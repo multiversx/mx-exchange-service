@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Address, AddressValue } from '@elrondnetwork/erdjs';
-import { Interaction } from '@elrondnetwork/erdjs';
+import { Address, AddressValue, Interaction } from '@multiversx/sdk-core';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import BigNumber from 'bignumber.js';
 import { CommunityDistributionModel } from '../models/distribution.model';

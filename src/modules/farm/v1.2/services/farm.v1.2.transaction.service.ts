@@ -3,7 +3,7 @@ import {
     AddressValue,
     BytesValue,
     TokenPayment,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

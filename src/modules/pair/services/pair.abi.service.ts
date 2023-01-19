@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
+import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { PairInfoModel } from '../models/pair-info.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -22,7 +22,7 @@ import {
     Struct,
     TokenIdentifierValue,
     U64Value,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { elrondConfig } from 'src/config';
 import { VmQueryError } from 'src/utils/errors.constants';

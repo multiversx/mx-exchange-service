@@ -25,7 +25,7 @@ import {
 import { ProgressComputeService } from '../services/progress.compute.service';
 import { createMockProgress } from './progress.compute.service.spec';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyType } from '@multiversx/sdk-exchange';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import BigNumber from 'bignumber.js';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';

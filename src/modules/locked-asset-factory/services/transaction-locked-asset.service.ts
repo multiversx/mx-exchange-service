@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Address, TokenPayment } from '@elrondnetwork/erdjs';
+import { Address, TokenPayment } from '@multiversx/sdk-core';
 import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { BigNumber } from 'bignumber.js';
@@ -23,7 +23,8 @@ export class TransactionsLockedAssetService {
         sender: string,
         args: UnlockAssetsArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const contract =
+            await this.elrondProxy.getLockedAssetFactorySmartContract();
         return contract.methodsExplicit
             .unlockAssets()
             .withSingleESDTNFTTransfer(
@@ -42,7 +43,8 @@ export class TransactionsLockedAssetService {
 
     async lockAssets(token: InputTokenModel): Promise<TransactionModel> {
         await this.validateLockAssetsInputTokens(token);
-        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const contract =
+            await this.elrondProxy.getLockedAssetFactorySmartContract();
         return contract.methodsExplicit
             .lockAssets()
             .withSingleESDTTransfer(
@@ -82,9 +84,10 @@ export class TransactionsLockedAssetService {
             throw error;
         }
 
-        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const contract =
+            await this.elrondProxy.getLockedAssetFactorySmartContract();
 
-        const mappedPayments = tokens.map(tokenPayment =>
+        const mappedPayments = tokens.map((tokenPayment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,
@@ -111,7 +114,8 @@ export class TransactionsLockedAssetService {
     }
 
     async validateInputTokens(tokens: InputTokenModel[]): Promise<void> {
-        const lockedAssetTokenID = await this.lockedAssetGetter.getLockedTokenID();
+        const lockedAssetTokenID =
+            await this.lockedAssetGetter.getLockedTokenID();
 
         for (const lockedAssetToken of tokens) {
             if (

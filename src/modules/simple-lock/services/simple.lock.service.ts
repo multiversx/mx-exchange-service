@@ -2,7 +2,7 @@ import {
     LockedFarmTokenAttributes,
     LockedLpTokenAttributes,
     LockedTokenAttributes,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

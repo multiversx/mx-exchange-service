@@ -19,7 +19,7 @@ import { ContextGetterServiceMock } from 'src/services/context/mocks/context.get
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { elrondConfig, gasConfig } from 'src/config';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';

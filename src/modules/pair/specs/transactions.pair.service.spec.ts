@@ -16,7 +16,7 @@ import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';

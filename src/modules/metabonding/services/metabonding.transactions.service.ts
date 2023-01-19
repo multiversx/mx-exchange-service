@@ -1,4 +1,4 @@
-import { Address, BigUIntValue, TokenPayment } from '@elrondnetwork/erdjs/out';
+import { Address, BigUIntValue, TokenPayment } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -65,7 +65,8 @@ export class MetabondingTransactionService {
     }
 
     async unstake(unstakeAmount: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
+        const contract =
+            await this.elrondProxy.getMetabondingStakingSmartContract();
         return contract.methodsExplicit
             .unstake([new BigUIntValue(new BigNumber(unstakeAmount))])
             .withGasLimit(gasConfig.metabonding.unstake)
@@ -75,7 +76,8 @@ export class MetabondingTransactionService {
     }
 
     async unbond(sender: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
+        const contract =
+            await this.elrondProxy.getMetabondingStakingSmartContract();
         await this.pubSub.publish('deleteCacheKeys', [`${sender}.userEntry`]);
         return contract.methodsExplicit
             .unbond([])
@@ -88,7 +90,8 @@ export class MetabondingTransactionService {
     private async validateInputToken(
         inputToken: InputTokenModel,
     ): Promise<void> {
-        const lockedAssetTokenID = await this.metabondingGetter.getLockedAssetTokenID();
+        const lockedAssetTokenID =
+            await this.metabondingGetter.getLockedAssetTokenID();
 
         if (
             lockedAssetTokenID !== inputToken.tokenID ||

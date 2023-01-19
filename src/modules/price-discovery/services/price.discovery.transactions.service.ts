@@ -1,4 +1,4 @@
-import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs/out';
+import { Address, Interaction, TokenPayment } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { elrondConfig, gasConfig } from 'src/config';
@@ -23,7 +23,8 @@ export class PriceDiscoveryTransactionService {
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel[]> {
-        const wrappedTokenID = await this.wrappingService.getWrappedEgldTokenID();
+        const wrappedTokenID =
+            await this.wrappingService.getWrappedEgldTokenID();
         const transactions: TransactionModel[] = [];
         if (inputToken.tokenID === elrondConfig.EGLDIdentifier) {
             transactions.push(
@@ -85,15 +86,16 @@ export class PriceDiscoveryTransactionService {
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
 
-        const [
-            currentPhase,
-            acceptedTokenID,
-            wrappedTokenID,
-        ] = await Promise.all([
-            this.priceDiscoveryGetter.getCurrentPhase(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getAcceptedTokenID(priceDiscoveryAddress),
-            this.wrappingService.getWrappedEgldTokenID(),
-        ]);
+        const [currentPhase, acceptedTokenID, wrappedTokenID] =
+            await Promise.all([
+                this.priceDiscoveryGetter.getCurrentPhase(
+                    priceDiscoveryAddress,
+                ),
+                this.priceDiscoveryGetter.getAcceptedTokenID(
+                    priceDiscoveryAddress,
+                ),
+                this.wrappingService.getWrappedEgldTokenID(),
+            ]);
 
         transactions.push(
             await this.genericRedeemInteraction(

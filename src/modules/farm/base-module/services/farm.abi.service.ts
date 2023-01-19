@@ -2,8 +2,8 @@ import { Inject } from '@nestjs/common';
 import {
     BigUIntValue,
     BytesValue,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Address, Interaction, ReturnCode } from '@elrondnetwork/erdjs';
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+import { Address, Interaction, ReturnCode } from '@multiversx/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';

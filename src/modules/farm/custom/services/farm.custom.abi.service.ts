@@ -1,4 +1,4 @@
-import { Address, Interaction } from '@elrondnetwork/erdjs/out';
+import { Address, Interaction } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
 

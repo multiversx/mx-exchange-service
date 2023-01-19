@@ -3,7 +3,7 @@ import {
     Address,
     SmartContract,
     SmartContractAbi,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { promises } from 'fs';
 import { ElrondProxyService } from './elrond-proxy.service';
 

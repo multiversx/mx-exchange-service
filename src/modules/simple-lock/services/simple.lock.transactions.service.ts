@@ -7,7 +7,7 @@ import {
     TokenPayment,
     TypedValue,
     U64Value,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { elrondConfig, gasConfig } from 'src/config';

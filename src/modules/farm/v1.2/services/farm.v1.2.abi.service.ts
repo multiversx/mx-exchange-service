@@ -1,4 +1,4 @@
-import { Interaction } from '@elrondnetwork/erdjs/out';
+import { Interaction } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { FarmMigrationConfig } from '../../models/farm.model';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';

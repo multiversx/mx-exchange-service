@@ -27,7 +27,7 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { RouterService } from 'src/modules/router/services/router.service';
 import { AutoRouteModel } from '../models/auto-route.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';

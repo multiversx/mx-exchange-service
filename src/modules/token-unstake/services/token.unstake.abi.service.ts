@@ -1,5 +1,5 @@
-import { EsdtTokenPayment } from '@elrondnetwork/erdjs-dex';
-import { Address, AddressValue, Interaction } from '@elrondnetwork/erdjs/out';
+import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
+import { Address, AddressValue, Interaction } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';

@@ -17,7 +17,7 @@ import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { FarmGetterService } from '../../base-module/services/farm.getter.service';
 import { TransactionsFarmService } from '../../base-module/services/farm.transaction.service';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import { Address, TokenPayment } from '@elrondnetwork/erdjs/out';
+import { Address, TokenPayment } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 
 @Injectable()

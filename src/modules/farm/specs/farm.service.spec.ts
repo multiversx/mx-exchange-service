@@ -15,7 +15,7 @@ import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
 import { FarmAbiServiceV1_2 } from '../v1.2/services/farm.v1.2.abi.service';
 import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service';
@@ -35,28 +35,14 @@ import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from '../v2/services/farm.v2.compute.service';
 import { FarmGetterService } from '../base-module/services/farm.getter.service';
 import { RewardsModel } from '../models/farm.model';
-import {
-    WeeklyRewardsSplittingGetterService
-} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import {
-    WeeklyRewardsSplittingGetterServiceMock
-} from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
-import {
-    WeekTimekeepingGetterService
-} from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
-import {
-    WeekTimekeepingGetterServiceMock
-} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
-import {
-    WeekTimekeepingComputeService
-} from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import {
-    WeekTimekeepingComputeServiceMock
-} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
+import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
+import { WeeklyRewardsSplittingGetterServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
+import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import { WeekTimekeepingGetterServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
+import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import {
-    ProgressComputeServiceMock
-} from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
+import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
 import { EnergyGetterServiceProvider } from '../../energy/mocks/energy.getter.service.mock';
 
 describe('FarmService', () => {

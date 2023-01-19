@@ -8,7 +8,7 @@ import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { EsdtTokenInput } from '../tokens/models/esdtTokenInput.model';
 import { ApolloError } from 'apollo-server-express';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
 import { UserEsdtService } from './services/user.esdt.service';
 import { UserEnergyService } from './services/userEnergy/user.energy.service';

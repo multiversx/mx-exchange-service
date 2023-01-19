@@ -1,4 +1,4 @@
-import { Interaction, TokenIdentifierValue } from '@elrondnetwork/erdjs/out';
+import { Interaction, TokenIdentifierValue } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { AbiProxyService } from '../../services/proxy-abi.service';
 

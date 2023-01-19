@@ -10,7 +10,7 @@ import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { ApiNetworkProvider } from '@elrondnetwork/erdjs-network-providers/out';
+import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
 import { isEsdtToken, isNftCollection } from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
 

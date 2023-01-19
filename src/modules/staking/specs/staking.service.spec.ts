@@ -20,7 +20,7 @@ import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-g
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
 
 describe('StakingService', () => {

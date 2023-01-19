@@ -1,11 +1,11 @@
-import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
+import { Energy, EnergyType } from '@multiversx/sdk-exchange';
 import {
     Address,
     AddressValue,
     BigUIntValue,
     Interaction,
     U64Value,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

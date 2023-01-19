@@ -44,7 +44,7 @@ import {
     WEEKLY_REWARDS_SPLITTING_EVENTS,
     TOKEN_UNSTAKE_EVENTS,
     UserUnlockedTokensEvent,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { RouterGetterService } from '../router/services/router.getter.service';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';

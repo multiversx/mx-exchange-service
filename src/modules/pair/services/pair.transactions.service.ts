@@ -4,9 +4,9 @@ import {
     BigUIntValue,
     TypedValue,
     U64Value,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Address, TokenPayment } from '@elrondnetwork/erdjs';
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
+import { Address, TokenPayment } from '@multiversx/sdk-core';
 import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {

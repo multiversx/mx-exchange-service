@@ -1,5 +1,10 @@
-import { ContractQueryResponse } from '@elrondnetwork/erdjs-network-providers/out';
-import { Interaction, Query, ResultsParser, TypedOutcomeBundle } from '@elrondnetwork/erdjs/out';
+import { ContractQueryResponse } from '@multiversx/sdk-network-providers/out';
+import {
+    Interaction,
+    Query,
+    ResultsParser,
+    TypedOutcomeBundle,
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';

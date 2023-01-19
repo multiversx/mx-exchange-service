@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TokenPayment } from '@elrondnetwork/erdjs';
+import { TokenPayment } from '@multiversx/sdk-core';
 import { TransactionModel } from '../../models/transaction.model';
 import { elrondConfig, gasConfig } from '../../config';
 import { WrapService } from './wrap.service';

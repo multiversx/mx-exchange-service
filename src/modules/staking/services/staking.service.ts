@@ -1,7 +1,7 @@
 import {
     StakingFarmTokenAttributes,
     UnbondFarmTokenAttributes,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -30,7 +30,7 @@ export class StakingService {
         private readonly apiService: ElrondApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) { }
+    ) {}
 
     async getFarmsStaking(): Promise<StakingModel[]> {
         const farmsStakingAddresses =
@@ -65,20 +65,22 @@ export class StakingService {
     async decodeUnboundTokenAttributes(
         args: DecodeAttributesArgs,
     ): Promise<UnbondTokenAttributesModel[]> {
-        return Promise.all(args.batchAttributes.map(async arg => {
-            const unboundFarmTokenAttributes =
-                UnbondFarmTokenAttributes.fromAttributes(arg.attributes);
-            const remainingEpochs = await this.getUnbondigRemaingEpochs(
-                unboundFarmTokenAttributes.unlockEpoch,
-            );
+        return Promise.all(
+            args.batchAttributes.map(async (arg) => {
+                const unboundFarmTokenAttributes =
+                    UnbondFarmTokenAttributes.fromAttributes(arg.attributes);
+                const remainingEpochs = await this.getUnbondigRemaingEpochs(
+                    unboundFarmTokenAttributes.unlockEpoch,
+                );
 
-            return new UnbondTokenAttributesModel({
-                ...unboundFarmTokenAttributes.toJSON(),
-                remainingEpochs,
-                attributes: arg.attributes,
-                identifier: arg.identifier,
-            });
-        }));
+                return new UnbondTokenAttributesModel({
+                    ...unboundFarmTokenAttributes.toJSON(),
+                    remainingEpochs,
+                    attributes: arg.attributes,
+                    identifier: arg.identifier,
+                });
+            }),
+        );
     }
 
     async getBatchRewardsForPosition(

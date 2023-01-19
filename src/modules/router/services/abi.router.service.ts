@@ -1,4 +1,4 @@
-import { Interaction } from '@elrondnetwork/erdjs/out';
+import { Interaction } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

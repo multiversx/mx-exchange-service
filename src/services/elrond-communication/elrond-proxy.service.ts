@@ -3,7 +3,7 @@ import {
     Address,
     SmartContract,
     SmartContractAbi,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { abiConfig, elrondConfig, scAddress } from '../../config';
 import Agent, { HttpsAgent } from 'agentkeepalive';

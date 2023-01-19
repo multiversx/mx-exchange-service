@@ -19,7 +19,7 @@ import {
     EsdtLocalBurnEvent,
     ExitFarmEventV1_2,
     ExitFarmEventV1_3,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';

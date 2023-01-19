@@ -16,7 +16,7 @@ import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 import { StakingTransactionService } from '../services/staking.transactions.service';
 
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { elrondConfig, gasConfig } from 'src/config';

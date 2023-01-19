@@ -3,7 +3,7 @@ import { GenericAbiService } from '../../../services/generics/generic.abi.servic
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { Interaction } from '@elrondnetwork/erdjs/out';
+import { Interaction } from '@multiversx/sdk-core';
 
 @Injectable()
 export class LockedTokenWrapperAbiService extends GenericAbiService {
@@ -15,24 +15,32 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
     }
 
     async lockedTokenId(address: string): Promise<string> {
-        const contract = await this.elrondProxy.getLockedTokenWrapperContract(address);
-        const interaction: Interaction = contract.methodsExplicit.getLockedTokenId();
+        const contract = await this.elrondProxy.getLockedTokenWrapperContract(
+            address,
+        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockedTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
     async wrappedTokenId(address: string): Promise<string> {
-        const contract = await this.elrondProxy.getLockedTokenWrapperContract(address);
-        const interaction: Interaction = contract.methodsExplicit.getWrappedTokenId();
+        const contract = await this.elrondProxy.getLockedTokenWrapperContract(
+            address,
+        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getWrappedTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
     async energyFactoryAddress(address: string): Promise<string> {
-        const contract = await this.elrondProxy.getLockedTokenWrapperContract(address);
-        const interaction: Interaction = contract.methodsExplicit.getEnergyFactoryAddress();
+        const contract = await this.elrondProxy.getLockedTokenWrapperContract(
+            address,
+        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getEnergyFactoryAddress();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().bech32();
     }
-
 }

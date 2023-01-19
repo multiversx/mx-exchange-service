@@ -5,7 +5,7 @@ import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../base-module/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';

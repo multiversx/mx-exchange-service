@@ -1,6 +1,6 @@
 import { PairProxyEventModel } from './pairProxy.event.model';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { AddLiquidityProxyEvent } from '@elrondnetwork/erdjs-dex';
+import { AddLiquidityProxyEvent } from '@multiversx/sdk-exchange';
 
 @ObjectType()
 export class AddLiquidityProxyEventModel extends PairProxyEventModel {

@@ -4,8 +4,8 @@ import {
     BigUIntValue,
     BytesValue,
     TypedValue,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs';
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+import { Address, Interaction, TokenPayment } from '@multiversx/sdk-core';
 import { TransactionModel } from '../../../../models/transaction.model';
 import BigNumber from 'bignumber.js';
 

@@ -1,4 +1,4 @@
-import { LockedTokenAttributes } from '@elrondnetwork/erdjs-dex';
+import { LockedTokenAttributes } from '@multiversx/sdk-exchange';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -62,11 +62,13 @@ export class EnergyService {
             }
 
             const tentativeNewUnlockEpoch = currentEpoch + newLockPeriod;
-            const startOfMonthEpoch = this.unlockEpochToStartOfMonth(tentativeNewUnlockEpoch)
-            const epochsDiffFromMonthStart = tentativeNewUnlockEpoch - startOfMonthEpoch
-            newLockPeriod = newLockPeriod - epochsDiffFromMonthStart
+            const startOfMonthEpoch = this.unlockEpochToStartOfMonth(
+                tentativeNewUnlockEpoch,
+            );
+            const epochsDiffFromMonthStart =
+                tentativeNewUnlockEpoch - startOfMonthEpoch;
+            newLockPeriod = newLockPeriod - epochsDiffFromMonthStart;
         }
-
 
         const prevLockEpochs = decodedAttributes.unlockEpoch - currentEpoch;
         if (prevLockEpochs <= 0) {
@@ -95,7 +97,7 @@ export class EnergyService {
     }
 
     private unlockEpochToStartOfMonth(unlockEpoch: number): number {
-        const extraDays = unlockEpoch % constantsConfig.EPOCHS_IN_MONTH
-        return unlockEpoch - extraDays
+        const extraDays = unlockEpoch % constantsConfig.EPOCHS_IN_MONTH;
+        return unlockEpoch - extraDays;
     }
 }

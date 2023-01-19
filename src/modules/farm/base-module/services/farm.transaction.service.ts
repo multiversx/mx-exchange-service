@@ -1,12 +1,12 @@
 import { TransactionModel } from '../../../../models/transaction.model';
 import { Inject } from '@nestjs/common';
-import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
+import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
 import {
     Address,
     BigUIntValue,
     TokenPayment,
     TypedValue,
-} from '@elrondnetwork/erdjs';
+} from '@multiversx/sdk-core';
 import { elrondConfig, gasConfig } from '../../../../config';
 import { BigNumber } from 'bignumber.js';
 import {

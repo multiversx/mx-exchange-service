@@ -20,7 +20,7 @@ import {
 import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
 import { elrondConfig, gasConfig } from 'src/config';

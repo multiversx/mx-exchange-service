@@ -4,7 +4,7 @@ import {
     Interaction,
     SmartContract,
     U32Value,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import BigNumber from 'bignumber.js';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
@@ -14,8 +14,8 @@ import {
     ErrorGetContractHandlerNotSet,
     VmQueryError,
 } from '../../../utils/errors.constants';
-import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
-import { ReturnCode } from '@elrondnetwork/erdjs/out/smartcontracts/returnCode';
+import { Energy, EnergyType } from '@multiversx/sdk-exchange';
+import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';

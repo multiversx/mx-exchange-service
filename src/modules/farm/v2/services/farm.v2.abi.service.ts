@@ -12,12 +12,12 @@ import {
     U32Value,
     U64Type,
     U64Value,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
-import { FarmTokenAttributesV1_3 } from '@elrondnetwork/erdjs-dex';
+import { FarmTokenAttributesV1_3 } from '@multiversx/sdk-exchange';
 import { FarmRewardType } from '../../models/farm.model';
 import { farmType } from 'src/utils/farm.utils';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
@@ -144,7 +144,10 @@ export class FarmAbiServiceV2 extends Mixin(
         scAddress: string,
         week: number,
     ): Promise<string> {
-        const hexValue = await this.gatewayService.getSCStorageKeys(scAddress, ['accumulatedRewardsForWeek' , week])
+        const hexValue = await this.gatewayService.getSCStorageKeys(scAddress, [
+            'accumulatedRewardsForWeek',
+            week,
+        ]);
         return new BigNumber(hexValue, 16).integerValue().toFixed();
         // TODO: remove the code above after the contracts are upgraded with the required view
         const contract = await this.getContractHandler(scAddress);

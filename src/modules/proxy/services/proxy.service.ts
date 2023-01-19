@@ -25,7 +25,7 @@ import {
     WrappedFarmTokenAttributesV2,
     WrappedLpTokenAttributes,
     WrappedLpTokenAttributesV2,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { farmVersion } from 'src/utils/farm.utils';
 import {

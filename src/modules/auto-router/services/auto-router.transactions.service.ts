@@ -4,7 +4,7 @@ import {
     BigUIntValue,
     BytesValue,
     TokenPayment,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { elrondConfig, gasConfig } from 'src/config';
@@ -26,23 +26,22 @@ export class AutoRouterTransactionService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const [
-            contract,
-            wrapTransaction,
-            unwrapTransaction,
-        ] = await Promise.all([
-            this.elrondProxy.getRouterSmartContract(),
-            this.wrapIfNeeded(
-                sender,
-                args.tokenInID,
-                args.intermediaryAmounts[0],
-            ),
-            this.unwrapIfNeeded(
-                sender,
-                args.tokenOutID,
-                args.intermediaryAmounts[args.intermediaryAmounts.length - 1],
-            ),
-        ]);
+        const [contract, wrapTransaction, unwrapTransaction] =
+            await Promise.all([
+                this.elrondProxy.getRouterSmartContract(),
+                this.wrapIfNeeded(
+                    sender,
+                    args.tokenInID,
+                    args.intermediaryAmounts[0],
+                ),
+                this.unwrapIfNeeded(
+                    sender,
+                    args.tokenOutID,
+                    args.intermediaryAmounts[
+                        args.intermediaryAmounts.length - 1
+                    ],
+                ),
+            ]);
 
         if (wrapTransaction) transactions.push(wrapTransaction);
 

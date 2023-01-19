@@ -8,7 +8,7 @@ import {
     U64Type,
     U64Value,
     VariadicValue,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { elrondConfig, gasConfig } from 'src/config';

@@ -1,4 +1,4 @@
-import { PriceDiscoveryEvent } from '@elrondnetwork/erdjs-dex';
+import { PriceDiscoveryEvent } from '@multiversx/sdk-exchange';
 import { Field } from '@nestjs/graphql';
 
 export class PriceDiscoveryEventModel {
