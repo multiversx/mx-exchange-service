@@ -1,7 +1,6 @@
 import { TimeResolution } from "@multiversx/sdk-data-api-client";
 import { DataApiHistoricalResponse } from "@multiversx/sdk-data-api-client/lib/src/responses";
 import BigNumber from "bignumber.js";
-import { response } from "express";
 import moment from "moment";
 import { MetricsCollector } from "./metrics.collector";
 import { PerformanceProfiler } from "./performance.profiler";
@@ -90,4 +89,15 @@ export const convertDataApiHistoricalResponseToHash = (rows: DataApiHistoricalRe
         return { field, value };
     });
     return toBeInserted;
+}
+
+export const computeIntervalValues = (keys, values) => {
+    const intervalValues = [];
+    for (const [index, key] of keys.entries()) {
+        intervalValues.push({
+            field: key,
+            value: values[index] ? JSON.parse(values[index]) : null,
+        });
+    }
+    return intervalValues;
 }

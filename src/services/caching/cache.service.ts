@@ -254,6 +254,17 @@ export class CachingService {
         }
     }
 
+    async setMultipleInHash(hashKey: string, values: [string, string][]): Promise<void> {
+        const profiler = new PerformanceProfiler();
+
+        try {
+            await this.client.hset(hashKey, ...values.flat());
+        } finally {
+            profiler.stop();
+            MetricsCollector.setRedisDuration('HMSET', profiler.duration);
+        }
+    }
+
     async setHash(hashKey: string, key: string, value: string): Promise<void> {
         const profiler = new PerformanceProfiler();
 
