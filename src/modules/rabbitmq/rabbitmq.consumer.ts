@@ -4,7 +4,7 @@ import { Logger } from 'winston';
 import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
-import { awsConfig, scAddress } from 'src/config';
+import { scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
@@ -54,12 +54,14 @@ import { EnergyHandler } from './handlers/energy.handler.service';
 import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
     private data: any[];
 
     constructor(
+        private readonly apiConfig: ApiConfigService,
         private readonly routerGetter: RouterGetterService,
         private readonly liquidityHandler: LiquidityHandler,
         private readonly swapHandler: SwapEventHandler,
@@ -266,9 +268,12 @@ export class RabbitMqConsumer {
             }
         }
 
-        if (Object.keys(this.data).length > 0) {
+        if (
+            Object.keys(this.data).length > 0 &&
+            this.apiConfig.isAWSTimestreamWrite()
+        ) {
             await this.awsTimestreamWrite.ingest({
-                TableName: awsConfig.timestream.tableName,
+                TableName: this.apiConfig.getAWSTableName(),
                 data: this.data,
                 Time: timestamp,
             });

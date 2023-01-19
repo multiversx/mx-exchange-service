@@ -447,7 +447,10 @@
             "updateFarmsEnergyForUser": 15000000
         },
         "tokenUnstake": {
-            "claimUnlockedTokens": 30000000,
+            "claimUnlockedTokens": {
+                "default": 8500000,
+                "additionalTokens": 5000000
+            },
             "cancelUnbond": 20000000
         },
         "lockedTokenWrapper": {
@@ -540,17 +543,5 @@
             "MAX_SLIPPAGE": 0.05
         },
         "MIN_SWAP_AMOUNT": 0.05
-    },
-    "security": {
-        "admins": []
-    },
-    "aws": {
-        "region": "us-east-1",
-        "timestream": {
-            "databaseName": "devnet-data-timestream",
-            "tableName": "tradingInfo",
-            "MemoryStoreRetentionPeriodInHours": 768,
-            "MagneticStoreRetentionPeriodInDays": 73000
-        }
     }
 }

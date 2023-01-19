@@ -27,10 +27,4 @@ export const tokensSupplyConfig = config.get('tokensSupply');
 
 export const cachedTokensPriceConfig = config.get('cachedTokensPrice');
 
-export const cronConfig = config.get('cron');
-
 export const constantsConfig = config.get('constants');
-
-export const securityConfig = config.get('security');
-
-export const awsConfig = config.get('aws');

@@ -11,6 +11,11 @@ import { ElrondProxyService } from './elrond-proxy.service';
         ElrondGatewayService,
         ApiConfigService,
     ],
-    exports: [ElrondProxyService, ElrondApiService, ElrondGatewayService],
+    exports: [
+        ElrondProxyService,
+        ElrondApiService,
+        ElrondGatewayService,
+        ApiConfigService,
+    ],
 })
 export class ElrondCommunicationModule {}

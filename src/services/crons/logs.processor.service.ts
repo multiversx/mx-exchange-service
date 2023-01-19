@@ -22,6 +22,7 @@ import {
 } from '@elrondnetwork/erdjs-dex';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class LogsProcessorService {
@@ -34,6 +35,7 @@ export class LogsProcessorService {
         private readonly apiService: ElrondApiService,
         private readonly elasticService: ElasticService,
         private readonly awsWrite: AWSTimestreamWriteService,
+        private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -228,8 +230,15 @@ export class LogsProcessorService {
     private async pushAWSRecords(
         Records: TimestreamWrite.Records,
     ): Promise<number> {
+        if (!this.apiConfig.isAWSTimestreamWrite()) {
+            return 0;
+        }
+
         try {
-            await this.awsWrite.multiRecordsIngest('tradingInfo', Records);
+            await this.awsWrite.multiRecordsIngest(
+                this.apiConfig.getAWSTableName(),
+                Records,
+            );
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(
