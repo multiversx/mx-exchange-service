@@ -123,10 +123,10 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
       metric,
       startDate: moment.utc(startDate).format('YYYY-MM-DD HH:mm:ss'),
       endDate: moment.utc(endDate).format('YYYY-MM-DD HH:mm:ss'),
-    }
+    };
 
     const response = await this.dataApiClient.executeRawQuery({ query, variables });
-    const rows = response.xExchangeAnalytics.values
+    const rows = response.xExchangeAnalytics.values;
 
     const data = rows.map((row: any) => new HistoricDataModel({
       timestamp: moment.utc(row.time).unix().toString(),
@@ -170,11 +170,11 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
       let intervalValues = computeIntervalValues(keys, values);
 
       if (values.some(value => value === null)) {
-        const dates = [intervalStart.utc(false).toDate(), intervalEnd.utc(false).toDate()]
-        const rows = await this.getCompleteValuesInInterval(series, metric, dates[0], dates[1])
+        this.logger.info(`Get complete values for ${hashCacheKey} between ${intervalStart.format('YYYY-MM-DD HH:mm:ss')} and ${intervalEnd.format('YYYY-MM-DD HH:mm:ss')}`);
+
+        const rows = await this.getCompleteValuesInInterval(series, metric, intervalStart.toDate(), intervalEnd.toDate());
 
         const toBeInserted = convertDataApiHistoricalResponseToHash(rows);
-
         if (toBeInserted.length > 0) {
           const redisValues = toBeInserted.map(({ field, value }) => [field, JSON.stringify(value)]) as [string, string][];
           await this.cachingService.setMultipleInHash(hashCacheKey, redisValues);
@@ -183,13 +183,13 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         intervalValues = toBeInserted;
       }
 
-      completeValues.push(...intervalValues)
+      completeValues.push(...intervalValues);
     }
 
     // handle current time
     const currentRows = await this.getCompleteValuesInInterval(series, metric, moment.utc().startOf('day').toDate(), moment.utc().toDate());
     const currentValues = convertDataApiHistoricalResponseToHash(currentRows);
-    completeValues.push(...currentValues)
+    completeValues.push(...currentValues);
 
     return completeValues;
   }
