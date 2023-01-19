@@ -1,4 +1,7 @@
 import { TimeResolution } from "@multiversx/sdk-data-api-client";
+import { DataApiHistoricalResponse } from "@multiversx/sdk-data-api-client/lib/src/responses";
+import BigNumber from "bignumber.js";
+import { response } from "express";
 import moment from "moment";
 import { MetricsCollector } from "./metrics.collector";
 import { PerformanceProfiler } from "./performance.profiler";
@@ -66,4 +69,25 @@ export function DataApiQuery() {
         };
         return descriptor;
     };
+}
+
+export const generateCacheKeysForTimeInterval = (intervalStart: moment.Moment, intervalEnd: moment.Moment): string[] => {
+    const keys = [];
+    for (let d = intervalStart.clone(); d.isSameOrBefore(intervalEnd); d.add(1, 'day')) {
+        keys.push(d.format('YYYY-MM-DD'));
+    }
+
+    return keys;
+}
+
+export const convertDataApiHistoricalResponseToHash = (rows: DataApiHistoricalResponse[]): { field: string, value: { last: string, sum: string } }[] => {
+    const toBeInserted = rows.map((row) => {
+        const field = moment.utc(row.timestamp * 1000).format('YYYY-MM-DD');
+        const value = {
+            last: new BigNumber(row.last ?? '0').toFixed(),
+            sum: new BigNumber(row.sum ?? '0').toFixed(),
+        };
+        return { field, value };
+    });
+    return toBeInserted;
 }

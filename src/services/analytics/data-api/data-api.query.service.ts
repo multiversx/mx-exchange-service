@@ -7,7 +7,9 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { dataApiConfig, elrondConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { computeTimeInterval, convertBinToTimeResolution, DataApiQuery } from 'src/utils/analytics.utils';
+import { CachingService } from 'src/services/caching/cache.service';
+import { computeTimeInterval, convertBinToTimeResolution, convertDataApiHistoricalResponseToHash, DataApiQuery, generateCacheKeysForTimeInterval } from 'src/utils/analytics.utils';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -17,8 +19,9 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
   private readonly dataApiClient: DataApiClient;
 
   constructor(
-    private readonly apiConfigService: ApiConfigService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly apiConfigService: ApiConfigService,
+    private readonly cachingService: CachingService,
   ) {
     this.dataApiClient = new DataApiClient({
       host: 'dex-service',
@@ -53,33 +56,18 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
   @DataApiQuery()
   async getLatestCompleteValues({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    const query = DataApiQueryBuilder
-      .createXExchangeAnalyticsQuery()
-      .metric(series, metric)
-      .withTimeRange(TimeRange.ALL)
-      .withTimeResolution(TimeResolution.INTERVAL_DAY)
-      .getHistorical(HistoricalValue.last, HistoricalValue.time);
+    const completeValues = await this.getCompleteValues(series, metric);
 
-    const rows = await this.dataApiClient.executeHistoricalQuery(query);
-
-    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.last));
-    return data;
+    const latestCompleteValues = completeValues.map((value) => HistoricDataModel.fromCompleteValues(value, 'last'));
+    return latestCompleteValues;
   }
 
   @DataApiQuery()
   async getSumCompleteValues({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    const query = DataApiQueryBuilder
-      .createXExchangeAnalyticsQuery()
-      .metric(series, metric)
-      .withTimeRange(TimeRange.ALL)
-      .withTimeResolution(TimeResolution.INTERVAL_DAY)
-      .fillDataGaps({ skipFirstNullValues: true })
-      .getHistorical(HistoricalValue.sum, HistoricalValue.time);
+    const completeValues = await this.getCompleteValues(series, metric);
 
-    const rows = await this.dataApiClient.executeHistoricalQuery(query);
-
-    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.sum));
-    return data;
+    const sumCompleteValues = completeValues.map((value) => HistoricDataModel.fromCompleteValues(value, 'sum'));
+    return sumCompleteValues;
   }
 
   @DataApiQuery()
@@ -164,5 +152,63 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
     const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.max));
     return data;
+  }
+
+  private async getCompleteValues(series: string, metric: string): Promise<any[]> {
+    const response = [];
+
+    const hashCacheKey = generateCacheKeyFromParams('timeseries', series, metric);
+
+    const startDate = moment.utc('2021-11-15').startOf('day'); // dex launch date
+    const endDate = moment.utc();
+
+    for (let date = startDate.clone(); date.isSameOrBefore(endDate); date.add(1, 'month')) {
+      const intervalStart = date.clone();
+      const intervalEnd = moment.min(date.clone().add(1, 'month').subtract(1, 's'), endDate);
+
+      console.log(intervalStart.format('YYYY-MM-DD HH:mm'), intervalEnd.format('YYYY-MM-DD HH:mm'));
+
+      // generate redis keys
+      const keys = generateCacheKeysForTimeInterval(intervalStart, intervalEnd);
+
+      const values = await this.cachingService.getMultipleFromHash(hashCacheKey, keys);
+      let intervalValues = [];
+      for (const [index, key] of keys.entries()) {
+        intervalValues.push({
+          field: key,
+          value: values[index] ? JSON.parse(values[index]) : null,
+        });
+      }
+      if (values.some(value => value === null)) {
+        // TODO
+        try {
+          const dates = [intervalStart.utc(false).toDate(), intervalEnd.utc(false).toDate()]
+          // fetch data from data api
+          const query = DataApiQueryBuilder
+            .createXExchangeAnalyticsQuery()
+            .metric(series, metric)
+            .betweenDates(dates[0], dates[1])
+            .withTimeResolution(TimeResolution.INTERVAL_DAY)
+            .fillDataGaps({ skipFirstNullValues: true })
+            .getHistorical(HistoricalValue.last, HistoricalValue.sum, HistoricalValue.time);
+
+          const rows = await this.dataApiClient.executeHistoricalQuery(query);
+
+          const toBeInserted = convertDataApiHistoricalResponseToHash(rows);
+          for (const { field, value } of toBeInserted) {
+            await this.cachingService.setHash(hashCacheKey, field, JSON.stringify(value));
+          }
+
+          intervalValues = toBeInserted;
+        } catch (e) {
+          console.log(e)
+        }
+      }
+
+      response.push(...intervalValues)
+    }
+
+
+    return response;
   }
 }
