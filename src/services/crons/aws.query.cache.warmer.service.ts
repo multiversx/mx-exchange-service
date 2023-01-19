@@ -17,20 +17,17 @@ export class AWSQueryCacheWarmerService {
         private readonly routerGetter: RouterGetterService,
         private readonly analyticsAWSSetter: AnalyticsAWSSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    ) {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        this.updateHistoricTokensData().catch(() => { })
-    }
+    ) { }
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async updateHistoricTokensData(): Promise<void> {
         const tokens = await this.tokenService.getUniqueTokenIDs(false);
         for (const tokenID of tokens) {
-            // const priceUSD24h = await this.analyticsQuery.getValues24h({
-            //     table: awsConfig.timestream.tableName,
-            //     series: tokenID,
-            //     metric: 'priceUSD',
-            // });
+            const priceUSD24h = await this.analyticsQuery.getValues24h({
+                table: awsConfig.timestream.tableName,
+                series: tokenID,
+                metric: 'priceUSD',
+            });
             delay(1000);
             const priceUSDCompleteValues =
                 await this.analyticsQuery.getLatestCompleteValues({
@@ -38,7 +35,6 @@ export class AWSQueryCacheWarmerService {
                     series: tokenID,
                     metric: 'priceUSD',
                 });
-            return;
             delay(1000);
             const lockedValueUSD24h = await this.analyticsQuery.getValues24h({
                 table: awsConfig.timestream.tableName,
@@ -67,11 +63,11 @@ export class AWSQueryCacheWarmerService {
                 });
 
             const cachedKeys = await Promise.all([
-                // this.analyticsAWSSetter.setValues24h(
-                //     tokenID,
-                //     'priceUSD',
-                //     priceUSD24h,
-                // ),
+                this.analyticsAWSSetter.setValues24h(
+                    tokenID,
+                    'priceUSD',
+                    priceUSD24h,
+                ),
                 this.analyticsAWSSetter.setLatestCompleteValues(
                     tokenID,
                     'priceUSD',

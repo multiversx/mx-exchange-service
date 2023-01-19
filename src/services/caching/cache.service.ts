@@ -264,15 +264,4 @@ export class CachingService {
             MetricsCollector.setRedisDuration('HMSET', profiler.duration);
         }
     }
-
-    async setHash(hashKey: string, key: string, value: string): Promise<void> {
-        const profiler = new PerformanceProfiler();
-
-        try {
-            await this.client.hset(hashKey, key, value);
-        } finally {
-            profiler.stop();
-            MetricsCollector.setRedisDuration('HSET', profiler.duration);
-        }
-    }
 }
