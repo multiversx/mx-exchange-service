@@ -1,24 +1,24 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { awsConfig, constantsConfig, scAddress } from 'src/config';
-import { FarmRewardType, FarmVersion } from 'src/modules/farm/models/farm.model';
+import { constantsConfig, scAddress } from 'src/config';
+import {
+    FarmRewardType,
+    FarmVersion,
+} from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
-import { EnergyGetterService } from '../../energy/services/energy.getter.service';
 import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { AnalyticsGetterService } from './analytics.getter.service';
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
-import {
-    WeekTimekeepingGetterService
-} from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
-import {
-    RemoteConfigGetterService
-} from '../../remote-config/remote-config.getter.service';
+import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
@@ -26,16 +26,15 @@ export class AnalyticsComputeService {
         private readonly farmGetter: FarmGetterFactory,
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairGetter: PairGetterService,
-        private readonly energyGetter: EnergyGetterService,
         private readonly stakingGetter: StakingGetterService,
         private readonly tokenGetter: TokenGetterService,
         @Inject(forwardRef(() => AnalyticsGetterService))
-        private readonly analyticsGetter: AnalyticsGetterService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-    ) { }
+        private readonly apiConfig: ApiConfigService,
+    ) {}
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
@@ -85,12 +84,13 @@ export class AnalyticsComputeService {
     async computeTotalValueStakedUSD(): Promise<string> {
         let totalValueLockedUSD = new BigNumber(0);
 
-        const stakingAddresses = await this.remoteConfigGetterService.getStakingAddresses()
+        const stakingAddresses =
+            await this.remoteConfigGetterService.getStakingAddresses();
         const promises = stakingAddresses.map((stakingAddress) =>
-            this.stakingGetter.getStakedValueUSD(stakingAddress)
+            this.stakingGetter.getStakedValueUSD(stakingAddress),
         );
 
-        promises.push(this.computeTotalLockedMexStakedUSD())
+        promises.push(this.computeTotalLockedMexStakedUSD());
 
         if (farmsAddresses()[5] !== undefined) {
             promises.push(
@@ -147,16 +147,18 @@ export class AnalyticsComputeService {
     }
 
     async computeTotalLockedMexStakedUSD(): Promise<string> {
-        const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress.feesCollector);
-        const [
-            mexTokenPrice,
-            tokenMetadata,
-            totalLockedTokens,
-        ] = await Promise.all([
-            this.tokenGetter.getDerivedUSD(constantsConfig.MEX_TOKEN_ID),
-            this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
-            this.feesCollectorGetter.totalLockedTokensForWeek(scAddress.feesCollector, currentWeek)
-        ]);
+        const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(
+            scAddress.feesCollector,
+        );
+        const [mexTokenPrice, tokenMetadata, totalLockedTokens] =
+            await Promise.all([
+                this.tokenGetter.getDerivedUSD(constantsConfig.MEX_TOKEN_ID),
+                this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
+                this.feesCollectorGetter.totalLockedTokensForWeek(
+                    scAddress.feesCollector,
+                    currentWeek,
+                ),
+            ]);
 
         return new BigNumber(mexTokenPrice)
             .multipliedBy(totalLockedTokens)
@@ -169,7 +171,7 @@ export class AnalyticsComputeService {
         metric: string,
     ): Promise<string> {
         return await this.awsTimestreamQuery.getAggregatedValue({
-            table: awsConfig.timestream.tableName,
+            table: this.apiConfig.getAWSTableName(),
             series: tokenID,
             metric,
             time,
@@ -179,16 +181,17 @@ export class AnalyticsComputeService {
     private async fiterPairsByIssuedLpToken(
         pairsAddress: string[],
     ): Promise<string[]> {
-
-        const unfilteredPairAddresses = await Promise.all(pairsAddress.map(async pairAddress => {
-            return {
-                lpTokenId: await this.pairGetter.getLpTokenID(pairAddress),
-                pairAddress
-            };
-        }));
+        const unfilteredPairAddresses = await Promise.all(
+            pairsAddress.map(async (pairAddress) => {
+                return {
+                    lpTokenId: await this.pairGetter.getLpTokenID(pairAddress),
+                    pairAddress,
+                };
+            }),
+        );
 
         return unfilteredPairAddresses
-            .filter(pair => pair.lpTokenId !== undefined)
-            .map(pair => pair.pairAddress);
+            .filter((pair) => pair.lpTokenId !== undefined)
+            .map((pair) => pair.pairAddress);
     }
 }
