@@ -11,7 +11,7 @@ import {
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -55,7 +55,7 @@ export class EnergyTransactionService {
                       );
         return interaction
             .withGasLimit(gasConfig.simpleLockEnergy.lockTokens)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -99,7 +99,7 @@ export class EnergyTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -129,7 +129,7 @@ export class EnergyTransactionService {
                 gasConfig.simpleLockEnergy.defaultMergeTokens *
                     inputTokens.length,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -155,7 +155,7 @@ export class EnergyTransactionService {
             .withGasLimit(
                 gasConfig.simpleLockEnergy.migrateOldTokens * args.length,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -183,7 +183,7 @@ export class EnergyTransactionService {
 
         return endpoint
             .withGasLimit(gasConfig.simpleLockEnergy.admin.updateLockOptions)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -202,7 +202,7 @@ export class EnergyTransactionService {
                 new U16Value(new BigNumber(maxPenaltyPercentage)),
             ])
             .withGasLimit(gasConfig.simpleLockEnergy.admin.setPenaltyPercentage)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -217,7 +217,7 @@ export class EnergyTransactionService {
             .withGasLimit(
                 gasConfig.simpleLockEnergy.admin.setFeesBurnPercentage,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -234,7 +234,7 @@ export class EnergyTransactionService {
             .withGasLimit(
                 gasConfig.simpleLockEnergy.admin.setFeesCollectorAddress,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -254,7 +254,7 @@ export class EnergyTransactionService {
                 gasConfig.simpleLockEnergy.admin
                     .setOldLockedAssetFactoryAddress,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

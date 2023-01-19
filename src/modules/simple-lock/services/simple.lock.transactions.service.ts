@@ -10,7 +10,7 @@ import {
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
@@ -67,7 +67,7 @@ export class SimpleLockTransactionService {
                 ),
             )
             .withGasLimit(gasConfig.simpleLock.lockTokens)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -92,7 +92,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.unlockTokens)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -113,7 +113,7 @@ export class SimpleLockTransactionService {
 
         const [firstTokenInput, secondTokenInput] = inputTokens;
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case firstTokenInput.tokenID:
                 firstTokenInput.tokenID = wrappedTokenID;
                 transactions.push(
@@ -223,7 +223,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.addLiquidityLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -282,7 +282,7 @@ export class SimpleLockTransactionService {
                     Address.fromString(sender),
                 )
                 .withGasLimit(gasConfig.simpleLock.removeLiquidityLockedToken)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject(),
         );
@@ -344,7 +344,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -380,7 +380,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -407,7 +407,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.claimRewardsFarmLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -437,7 +437,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

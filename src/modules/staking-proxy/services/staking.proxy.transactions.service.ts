@@ -2,7 +2,7 @@ import { Address, BigUIntValue, TokenPayment } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -78,7 +78,7 @@ export class StakingProxyTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -115,7 +115,7 @@ export class StakingProxyTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stakeProxy.claimDualYield)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -201,7 +201,7 @@ export class StakingProxyTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stakeProxy.unstakeFarmTokens)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

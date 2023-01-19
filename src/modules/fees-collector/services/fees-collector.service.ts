@@ -16,7 +16,7 @@ import {
 import { TransactionModel } from '../../../models/transaction.model';
 import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
+import { constantsConfig, mxConfig, gasConfig } from '../../../config';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { Address, AddressValue } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
@@ -72,7 +72,7 @@ export class FeesCollectorService {
         return contract.methodsExplicit
             .claimRewards()
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -232,7 +232,7 @@ export class FeesCollectorService {
                 new AddressValue(Address.fromString(userAddress)),
             ])
             .withGasLimit(gasConfig.feesCollector.updateEnergyForUser)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

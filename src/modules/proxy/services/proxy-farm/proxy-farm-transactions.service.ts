@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { constantsConfig, elrondConfig, gasConfig } from '../../../../config';
+import { constantsConfig, mxConfig, gasConfig } from '../../../../config';
 import {
     BigUIntValue,
     BytesValue,
@@ -78,7 +78,7 @@ export class TransactionsProxyFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -120,7 +120,7 @@ export class TransactionsProxyFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -164,7 +164,7 @@ export class TransactionsProxyFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -195,7 +195,7 @@ export class TransactionsProxyFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.proxy.farms[version].compoundRewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -225,7 +225,7 @@ export class TransactionsProxyFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.proxy.farms[version].migrateToNewFarm)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -266,7 +266,7 @@ export class TransactionsProxyFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

@@ -1,4 +1,4 @@
-import { constantsConfig, elrondConfig } from '../../config';
+import { constantsConfig, mxConfig } from '../../config';
 import { Inject, Injectable } from '@nestjs/common';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -30,10 +30,10 @@ export class ElrondApiService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         const keepAliveOptions = {
-            maxSockets: elrondConfig.keepAliveMaxSockets,
-            maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+            maxSockets: mxConfig.keepAliveMaxSockets,
+            maxFreeSockets: mxConfig.keepAliveMaxFreeSockets,
             timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-            freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            freeSocketTimeout: mxConfig.keepAliveFreeSocketTimeout,
             keepAlive: true,
         };
         const httpAgent = new Agent(keepAliveOptions);
@@ -42,9 +42,9 @@ export class ElrondApiService {
         this.apiProvider = new ApiNetworkProvider(
             this.apiConfigService.getApiUrl(),
             {
-                timeout: elrondConfig.proxyTimeout,
-                httpAgent: elrondConfig.keepAlive ? httpAgent : null,
-                httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+                timeout: mxConfig.proxyTimeout,
+                httpAgent: mxConfig.keepAlive ? httpAgent : null,
+                httpsAgent: mxConfig.keepAlive ? httpsAgent : null,
                 headers: {
                     origin: 'xExchangeService',
                 },

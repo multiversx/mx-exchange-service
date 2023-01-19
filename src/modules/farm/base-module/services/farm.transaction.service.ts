@@ -7,7 +7,7 @@ import {
     TokenPayment,
     TypedValue,
 } from '@multiversx/sdk-core';
-import { elrondConfig, gasConfig } from '../../../../config';
+import { mxConfig, gasConfig } from '../../../../config';
 import { BigNumber } from 'bignumber.js';
 import {
     ClaimRewardsArgs,
@@ -124,7 +124,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .end_produce_rewards()
             .withGasLimit(gasConfig.farms.admin.end_produce_rewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -136,7 +136,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .start_produce_rewards()
             .withGasLimit(gasConfig.farms.admin.start_produce_rewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -151,7 +151,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .setPerBlockRewardAmount([new BigUIntValue(new BigNumber(amount))])
             .withGasLimit(gasConfig.farms.admin.setPerBlockRewardAmount)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -166,7 +166,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .set_penalty_percent([new BigUIntValue(new BigNumber(percent))])
             .withGasLimit(gasConfig.farms.admin.set_penalty_percent)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -183,7 +183,7 @@ export abstract class TransactionsFarmService {
                 new BigUIntValue(new BigNumber(epochs)),
             ])
             .withGasLimit(gasConfig.farms.admin.set_minimum_farming_epochs)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -200,7 +200,7 @@ export abstract class TransactionsFarmService {
                 new BigUIntValue(new BigNumber(gasLimit)),
             ])
             .withGasLimit(gasConfig.farms.admin.set_transfer_exec_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -215,7 +215,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .set_burn_gas_limit([new BigUIntValue(new BigNumber(gasLimit))])
             .withGasLimit(gasConfig.farms.admin.set_burn_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -227,7 +227,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .pause()
             .withGasLimit(gasConfig.farms.admin.pause)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -239,7 +239,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .resume()
             .withGasLimit(gasConfig.farms.admin.resume)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -261,7 +261,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .registerFarmToken(transactionArgs)
             .withGasLimit(gasConfig.farms.admin.registerFarmToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -275,7 +275,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .setLocalRolesFarmToken()
             .withGasLimit(gasConfig.farms.admin.setLocalRolesFarmToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -305,7 +305,7 @@ export abstract class TransactionsFarmService {
                 gasConfig.farms.admin.mergeFarmTokensMultiplier *
                     payments.length,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

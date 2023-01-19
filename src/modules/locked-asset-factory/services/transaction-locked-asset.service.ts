@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Address, TokenPayment } from '@multiversx/sdk-core';
-import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
+import { constantsConfig, mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { BigNumber } from 'bignumber.js';
 import { UnlockAssetsArgs } from '../models/locked-asset.args';
@@ -36,7 +36,7 @@ export class TransactionsLockedAssetService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.lockedAssetFactory.unlockAssets)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -54,7 +54,7 @@ export class TransactionsLockedAssetService {
                 ),
             )
             .withGasLimit(gasConfig.lockedAssetFactory.lockAssets)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -108,7 +108,7 @@ export class TransactionsLockedAssetService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

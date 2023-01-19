@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { elrondConfig, gasConfig, scAddress } from '../../../../config';
+import { mxConfig, gasConfig, scAddress } from '../../../../config';
 import { TransactionModel } from '../../../../models/transaction.model';
 import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
 import { Address, AddressValue, TypedValue } from '@multiversx/sdk-core';
@@ -51,7 +51,7 @@ export class UserEnergyService {
                 gasConfig.energyUpdate.updateFarmsEnergyForUser *
                     endpointArgs.length,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

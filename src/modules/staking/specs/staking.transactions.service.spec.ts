@@ -19,7 +19,7 @@ import { StakingTransactionService } from '../services/staking.transactions.serv
 import { Address } from '@multiversx/sdk-core';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { encodeTransactionData } from 'src/helpers/helpers';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 
 describe('StakingTransactionService', () => {
     let service: StakingTransactionService;
@@ -98,7 +98,7 @@ describe('StakingTransactionService', () => {
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01@TOK1-1111@@1000@stakeFarm',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,

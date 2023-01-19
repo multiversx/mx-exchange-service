@@ -24,7 +24,7 @@ import {
     U64Value,
 } from '@multiversx/sdk-core';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { elrondConfig } from 'src/config';
+import { mxConfig } from 'src/config';
 import { VmQueryError } from 'src/utils/errors.constants';
 
 @Injectable()
@@ -67,7 +67,7 @@ export class PairAbiService extends GenericAbiService {
 
         const response = await this.getGenericData(interaction);
         const lpTokenID = response.firstValue.valueOf().toString();
-        return lpTokenID === elrondConfig.EGLDIdentifier || lpTokenID === ''
+        return lpTokenID === mxConfig.EGLDIdentifier || lpTokenID === ''
             ? undefined
             : lpTokenID;
     }

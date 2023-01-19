@@ -1,7 +1,7 @@
 import { Address, Interaction, TokenPayment } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
@@ -26,7 +26,7 @@ export class PriceDiscoveryTransactionService {
         const wrappedTokenID =
             await this.wrappingService.getWrappedEgldTokenID();
         const transactions: TransactionModel[] = [];
-        if (inputToken.tokenID === elrondConfig.EGLDIdentifier) {
+        if (inputToken.tokenID === mxConfig.EGLDIdentifier) {
             transactions.push(
                 await this.wrappingTransactions.wrapEgld(
                     sender,
@@ -73,7 +73,7 @@ export class PriceDiscoveryTransactionService {
                 ),
             )
             .withGasLimit(gasConfig.priceDiscovery.deposit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -156,7 +156,7 @@ export class PriceDiscoveryTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.priceDiscovery.withdraw)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

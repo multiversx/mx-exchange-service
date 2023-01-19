@@ -10,7 +10,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
@@ -67,7 +67,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -91,7 +91,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.unstakeFarm)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -115,7 +115,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.unbondFarm)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -139,7 +139,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.claimRewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -166,7 +166,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.claimRewardsWithNewValue)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -190,7 +190,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.compoundRewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -211,7 +211,7 @@ export class StakingTransactionService {
                 ),
             )
             .withGasLimit(gasConfig.stake.admin.topUpRewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -238,7 +238,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.mergeTokens)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -253,7 +253,7 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .set_penalty_percent([new BigUIntValue(new BigNumber(percent))])
             .withGasLimit(gasConfig.stake.admin.set_penalty_percent)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -270,7 +270,7 @@ export class StakingTransactionService {
                 new BigUIntValue(new BigNumber(epochs)),
             ])
             .withGasLimit(gasConfig.stake.admin.set_minimum_farming_epochs)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -285,7 +285,7 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .set_burn_gas_limit([new BigUIntValue(new BigNumber(gasLimit))])
             .withGasLimit(gasConfig.stake.admin.set_burn_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -302,7 +302,7 @@ export class StakingTransactionService {
                 new BigUIntValue(new BigNumber(gasLimit)),
             ])
             .withGasLimit(gasConfig.stake.admin.set_transfer_exec_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -322,7 +322,7 @@ export class StakingTransactionService {
                     new AddressValue(Address.fromString(address)),
                 ])
                 .withGasLimit(gasConfig.stake.admin.whitelist)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject();
 
@@ -331,7 +331,7 @@ export class StakingTransactionService {
                 new AddressValue(Address.fromString(address)),
             ])
             .withGasLimit(gasConfig.stake.admin.whitelist)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -348,14 +348,14 @@ export class StakingTransactionService {
             return contract.methodsExplicit
                 .resume()
                 .withGasLimit(gasConfig.stake.admin.setState)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject();
 
         return contract.methodsExplicit
             .pause()
             .withGasLimit(gasConfig.stake.admin.setState)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -369,7 +369,7 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .setLocalRolesFarmToken()
             .withGasLimit(gasConfig.stake.admin.setLocalRolesFarmToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -391,7 +391,7 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .registerFarmToken(transactionArgs)
             .withGasLimit(gasConfig.stake.admin.registerFarmToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -408,7 +408,7 @@ export class StakingTransactionService {
                 new BigUIntValue(new BigNumber(perBlockAmount)),
             ])
             .withGasLimit(gasConfig.stake.admin.setPerBlockRewardAmount)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -423,7 +423,7 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .setMaxApr([new BigUIntValue(new BigNumber(maxApr))])
             .withGasLimit(gasConfig.stake.admin.setMaxApr)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -438,7 +438,7 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .setMinUnbondEpochs([new U64Value(new BigNumber(minUnboundEpoch))])
             .withGasLimit(gasConfig.stake.admin.setMinUnbondEpochs)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -455,14 +455,14 @@ export class StakingTransactionService {
             return contract.methodsExplicit
                 .startProduceRewards()
                 .withGasLimit(gasConfig.stake.admin.setRewardsState)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject();
 
         return contract.methodsExplicit
             .end_produce_rewards()
             .withGasLimit(gasConfig.stake.admin.setRewardsState)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

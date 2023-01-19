@@ -18,7 +18,7 @@ import { ContextGetterServiceMock } from '../../../services/context/mocks/contex
 import { ElrondProxyServiceMock } from '../../../services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { encodeTransactionData } from '../../../helpers/helpers';
-import { elrondConfig, gasConfig } from '../../../config';
+import { mxConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
@@ -114,7 +114,7 @@ describe('FarmService', () => {
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@01@TOK1TOK4LP@@1000000000000@enterFarmAndLockRewards',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -147,7 +147,7 @@ describe('FarmService', () => {
             data: encodeTransactionData(
                 'ESDTNFTTransfer@TOK1TOK4LPStaked@01@1000000000000@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@07311709943153914477',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -179,7 +179,7 @@ describe('FarmService', () => {
             data: encodeTransactionData(
                 'ESDTNFTTransfer@TOK1TOK4LPStaked@01@1000000000000@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@claimRewards',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -227,7 +227,7 @@ describe('FarmService', () => {
             data: encodeTransactionData(
                 'ESDTNFTTransfer@TOK1TOK4LPStaked@01@1000000000000@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@migrateToNewFarm@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -253,7 +253,7 @@ describe('FarmService', () => {
             data: encodeTransactionData(
                 'setFarmMigrationConfig@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@TOK1TOK4LPStaked@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -273,7 +273,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms['v1.2'].stopRewards,
             data: encodeTransactionData('stopRewardsAndMigrateRps'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -303,7 +303,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.end_produce_rewards,
             data: encodeTransactionData('end_produce_rewards'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -333,7 +333,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.start_produce_rewards,
             data: encodeTransactionData('start_produce_rewards'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -367,7 +367,7 @@ describe('FarmService', () => {
             data: encodeTransactionData(
                 'setPerBlockRewardAmount@1000000000000',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -399,7 +399,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_penalty_percent,
             data: encodeTransactionData('set_penalty_percent@05'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -431,7 +431,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_minimum_farming_epochs,
             data: encodeTransactionData('set_minimum_farming_epochs@10'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -465,7 +465,7 @@ describe('FarmService', () => {
             data: encodeTransactionData(
                 'set_transfer_exec_gas_limit@0100000000',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -497,7 +497,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_burn_gas_limit,
             data: encodeTransactionData('set_burn_gas_limit@0100000000'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -527,7 +527,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.pause,
             data: encodeTransactionData('pause'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -557,7 +557,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.resume,
             data: encodeTransactionData('resume'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -595,7 +595,7 @@ describe('FarmService', () => {
             data: encodeTransactionData(
                 'registerFarmToken@FarmingToken12@T1T2-1234@18',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -625,7 +625,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.setLocalRolesFarmToken,
             data: encodeTransactionData('setLocalRolesFarmToken'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -683,7 +683,7 @@ describe('FarmService', () => {
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u@02@TOK1TOK4LPStaked@@01000000000000@TOK1TOK4LPStaked@@01000000000000@mergeFarmTokens',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,

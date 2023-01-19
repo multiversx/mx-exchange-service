@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TokenPayment } from '@multiversx/sdk-core';
 import { TransactionModel } from '../../models/transaction.model';
-import { elrondConfig, gasConfig } from '../../config';
+import { mxConfig, gasConfig } from '../../config';
 import { WrapService } from './wrap.service';
 import BigNumber from 'bignumber.js';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
@@ -20,7 +20,7 @@ export class TransactionsWrapService {
             .wrapEgld()
             .withValue(amount)
             .withGasLimit(gasConfig.wrapeGLD)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -43,7 +43,7 @@ export class TransactionsWrapService {
                 ),
             )
             .withGasLimit(gasConfig.wrapeGLD)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

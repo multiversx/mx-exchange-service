@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
@@ -59,7 +59,7 @@ export class MetabondingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -70,7 +70,7 @@ export class MetabondingTransactionService {
         return contract.methodsExplicit
             .unstake([new BigUIntValue(new BigNumber(unstakeAmount))])
             .withGasLimit(gasConfig.metabonding.unstake)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -82,7 +82,7 @@ export class MetabondingTransactionService {
         return contract.methodsExplicit
             .unbond([])
             .withGasLimit(gasConfig.metabonding.unbond)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

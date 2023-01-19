@@ -7,7 +7,7 @@ import {
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
 import { Address, TokenPayment } from '@multiversx/sdk-core';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -45,7 +45,7 @@ export class PairTransactionService {
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case args.tokens[0].tokenID:
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(
@@ -77,7 +77,7 @@ export class PairTransactionService {
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case args.tokens[0].tokenID:
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(
@@ -152,7 +152,7 @@ export class PairTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.pairs.addLiquidity)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -213,7 +213,7 @@ export class PairTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.pairs.addLiquidity)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -261,7 +261,7 @@ export class PairTransactionService {
                     ),
                 )
                 .withGasLimit(gasConfig.pairs.removeLiquidity)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject(),
         );
@@ -321,7 +321,7 @@ export class PairTransactionService {
                 ? gasConfig.pairs.swapTokensFixedInput.default
                 : gasConfig.pairs.swapTokensFixedInput.withFeeSwap;
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case args.tokenInID:
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(sender, args.amountIn),
@@ -340,7 +340,7 @@ export class PairTransactionService {
                             ),
                         )
                         .withGasLimit(gasLimit)
-                        .withChainID(elrondConfig.chainID)
+                        .withChainID(mxConfig.chainID)
                         .buildTransaction()
                         .toPlainObject(),
                 );
@@ -360,7 +360,7 @@ export class PairTransactionService {
                             ),
                         )
                         .withGasLimit(gasLimit)
-                        .withChainID(elrondConfig.chainID)
+                        .withChainID(mxConfig.chainID)
                         .buildTransaction()
                         .toPlainObject(),
                 );
@@ -387,7 +387,7 @@ export class PairTransactionService {
                             ),
                         )
                         .withGasLimit(gasLimit)
-                        .withChainID(elrondConfig.chainID)
+                        .withChainID(mxConfig.chainID)
                         .buildTransaction()
                         .toPlainObject(),
                 );
@@ -427,7 +427,7 @@ export class PairTransactionService {
                 ? gasConfig.pairs.swapTokensFixedOutput.default
                 : gasConfig.pairs.swapTokensFixedOutput.withFeeSwap;
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case args.tokenInID:
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(
@@ -451,7 +451,7 @@ export class PairTransactionService {
                             ),
                         )
                         .withGasLimit(gasLimit)
-                        .withChainID(elrondConfig.chainID)
+                        .withChainID(mxConfig.chainID)
                         .buildTransaction()
                         .toPlainObject(),
                 );
@@ -471,7 +471,7 @@ export class PairTransactionService {
                             ),
                         )
                         .withGasLimit(gasLimit)
-                        .withChainID(elrondConfig.chainID)
+                        .withChainID(mxConfig.chainID)
                         .buildTransaction()
                         .toPlainObject(),
                 );
@@ -498,7 +498,7 @@ export class PairTransactionService {
                             ),
                         )
                         .withGasLimit(gasLimit)
-                        .withChainID(elrondConfig.chainID)
+                        .withChainID(mxConfig.chainID)
                         .buildTransaction()
                         .toPlainObject(),
                 );
@@ -521,8 +521,8 @@ export class PairTransactionService {
         }
 
         if (
-            tokens[0].tokenID === elrondConfig.EGLDIdentifier ||
-            tokens[1].tokenID === elrondConfig.EGLDIdentifier
+            tokens[0].tokenID === mxConfig.EGLDIdentifier ||
+            tokens[1].tokenID === mxConfig.EGLDIdentifier
         ) {
             return await this.getTokensWithEGLD(
                 tokens,
@@ -553,7 +553,7 @@ export class PairTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<InputTokenModel[]> {
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case tokens[0].tokenID:
                 return await this.getTokensInOrder(
                     tokens[1],
@@ -612,7 +612,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .whitelist(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.whitelist)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -627,7 +627,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .removeWhitelist(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.removeWhitelist)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -649,7 +649,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .addTrustedSwapPair(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.addTrustedSwapPair)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -669,7 +669,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .removeTrustedSwapPair(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.removeTrustedSwapPair)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -687,7 +687,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .set_transfer_exec_gas_limit(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.set_transfer_exec_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -705,7 +705,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .set_extern_swap_gas_limit(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.set_extern_swap_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -717,7 +717,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .pause()
             .withGasLimit(gasConfig.pairs.admin.pause)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -729,7 +729,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .resume()
             .withGasLimit(gasConfig.pairs.admin.resume)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -743,7 +743,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setStateActiveNoSwaps()
             .withGasLimit(gasConfig.pairs.admin.setStateActiveNoSwaps)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -763,7 +763,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setFeePercents(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setFeePercents)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -781,7 +781,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setMaxObservationsPerRecord(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setMaxObservationsPerRecord)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -801,7 +801,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setBPSwapConfig(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setBPSwapConfig)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -821,7 +821,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setBPRemoveConfig(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setBPRemoveConfig)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -841,7 +841,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setBPAddConfig(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setBPAddConfig)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -859,7 +859,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setLockingDeadlineEpoch(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setLockingDeadlineEpoch)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -877,7 +877,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setUnlockEpoch(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setUnlockEpoch)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -895,7 +895,7 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setLockingScAddress(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setLockingScAddress)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

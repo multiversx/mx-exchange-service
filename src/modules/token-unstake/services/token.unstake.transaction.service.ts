@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { TokenUnstakeGetterService } from './token.unstake.getter.service';
@@ -27,7 +27,7 @@ export class TokenUnstakeTransactionService {
 
         return contract.methodsExplicit
             .claimUnlockedTokens()
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .withGasLimit(gasLimit.integerValue().toNumber())
             .buildTransaction()
             .toPlainObject();
@@ -37,7 +37,7 @@ export class TokenUnstakeTransactionService {
         const contract = await this.elrondProxy.getTokenUnstakeContract();
         return contract.methodsExplicit
             .cancelUnbond()
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .withGasLimit(gasConfig.tokenUnstake.cancelUnbond)
             .buildTransaction()
             .toPlainObject();

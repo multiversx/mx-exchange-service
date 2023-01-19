@@ -20,7 +20,7 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
+import { constantsConfig, mxConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { SetLocalRoleOwnerArgs } from '../models/router.args';
@@ -61,7 +61,7 @@ export class TransactionRouterService {
                 new AddressValue(Address.fromString(sender)),
             ])
             .withGasLimit(gasConfig.router.createPair)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -93,7 +93,7 @@ export class TransactionRouterService {
         return contract.methodsExplicit
             .upgradePair(endpointArgs)
             .withGasLimit(gasConfig.router.admin.upgradePair)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -119,7 +119,7 @@ export class TransactionRouterService {
         return contract.methodsExplicit
             .removePair(endpointArgs)
             .withGasLimit(gasConfig.router.admin.removePair)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -143,7 +143,7 @@ export class TransactionRouterService {
             ])
             .withValue(constantsConfig.ISSUE_LP_TOKEN_COST)
             .withGasLimit(gasConfig.router.issueToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -153,7 +153,7 @@ export class TransactionRouterService {
         return contract.methodsExplicit
             .setLocalRoles([BytesValue.fromHex(new Address(pairAddress).hex())])
             .withGasLimit(gasConfig.router.setLocalRoles)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -172,7 +172,7 @@ export class TransactionRouterService {
         return contract.methodsExplicit
             .setLocalRolesOwner(endpointArgs)
             .withGasLimit(gasConfig.router.admin.setLocalRolesOwner)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -190,7 +190,7 @@ export class TransactionRouterService {
 
         return interaction
             .withGasLimit(gasConfig.router.admin.setState)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -200,7 +200,7 @@ export class TransactionRouterService {
         return contract.methodsExplicit
             .setPairCreationEnabled([new BooleanValue(enable)])
             .withGasLimit(gasConfig.router.admin.setPairCreationEnabled)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -224,7 +224,7 @@ export class TransactionRouterService {
 
         return interaction
             .withGasLimit(gasConfig.router.admin.setFee)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -267,7 +267,7 @@ export class TransactionRouterService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.router.swapEnableByUser)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -277,7 +277,7 @@ export class TransactionRouterService {
         return contract.methodsExplicit
             .clearPairTemporaryOwnerStorage()
             .withGasLimit(gasConfig.router.admin.clearPairTemporaryOwnerStorage)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -291,7 +291,7 @@ export class TransactionRouterService {
                 new BigUIntValue(new BigNumber(periodBlocks)),
             ])
             .withGasLimit(gasConfig.router.admin.setTemporaryOwnerPeriod)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -303,7 +303,7 @@ export class TransactionRouterService {
                 new AddressValue(Address.fromString(address)),
             ])
             .withGasLimit(gasConfig.router.admin.setPairTemplateAddress)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -351,7 +351,7 @@ export class TransactionRouterService {
                     args.addressRoute.length *
                         gasConfig.router.multiPairSwapMultiplier,
                 )
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject(),
         );
@@ -389,7 +389,7 @@ export class TransactionRouterService {
         tokenID: string,
         amount: string,
     ): Promise<TransactionModel> {
-        if (tokenID === elrondConfig.EGLDIdentifier) {
+        if (tokenID === mxConfig.EGLDIdentifier) {
             return await this.transactionsWrapService.wrapEgld(sender, amount);
         }
     }
@@ -399,7 +399,7 @@ export class TransactionRouterService {
         tokenID: string,
         amount: string,
     ): Promise<TransactionModel> {
-        if (tokenID === elrondConfig.EGLDIdentifier) {
+        if (tokenID === mxConfig.EGLDIdentifier) {
             return await this.transactionsWrapService.unwrapEgld(
                 sender,
                 amount,

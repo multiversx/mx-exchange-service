@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
+import { constantsConfig, mxConfig, gasConfig } from 'src/config';
 import {
     BigUIntValue,
     BytesValue,
@@ -42,7 +42,7 @@ export class TransactionsProxyPairService {
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case args.tokens[0].tokenID:
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(
@@ -134,7 +134,7 @@ export class TransactionsProxyPairService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -190,7 +190,7 @@ export class TransactionsProxyPairService {
                     Address.fromString(sender),
                 )
                 .withGasLimit(gasConfig.proxy.pairs.removeLiquidity)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject(),
         );
@@ -247,7 +247,7 @@ export class TransactionsProxyPairService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -257,7 +257,7 @@ export class TransactionsProxyPairService {
     ): Promise<InputTokenModel[]> {
         const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case tokens[0].tokenID:
                 if (tokens[0].nonce > 0) {
                     throw new Error('Invalid nonce for EGLD token!');

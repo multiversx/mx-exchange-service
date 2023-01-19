@@ -7,7 +7,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -87,7 +87,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -120,7 +120,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -156,7 +156,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -189,7 +189,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -213,7 +213,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -227,7 +227,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         return contract.methodsExplicit
             .stopRewardsAndMigrateRps()
             .withGasLimit(gasConfig.farms[FarmVersion.V1_2].stopRewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -249,7 +249,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         return contract.methodsExplicit
             .setFarmMigrationConfig(transactionArgs)
             .withGasLimit(gasConfig.farms.admin.setFarmMigrationConfig)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

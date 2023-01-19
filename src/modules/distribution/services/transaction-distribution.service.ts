@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { elrondConfig, gasConfig } from '../../../config';
+import { mxConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
@@ -12,7 +12,7 @@ export class TransactionsDistributionService {
         return contract.methodsExplicit
             .claimLockedAssets([])
             .withGasLimit(gasConfig.claimLockedAssets)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
