@@ -157,16 +157,12 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
   private async getCompleteValues(series: string, metric: string): Promise<any[]> {
     const hashCacheKey = generateCacheKeyFromParams('timeseries', series, metric);
 
-    // TODO get first date;
-    const startDate = moment.utc('2021-11-15').startOf('day'); // dex launch date
-    const endDate = moment.utc();
+    const [startDate, endDate] = await this.getCompleteValuesDateRange(series, metric);
 
     const completeValues = [];
     for (let date = startDate.clone(); date.isSameOrBefore(endDate); date.add(1, 'month')) {
       const intervalStart = date.clone();
       const intervalEnd = moment.min(date.clone().add(1, 'month').subtract(1, 's'), endDate);
-
-      console.log(intervalStart.format('YYYY-MM-DD HH:mm'), intervalEnd.format('YYYY-MM-DD HH:mm'));
 
       const keys = generateCacheKeysForTimeInterval(intervalStart, intervalEnd);
 
@@ -210,5 +206,21 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
     return rows;
+  }
+
+  private async getCompleteValuesDateRange(series: string, metric: string): Promise<[moment.Moment, moment.Moment]> {
+    const query = DataApiQueryBuilder
+      .createXExchangeAnalyticsQuery()
+      .metric(series, metric)
+      .getFirst();
+
+    const firstRecord = await this.dataApiClient.executeValueQuery(query);
+    const startDate = firstRecord?.timestamp
+      ? moment.utc(firstRecord.timestamp * 1000).startOf('day')
+      : moment.utc('2021-11-15').startOf('day'); // dex launch date
+
+    const endDate = moment.utc();
+
+    return [startDate, endDate];
   }
 }
