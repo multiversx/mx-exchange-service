@@ -99,6 +99,10 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         metric: string,
         start: string,
     ): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const cacheKey = this.getAnalyticsCacheKey(
             'latestHistoricData',
             time,
@@ -127,6 +131,10 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         bin: string,
         start: string,
     ): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const cacheKey = this.getAnalyticsCacheKey(
             'latestBinnedHistoricData',
             time,

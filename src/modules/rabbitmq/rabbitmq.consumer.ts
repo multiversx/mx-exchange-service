@@ -268,7 +268,10 @@ export class RabbitMqConsumer {
             }
         }
 
-        if (Object.keys(this.data).length > 0) {
+        if (
+            Object.keys(this.data).length > 0 &&
+            this.apiConfig.isAWSTimestreamWrite()
+        ) {
             await this.awsTimestreamWrite.ingest({
                 TableName: this.apiConfig.getAWSTableName(),
                 data: this.data,

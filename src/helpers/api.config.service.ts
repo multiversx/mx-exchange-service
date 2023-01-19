@@ -223,6 +223,24 @@ export class ApiConfigService {
         return parseInt(retentionPeriod);
     }
 
+    isAWSTimestreamRead(): boolean {
+        const readFlag = this.configService.get<string>('AWS_TIMESTREAM_READ');
+        if (!readFlag) {
+            throw new Error('No AWS Timestream read flag present');
+        }
+        return readFlag === 'true';
+    }
+
+    isAWSTimestreamWrite(): boolean {
+        const writeFlag = this.configService.get<string>(
+            'AWS_TIMESTREAM_WRITE',
+        );
+        if (!writeFlag) {
+            throw new Error('No AWS Timestream write flag present');
+        }
+        return writeFlag === 'true';
+    }
+
     getSecurityAdmins(): string[] {
         const admins = this.configService.get<string>('SECURITY_ADMINS');
         if (!admins) {

@@ -80,6 +80,10 @@ export class PairCacheWarmerService {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async cachePairsAnalytics(): Promise<void> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return;
+        }
+
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
         const time = '24h';
         for (const pairAddress of pairsAddresses) {

@@ -223,6 +223,10 @@ export class PairGetterService
         pairAddress: string,
         time: string,
     ): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+
         return this.getData(
             this.getCacheKey(pairAddress, `firstTokenVolume.${time}`),
             () =>
@@ -241,6 +245,10 @@ export class PairGetterService
         pairAddress: string,
         time: string,
     ): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+
         return this.getData(
             this.getCacheKey(pairAddress, `secondTokenVolume.${time}`),
             () =>
@@ -256,6 +264,10 @@ export class PairGetterService
     }
 
     async getVolumeUSD(pairAddress: string, time: string): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+
         return this.getData(
             this.getCacheKey(pairAddress, `volumeUSD.${time}`),
             () =>
@@ -271,6 +283,10 @@ export class PairGetterService
     }
 
     async getFeesUSD(pairAddress: string, time: string): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+
         return this.getData(
             this.getCacheKey(pairAddress, `feesUSD.${time}`),
             () =>

@@ -29,6 +29,10 @@ export class AWSTimestreamQueryService {
         private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return;
+        }
+
         AWS.config.update({ region: this.apiConfig.getAWSRegion() });
         const httpsAgent = new HttpsAgent({
             maxSockets: 5000,
@@ -64,6 +68,10 @@ export class AWSTimestreamQueryService {
     }
 
     async getAggregatedValue({ table, series, metric, time }): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+
         const QueryString = `SELECT sum(measure_value::double) FROM "${this.DatabaseName}"."${table}"
                              WHERE series = '${series}' AND measure_name = '${metric}' AND time between ago(${time}) and now()`;
         const params = { QueryString };
@@ -80,6 +88,10 @@ export class AWSTimestreamQueryService {
         series,
         metric,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const QueryString = `
             SELECT date_trunc('day', time) as time, max(value) as value 
             FROM (
@@ -126,6 +138,10 @@ export class AWSTimestreamQueryService {
         series,
         metric,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const QueryString = `
             WITH binned_timeseries AS (
                 SELECT series, BIN(time, 24h) AS binned_timestamp, SUM(measure_value::double) AS sum
@@ -164,6 +180,10 @@ export class AWSTimestreamQueryService {
         series,
         metric,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const QueryString = `
             SELECT date_trunc('hour', time) as time, value 
             FROM (
@@ -212,6 +232,10 @@ export class AWSTimestreamQueryService {
         series,
         metric,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const QueryString = `
              WITH binned_timeseries AS (
                 SELECT series, BIN(time, 1h) AS binned_timestamp, SUM(measure_value::double) AS sum
@@ -254,6 +278,10 @@ export class AWSTimestreamQueryService {
         metric,
         start,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const formattedStart = moment
             .unix(start)
             .utc()
@@ -298,6 +326,10 @@ export class AWSTimestreamQueryService {
         bin,
         start,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const formattedStart = moment
             .unix(start)
             .utc()

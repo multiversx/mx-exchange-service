@@ -14,6 +14,10 @@ export class AWSTimestreamWriteService {
         private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
+        if (!this.apiConfig.isAWSTimestreamWrite()) {
+            return;
+        }
+
         AWS.config.update({ region: this.apiConfig.getAWSRegion() });
         const httpsAgent = new HttpsAgent({
             maxSockets: 5000,
@@ -109,6 +113,10 @@ export class AWSTimestreamWriteService {
     }
 
     async ingest({ TableName, data, Time }) {
+        if (!this.apiConfig.isAWSTimestreamWrite()) {
+            return;
+        }
+
         if (!(await this.describeTable({ TableName }))) {
             await this.createTable({ TableName });
         }
@@ -121,6 +129,10 @@ export class AWSTimestreamWriteService {
         TableName: string,
         Records: TimestreamWrite.Records,
     ) {
+        if (!this.apiConfig.isAWSTimestreamWrite()) {
+            return;
+        }
+
         if (!(await this.describeTable({ TableName }))) {
             await this.createTable({ TableName });
         }

@@ -22,6 +22,10 @@ export class AWSQueryCacheWarmerService {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async updateHistoricTokensData(): Promise<void> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return;
+        }
+
         const tokens = await this.tokenService.getUniqueTokenIDs(false);
         for (const tokenID of tokens) {
             const priceUSD24h = await this.awsQuery.getValues24h({
@@ -101,6 +105,10 @@ export class AWSQueryCacheWarmerService {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async updateHistoricPairsData(): Promise<void> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return;
+        }
+
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
         for (const pairAddress of pairsAddresses) {
             const lockedValueUSD24h = await this.awsQuery.getValues24h({
