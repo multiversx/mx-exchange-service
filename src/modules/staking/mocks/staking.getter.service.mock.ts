@@ -1,4 +1,4 @@
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 import { StakingGetterService } from '../services/staking.getter.service';
 

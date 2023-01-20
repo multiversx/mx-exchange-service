@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PairModule } from '../pair/pair.module';
 import { ContextModule } from '../../services/context/context.module';
-import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { CachingModule } from '../../services/caching/cache.module';
 import { CommonAppModule } from 'src/common.app.module';
 import { TokenModule } from '../tokens/token.module';
@@ -21,7 +21,7 @@ import { FarmSetterFactory } from './farm.setter.factory';
 @Module({
     imports: [
         CommonAppModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         ContextModule,
         PairModule,

@@ -1,4 +1,4 @@
-import { LockedTokenAttributes } from '@elrondnetwork/erdjs-dex';
+import { LockedTokenAttributes } from '@multiversx/sdk-exchange';
 import {
     Address,
     AddressValue,
@@ -8,7 +8,7 @@ import {
     TokenIdentifierValue,
     TokenPayment,
     TypedValue,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -20,16 +20,16 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
+import { constantsConfig, mxConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SetLocalRoleOwnerArgs } from '../models/router.args';
 import { RouterGetterService } from './router.getter.service';
 
 @Injectable()
 export class TransactionRouterService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly routerGetterService: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairService: PairService,
@@ -52,7 +52,7 @@ export class TransactionRouterService {
             throw new Error('Pair already exists');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
 
         return contract.methodsExplicit
             .createPair([
@@ -61,7 +61,7 @@ export class TransactionRouterService {
                 new AddressValue(Address.fromString(sender)),
             ])
             .withGasLimit(gasConfig.router.createPair)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -80,7 +80,7 @@ export class TransactionRouterService {
             throw new Error('Pair does not exist');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
@@ -93,7 +93,7 @@ export class TransactionRouterService {
         return contract.methodsExplicit
             .upgradePair(endpointArgs)
             .withGasLimit(gasConfig.router.admin.upgradePair)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -111,7 +111,7 @@ export class TransactionRouterService {
             throw new Error('Pair does not exist');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
@@ -119,7 +119,7 @@ export class TransactionRouterService {
         return contract.methodsExplicit
             .removePair(endpointArgs)
             .withGasLimit(gasConfig.router.admin.removePair)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -134,7 +134,7 @@ export class TransactionRouterService {
             throw new Error('LP Token already issued');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .issueLpToken([
                 new AddressValue(Address.fromString(pairAddress)),
@@ -143,17 +143,17 @@ export class TransactionRouterService {
             ])
             .withValue(constantsConfig.ISSUE_LP_TOKEN_COST)
             .withGasLimit(gasConfig.router.issueToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setLocalRoles([BytesValue.fromHex(new Address(pairAddress).hex())])
             .withGasLimit(gasConfig.router.setLocalRoles)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -161,7 +161,7 @@ export class TransactionRouterService {
     async setLocalRolesOwner(
         args: SetLocalRoleOwnerArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(args.tokenID),
             new AddressValue(Address.fromString(args.address)),
@@ -172,7 +172,7 @@ export class TransactionRouterService {
         return contract.methodsExplicit
             .setLocalRolesOwner(endpointArgs)
             .withGasLimit(gasConfig.router.admin.setLocalRolesOwner)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -181,7 +181,7 @@ export class TransactionRouterService {
         address: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const args = [new AddressValue(Address.fromString(address))];
 
         const interaction = enable
@@ -190,17 +190,17 @@ export class TransactionRouterService {
 
         return interaction
             .withGasLimit(gasConfig.router.admin.setState)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async setPairCreationEnabled(enable: boolean): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setPairCreationEnabled([new BooleanValue(enable)])
             .withGasLimit(gasConfig.router.admin.setPairCreationEnabled)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -211,7 +211,7 @@ export class TransactionRouterService {
         feeTokenID: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const args: TypedValue[] = [
             new AddressValue(Address.fromString(pairAddress)),
             new AddressValue(Address.fromString(feeToAddress)),
@@ -224,7 +224,7 @@ export class TransactionRouterService {
 
         return interaction
             .withGasLimit(gasConfig.router.admin.setFee)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -253,7 +253,7 @@ export class TransactionRouterService {
             throw new Error('Invalid sender address');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setSwapEnabledByUser([
                 new AddressValue(Address.fromString(pairAddress)),
@@ -267,17 +267,17 @@ export class TransactionRouterService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.router.swapEnableByUser)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async clearPairTemporaryOwnerStorage(): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .clearPairTemporaryOwnerStorage()
             .withGasLimit(gasConfig.router.admin.clearPairTemporaryOwnerStorage)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -285,25 +285,25 @@ export class TransactionRouterService {
     async setTemporaryOwnerPeriod(
         periodBlocks: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setTemporaryOwnerPeriod([
                 new BigUIntValue(new BigNumber(periodBlocks)),
             ])
             .withGasLimit(gasConfig.router.admin.setTemporaryOwnerPeriod)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async setPairTemplateAddress(address: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setPairTemplateAddress([
                 new AddressValue(Address.fromString(address)),
             ])
             .withGasLimit(gasConfig.router.admin.setPairTemplateAddress)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -313,7 +313,7 @@ export class TransactionRouterService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
 
         const wrapTransaction = await this.wrapIfNeeded(
             sender,
@@ -351,7 +351,7 @@ export class TransactionRouterService {
                     args.addressRoute.length *
                         gasConfig.router.multiPairSwapMultiplier,
                 )
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject(),
         );
@@ -389,7 +389,7 @@ export class TransactionRouterService {
         tokenID: string,
         amount: string,
     ): Promise<TransactionModel> {
-        if (tokenID === elrondConfig.EGLDIdentifier) {
+        if (tokenID === mxConfig.EGLDIdentifier) {
             return await this.transactionsWrapService.wrapEgld(sender, amount);
         }
     }
@@ -399,7 +399,7 @@ export class TransactionRouterService {
         tokenID: string,
         amount: string,
     ): Promise<TransactionModel> {
-        if (tokenID === elrondConfig.EGLDIdentifier) {
+        if (tokenID === mxConfig.EGLDIdentifier) {
             return await this.transactionsWrapService.unwrapEgld(
                 sender,
                 amount,

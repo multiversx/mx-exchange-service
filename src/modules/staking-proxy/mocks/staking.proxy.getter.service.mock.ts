@@ -1,4 +1,4 @@
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 
 export class StakingProxyGetterServiceMock {
     async getLpFarmAddress(stakingProxyAddress: string): Promise<string> {

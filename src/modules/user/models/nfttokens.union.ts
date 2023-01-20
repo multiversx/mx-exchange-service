@@ -1,5 +1,5 @@
 import { createUnionType } from '@nestjs/graphql';
-import { StakingFarmTokenType } from '@elrondnetwork/erdjs-dex';
+import { StakingFarmTokenType } from '@multiversx/sdk-exchange';
 
 import {
     UserFarmToken,
@@ -53,7 +53,7 @@ export const UserNftTokens = createUnionType({
             case UserLockedTokenEnergy.name:
             case UserWrappedLockedToken.name:
             case UserFarmToken.name:
-                return value.constructor.name
+                return value.constructor.name;
             default:
                 break;
         }

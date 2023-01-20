@@ -7,8 +7,8 @@ import { HistoricDataModel } from '../models/analytics.model';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { oneMinute } from 'src/helpers/helpers';
-import { awsConfig } from 'src/config';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class AnalyticsAWSGetterService extends GenericGetterService {
@@ -16,6 +16,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly apiConfig: ApiConfigService,
     ) {
         super(cachingService, logger);
     }
@@ -98,6 +99,10 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         metric: string,
         start: string,
     ): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const cacheKey = this.getAnalyticsCacheKey(
             'latestHistoricData',
             time,
@@ -109,7 +114,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             cacheKey,
             () =>
                 this.analyticsQuery.getLatestHistoricData({
-                    table: awsConfig.timestream.tableName,
+                    table: this.apiConfig.getAWSTableName(),
                     series,
                     metric,
                     time,
@@ -126,6 +131,10 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         bin: string,
         start: string,
     ): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const cacheKey = this.getAnalyticsCacheKey(
             'latestBinnedHistoricData',
             time,
@@ -138,7 +147,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             cacheKey,
             () =>
                 this.analyticsQuery.getLatestBinnedHistoricData({
-                    table: awsConfig.timestream.tableName,
+                    table: this.apiConfig.getAWSTableName(),
                     series,
                     metric,
                     time,

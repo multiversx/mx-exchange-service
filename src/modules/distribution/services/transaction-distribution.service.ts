@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { elrondConfig, gasConfig } from '../../../config';
+import { mxConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 
 @Injectable()
 export class TransactionsDistributionService {
-    constructor(private elrondProxy: ElrondProxyService) {}
+    constructor(private mxProxy: MXProxyService) {}
 
     async claimLockedAssets(): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getDistributionSmartContract();
+        const contract = await this.mxProxy.getDistributionSmartContract();
         return contract.methodsExplicit
             .claimLockedAssets([])
             .withGasLimit(gasConfig.claimLockedAssets)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

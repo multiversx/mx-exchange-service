@@ -3,7 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute, oneMonth } from 'src/helpers/helpers';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { GenericGetterService } from '../generics/generic.getter.service';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class ContextGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'context';
@@ -26,16 +26,20 @@ export class ContextGetterService extends GenericGetterService {
         );
     }
 
-    async getBlocksCountInEpoch(epoch: number, shardId: number): Promise<number> {
+    async getBlocksCountInEpoch(
+        epoch: number,
+        shardId: number,
+    ): Promise<number> {
         const cacheKey = this.getCacheKey('blocksCountInEpoch', shardId, epoch);
-        let ttl = oneMonth()
+        let ttl = oneMonth();
         const currentEpoch = await this.getCurrentEpoch();
         if (currentEpoch === epoch) {
-           ttl = oneMinute();
+            ttl = oneMinute();
         }
         return await this.getData(
             cacheKey,
-            async () => await this.apiService.getShardBlockCountInEpoch(epoch, shardId),
+            async () =>
+                await this.apiService.getShardBlockCountInEpoch(epoch, shardId),
             ttl,
         );
     }

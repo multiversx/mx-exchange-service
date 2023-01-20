@@ -3,7 +3,7 @@ import {
     FieldDefinition,
     StructType,
     U64Type,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { constantsConfig } from 'src/config';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';

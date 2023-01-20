@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiConfigService {
-    constructor(private readonly configService: ConfigService) { }
+    constructor(private readonly configService: ConfigService) {}
 
     getPublicAppPort(): number {
         const port = this.configService.get<number>('PORT');
@@ -115,19 +115,11 @@ export class ApiConfigService {
     }
 
     getApiUrl(): string {
-        const apiUrl = this.configService.get<string>('ELRONDAPI_URL');
+        const apiUrl = this.configService.get<string>('MX_API_URL');
         if (!apiUrl) {
             throw new Error('No apiUrl present');
         }
         return apiUrl;
-    }
-
-    getNotifierUrl(): string {
-        const notifierUrl = this.configService.get<string>('NOTIFIER_URL');
-        if (!notifierUrl) {
-            throw new Error('No notifier url present');
-        }
-        return notifierUrl;
     }
 
     getKeepAliveTimeoutDownstream(): number {
@@ -195,6 +187,69 @@ export class ApiConfigService {
         return secret;
     }
 
+    getAWSRegion(): string {
+        const region = this.configService.get<string>('AWS_REGION');
+        if (!region) {
+            throw new Error('No AWS region present');
+        }
+        return region;
+    }
+
+    getAWSDatabaseName(): string {
+        const databaseName =
+            this.configService.get<string>('AWS_DATABASE_NAME');
+        if (!databaseName) {
+            throw new Error('No AWS database name present');
+        }
+        return databaseName;
+    }
+
+    getAWSTableName(): string {
+        const tableName = this.configService.get<string>('AWS_TABLE_NAME');
+        if (!tableName) {
+            throw new Error('No AWS table name present');
+        }
+        return tableName;
+    }
+
+    getAWSMemoryStoreRetention(): number {
+        const retentionPeriod = this.configService.get<string>(
+            'AWS_MEMORY_STORE_RETENTION',
+        );
+        if (!retentionPeriod) {
+            throw new Error('No AWS memory store retention period present');
+        }
+        return parseInt(retentionPeriod);
+    }
+
+    getAWSMagneticStoreRetention(): number {
+        const retentionPeriod = this.configService.get<string>(
+            'AWS_MAGNETIC_STORE_RETENTION',
+        );
+        if (!retentionPeriod) {
+            throw new Error('No AWS magnetic store retention period present');
+        }
+        return parseInt(retentionPeriod);
+    }
+
+    isAWSTimestreamRead(): boolean {
+        const readFlag = this.configService.get<string>('AWS_TIMESTREAM_READ');
+        if (!readFlag) {
+            throw new Error('No AWS Timestream read flag present');
+        }
+        return readFlag === 'true';
+    }
+
+    isAWSTimestreamWrite(): boolean {
+        const writeFlag = this.configService.get<string>(
+            'AWS_TIMESTREAM_WRITE',
+        );
+        if (!writeFlag) {
+            throw new Error('No AWS Timestream write flag present');
+        }
+        return writeFlag === 'true';
+    }
+
     getSecurityAdmins(): string[] {
         const admins = this.configService.get<string>('SECURITY_ADMINS');
         if (!admins) {
@@ -205,7 +260,9 @@ export class ApiConfigService {
     }
 
     getNativeAuthKeyPath(): string {
-        const nativeAuthPemPath = this.configService.get<string>('NATIVE_AUTH_PEM_PATH');
+        const nativeAuthPemPath = this.configService.get<string>(
+            'NATIVE_AUTH_PEM_PATH',
+        );
         if (!nativeAuthPemPath) {
             throw new Error('No NATIVE_AUTH_PEM_PATH present');
         }

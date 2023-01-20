@@ -4,7 +4,7 @@ import { Logger } from 'winston';
 import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
-import { awsConfig, scAddress } from 'src/config';
+import { scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
@@ -44,7 +44,7 @@ import {
     WEEKLY_REWARDS_SPLITTING_EVENTS,
     TOKEN_UNSTAKE_EVENTS,
     UserUnlockedTokensEvent,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { RouterGetterService } from '../router/services/router.getter.service';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
@@ -54,6 +54,7 @@ import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.se
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
 import { AnalyticsWriteService } from 'src/services/analytics/services/analytics.write.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -61,6 +62,7 @@ export class RabbitMqConsumer {
     private data: any[];
 
     constructor(
+        private readonly apiConfig: ApiConfigService,
         private readonly routerGetter: RouterGetterService,
         private readonly liquidityHandler: LiquidityHandler,
         private readonly swapHandler: SwapEventHandler,
@@ -76,7 +78,7 @@ export class RabbitMqConsumer {
         private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
         private readonly analyticsWrite: AnalyticsWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) { }
+    ) {}
 
     @CompetingRabbitConsumer({
         queueName: process.env.RABBITMQ_QUEUE,
@@ -90,9 +92,9 @@ export class RabbitMqConsumer {
             ?.filter(
                 (rawEvent: { address: string; identifier: string }) =>
                     rawEvent.identifier ===
-                    TRANSACTION_EVENTS.ESDT_LOCAL_BURN ||
+                        TRANSACTION_EVENTS.ESDT_LOCAL_BURN ||
                     rawEvent.identifier ===
-                    TRANSACTION_EVENTS.ESDT_LOCAL_MINT ||
+                        TRANSACTION_EVENTS.ESDT_LOCAL_MINT ||
                     this.isFilteredAddress(rawEvent.address),
             )
             .map((rawEventType) => new RawEvent(rawEventType));
@@ -267,9 +269,12 @@ export class RabbitMqConsumer {
             }
         }
 
-        if (Object.keys(this.data).length > 0) {
+        if (
+            Object.keys(this.data).length > 0 &&
+            this.apiConfig.isAWSTimestreamWrite()
+        ) {
             await this.analyticsWrite.ingest({
-                TableName: awsConfig.timestream.tableName,
+                TableName: this.apiConfig.getAWSTableName(),
                 data: this.data,
                 Time: timestamp,
             });
@@ -308,8 +313,8 @@ export class RabbitMqConsumer {
                 ) {
                     this.data[series][measure] = this.data[series][measure]
                         ? new BigNumber(this.data[series][measure])
-                            .plus(eventData[series][measure])
-                            .toFixed()
+                              .plus(eventData[series][measure])
+                              .toFixed()
                         : eventData[series][measure];
                 } else {
                     this.data[series][measure] = eventData[series][measure];

@@ -5,7 +5,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
@@ -20,7 +20,7 @@ export abstract class FarmGetterService extends GenericGetterService {
         @Inject(forwardRef(() => FarmComputeService))
         protected readonly computeService: FarmComputeService,
         protected readonly tokenGetter: TokenGetterService,
-        protected readonly apiService: ElrondApiService,
+        protected readonly apiService: MXApiService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'farm';

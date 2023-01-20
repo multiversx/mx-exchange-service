@@ -1,25 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { TransactionModel } from '../../../models/transaction.model';
-import { Address, TokenPayment } from '@elrondnetwork/erdjs/out';
-import { elrondConfig, gasConfig } from '../../../config';
+import { Address, TokenPayment } from '@multiversx/sdk-core';
+import { mxConfig, gasConfig } from '../../../config';
 import { BigNumber } from 'bignumber.js';
 import { InputTokenModel } from '../../../models/inputToken.model';
 
-
 @Injectable()
 export class LockedTokenWrapperTransactionService {
-    constructor(
-        private readonly elrondProxy: ElrondProxyService,
-    ) {
-    }
+    constructor(private readonly mxProxy: MXProxyService) {}
 
     async unwrapLockedToken(
         scAddress: string,
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getLockedTokenWrapperContract(scAddress);
+        const contract = await this.mxProxy.getLockedTokenWrapperContract(
+            scAddress,
+        );
         return contract.methodsExplicit
             .unwrapLockedToken()
             .withSingleESDTNFTTransfer(
@@ -31,7 +29,7 @@ export class LockedTokenWrapperTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.lockedTokenWrapper.unwrapLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -41,7 +39,9 @@ export class LockedTokenWrapperTransactionService {
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getLockedTokenWrapperContract(scAddress);
+        const contract = await this.mxProxy.getLockedTokenWrapperContract(
+            scAddress,
+        );
         return contract.methodsExplicit
             .wrapLockedToken()
             .withSingleESDTNFTTransfer(
@@ -53,7 +53,7 @@ export class LockedTokenWrapperTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.lockedTokenWrapper.wrapLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

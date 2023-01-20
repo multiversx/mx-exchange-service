@@ -1,4 +1,4 @@
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyType } from '@multiversx/sdk-exchange';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 export enum UnlockType {

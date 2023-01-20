@@ -1,12 +1,12 @@
-import { Address, BigUIntValue, TokenPayment } from '@elrondnetwork/erdjs/out';
+import { Address, BigUIntValue, TokenPayment } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -16,7 +16,7 @@ import { MetabondingGetterService } from './metabonding.getter.service';
 export class MetabondingTransactionService {
     constructor(
         private readonly metabondingGetter: MetabondingGetterService,
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -39,7 +39,7 @@ export class MetabondingTransactionService {
         }
 
         const [contract, userEntry] = await Promise.all([
-            this.elrondProxy.getMetabondingStakingSmartContract(),
+            this.mxProxy.getMetabondingStakingSmartContract(),
             this.metabondingGetter.getUserEntry(sender),
         ]);
 
@@ -59,28 +59,30 @@ export class MetabondingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async unstake(unstakeAmount: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
+        const contract =
+            await this.mxProxy.getMetabondingStakingSmartContract();
         return contract.methodsExplicit
             .unstake([new BigUIntValue(new BigNumber(unstakeAmount))])
             .withGasLimit(gasConfig.metabonding.unstake)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async unbond(sender: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
+        const contract =
+            await this.mxProxy.getMetabondingStakingSmartContract();
         await this.pubSub.publish('deleteCacheKeys', [`${sender}.userEntry`]);
         return contract.methodsExplicit
             .unbond([])
             .withGasLimit(gasConfig.metabonding.unbond)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -88,7 +90,8 @@ export class MetabondingTransactionService {
     private async validateInputToken(
         inputToken: InputTokenModel,
     ): Promise<void> {
-        const lockedAssetTokenID = await this.metabondingGetter.getLockedAssetTokenID();
+        const lockedAssetTokenID =
+            await this.metabondingGetter.getLockedAssetTokenID();
 
         if (
             lockedAssetTokenID !== inputToken.tokenID ||
