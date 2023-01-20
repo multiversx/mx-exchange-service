@@ -1,26 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { TokenPayment } from '@elrondnetwork/erdjs';
+import { TokenPayment } from '@multiversx/sdk-core';
 import { TransactionModel } from '../../models/transaction.model';
-import { elrondConfig, gasConfig } from '../../config';
+import { mxConfig, gasConfig } from '../../config';
 import { WrapService } from './wrap.service';
 import BigNumber from 'bignumber.js';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../services/multiversx-communication/mx.proxy.service';
 
 @Injectable()
 export class TransactionsWrapService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly wrapService: WrapService,
     ) {}
 
     async wrapEgld(sender: string, amount: string): Promise<TransactionModel> {
-        const shardID = await this.elrondProxy.getAddressShardID(sender);
-        const contract = await this.elrondProxy.getWrapSmartContract(shardID);
+        const shardID = await this.mxProxy.getAddressShardID(sender);
+        const contract = await this.mxProxy.getWrapSmartContract(shardID);
         return contract.methodsExplicit
             .wrapEgld()
             .withValue(amount)
             .withGasLimit(gasConfig.wrapeGLD)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -29,8 +29,8 @@ export class TransactionsWrapService {
         sender: string,
         amount: string,
     ): Promise<TransactionModel> {
-        const shardID = await this.elrondProxy.getAddressShardID(sender);
-        const contract = await this.elrondProxy.getWrapSmartContract(shardID);
+        const shardID = await this.mxProxy.getAddressShardID(sender);
+        const contract = await this.mxProxy.getWrapSmartContract(shardID);
 
         const wrappedEgldToken = await this.wrapService.getWrappedEgldToken();
 
@@ -43,7 +43,7 @@ export class TransactionsWrapService {
                 ),
             )
             .withGasLimit(gasConfig.wrapeGLD)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

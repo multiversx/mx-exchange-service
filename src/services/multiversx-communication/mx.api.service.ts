@@ -1,4 +1,4 @@
-import { constantsConfig, elrondConfig } from '../../config';
+import { constantsConfig, mxConfig } from '../../config';
 import { Inject, Injectable } from '@nestjs/common';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -10,7 +10,7 @@ import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { ApiNetworkProvider } from '@elrondnetwork/erdjs-network-providers/out';
+import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
 import { isEsdtToken, isNftCollection } from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
 
@@ -21,7 +21,7 @@ type GenericGetArgs = {
 };
 
 @Injectable()
-export class ElrondApiService {
+export class MXApiService {
     private readonly apiProvider: ApiNetworkProvider;
     private genericGetExecutor: PendingExecutor<GenericGetArgs, any>;
 
@@ -30,23 +30,26 @@ export class ElrondApiService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         const keepAliveOptions = {
-            maxSockets: elrondConfig.keepAliveMaxSockets,
-            maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+            maxSockets: mxConfig.keepAliveMaxSockets,
+            maxFreeSockets: mxConfig.keepAliveMaxFreeSockets,
             timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-            freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            freeSocketTimeout: mxConfig.keepAliveFreeSocketTimeout,
             keepAlive: true,
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
 
-        this.apiProvider = new ApiNetworkProvider(process.env.ELRONDAPI_URL, {
-            timeout: elrondConfig.proxyTimeout,
-            httpAgent: elrondConfig.keepAlive ? httpAgent : null,
-            httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
-            headers: {
-                origin: 'MaiarExchangeService',
+        this.apiProvider = new ApiNetworkProvider(
+            this.apiConfigService.getApiUrl(),
+            {
+                timeout: mxConfig.proxyTimeout,
+                httpAgent: mxConfig.keepAlive ? httpAgent : null,
+                httpsAgent: mxConfig.keepAlive ? httpsAgent : null,
+                headers: {
+                    origin: 'xExchangeService',
+                },
             },
-        });
+        );
         this.genericGetExecutor = new PendingExecutor(
             async (getGenericArgs: GenericGetArgs) =>
                 await this.doGetGeneric(
@@ -83,14 +86,14 @@ export class ElrondApiService {
                 return await this.doGetGeneric(name, resourceUrl, retries + 1);
             }
             this.logger.error(`${error.message} after ${retries} retries`, {
-                path: `${ElrondApiService.name}.${name}`,
+                path: `${MXApiService.name}.${name}`,
             });
             throw new Error(error);
         } finally {
             profiler.stop();
 
             MetricsCollector.setExternalCall(
-                ElrondApiService.name,
+                MXApiService.name,
                 name,
                 profiler.duration,
             );
@@ -105,7 +108,10 @@ export class ElrondApiService {
         return new Stats(stats);
     }
 
-    async getShardBlockCountInEpoch(epoch: number, shardId: number): Promise<Stats> {
+    async getShardBlockCountInEpoch(
+        epoch: number,
+        shardId: number,
+    ): Promise<Stats> {
         return await this.doGetGeneric<Stats>(
             this.getStats.name,
             `blocks/count?epoch=${epoch}&shard=${shardId}`,

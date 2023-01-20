@@ -5,7 +5,7 @@ import {
     UserInfoByWeekModel,
 } from './models/weekly-rewards-splitting.model';
 import { EnergyModel } from '../../modules/energy/models/energy.model';
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyType } from '@multiversx/sdk-exchange';
 
 export interface IWeeklyRewardsSplittingGetterService {
     currentClaimProgress(

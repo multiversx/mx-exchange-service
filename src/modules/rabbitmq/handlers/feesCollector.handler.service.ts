@@ -7,7 +7,10 @@ import { FeesCollectorSetterService } from '../../fees-collector/services/fees-c
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import { scAddress } from '../../../config';
 import BigNumber from 'bignumber.js';
-import { DepositSwapFeesEvent, FEES_COLLECTOR_EVENTS } from '@elrondnetwork/erdjs-dex';
+import {
+    DepositSwapFeesEvent,
+    FEES_COLLECTOR_EVENTS,
+} from '@multiversx/sdk-exchange';
 
 @Injectable()
 export class FeesCollectorHandlerService {
@@ -18,10 +21,11 @@ export class FeesCollectorHandlerService {
         private readonly getter: FeesCollectorGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-    }
+    ) {}
 
-    async handleDepositSwapFeesEvent(event: DepositSwapFeesEvent): Promise<void> {
+    async handleDepositSwapFeesEvent(
+        event: DepositSwapFeesEvent,
+    ): Promise<void> {
         const topics = event.getTopics();
         const accumulatedFees = await this.getter.getAccumulatedFees(
             scAddress.feesCollector,
@@ -32,7 +36,9 @@ export class FeesCollectorHandlerService {
             scAddress.feesCollector,
             topics.currentWeek,
             topics.payment.tokenIdentifier,
-            new BigNumber(accumulatedFees).plus(topics.payment.amount).toFixed(),
+            new BigNumber(accumulatedFees)
+                .plus(topics.payment.amount)
+                .toFixed(),
         );
 
         this.invalidatedKeys.push(cacheKey);

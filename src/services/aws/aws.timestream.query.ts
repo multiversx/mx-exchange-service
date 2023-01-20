@@ -3,7 +3,6 @@ import { HttpsAgent } from 'agentkeepalive';
 import AWS, { AWSError, TimestreamQuery } from 'aws-sdk';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { awsConfig } from 'src/config';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { Logger } from 'winston';
 import moment from 'moment';
@@ -12,6 +11,7 @@ import { PromiseResult } from 'aws-sdk/lib/request';
 import { QueryResponse } from 'aws-sdk/clients/timestreamquery';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class AWSTimestreamQueryService {
@@ -26,9 +26,14 @@ export class AWSTimestreamQueryService {
     private readonly DatabaseName: string;
 
     constructor(
+        private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        AWS.config.update({ region: awsConfig.region });
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return;
+        }
+
+        AWS.config.update({ region: this.apiConfig.getAWSRegion() });
         const httpsAgent = new HttpsAgent({
             maxSockets: 5000,
         });
@@ -39,7 +44,7 @@ export class AWSTimestreamQueryService {
                 agent: httpsAgent,
             },
         });
-        this.DatabaseName = awsConfig.timestream.databaseName;
+        this.DatabaseName = this.apiConfig.getAWSDatabaseName();
 
         this.queryExecutor = new PendingExecutor(
             async (value: {
@@ -63,6 +68,10 @@ export class AWSTimestreamQueryService {
     }
 
     async getAggregatedValue({ table, series, metric, time }): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+
         const QueryString = `SELECT sum(measure_value::double) FROM "${this.DatabaseName}"."${table}"
                              WHERE series = '${series}' AND measure_name = '${metric}' AND time between ago(${time}) and now()`;
         const params = { QueryString };
@@ -79,6 +88,10 @@ export class AWSTimestreamQueryService {
         series,
         metric,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const QueryString = `
             SELECT date_trunc('day', time) as time, max(value) as value 
             FROM (
@@ -125,6 +138,10 @@ export class AWSTimestreamQueryService {
         series,
         metric,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const QueryString = `
             WITH binned_timeseries AS (
                 SELECT series, BIN(time, 24h) AS binned_timestamp, SUM(measure_value::double) AS sum
@@ -163,6 +180,10 @@ export class AWSTimestreamQueryService {
         series,
         metric,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const QueryString = `
             SELECT date_trunc('hour', time) as time, value 
             FROM (
@@ -211,6 +232,10 @@ export class AWSTimestreamQueryService {
         series,
         metric,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const QueryString = `
              WITH binned_timeseries AS (
                 SELECT series, BIN(time, 1h) AS binned_timestamp, SUM(measure_value::double) AS sum
@@ -253,6 +278,10 @@ export class AWSTimestreamQueryService {
         metric,
         start,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const formattedStart = moment
             .unix(start)
             .utc()
@@ -297,6 +326,10 @@ export class AWSTimestreamQueryService {
         bin,
         start,
     }): Promise<HistoricDataModel[]> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return [];
+        }
+
         const formattedStart = moment
             .unix(start)
             .utc()

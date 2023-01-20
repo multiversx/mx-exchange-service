@@ -2,29 +2,27 @@ import { Inject } from '@nestjs/common';
 import {
     BigUIntValue,
     BytesValue,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Address, Interaction, ReturnCode } from '@elrondnetwork/erdjs';
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+import { Address, Interaction, ReturnCode } from '@multiversx/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
-import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
+import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
 export class AbiFarmService extends GenericAbiService {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly gatewayService: ElrondGatewayService,
+        protected readonly gatewayService: MXGatewayService,
     ) {
-        super(elrondProxy, logger);
+        super(mxProxy, logger);
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getRewardTokenId();
         const response = await this.getGenericData(interaction);
@@ -32,9 +30,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getFarmTokenId();
         const response = await this.getGenericData(interaction);
@@ -42,9 +38,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getFarmingTokenId();
         const response = await this.getGenericData(interaction);
@@ -52,9 +46,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getFarmTokenSupply();
         const response = await this.getGenericData(interaction);
@@ -63,9 +55,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getPerBlockRewardAmount();
         const response = await this.getGenericData(interaction);
@@ -73,9 +63,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getPenaltyPercent(farmAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getPenaltyPercent();
         const response = await this.getGenericData(interaction);
@@ -83,9 +71,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getMinimumFarmingEpoch();
         const response = await this.getGenericData(interaction);
@@ -93,9 +79,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getRewardPerShare(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getRewardPerShare();
         const response = await this.getGenericData(interaction);
@@ -103,9 +87,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getRewardReserve(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getRewardReserve();
         const response = await this.getGenericData(interaction);
@@ -113,9 +95,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getLastRewardBlockNonce(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getLastRewardBlockNonce();
         const response = await this.getGenericData(interaction);
@@ -123,9 +103,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getDivisionSafetyConstant();
         const response = await this.getGenericData(interaction);
@@ -135,7 +113,7 @@ export class AbiFarmService extends GenericAbiService {
     async calculateRewardsForGivenPosition(
         args: CalculateRewardsArgs,
     ): Promise<BigNumber> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );
         const interaction: Interaction =
@@ -150,9 +128,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getState(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction = contract.methodsExplicit.getState();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().name;
@@ -167,9 +143,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getBurnGasLimit(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getBurnGasLimit();
         const response = await this.getGenericData(interaction);
@@ -177,9 +151,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getTransferExecGasLimit(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getTransferExecGasLimit();
         const response = await this.getGenericData(interaction);
@@ -188,7 +160,7 @@ export class AbiFarmService extends GenericAbiService {
 
     async getPairContractManagedAddress(farmAddress: string): Promise<string> {
         try {
-            const contract = await this.elrondProxy.getFarmSmartContract(
+            const contract = await this.mxProxy.getFarmSmartContract(
                 farmAddress,
             );
             const interaction: Interaction =
@@ -207,7 +179,7 @@ export class AbiFarmService extends GenericAbiService {
         farmAddress: string,
     ): Promise<string> {
         try {
-            const contract = await this.elrondProxy.getFarmSmartContract(
+            const contract = await this.mxProxy.getFarmSmartContract(
                 farmAddress,
             );
             const interaction: Interaction =
@@ -220,9 +192,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getLastErrorMessage(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getLastErrorMessage();
         const response = await this.getGenericData(interaction);

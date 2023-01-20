@@ -2,15 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
-import { awsConfig } from 'src/config';
 import { delay } from 'src/helpers/helpers';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -19,9 +19,10 @@ export class PairCacheWarmerService {
         private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: PairAbiService,
         private readonly routerGetter: RouterGetterService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly tokenSetter: TokenSetterService,
         private readonly awsQuery: AWSTimestreamQueryService,
+        private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -79,11 +80,15 @@ export class PairCacheWarmerService {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async cachePairsAnalytics(): Promise<void> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return;
+        }
+
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
             const firstTokenVolume24h = await this.awsQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
+                table: this.apiConfig.getAWSTableName(),
                 series: pairAddress,
                 metric: 'firstTokenVolume',
                 time,
@@ -91,7 +96,7 @@ export class PairCacheWarmerService {
             delay(1000);
             const secondTokenVolume24h = await this.awsQuery.getAggregatedValue(
                 {
-                    table: awsConfig.timestream.tableName,
+                    table: this.apiConfig.getAWSTableName(),
                     series: pairAddress,
                     metric: 'secondTokenVolume',
                     time,
@@ -99,14 +104,14 @@ export class PairCacheWarmerService {
             );
             delay(1000);
             const volumeUSD24h = await this.awsQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
+                table: this.apiConfig.getAWSTableName(),
                 series: pairAddress,
                 metric: 'volumeUSD',
                 time,
             });
             delay(1000);
             const feesUSD24h = await this.awsQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
+                table: this.apiConfig.getAWSTableName(),
                 series: pairAddress,
                 metric: 'feesUSD',
                 time,

@@ -7,10 +7,10 @@ import {
     TokenPayment,
     TypedValue,
     U64Value,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
@@ -23,7 +23,7 @@ import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTypeEnumType, SimpleLockType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
@@ -41,7 +41,7 @@ export class SimpleLockTransactionService {
         protected readonly wrapService: WrapService,
         protected readonly wrapTransaction: TransactionsWrapService,
         protected readonly contextGetter: ContextGetterService,
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
     ) {
         this.lockType = SimpleLockType.BASE_TYPE;
     }
@@ -52,7 +52,7 @@ export class SimpleLockTransactionService {
         simpleLockAddress: string,
     ): Promise<TransactionModel> {
         const [contract, currentEpoch] = await Promise.all([
-            this.elrondProxy.getSimpleLockSmartContract(simpleLockAddress),
+            this.mxProxy.getSimpleLockSmartContract(simpleLockAddress),
             this.contextGetter.getCurrentEpoch(),
         ]);
 
@@ -67,7 +67,7 @@ export class SimpleLockTransactionService {
                 ),
             )
             .withGasLimit(gasConfig.simpleLock.lockTokens)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -77,7 +77,7 @@ export class SimpleLockTransactionService {
         sender: string,
         inputTokens: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -92,7 +92,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.unlockTokens)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -113,7 +113,7 @@ export class SimpleLockTransactionService {
 
         const [firstTokenInput, secondTokenInput] = inputTokens;
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case firstTokenInput.tokenID:
                 firstTokenInput.tokenID = wrappedTokenID;
                 transactions.push(
@@ -160,7 +160,7 @@ export class SimpleLockTransactionService {
             await Promise.all([
                 this.pairGetterService.getFirstTokenID(pairAddress),
                 this.pairGetterService.getSecondTokenID(pairAddress),
-                this.elrondProxy.getSimpleLockSmartContract(simpleLockAddress),
+                this.mxProxy.getSimpleLockSmartContract(simpleLockAddress),
             ]);
 
         let [firstTokenID, secondTokenID] = [
@@ -223,7 +223,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.addLiquidityLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -236,7 +236,7 @@ export class SimpleLockTransactionService {
         tolerance: number,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -282,7 +282,7 @@ export class SimpleLockTransactionService {
                     Address.fromString(sender),
                 )
                 .withGasLimit(gasConfig.simpleLock.removeLiquidityLockedToken)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject(),
         );
@@ -317,7 +317,7 @@ export class SimpleLockTransactionService {
                 .name,
         );
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -344,7 +344,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -358,7 +358,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
         if (!exitAmount && farmVersion === FarmVersion.V2) {
@@ -380,7 +380,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -392,7 +392,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -407,7 +407,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.claimRewardsFarmLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -419,7 +419,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -437,7 +437,7 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

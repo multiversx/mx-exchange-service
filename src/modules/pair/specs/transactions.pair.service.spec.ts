@@ -5,7 +5,7 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairService } from '../services/pair.service';
@@ -13,10 +13,10 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
@@ -24,9 +24,9 @@ import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.get
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     const PairGetterServiceProvider = {
@@ -59,7 +59,7 @@ describe('TransactionPairService', () => {
             providers: [
                 ConfigService,
                 ApiConfigService,
-                ElrondProxyServiceProvider,
+                MXProxyServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
                 RouterGetterServiceProvider,

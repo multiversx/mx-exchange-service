@@ -48,9 +48,8 @@ export class ApiConfigService {
     }
 
     isPublicApiActive(): boolean {
-        const publicApiActive = this.configService.get<string>(
-            'ENABLE_PUBLIC_API',
-        );
+        const publicApiActive =
+            this.configService.get<string>('ENABLE_PUBLIC_API');
         if (!publicApiActive) {
             throw new Error('No public api flag present');
         }
@@ -68,9 +67,8 @@ export class ApiConfigService {
     }
 
     isPrivateAppActive(): boolean {
-        const privateAppActive = this.configService.get<string>(
-            'ENABLE_PRIVATE_API',
-        );
+        const privateAppActive =
+            this.configService.get<string>('ENABLE_PRIVATE_API');
         if (!privateAppActive) {
             throw new Error('No private api flag present');
         }
@@ -117,19 +115,11 @@ export class ApiConfigService {
     }
 
     getApiUrl(): string {
-        const apiUrl = this.configService.get<string>('ELRONDAPI_URL');
+        const apiUrl = this.configService.get<string>('MX_API_URL');
         if (!apiUrl) {
             throw new Error('No apiUrl present');
         }
         return apiUrl;
-    }
-
-    getNotifierUrl(): string {
-        const notifierUrl = this.configService.get<string>('NOTIFIER_URL');
-        if (!notifierUrl) {
-            throw new Error('No notifier url present');
-        }
-        return notifierUrl;
     }
 
     getKeepAliveTimeoutDownstream(): number {
@@ -162,9 +152,8 @@ export class ApiConfigService {
     }
 
     getMongoDBDatabase(): string {
-        const mongoDBDatabase = this.configService.get<string>(
-            'MONGODB_DATABASE',
-        );
+        const mongoDBDatabase =
+            this.configService.get<string>('MONGODB_DATABASE');
         if (!mongoDBDatabase) {
             throw new Error('No MongoDB Database present');
         }
@@ -172,9 +161,8 @@ export class ApiConfigService {
     }
 
     getMongoDBUsername(): string {
-        const mongoDBUsername = this.configService.get<string>(
-            'MONGODB_USERNAME',
-        );
+        const mongoDBUsername =
+            this.configService.get<string>('MONGODB_USERNAME');
         if (!mongoDBUsername) {
             throw new Error('No MongoDB username present');
         }
@@ -182,13 +170,75 @@ export class ApiConfigService {
     }
 
     getMongoDBPassword(): string {
-        const mongoDBPassword = this.configService.get<string>(
-            'MONGODB_PASSWORD',
-        );
+        const mongoDBPassword =
+            this.configService.get<string>('MONGODB_PASSWORD');
         if (!mongoDBPassword) {
             throw new Error('No MongoDB password present');
         }
         return mongoDBPassword;
+    }
+
+    getAWSRegion(): string {
+        const region = this.configService.get<string>('AWS_REGION');
+        if (!region) {
+            throw new Error('No AWS region present');
+        }
+        return region;
+    }
+
+    getAWSDatabaseName(): string {
+        const databaseName =
+            this.configService.get<string>('AWS_DATABASE_NAME');
+        if (!databaseName) {
+            throw new Error('No AWS database name present');
+        }
+        return databaseName;
+    }
+
+    getAWSTableName(): string {
+        const tableName = this.configService.get<string>('AWS_TABLE_NAME');
+        if (!tableName) {
+            throw new Error('No AWS table name present');
+        }
+        return tableName;
+    }
+
+    getAWSMemoryStoreRetention(): number {
+        const retentionPeriod = this.configService.get<string>(
+            'AWS_MEMORY_STORE_RETENTION',
+        );
+        if (!retentionPeriod) {
+            throw new Error('No AWS memory store retention period present');
+        }
+        return parseInt(retentionPeriod);
+    }
+
+    getAWSMagneticStoreRetention(): number {
+        const retentionPeriod = this.configService.get<string>(
+            'AWS_MAGNETIC_STORE_RETENTION',
+        );
+        if (!retentionPeriod) {
+            throw new Error('No AWS magnetic store retention period present');
+        }
+        return parseInt(retentionPeriod);
+    }
+
+    isAWSTimestreamRead(): boolean {
+        const readFlag = this.configService.get<string>('AWS_TIMESTREAM_READ');
+        if (!readFlag) {
+            throw new Error('No AWS Timestream read flag present');
+        }
+        return readFlag === 'true';
+    }
+
+    isAWSTimestreamWrite(): boolean {
+        const writeFlag = this.configService.get<string>(
+            'AWS_TIMESTREAM_WRITE',
+        );
+        if (!writeFlag) {
+            throw new Error('No AWS Timestream write flag present');
+        }
+        return writeFlag === 'true';
     }
 
     getSecurityAdmins(): string[] {

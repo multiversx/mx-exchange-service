@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { ElrondCommunicationModule } from '../../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../../services/multiversx-communication/mx.communication.module';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import {
     WeekTimekeepingComputeHandlers,
@@ -25,7 +25,7 @@ import {
 import { ProgressComputeService } from '../services/progress.compute.service';
 import { createMockProgress } from './progress.compute.service.spec';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyType } from '@multiversx/sdk-exchange';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import BigNumber from 'bignumber.js';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
@@ -988,7 +988,7 @@ async function createService(handlers: {
     const tokenCompute = new TokenComputeServiceMock(handlers.tokenCompute);
 
     const module: TestingModule = await Test.createTestingModule({
-        imports: [ElrondCommunicationModule, CachingModule],
+        imports: [MXCommunicationModule, CachingModule],
         providers: [
             PairComputeService,
             PairService,

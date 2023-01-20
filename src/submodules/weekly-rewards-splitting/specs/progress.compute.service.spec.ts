@@ -5,7 +5,7 @@ import {
     EnergyComputeHandlers,
     EnergyComputeServiceMock,
 } from '../../../modules/simple-lock/mocks/energy.compute.service.mock';
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import BigNumber from 'bignumber.js';
 import { EnergyModel } from 'src/modules/energy/models/energy.model';

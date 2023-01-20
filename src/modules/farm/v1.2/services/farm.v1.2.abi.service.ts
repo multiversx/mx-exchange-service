@@ -1,4 +1,4 @@
-import { Interaction } from '@elrondnetwork/erdjs/out';
+import { Interaction } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { FarmMigrationConfig } from '../../models/farm.model';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
@@ -6,9 +6,7 @@ import { AbiFarmService } from '../../base-module/services/farm.abi.service';
 @Injectable()
 export class FarmAbiServiceV1_2 extends AbiFarmService {
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getFarmingTokenReserve();
@@ -17,9 +15,7 @@ export class FarmAbiServiceV1_2 extends AbiFarmService {
     }
 
     async getUndistributedFees(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getUndistributedFees();
@@ -28,9 +24,7 @@ export class FarmAbiServiceV1_2 extends AbiFarmService {
     }
 
     async getCurrentBlockFee(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getCurrentBlockFee();
@@ -40,9 +34,7 @@ export class FarmAbiServiceV1_2 extends AbiFarmService {
     }
 
     async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getLockedRewardAprMuliplier();
@@ -53,9 +45,7 @@ export class FarmAbiServiceV1_2 extends AbiFarmService {
     async getFarmMigrationConfiguration(
         farmAddress: string,
     ): Promise<FarmMigrationConfig | undefined> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getFarmMigrationConfiguration();

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
@@ -8,14 +8,14 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 @Injectable()
 export class AbiProxyService extends GenericAbiService {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
-        super(elrondProxy, logger);
+        super(mxProxy, logger);
     }
 
     async getAssetTokenID(proxyAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
         const interaction: Interaction =
@@ -25,7 +25,7 @@ export class AbiProxyService extends GenericAbiService {
     }
 
     async getLockedAssetTokenID(proxyAddress: string): Promise<string[]> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
         const interaction: Interaction =

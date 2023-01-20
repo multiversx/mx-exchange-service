@@ -6,7 +6,7 @@ import { AbiProxyFarmService } from 'src/modules/proxy/services/proxy-farm/proxy
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
 import { cacheConfig, scAddress } from 'src/config';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour } from '../../helpers/helpers';
@@ -21,7 +21,7 @@ export class ProxyCacheWarmerService {
         private readonly abiProxyService: AbiProxyService,
         private readonly abiProxyPairService: AbiProxyPairService,
         private readonly abiProxyFarmService: AbiProxyFarmService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly cachingService: CachingService,
         private readonly tokenSetter: TokenSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
