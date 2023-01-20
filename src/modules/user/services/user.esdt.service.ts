@@ -11,21 +11,21 @@ import {
 } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { UserToken } from '../models/user.model';
 import { UserEsdtComputeService } from './esdt.compute.service';
 
 @Injectable()
 export class UserEsdtService {
     constructor(
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly pairService: PairService,
         private readonly tokenService: TokenService,
         private readonly pairGetter: PairGetterService,
         private readonly routerGetter: RouterGetterService,
         private readonly userEsdtCompute: UserEsdtComputeService,
         private readonly cachingService: CachingService,
-    ) { }
+    ) {}
 
     private async getUniquePairTokens(): Promise<string[]> {
         return await this.cachingService.getOrSet(
@@ -58,20 +58,21 @@ export class UserEsdtService {
         pagination: PaginationArgs,
         inputTokens?: IEsdtToken[],
     ): Promise<UserToken[]> {
-
         const [userTokens, uniquePairTokens] = await Promise.all([
-            inputTokens ? Promise.resolve(inputTokens) : this.apiService.getTokensForUser(
-                userAddress,
-                pagination.offset,
-                pagination.limit,
-            ),
-            this.getUniquePairTokens()
+            inputTokens
+                ? Promise.resolve(inputTokens)
+                : this.apiService.getTokensForUser(
+                      userAddress,
+                      pagination.offset,
+                      pagination.limit,
+                  ),
+            this.getUniquePairTokens(),
         ]);
 
-        const userPairEsdtTokens = userTokens.filter(token =>
+        const userPairEsdtTokens = userTokens.filter((token) =>
             uniquePairTokens.includes(token.identifier),
         );
-        const promises = userPairEsdtTokens.map(token => {
+        const promises = userPairEsdtTokens.map((token) => {
             return this.getEsdtTokenDetails(new EsdtToken(token));
         });
 

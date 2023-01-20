@@ -1,15 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { PairService } from '../../pair/services/pair.service';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
-import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
-import { AnalyticsModule } from 'src/services/analytics/analytics.module';
+import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { MXApiServiceMock } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
@@ -33,41 +32,23 @@ import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compu
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
-import {
-    WeeklyRewardsSplittingGetterService
-} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import {
-    WeeklyRewardsSplittingGetterServiceMock
-} from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
-import {
-    WeekTimekeepingGetterService
-} from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
-import {
-    WeekTimekeepingGetterServiceMock
-} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
-import {
-    WeekTimekeepingComputeService
-} from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import {
-    WeekTimekeepingComputeServiceMock
-} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
+import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
+import { WeeklyRewardsSplittingGetterServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
+import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import { WeekTimekeepingGetterServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
+import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import {
-    ProgressComputeServiceMock
-} from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
+import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
 import { EnergyGetterServiceProvider } from '../../energy/mocks/energy.getter.service.mock';
-import {
-    StakingGetterServiceProvider,
-} from '../../staking/mocks/staking.getter.service.mock';
+import { StakingGetterServiceProvider } from '../../staking/mocks/staking.getter.service.mock';
 import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
 import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
-import {
-    RemoteConfigGetterServiceProvider
-} from '../../remote-config/mocks/remote-config.getter.mock';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
 import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
+import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -92,14 +73,14 @@ describe('AnalyticsService', () => {
         useClass: ContextGetterServiceMock,
     };
 
-    const ElrondApiServiceProvider = {
-        provide: ElrondApiService,
-        useClass: ElrondApiServiceMock,
+    const MXApiServiceProvider = {
+        provide: MXApiService,
+        useClass: MXApiServiceMock,
     };
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     const WrapServiceProvider = {
@@ -110,14 +91,11 @@ describe('AnalyticsService', () => {
     beforeEach(async () => {
         const feesCollectorGetter = new FeesCollectorGetterServiceMock({});
         const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                CommonAppModule,
-                CachingModule,
-            ],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 ContextGetterServiceProvider,
-                ElrondProxyServiceProvider,
-                ElrondApiServiceProvider,
+                MXProxyServiceProvider,
+                MXApiServiceProvider,
                 FarmGetterFactory,
                 FarmGetterServiceProviderV1_2,
                 FarmGetterServiceProviderV1_3,
@@ -170,7 +148,7 @@ describe('AnalyticsService', () => {
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryService,
                 AWSTimestreamQueryService,
-                DataApiQueryServiceProvider
+                DataApiQueryServiceProvider,
             ],
         }).compile();
 

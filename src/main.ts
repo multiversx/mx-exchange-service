@@ -36,12 +36,11 @@ async function bootstrap() {
         {
             transport: Transport.REDIS,
             options: {
-                url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
+                host: apiConfigService.getRedisUrl(),
+                port: apiConfigService.getRedisPort(),
                 retryDelay: 1000,
                 retryAttempts: 10,
-                retry_strategy: function () {
-                    return 1000;
-                },
+                retryStrategy: () => 1000,
             },
         },
     );

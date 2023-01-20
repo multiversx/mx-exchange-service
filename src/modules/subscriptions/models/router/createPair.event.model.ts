@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { GenericEventModel } from '../generic.event.model';
-import { CreatePairEvent } from '@elrondnetwork/erdjs-dex';
+import { CreatePairEvent } from '@multiversx/sdk-exchange';
 
 @ObjectType()
 export class CreatePairEventModel extends GenericEventModel {

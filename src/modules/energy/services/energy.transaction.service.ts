@@ -8,21 +8,21 @@ import {
     U64Type,
     U64Value,
     VariadicValue,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { UnlockType } from '../models/energy.model';
 
 @Injectable()
 export class EnergyTransactionService {
     constructor(
         protected readonly contextGetter: ContextGetterService,
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
     ) {}
 
     async lockTokens(
@@ -30,8 +30,7 @@ export class EnergyTransactionService {
         inputTokens: InputTokenModel,
         lockEpochs: number,
     ): Promise<TransactionModel> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
 
         const interaction =
             inputTokens.nonce > 0
@@ -55,7 +54,7 @@ export class EnergyTransactionService {
                       );
         return interaction
             .withGasLimit(gasConfig.simpleLockEnergy.lockTokens)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -66,8 +65,7 @@ export class EnergyTransactionService {
         unlockType: UnlockType,
         newLockPeriod?: number,
     ): Promise<TransactionModel> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
 
         let endpoint: Interaction;
         let gasLimit: IGasLimit;
@@ -99,7 +97,7 @@ export class EnergyTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -108,8 +106,7 @@ export class EnergyTransactionService {
         sender: string,
         inputTokens: InputTokenModel[],
     ): Promise<TransactionModel> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
 
         const mappedTokenPayments = inputTokens.map((inputToken) =>
             TokenPayment.metaEsdtFromBigInteger(
@@ -129,7 +126,7 @@ export class EnergyTransactionService {
                 gasConfig.simpleLockEnergy.defaultMergeTokens *
                     inputTokens.length,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -138,8 +135,7 @@ export class EnergyTransactionService {
         sender: string,
         args: InputTokenModel[],
     ): Promise<TransactionModel> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
         return contract.methodsExplicit
             .migrateOldTokens()
             .withMultiESDTNFTTransfer(
@@ -155,7 +151,7 @@ export class EnergyTransactionService {
             .withGasLimit(
                 gasConfig.simpleLockEnergy.migrateOldTokens * args.length,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -165,8 +161,7 @@ export class EnergyTransactionService {
         lockOptions: number[],
         remove = false,
     ): Promise<TransactionModel> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
 
         const endpointArgs = [
             new VariadicValue(
@@ -183,7 +178,7 @@ export class EnergyTransactionService {
 
         return endpoint
             .withGasLimit(gasConfig.simpleLockEnergy.admin.updateLockOptions)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -193,8 +188,7 @@ export class EnergyTransactionService {
         minPenaltyPercentage: number,
         maxPenaltyPercentage: number,
     ): Promise<TransactionModel> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
 
         return contract.methodsExplicit
             .setPenaltyPercentage([
@@ -202,30 +196,28 @@ export class EnergyTransactionService {
                 new U16Value(new BigNumber(maxPenaltyPercentage)),
             ])
             .withGasLimit(gasConfig.simpleLockEnergy.admin.setPenaltyPercentage)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     // Only owner transaction
     async setFeesBurnPercentage(percentage: number): Promise<TransactionModel> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
 
         return contract.methodsExplicit
             .setFeesBurnPercentage([new U16Value(new BigNumber(percentage))])
             .withGasLimit(
                 gasConfig.simpleLockEnergy.admin.setFeesBurnPercentage,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     // Only owner address
     async setFeesCollectorAddress(address: string): Promise<TransactionModel> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
 
         return contract.methodsExplicit
             .setFeesBurnPercentage([
@@ -234,7 +226,7 @@ export class EnergyTransactionService {
             .withGasLimit(
                 gasConfig.simpleLockEnergy.admin.setFeesCollectorAddress,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -243,8 +235,7 @@ export class EnergyTransactionService {
     async setOldLockedAssetFactoryAddress(
         address: string,
     ): Promise<TransactionModel> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
 
         return contract.methodsExplicit
             .setOldLockedAssetFactoryAddress([
@@ -254,7 +245,7 @@ export class EnergyTransactionService {
                 gasConfig.simpleLockEnergy.admin
                     .setOldLockedAssetFactoryAddress,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

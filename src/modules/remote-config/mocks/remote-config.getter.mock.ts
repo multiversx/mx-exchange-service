@@ -1,4 +1,4 @@
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { AnalyticsQueryMode } from 'src/services/analytics/entities/analytics.query.mode';
 import { RemoteConfigGetterService } from '../remote-config.getter.service';
 

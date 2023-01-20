@@ -1,6 +1,6 @@
 import { IEnergyGetterService } from '../../energy/services/interfaces';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyType } from '@multiversx/sdk-exchange';
 import { ErrorNotImplemented } from '../../../utils/errors.constants';
 import { LockOption } from 'src/modules/energy/models/simple.lock.energy.model';
 

@@ -1,4 +1,4 @@
-import { LockedFarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
+import { LockedFarmTokenAttributes } from '@multiversx/sdk-exchange';
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';

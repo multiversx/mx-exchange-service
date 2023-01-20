@@ -12,7 +12,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { LockedAssetGetterService } from './locked.asset.getter.service';
 import BigNumber from 'bignumber.js';
 import { tokenNonce } from 'src/utils/token.converters';
-import { LockedAssetAttributes } from '@elrondnetwork/erdjs-dex';
+import { LockedAssetAttributes } from '@multiversx/sdk-exchange';
 
 @Injectable()
 export class LockedAssetService {
@@ -21,7 +21,7 @@ export class LockedAssetService {
 
         private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) { }
+    ) {}
 
     async getLockedAssetInfo(): Promise<LockedAssetModel> {
         return new LockedAssetModel({ address: scAddress.lockedAssetAddress });
@@ -30,49 +30,56 @@ export class LockedAssetService {
     async decodeLockedAssetAttributes(
         args: DecodeAttributesArgs,
     ): Promise<LockedAssetAttributesModel[]> {
-        const extendedAttributesActivationNonce = await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
+        const extendedAttributesActivationNonce =
+            await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
 
-        return Promise.all(args.batchAttributes.map(async lockedAsset => {
-            const withActivationNonce =
-                tokenNonce(lockedAsset.identifier) >=
-                extendedAttributesActivationNonce;
-            const lockedAssetAttributes = LockedAssetAttributes.fromAttributes(
-                withActivationNonce,
-                lockedAsset.attributes,
-            );
-            const unlockSchedule = await this.getUnlockMilestones(
-                lockedAssetAttributes.unlockSchedule,
-                withActivationNonce,
-            );
+        return Promise.all(
+            args.batchAttributes.map(async (lockedAsset) => {
+                const withActivationNonce =
+                    tokenNonce(lockedAsset.identifier) >=
+                    extendedAttributesActivationNonce;
+                const lockedAssetAttributes =
+                    LockedAssetAttributes.fromAttributes(
+                        withActivationNonce,
+                        lockedAsset.attributes,
+                    );
+                const unlockSchedule = await this.getUnlockMilestones(
+                    lockedAssetAttributes.unlockSchedule,
+                    withActivationNonce,
+                );
 
-
-            return new LockedAssetAttributesModel({
-                attributes: lockedAsset.attributes,
-                identifier: lockedAsset.identifier,
-                unlockSchedule,
-                isMerged: lockedAssetAttributes.isMerged,
-            });
-        }));
+                return new LockedAssetAttributesModel({
+                    attributes: lockedAsset.attributes,
+                    identifier: lockedAsset.identifier,
+                    unlockSchedule,
+                    isMerged: lockedAssetAttributes.isMerged,
+                });
+            }),
+        );
     }
 
     private async getUnlockMilestones(
         unlockSchedule: any,
         withActivationNonce: boolean,
     ): Promise<UnlockMileStoneModel[]> {
-        return Promise.all(unlockSchedule.map(async unlockMilestone => {
-            const unlockEpoch = unlockMilestone.epoch.toNumber();
-            const unlockPercent: BigNumber = withActivationNonce
-                ? unlockMilestone.percent.div(
-                    constantsConfig.PRECISION_EX_INCREASE,
-                )
-                : unlockMilestone.percent;
-            const remainingEpochs = await this.getRemainingEpochs(unlockEpoch);
+        return Promise.all(
+            unlockSchedule.map(async (unlockMilestone) => {
+                const unlockEpoch = unlockMilestone.epoch.toNumber();
+                const unlockPercent: BigNumber = withActivationNonce
+                    ? unlockMilestone.percent.div(
+                          constantsConfig.PRECISION_EX_INCREASE,
+                      )
+                    : unlockMilestone.percent;
+                const remainingEpochs = await this.getRemainingEpochs(
+                    unlockEpoch,
+                );
 
-            return new UnlockMileStoneModel({
-                percent: unlockPercent.toNumber(),
-                epochs: remainingEpochs > 0 ? remainingEpochs : 0,
-            });
-        }));
+                return new UnlockMileStoneModel({
+                    percent: unlockPercent.toNumber(),
+                    epochs: remainingEpochs > 0 ? remainingEpochs : 0,
+                });
+            }),
+        );
     }
 
     private async getRemainingEpochs(unlockEpoch: number): Promise<number> {

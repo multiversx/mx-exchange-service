@@ -5,7 +5,7 @@ import {
     FeesCollectorResolver,
     UserEntryFeesCollectorResolver,
 } from './fees-collector.resolver';
-import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { CachingModule } from '../../services/caching/cache.module';
 import { FeesCollectorService } from './services/fees-collector.service';
 import { WeeklyRewardsSplittingModule } from '../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
@@ -16,7 +16,7 @@ import { ContextModule } from '../../services/context/context.module';
 
 @Module({
     imports: [
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         WeekTimekeepingModule.register(FeesCollectorAbiService),
         WeeklyRewardsSplittingModule.register(FeesCollectorAbiService),

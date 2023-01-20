@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { dataApiConfig, elrondConfig } from 'src/config';
+import { dataApiConfig, mxConfig } from 'src/config';
 import { Logger } from 'winston';
 import { TimestreamWrite } from 'aws-sdk';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -25,14 +25,16 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
             host: 'dex-service',
             dataApiUrl: process.env.ELRONDDATAAPI_URL,
             multiversXApiUrl: this.apiConfigService.getApiUrl(),
-            proxyTimeout: elrondConfig.proxyTimeout,
+            proxyTimeout: mxConfig.proxyTimeout,
             keepAlive: {
-                maxSockets: elrondConfig.keepAliveMaxSockets,
-                maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+                maxSockets: mxConfig.keepAliveMaxSockets,
+                maxFreeSockets: mxConfig.keepAliveMaxFreeSockets,
                 timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-                freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+                freeSocketTimeout: mxConfig.keepAliveFreeSocketTimeout,
             },
-            signerPrivateKey: fs.readFileSync(this.apiConfigService.getNativeAuthKeyPath()).toString(),
+            signerPrivateKey: fs
+                .readFileSync(this.apiConfigService.getNativeAuthKeyPath())
+                .toString(),
         });
     }
 
@@ -55,9 +57,13 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         }
     }
 
-    async multiRecordsIngest(_tableName: string, Records: TimestreamWrite.Records) {
+    async multiRecordsIngest(
+        _tableName: string,
+        Records: TimestreamWrite.Records,
+    ) {
         try {
-            const ingestRecords = this.convertAWSRecordsToDataAPIRecords(Records);
+            const ingestRecords =
+                this.convertAWSRecordsToDataAPIRecords(Records);
             await this.writeRecords(ingestRecords);
         } catch (error) {
             const logMessage = generateLogMessage(
@@ -79,7 +85,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
 
         try {
             const mutation = this.generateIngestMutation(records);
-            await this.dataApiClient.executeRawQuery(mutation)
+            await this.dataApiClient.executeRawQuery(mutation);
         } catch (errors) {
             const logMessage = generateLogMessage(
                 DataApiWriteService.name,

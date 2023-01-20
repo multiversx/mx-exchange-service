@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { oneMinute, oneSecond } from 'src/helpers/helpers';
@@ -17,12 +17,12 @@ import { PerformanceProfiler } from 'src/utils/performance.profiler';
 @Injectable()
 export class CacheWarmerService {
     constructor(
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly cachingService: CachingService,
         private readonly routerService: RouterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) { }
+    ) {}
 
     @Cron('*/6 * * * * *')
     async cacheCurrentEpoch(): Promise<void> {
@@ -38,51 +38,100 @@ export class CacheWarmerService {
         // recompute cache
         const dateFormat = 'YYYY-MM-DD_HH:mm';
         const currentDate = moment().format(dateFormat);
-        const previousMinute = moment().subtract(1, 'minute').format(dateFormat);
+        const previousMinute = moment()
+            .subtract(1, 'minute')
+            .format(dateFormat);
 
         const prefix = 'guestCache';
-        const threshold = Number(process.env.ENABLE_CACHE_GUEST_RATE_THRESHOLD || 100);
-        const keysToComputeCurrentMinute: string[] = await this.cachingService.executeRemoteRaw('zrange', `${prefix}.${currentDate}`, threshold, '+inf', 'BYSCORE');
-        const keysToComputePreviousMinute: string[] = await this.cachingService.executeRemoteRaw('zrange', `${prefix}.${previousMinute}`, threshold, '+inf', 'BYSCORE');
+        const threshold = Number(
+            process.env.ENABLE_CACHE_GUEST_RATE_THRESHOLD || 100,
+        );
+        const keysToComputeCurrentMinute: string[] =
+            await this.cachingService.executeRemoteRaw(
+                'zrange',
+                `${prefix}.${currentDate}`,
+                threshold,
+                '+inf',
+                'BYSCORE',
+            );
+        const keysToComputePreviousMinute: string[] =
+            await this.cachingService.executeRemoteRaw(
+                'zrange',
+                `${prefix}.${previousMinute}`,
+                threshold,
+                '+inf',
+                'BYSCORE',
+            );
 
-        const keysToCompute = [...new Set([...keysToComputeCurrentMinute, ...keysToComputePreviousMinute])];
+        const keysToCompute = [
+            ...new Set([
+                ...keysToComputeCurrentMinute,
+                ...keysToComputePreviousMinute,
+            ]),
+        ];
 
+        await Promise.allSettled(
+            keysToCompute.map(async (key) => {
+                await Locker.lock(key, async () => {
+                    const parsedKey = `${prefix}.${key}.body`;
+                    const keyValue: object = await this.cachingService.getCache(
+                        parsedKey,
+                    );
 
+                    if (!keyValue) {
+                        return Promise.resolve();
+                    }
 
-        await Promise.allSettled(keysToCompute.map(async key => {
-            await Locker.lock(key, async () => {
-                const parsedKey = `${prefix}.${key}.body`;
-                const keyValue: object = await this.cachingService.getCache(parsedKey);
-    
-                if (!keyValue) {
-                    return Promise.resolve();
-                }
-    
-                console.log(`Started warming up query '${JSON.stringify(keyValue)}' for url '${process.env.ELRONDDEX_URL}'`);
-                const profiler = new PerformanceProfiler();
+                    console.log(
+                        `Started warming up query '${JSON.stringify(
+                            keyValue,
+                        )}' for url '${process.env.MX_DEX_URL}'`,
+                    );
+                    const profiler = new PerformanceProfiler();
 
-                let data;
-                try {
-                    // Get new data without cache and update it
-                    const response = await axios.post(`${process.env.ELRONDDEX_URL}/graphql`, keyValue, {
-                        headers: {
-                            'no-cache': true
-                        }
-                    });
+                    let data;
+                    try {
+                        // Get new data without cache and update it
+                        const response = await axios.post(
+                            `${process.env.MX_DEX_URL}/graphql`,
+                            keyValue,
+                            {
+                                headers: {
+                                    'no-cache': true,
+                                },
+                            },
+                        );
 
-                    data = response.data;
-                } catch (error) {
-                    console.error(`An error occurred while warming up query '${JSON.stringify(keyValue)}' for url '${process.env.ELRONDDEX_URL}'`);
-                    console.error(error);
-                }
+                        data = response.data;
+                    } catch (error) {
+                        console.error(
+                            `An error occurred while warming up query '${JSON.stringify(
+                                keyValue,
+                            )}' for url '${process.env.MX_DEX_URL}'`,
+                        );
+                        console.error(error);
+                    }
 
-                profiler.stop();
+                    profiler.stop();
 
-                console.log(`Finished warming up query '${JSON.stringify(keyValue)}' for url '${process.env.ELRONDDEX_URL}'. Response size: ${JSON.stringify(data).length}. Duration: ${profiler.duration}`);
-    
-                return this.cachingService.setCache(`${prefix}.${key}.response`, data, 30 * oneSecond());
-            })
-        }));
+                    console.log(
+                        `Finished warming up query '${JSON.stringify(
+                            keyValue,
+                        )}' for url '${
+                            process.env.MX_DEX_URL
+                        }'. Response size: ${
+                            JSON.stringify(data).length
+                        }. Duration: ${profiler.duration}`,
+                    );
+
+                    return this.cachingService.setCache(
+                        `${prefix}.${key}.response`,
+                        data,
+                        30 * oneSecond(),
+                    );
+                });
+            }),
+        );
 
         MetricsCollector.setGuestHitQueries(keysToCompute.length);
     }
@@ -115,4 +164,4 @@ export class CacheWarmerService {
     private async deleteCacheKeys(invalidatedKeys: string[]) {
         await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
-};
+}

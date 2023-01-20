@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import {
     constantsConfig,
-    elrondConfig,
+    mxConfig,
     scAddress,
     tokenProviderUSD,
 } from 'src/config';
@@ -69,7 +69,7 @@ export class TokenComputeService implements ITokenComputeService {
                         const egldLocked = new BigNumber(secondTokenReserves)
                             .times(`1e-${secondToken.decimals}`)
                             .times(secondTokenDerivedEGLD)
-                            .times(`1e${elrondConfig.EGLDDecimals}`)
+                            .times(`1e${mxConfig.EGLDDecimals}`)
                             .integerValue();
 
                         if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
@@ -96,7 +96,7 @@ export class TokenComputeService implements ITokenComputeService {
                         const egldLocked = new BigNumber(firstTokenReserves)
                             .times(`1e-${firstToken.decimals}`)
                             .times(firstTokenDerivedEGLD)
-                            .times(`1e${elrondConfig.EGLDDecimals}`)
+                            .times(`1e${mxConfig.EGLDDecimals}`)
                             .integerValue();
                         if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
                             largestLiquidityEGLD = egldLocked;

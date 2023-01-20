@@ -12,7 +12,7 @@ import {
     PAIR_EVENTS,
     SwapEvent,
     SwapNoFeeEvent,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { PairHandler } from './pair.handler.service';
 import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
 
@@ -33,9 +33,7 @@ export class SwapEventHandler {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async handleSwapEvents(
-        event: SwapEvent,
-    ): Promise<[any[], number]> {
+    async handleSwapEvents(event: SwapEvent): Promise<[any[], number]> {
         const [firstToken, secondToken] = await Promise.all([
             this.pairGetter.getFirstToken(event.address),
             this.pairGetter.getSecondToken(event.address),

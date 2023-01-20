@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
-import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
+import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
+import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
@@ -21,9 +21,9 @@ import { FarmGetterServiceProviderV1_3 } from '../mocks/farm.v1.3.getter.service
 describe('FarmService', () => {
     let service: FarmComputeServiceV1_3;
 
-    const ElrondApiServiceProvider = {
-        provide: ElrondApiService,
-        useClass: ElrondApiServiceMock,
+    const MXApiServiceProvider = {
+        provide: MXApiService,
+        useClass: MXApiServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -48,7 +48,7 @@ describe('FarmService', () => {
                 AbiFarmServiceProvider,
                 FarmGetterServiceProviderV1_3,
                 FarmComputeServiceV1_3,
-                ElrondApiServiceProvider,
+                MXApiServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
