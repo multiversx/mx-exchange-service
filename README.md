@@ -1,75 +1,73 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+GraphQl service to provide backend environment for xExchange
 
-[travis-image]: https://api.travis-ci.org/nestjs/nest.svg?branch=master
-[travis-url]: https://travis-ci.org/nestjs/nest
-[linux-image]: https://img.shields.io/travis/nestjs/nest/master.svg?label=linux
-[linux-url]: https://travis-ci.org/nestjs/nest
-  
-  <p align="center">A progressive <a href="http://nodejs.org" target="blank">Node.js</a> framework for building efficient and scalable server-side applications, heavily inspired by <a href="https://angular.io" target="blank">Angular</a>.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/dm/@nestjs/core.svg" alt="NPM Downloads" /></a>
-<a href="https://travis-ci.org/nestjs/nest"><img src="https://api.travis-ci.org/nestjs/nest.svg?branch=master" alt="Travis" /></a>
-<a href="https://travis-ci.org/nestjs/nest"><img src="https://img.shields.io/travis/nestjs/nest/master.svg?label=linux" alt="Linux" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#5" alt="Coverage" /></a>
-<a href="https://gitter.im/nestjs/nestjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge"><img src="https://badges.gitter.im/nestjs/nestjs.svg" alt="Gitter" /></a>
-<a href="https://opencollective.com/nest#backer"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec"><img src="https://img.shields.io/badge/Donate-PayPal-dc3d53.svg"/></a>
-  <a href="https://twitter.com/nestframework"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Dependencies
 
-## Description
+1. Node.js > @16.x.x is required to be installed [docs](https://nodejs.org/en/)
+2. Redis Server is required to be installed [docs](https://redis.io/).
+3. RabbitMQ Server is required to be installed [docs](https://www.rabbitmq.com/download.html).
+4. MongoDB Server is required to be installed [docs](https://www.mongodb.com/docs/manual/installation).
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+You can use `docker-compose up` in a separate terminal to use a local docker container for all these dependencies.
 
-## Installation
+After running the sample, you can stop the Docker container with `docker-compose down`
+
+## Available Scripts
+
+This is an MultiversX project built on Nest.js framework.
+
+### `npm run start`
+
+Runs the app in the production mode.
+Make requests to [http://localhost:3005/graphql](http://localhost:3005/graphql).
+
+## Running the app
+
+1. At the root folder run (make sure you have node v16.x.x)
 
 ```bash
 $ npm install
 ```
 
-## Running the app
+2. Proper config .env.example based on desired configuration
+
+3. Start the app
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
+# development debug mode
+$ npm run start:debug
+# development mode
 $ npm run start:dev
-
 # production mode
-$ npm run start:prod
+$ npm run start
 ```
 
-## Test
+It depends on the following external systems:
 
-```bash
-# unit tests
-$ npm run test
+-   gateway:
+    -   docs: [https://docs.multiversx.com/sdk-and-tools/proxy/](https://docs.multiversx.com/sdk-and-tools/proxy/)
+-   index:
+    -   to gather information for some statistics
+    -   docs: [https://docs.multiversx.com/sdk-and-tools/elastic-search/)
+-   api:
+    -   to get information regarding tokens, metaesdts and user balances
+    -   docs: [https://docs.multiversx.com/sdk-and-tools/rest-api/multiversx-api/](https://docs.multiversx.com/sdk-and-tools/rest-api/multiversx-api/)
+        It uses on the following internal systems:
+-   redis: used to cache various data, for performance purposes
+-   rabbitmq:
+    -   fetching events from blockchain emitted events via notifier
 
-# e2e tests
-$ npm run test:e2e
+A service instance can be started with the following behavior:
 
-# test coverage
-$ npm run test:cov
-```
+-   public API: provides graphQL queries for the consumers
+-   private API: used to report prometheus metrics & health checks
+-   rabbitMQ: used to fetch events in real time and create analytics data
+-   cache warmer: used to proactively fetch data & pushes it to cache, to improve performance & scalability
 
-## Support
+It depends on the following optional external systems:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+-   events notifier rabbitmq: queue that pushes logs & events which are handled internally e.g. to store token prices
+-   AWS Timestream: used to store time based metrics such as prices, volumes, fees
 
-## Stay in touch
+It uses the following optional internal systems:
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-  Nest is [MIT licensed](LICENSE).
+-   mongo database: used to store configs and addresses
