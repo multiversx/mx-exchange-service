@@ -188,8 +188,13 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
     // handle current time
     const currentRows = await this.getCompleteValuesInInterval(series, metric, moment.utc().startOf('day').toDate(), moment.utc().toDate());
-    const currentValues = convertDataApiHistoricalResponseToHash(currentRows);
-    completeValues.push(...currentValues);
+    const [currentValue] = convertDataApiHistoricalResponseToHash(currentRows);
+
+    if (completeValues.length > 0) {
+      completeValues[completeValues.length - 1] = currentValue;
+    } else {
+      completeValues.push(currentValue);
+    }
 
     return completeValues;
   }
@@ -208,13 +213,16 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     return rows;
   }
 
+  @DataApiQuery()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async getCompleteValuesDateRange(series: string, metric: string): Promise<[moment.Moment, moment.Moment]> {
-    const query = DataApiQueryBuilder
-      .createXExchangeAnalyticsQuery()
-      .metric(series, metric)
-      .getFirst();
+    // const query = DataApiQueryBuilder
+    //   .createXExchangeAnalyticsQuery()
+    //   .metric(series, metric)
+    //   .getFirst();
 
-    const firstRecord = await this.dataApiClient.executeValueQuery(query);
+    // const firstRecord = await this.dataApiClient.executeValueQuery(query);
+    const firstRecord = undefined;
     const startDate = firstRecord?.timestamp
       ? moment.utc(firstRecord.timestamp * 1000).startOf('day')
       : moment.utc('2021-11-15').startOf('day'); // dex launch date
