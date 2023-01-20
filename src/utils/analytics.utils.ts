@@ -1,4 +1,6 @@
 import { TimeResolution } from "@multiversx/sdk-data-api-client";
+import { DataApiHistoricalResponse } from "@multiversx/sdk-data-api-client/lib/src/responses";
+import BigNumber from "bignumber.js";
 import moment from "moment";
 import { MetricsCollector } from "./metrics.collector";
 import { PerformanceProfiler } from "./performance.profiler";
@@ -53,8 +55,12 @@ export function DataApiQuery() {
             try {
                 return await childMethod.apply(this, args);
             } catch (errors) {
-                const errorIds: string[] = errors?.map(error => error?.extensions?.id);
-                throw new Error(`Data API Internal Error. Error IDs: ${errorIds.join()}`);
+                if (Array.isArray(errors)) {
+                    const errorIds: string[] = errors?.map(error => error?.extensions?.id);
+                    throw new Error(`Data API Internal Error. Error IDs: ${errorIds.join()}`);
+                } else {
+                    throw new Error(`Data API Internal Error. Error: ${errors.message}`);
+                }
             } finally {
                 profiler.stop();
                 MetricsCollector.setDataApiQueryDuration(childMethod.name, profiler.duration);
@@ -62,4 +68,36 @@ export function DataApiQuery() {
         };
         return descriptor;
     };
+}
+
+export const generateCacheKeysForTimeInterval = (intervalStart: moment.Moment, intervalEnd: moment.Moment): string[] => {
+    const keys = [];
+    for (let d = intervalStart.clone(); d.isSameOrBefore(intervalEnd); d.add(1, 'day')) {
+        keys.push(d.format('YYYY-MM-DD'));
+    }
+
+    return keys;
+}
+
+export const convertDataApiHistoricalResponseToHash = (rows: DataApiHistoricalResponse[]): { field: string, value: { last: string, sum: string } }[] => {
+    const toBeInserted = rows.map((row) => {
+        const field = moment.utc(row.timestamp * 1000).format('YYYY-MM-DD');
+        const value = {
+            last: new BigNumber(row.last ?? '0').toFixed(),
+            sum: new BigNumber(row.sum ?? '0').toFixed(),
+        };
+        return { field, value };
+    });
+    return toBeInserted;
+}
+
+export const computeIntervalValues = (keys, values) => {
+    const intervalValues = [];
+    for (const [index, key] of keys.entries()) {
+        intervalValues.push({
+            field: key,
+            value: values[index] ? JSON.parse(values[index]) : null,
+        });
+    }
+    return intervalValues;
 }
