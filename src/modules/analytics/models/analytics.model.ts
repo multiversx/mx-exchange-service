@@ -22,6 +22,13 @@ export class HistoricDataModel {
             value: new BigNumber(row[aggregate] ?? '0').toFixed(),
         });
     }
+
+    static fromCompleteValues({ field, value }, type: 'last' | 'sum') {
+        return new HistoricDataModel({
+            timestamp: moment.utc(field).format('yyyy-MM-DD HH:mm:ss'),
+            value: value ? new BigNumber(value[type] ?? '0').toFixed() : '0',
+        });
+    }
 }
 
 @ObjectType()

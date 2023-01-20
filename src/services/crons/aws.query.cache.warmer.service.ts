@@ -17,7 +17,7 @@ export class AWSQueryCacheWarmerService {
         private readonly routerGetter: RouterGetterService,
         private readonly analyticsAWSSetter: AnalyticsAWSSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    ) {}
+    ) { }
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async updateHistoricTokensData(): Promise<void> {
