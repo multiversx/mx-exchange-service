@@ -47,7 +47,7 @@ It depends on the following external systems:
     -   docs: [https://docs.multiversx.com/sdk-and-tools/proxy/](https://docs.multiversx.com/sdk-and-tools/proxy/)
 -   index:
     -   to gather information for some statistics
-    -   docs: [https://docs.multiversx.com/sdk-and-tools/elastic-search/)
+    -   docs: [https://docs.multiversx.com/sdk-and-tools/elastic-search/](https://docs.multiversx.com/sdk-and-tools/elastic-search/)
 -   api:
     -   to get information regarding tokens, metaesdts and user balances
     -   docs: [https://docs.multiversx.com/sdk-and-tools/rest-api/multiversx-api/](https://docs.multiversx.com/sdk-and-tools/rest-api/multiversx-api/)
