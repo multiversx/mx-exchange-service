@@ -155,48 +155,53 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
   }
 
   private async getCompleteValues(series: string, metric: string): Promise<any[]> {
-    const hashCacheKey = generateCacheKeyFromParams('timeseries', series, metric);
+    try {
+      const hashCacheKey = generateCacheKeyFromParams('timeseries', series, metric);
 
-    const [startDate, endDate] = await this.getCompleteValuesDateRange(series, metric);
+      const [startDate, endDate] = await this.getCompleteValuesDateRange(series, metric);
 
-    const completeValues = [];
-    for (let date = startDate.clone(); date.isSameOrBefore(endDate); date.add(1, 'month')) {
-      const intervalStart = date.clone();
-      const intervalEnd = moment.min(date.clone().add(1, 'month').subtract(1, 's'), endDate);
+      const completeValues = [];
+      for (let date = startDate.clone(); date.isSameOrBefore(endDate); date.add(1, 'month')) {
+        const intervalStart = date.clone();
+        const intervalEnd = moment.min(date.clone().add(1, 'month').subtract(1, 's'), endDate);
 
-      const keys = generateCacheKeysForTimeInterval(intervalStart, intervalEnd);
+        const keys = generateCacheKeysForTimeInterval(intervalStart, intervalEnd);
 
-      const values = await this.cachingService.getMultipleFromHash(hashCacheKey, keys);
-      let intervalValues = computeIntervalValues(keys, values);
+        const values = await this.cachingService.getMultipleFromHash(hashCacheKey, keys);
+        let intervalValues = computeIntervalValues(keys, values);
 
-      if (values.some(value => value === null)) {
-        this.logger.info(`Get complete values for ${hashCacheKey} between ${intervalStart.format('YYYY-MM-DD HH:mm:ss')} and ${intervalEnd.format('YYYY-MM-DD HH:mm:ss')}`);
+        if (values.some(value => value === null)) {
+          this.logger.info(`Get complete values for ${hashCacheKey} between ${intervalStart.format('YYYY-MM-DD HH:mm:ss')} and ${intervalEnd.format('YYYY-MM-DD HH:mm:ss')}`);
 
-        const rows = await this.getCompleteValuesInInterval(series, metric, intervalStart.toDate(), intervalEnd.toDate());
+          const rows = await this.getCompleteValuesInInterval(series, metric, intervalStart.toDate(), intervalEnd.toDate());
 
-        const toBeInserted = convertDataApiHistoricalResponseToHash(rows);
-        if (toBeInserted.length > 0) {
-          const redisValues = toBeInserted.map(({ field, value }) => [field, JSON.stringify(value)]) as [string, string][];
-          await this.cachingService.setMultipleInHash(hashCacheKey, redisValues);
+          const toBeInserted = convertDataApiHistoricalResponseToHash(rows);
+          if (toBeInserted.length > 0) {
+            const redisValues = toBeInserted.map(({ field, value }) => [field, JSON.stringify(value)]) as [string, string][];
+            await this.cachingService.setMultipleInHash(hashCacheKey, redisValues);
+          }
+
+          intervalValues = toBeInserted;
         }
 
-        intervalValues = toBeInserted;
+        completeValues.push(...intervalValues);
       }
 
-      completeValues.push(...intervalValues);
+      // handle current time
+      const currentRows = await this.getCompleteValuesInInterval(series, metric, moment.utc().startOf('day').toDate(), moment.utc().toDate());
+      const [currentValue] = convertDataApiHistoricalResponseToHash(currentRows);
+
+      if (completeValues.length > 0) {
+        completeValues[completeValues.length - 1] = currentValue;
+      } else {
+        completeValues.push(currentValue);
+      }
+
+      return completeValues;
+    } catch (error) {
+      console.log(error);
+      return [];
     }
-
-    // handle current time
-    const currentRows = await this.getCompleteValuesInInterval(series, metric, moment.utc().startOf('day').toDate(), moment.utc().toDate());
-    const [currentValue] = convertDataApiHistoricalResponseToHash(currentRows);
-
-    if (completeValues.length > 0) {
-      completeValues[completeValues.length - 1] = currentValue;
-    } else {
-      completeValues.push(currentValue);
-    }
-
-    return completeValues;
   }
 
   @DataApiQuery()
