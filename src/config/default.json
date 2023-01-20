@@ -543,5 +543,8 @@
             "MAX_SLIPPAGE": 0.05
         },
         "MIN_SWAP_AMOUNT": 0.05
+    },
+    "dataApi": {
+        "tableName": "XEXCHANGE_ANALYTICS"
     }
 }

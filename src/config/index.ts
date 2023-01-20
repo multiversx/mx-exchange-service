@@ -28,3 +28,5 @@ export const tokensSupplyConfig = config.get('tokensSupply');
 export const cachedTokensPriceConfig = config.get('cachedTokensPrice');
 
 export const constantsConfig = config.get('constants');
+
+export const dataApiConfig = config.get('dataApi');
