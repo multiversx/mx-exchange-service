@@ -1,7 +1,7 @@
 import {
     EnergyEvent,
     SIMPLE_LOCK_ENERGY_EVENTS,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { EnergySetterService } from 'src/modules/energy/services/energy.setter.service';

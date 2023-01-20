@@ -1,7 +1,7 @@
-import { Address, BigUIntValue, TokenPayment } from '@elrondnetwork/erdjs/out';
+import { Address, BigUIntValue, TokenPayment } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { farmType } from 'src/utils/farm.utils';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -20,7 +20,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         sender: string,
         args: EnterFarmArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );
 
@@ -57,7 +57,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -69,7 +69,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         if (!args.exitAmount && !new BigNumber(args.exitAmount).isPositive()) {
             throw new Error('Invalid exit amount');
         }
-        const contract = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );
         const gasLimit = await this.getExitFarmGasLimit(
@@ -89,7 +89,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -107,7 +107,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             gasConfig.farms[FarmVersion.V2][type].claimRewards +
             lockedAssetCreateGas;
 
-        const contract = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );
 
@@ -122,7 +122,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

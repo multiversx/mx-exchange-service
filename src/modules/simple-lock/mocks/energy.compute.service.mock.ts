@@ -1,4 +1,4 @@
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyType } from '@multiversx/sdk-exchange';
 import { IEnergyComputeService } from '../../energy/services/interfaces';
 import { ErrorNotImplemented } from '../../../utils/errors.constants';
 

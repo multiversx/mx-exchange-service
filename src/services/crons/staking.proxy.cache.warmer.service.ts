@@ -5,7 +5,7 @@ import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-conf
 import { AbiStakingProxyService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingProxySetterService } from 'src/modules/staking-proxy/services/staking.proxy.setter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class StakingProxyCacheWarmerService {
     constructor(
         private readonly abiService: AbiStakingProxyService,
         private readonly stakingProxySetter: StakingProxySetterService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly tokenSetter: TokenSetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,

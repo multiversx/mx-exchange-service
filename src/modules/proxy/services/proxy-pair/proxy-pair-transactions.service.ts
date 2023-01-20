@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
+import { constantsConfig, mxConfig, gasConfig } from 'src/config';
 import {
     BigUIntValue,
     BytesValue,
     TypedValue,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Address, TokenPayment } from '@elrondnetwork/erdjs';
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+import { Address, TokenPayment } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import BigNumber from 'bignumber.js';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -13,7 +13,7 @@ import {
     AddLiquidityProxyArgs,
     RemoveLiquidityProxyArgs,
 } from '../../models/proxy-pair.args';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -26,7 +26,7 @@ import { ProxyGetterService } from '../proxy.getter.service';
 @Injectable()
 export class TransactionsProxyPairService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly proxyGetter: ProxyGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
@@ -42,7 +42,7 @@ export class TransactionsProxyPairService {
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case args.tokens[0].tokenID:
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(
@@ -95,7 +95,7 @@ export class TransactionsProxyPairService {
             this.logger.error(logMessage);
             throw error;
         }
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
         const amount0 = new BigNumber(liquidityTokens[0].amount);
@@ -134,7 +134,7 @@ export class TransactionsProxyPairService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -159,7 +159,7 @@ export class TransactionsProxyPairService {
                 args.pairAddress,
                 args.liquidity,
             ),
-            this.elrondProxy.getProxyDexSmartContract(proxyAddress),
+            this.mxProxy.getProxyDexSmartContract(proxyAddress),
         ]);
         const amount0Min = new BigNumber(
             liquidityPosition.firstTokenAmount.toString(),
@@ -190,7 +190,7 @@ export class TransactionsProxyPairService {
                     Address.fromString(sender),
                 )
                 .withGasLimit(gasConfig.proxy.pairs.removeLiquidity)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject(),
         );
@@ -228,7 +228,7 @@ export class TransactionsProxyPairService {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
         }
 
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
         const gasLimit = gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length;
@@ -247,7 +247,7 @@ export class TransactionsProxyPairService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -257,7 +257,7 @@ export class TransactionsProxyPairService {
     ): Promise<InputTokenModel[]> {
         const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
 
-        switch (elrondConfig.EGLDIdentifier) {
+        switch (mxConfig.EGLDIdentifier) {
             case tokens[0].tokenID:
                 if (tokens[0].nonce > 0) {
                     throw new Error('Invalid nonce for EGLD token!');

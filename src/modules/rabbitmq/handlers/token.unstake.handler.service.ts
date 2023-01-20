@@ -1,4 +1,4 @@
-import { UserUnlockedTokensEvent } from '@elrondnetwork/erdjs-dex';
+import { UserUnlockedTokensEvent } from '@multiversx/sdk-exchange';
 import { Inject } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { UnstakePairModel } from 'src/modules/token-unstake/models/token.unstake.model';

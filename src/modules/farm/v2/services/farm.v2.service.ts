@@ -10,12 +10,10 @@ import { CalculateRewardsArgs } from '../../models/farm.args';
 import { RewardsModel } from '../../models/farm.model';
 import { FarmTokenAttributesModelV2 } from '../../models/farmTokenAttributes.model';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
-import {
-    WeeklyRewardsSplittingService
-} from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
+import { WeeklyRewardsSplittingService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
 import { WeekTimekeepingService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.service';
 import { Mixin } from 'ts-mixer';
-import { FarmTokenAttributesV2 } from '@elrondnetwork/erdjs-dex';
+import { FarmTokenAttributesV2 } from '@multiversx/sdk-exchange';
 import BigNumber from 'bignumber.js';
 import {
     ClaimProgress,
@@ -24,7 +22,11 @@ import {
 import { constantsConfig } from '../../../../config';
 
 @Injectable()
-export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService, WeeklyRewardsSplittingService) {
+export class FarmServiceV2 extends Mixin(
+    FarmServiceBase,
+    WeekTimekeepingService,
+    WeeklyRewardsSplittingService,
+) {
     constructor(
         protected readonly abiService: FarmAbiServiceV2,
         @Inject(forwardRef(() => FarmGetterServiceV2))
@@ -49,7 +51,8 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
     ): Promise<RewardsModel[]> {
         const boostedPositions = new Map<string, CalculateRewardsArgs>();
         positions.forEach((position) => {
-            let boostedPosition = boostedPositions.get(position.farmAddress) ?? position;
+            let boostedPosition =
+                boostedPositions.get(position.farmAddress) ?? position;
             if (
                 new BigNumber(position.liquidity).isGreaterThan(
                     boostedPosition.liquidity,
@@ -92,34 +95,48 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
         let currentClaimProgress: ClaimProgress = undefined;
         let userAccumulatedRewards: string = undefined;
         if (computeBoosted) {
-            const currentWeek = await this.farmGetter.getCurrentWeek(positon.farmAddress);
-            modelsList = []
-            let lastActiveWeekUser = await this.farmGetter.lastActiveWeekForUser(positon.farmAddress, positon.user)
+            const currentWeek = await this.farmGetter.getCurrentWeek(
+                positon.farmAddress,
+            );
+            modelsList = [];
+            let lastActiveWeekUser =
+                await this.farmGetter.lastActiveWeekForUser(
+                    positon.farmAddress,
+                    positon.user,
+                );
             if (lastActiveWeekUser === 0) {
-                lastActiveWeekUser = currentWeek
+                lastActiveWeekUser = currentWeek;
             }
-            const startWeek = Math.max(currentWeek-constantsConfig.USER_MAX_CLAIM_WEEKS, lastActiveWeekUser);
+            const startWeek = Math.max(
+                currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
+                lastActiveWeekUser,
+            );
 
             for (let week = startWeek; week <= currentWeek - 1; week++) {
                 if (week < 1) {
                     continue;
                 }
-                const model = this.getUserInfoByWeek(positon.farmAddress, positon.user, week)
-                model.positionAmount = positon.liquidity
-                modelsList.push(model)
+                const model = this.getUserInfoByWeek(
+                    positon.farmAddress,
+                    positon.user,
+                    week,
+                );
+                model.positionAmount = positon.liquidity;
+                modelsList.push(model);
             }
 
             currentClaimProgress = await this.farmGetter.currentClaimProgress(
                 positon.farmAddress,
                 positon.user,
-            )
-
-            userAccumulatedRewards = await this.farmGetter.getUserAccumulatedRewardsForWeek(
-                positon.farmAddress,
-                currentWeek,
-                positon.user,
-                positon.liquidity
             );
+
+            userAccumulatedRewards =
+                await this.farmGetter.getUserAccumulatedRewardsForWeek(
+                    positon.farmAddress,
+                    currentWeek,
+                    positon.user,
+                    positon.liquidity,
+                );
         }
 
         return new RewardsModel({

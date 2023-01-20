@@ -3,11 +3,11 @@ import {
     Address,
     SmartContract,
     SmartContractAbi,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { promises } from 'fs';
-import { ElrondProxyService } from './elrond-proxy.service';
+import { MXProxyService } from './mx.proxy.service';
 
-export class ElrondProxyServiceMock extends ElrondProxyService {
+export class MXProxyServiceMock extends MXProxyService {
     async getAddressShardID(address: string): Promise<number> {
         return 0;
     }

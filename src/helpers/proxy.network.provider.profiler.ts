@@ -1,10 +1,10 @@
 import {
     ContractQueryResponse,
     ProxyNetworkProvider,
-} from '@elrondnetwork/erdjs-network-providers';
+} from '@multiversx/sdk-network-providers';
 import { PerformanceProfiler } from '../utils/performance.profiler';
 import { MetricsCollector } from '../utils/metrics.collector';
-import { IContractQuery } from '@elrondnetwork/erdjs-network-providers/out/interface';
+import { IContractQuery } from '@multiversx/sdk-network-providers/out/interface';
 
 export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
     async queryContract(query: IContractQuery): Promise<ContractQueryResponse> {

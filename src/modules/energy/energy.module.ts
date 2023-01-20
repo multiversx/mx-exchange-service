@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { TokenModule } from '../tokens/token.module';
 import { EnergyResolver } from './energy.resolver';
 import { EnergyAbiService } from './services/energy.abi.service';
@@ -16,7 +16,7 @@ import { EnergyTransactionService } from './services/energy.transaction.service'
     imports: [
         CommonAppModule,
         CachingModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         ContextModule,
         TokenModule,
     ],

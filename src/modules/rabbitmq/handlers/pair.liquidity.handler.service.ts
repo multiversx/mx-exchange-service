@@ -1,4 +1,4 @@
-import { AddLiquidityEvent, PAIR_EVENTS } from '@elrondnetwork/erdjs-dex';
+import { AddLiquidityEvent, PAIR_EVENTS } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';

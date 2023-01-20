@@ -1,4 +1,4 @@
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyType } from '@multiversx/sdk-exchange';
 import { EnergyComputeService } from '../../../modules/energy/services/energy.compute.service';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { IProgressComputeService } from '../interfaces';

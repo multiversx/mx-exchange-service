@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
@@ -19,7 +19,7 @@ export class PairCacheWarmerService {
         private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: PairAbiService,
         private readonly routerGetter: RouterGetterService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly tokenSetter: TokenSetterService,
         private readonly awsQuery: AWSTimestreamQueryService,
         private readonly apiConfig: ApiConfigService,

@@ -11,7 +11,7 @@ import {
     LockedLpTokenV2,
 } from 'src/modules/tokens/models/lockedLpToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
-import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
@@ -67,7 +67,7 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 @Injectable()
 export class UserMetaEsdtComputeService {
     constructor(
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly farmFactory: FarmFactoryService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly pairService: PairService,

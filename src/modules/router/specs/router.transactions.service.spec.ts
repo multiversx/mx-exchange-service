@@ -4,7 +4,7 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { TransactionRouterService } from '../services/transactions.router.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
@@ -20,10 +20,10 @@ import {
 import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { PairService } from 'src/modules/pair/services/pair.service';
 
 describe('RouterService', () => {
@@ -75,7 +75,7 @@ describe('RouterService', () => {
                 WrapServiceProvider,
                 TransactionsWrapService,
                 ApiConfigService,
-                ElrondProxyService,
+                MXProxyService,
                 TransactionRouterService,
                 RouterService,
             ],
@@ -107,7 +107,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'createPair@TOK3-3333@TOK4-4444@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -131,7 +131,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'issueLpToken@erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2@LiquidityPoolToken3@LPT-3333',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -165,7 +165,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'setLocalRoles@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -188,7 +188,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'pause@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -211,7 +211,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'resume@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -236,7 +236,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'setFeeOff@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -261,7 +261,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'setFeeOn@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -285,7 +285,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'setLocalRolesOwner@TOK1-1111@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -303,7 +303,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.removePair,
             data: encodeTransactionData('removePair@TOK1-1111@USDC-1111'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -321,7 +321,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@01'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -339,7 +339,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -357,7 +357,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: 200000000,
             data: 'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -379,7 +379,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'setTemporaryOwnerPeriod@1000000000000000000000000000000000',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -401,7 +401,7 @@ describe('RouterService', () => {
             data: encodeTransactionData(
                 'setPairTemplateAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
