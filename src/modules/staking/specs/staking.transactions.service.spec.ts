@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import winston from 'winston';
@@ -12,14 +12,14 @@ import {
 import * as Transport from 'winston-transport';
 import { StakingGetterService } from '../services/staking.getter.service';
 import { StakingGetterServiceMock } from '../mocks/staking.getter.service.mock';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
-import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
+import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
+import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { StakingTransactionService } from '../services/staking.transactions.service';
 
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { encodeTransactionData } from 'src/helpers/helpers';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 
 describe('StakingTransactionService', () => {
     let service: StakingTransactionService;
@@ -34,9 +34,9 @@ describe('StakingTransactionService', () => {
         useClass: ContextGetterServiceMock,
     };
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     const logTransports: Transport[] = [
@@ -60,8 +60,8 @@ describe('StakingTransactionService', () => {
                 StakingTransactionService,
                 StakingGetterServiceProvider,
                 ContextGetterServiceProvider,
-                ElrondProxyServiceProvider,
-                ElrondGatewayService,
+                MXProxyServiceProvider,
+                MXGatewayService,
                 ApiConfigService,
             ],
         }).compile();
@@ -98,7 +98,7 @@ describe('StakingTransactionService', () => {
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01@TOK1-1111@@1000@stakeFarm',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,

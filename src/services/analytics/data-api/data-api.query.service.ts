@@ -1,10 +1,17 @@
-import { AggregateValue, DataApiClient, DataApiQueryBuilder, HistoricalValue, TimeRange, TimeResolution } from '@multiversx/sdk-data-api-client';
+import {
+  AggregateValue,
+  DataApiClient,
+  DataApiQueryBuilder,
+  HistoricalValue,
+  TimeRange,
+  TimeResolution,
+} from '@multiversx/sdk-data-api-client';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import fs from 'fs';
 import moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { dataApiConfig, elrondConfig } from 'src/config';
+import { dataApiConfig, mxConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -27,23 +34,26 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
       host: 'dex-service',
       dataApiUrl: process.env.ELRONDDATAAPI_URL,
       multiversXApiUrl: this.apiConfigService.getApiUrl(),
-      proxyTimeout: elrondConfig.proxyTimeout,
+      proxyTimeout: mxConfig.proxyTimeout,
       keepAlive: {
-        maxSockets: elrondConfig.keepAliveMaxSockets,
-        maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+        maxSockets: mxConfig.keepAliveMaxSockets,
+        maxFreeSockets: mxConfig.keepAliveMaxFreeSockets,
         timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-        freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+        freeSocketTimeout: mxConfig.keepAliveFreeSocketTimeout,
       },
       signerPrivateKey: fs.readFileSync(this.apiConfigService.getNativeAuthKeyPath()).toString(),
     });
   }
 
   @DataApiQuery()
-  async getAggregatedValue({ series, metric, time }: AnalyticsQueryArgs): Promise<string> {
+  async getAggregatedValue({
+    series,
+    metric,
+    time,
+  }: AnalyticsQueryArgs): Promise<string> {
     const [startDate, endDate] = computeTimeInterval(time);
 
-    const query = DataApiQueryBuilder
-      .createXExchangeAnalyticsQuery()
+    const query = DataApiQueryBuilder.createXExchangeAnalyticsQuery()
       .metric(series, metric)
       .betweenDates(startDate, endDate)
       .getAggregate(AggregateValue.sum);
@@ -71,9 +81,11 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
   }
 
   @DataApiQuery()
-  async getValues24h({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    const query = DataApiQueryBuilder
-      .createXExchangeAnalyticsQuery()
+  async getValues24h({
+    series,
+    metric,
+  }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    const query = DataApiQueryBuilder.createXExchangeAnalyticsQuery()
       .metric(series, metric)
       .withTimeRange(TimeRange.DAY)
       .withTimeResolution(TimeResolution.INTERVAL_HOUR)
@@ -81,14 +93,18 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.last));
+    const data = rows.map((row) =>
+      HistoricDataModel.fromDataApiResponse(row, HistoricalValue.last),
+    );
     return data;
   }
 
   @DataApiQuery()
-  async getValues24hSum({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    const query = DataApiQueryBuilder
-      .createXExchangeAnalyticsQuery()
+  async getValues24hSum({
+    series,
+    metric,
+  }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    const query = DataApiQueryBuilder.createXExchangeAnalyticsQuery()
       .metric(series, metric)
       .withTimeRange(TimeRange.DAY)
       .withTimeResolution(TimeResolution.INTERVAL_HOUR)
@@ -97,7 +113,9 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.sum));
+    const data = rows.map((row) =>
+      HistoricDataModel.fromDataApiResponse(row, HistoricalValue.sum),
+    );
     return data;
   }
 
@@ -106,14 +124,15 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     const [startDate, endDate] = computeTimeInterval(time, start);
 
     const query = `query getLatestHistoricData($series: String!, $metric: String!, $startDate: DateTime!, $endDate: DateTime!) {
-      ${dataApiConfig.tableName} {
-        values(
-          series: $series
-          key: $metric
-          filter: { sort: ASC, start_date: $startDate, end_date: $endDate }
-        ) {
-          value
-          time
+        ${dataApiConfig.tableName} {
+          values(
+            series: $series
+            key: $metric
+            filter: { sort: ASC, start_date: $startDate, end_date: $endDate }
+          ) {
+            value
+            time
+          }
         }
       }
     }`;

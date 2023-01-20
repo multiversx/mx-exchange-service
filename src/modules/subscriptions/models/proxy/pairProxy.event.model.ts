@@ -1,4 +1,4 @@
-import { PairProxyEvent } from '@elrondnetwork/erdjs-dex';
+import { PairProxyEvent } from '@multiversx/sdk-exchange';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { GenericToken } from 'src/models/genericToken.model';
 import { WrappedLpTokenAttributesModel } from 'src/modules/proxy/models/wrappedLpTokenAttributes.model';

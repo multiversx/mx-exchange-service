@@ -10,7 +10,7 @@ import { ProxyPairModule } from 'src/modules/proxy/services/proxy-pair/proxy-pai
 import { PairCacheWarmerService } from './crons/pair.cache.warmer.service';
 import { FarmCacheWarmerService } from './crons/farm.cache.warmer.service';
 import { ProxyCacheWarmerService } from './crons/proxy.cache.warmer.service';
-import { ElrondCommunicationModule } from './elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from './multiversx-communication/mx.communication.module';
 import { CommonAppModule } from 'src/common.app.module';
 import { AnalyticsCacheWarmerService } from './crons/analytics.cache.warmer.service';
 import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
@@ -41,7 +41,7 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         CacheModule.register(),
         PairModule,
         RouterModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         ContextModule,
         FarmModule,
         FarmModuleV1_2,

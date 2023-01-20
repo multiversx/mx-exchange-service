@@ -2,7 +2,7 @@ import { DynamicModule, forwardRef, Module } from '@nestjs/common';
 import { WeeklyRewardsSplittingGetterService } from './services/weekly-rewards-splitting.getter.service';
 import { CachingModule } from '../../services/caching/cache.module';
 import { WeeklyRewardsSplittingAbiService } from './services/weekly-rewards-splitting.abi.service';
-import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { WeeklyRewardsSplittingService } from './services/weekly-rewards-splitting.service';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import { WeeklyRewardsSplittingComputeService } from './services/weekly-rewards-splitting.compute.service';
@@ -19,7 +19,7 @@ import { WeeklyRewardsSplittingSetterService } from './services/weekly-rewards-s
 
 @Module({
     imports: [
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         EnergyModule,
         forwardRef(() => RouterModule),

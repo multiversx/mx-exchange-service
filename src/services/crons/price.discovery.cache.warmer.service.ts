@@ -6,7 +6,7 @@ import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/p
 import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
 import { PriceDiscoverySetterService } from 'src/modules/price-discovery/services/price.discovery.setter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class PriceDiscoveryCacheWarmerService {
         private readonly priceDiscoverySetter: PriceDiscoverySetterService,
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         private readonly tokenSetter: TokenSetterService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 

@@ -9,7 +9,7 @@ import {
     AutoRouterComputeService,
     BestSwapRoute,
 } from './auto-router.compute.service';
-import { constantsConfig, elrondConfig } from 'src/config';
+import { constantsConfig, mxConfig } from 'src/config';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { AutoRouterArgs } from '../models/auto-router.args';
 import { RouterGetterService } from '../../router/services/router.getter.service';
@@ -366,7 +366,7 @@ export class AutoRouterService {
             await this.wrapService.getWrappedEgldTokenID();
 
         return tokensIDs.map((t) => {
-            return elrondConfig.EGLDIdentifier === t ? wrappedEgldTokenID : t;
+            return mxConfig.EGLDIdentifier === t ? wrappedEgldTokenID : t;
         });
     }
 

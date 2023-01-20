@@ -1,19 +1,19 @@
-import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs/out';
+import { Address, Interaction, TokenPayment } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
 
 @Injectable()
 export class PriceDiscoveryTransactionService {
     constructor(
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly wrappingService: WrapService,
         private readonly wrappingTransactions: TransactionsWrapService,
     ) {}
@@ -23,9 +23,10 @@ export class PriceDiscoveryTransactionService {
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel[]> {
-        const wrappedTokenID = await this.wrappingService.getWrappedEgldTokenID();
+        const wrappedTokenID =
+            await this.wrappingService.getWrappedEgldTokenID();
         const transactions: TransactionModel[] = [];
-        if (inputToken.tokenID === elrondConfig.EGLDIdentifier) {
+        if (inputToken.tokenID === mxConfig.EGLDIdentifier) {
             transactions.push(
                 await this.wrappingTransactions.wrapEgld(
                     sender,
@@ -59,7 +60,7 @@ export class PriceDiscoveryTransactionService {
             inputToken,
         );
 
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
 
@@ -72,7 +73,7 @@ export class PriceDiscoveryTransactionService {
                 ),
             )
             .withGasLimit(gasConfig.priceDiscovery.deposit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -85,15 +86,16 @@ export class PriceDiscoveryTransactionService {
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
 
-        const [
-            currentPhase,
-            acceptedTokenID,
-            wrappedTokenID,
-        ] = await Promise.all([
-            this.priceDiscoveryGetter.getCurrentPhase(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getAcceptedTokenID(priceDiscoveryAddress),
-            this.wrappingService.getWrappedEgldTokenID(),
-        ]);
+        const [currentPhase, acceptedTokenID, wrappedTokenID] =
+            await Promise.all([
+                this.priceDiscoveryGetter.getCurrentPhase(
+                    priceDiscoveryAddress,
+                ),
+                this.priceDiscoveryGetter.getAcceptedTokenID(
+                    priceDiscoveryAddress,
+                ),
+                this.wrappingService.getWrappedEgldTokenID(),
+            ]);
 
         transactions.push(
             await this.genericRedeemInteraction(
@@ -130,7 +132,7 @@ export class PriceDiscoveryTransactionService {
     ): Promise<TransactionModel> {
         await this.validateRedeemInputTokens(priceDiscoveryAddress, inputToken);
 
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
 
@@ -154,7 +156,7 @@ export class PriceDiscoveryTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.priceDiscovery.withdraw)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

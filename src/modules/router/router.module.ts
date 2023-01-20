@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { RouterService } from './services/router.service';
 import { RouterResolver } from './router.resolver';
-import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { AbiRouterService } from './services/abi.router.service';
 import { TransactionRouterService } from './services/transactions.router.service';
 import { CachingModule } from '../../services/caching/cache.module';
@@ -21,7 +21,7 @@ import { SimpleLockModule } from '../simple-lock/simple.lock.module';
 @Module({
     imports: [
         CommonAppModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         PairModule,
         SimpleLockModule,

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { TokenModule } from '../tokens/token.module';
 import { MetabondingResolver } from './metabonding.resolver';
 import { MetabondingAbiService } from './services/metabonding.abi.service';
@@ -10,7 +10,7 @@ import { MetabondingSetterService } from './services/metabonding.setter.service'
 import { MetabondingTransactionService } from './services/metabonding.transactions.service';
 
 @Module({
-    imports: [ElrondCommunicationModule, CachingModule, TokenModule],
+    imports: [MXCommunicationModule, CachingModule, TokenModule],
     providers: [
         MetabondingService,
         MetabondingAbiService,

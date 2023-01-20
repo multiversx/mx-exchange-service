@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
 import { TokenModule } from '../tokens/token.module';
 import { WrappingModule } from '../wrapping/wrap.module';
@@ -20,7 +20,7 @@ import { FarmModule } from '../farm/farm.module';
 @Module({
     imports: [
         CommonAppModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         ContextModule,
         CachingModule,
         PairModule,

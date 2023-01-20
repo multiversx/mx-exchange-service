@@ -3,7 +3,7 @@ import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
-import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { UserNftTokens } from '../models/nfttokens.union';
 import { UserMetaEsdtComputeService } from './metaEsdt.compute.service';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
@@ -76,7 +76,7 @@ enum NftTokenType {
 export class UserMetaEsdtService {
     constructor(
         private userComputeService: UserMetaEsdtComputeService,
-        private apiService: ElrondApiService,
+        private apiService: MXApiService,
         private cachingService: CachingService,
         private proxyPairGetter: ProxyPairGetterService,
         private proxyFarmGetter: ProxyFarmGetterService,

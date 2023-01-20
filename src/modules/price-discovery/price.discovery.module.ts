@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
 import { TokenModule } from '../tokens/token.module';
 import { WrappingModule } from '../wrapping/wrap.module';
@@ -14,7 +14,7 @@ import { PriceDiscoveryTransactionService } from './services/price.discovery.tra
 
 @Module({
     imports: [
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         PairModule,
         WrappingModule,

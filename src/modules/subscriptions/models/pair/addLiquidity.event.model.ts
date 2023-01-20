@@ -1,4 +1,4 @@
-import { AddLiquidityEvent } from '@elrondnetwork/erdjs-dex';
+import { AddLiquidityEvent } from '@multiversx/sdk-exchange';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';

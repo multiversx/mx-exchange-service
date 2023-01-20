@@ -3,7 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { Logger } from 'winston';
 import { FarmMigrationConfig } from '../../models/farm.model';
 import { FarmGetterService } from '../../base-module/services/farm.getter.service';
@@ -19,7 +19,7 @@ export class FarmGetterServiceV1_3 extends FarmGetterService {
         @Inject(forwardRef(() => FarmComputeServiceV1_3))
         protected readonly computeService: FarmComputeServiceV1_3,
         protected readonly tokenGetter: TokenGetterService,
-        protected readonly apiService: ElrondApiService,
+        protected readonly apiService: MXApiService,
     ) {
         super(
             cachingService,

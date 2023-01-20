@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { PairModule } from 'src/modules/pair/pair.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { FarmCustomAbiService } from './services/farm.custom.abi.service';
 import { FarmCustomGetterService } from './services/farm.custom.getter.service';
 import { FarmCustomResolver } from './farm.custom.resolver';
@@ -15,7 +15,7 @@ import { ContextModule } from 'src/services/context/context.module';
 @Module({
     imports: [
         CachingModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         ContextModule,
         TokenModule,
         PairModule,

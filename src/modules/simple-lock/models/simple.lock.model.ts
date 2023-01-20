@@ -1,7 +1,7 @@
 import {
     EnumType,
     EnumVariantDefinition,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/enum';
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/enum';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmTokenAttributesUnion } from 'src/modules/farm/models/farmTokenAttributes.model';

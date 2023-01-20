@@ -3,8 +3,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import AWS, { TimestreamWrite } from 'aws-sdk';
 import { HttpsAgent } from 'agentkeepalive';
-import { awsConfig } from 'src/config';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class AWSTimestreamWriteService implements AnalyticsWriteInterface {
@@ -12,9 +12,14 @@ export class AWSTimestreamWriteService implements AnalyticsWriteInterface {
     private readonly DatabaseName: string;
 
     constructor(
+        private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        AWS.config.update({ region: awsConfig.region });
+        if (!this.apiConfig.isAWSTimestreamWrite()) {
+            return;
+        }
+
+        AWS.config.update({ region: this.apiConfig.getAWSRegion() });
         const httpsAgent = new HttpsAgent({
             maxSockets: 5000,
         });
@@ -25,7 +30,7 @@ export class AWSTimestreamWriteService implements AnalyticsWriteInterface {
                 agent: httpsAgent,
             },
         });
-        this.DatabaseName = awsConfig.timestream.databaseName;
+        this.DatabaseName = this.apiConfig.getAWSDatabaseName();
     }
 
     async describeTable({ TableName }): Promise<TimestreamWrite.Table> {
@@ -52,9 +57,9 @@ export class AWSTimestreamWriteService implements AnalyticsWriteInterface {
                 TableName,
                 RetentionProperties: {
                     MemoryStoreRetentionPeriodInHours:
-                        awsConfig.timestream.MemoryStoreRetentionPeriodInHours,
+                        this.apiConfig.getAWSMemoryStoreRetention(),
                     MagneticStoreRetentionPeriodInDays:
-                        awsConfig.timestream.MagneticStoreRetentionPeriodInDays,
+                        this.apiConfig.getAWSMagneticStoreRetention(),
                 },
             };
             await this.writeClient.createTable(params).promise();
@@ -67,10 +72,10 @@ export class AWSTimestreamWriteService implements AnalyticsWriteInterface {
     createRecords({ data, Time }): TimestreamWrite.Records {
         const MeasureValueType = 'DOUBLE';
         const Records: TimestreamWrite.Records = [];
-        Object.keys(data).forEach(series => {
+        Object.keys(data).forEach((series) => {
             const Dimensions = [{ Name: 'series', Value: series }];
 
-            Object.keys(data[series]).forEach(MeasureName => {
+            Object.keys(data[series]).forEach((MeasureName) => {
                 const MeasureValue = data[series][MeasureName].toString();
                 Records.push({
                     Dimensions,
@@ -88,7 +93,10 @@ export class AWSTimestreamWriteService implements AnalyticsWriteInterface {
     }
 
     async writeRecords({ TableName, Records }): Promise<void> {
-        let request: AWS.Request<TimestreamWrite.Types.WriteRecordsResponse, AWS.AWSError>;
+        let request: AWS.Request<
+            TimestreamWrite.Types.WriteRecordsResponse,
+            AWS.AWSError
+        >;
         try {
             const params: TimestreamWrite.WriteRecordsRequest = {
                 DatabaseName: this.DatabaseName,
@@ -109,6 +117,10 @@ export class AWSTimestreamWriteService implements AnalyticsWriteInterface {
     }
 
     async ingest({ TableName, data, Time }) {
+        if (!this.apiConfig.isAWSTimestreamWrite()) {
+            return;
+        }
+
         if (!(await this.describeTable({ TableName }))) {
             await this.createTable({ TableName });
         }
@@ -121,6 +133,10 @@ export class AWSTimestreamWriteService implements AnalyticsWriteInterface {
         TableName: string,
         Records: TimestreamWrite.Records,
     ) {
+        if (!this.apiConfig.isAWSTimestreamWrite()) {
+            return;
+        }
+
         if (!(await this.describeTable({ TableName }))) {
             await this.createTable({ TableName });
         }

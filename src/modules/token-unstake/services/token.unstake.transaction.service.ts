@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { TokenUnstakeGetterService } from './token.unstake.getter.service';
 
 @Injectable()
 export class TokenUnstakeTransactionService {
     constructor(
         private readonly tokenUnstakeGetter: TokenUnstakeGetterService,
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
     ) {}
 
     async claimUnlockedTokens(sender: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getTokenUnstakeContract();
+        const contract = await this.mxProxy.getTokenUnstakeContract();
 
         const unstakedTokens =
             await this.tokenUnstakeGetter.getUnlockedTokensForUser(sender);
@@ -27,17 +27,17 @@ export class TokenUnstakeTransactionService {
 
         return contract.methodsExplicit
             .claimUnlockedTokens()
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .withGasLimit(gasLimit.integerValue().toNumber())
             .buildTransaction()
             .toPlainObject();
     }
 
     async cancelUnbond(): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getTokenUnstakeContract();
+        const contract = await this.mxProxy.getTokenUnstakeContract();
         return contract.methodsExplicit
             .cancelUnbond()
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .withGasLimit(gasConfig.tokenUnstake.cancelUnbond)
             .buildTransaction()
             .toPlainObject();

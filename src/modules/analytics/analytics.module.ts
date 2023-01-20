@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
 import { AnalyticsResolver } from './analytics.resolver';
@@ -25,8 +25,8 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
 
 @Module({
     imports: [
-        ElrondCommunicationModule,
         AnalyticsServicesModule,
+        MXCommunicationModule,
         CachingModule,
         ContextModule,
         RouterModule,
@@ -57,4 +57,4 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         AnalyticsComputeService,
     ],
 })
-export class AnalyticsModule { }
+export class AnalyticsModule {}

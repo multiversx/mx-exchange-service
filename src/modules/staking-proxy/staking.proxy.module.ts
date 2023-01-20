@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
@@ -20,7 +20,7 @@ import { StakingProxyResolver } from './staking.proxy.resolver';
         CommonAppModule,
         ContextModule,
         CachingModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         PairModule,
         FarmModule,
         StakingModule,

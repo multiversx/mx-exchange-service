@@ -6,13 +6,13 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-transactions.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { ProxyGetterServiceMock } from '../mocks/proxy.getter.service.mock';
 import { ProxyPairGetterService } from '../services/proxy-pair/proxy-pair.getter.service';
@@ -25,7 +25,7 @@ import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.get
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
-    let elrondProxy: ElrondProxyService;
+    let mxProxy: MXProxyService;
     let pairGetterService: PairGetterService;
 
     const ProxyGetterServiceProvider = {
@@ -68,7 +68,7 @@ describe('TransactionProxyPairService', () => {
             providers: [
                 ApiConfigService,
                 ConfigService,
-                ElrondProxyService,
+                MXProxyService,
                 ProxyGetterServiceProvider,
                 ProxyPairGetterServiceProvider,
                 PairService,
@@ -83,7 +83,7 @@ describe('TransactionProxyPairService', () => {
         service = module.get<TransactionsProxyPairService>(
             TransactionsProxyPairService,
         );
-        elrondProxy = module.get<ElrondProxyService>(ElrondProxyService);
+        mxProxy = module.get<MXProxyService>(MXProxyService);
         pairGetterService = module.get<PairGetterService>(PairGetterService);
     });
 
@@ -94,7 +94,7 @@ describe('TransactionProxyPairService', () => {
     it('should get add liquidity batch transaction EGLD first token', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
-        jest.spyOn(elrondProxy, 'getAddressShardID').mockImplementation(
+        jest.spyOn(mxProxy, 'getAddressShardID').mockImplementation(
             async () => 0,
         );
         jest.spyOn(pairGetterService, 'getFirstTokenID').mockImplementation(
@@ -135,7 +135,7 @@ describe('TransactionProxyPairService', () => {
     it('should get add liquidity batch transaction EGLD second token', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
-        jest.spyOn(elrondProxy, 'getAddressShardID').mockImplementation(
+        jest.spyOn(mxProxy, 'getAddressShardID').mockImplementation(
             async () => 0,
         );
         jest.spyOn(pairGetterService, 'getFirstTokenID').mockImplementation(
