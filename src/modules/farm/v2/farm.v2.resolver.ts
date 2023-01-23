@@ -1,11 +1,12 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { BoostedYieldsFactors, FarmModelV2 } from '../models/farm.v2.model';
 import { FarmGetterServiceV2 } from './services/farm.v2.getter.service';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmServiceV2 } from "./services/farm.v2.service";
 import {
+    ClaimProgress,
     GlobalInfoByWeekModel,
-} from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
+} from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import {
     WeekTimekeepingModel
 } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
@@ -137,6 +138,17 @@ export class FarmResolverV2 extends FarmResolver {
     async energyFactoryAddress(@Parent() parent: FarmModelV2): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.farmGetter.getEnergyFactoryAddress(parent.address),
+        );
+    }
+
+
+    @Query( () => ClaimProgress)
+    async getClaimProgressForUser(
+        @Args('farmAddress') farmAddress: string,
+        @Args('userAddress') userAddress: string,
+    ): Promise<ClaimProgress> {
+        return await this.genericQuery(() =>
+            this.farmGetter.currentClaimProgress('erd1qqqqqqqqqqqqqpgqapxdp9gjxtg60mjwhle3n6h88zch9e7kkp2s8aqhkg', userAddress),
         );
     }
 }
