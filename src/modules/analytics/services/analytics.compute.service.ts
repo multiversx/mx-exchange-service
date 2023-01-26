@@ -13,7 +13,6 @@ import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
-import { AnalyticsGetterService } from './analytics.getter.service';
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
@@ -28,7 +27,7 @@ export class AnalyticsComputeService {
         private readonly pairGetter: PairGetterService,
         private readonly stakingGetter: StakingGetterService,
         private readonly tokenGetter: TokenGetterService,
-        @Inject(forwardRef(() => AnalyticsGetterService))
+        @Inject(forwardRef(() => FeesCollectorGetterService))
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
