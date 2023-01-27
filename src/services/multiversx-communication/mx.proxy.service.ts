@@ -88,6 +88,10 @@ export class MXProxyService {
             type === undefined
                 ? abiConfig.farm[version]
                 : abiConfig.farm[version][type];
+        this.logger.debug(`ABI path: ${abiPath}`);
+        this.logger.debug(`Farm address: ${farmAddress}`);
+        this.logger.debug(`Farm version: ${version}`);
+        this.logger.debug(`Farm type: ${type}`);
         return await this.getSmartContract(farmAddress, abiPath, 'Farm');
     }
 
