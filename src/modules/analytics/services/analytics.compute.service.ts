@@ -27,6 +27,7 @@ export class AnalyticsComputeService {
         private readonly pairGetter: PairGetterService,
         private readonly stakingGetter: StakingGetterService,
         private readonly tokenGetter: TokenGetterService,
+        @Inject(forwardRef(() => FeesCollectorGetterService))
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,

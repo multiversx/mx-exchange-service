@@ -183,7 +183,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
                 new U32Value(new BigNumber(week)),
             ]);
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
+        return response.firstValue.valueOf().toFixed();
     }
 
     protected getContractHandler: (
