@@ -49,6 +49,7 @@ export class NativeAuthGuard implements CanActivate {
                 'X-Native-Auth-Timestamp',
                 Math.round(new Date().getTime() / 1000),
             );
+            req.auth = userInfo;
 
             if (this.impersonateAddress) {
                 const admins = process.env.SECURITY_ADMINS.split(',');
@@ -57,10 +58,9 @@ export class NativeAuthGuard implements CanActivate {
                         'X-Native-Auth-Address',
                         this.impersonateAddress,
                     );
+                    req.auth.address = this.impersonateAddress;
                 }
             }
-
-            req.auth = userInfo;
 
             return true;
         } catch (error: any) {
