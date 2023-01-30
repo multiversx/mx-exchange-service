@@ -3,7 +3,7 @@ import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { AbiLockedAssetService } from '../services/abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from '../mocks/abi.locked.asset.service.mock';
 import { LockedAssetService } from '../services/locked-asset.service';
@@ -30,11 +30,7 @@ describe('LockedAssetService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                CommonAppModule,
-                CachingModule,
-                ElrondCommunicationModule,
-            ],
+            imports: [CommonAppModule, CachingModule, MXCommunicationModule],
             providers: [
                 ContextGetterServiceProvider,
                 TokenGetterServiceProvider,

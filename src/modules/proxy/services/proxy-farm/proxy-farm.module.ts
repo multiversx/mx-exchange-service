@@ -1,5 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { ElrondCommunicationModule } from '../../../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../../../services/multiversx-communication/mx.communication.module';
 import { ContextModule } from '../../../../services/context/context.module';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
 import { TransactionsProxyFarmService } from './proxy-farm-transactions.service';
@@ -13,7 +13,7 @@ import { FarmModule } from 'src/modules/farm/farm.module';
 
 @Module({
     imports: [
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         ContextModule,
         ProxyPairModule,

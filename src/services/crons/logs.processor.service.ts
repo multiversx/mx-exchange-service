@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
@@ -19,9 +19,10 @@ import {
     EsdtLocalBurnEvent,
     ExitFarmEventV1_2,
     ExitFarmEventV1_3,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class LogsProcessorService {
@@ -31,9 +32,10 @@ export class LogsProcessorService {
 
     constructor(
         private readonly cachingService: CachingService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly elasticService: ElasticService,
         private readonly awsWrite: AWSTimestreamWriteService,
+        private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -228,8 +230,15 @@ export class LogsProcessorService {
     private async pushAWSRecords(
         Records: TimestreamWrite.Records,
     ): Promise<number> {
+        if (!this.apiConfig.isAWSTimestreamWrite()) {
+            return 0;
+        }
+
         try {
-            await this.awsWrite.multiRecordsIngest('tradingInfo', Records);
+            await this.awsWrite.multiRecordsIngest(
+                this.apiConfig.getAWSTableName(),
+                Records,
+            );
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(

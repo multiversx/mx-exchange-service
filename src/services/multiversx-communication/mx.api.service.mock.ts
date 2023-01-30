@@ -2,7 +2,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 
-export class ElrondApiServiceMock {
+export class MXApiServiceMock {
     async getCurrentEpoch(): Promise<number> {
         return 1;
     }

@@ -4,7 +4,7 @@ import { PairResolver } from './pair.resolver';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairTransactionService } from './services/pair.transactions.service';
 import { ContextModule } from '../../services/context/context.module';
-import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { CachingModule } from '../../services/caching/cache.module';
 import { PairGetterService } from './services/pair.getter.service';
@@ -18,7 +18,7 @@ import { CommonAppModule } from 'src/common.app.module';
 @Module({
     imports: [
         CommonAppModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         ContextModule,
         WrappingModule,
         CachingModule,

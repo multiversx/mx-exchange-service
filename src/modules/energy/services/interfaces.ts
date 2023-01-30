@@ -1,4 +1,4 @@
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyType } from '@multiversx/sdk-exchange';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
 import { LockOption } from '../models/simple.lock.energy.model';
 

@@ -1,13 +1,13 @@
 import { TransactionModel } from '../../../../models/transaction.model';
 import { Inject } from '@nestjs/common';
-import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
+import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
 import {
     Address,
     BigUIntValue,
     TokenPayment,
     TypedValue,
-} from '@elrondnetwork/erdjs';
-import { elrondConfig, gasConfig } from '../../../../config';
+} from '@multiversx/sdk-core';
+import { mxConfig, gasConfig } from '../../../../config';
 import { BigNumber } from 'bignumber.js';
 import {
     ClaimRewardsArgs,
@@ -15,7 +15,7 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
 } from '../../models/farm.args';
-import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { FarmGetterService } from './farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -26,7 +26,7 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 
 export abstract class TransactionsFarmService {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         protected readonly farmGetterService: FarmGetterService,
         protected readonly pairService: PairService,
         protected readonly pairGetterService: PairGetterService,
@@ -118,25 +118,21 @@ export abstract class TransactionsFarmService {
     }
 
     async endProduceRewards(farmAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .end_produce_rewards()
             .withGasLimit(gasConfig.farms.admin.end_produce_rewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async startProduceRewards(farmAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .start_produce_rewards()
             .withGasLimit(gasConfig.farms.admin.start_produce_rewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -145,13 +141,11 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         amount: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .setPerBlockRewardAmount([new BigUIntValue(new BigNumber(amount))])
             .withGasLimit(gasConfig.farms.admin.setPerBlockRewardAmount)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -160,13 +154,11 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         percent: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .set_penalty_percent([new BigUIntValue(new BigNumber(percent))])
             .withGasLimit(gasConfig.farms.admin.set_penalty_percent)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -175,15 +167,13 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         epochs: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .set_minimum_farming_epochs([
                 new BigUIntValue(new BigNumber(epochs)),
             ])
             .withGasLimit(gasConfig.farms.admin.set_minimum_farming_epochs)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -192,15 +182,13 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .set_transfer_exec_gas_limit([
                 new BigUIntValue(new BigNumber(gasLimit)),
             ])
             .withGasLimit(gasConfig.farms.admin.set_transfer_exec_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -209,37 +197,31 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .set_burn_gas_limit([new BigUIntValue(new BigNumber(gasLimit))])
             .withGasLimit(gasConfig.farms.admin.set_burn_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async pause(farmAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .pause()
             .withGasLimit(gasConfig.farms.admin.pause)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async resume(farmAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .resume()
             .withGasLimit(gasConfig.farms.admin.resume)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -250,9 +232,7 @@ export abstract class TransactionsFarmService {
         tokenTicker: string,
         decimals: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const transactionArgs: TypedValue[] = [
             BytesValue.fromUTF8(tokenName),
             BytesValue.fromUTF8(tokenTicker),
@@ -261,7 +241,7 @@ export abstract class TransactionsFarmService {
         return contract.methodsExplicit
             .registerFarmToken(transactionArgs)
             .withGasLimit(gasConfig.farms.admin.registerFarmToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -269,13 +249,11 @@ export abstract class TransactionsFarmService {
     async setLocalRolesFarmToken(
         farmAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract.methodsExplicit
             .setLocalRolesFarmToken()
             .withGasLimit(gasConfig.farms.admin.setLocalRolesFarmToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -285,9 +263,7 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const mappedPayments = payments.map((tokenPayment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
@@ -305,7 +281,7 @@ export abstract class TransactionsFarmService {
                 gasConfig.farms.admin.mergeFarmTokensMultiplier *
                     payments.length,
             )
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

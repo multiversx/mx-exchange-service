@@ -8,6 +8,7 @@ import { AnalyticsGetterService } from 'src/modules/analytics/services/analytics
 import { awsOneYear, delay, oneMinute } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
@@ -15,6 +16,7 @@ export class AnalyticsCacheWarmerService {
         private readonly analyticsGetterService: AnalyticsGetterService,
         private readonly analyticsCompute: AnalyticsComputeService,
         private readonly cachingService: CachingService,
+        private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -58,6 +60,10 @@ export class AnalyticsCacheWarmerService {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async cacheBurnedTokens(): Promise<void> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return;
+        }
+
         const feeBurned = await this.analyticsCompute.computeTokenBurned(
             constantsConfig.MEX_TOKEN_ID,
             awsOneYear(),

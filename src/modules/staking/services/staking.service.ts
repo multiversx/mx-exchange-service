@@ -1,7 +1,7 @@
 import {
     StakingFarmTokenAttributes,
     UnbondFarmTokenAttributes,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -9,7 +9,7 @@ import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { Logger } from 'winston';
 import { StakingModel, StakingRewardsModel } from '../models/staking.model';
 import {
@@ -27,10 +27,10 @@ export class StakingService {
         private readonly stakingGetterService: StakingGetterService,
         private readonly stakingComputeService: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) { }
+    ) {}
 
     async getFarmsStaking(): Promise<StakingModel[]> {
         const farmsStakingAddresses =
@@ -65,20 +65,22 @@ export class StakingService {
     async decodeUnboundTokenAttributes(
         args: DecodeAttributesArgs,
     ): Promise<UnbondTokenAttributesModel[]> {
-        return Promise.all(args.batchAttributes.map(async arg => {
-            const unboundFarmTokenAttributes =
-                UnbondFarmTokenAttributes.fromAttributes(arg.attributes);
-            const remainingEpochs = await this.getUnbondigRemaingEpochs(
-                unboundFarmTokenAttributes.unlockEpoch,
-            );
+        return Promise.all(
+            args.batchAttributes.map(async (arg) => {
+                const unboundFarmTokenAttributes =
+                    UnbondFarmTokenAttributes.fromAttributes(arg.attributes);
+                const remainingEpochs = await this.getUnbondigRemaingEpochs(
+                    unboundFarmTokenAttributes.unlockEpoch,
+                );
 
-            return new UnbondTokenAttributesModel({
-                ...unboundFarmTokenAttributes.toJSON(),
-                remainingEpochs,
-                attributes: arg.attributes,
-                identifier: arg.identifier,
-            });
-        }));
+                return new UnbondTokenAttributesModel({
+                    ...unboundFarmTokenAttributes.toJSON(),
+                    remainingEpochs,
+                    attributes: arg.attributes,
+                    identifier: arg.identifier,
+                });
+            }),
+        );
     }
 
     async getBatchRewardsForPosition(

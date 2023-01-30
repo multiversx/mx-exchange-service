@@ -1,5 +1,5 @@
 {
-    "elrond": {
+    "multiversx": {
         "chainID": "T",
         "EGLDIdentifier": "EGLD",
         "EGLDDecimals": 18,
@@ -543,17 +543,5 @@
             "MAX_SLIPPAGE": 0.05
         },
         "MIN_SWAP_AMOUNT": 0.05
-    },
-    "security": {
-        "admins": []
-    },
-    "aws": {
-        "region": "us-east-1",
-        "timestream": {
-            "databaseName": "devnet-data-timestream",
-            "tableName": "tradingInfo",
-            "MemoryStoreRetentionPeriodInHours": 768,
-            "MagneticStoreRetentionPeriodInDays": 73000
-        }
     }
 }

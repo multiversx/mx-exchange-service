@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { elrondConfig } from 'src/config';
+import { mxConfig } from 'src/config';
 import { BigNumber } from 'bignumber.js';
 import { LiquidityPosition } from '../models/pair.model';
 import {
@@ -28,7 +28,7 @@ export class PairService {
         private readonly wrapService: WrapService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) { }
+    ) {}
 
     async getAmountOut(
         pairAddress: string,
@@ -50,9 +50,7 @@ export class PairService {
         ]);
 
         const tokenIn =
-            tokenInID === elrondConfig.EGLDIdentifier
-                ? wrappedTokenID
-                : tokenInID;
+            tokenInID === mxConfig.EGLDIdentifier ? wrappedTokenID : tokenInID;
 
         switch (tokenIn) {
             case firstTokenID:
@@ -94,7 +92,7 @@ export class PairService {
         ]);
 
         const tokenOut =
-            tokenOutID === elrondConfig.EGLDIdentifier
+            tokenOutID === mxConfig.EGLDIdentifier
                 ? wrappedTokenID
                 : tokenOutID;
 
@@ -123,22 +121,16 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<BigNumber> {
-        const [
-            wrappedTokenID,
-            firstTokenID,
-            secondTokenID,
-            pairInfo,
-        ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
-            this.pairGetterService.getPairInfoMetadata(pairAddress),
-        ]);
+        const [wrappedTokenID, firstTokenID, secondTokenID, pairInfo] =
+            await Promise.all([
+                this.wrapService.getWrappedEgldTokenID(),
+                this.pairGetterService.getFirstTokenID(pairAddress),
+                this.pairGetterService.getSecondTokenID(pairAddress),
+                this.pairGetterService.getPairInfoMetadata(pairAddress),
+            ]);
 
         const tokenIn =
-            tokenInID === elrondConfig.EGLDIdentifier
-                ? wrappedTokenID
-                : tokenInID;
+            tokenInID === mxConfig.EGLDIdentifier ? wrappedTokenID : tokenInID;
 
         switch (tokenIn) {
             case firstTokenID:
@@ -215,7 +207,7 @@ export class PairService {
             return cachedValue;
         }
         const pairsAddress = await this.routerGetter.getAllPairsAddress();
-        const promises = pairsAddress.map(async pairAddress =>
+        const promises = pairsAddress.map(async (pairAddress) =>
             this.pairGetterService.getLpTokenID(pairAddress),
         );
         const lpTokenIDs = await Promise.all(promises);
@@ -263,4 +255,4 @@ export class PairService {
         )
             throw new Error('You are not the owner.');
     }
-};
+}

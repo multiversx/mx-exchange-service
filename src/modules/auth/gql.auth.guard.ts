@@ -22,12 +22,23 @@ export class GqlAuthGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const ctx = GqlExecutionContext.create(context);
         const { req } = ctx.getContext();
+        const headers = req.headers;
         this.logger.info('request header', [
-            { requestIP: req.ip, request: req.headers },
+            {
+                requestIP: req.ip, headers: {
+                    'host': headers['host'],
+                    'x-request-id': headers['x-request-id'],
+                    'x-real-ip': headers['x-real-ip'],
+                    'x-forwarded-for': headers['x-forwarded-for'],
+                    'x-forwarded-host': headers['x-forwarded-host'],
+                    'x-forwarded-port': headers['x-forwarded-port'],
+                    'user-agent': headers['user-agent'],
+                }
+            },
         ]);
 
-        if (req.headers !== undefined) {
-            this.impersonateAddress = req.headers['impersonate-address'];
+        if (headers !== undefined) {
+            this.impersonateAddress = headers['impersonate-address'];
         }
 
         const authorization: string = req.headers['authorization'];

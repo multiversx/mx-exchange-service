@@ -19,15 +19,15 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
+import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TransactionRouterService } from 'src/modules/router/services/transactions.router.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { RouterService } from 'src/modules/router/services/router.service';
 import { AutoRouteModel } from '../models/auto-route.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
@@ -59,9 +59,9 @@ describe('AutoRouterService', () => {
         useClass: WrapServiceMock,
     };
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     const RemoteConfigGetterServiceProvider = {
@@ -91,7 +91,7 @@ describe('AutoRouterService', () => {
                 RouterService,
                 RouterGetterServiceProvider,
                 ContextGetterServiceProvider,
-                ElrondProxyServiceProvider,
+                MXProxyServiceProvider,
                 TokenGetterServiceProvider,
                 PairGetterServiceProvider,
                 PairService,

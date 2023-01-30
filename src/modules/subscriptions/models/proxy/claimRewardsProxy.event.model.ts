@@ -1,4 +1,4 @@
-import { ClaimRewardsProxyEvent } from '@elrondnetwork/erdjs-dex';
+import { ClaimRewardsProxyEvent } from '@multiversx/sdk-exchange';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { GenericToken } from 'src/models/genericToken.model';
 import { RewardsProxyEventModel } from './rewardsProxy.event.model';

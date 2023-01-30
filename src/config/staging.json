@@ -1,5 +1,5 @@
 {
-    "elrond": {
+    "multiversx": {
         "chainID": "1"
     },
     "scAddress": {
@@ -83,14 +83,5 @@
         "MEX_TOKEN_ID": "MEX-455c57",
         "USDC_TOKEN_ID": "USDC-c76f1f",
         "MAINTENANCE": false
-    },
-    "aws": {
-        "region": "eu-central-1",
-        "timestream": {
-            "databaseName": "staging-maiar-exchange-timestream",
-            "tableName": "tradingInfo",
-            "MemoryStoreRetentionPeriodInHours": 768,
-            "MagneticStoreRetentionPeriodInDays": 73000
-        }
     }
 }
