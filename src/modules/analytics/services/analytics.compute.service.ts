@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { constantsConfig, scAddress } from 'src/config';
 import {
@@ -27,6 +27,7 @@ export class AnalyticsComputeService {
         private readonly pairGetter: PairGetterService,
         private readonly stakingGetter: StakingGetterService,
         private readonly tokenGetter: TokenGetterService,
+        @Inject(forwardRef(() => FeesCollectorGetterService))
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
