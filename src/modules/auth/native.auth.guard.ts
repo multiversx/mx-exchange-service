@@ -57,6 +57,7 @@ export class NativeAuthGuard implements CanActivate {
                         'X-Native-Auth-Address',
                         this.impersonateAddress,
                     );
+                    req.auth.address = this.impersonateAddress;
                 }
             }
 
