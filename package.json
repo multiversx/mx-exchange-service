@@ -27,7 +27,7 @@
         "@golevelup/nestjs-rabbitmq": "^2.4.0",
         "@elrondnetwork/erdjs-walletcore": "^2.1.0",
         "@elrondnetwork/native-auth-client": "^0.1.0",
-        "@multiversx/sdk-data-api-client": "^0.5.7",
+        "@multiversx/sdk-data-api-client": "^0.5.8",
         "@multiversx/sdk-core": "^11.2.0",
         "@multiversx/sdk-exchange": "^0.2.16",
         "@multiversx/sdk-native-auth-server": "^0.2.3",
