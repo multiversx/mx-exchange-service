@@ -213,8 +213,9 @@ export class MXProxyService {
         contractAbiPath: string,
         contractInterface: string,
     ): Promise<SmartContract> {
+        const key = `${contractInterface}.${contractAddress}`;
         return (
-            MXProxyService.smartContracts[contractAddress] ||
+            MXProxyService.smartContracts[key] ||
             this.createSmartContract(
                 contractAddress,
                 contractAbiPath,
@@ -237,7 +238,8 @@ export class MXProxyService {
             address: Address.fromString(contractAddress),
             abi: new SmartContractAbi(abiRegistry, [contractInterface]),
         });
-        MXProxyService.smartContracts[contractAddress] = newSC;
+        const key = `${contractInterface}.${contractAddress}`;
+        MXProxyService.smartContracts[key] = newSC;
         return newSC;
     }
 }
