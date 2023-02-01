@@ -6,8 +6,9 @@ import { WrapModel } from './models/wrapping.model';
 import { WrapService } from './wrap.service';
 import { TransactionsWrapService } from './transactions-wrap.service';
 import { ApolloError } from 'apollo-server-express';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { User } from 'src/helpers/userDecorator';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 
 @Resolver(() => WrapModel)
 export class WrapResolver {
@@ -32,21 +33,21 @@ export class WrapResolver {
         return this.wrapService.getWrappingInfo();
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async wrapEgld(
         @Args('amount') amount: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.transactionService.wrapEgld(user.publicKey, amount);
+        return this.transactionService.wrapEgld(user.address, amount);
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unwrapEgld(
         @Args('amount') amount: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.transactionService.unwrapEgld(user.publicKey, amount);
+        return this.transactionService.unwrapEgld(user.address, amount);
     }
 }

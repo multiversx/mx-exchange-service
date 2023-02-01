@@ -1,10 +1,11 @@
 import { UseGuards } from '@nestjs/common';
 import { Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { scAddress } from 'src/config';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import {
     TokenUnstakeModel,
     UnstakePairModel,
@@ -63,25 +64,27 @@ export class TokenUnstakeResolver extends GenericResolver {
         });
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [UnstakePairModel])
     async getUnlockedTokensForUser(
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<UnstakePairModel[]> {
         return await this.genericQuery(() =>
-            this.tokenUnstakeGetter.getUnlockedTokensForUser(user.publicKey),
+            this.tokenUnstakeGetter.getUnlockedTokensForUser(user.address),
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
-    async claimUnlockedTokens(@User() user: any): Promise<TransactionModel> {
+    async claimUnlockedTokens(
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.tokenUnstakeTransactions.claimUnlockedTokens(user.publicKey),
+            this.tokenUnstakeTransactions.claimUnlockedTokens(user.address),
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async cancelUnbond(): Promise<TransactionModel> {
         return await this.genericQuery(() =>

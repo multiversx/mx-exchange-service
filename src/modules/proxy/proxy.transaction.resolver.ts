@@ -17,8 +17,9 @@ import { EnterFarmProxyValidationPipe } from './validators/enter.farm.proxy.valo
 import { WrappedFarmValidationPipe } from './validators/wrapped.farm.token.validator';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { User } from 'src/helpers/userDecorator';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { LiquidityTokensValidationPipe } from './validators/add.liquidity.input.validator';
 import { ApolloError } from 'apollo-server-express';
@@ -33,15 +34,15 @@ export class ProxyTransactionResolver {
         private readonly transactionsProxyFarmService: TransactionsProxyFarmService,
     ) {}
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async addLiquidityProxyBatch(
         @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
         try {
             return await this.transactionsProxyPairService.addLiquidityProxyBatch(
-                user.publicKey,
+                user.address,
                 scAddress.proxyDexAddress.v2,
                 args,
             );
@@ -50,15 +51,15 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async addLiquidityProxy(
         @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.transactionsProxyPairService.addLiquidityProxy(
-                user.publicKey,
+                user.address,
                 scAddress.proxyDexAddress.v2,
                 args,
             );
@@ -67,31 +68,31 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async removeLiquidityProxy(
         @Args(WrappedLpValidationPipe) args: RemoveLiquidityProxyArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.wrappedLpTokenID,
         );
         return await this.transactionsProxyPairService.removeLiquidityProxy(
-            user.publicKey,
+            user.address,
             proxyAddress,
             args,
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async enterFarmProxy(
         @Args(EnterFarmProxyValidationPipe) args: EnterFarmProxyArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.transactionsProxyFarmService.enterFarmProxy(
-                user.publicKey,
+                user.address,
                 scAddress.proxyDexAddress.v2,
                 args,
             );
@@ -100,39 +101,39 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async exitFarmProxy(
         @Args(WrappedFarmValidationPipe) args: ExitFarmProxyArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.wrappedFarmTokenID,
         );
         return await this.transactionsProxyFarmService.exitFarmProxy(
-            user.publicKey,
+            user.address,
             proxyAddress,
             args,
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimFarmRewardsProxy(
         @Args(WrappedFarmValidationPipe) args: ClaimFarmRewardsProxyArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.wrappedFarmTokenID,
         );
         return await this.transactionsProxyFarmService.claimFarmRewardsProxy(
-            user.publicKey,
+            user.address,
             proxyAddress,
             args,
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async mergeWrappedLpTokens(
         @Args(
@@ -141,14 +142,14 @@ export class ProxyTransactionResolver {
             MergeWrappedTokenValidationPipe,
         )
         tokens: InputTokenModel[],
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             const proxyAddress = await this.proxyService.getProxyAddressByToken(
                 tokens[0].tokenID,
             );
             return await this.transactionsProxyPairService.mergeWrappedLPTokens(
-                user.publicKey,
+                user.address,
                 proxyAddress,
                 tokens,
             );
@@ -157,7 +158,7 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async mergeWrappedFarmTokens(
         @Args('farmAddress') farmAddress: string,
@@ -167,14 +168,14 @@ export class ProxyTransactionResolver {
             MergeWrappedTokenValidationPipe,
         )
         tokens: InputTokenModel[],
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             const proxyAddress = await this.proxyService.getProxyAddressByToken(
                 tokens[0].tokenID,
             );
             return await this.transactionsProxyFarmService.mergeWrappedFarmTokens(
-                user.publicKey,
+                user.address,
                 proxyAddress,
                 farmAddress,
                 tokens,
@@ -184,33 +185,33 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async compoundRewardsProxy(
         @Args(WrappedFarmValidationPipe) args: CompoundRewardsProxyArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.tokenID,
         );
         return await this.transactionsProxyFarmService.compoundRewardsProxy(
-            user.publicKey,
+            user.address,
             proxyAddress,
             args,
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async migrateToNewFarmProxy(
         @Args(WrappedFarmValidationPipe) args: ExitFarmProxyArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.wrappedFarmTokenID,
         );
         return await this.transactionsProxyFarmService.migrateToNewFarmProxy(
-            user.publicKey,
+            user.address,
             proxyAddress,
             args,
         );
