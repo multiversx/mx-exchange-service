@@ -2,30 +2,34 @@ import { Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import {
     FeesCollectorModel,
     FeesCollectorTransactionModel,
-    UserEntryFeesCollectorModel
+    UserEntryFeesCollectorModel,
 } from './models/fees-collector.model';
 import { FeesCollectorService } from './services/fees-collector.service';
-import { User } from '../../helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import { scAddress } from '../../config';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
+import { WeeklyRewardsSplittingGetterService } from '../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import {
-    WeeklyRewardsSplittingGetterService
-} from '../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import {
-    GlobalInfoByWeekModel, UserInfoByWeekModel,
+    GlobalInfoByWeekModel,
+    UserInfoByWeekModel,
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { Mixin } from 'ts-mixer';
 import {
-    GlobalInfoByWeekSubResolver, UserInfoByWeekSubResolver
+    GlobalInfoByWeekSubResolver,
+    UserInfoByWeekSubResolver,
 } from '../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.resolver';
 import { TransactionModel } from '../../models/transaction.model';
 import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
 
 @Resolver(() => FeesCollectorModel)
-export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWeekSubResolver) {
+export class FeesCollectorResolver extends Mixin(
+    GenericResolver,
+    GlobalInfoByWeekSubResolver,
+) {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
@@ -35,14 +39,26 @@ export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWe
     }
 
     @ResolveField(() => [GlobalInfoByWeekModel])
-    async undistributedRewards(@Parent() parent: FeesCollectorModel): Promise<GlobalInfoByWeekModel[]> {
-        return this.feesCollectorService.getWeeklyRewardsSplit(parent.address, parent.startWeek, parent.endWeek);
+    async undistributedRewards(
+        @Parent() parent: FeesCollectorModel,
+    ): Promise<GlobalInfoByWeekModel[]> {
+        return this.feesCollectorService.getWeeklyRewardsSplit(
+            parent.address,
+            parent.startWeek,
+            parent.endWeek,
+        );
     }
 
     @ResolveField(() => [EsdtTokenPayment])
-    async accumulatedFees(@Parent() parent: FeesCollectorModel): Promise<EsdtTokenPayment[]> {
+    async accumulatedFees(
+        @Parent() parent: FeesCollectorModel,
+    ): Promise<EsdtTokenPayment[]> {
         return await this.genericFieldResolver(() =>
-            this.feesCollectorService.getAccumulatedFees(parent.address, parent.time.currentWeek, parent.allTokens),
+            this.feesCollectorService.getAccumulatedFees(
+                parent.address,
+                parent.time.currentWeek,
+                parent.allTokens,
+            ),
         );
     }
 
@@ -54,7 +70,9 @@ export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWe
     }
 
     @ResolveField()
-    async lockedTokensPerBlock(@Parent() parent: FeesCollectorModel): Promise<string> {
+    async lockedTokensPerBlock(
+        @Parent() parent: FeesCollectorModel,
+    ): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.feesCollectorGetter.getLockedTokensPerBlock(parent.address),
         );
@@ -68,9 +86,11 @@ export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWe
     }
 }
 
-
 @Resolver(() => UserEntryFeesCollectorModel)
-export class UserEntryFeesCollectorResolver extends Mixin(GenericResolver, UserInfoByWeekSubResolver) {
+export class UserEntryFeesCollectorResolver extends Mixin(
+    GenericResolver,
+    UserInfoByWeekSubResolver,
+) {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
         protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
@@ -82,43 +102,58 @@ export class UserEntryFeesCollectorResolver extends Mixin(GenericResolver, UserI
     async undistributedRewards(
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<UserInfoByWeekModel[]> {
-        return this.feesCollectorService.getUserWeeklyRewardsSplit(parent.address, parent.userAddress, parent.startWeek, parent.endWeek);
+        return this.feesCollectorService.getUserWeeklyRewardsSplit(
+            parent.address,
+            parent.userAddress,
+            parent.startWeek,
+            parent.endWeek,
+        );
     }
 
     @ResolveField(() => [EsdtTokenPayment])
     async accumulatedRewards(
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<EsdtTokenPayment[]> {
-        return this.feesCollectorService.getUserAccumulatedRewards(parent.address, parent.userAddress, parent.time.currentWeek);
+        return this.feesCollectorService.getUserAccumulatedRewards(
+            parent.address,
+            parent.userAddress,
+            parent.time.currentWeek,
+        );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => UserEntryFeesCollectorModel)
     async userFeesCollector(
-        @User() user: any
+        @AuthUser() user: UserAuthResult,
     ): Promise<UserEntryFeesCollectorModel> {
         return await this.genericQuery(() =>
-            this.feesCollectorService.userFeesCollector(scAddress.feesCollector, user.publicKey),
+            this.feesCollectorService.userFeesCollector(
+                scAddress.feesCollector,
+                user.address,
+            ),
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => FeesCollectorTransactionModel)
     async claimFeesRewards(
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<FeesCollectorTransactionModel> {
         return await this.genericQuery(() =>
-            this.feesCollectorService.claimRewardsBatch(scAddress.feesCollector, user.publicKey),
+            this.feesCollectorService.claimRewardsBatch(
+                scAddress.feesCollector,
+                user.address,
+            ),
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async updateEnergyForUser(
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.feesCollectorService.updateEnergyForUser(user.publicKey),
+            this.feesCollectorService.updateEnergyForUser(user.address),
         );
     }
 }

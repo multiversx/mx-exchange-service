@@ -2,7 +2,7 @@ import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import {
     LockedTokenAttributesModel,
@@ -73,7 +73,7 @@ export class SimpleLockResolver extends GenericResolver {
         } catch (error) {}
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [LockedTokenAttributesModel])
     async lockedTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,

@@ -67,12 +67,12 @@ export class ApiConfigService {
     }
 
     isPrivateAppActive(): boolean {
-        const privateAppActive =
+        const privateApiActive =
             this.configService.get<string>('ENABLE_PRIVATE_API');
-        if (!privateAppActive) {
+        if (!privateApiActive) {
             throw new Error('No private api flag present');
         }
-        return privateAppActive === 'true';
+        return privateApiActive === 'true';
     }
 
     isEventsNotifierAppActive(): boolean {
@@ -178,6 +178,15 @@ export class ApiConfigService {
         return mongoDBPassword;
     }
 
+    getJwtSecret(): string {
+        const secret = this.configService.get<string>('JWT_SECRET');
+        if (!secret) {
+            throw new Error('No jwt secret present');
+        }
+
+        return secret;
+    }
+    
     getAWSRegion(): string {
         const region = this.configService.get<string>('AWS_REGION');
         if (!region) {

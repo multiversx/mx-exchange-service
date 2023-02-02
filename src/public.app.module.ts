@@ -1,4 +1,9 @@
-import { CacheModule, MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import {
+    CacheModule,
+    MiddlewareConsumer,
+    Module,
+    RequestMethod,
+} from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
@@ -16,7 +21,6 @@ import * as winston from 'winston';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
-import { AuthModule } from './modules/auth/auth.module';
 import { StakingModule } from './modules/staking/staking.module';
 import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module';
 import { MetabondingModule } from './modules/metabonding/metabonding.module';
@@ -30,15 +34,12 @@ import { deprecationLoggerMiddleware } from './utils/deprecate.logger.middleware
 import { GraphQLRequestContext, GraphQLResponse } from 'apollo-server-types';
 import { EnergyModule } from './modules/energy/energy.module';
 import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
-import {
-    LockedTokenWrapperModule
-} from './modules/locked-token-wrapper/locked-token-wrapper.module';
+import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-token-wrapper.module';
 import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
 
 @Module({
     imports: [
         CommonAppModule,
-        AuthModule,
         CacheModule.register(),
         GraphQLModule.forRoot<ApolloDriverConfig>({
             driver: ApolloDriver,
@@ -55,10 +56,10 @@ import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
                 const { req } = context;
                 const extensionResponse = req?.deprecationWarning
                     ? {
-                        extensions: {
-                            deprecationWarning: req?.deprecationWarning,
-                        },
-                    }
+                          extensions: {
+                              deprecationWarning: req?.deprecationWarning,
+                          },
+                      }
                     : {};
                 return {
                     ...response,

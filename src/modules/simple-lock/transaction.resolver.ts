@@ -2,12 +2,13 @@ import { LockedFarmTokenAttributes } from '@multiversx/sdk-exchange';
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { farmVersion } from 'src/utils/farm.utils';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { FarmGetterFactory } from '../farm/farm.getter.factory';
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
@@ -29,7 +30,7 @@ export class TransactionResolver extends GenericResolver {
         super();
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async lockTokens(
         @Args('inputTokens') inputTokens: InputTokenModel,
@@ -47,12 +48,12 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unlockTokens(
         @Args('inputTokens', UnlockTokensValidationPipe)
         inputTokens: InputTokenModel,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             const simpleLockAddress =
@@ -61,7 +62,7 @@ export class TransactionResolver extends GenericResolver {
                 );
             return await this.simpleLockTransactions.unlockTokens(
                 simpleLockAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
             );
         } catch (error) {
@@ -69,7 +70,7 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async addLiquidityLockedTokenBatch(
         @Args(
@@ -80,7 +81,7 @@ export class TransactionResolver extends GenericResolver {
         inputTokens: InputTokenModel[],
         @Args('pairAddress') pairAddress: string,
         @Args('tolerance') tolerance: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
         try {
             const simpleLockAddress =
@@ -89,7 +90,7 @@ export class TransactionResolver extends GenericResolver {
                 );
             return await this.simpleLockTransactions.addLiquidityLockedTokenBatch(
                 simpleLockAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
                 pairAddress,
                 tolerance,
@@ -99,14 +100,14 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async removeLiquidityLockedToken(
         @Args('inputTokens', LpProxyTokensValidationPipe)
         inputTokens: InputTokenModel,
         @Args('attributes') attributes: string,
         @Args('tolerance') tolerance: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
         try {
             const simpleLockAddress =
@@ -115,7 +116,7 @@ export class TransactionResolver extends GenericResolver {
                 );
             return await this.simpleLockTransactions.removeLiquidityLockedToken(
                 simpleLockAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
                 attributes,
                 tolerance,
@@ -125,7 +126,7 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async enterFarmLockedToken(
         @Args(
@@ -135,7 +136,7 @@ export class TransactionResolver extends GenericResolver {
         )
         inputTokens: InputTokenModel[],
         @Args('farmAddress') farmAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             const simpleLockAddress =
@@ -144,7 +145,7 @@ export class TransactionResolver extends GenericResolver {
                 );
             return await this.simpleLockTransactions.enterFarmLockedToken(
                 simpleLockAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
                 farmAddress,
             );
@@ -153,13 +154,13 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async exitFarmLockedToken(
         @Args('inputTokens', FarmProxyTokensValidationPipe)
         inputTokens: InputTokenModel,
         @Args('exitAmount', { nullable: true }) exitAmount: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             const simpleLockAddress =
@@ -182,7 +183,7 @@ export class TransactionResolver extends GenericResolver {
             ) {
                 return await this.simpleLockTransactions.exitFarmLockedToken(
                     simpleLockAddress,
-                    user.publicKey,
+                    user.address,
                     inputTokens,
                     version,
                     exitAmount,
@@ -190,7 +191,7 @@ export class TransactionResolver extends GenericResolver {
             } else {
                 return await this.simpleLockTransactions.exitFarmOldToken(
                     simpleLockAddress,
-                    user.publicKey,
+                    user.address,
                     inputTokens,
                 );
             }
@@ -199,12 +200,12 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimRewardsFarmLockedToken(
         @Args('inputTokens', FarmProxyTokensValidationPipe)
         inputTokens: InputTokenModel,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             const simpleLockAddress =
@@ -214,7 +215,7 @@ export class TransactionResolver extends GenericResolver {
 
             return await this.simpleLockTransactions.farmClaimRewardsLockedToken(
                 simpleLockAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
             );
         } catch (error) {
