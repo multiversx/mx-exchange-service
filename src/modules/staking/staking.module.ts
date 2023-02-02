@@ -36,6 +36,7 @@ import { StakingResolver } from './staking.resolver';
         StakingService,
         StakingGetterService,
         StakingSetterService,
+        StakingComputeService,
     ],
 })
 export class StakingModule {}

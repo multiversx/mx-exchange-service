@@ -25,6 +25,8 @@ export class StakingModel {
     rewardCapacity: string;
     @Field()
     annualPercentageRewards: string;
+    @Field()
+    apr: string;
     @Field(() => Int)
     minUnboundEpochs: number;
     @Field()
