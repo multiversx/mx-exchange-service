@@ -122,7 +122,7 @@ describe('StakingComputeService', () => {
         ).mockImplementation(async () => '2500');
 
         const apr = await service.computeStakeFarmAPR(Address.Zero().bech32());
-        expect(apr).toEqual('0.24999999999999999999');
+        expect(apr).toEqual('0.25');
     });
 
     it('should compute farm staking apr from rewards', async () => {
