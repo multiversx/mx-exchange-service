@@ -120,6 +120,18 @@ export class StakingSetterService extends GenericSetterService {
         );
     }
 
+    async setStakeFarmAPR(
+        stakeAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getStakeCacheKey(stakeAddress, 'apr'),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
     async setMinUnbondEpochs(
         stakeAddress: string,
         value: number,

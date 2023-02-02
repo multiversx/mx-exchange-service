@@ -19,6 +19,7 @@ import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.serv
 
 describe('StakingComputeService', () => {
     let service: StakingComputeService;
+    let stakingGetter: StakingGetterService;
 
     const StakingGetterServiceProvider = {
         provide: StakingGetterService,
@@ -56,6 +57,7 @@ describe('StakingComputeService', () => {
         }).compile();
 
         service = module.get<StakingComputeService>(StakingComputeService);
+        stakingGetter = module.get<StakingGetterService>(StakingGetterService);
     });
 
     it('should be defined', () => {
@@ -105,5 +107,37 @@ describe('StakingComputeService', () => {
         expect(extraRewardsBounded).toEqual(
             new BigNumber(10000000000000000000),
         );
+    });
+
+    it('should compute farm staking apr from token supply', async () => {
+        jest.spyOn(stakingGetter, 'getFarmTokenSupply').mockImplementation(
+            async () => '10000000000000000000000000',
+        );
+        jest.spyOn(stakingGetter, 'getPerBlockRewardAmount').mockImplementation(
+            async () => '4138000000000000000',
+        );
+        jest.spyOn(
+            stakingGetter,
+            'getAnnualPercentageRewards',
+        ).mockImplementation(async () => '2500');
+
+        const apr = await service.computeStakeFarmAPR(Address.Zero().bech32());
+        expect(apr).toEqual('0.24999999999999999999');
+    });
+
+    it('should compute farm staking apr from rewards', async () => {
+        jest.spyOn(stakingGetter, 'getFarmTokenSupply').mockImplementation(
+            async () => '100000000000000000000000000',
+        );
+        jest.spyOn(stakingGetter, 'getPerBlockRewardAmount').mockImplementation(
+            async () => '4138000000000000000',
+        );
+        jest.spyOn(
+            stakingGetter,
+            'getAnnualPercentageRewards',
+        ).mockImplementation(async () => '2500');
+
+        const apr = await service.computeStakeFarmAPR(Address.Zero().bech32());
+        expect(apr).toEqual('0.21749328');
     });
 });
