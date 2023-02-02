@@ -157,30 +157,32 @@ export class StakingComputeService {
     }
 
     async computeStakeFarmAPR(stakeAddress: string): Promise<string> {
-        const [perBlockRewardAmount, rewardsAPRBoundedBig, stakedValue] =
-            await Promise.all([
-                this.stakingGetterService.getPerBlockRewardAmount(stakeAddress),
-                this.computeExtraRewardsBounded(
-                    stakeAddress,
-                    constantsConfig.BLOCKS_IN_YEAR,
-                ),
-                this.stakingGetterService.getFarmTokenSupply(stakeAddress),
-            ]);
+        const [
+            annualPercentageRewards,
+            perBlockRewardAmount,
+            rewardsAPRBoundedBig,
+            stakedValue,
+        ] = await Promise.all([
+            this.stakingGetterService.getAnnualPercentageRewards(stakeAddress),
+            this.stakingGetterService.getPerBlockRewardAmount(stakeAddress),
+            this.computeExtraRewardsBounded(
+                stakeAddress,
+                constantsConfig.BLOCKS_IN_YEAR,
+            ),
+            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
+        ]);
 
         const rewardsUnboundedBig = new BigNumber(perBlockRewardAmount).times(
             constantsConfig.BLOCKS_IN_YEAR,
         );
         const stakedValueBig = new BigNumber(stakedValue);
 
-        const apr = rewardsUnboundedBig.isLessThan(
+        return rewardsUnboundedBig.isLessThan(
             rewardsAPRBoundedBig.integerValue(),
         )
             ? rewardsUnboundedBig.dividedBy(stakedValueBig).toFixed()
-            : rewardsAPRBoundedBig
-                  .integerValue()
-                  .dividedBy(stakedValueBig)
+            : new BigNumber(annualPercentageRewards)
+                  .dividedBy(constantsConfig.MAX_PERCENT)
                   .toFixed();
-
-        return apr;
     }
 }
