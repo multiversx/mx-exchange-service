@@ -117,6 +117,17 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async apr(@Parent() parent: StakingModel) {
+        try {
+            return await this.stakingGetterService.getStakeFarmAPR(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async minUnboundEpochs(@Parent() parent: StakingModel) {
         try {
             return await this.stakingGetterService.getMinUnbondEpochs(

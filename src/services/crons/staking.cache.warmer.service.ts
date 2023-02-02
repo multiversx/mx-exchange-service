@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { AbiStakingService } from 'src/modules/staking/services/staking.abi.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
@@ -13,6 +14,7 @@ export class StakingCacheWarmerService {
     constructor(
         private readonly abiStakeService: AbiStakingService,
         private readonly stakeSetterService: StakingSetterService,
+        private readonly stakeCompute: StakingComputeService,
         private readonly apiService: MXApiService,
         private readonly tokenSetter: TokenSetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
@@ -69,11 +71,13 @@ export class StakingCacheWarmerService {
                 minUnboundEpochs,
                 divisionSafetyConstant,
                 state,
+                apr,
             ] = await Promise.all([
                 this.abiStakeService.getAnnualPercentageRewards(address),
                 this.abiStakeService.getMinUnbondEpochs(address),
                 this.abiStakeService.getDivisionSafetyConstant(address),
                 this.abiStakeService.getState(address),
+                this.stakeCompute.computeStakeFarmAPR(address),
             ]);
 
             const cacheKeys = await Promise.all([
@@ -90,6 +94,7 @@ export class StakingCacheWarmerService {
                     divisionSafetyConstant,
                 ),
                 this.stakeSetterService.setState(address, state),
+                this.stakeSetterService.setStakeFarmAPR(address, apr),
             ]);
 
             await this.deleteCacheKeys(cacheKeys);
