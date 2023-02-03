@@ -26,11 +26,12 @@ export class PairComputeService {
             this.pairGetterService.getSecondToken(pairAddress),
         ]);
 
-        const firstTokenPrice = await this.pairService.getEquivalentForLiquidity(
-            pairAddress,
-            firstToken.identifier,
-            new BigNumber(`1e${firstToken.decimals}`).toFixed(),
-        );
+        const firstTokenPrice =
+            await this.pairService.getEquivalentForLiquidity(
+                pairAddress,
+                firstToken.identifier,
+                new BigNumber(`1e${firstToken.decimals}`).toFixed(),
+            );
         return firstTokenPrice
             .multipliedBy(`1e-${secondToken.decimals}`)
             .toFixed();
@@ -42,11 +43,12 @@ export class PairComputeService {
             this.pairGetterService.getSecondToken(pairAddress),
         ]);
 
-        const secondTokenPrice = await this.pairService.getEquivalentForLiquidity(
-            pairAddress,
-            secondToken.identifier,
-            new BigNumber(`1e${secondToken.decimals}`).toFixed(),
-        );
+        const secondTokenPrice =
+            await this.pairService.getEquivalentForLiquidity(
+                pairAddress,
+                secondToken.identifier,
+                new BigNumber(`1e${secondToken.decimals}`).toFixed(),
+            );
         return secondTokenPrice
             .multipliedBy(`1e-${firstToken.decimals}`)
             .toFixed();
@@ -126,15 +128,12 @@ export class PairComputeService {
     async computeFirstTokenLockedValueUSD(
         pairAddress: string,
     ): Promise<BigNumber> {
-        const [
-            firstToken,
-            firstTokenPriceUSD,
-            firstTokenReserve,
-        ] = await Promise.all([
-            this.pairGetterService.getFirstToken(pairAddress),
-            this.pairGetterService.getFirstTokenPriceUSD(pairAddress),
-            this.pairGetterService.getFirstTokenReserve(pairAddress),
-        ]);
+        const [firstToken, firstTokenPriceUSD, firstTokenReserve] =
+            await Promise.all([
+                this.pairGetterService.getFirstToken(pairAddress),
+                this.pairGetterService.getFirstTokenPriceUSD(pairAddress),
+                this.pairGetterService.getFirstTokenReserve(pairAddress),
+            ]);
 
         return new BigNumber(firstTokenReserve)
             .multipliedBy(`1e-${firstToken.decimals}`)
@@ -144,15 +143,12 @@ export class PairComputeService {
     async computeSecondTokenLockedValueUSD(
         pairAddress: string,
     ): Promise<BigNumber> {
-        const [
-            secondToken,
-            secondTokenPriceUSD,
-            secondTokenReserve,
-        ] = await Promise.all([
-            this.pairGetterService.getSecondToken(pairAddress),
-            this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
-            this.pairGetterService.getSecondTokenReserve(pairAddress),
-        ]);
+        const [secondToken, secondTokenPriceUSD, secondTokenReserve] =
+            await Promise.all([
+                this.pairGetterService.getSecondToken(pairAddress),
+                this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
+                this.pairGetterService.getSecondTokenReserve(pairAddress),
+            ]);
 
         return new BigNumber(secondTokenReserve)
             .multipliedBy(`1e-${secondToken.decimals}`)
@@ -160,13 +156,11 @@ export class PairComputeService {
     }
 
     async computeLockedValueUSD(pairAddress: string): Promise<BigNumber> {
-        const [
-            firstTokenLockedValueUSD,
-            secondTokenLockedValueUSD,
-        ] = await Promise.all([
-            this.computeFirstTokenLockedValueUSD(pairAddress),
-            this.computeSecondTokenLockedValueUSD(pairAddress),
-        ]);
+        const [firstTokenLockedValueUSD, secondTokenLockedValueUSD] =
+            await Promise.all([
+                this.computeFirstTokenLockedValueUSD(pairAddress),
+                this.computeSecondTokenLockedValueUSD(pairAddress),
+            ]);
 
         return new BigNumber(firstTokenLockedValueUSD).plus(
             secondTokenLockedValueUSD,
@@ -174,15 +168,21 @@ export class PairComputeService {
     }
 
     async computeFeesAPR(pairAddress: string): Promise<string> {
-        const [fees24h, lockedValueUSD] = await Promise.all([
-            this.pairGetterService.getFeesUSD(pairAddress, '24h'),
-            this.computeLockedValueUSD(pairAddress),
-        ]);
+        const [fees24h, lockedValueUSD, specialFeePercent, totalFeesPercent] =
+            await Promise.all([
+                this.pairGetterService.getFeesUSD(pairAddress, '24h'),
+                this.computeLockedValueUSD(pairAddress),
+                this.pairGetterService.getSpecialFeePercent(pairAddress),
+                this.pairGetterService.getTotalFeePercent(pairAddress),
+            ]);
 
-        return new BigNumber(fees24h)
-            .times(365)
-            .div(lockedValueUSD)
-            .toFixed();
+        const actualFees24hBig = new BigNumber(fees24h).multipliedBy(
+            new BigNumber(totalFeesPercent - specialFeePercent).div(
+                totalFeesPercent,
+            ),
+        );
+
+        return actualFees24hBig.times(365).div(lockedValueUSD).toFixed();
     }
 
     async computeTypeFromTokens(pairAddress: string): Promise<string> {
