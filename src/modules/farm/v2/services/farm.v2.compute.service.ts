@@ -327,17 +327,24 @@ export class FarmComputeServiceV2 extends Mixin(
         return payments;
     }
 
+    //
     // The boosted rewards is min(MAX_REWARDS, COMPUTED_REWARDS)
-    // MAX_REWARDS = MAX_REWARDS_FACTOR * WEEKLY_REWARDS * USER_FARM_AMOUNT / FARM_SUPPLY
     //
-    // COMPUTED_REWARDS =  WEEKLY_REWARDS *
-    //    (USER_ENERGY_CONS * USER_ENERGY / TOTAL_ENERGY + USER_FARM_CONST * USER_FARM_AMOUNT / FARM_SUPPLY)
-    //    / (USER_ENERGY_CONST + USER_FARM_CONST)
+    //                    USER_FARM_AMOUNT
+    // MAX_REWARDS = u * ------------------
+    //                      FARM_SUPPLY
     //
-    // the optimal ratio is the ration when MAX_REWARDS = COMPUTED_REWARDS
-    // USER_FARM_AMOUNT / USER_ENERGY =
-    // = FARM_SUPPLY * USER_ENERGY_CONST /
-    // ( ENERGY_SUPPLY * (MAX_REWARDS_FACTOR * (USER_ENERGY_CONST + USER_FARM_CONST) - USER_FARM_CONST)
+    //                       A        USER_FARM_AMOUNT        B        USER_ENERGY_AMOUNT
+    //  COMPUTED_REWARDS = -----  *  ------------------  +  -----  *  --------------------
+    //                     A + B        FARM_SUPPLY         A + B         TOTAL_ENERGY
+    //
+    //
+    // the optimal ratio is the ration when MAX_REWARDS = COMPUTED_REWARDS, which gives the following formula:
+    //
+    //  USER_FARM_AMOUNT            FARM_SUPPLY * B
+    // ------------------ =  ------------------------------
+    //    USER_ENERGY         TOTAL_ENERGY * u * A * (B-1)
+    //
     async computeOptimalRatio(scAddress: string, week: number): Promise<string> {
         const [
             factors,
@@ -349,16 +356,19 @@ export class FarmComputeServiceV2 extends Mixin(
             this.farmGetter.totalEnergyForWeek(scAddress, week),
         ]);
 
+        const u = factors.maxRewardsFactor;
+        const A = factors.userRewardsFarm;
+        const B = factors.userRewardsEnergy;
+
         return new BigNumber(farmSupply)
-            .multipliedBy(factors.userRewardsEnergy)
-            .dividedBy(energySupply)
+            .multipliedBy(B)
             .dividedBy(
-                new BigNumber(factors.maxRewardsFactor)
-                    .multipliedBy(
-                        new BigNumber(factors.userRewardsEnergy)
-                            .plus(factors.userRewardsFarm)
-                    )
-                    .minus(factors.userRewardsFarm)
+                new BigNumber(energySupply)
+                .multipliedBy(u)
+                .multipliedBy(A)
+                .multipliedBy(
+                    new BigNumber(B).minus(1)
+                )
             )
             .toFixed()
     }
