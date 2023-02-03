@@ -345,7 +345,7 @@ export class FarmComputeServiceV2 extends Mixin(
     // ------------------ =  ------------------------------
     //    USER_ENERGY         TOTAL_ENERGY * u * A * (B-1)
     //
-    async computeOptimalLpPerEnergy(scAddress: string, week: number): Promise<string> {
+    async computeOptimalEnergyPerLP(scAddress: string, week: number): Promise<string> {
         const [
             factors,
             farmSupply,
@@ -360,16 +360,18 @@ export class FarmComputeServiceV2 extends Mixin(
         const A = factors.userRewardsFarm;
         const B = factors.userRewardsEnergy;
 
-        return new BigNumber(farmSupply)
-            .multipliedBy(B)
-            .dividedBy(
-                new BigNumber(energySupply)
-                .multipliedBy(u)
-                .multipliedBy(A)
+        const optimisationConstant = (
+            new BigNumber(u)
                 .multipliedBy(
-                    new BigNumber(B).minus(1)
+                    new BigNumber(A).plus(B)
                 )
+                .minus(A)
             )
+            .dividedBy(B)
+        return optimisationConstant
+            .multipliedBy(energySupply)
+            .dividedBy(farmSupply)
+            .integerValue()
             .toFixed()
     }
 

@@ -35,14 +35,14 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
-    async optimalLpPerEnergy(
+    async optimalEnergyPerLp(
         @Parent() parent: FarmModelV2
     ): Promise<string> {
         const currentWeek = await this.farmGetter.getCurrentWeek(
             parent.address,
         );
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getOptimalLpPerEnergy(parent.address, currentWeek),
+            this.farmGetter.getOptimalEnergyPerLp(parent.address, currentWeek),
         );
     }
 
