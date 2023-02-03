@@ -94,10 +94,10 @@ export class FarmGetterServiceV2
         );
     }
 
-    async getOptimalRatio(scAddress: string, week: number): Promise<string> {
+    async getOptimalEnergyPerLp(scAddress: string, week: number): Promise<string> {
         return this.getData(
             this.getCacheKey(scAddress, 'optimalRatio', week),
-            () => this.computeService.computeOptimalRatio(scAddress, week),
+            () => this.computeService.computeOptimalEnergyPerLP(scAddress, week),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
