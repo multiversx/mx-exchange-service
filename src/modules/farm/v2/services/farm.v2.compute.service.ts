@@ -341,9 +341,9 @@ export class FarmComputeServiceV2 extends Mixin(
     //
     // the optimal ratio is the ration when MAX_REWARDS = COMPUTED_REWARDS, which gives the following formula:
     //
-    //  USER_FARM_AMOUNT            FARM_SUPPLY * B
-    // ------------------ =  ------------------------------
-    //    USER_ENERGY         TOTAL_ENERGY * u * A * (B-1)
+    //     USER_ENERGY        u * (A + b) - A      TOTAL_ENERGY
+    // ------------------ =  ----------------- *  --------------
+    //  USER_FARM_AMOUNT             B             FARM_SUPPLY
     //
     async computeOptimalEnergyPerLP(scAddress: string, week: number): Promise<string> {
         const [
