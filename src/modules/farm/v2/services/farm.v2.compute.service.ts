@@ -345,7 +345,7 @@ export class FarmComputeServiceV2 extends Mixin(
     // ------------------ =  ------------------------------
     //    USER_ENERGY         TOTAL_ENERGY * u * A * (B-1)
     //
-    async computeOptimalRatio(scAddress: string, week: number): Promise<string> {
+    async computeOptimalLpPerEnergy(scAddress: string, week: number): Promise<string> {
         const [
             factors,
             farmSupply,
