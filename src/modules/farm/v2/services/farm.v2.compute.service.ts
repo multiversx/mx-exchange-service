@@ -134,6 +134,7 @@ export class FarmComputeServiceV2 extends Mixin(
     ): Promise<string> {
         const [
             boostedYieldsFactors,
+            boostedYieldsRewardsPercenatage,
             userEnergy,
             totalRewards,
             rewardsPerBlock,
@@ -142,6 +143,7 @@ export class FarmComputeServiceV2 extends Mixin(
             blocksInWeek,
         ] = await Promise.all([
             this.farmGetter.getBoostedYieldsFactors(scAddress),
+            this.farmGetter.getBoostedYieldsRewardsPercenatage(scAddress),
             this.farmGetter.userEnergyForWeek(
                 scAddress,
                 userAddress,
@@ -180,13 +182,16 @@ export class FarmComputeServiceV2 extends Mixin(
             return "0";
         }
 
-        const userBaseRewardsPerBlock = new BigNumber(rewardsPerBlock)
+        const userMaxBoostedRewardsPerBlock = new BigNumber(rewardsPerBlock)
+            .multipliedBy(boostedYieldsRewardsPercenatage)
+            .dividedBy(constantsConfig.MAX_PERCENT)
             .multipliedBy(liquidity)
             .dividedBy(farmTokenSupply);
+
         const userRewardsForWeek = new BigNumber(
             boostedYieldsFactors.maxRewardsFactor,
         )
-            .multipliedBy(userBaseRewardsPerBlock)
+            .multipliedBy(userMaxBoostedRewardsPerBlock)
             .multipliedBy(blocksInWeek);
 
         const boostedRewardsByEnergy = new BigNumber(totalRewards)
@@ -281,14 +286,14 @@ export class FarmComputeServiceV2 extends Mixin(
                 ),
             ]);
 
-        const userBaseRewardsPerBlock = new BigNumber(rewardsPerBlock)
+        const userMaxBoostedRewardsPerBlock = new BigNumber(rewardsPerBlock)
             .multipliedBy(boostedYieldsRewardsPercenatage)
             .dividedBy(constantsConfig.MAX_PERCENT)
             .multipliedBy(liquidity)
             .dividedBy(farmTokenSupply);
 
         const userRewardsForWeek = new BigNumber(boostedYieldsFactors.maxRewardsFactor)
-            .multipliedBy(userBaseRewardsPerBlock)
+            .multipliedBy(userMaxBoostedRewardsPerBlock)
             .multipliedBy(constantsConfig.BLOCKS_PER_WEEK);
 
         for (const weeklyRewards of totalRewards) {
