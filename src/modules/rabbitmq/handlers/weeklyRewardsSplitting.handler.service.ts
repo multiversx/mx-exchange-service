@@ -21,10 +21,12 @@ import { FarmGetterFactory } from '../../farm/farm.getter.factory';
 import { UserEnergySetterService } from '../../user/services/userEnergy/user.energy.setter.service';
 import { UserEnergyGetterService } from '../../user/services/userEnergy/user.energy.getter.service';
 import { OutdatedContract } from '../../user/models/user.model';
+import { Mutex } from '../../../utils/mutex';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
     private invalidatedKeys = [];
+    private mutex: Mutex;
 
     constructor(
         private readonly farmSetter: FarmSetterFactory,
@@ -35,7 +37,9 @@ export class WeeklyRewardsSplittingHandlerService {
         private readonly userEnergySetter: UserEnergySetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) {
+        this.mutex = new Mutex();
+    }
 
     async handleUpdateGlobalAmounts(
         event: UpdateGlobalAmountsEvent,
@@ -68,6 +72,7 @@ export class WeeklyRewardsSplittingHandlerService {
     async handleUpdateUserEnergy(event: UpdateUserEnergyEvent): Promise<void> {
         const topics = event.getTopics();
 
+        await this.mutex.lock();
         let userOutdatedContracts =
             await this.userEnergyGetter.getUserOutdatedContracts(
                 topics.caller.bech32(),
@@ -75,6 +80,12 @@ export class WeeklyRewardsSplittingHandlerService {
         userOutdatedContracts = userOutdatedContracts.filter(
             (item: OutdatedContract) => item.address != event.address,
         );
+        await this.userEnergySetter.setUserOutdatedContracts(
+            topics.caller.bech32(),
+            userOutdatedContracts,
+        );
+        await this.mutex.unlock();
+
         const keys = await Promise.all([
             this.getSetter(event.address).currentClaimProgress(
                 event.address,
@@ -94,10 +105,6 @@ export class WeeklyRewardsSplittingHandlerService {
                 event.address,
                 topics.caller.bech32(),
                 topics.currentWeek,
-            ),
-            this.userEnergySetter.setUserOutdatedContracts(
-                topics.caller.bech32(),
-                userOutdatedContracts,
             ),
         ]);
 
