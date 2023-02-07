@@ -46,16 +46,21 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
     async getLatestCompleteValues(
         series: string,
         metric: string,
+        last?: number,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestCompleteValues',
             series,
             metric,
         );
-        return await this.getCachedData(
+        let data = await this.getCachedData<HistoricDataModel[]>(
             cacheKey,
             this.getLatestCompleteValues.name,
         );
+        if (last !== undefined) {
+            data = data.slice(-last);
+        }
+        return data;
     }
 
     async getSumCompleteValues(

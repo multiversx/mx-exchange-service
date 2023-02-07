@@ -1,4 +1,4 @@
-import { ArgsType, Field } from '@nestjs/graphql';
+import { ArgsType, Field, Int } from '@nestjs/graphql';
 import { Matches } from 'class-validator';
 import { IsValidMetric } from 'src/helpers/validators/metric.validator';
 import { IsValidSeries } from 'src/helpers/validators/series.validator';
@@ -19,6 +19,8 @@ export class AWSQueryArgs {
     @IsValidUnixTime()
     start: string;
     @Field({ nullable: true })
+    last?: number;
+    @Field(() => Int, { nullable: true })
     @Matches(new RegExp('[1-60][s,m,h,d]'))
     bin: string;
 }
