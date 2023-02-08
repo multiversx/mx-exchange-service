@@ -67,36 +67,21 @@ export class FarmComputeServiceV2 extends Mixin(
 
     async computeFarmBaseAPR(farmAddress: string): Promise<string> {
         const [
-            farmedTokenID,
-            farmingTokenID,
             boostedYieldsRewardsPercenatage,
             totalRewardsPerYearUSD,
             farmTokenSupplyUSD,
         ] = await Promise.all([
-            this.farmGetter.getFarmedTokenID(farmAddress),
-            this.farmGetter.getFarmingTokenID(farmAddress),
             this.farmGetter.getBoostedYieldsRewardsPercenatage(farmAddress),
             this.computeAnualRewardsUSD(farmAddress),
             this.farmGetter.getTotalValueLockedUSD(farmAddress),
         ]);
 
-        const apr = this.computeBaseRewards(
+        return this.computeBaseRewards(
             new BigNumber(totalRewardsPerYearUSD),
             boostedYieldsRewardsPercenatage,
-        ).div(farmTokenSupplyUSD);
-
-        let feesAPR: BigNumber = new BigNumber(0);
-        if (farmedTokenID !== farmingTokenID) {
-            const pairAddress =
-                await this.pairService.getPairAddressByLpTokenID(
-                    farmingTokenID,
-                );
-
-            feesAPR = pairAddress
-                ? new BigNumber(await this.pairGetter.getFeesAPR(pairAddress))
-                : new BigNumber(0);
-        }
-        return feesAPR.isNaN() ? apr.toFixed() : apr.plus(feesAPR).toFixed();
+        )
+            .div(farmTokenSupplyUSD)
+            .toFixed();
     }
 
     async computeFarmRewardsForPosition(
@@ -144,23 +129,13 @@ export class FarmComputeServiceV2 extends Mixin(
         ] = await Promise.all([
             this.farmGetter.getBoostedYieldsFactors(scAddress),
             this.farmGetter.getBoostedYieldsRewardsPercenatage(scAddress),
-            this.farmGetter.userEnergyForWeek(
-                scAddress,
-                userAddress,
-                week,
-            ),
-            this.farmGetter.getAccumulatedRewardsForWeek(
-                scAddress,
-                week,
-            ),
+            this.farmGetter.userEnergyForWeek(scAddress, userAddress, week),
+            this.farmGetter.getAccumulatedRewardsForWeek(scAddress, week),
             this.farmGetter.getRewardsPerBlock(scAddress),
             this.farmGetter.getFarmTokenSupply(scAddress),
-            this.farmGetter.totalEnergyForWeek(
-                scAddress,
-                week,
-            ),
+            this.farmGetter.totalEnergyForWeek(scAddress, week),
             this.computeBlocksInWeek(scAddress, week),
-        ])
+        ]);
 
         const energyAmount = userEnergy.amount;
 
@@ -168,18 +143,18 @@ export class FarmComputeServiceV2 extends Mixin(
             boostedYieldsFactors.minEnergyAmount,
         );
         if (!userHasMinEnergy) {
-            return "0";
+            return '0';
         }
 
         const userMinFarmAmount = new BigNumber(liquidity).isGreaterThan(
             boostedYieldsFactors.minFarmAmount,
         );
         if (!userMinFarmAmount) {
-            return "0";
+            return '0';
         }
 
         if (totalRewards.length === 0) {
-            return "0";
+            return '0';
         }
 
         const userMaxBoostedRewardsPerBlock = new BigNumber(rewardsPerBlock)
@@ -270,21 +245,21 @@ export class FarmComputeServiceV2 extends Mixin(
             farmTokenSupply,
             boostedYieldsRewardsPercenatage,
             totalEnergy,
-            userEnergy] =
-            await Promise.all([
-                this.farmGetter.getRewardsPerBlock(scAddress),
-                this.farmGetter.getFarmTokenSupply(scAddress),
-                this.farmGetter.getBoostedYieldsRewardsPercenatage(scAddress),
-                this.weeklyRewardsSplittingGetter.totalEnergyForWeek(
-                    scAddress,
-                    week,
-                ),
-                this.weeklyRewardsSplittingGetter.userEnergyForWeek(
-                    scAddress,
-                    userAddress,
-                    week,
-                ),
-            ]);
+            userEnergy,
+        ] = await Promise.all([
+            this.farmGetter.getRewardsPerBlock(scAddress),
+            this.farmGetter.getFarmTokenSupply(scAddress),
+            this.farmGetter.getBoostedYieldsRewardsPercenatage(scAddress),
+            this.weeklyRewardsSplittingGetter.totalEnergyForWeek(
+                scAddress,
+                week,
+            ),
+            this.weeklyRewardsSplittingGetter.userEnergyForWeek(
+                scAddress,
+                userAddress,
+                week,
+            ),
+        ]);
 
         const userMaxBoostedRewardsPerBlock = new BigNumber(rewardsPerBlock)
             .multipliedBy(boostedYieldsRewardsPercenatage)
@@ -292,7 +267,9 @@ export class FarmComputeServiceV2 extends Mixin(
             .multipliedBy(liquidity)
             .dividedBy(farmTokenSupply);
 
-        const userRewardsForWeek = new BigNumber(boostedYieldsFactors.maxRewardsFactor)
+        const userRewardsForWeek = new BigNumber(
+            boostedYieldsFactors.maxRewardsFactor,
+        )
             .multipliedBy(userMaxBoostedRewardsPerBlock)
             .multipliedBy(constantsConfig.BLOCKS_PER_WEEK);
 
@@ -350,12 +327,11 @@ export class FarmComputeServiceV2 extends Mixin(
     // ------------------ =  ----------------- *  --------------
     //  USER_FARM_AMOUNT             B             FARM_SUPPLY
     //
-    async computeOptimalEnergyPerLP(scAddress: string, week: number): Promise<string> {
-        const [
-            factors,
-            farmSupply,
-            energySupply,
-        ] = await Promise.all([
+    async computeOptimalEnergyPerLP(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
+        const [factors, farmSupply, energySupply] = await Promise.all([
             this.farmGetter.getBoostedYieldsFactors(scAddress),
             this.farmGetter.getFarmTokenSupply(scAddress),
             this.farmGetter.totalEnergyForWeek(scAddress, week),
@@ -365,39 +341,38 @@ export class FarmComputeServiceV2 extends Mixin(
         const A = factors.userRewardsFarm;
         const B = factors.userRewardsEnergy;
 
-        const optimisationConstant = (
-            new BigNumber(u)
-                .multipliedBy(
-                    new BigNumber(A).plus(B)
-                )
-                .minus(A)
-            )
-            .dividedBy(B)
+        const optimisationConstant = new BigNumber(u)
+            .multipliedBy(new BigNumber(A).plus(B))
+            .minus(A)
+            .dividedBy(B);
         return optimisationConstant
             .multipliedBy(energySupply)
             .dividedBy(farmSupply)
             .integerValue()
-            .toFixed()
+            .toFixed();
     }
 
-    async computeBlocksInWeek(scAddress: string, week: number): Promise<number> {
-        const [
-            startEpochForCurrentWeek,
-            currentEpoch,
-        ] = await Promise.all([
+    async computeBlocksInWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<number> {
+        const [startEpochForCurrentWeek, currentEpoch] = await Promise.all([
             this.weekTimekeepingGetter.getStartEpochForWeek(scAddress, week),
             this.contextGetter.getCurrentEpoch(),
         ]);
 
-        const promises = []
-        for (let epoch = startEpochForCurrentWeek; epoch <= currentEpoch; epoch++) {
+        const promises = [];
+        for (
+            let epoch = startEpochForCurrentWeek;
+            epoch <= currentEpoch;
+            epoch++
+        ) {
             promises.push(this.contextGetter.getBlocksCountInEpoch(epoch, 1));
         }
 
         const blocksInEpoch = await Promise.all(promises);
         return blocksInEpoch.reduce((total, current) => {
             return total + current;
-        })
+        });
     }
-
 }
