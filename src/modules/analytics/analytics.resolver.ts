@@ -108,7 +108,8 @@ export class AnalyticsResolver {
             this.analyticsAWSGetter.getLatestCompleteValues(
                 args.series,
                 args.metric,
-                args.last,
+                args.start,
+                args.time,
             ),
         );
     }

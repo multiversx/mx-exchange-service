@@ -9,6 +9,7 @@ import { GenericGetterService } from 'src/services/generics/generic.getter.servi
 import { oneMinute } from 'src/helpers/helpers';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import moment from 'moment';
 
 @Injectable()
 export class AnalyticsAWSGetterService extends GenericGetterService {
@@ -46,7 +47,8 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
     async getLatestCompleteValues(
         series: string,
         metric: string,
-        last?: number,
+        start?: string,
+        time?: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestCompleteValues',
@@ -57,9 +59,29 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             cacheKey,
             this.getLatestCompleteValues.name,
         );
-        if (last !== undefined) {
-            data = data.slice(-last);
+        if (start) {
+            const formattedStart = moment.unix(parseInt(start)).utc();
+
+            data = data.filter((historicData) =>
+                moment
+                    .utc(historicData.timestamp)
+                    .isSameOrAfter(formattedStart),
+            );
+
+            if (time) {
+                const [timeAmount, timeUnit] = time.match(/[a-zA-Z]+|[0-9]+/g);
+                const endDate = formattedStart.add(
+                    moment.duration(
+                        timeAmount,
+                        timeUnit as moment.unitOfTime.Base,
+                    ),
+                );
+                data = data.filter((historicData) =>
+                    moment.utc(historicData.timestamp).isSameOrBefore(endDate),
+                );
+            }
         }
+
         return data;
     }
 

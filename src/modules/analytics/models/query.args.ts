@@ -18,8 +18,6 @@ export class AWSQueryArgs {
     @Field({ nullable: true })
     @IsValidUnixTime()
     start: string;
-    @Field({ nullable: true })
-    last?: number;
     @Field(() => Int, { nullable: true })
     @Matches(new RegExp('[1-60][s,m,h,d]'))
     bin: string;
