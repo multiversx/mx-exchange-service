@@ -77,7 +77,7 @@ export class WeeklyRewardsSplittingHandlerService {
             await this.userEnergyGetter.getUserOutdatedContracts(
                 topics.caller.bech32(),
             );
-        this.logger.debug("Processing event before:", userOutdatedContracts);
+        this.logger.info("Processing event before:", userOutdatedContracts);
         userOutdatedContracts = userOutdatedContracts.filter(
             (item: OutdatedContract) => item.address != event.address,
         );
@@ -85,7 +85,7 @@ export class WeeklyRewardsSplittingHandlerService {
             topics.caller.bech32(),
             userOutdatedContracts,
         );
-        this.logger.debug("Processing event after:", userOutdatedContracts);
+        this.logger.info("Processing event after:", userOutdatedContracts);
         await this.mutex.unlock();
 
         const keys = await Promise.all([
