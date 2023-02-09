@@ -1,9 +1,9 @@
 export class Mutex {
     private locked: boolean;
 
-    async lock(): Promise<void> {
+    async lock(timeout = 50): Promise<void> {
         while (this.locked) {
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => setTimeout(resolve, timeout));
         }
         this.locked = true;
     }
