@@ -21,12 +21,10 @@ import { FarmGetterFactory } from '../../farm/farm.getter.factory';
 import { UserEnergySetterService } from '../../user/services/userEnergy/user.energy.setter.service';
 import { UserEnergyGetterService } from '../../user/services/userEnergy/user.energy.getter.service';
 import { OutdatedContract } from '../../user/models/user.model';
-import { Mutex } from '../../../utils/mutex';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
     private invalidatedKeys = [];
-    private mutex: Mutex;
 
     constructor(
         private readonly farmSetter: FarmSetterFactory,
@@ -38,7 +36,6 @@ export class WeeklyRewardsSplittingHandlerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.mutex = new Mutex();
     }
 
     async handleUpdateGlobalAmounts(
@@ -72,13 +69,12 @@ export class WeeklyRewardsSplittingHandlerService {
     async handleUpdateUserEnergy(event: UpdateUserEnergyEvent): Promise<void> {
         const topics = event.getTopics();
 
-        await this.mutex.lock();
         let userOutdatedContracts =
             await this.userEnergyGetter.getUserOutdatedContracts(
                 topics.caller.bech32(),
             );
         this.logger.info("Processing event before:", userOutdatedContracts);
-        userOutdatedContracts = userOutdatedContracts.filter(
+        userOutdatedContracts = userOutdatedContracts.slice().filter(
             (item: OutdatedContract) => item.address != event.address,
         );
         await this.userEnergySetter.setUserOutdatedContracts(
@@ -86,7 +82,6 @@ export class WeeklyRewardsSplittingHandlerService {
             userOutdatedContracts,
         );
         this.logger.info("Processing event after:", userOutdatedContracts);
-        await this.mutex.unlock();
 
         const keys = await Promise.all([
             this.getSetter(event.address).currentClaimProgress(
