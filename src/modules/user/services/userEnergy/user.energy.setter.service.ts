@@ -6,7 +6,7 @@ import { OutdatedContract } from '../../models/user.model';
 import {
     GenericSetterService
 } from '../../../../services/generics/generic.setter.service';
-import { oneSecond } from '../../../../helpers/helpers';
+import { oneMinute } from '../../../../helpers/helpers';
 
 @Injectable()
 export class UserEnergySetterService extends GenericSetterService {
@@ -15,15 +15,15 @@ export class UserEnergySetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
-        this.baseKey = 'userOutdatedContracts'
+        this.baseKey = 'userEnergy';
     }
 
     async setUserOutdatedContracts(userAddress: string, value: OutdatedContract[]): Promise<string> {
         return this.setData(
-            this.getCacheKey(userAddress),
-            () => value,
-            oneSecond(),
-            oneSecond(),
-        )
+            this.getCacheKey('userOutdatedContracts', userAddress),
+            value,
+            oneMinute(),
+            oneMinute(),
+        );
     }
 }

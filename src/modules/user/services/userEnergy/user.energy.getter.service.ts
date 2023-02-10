@@ -5,7 +5,7 @@ import { CachingService } from '../../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { OutdatedContract } from '../../models/user.model';
-import { oneSecond } from '../../../../helpers/helpers';
+import { oneMinute } from '../../../../helpers/helpers';
 
 @Injectable()
 export class UserEnergyGetterService extends GenericGetterService {
@@ -15,15 +15,15 @@ export class UserEnergyGetterService extends GenericGetterService {
         private readonly userEnergyCompute: UserEnergyComputeService,
     ) {
         super(cachingService, logger);
-        this.baseKey = 'userEnergyGetter';
+        this.baseKey = 'userEnergy';
     }
 
     async getUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
         return this.getData(
             this.getCacheKey('userOutdatedContracts', userAddress),
             () => this.userEnergyCompute.computeUserOutdatedContracts(userAddress),
-            oneSecond(),
-            oneSecond(),
+            oneMinute(),
+            oneMinute(),
         )
     }
 
@@ -31,8 +31,8 @@ export class UserEnergyGetterService extends GenericGetterService {
         return this.getData(
             this.getCacheKey('userActiveFarms', userAddress),
             () => this.userEnergyCompute.computeActiveFarmsV2ForUser(userAddress),
-            oneSecond(),
-            oneSecond(),
+            oneMinute(),
+            oneMinute(),
         )
     }
 }
