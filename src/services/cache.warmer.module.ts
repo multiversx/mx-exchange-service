@@ -33,6 +33,7 @@ import { FarmModuleV1_2 } from 'src/modules/farm/v1.2/farm.v1.2.module';
 import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
+import { CacheController } from 'src/endpoints/cache/cache.controller';
 
 @Module({
     imports: [
@@ -58,7 +59,7 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         AnalyticsServicesModule,
         RemoteConfigModule,
     ],
-    controllers: [],
+    controllers: [CacheController],
     providers: [
         CacheWarmerService,
         PairCacheWarmerService,
@@ -76,4 +77,4 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         ElasticService,
     ],
 })
-export class CacheWarmerModule { }
+export class CacheWarmerModule {}
