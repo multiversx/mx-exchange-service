@@ -19,10 +19,9 @@ export class UserEnergyGetterService extends GenericGetterService {
     }
 
     async getUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
-        return await this.getData(
+        return await this.cachingService.getOrSetRemote(
             this.getCacheKey('userOutdatedContracts', userAddress),
             () => this.userEnergyCompute.computeUserOutdatedContracts(userAddress),
-            oneMinute(),
             oneMinute(),
         )
     }

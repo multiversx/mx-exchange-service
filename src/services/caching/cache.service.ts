@@ -56,7 +56,7 @@ export class CachingService {
         );
     }
 
-    private async setCacheRemote<T>(
+    async setCacheRemote<T>(
         key: string,
         value: T,
         ttl: number = cacheConfig.default,
@@ -199,6 +199,41 @@ export class CachingService {
             if (localTtl > 0) {
                 await this.setCacheLocal<T>(key, value, localTtl);
             }
+
+            if (remoteTtl > 0) {
+                await this.setCacheRemote<T>(key, value, remoteTtl);
+            }
+            return value;
+        } catch (error) {
+            const logMessage = generateSetLogMessage(
+                CachingService.name,
+                this.getOrSet.name,
+                key,
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getOrSetRemote<T>(
+        key: string,
+        promise: () => Promise<T>,
+        remoteTtl: number = cacheConfig.default,
+    ): Promise<any> {
+
+        const profiler = new PerformanceProfiler(`vmQuery:${key}`);
+
+        const cachedValue = await this.getCacheRemote<T>(key);
+        if (cachedValue !== null) {
+            profiler.stop(`Remote Cache hit for key ${key}`);
+            return cachedValue;
+        }
+
+        try {
+            const value = await promise();
+
+            profiler.stop(`Cache miss for key ${key}`);
 
             if (remoteTtl > 0) {
                 await this.setCacheRemote<T>(key, value, remoteTtl);

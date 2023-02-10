@@ -19,11 +19,12 @@ export class UserEnergySetterService extends GenericSetterService {
     }
 
     async setUserOutdatedContracts(userAddress: string, value: OutdatedContract[]): Promise<string> {
-        return await this.setData(
-            this.getCacheKey(userAddress),
+        const cacheKey = this.getCacheKey(userAddress);
+        await this.cachingService.setCacheRemote(
+            cacheKey,
             () => value,
             oneMinute(),
-            oneMinute(),
-        )
+        );
+        return cacheKey;
     }
 }
