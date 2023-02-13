@@ -492,7 +492,8 @@
         "feesCollector": "./src/abis/fees-collector.abi.json",
         "energyUpdate": "./src/abis/energy-update.abi.json",
         "tokenUnstake": "./src/abis/token-unstake.abi.json",
-        "lockedTokenWrapper": "./src/abis/locked-token-wrapper.abi.json"
+        "lockedTokenWrapper": "./src/abis/locked-token-wrapper.abi.json",
+        "escrow": "./src/abis/lkmex-transfer.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,

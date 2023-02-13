@@ -13,6 +13,10 @@ export class EscrowModel {
     minLockEpochs: number;
     @Field()
     epochsCooldownDuration: number;
+
+    constructor(init?: Partial<EscrowModel>) {
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
