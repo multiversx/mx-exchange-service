@@ -1,4 +1,5 @@
 import { Resolver } from '@nestjs/graphql';
+import { EscrowModel } from './models/escrow.model';
 
-@Resolver()
+@Resolver(EscrowModel)
 export class EscrowResolver {}
