@@ -5,9 +5,15 @@ import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.
 import { EscrowResolver } from './escrow.resolver';
 import { EscrowAbiService } from './services/escrow.abi.service';
 import { EscrowGetterService } from './services/escrow.getter.service';
+import { EscrowTransactionService } from './services/escrow.transaction.service';
 
 @Module({
     imports: [CommonAppModule, MXCommunicationModule, CachingModule],
-    providers: [EscrowAbiService, EscrowGetterService, EscrowResolver],
+    providers: [
+        EscrowAbiService,
+        EscrowGetterService,
+        EscrowTransactionService,
+        EscrowResolver,
+    ],
 })
 export class EscrowModule {}
