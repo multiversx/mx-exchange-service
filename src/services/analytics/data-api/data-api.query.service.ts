@@ -33,7 +33,6 @@ import {
 } from 'src/utils/analytics.utils';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { PendingExecutor } from 'src/utils/pending.executor';
-import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { Logger } from 'winston';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -276,8 +275,6 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
                 let intervalValues = computeIntervalValues(keys, values);
 
                 if (values.some((value) => value === null)) {
-                    // this.logger.info(`Get complete values for ${hashCacheKey} between ${intervalStart.format('YYYY-MM-DD HH:mm:ss')} and ${intervalEnd.format('YYYY-MM-DD HH:mm:ss')}`);
-
                     const rows = await this.getCompleteValuesInInterval(
                         series,
                         metric,
