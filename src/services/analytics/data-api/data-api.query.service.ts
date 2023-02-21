@@ -22,7 +22,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { mxConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { CachingService } from 'src/services/caching/cache.service';
 import {
     computeTimeInterval,
     convertBinToTimeResolution,
@@ -49,7 +48,6 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private readonly apiConfigService: ApiConfigService,
-        private readonly cachingService: CachingService,
     ) {
         this.dataApiClient = new DataApiClient({
             host: 'dex-service',
