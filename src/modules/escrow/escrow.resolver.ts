@@ -7,7 +7,7 @@ import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { AuthUser } from '../auth/auth.user';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { UserAuthResult } from '../auth/user.auth.result';
-import { EscrowModel } from './models/escrow.model';
+import { EscrowModel, ScheduledTransferModel } from './models/escrow.model';
 import { EscrowGetterService } from './services/escrow.getter.service';
 import { EscrowTransactionService } from './services/escrow.transaction.service';
 
@@ -70,6 +70,14 @@ export class EscrowResolver extends GenericResolver {
     async senders(@AuthUser() user: UserAuthResult): Promise<string[]> {
         return await this.genericQuery(() =>
             this.escrowGetter.getAllSenders(user.address),
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => Number, { nullable: true })
+    async lastTransferEpoch(@AuthUser() user: UserAuthResult): Promise<number> {
+        return await this.genericQuery(() =>
+            this.escrowGetter.getAddressLastTransferEpoch(user.address),
         );
     }
 

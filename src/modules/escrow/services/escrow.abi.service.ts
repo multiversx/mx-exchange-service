@@ -71,6 +71,19 @@ export class EscrowAbiService extends GenericAbiService {
             .map((rawAddress: AddressValue) => rawAddress.valueOf().bech32());
     }
 
+    async getAddressLastTransferEpoch(
+        address: string,
+    ): Promise<number | undefined> {
+        const hexValue = await this.mxGateway.getSCStorageKeys(
+            scAddress.escrow,
+            ['addressLastTransferEpoch', Address.fromString(address)],
+        );
+        console.log({
+            hexValue,
+        });
+        return hexValue === ''
+            ? undefined
+            : new U64Value(new BigNumber(hexValue)).valueOf().toNumber();
     }
 
     async getEnergyFactoryAddress(): Promise<string> {
