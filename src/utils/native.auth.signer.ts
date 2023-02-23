@@ -1,5 +1,5 @@
 import { UserSigner } from '@elrondnetwork/erdjs-walletcore/out';
-import { SignableMessage } from '@elrondnetwork/erdjs/out';
+import { SignableMessage } from '@multiversx/sdk-core';
 import { NativeAuthClient } from '@elrondnetwork/native-auth-client';
 import { NativeAuthClientConfig } from '@elrondnetwork/native-auth-client/lib/src/entities/native.auth.client.config';
 import moment from 'moment';
@@ -28,7 +28,10 @@ export class NativeAuthSigner {
 
     public async getToken(): Promise<AccessTokenInfo> {
         const currentDate = moment().add(1, 'minutes').toDate();
-        if (this.accessTokenInfo && currentDate <= this.accessTokenInfo.expiryDate) {
+        if (
+            this.accessTokenInfo &&
+            currentDate <= this.accessTokenInfo.expiryDate
+        ) {
             return this.accessTokenInfo;
         }
 
@@ -36,19 +39,28 @@ export class NativeAuthSigner {
         const signableToken = await this.getSignableToken();
         const signerAddress = userSigner.getAddress().bech32();
 
-        const signableMessage = this.getSignableMessage(signerAddress, signableToken);
+        const signableMessage = this.getSignableMessage(
+            signerAddress,
+            signableToken,
+        );
 
         await userSigner.sign(signableMessage);
 
         const signature = signableMessage.getSignature();
 
-        const token = this.nativeAuthClient.getToken(signerAddress, signableToken, signature.hex());
-        const expiryDate = moment().add(this.config.expirySeconds, 'seconds').toDate();
+        const token = this.nativeAuthClient.getToken(
+            signerAddress,
+            signableToken,
+            signature.hex(),
+        );
+        const expiryDate = moment()
+            .add(this.config.expirySeconds, 'seconds')
+            .toDate();
 
-        return this.accessTokenInfo = {
+        return (this.accessTokenInfo = {
             token,
             expiryDate,
-        };
+        });
     }
 
     private async getUserSigner(): Promise<UserSigner> {
@@ -60,10 +72,12 @@ export class NativeAuthSigner {
         if (this.config.signerPrivateKey) {
             pemContent = this.config.signerPrivateKey;
         } else if (this.config.signerPrivateKeyPath) {
-            pemContent = await promises.readFile(this.config.signerPrivateKeyPath).then(content=>content.toString());
+            pemContent = await promises
+                .readFile(this.config.signerPrivateKeyPath)
+                .then((content) => content.toString());
         }
-        
-        if(!pemContent) {
+
+        if (!pemContent) {
             throw new Error('Missing SignerPrivateKey in NativeAuthSigner.');
         }
 
