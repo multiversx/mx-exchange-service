@@ -1349,7 +1349,7 @@ input EsdtTokenPaymentInput {
 type Query {
   factory: FactoryModel!
   pairAddresses: [String!]!
-  pairs(offset: Int = 0, limit: Int = 10, address: String, firstTokenID: String, secondTokenID: String, issuedLpToken: Boolean = true, state: String): [PairModel!]!
+  pairs(offset: Int! = 0, limit: Int! = 10, address: String, firstTokenID: String, secondTokenID: String, issuedLpToken: Boolean! = true, state: String): [PairModel!]!
   createPair(firstTokenID: String!, secondTokenID: String!): TransactionModel!
   upgradePair(firstTokenID: String!, secondTokenID: String!, fees: [Float!]!): TransactionModel!
   issueLPToken(address: String!, lpTokenName: String!, lpTokenTicker: String!): TransactionModel!
@@ -1400,7 +1400,7 @@ type Query {
   wrappingInfo: [WrapModel!]!
   wrapEgld(amount: String!): TransactionModel!
   unwrapEgld(amount: String!): TransactionModel!
-  tokens(identifiers: [String!], type: String, enabledSwaps: Boolean = false): [EsdtToken!]!
+  tokens(identifiers: [String!], type: String, enabledSwaps: Boolean! = false): [EsdtToken!]!
   nftToken(identifier: String!): NftToken!
   simpleLock: [SimpleLockModel!]!
   lockedTokenAttributes(args: DecodeAttributesArgs!): [LockedTokenAttributesModel!]!
@@ -1506,13 +1506,13 @@ type Query {
   withdrawFromPriceDiscovery(priceDiscoveryAddress: String!, inputTokens: InputTokenModel!): TransactionModel!
   redeemTokensBatchFromPriceDiscovery(priceDiscoveryAddress: String!, inputTokens: InputTokenModel!): [TransactionModel!]!
   redeemTokensFromPriceDiscovery(priceDiscoveryAddress: String!, inputTokens: InputTokenModel!): TransactionModel!
-  userTokens(offset: Int = 0, limit: Int = 10): [UserToken!]!
-  nfts(offset: Int = 0, limit: Int = 10): [UserNftTokens!]!
+  userTokens(offset: Int! = 0, limit: Int! = 10): [UserToken!]!
+  nfts(offset: Int! = 0, limit: Int! = 10): [UserNftTokens!]!
   userOutdatedContracts: [OutdatedContract!]!
   updateEnergy(includeAllContracts: Boolean): TransactionModel
-  userCustomTokens(offset: Int = 0, limit: Int = 10, tokens: [EsdtTokenInput!]!): [UserToken!]!
-  userCustomNftTokens(offset: Int = 0, limit: Int = 10, nfts: [NftTokenInput!]!): [UserNftTokens!]!
-  userNfts(offset: Int = 0, limit: Int = 10): UserNftsModel!
+  userCustomTokens(offset: Int! = 0, limit: Int! = 10, tokens: [EsdtTokenInput!]!): [UserToken!]!
+  userCustomNftTokens(offset: Int! = 0, limit: Int! = 10, nfts: [NftTokenInput!]!): [UserNftTokens!]!
+  userNfts(offset: Int! = 0, limit: Int! = 10): UserNftsModel!
   feesCollector: FeesCollectorModel!
   userFeesCollector: UserEntryFeesCollectorModel!
   claimFeesRewards: FeesCollectorTransactionModel!
@@ -1754,7 +1754,7 @@ input CalculateRewardsArgs {
   liquidity: String!
   identifier: String!
   attributes: String!
-  vmQuery: Boolean = false
+  vmQuery: Boolean! = false
 }
 
 enum UnlockType {

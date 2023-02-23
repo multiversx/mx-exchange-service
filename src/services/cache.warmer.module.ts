@@ -76,4 +76,4 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         ElasticService,
     ],
 })
-export class CacheWarmerModule { }
+export class CacheWarmerModule {}
