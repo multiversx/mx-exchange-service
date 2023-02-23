@@ -5,7 +5,7 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairService } from '../services/pair.service';
@@ -13,24 +13,24 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -68,7 +68,7 @@ describe('TransactionPairService', () => {
             providers: [
                 ConfigService,
                 ApiConfigService,
-                ElrondProxyServiceProvider,
+                MXProxyServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
@@ -121,7 +121,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.wrapeGLD,
             data: encodeTransactionData('wrapEgld'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -137,7 +137,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@2@TOK1-1111@@9@TOK2-2222@@10@addInitialLiquidity',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -179,7 +179,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@TOK1-1111@@10@TOK2-2222@@09@addInitialLiquidity',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -222,7 +222,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@2@TOK1-1111@@9@TOK2-2222@@10@addLiquidity@8@9',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -264,7 +264,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.wrapeGLD,
             data: encodeTransactionData('wrapEgld'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -280,7 +280,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@TOK1-1111@@10@TOK2-2222@@09@addLiquidity@09@08',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -323,7 +323,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.wrapeGLD,
             data: encodeTransactionData('wrapEgld'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -339,7 +339,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@TOK1-1111@@09@TOK2-2222@@10@addLiquidity@08@09',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -370,7 +370,7 @@ describe('TransactionPairService', () => {
                 data: encodeTransactionData(
                     'ESDTTransfer@1162300484@09@removeLiquidity@08@17',
                 ),
-                chainID: elrondConfig.chainID,
+                chainID: mxConfig.chainID,
                 version: 1,
                 options: undefined,
                 signature: undefined,
@@ -386,7 +386,7 @@ describe('TransactionPairService', () => {
                 data: encodeTransactionData(
                     'ESDTTransfer@TOK1-1111@08@unwrapEgld',
                 ),
-                chainID: elrondConfig.chainID,
+                chainID: mxConfig.chainID,
                 version: 1,
                 options: undefined,
                 signature: undefined,
@@ -418,7 +418,7 @@ describe('TransactionPairService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData('wrapEgld'),
-                chainID: elrondConfig.chainID,
+                chainID: mxConfig.chainID,
                 version: 1,
                 options: undefined,
                 signature: undefined,
@@ -434,7 +434,7 @@ describe('TransactionPairService', () => {
                 data: encodeTransactionData(
                     'ESDTTransfer@TOK1-1111@5@swapTokensFixedInput@TOK2-2222@4',
                 ),
-                chainID: elrondConfig.chainID,
+                chainID: mxConfig.chainID,
                 version: 1,
                 options: undefined,
                 signature: undefined,
@@ -467,7 +467,7 @@ describe('TransactionPairService', () => {
                 data: encodeTransactionData(
                     'ESDTTransfer@TOK2-2222@05@swapTokensFixedOutput@TOK1-1111@05',
                 ),
-                chainID: elrondConfig.chainID,
+                chainID: mxConfig.chainID,
                 version: 1,
                 options: undefined,
                 signature: undefined,
@@ -483,7 +483,7 @@ describe('TransactionPairService', () => {
                 data: encodeTransactionData(
                     'ESDTTransfer@TOK1-1111@05@unwrapEgld',
                 ),
-                chainID: elrondConfig.chainID,
+                chainID: mxConfig.chainID,
                 version: 1,
                 options: undefined,
                 signature: undefined,
@@ -552,7 +552,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'whitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -577,7 +577,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'removeWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -603,7 +603,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'addTrustedSwapPair@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111@TOK2-2222',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -628,7 +628,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'removeTrustedSwapPair@TOK1-1111@TOK2-2222',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -650,7 +650,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.set_transfer_exec_gas_limit,
             data: encodeTransactionData('set_transfer_exec_gas_limit@50000000'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -672,7 +672,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.set_extern_swap_gas_limit,
             data: encodeTransactionData('set_extern_swap_gas_limit@50000000'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -693,7 +693,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.pause,
             data: encodeTransactionData('pause'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -714,7 +714,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.resume,
             data: encodeTransactionData('resume'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -735,7 +735,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setStateActiveNoSwaps,
             data: encodeTransactionData('setStateActiveNoSwaps'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -758,7 +758,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setFeePercents,
             data: encodeTransactionData('setFeePercents@03@05'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -780,7 +780,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setMaxObservationsPerRecord,
             data: encodeTransactionData('setMaxObservationsPerRecord@1000'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -808,7 +808,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'setBPSwapConfig@1000@01000000000000000000@0100',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -836,7 +836,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'setBPRemoveConfig@1000@01000000000000000000@0100',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -864,7 +864,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'setBPAddConfig@1000@01000000000000000000@0100',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -886,7 +886,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setLockingDeadlineEpoch,
             data: encodeTransactionData('setLockingDeadlineEpoch@1000'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -908,7 +908,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setUnlockEpoch,
             data: encodeTransactionData('setUnlockEpoch@1005'),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,
@@ -932,7 +932,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 'setLockingScAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
-            chainID: elrondConfig.chainID,
+            chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
             signature: undefined,

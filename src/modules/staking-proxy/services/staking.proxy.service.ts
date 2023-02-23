@@ -1,4 +1,4 @@
-import { DualYieldTokenAttributes } from '@elrondnetwork/erdjs-dex';
+import { DualYieldTokenAttributes } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -9,7 +9,7 @@ import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { DualYieldTokenAttributesModel } from '../models/dualYieldTokenAttributes.model';
@@ -28,7 +28,7 @@ export class StakingProxyService {
         private readonly stakingService: StakingService,
         private readonly farmFactory: FarmFactoryService,
         private readonly pairService: PairService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -140,14 +140,18 @@ export class StakingProxyService {
         );
 
         const [farmRewards, stakingRewards] = await Promise.all([
-            this.farmFactory.useService(farmAddress).getRewardsForPosition({
-                attributes: farmToken.attributes,
-                identifier: farmToken.identifier,
-                farmAddress,
-                user: position.user,
-                liquidity: lpFarmTokenAmount.toFixed(),
-                vmQuery: position.vmQuery,
-            }),
+            this.farmFactory
+                .useService(farmAddress)
+                .getBatchRewardsForPosition([
+                    {
+                        attributes: farmToken.attributes,
+                        identifier: farmToken.identifier,
+                        farmAddress,
+                        user: position.user,
+                        liquidity: lpFarmTokenAmount.toFixed(),
+                        vmQuery: position.vmQuery,
+                    },
+                ]),
             this.stakingService.getRewardsForPosition({
                 attributes: stakingToken.attributes,
                 identifier: stakingToken.identifier,
@@ -161,7 +165,7 @@ export class StakingProxyService {
         return new DualYieldRewardsModel({
             attributes: position.attributes,
             identifier: position.identifier,
-            farmRewards,
+            farmRewards: farmRewards[0],
             stakingRewards,
         });
     }

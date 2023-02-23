@@ -1,10 +1,11 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { BatchFarmRewardsComputeArgs } from '../farm/models/farm.args';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import {
@@ -108,6 +109,17 @@ export class StakingResolver {
     async annualPercentageRewards(@Parent() parent: StakingModel) {
         try {
             return await this.stakingGetterService.getAnnualPercentageRewards(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async apr(@Parent() parent: StakingModel) {
+        try {
+            return await this.stakingGetterService.getStakeFarmAPR(
                 parent.address,
             );
         } catch (error) {
@@ -236,7 +248,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [StakingTokenAttributesModel])
     async stakingTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
@@ -248,7 +260,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [UnbondTokenAttributesModel])
     async unboundTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
@@ -260,7 +272,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [StakingRewardsModel])
     async getStakingRewardsForPosition(
         @Args('stakingPositions') args: BatchFarmRewardsComputeArgs,
@@ -283,15 +295,15 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async stakeFarm(
         @Args() args: StakeFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingTransactionService.stakeFarm(
-                user.publicKey,
+                user.address,
                 args.farmStakeAddress,
                 args.payments,
             );
@@ -300,15 +312,15 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unstakeFarm(
         @Args() args: GenericStakeFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingTransactionService.unstakeFarm(
-                user.publicKey,
+                user.address,
                 args.farmStakeAddress,
                 args.payment,
             );
@@ -322,12 +334,12 @@ export class StakingResolver {
     async setPenaltyPercent(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('percent') percent: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setPenaltyPercent(
                 farmStakeAddress,
@@ -343,12 +355,12 @@ export class StakingResolver {
     async setMinimumFarmingEpochs(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('epochs') epochs: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setMinimumFarmingEpochs(
                 farmStakeAddress,
@@ -364,12 +376,12 @@ export class StakingResolver {
     async setPerBlockRewardAmount(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('perBlockAmount') perBlockAmount: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setPerBlockRewardAmount(
                 farmStakeAddress,
@@ -385,12 +397,12 @@ export class StakingResolver {
     async setMaxApr(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('maxApr') maxApr: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setMaxApr(
                 farmStakeAddress,
@@ -406,12 +418,12 @@ export class StakingResolver {
     async setMinUnbondEpochs(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('minUnboundEpoch') minUnboundEpoch: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setMinUnbondEpochs(
                 farmStakeAddress,
@@ -426,12 +438,12 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async startProduceRewards(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setRewardsState(
                 farmStakeAddress,
@@ -446,12 +458,12 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async endProduceRewards(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setRewardsState(
                 farmStakeAddress,
@@ -467,12 +479,12 @@ export class StakingResolver {
     async setBurnGasLimit(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('gasLimit') gasLimit: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setBurnGasLimit(
                 farmStakeAddress,
@@ -488,12 +500,12 @@ export class StakingResolver {
     async setTransferExecGasLimit(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('gasLimit') gasLimit: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setTransferExecGasLimit(
                 farmStakeAddress,
@@ -509,12 +521,12 @@ export class StakingResolver {
     async addAddressToWhitelist(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('address') address: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setAddressWhitelist(
                 farmStakeAddress,
@@ -531,12 +543,12 @@ export class StakingResolver {
     async removeAddressFromWhitelist(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('address') address: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setAddressWhitelist(
                 farmStakeAddress,
@@ -555,12 +567,12 @@ export class StakingResolver {
         @Args('tokenDisplayName') tokenDisplayName: string,
         @Args('tokenTicker') tokenTicker: string,
         @Args('decimals') decimals: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.registerFarmToken(
                 farmStakeAddress,
@@ -577,12 +589,12 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async pause(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setState(
                 farmStakeAddress,
@@ -597,12 +609,12 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async resume(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setState(
                 farmStakeAddress,
@@ -617,12 +629,12 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async setLocalRolesFarmToken(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.setLocalRolesFarmToken(
                 farmStakeAddress,
@@ -632,15 +644,15 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unbondFarm(
         @Args() args: GenericStakeFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingTransactionService.unbondFarm(
-                user.publicKey,
+                user.address,
                 args.farmStakeAddress,
                 args.payment,
             );
@@ -649,15 +661,15 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimStakingRewards(
         @Args() args: GenericStakeFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingTransactionService.claimRewards(
-                user.publicKey,
+                user.address,
                 args.farmStakeAddress,
                 args.payment,
             );
@@ -666,15 +678,15 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimStakingRewardsWithNewValue(
         @Args() args: ClaimRewardsWithNewValueArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingTransactionService.claimRewardsWithNewValue(
-                user.publicKey,
+                user.address,
                 args.farmStakeAddress,
                 args.payment,
                 args.newValue,
@@ -684,15 +696,15 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async compoundStakingRewards(
         @Args() args: GenericStakeFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingTransactionService.compoundRewards(
-                user.publicKey,
+                user.address,
                 args.farmStakeAddress,
                 args.payment,
             );
@@ -705,12 +717,12 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async topUpRewards(
         @Args() args: GenericStakeFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
                 args.farmStakeAddress,
-                user.publicKey,
+                user.address,
             );
             return await this.stakingTransactionService.topUpRewards(
                 args.farmStakeAddress,
@@ -721,15 +733,15 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async mergeStakeFarmTokens(
         @Args() args: StakeFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingTransactionService.mergeFarmTokens(
-                user.publicKey,
+                user.address,
                 args.farmStakeAddress,
                 args.payments,
             );

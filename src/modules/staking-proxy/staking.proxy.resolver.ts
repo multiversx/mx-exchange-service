@@ -1,11 +1,12 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import {
     BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,
@@ -115,7 +116,7 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [DualYieldTokenAttributesModel])
     dualYieldTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
@@ -138,15 +139,15 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async stakeFarmTokens(
         @Args() args: ProxyStakeFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingProxyTransaction.stakeFarmTokens(
-                user.publicKey,
+                user.address,
                 args,
             );
         } catch (error) {
@@ -154,15 +155,15 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimDualYield(
         @Args() args: ClaimDualYieldArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingProxyTransaction.claimDualYield(
-                user.publicKey,
+                user.address,
                 args,
             );
         } catch (error) {
@@ -170,15 +171,15 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unstakeFarmTokens(
         @Args() args: UnstakeFarmTokensArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingProxyTransaction.unstakeFarmTokens(
-                user.publicKey,
+                user.address,
                 args,
             );
         } catch (error) {
@@ -186,7 +187,7 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [DualYieldRewardsModel])
     async getDualYieldRewardsForPosition(
         @Args('proxyStakingPositions') args: BatchFarmRewardsComputeArgs,

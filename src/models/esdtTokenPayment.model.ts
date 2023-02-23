@@ -6,7 +6,7 @@ import {
     StructType,
     TokenIdentifierType,
     U64Type,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 
 @ObjectType('EsdtTokenPayment')

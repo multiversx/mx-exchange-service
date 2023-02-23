@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { dataApiConfig, elrondConfig } from 'src/config';
+import { dataApiConfig, mxConfig } from 'src/config';
 import { Logger } from 'winston';
 import { TimestreamWrite } from 'aws-sdk';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -27,10 +27,10 @@ export class DataApiWriteService {
         this.TableName = dataApiConfig.tableName;
 
         const keepAliveOptions = {
-            maxSockets: elrondConfig.keepAliveMaxSockets,
-            maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+            maxSockets: mxConfig.keepAliveMaxSockets,
+            maxFreeSockets: mxConfig.keepAliveMaxFreeSockets,
             timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-            freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            freeSocketTimeout: mxConfig.keepAliveFreeSocketTimeout,
             keepAlive: true,
         };
         const httpAgent = new Agent(keepAliveOptions);
@@ -38,9 +38,9 @@ export class DataApiWriteService {
         this.url = process.env.ELRONDDATAAPI_URL;
 
         this.config = {
-            timeout: elrondConfig.proxyTimeout,
-            httpAgent: elrondConfig.keepAlive ? httpAgent : null,
-            httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+            timeout: mxConfig.proxyTimeout,
+            httpAgent: mxConfig.keepAlive ? httpAgent : null,
+            httpsAgent: mxConfig.keepAlive ? httpsAgent : null,
         };
 
         this.nativeAuthSigner = new NativeAuthSigner({

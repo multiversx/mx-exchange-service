@@ -1,4 +1,4 @@
-import { StakingFarmTokenType } from '@elrondnetwork/erdjs-dex';
+import { StakingFarmTokenType } from '@multiversx/sdk-exchange';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 registerEnumType(StakingFarmTokenType, { name: 'StakingTokenType' });

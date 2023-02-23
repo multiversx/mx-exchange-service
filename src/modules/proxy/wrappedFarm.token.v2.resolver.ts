@@ -1,7 +1,7 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { scAddress } from 'src/config';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { FarmTokenAttributesUnion } from '../farm/models/farmTokenAttributes.model';
 import { DecodeAttributesArgs } from './models/proxy.args';
@@ -13,7 +13,7 @@ import { ProxyService } from './services/proxy.service';
 export class WrappedFarmTokenResolverV2 {
     constructor(
         private readonly proxyService: ProxyService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
     ) {}
 
     @ResolveField()

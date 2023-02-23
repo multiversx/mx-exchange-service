@@ -3,7 +3,7 @@ import { CommonAppModule } from 'src/common.app.module';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
 import { AutoRouterService } from './services/auto-router.service';
 import { AutoRouterComputeService } from './services/auto-router.compute.service';
@@ -19,7 +19,7 @@ import { TokenModule } from '../tokens/token.module';
     imports: [
         ContextModule,
         CommonAppModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         PairModule,
         AWSModule,

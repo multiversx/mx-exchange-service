@@ -1,5 +1,5 @@
-import { GenericEvent } from '@elrondnetwork/erdjs-dex';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { GenericEvent } from '@multiversx/sdk-exchange';
+import { Address } from '@multiversx/sdk-core';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 

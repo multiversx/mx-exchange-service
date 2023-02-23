@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CachingService } from 'src/services/caching/cache.service';
-import { Address } from '@elrondnetwork/erdjs/out';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { Address } from '@multiversx/sdk-core';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { constantsConfig } from 'src/config';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 
@@ -12,7 +12,7 @@ export class TransactionProcessorService {
 
     constructor(
         private readonly cachingService: CachingService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
     ) {}
 
     @Cron(CronExpression.EVERY_10_SECONDS)
@@ -23,15 +23,13 @@ export class TransactionProcessorService {
 
         try {
             this.isProcessing = true;
-            let lastProcessedTimestamp: number = await this.cachingService.getCache(
-                'lastProcessedTimestamp',
-            );
+            let lastProcessedTimestamp: number =
+                await this.cachingService.getCache('lastProcessedTimestamp');
             let currentTimestamp: number;
 
             if (lastProcessedTimestamp === null) {
-                lastProcessedTimestamp = await this.apiService.getShardTimestamp(
-                    1,
-                );
+                lastProcessedTimestamp =
+                    await this.apiService.getShardTimestamp(1);
                 currentTimestamp = lastProcessedTimestamp;
             } else {
                 currentTimestamp = await this.apiService.getShardTimestamp(1);
@@ -80,12 +78,10 @@ export class TransactionProcessorService {
                         gasUsed = transaction.gasUsed;
                         break;
                     case 'MultiESDTNFTTransfer':
-                        endpoint = this.MultiESDTNFTTransferEndpoint(
-                            functionArgs,
-                        );
-                        receiver = this.MultiESDTNFTTransferReceiver(
-                            functionArgs,
-                        );
+                        endpoint =
+                            this.MultiESDTNFTTransferEndpoint(functionArgs);
+                        receiver =
+                            this.MultiESDTNFTTransferReceiver(functionArgs);
                         gasUsed = transaction.gasUsed;
                         break;
                     default:
@@ -96,7 +92,7 @@ export class TransactionProcessorService {
                 }
                 if (
                     constantsConfig.endpoints.find(
-                        predefinedEndpoint => predefinedEndpoint === endpoint,
+                        (predefinedEndpoint) => predefinedEndpoint === endpoint,
                     )
                 ) {
                     MetricsCollector.setGasDifference(

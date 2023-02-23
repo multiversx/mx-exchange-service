@@ -9,7 +9,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { FarmAbiServiceV1_2 } from './farm.v1.2.abi.service';
 import { FarmGetterServiceV1_2 } from './farm.v1.2.getter.service';
 import { FarmComputeServiceV1_2 } from './farm.v1.2.compute.service';
-import { FarmTokenAttributesV1_2 } from '@elrondnetwork/erdjs-dex';
+import { FarmTokenAttributesV1_2 } from '@multiversx/sdk-exchange';
 import { FarmTokenAttributesModelV1_2 } from '../../models/farmTokenAttributes.model';
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
 

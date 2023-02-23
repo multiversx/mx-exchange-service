@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { elrondConfig } from 'src/config';
+import { mxConfig } from 'src/config';
 import { BigNumber } from 'bignumber.js';
 import { LiquidityPosition } from '../models/pair.model';
 import {
@@ -50,9 +50,7 @@ export class PairService {
         ]);
 
         const tokenIn =
-            tokenInID === elrondConfig.EGLDIdentifier
-                ? wrappedTokenID
-                : tokenInID;
+            tokenInID === mxConfig.EGLDIdentifier ? wrappedTokenID : tokenInID;
 
         switch (tokenIn) {
             case firstTokenID:
@@ -94,7 +92,7 @@ export class PairService {
         ]);
 
         const tokenOut =
-            tokenOutID === elrondConfig.EGLDIdentifier
+            tokenOutID === mxConfig.EGLDIdentifier
                 ? wrappedTokenID
                 : tokenOutID;
 
@@ -123,22 +121,16 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<BigNumber> {
-        const [
-            wrappedTokenID,
-            firstTokenID,
-            secondTokenID,
-            pairInfo,
-        ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
-            this.pairGetterService.getPairInfoMetadata(pairAddress),
-        ]);
+        const [wrappedTokenID, firstTokenID, secondTokenID, pairInfo] =
+            await Promise.all([
+                this.wrapService.getWrappedEgldTokenID(),
+                this.pairGetterService.getFirstTokenID(pairAddress),
+                this.pairGetterService.getSecondTokenID(pairAddress),
+                this.pairGetterService.getPairInfoMetadata(pairAddress),
+            ]);
 
         const tokenIn =
-            tokenInID === elrondConfig.EGLDIdentifier
-                ? wrappedTokenID
-                : tokenInID;
+            tokenInID === mxConfig.EGLDIdentifier ? wrappedTokenID : tokenInID;
 
         switch (tokenIn) {
             case firstTokenID:
@@ -192,7 +184,6 @@ export class PairService {
             this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
             this.getLiquidityPosition(pairAddress, amount),
         ]);
-
         return computeValueUSD(
             liquidityPosition.firstTokenAmount,
             firstToken.decimals,
@@ -216,22 +207,24 @@ export class PairService {
             return cachedValue;
         }
         const pairsAddress = await this.routerGetter.getAllPairsAddress();
-        const promises = pairsAddress.map(async pairAddress =>
+        const promises = pairsAddress.map(async (pairAddress) =>
             this.pairGetterService.getLpTokenID(pairAddress),
         );
         const lpTokenIDs = await Promise.all(promises);
+        let returnedData = null;
         for (let index = 0; index < lpTokenIDs.length; index++) {
             if (lpTokenIDs[index] === tokenID) {
-                await this.cachingService.setCache(
-                    `${tokenID}.pairAddress`,
-                    pairsAddress[index],
-                    oneHour(),
-                );
-                return pairsAddress[index];
+                returnedData = pairsAddress[index];
+                break;
             }
         }
 
-        return null;
+        await this.cachingService.setCache(
+            `${tokenID}.pairAddress`,
+            returnedData,
+            oneHour(),
+        );
+        return returnedData;
     }
 
     async isPairEsdtToken(tokenID: string): Promise<boolean> {

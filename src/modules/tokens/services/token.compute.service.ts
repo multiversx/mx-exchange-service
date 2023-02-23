@@ -1,6 +1,11 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { constantsConfig, scAddress, tokenProviderUSD } from 'src/config';
+import {
+    constantsConfig,
+    mxConfig,
+    scAddress,
+    tokenProviderUSD,
+} from 'src/config';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
@@ -52,16 +57,21 @@ export class TokenComputeService implements ITokenComputeService {
                             secondTokenDerivedEGLD,
                             secondTokenReserves,
                             firstTokenPrice,
+                            secondToken,
                         ] = await Promise.all([
                             this.computeTokenPriceDerivedEGLD(
                                 pair.secondTokenID,
                             ),
                             this.pairGetter.getSecondTokenReserve(pair.address),
                             this.pairGetter.getFirstTokenPrice(pair.address),
+                            this.pairGetter.getSecondToken(pair.address),
                         ]);
-                        const egldLocked = new BigNumber(
-                            secondTokenReserves,
-                        ).times(secondTokenDerivedEGLD);
+                        const egldLocked = new BigNumber(secondTokenReserves)
+                            .times(`1e-${secondToken.decimals}`)
+                            .times(secondTokenDerivedEGLD)
+                            .times(`1e${mxConfig.EGLDDecimals}`)
+                            .integerValue();
+
                         if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
                             largestLiquidityEGLD = egldLocked;
                             priceSoFar = new BigNumber(firstTokenPrice)
@@ -74,16 +84,20 @@ export class TokenComputeService implements ITokenComputeService {
                             firstTokenDerivedEGLD,
                             firstTokenReserves,
                             secondTokenPrice,
+                            firstToken,
                         ] = await Promise.all([
                             this.computeTokenPriceDerivedEGLD(
                                 pair.firstTokenID,
                             ),
                             this.pairGetter.getFirstTokenReserve(pair.address),
                             this.pairGetter.getSecondTokenPrice(pair.address),
+                            this.pairGetter.getFirstToken(pair.address),
                         ]);
-                        const egldLocked = new BigNumber(
-                            firstTokenReserves,
-                        ).times(firstTokenDerivedEGLD);
+                        const egldLocked = new BigNumber(firstTokenReserves)
+                            .times(`1e-${firstToken.decimals}`)
+                            .times(firstTokenDerivedEGLD)
+                            .times(`1e${mxConfig.EGLDDecimals}`)
+                            .integerValue();
                         if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
                             largestLiquidityEGLD = egldLocked;
                             priceSoFar = new BigNumber(secondTokenPrice)

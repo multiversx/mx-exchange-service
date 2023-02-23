@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig } from 'src/config';
+import { mxConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Logger } from 'winston';
 import Agent, { HttpsAgent } from 'agentkeepalive';
@@ -9,7 +9,7 @@ import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
-export class ElrondGatewayService {
+export class MXGatewayService {
     private url: string;
     private config: AxiosRequestConfig;
 
@@ -18,20 +18,20 @@ export class ElrondGatewayService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         const keepAliveOptions = {
-            maxSockets: elrondConfig.keepAliveMaxSockets,
-            maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+            maxSockets: mxConfig.keepAliveMaxSockets,
+            maxFreeSockets: mxConfig.keepAliveMaxFreeSockets,
             timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-            freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            freeSocketTimeout: mxConfig.keepAliveFreeSocketTimeout,
             keepAlive: true,
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
-        this.url = process.env.ELRONDGATEWAY_URL;
+        this.url = process.env.MX_GATEWAY_URL;
 
         this.config = {
-            timeout: elrondConfig.proxyTimeout,
-            httpAgent: elrondConfig.keepAlive ? httpAgent : null,
-            httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+            timeout: mxConfig.proxyTimeout,
+            httpAgent: mxConfig.keepAlive ? httpAgent : null,
+            httpsAgent: mxConfig.keepAlive ? httpsAgent : null,
         };
     }
 
@@ -39,7 +39,26 @@ export class ElrondGatewayService {
         return await this.doGetGeneric(
             this.getSCStorageKey.name,
             `address/${address}/key/${Buffer.from(key).toString('hex')}`,
-            response => response.data.value,
+            (response) => response.data.value,
+        );
+    }
+
+    async getSCStorageKeys(address: string, keys: any[]): Promise<any> {
+        let fullKey = '';
+        for (const key of keys) {
+            switch (typeof key) {
+                case 'number':
+                    fullKey = fullKey.concat(key.toString(16).padStart(8, '0'));
+                    break;
+                case 'string':
+                    fullKey = fullKey.concat(Buffer.from(key).toString('hex'));
+                    break;
+            }
+        }
+        return await this.doGetGeneric(
+            this.getSCStorageKey.name,
+            `address/${address}/key/${fullKey}`,
+            (response) => response.data.value,
         );
     }
 
@@ -67,7 +86,7 @@ export class ElrondGatewayService {
             profiler.stop();
 
             MetricsCollector.setExternalCall(
-                ElrondGatewayService.name,
+                MXGatewayService.name,
                 name,
                 profiler.duration,
             );

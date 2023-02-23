@@ -3,9 +3,9 @@ import {
     Address,
     SmartContract,
     SmartContractAbi,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
-import { abiConfig, elrondConfig, scAddress } from '../../config';
+import { abiConfig, mxConfig, scAddress } from '../../config';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -16,7 +16,7 @@ import { promises } from 'fs';
 import { proxyVersion } from 'src/utils/proxy.utils';
 
 @Injectable()
-export class ElrondProxyService {
+export class MXProxyService {
     private readonly proxy: ProxyNetworkProviderProfiler;
     private static smartContracts: SmartContract[];
 
@@ -25,28 +25,28 @@ export class ElrondProxyService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         const keepAliveOptions = {
-            maxSockets: elrondConfig.keepAliveMaxSockets,
-            maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+            maxSockets: mxConfig.keepAliveMaxSockets,
+            maxFreeSockets: mxConfig.keepAliveMaxFreeSockets,
             timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-            freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            freeSocketTimeout: mxConfig.keepAliveFreeSocketTimeout,
             keepAlive: true,
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
 
         this.proxy = new ProxyNetworkProviderProfiler(
-            process.env.ELRONDAPI_URL,
+            this.apiConfigService.getApiUrl(),
             {
-                timeout: elrondConfig.proxyTimeout,
-                httpAgent: elrondConfig.keepAlive ? httpAgent : null,
-                httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+                timeout: mxConfig.proxyTimeout,
+                httpAgent: mxConfig.keepAlive ? httpAgent : null,
+                httpsAgent: mxConfig.keepAlive ? httpsAgent : null,
                 headers: {
                     origin: 'MaiarExchangeService',
                 },
             },
         );
 
-        ElrondProxyService.smartContracts = [];
+        MXProxyService.smartContracts = [];
     }
 
     getService(): ProxyNetworkProviderProfiler {
@@ -213,8 +213,9 @@ export class ElrondProxyService {
         contractAbiPath: string,
         contractInterface: string,
     ): Promise<SmartContract> {
+        const key = `${contractInterface}.${contractAddress}`;
         return (
-            ElrondProxyService.smartContracts[contractAddress] ||
+            MXProxyService.smartContracts[key] ||
             this.createSmartContract(
                 contractAddress,
                 contractAbiPath,
@@ -237,7 +238,8 @@ export class ElrondProxyService {
             address: Address.fromString(contractAddress),
             abi: new SmartContractAbi(abiRegistry, [contractInterface]),
         });
-        ElrondProxyService.smartContracts[contractAddress] = newSC;
+        const key = `${contractInterface}.${contractAddress}`;
+        MXProxyService.smartContracts[key] = newSC;
         return newSC;
     }
 }

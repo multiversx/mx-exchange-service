@@ -1,4 +1,4 @@
-import { PriceDiscoveryPhase } from '@elrondnetwork/erdjs-dex';
+import { PriceDiscoveryPhase } from '@multiversx/sdk-exchange';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';

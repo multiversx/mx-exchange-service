@@ -1,5 +1,5 @@
 {
-    "elrond": {
+    "multiversx": {
         "chainID": "1"
     },
     "scAddress": {
@@ -31,7 +31,7 @@
         "feesCollector": "erd1qqqqqqqqqqqqqpgqjsnxqprks7qxfwkcg2m2v9hxkrchgm9akp2segrswt",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqg48z8qfm028ze6y3d6tamdfaw6vn774tkp2shg5dt5",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqxv0y4p6vvszrknaztatycac77yvsxqrrkp2sghd86c",
-        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq97fctvqlskzu0str05muew2qyjttp8kfkp2sl9k0gx"
+        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqu64gygjs5ted4rupaewaszyhaxl9lv7m2jpsw47nzr"
     },
     "farms": {
         "v1.2": [
@@ -83,14 +83,5 @@
         "MEX_TOKEN_ID": "MEX-455c57",
         "USDC_TOKEN_ID": "USDC-c76f1f",
         "MAINTENANCE": false
-    },
-    "aws": {
-        "region": "eu-central-1",
-        "timestream": {
-            "databaseName": "maiar-exchange-timestream",
-            "tableName": "tradingInfo",
-            "MemoryStoreRetentionPeriodInHours": 768,
-            "MagneticStoreRetentionPeriodInDays": 73000
-        }
     }
 }

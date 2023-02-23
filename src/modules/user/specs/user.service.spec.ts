@@ -4,7 +4,7 @@ import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-fa
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
 import { UserMetaEsdtService } from '../services/user.metaEsdt.service';
-import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -14,7 +14,7 @@ import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { WrapService } from '../../wrapping/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
-import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
+import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModelV1_2 } from '../../farm/models/farmTokenAttributes.model';
 import { UserMetaEsdtComputeService } from '../services/metaEsdt.compute.service';
@@ -74,45 +74,25 @@ import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compu
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
 import { EnergyGetterServiceProvider } from 'src/modules/energy/mocks/energy.getter.service.mock';
-import {
-    WeeklyRewardsSplittingGetterServiceMock
-} from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
-import {
-    WeeklyRewardsSplittingGetterService
-} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import {
-    WeekTimekeepingGetterService
-} from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
-import {
-    WeekTimekeepingGetterServiceMock
-} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
-import {
-    WeekTimekeepingComputeService
-} from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import {
-    WeekTimekeepingComputeServiceMock
-} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
+import { WeeklyRewardsSplittingGetterServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
+import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
+import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import { WeekTimekeepingGetterServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
+import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import {
-    ProgressComputeServiceMock
-} from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
-import {
-    LockedTokenWrapperGetterService
-} from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
-import {
-    LockedTokenWrapperGetterServiceMock
-} from '../../locked-token-wrapper/mocks/locked-token-wrapper.getter.service.mock';
-import {
-    LockedTokenWrapperService
-} from '../../locked-token-wrapper/services/locked-token-wrapper.service';
+import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
+import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
+import { LockedTokenWrapperGetterServiceMock } from '../../locked-token-wrapper/mocks/locked-token-wrapper.getter.service.mock';
+import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
     let userEsdts: UserEsdtService;
 
-    const ElrondApiServiceProvider = {
-        provide: ElrondApiService,
-        useClass: ElrondApiServiceMock,
+    const MXApiServiceProvider = {
+        provide: MXApiService,
+        useClass: MXApiServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -200,19 +180,18 @@ describe('UserService', () => {
     ];
 
     beforeEach(async () => {
-
         const getter = new LockedTokenWrapperGetterServiceMock({
             getLockedTokenId(address: string): Promise<string> {
-                return Promise.resolve("ELKMEX-7e6873");
+                return Promise.resolve('ELKMEX-7e6873');
             },
             getWrappedTokenId(address: string): Promise<string> {
-                return Promise.resolve("WELKMEX-4b8419");
-            }
+                return Promise.resolve('WELKMEX-4b8419');
+            },
         });
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
-                ElrondApiServiceProvider,
+                MXApiServiceProvider,
                 ContextGetterServiceProvider,
                 RouterGetterServiceProvider,
                 PairService,

@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
 import { EsdtToken } from '../models/esdtToken.model';
@@ -18,7 +18,7 @@ export class TokenGetterService extends GenericGetterService {
         private readonly tokenRepositoryService: TokenRepositoryService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'token';

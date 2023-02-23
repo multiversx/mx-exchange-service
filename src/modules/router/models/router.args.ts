@@ -1,4 +1,4 @@
-import { EnumType, EnumVariantDefinition } from '@elrondnetwork/erdjs/out';
+import { EnumType, EnumVariantDefinition } from '@multiversx/sdk-core';
 import { Field, InputType, registerEnumType } from '@nestjs/graphql';
 
 @InputType()

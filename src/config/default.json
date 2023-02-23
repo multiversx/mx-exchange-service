@@ -1,10 +1,12 @@
 {
-    "elrond": {
+    "multiversx": {
         "chainID": "T",
         "EGLDIdentifier": "EGLD",
+        "EGLDDecimals": 18,
         "version": 1,
         "proxyTimeout": 60000,
         "timeoutLimit": 10000,
+        "localCacheMaxItems": 50000,
         "keepAlive": true,
         "keepAliveTimeout": 50000,
         "keepAliveFreeSocketTimeout": 30000,
@@ -131,7 +133,7 @@
                 "compoundRewards": 11600000,
                 "unlockedRewards": {
                     "exitFarm": {
-                        "default": 10000000,
+                        "default": 12000000,
                         "withPenalty": {
                             "localBurn": 10500000,
                             "pairBurn": 17000000,
@@ -385,7 +387,7 @@
                 "default": 23000000,
                 "withTokenMerge": 33000000
             },
-            "claimDualYield": 40000000,
+            "claimDualYield": 50000000,
             "unstakeFarmTokens": 62000000
         },
         "metabonding": {
@@ -412,11 +414,11 @@
             "addLiquidityLockedToken": 20000000,
             "removeLiquidityLockedToken": 15000000,
             "enterFarmLockedToken": {
-                "default": 15000000,
-                "withTokenMerge": 20000000
+                "default": 25000000,
+                "withTokenMerge": 30000000
             },
-            "exitFarmLockedToken": 45000000,
-            "claimRewardsFarmLockedToken": 30000000
+            "exitFarmLockedToken": 50000000,
+            "claimRewardsFarmLockedToken": 35000000
         },
         "simpleLockEnergy": {
             "lockTokens": 10000000,
@@ -438,14 +440,17 @@
             }
         },
         "feesCollector": {
-            "baseClaimRewards": 10000000,
-            "claimRewardsPerWeek": 10000000
+            "baseClaimRewards": 20000000,
+            "claimRewardsPerWeek": 20000000
         },
         "energyUpdate": {
             "updateFarmsEnergyForUser": 15000000
         },
         "tokenUnstake": {
-            "claimUnlockedTokens": 15000000,
+            "claimUnlockedTokens": {
+                "default": 8500000,
+                "additionalTokens": 5000000
+            },
             "cancelUnbond": 20000000
         },
         "lockedTokenWrapper": {
@@ -539,19 +544,7 @@
         },
         "MIN_SWAP_AMOUNT": 0.05
     },
-    "security": {
-        "admins": []
-    },
-    "aws": {
-        "region": "us-east-1",
-        "timestream": {
-            "databaseName": "devnet-data-timestream",
-            "tableName": "tradingInfo",
-            "MemoryStoreRetentionPeriodInHours": 768,
-            "MagneticStoreRetentionPeriodInDays": 73000
-        }
-    },
     "dataApi": {
-        "tableName": "MAIAR_EXCHANGE_ANALYTICS"
+        "tableName": "XEXCHANGE_ANALYTICS"
     }
 }

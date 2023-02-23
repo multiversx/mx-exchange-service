@@ -1,4 +1,4 @@
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 import { BigNumber } from 'bignumber.js';
 
 export function base64DecodeBinary(str: string): Buffer {
