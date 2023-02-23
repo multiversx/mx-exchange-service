@@ -6,14 +6,14 @@ import {
     TokenPayment,
     TypedValue,
     U64Value,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { StakingGetterService } from './staking.getter.service';
@@ -22,7 +22,7 @@ import { StakingGetterService } from './staking.getter.service';
 export class StakingTransactionService {
     constructor(
         private readonly stakeGetterService: StakingGetterService,
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -44,7 +44,7 @@ export class StakingTransactionService {
             throw error;
         }
 
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
 
@@ -67,7 +67,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -77,7 +77,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -91,7 +91,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.unstakeFarm)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -101,7 +101,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -115,7 +115,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.unbondFarm)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -125,7 +125,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -139,7 +139,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.claimRewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -150,7 +150,7 @@ export class StakingTransactionService {
         payment: InputTokenModel,
         newValue: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -166,7 +166,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.claimRewardsWithNewValue)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -176,7 +176,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -190,7 +190,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.compoundRewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -199,7 +199,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -211,7 +211,7 @@ export class StakingTransactionService {
                 ),
             )
             .withGasLimit(gasConfig.stake.admin.topUpRewards)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -221,7 +221,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const mappedPayments = payments.map((payment) =>
@@ -238,7 +238,7 @@ export class StakingTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.mergeTokens)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -247,13 +247,13 @@ export class StakingTransactionService {
         stakeAddress: string,
         percent: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
             .set_penalty_percent([new BigUIntValue(new BigNumber(percent))])
             .withGasLimit(gasConfig.stake.admin.set_penalty_percent)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -262,7 +262,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         epochs: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -270,7 +270,7 @@ export class StakingTransactionService {
                 new BigUIntValue(new BigNumber(epochs)),
             ])
             .withGasLimit(gasConfig.stake.admin.set_minimum_farming_epochs)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -279,13 +279,13 @@ export class StakingTransactionService {
         stakeAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
             .set_burn_gas_limit([new BigUIntValue(new BigNumber(gasLimit))])
             .withGasLimit(gasConfig.stake.admin.set_burn_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -294,7 +294,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -302,7 +302,7 @@ export class StakingTransactionService {
                 new BigUIntValue(new BigNumber(gasLimit)),
             ])
             .withGasLimit(gasConfig.stake.admin.set_transfer_exec_gas_limit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -312,7 +312,7 @@ export class StakingTransactionService {
         address: string,
         whitelist: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
 
@@ -322,7 +322,7 @@ export class StakingTransactionService {
                     new AddressValue(Address.fromString(address)),
                 ])
                 .withGasLimit(gasConfig.stake.admin.whitelist)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject();
 
@@ -331,7 +331,7 @@ export class StakingTransactionService {
                 new AddressValue(Address.fromString(address)),
             ])
             .withGasLimit(gasConfig.stake.admin.whitelist)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -340,7 +340,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         state: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
 
@@ -348,14 +348,14 @@ export class StakingTransactionService {
             return contract.methodsExplicit
                 .resume()
                 .withGasLimit(gasConfig.stake.admin.setState)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject();
 
         return contract.methodsExplicit
             .pause()
             .withGasLimit(gasConfig.stake.admin.setState)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -363,13 +363,13 @@ export class StakingTransactionService {
     async setLocalRolesFarmToken(
         stakeAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
             .setLocalRolesFarmToken()
             .withGasLimit(gasConfig.stake.admin.setLocalRolesFarmToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -380,7 +380,7 @@ export class StakingTransactionService {
         tokenTicker: string,
         decimals: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const transactionArgs: TypedValue[] = [
@@ -391,7 +391,7 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .registerFarmToken(transactionArgs)
             .withGasLimit(gasConfig.stake.admin.registerFarmToken)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -400,7 +400,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         perBlockAmount: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -408,7 +408,7 @@ export class StakingTransactionService {
                 new BigUIntValue(new BigNumber(perBlockAmount)),
             ])
             .withGasLimit(gasConfig.stake.admin.setPerBlockRewardAmount)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -417,13 +417,13 @@ export class StakingTransactionService {
         stakeAddress: string,
         maxApr: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
             .setMaxApr([new BigUIntValue(new BigNumber(maxApr))])
             .withGasLimit(gasConfig.stake.admin.setMaxApr)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -432,13 +432,13 @@ export class StakingTransactionService {
         stakeAddress: string,
         minUnboundEpoch: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
             .setMinUnbondEpochs([new U64Value(new BigNumber(minUnboundEpoch))])
             .withGasLimit(gasConfig.stake.admin.setMinUnbondEpochs)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -447,7 +447,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         rewards: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
 
@@ -455,14 +455,14 @@ export class StakingTransactionService {
             return contract.methodsExplicit
                 .startProduceRewards()
                 .withGasLimit(gasConfig.stake.admin.setRewardsState)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject();
 
         return contract.methodsExplicit
             .end_produce_rewards()
             .withGasLimit(gasConfig.stake.admin.setRewardsState)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }

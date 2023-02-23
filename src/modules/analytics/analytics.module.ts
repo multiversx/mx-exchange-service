@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
 import { AnalyticsResolver } from './analytics.resolver';
@@ -25,7 +25,7 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
 
 @Module({
     imports: [
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         AWSModule,
         CachingModule,
         ContextModule,

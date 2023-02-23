@@ -23,13 +23,13 @@ export class StakingComputeService {
         liquidity: string,
         decodedAttributes: StakingTokenAttributesModel,
     ): Promise<BigNumber> {
-        const [
-            futureRewardsPerShare,
-            divisionSafetyConstant,
-        ] = await Promise.all([
-            this.computeFutureRewardsPerShare(stakeAddress),
-            this.stakingGetterService.getDivisionSafetyConstant(stakeAddress),
-        ]);
+        const [futureRewardsPerShare, divisionSafetyConstant] =
+            await Promise.all([
+                this.computeFutureRewardsPerShare(stakeAddress),
+                this.stakingGetterService.getDivisionSafetyConstant(
+                    stakeAddress,
+                ),
+            ]);
 
         const amountBig = new BigNumber(liquidity);
         const futureRewardsPerShareBig = new BigNumber(futureRewardsPerShare);
@@ -109,9 +109,8 @@ export class StakingComputeService {
             lastRewardBlockNonceBig,
         );
         if (currentNonce > lastRewardBlockNonce && produceRewardsEnabled) {
-            const extraRewardsUnbounded = perBlockRewardAmountBig.times(
-                blockDifferenceBig,
-            );
+            const extraRewardsUnbounded =
+                perBlockRewardAmountBig.times(blockDifferenceBig);
             const extraRewardsBounded = await this.computeExtraRewardsBounded(
                 stakeAddress,
                 blockDifferenceBig,
@@ -142,19 +141,48 @@ export class StakingComputeService {
     }
 
     async computeStakedValueUSD(stakeAddress: string): Promise<string> {
-        const [
-            farmTokenSupply,
-            farmingToken
-        ] = await Promise.all([
+        const [farmTokenSupply, farmingToken] = await Promise.all([
             this.stakingGetterService.getFarmTokenSupply(stakeAddress),
             this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
             this.stakingGetterService.getFarmingToken(stakeAddress),
-        ])
+        ]);
 
-        const farmingTokenPrice = await this.tokenGetter.getDerivedUSD(farmingToken.identifier);
+        const farmingTokenPrice = await this.tokenGetter.getDerivedUSD(
+            farmingToken.identifier,
+        );
         return new BigNumber(farmTokenSupply)
             .multipliedBy(farmingTokenPrice)
             .multipliedBy(`1e-${farmingToken.decimals}`)
-            .toFixed()
+            .toFixed();
+    }
+
+    async computeStakeFarmAPR(stakeAddress: string): Promise<string> {
+        const [
+            annualPercentageRewards,
+            perBlockRewardAmount,
+            rewardsAPRBoundedBig,
+            stakedValue,
+        ] = await Promise.all([
+            this.stakingGetterService.getAnnualPercentageRewards(stakeAddress),
+            this.stakingGetterService.getPerBlockRewardAmount(stakeAddress),
+            this.computeExtraRewardsBounded(
+                stakeAddress,
+                constantsConfig.BLOCKS_IN_YEAR,
+            ),
+            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
+        ]);
+
+        const rewardsUnboundedBig = new BigNumber(perBlockRewardAmount).times(
+            constantsConfig.BLOCKS_IN_YEAR,
+        );
+        const stakedValueBig = new BigNumber(stakedValue);
+
+        return rewardsUnboundedBig.isLessThan(
+            rewardsAPRBoundedBig.integerValue(),
+        )
+            ? rewardsUnboundedBig.dividedBy(stakedValueBig).toFixed()
+            : new BigNumber(annualPercentageRewards)
+                  .dividedBy(constantsConfig.MAX_PERCENT)
+                  .toFixed();
     }
 }

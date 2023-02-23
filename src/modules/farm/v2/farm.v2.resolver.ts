@@ -9,7 +9,6 @@ import {
 import {
     WeekTimekeepingModel
 } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
-import { WeeklyRewardsSplittingGetterService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import { FarmComputeServiceV2 } from "./services/farm.v2.compute.service";
 import { constantsConfig } from "../../../config";
 
@@ -19,7 +18,6 @@ export class FarmResolverV2 extends FarmResolver {
         protected readonly farmGetter: FarmGetterServiceV2,
         protected readonly farmService: FarmServiceV2,
         protected readonly farmCompute: FarmComputeServiceV2,
-        private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
     ) {
         super(farmGetter);
     }
@@ -37,14 +35,14 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
-    async boostedOptimalRatio(
+    async optimalEnergyPerLp(
         @Parent() parent: FarmModelV2
     ): Promise<string> {
         const currentWeek = await this.farmGetter.getCurrentWeek(
             parent.address,
         );
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getOptimalRatio(parent.address, currentWeek),
+            this.farmGetter.getOptimalEnergyPerLp(parent.address, currentWeek),
         );
     }
 
@@ -129,7 +127,7 @@ export class FarmResolverV2 extends FarmResolver {
     @ResolveField()
     async lastGlobalUpdateWeek(@Parent() parent: FarmModelV2): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(
+            this.farmGetter.lastGlobalUpdateWeek(
                 parent.address,
             ),
         );

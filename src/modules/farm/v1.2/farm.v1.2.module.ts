@@ -3,7 +3,7 @@ import { PairModule } from 'src/modules/pair/pair.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { FarmAbiServiceV1_2 } from './services/farm.v1.2.abi.service';
 import { FarmComputeServiceV1_2 } from './services/farm.v1.2.compute.service';
 import { FarmGetterServiceV1_2 } from './services/farm.v1.2.getter.service';
@@ -18,7 +18,7 @@ import { FarmSetterServiceV1_2 } from './services/farm.v1.2.setter.service';
     imports: [
         CachingModule,
         ContextModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         TokenModule,
         PairModule,
     ],

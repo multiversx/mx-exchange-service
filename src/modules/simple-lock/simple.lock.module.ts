@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
 import { TokenModule } from '../tokens/token.module';
 import { WrappingModule } from '../wrapping/wrap.module';
@@ -15,16 +15,16 @@ import { SimpleLockTransactionService } from './services/simple.lock.transaction
 import { SimpleLockResolver } from './simple.lock.resolver';
 import { CommonAppModule } from 'src/common.app.module';
 import { TransactionResolver } from './transaction.resolver';
-import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
+import { FarmModule } from '../farm/farm.module';
 
 @Module({
     imports: [
         CommonAppModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         ContextModule,
         CachingModule,
         PairModule,
-        FarmModuleV1_3,
+        FarmModule,
         WrappingModule,
         TokenModule,
     ],

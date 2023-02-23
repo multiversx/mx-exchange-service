@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Address, TokenPayment } from '@elrondnetwork/erdjs';
-import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
+import { Address, TokenPayment } from '@multiversx/sdk-core';
+import { constantsConfig, mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { BigNumber } from 'bignumber.js';
 import { UnlockAssetsArgs } from '../models/locked-asset.args';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -14,7 +14,7 @@ import { LockedAssetGetterService } from './locked.asset.getter.service';
 @Injectable()
 export class TransactionsLockedAssetService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -23,7 +23,8 @@ export class TransactionsLockedAssetService {
         sender: string,
         args: UnlockAssetsArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const contract =
+            await this.mxProxy.getLockedAssetFactorySmartContract();
         return contract.methodsExplicit
             .unlockAssets()
             .withSingleESDTNFTTransfer(
@@ -35,14 +36,15 @@ export class TransactionsLockedAssetService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.lockedAssetFactory.unlockAssets)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async lockAssets(token: InputTokenModel): Promise<TransactionModel> {
         await this.validateLockAssetsInputTokens(token);
-        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const contract =
+            await this.mxProxy.getLockedAssetFactorySmartContract();
         return contract.methodsExplicit
             .lockAssets()
             .withSingleESDTTransfer(
@@ -52,7 +54,7 @@ export class TransactionsLockedAssetService {
                 ),
             )
             .withGasLimit(gasConfig.lockedAssetFactory.lockAssets)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
@@ -82,9 +84,10 @@ export class TransactionsLockedAssetService {
             throw error;
         }
 
-        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const contract =
+            await this.mxProxy.getLockedAssetFactorySmartContract();
 
-        const mappedPayments = tokens.map(tokenPayment =>
+        const mappedPayments = tokens.map((tokenPayment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,
@@ -105,13 +108,14 @@ export class TransactionsLockedAssetService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
+            .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
     async validateInputTokens(tokens: InputTokenModel[]): Promise<void> {
-        const lockedAssetTokenID = await this.lockedAssetGetter.getLockedTokenID();
+        const lockedAssetTokenID =
+            await this.lockedAssetGetter.getLockedTokenID();
 
         for (const lockedAssetToken of tokens) {
             if (

@@ -4,20 +4,20 @@ import {
     BigUIntValue,
     BytesValue,
     TokenPayment,
-} from '@elrondnetwork/erdjs/out';
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { TransactionModel } from '../../../models/transaction.model';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
 
 @Injectable()
 export class AutoRouterTransactionService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly transactionsWrapService: TransactionsWrapService,
     ) {}
 
@@ -26,23 +26,22 @@ export class AutoRouterTransactionService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const [
-            contract,
-            wrapTransaction,
-            unwrapTransaction,
-        ] = await Promise.all([
-            this.elrondProxy.getRouterSmartContract(),
-            this.wrapIfNeeded(
-                sender,
-                args.tokenInID,
-                args.intermediaryAmounts[0],
-            ),
-            this.unwrapIfNeeded(
-                sender,
-                args.tokenOutID,
-                args.intermediaryAmounts[args.intermediaryAmounts.length - 1],
-            ),
-        ]);
+        const [contract, wrapTransaction, unwrapTransaction] =
+            await Promise.all([
+                this.mxProxy.getRouterSmartContract(),
+                this.wrapIfNeeded(
+                    sender,
+                    args.tokenInID,
+                    args.intermediaryAmounts[0],
+                ),
+                this.unwrapIfNeeded(
+                    sender,
+                    args.tokenOutID,
+                    args.intermediaryAmounts[
+                        args.intermediaryAmounts.length - 1
+                    ],
+                ),
+            ]);
 
         if (wrapTransaction) transactions.push(wrapTransaction);
 
@@ -69,7 +68,7 @@ export class AutoRouterTransactionService {
                     ),
                 )
                 .withGasLimit(gasLimit)
-                .withChainID(elrondConfig.chainID)
+                .withChainID(mxConfig.chainID)
                 .buildTransaction()
                 .toPlainObject(),
         );
@@ -201,7 +200,7 @@ export class AutoRouterTransactionService {
         tokenID: string,
         amount: string,
     ): Promise<TransactionModel> {
-        if (tokenID === elrondConfig.EGLDIdentifier) {
+        if (tokenID === mxConfig.EGLDIdentifier) {
             return await this.transactionsWrapService.wrapEgld(sender, amount);
         }
     }
@@ -211,7 +210,7 @@ export class AutoRouterTransactionService {
         tokenID: string,
         amount: string,
     ): Promise<TransactionModel> {
-        if (tokenID === elrondConfig.EGLDIdentifier) {
+        if (tokenID === mxConfig.EGLDIdentifier) {
             return await this.transactionsWrapService.unwrapEgld(
                 sender,
                 amount,

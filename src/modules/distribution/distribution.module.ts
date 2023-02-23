@@ -4,12 +4,12 @@ import { AbiDistributionService } from './services/abi-distribution.service';
 import { DistributionResolver } from './distribution.resolver';
 import { DistributionService } from './services/distribution.service';
 import { TransactionsDistributionService } from './services/transaction-distribution.service';
-import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { CachingModule } from '../../services/caching/cache.module';
 import { DistributionGetterService } from './services/distribution.getter.service';
 
 @Module({
-    imports: [ContextModule, ElrondCommunicationModule, CachingModule],
+    imports: [ContextModule, MXCommunicationModule, CachingModule],
     providers: [
         DistributionService,
         DistributionGetterService,

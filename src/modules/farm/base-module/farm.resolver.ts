@@ -7,7 +7,7 @@ import { LockedAssetModel } from '../../locked-asset-factory/models/locked-asset
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
 import { NftCollection } from '../../tokens/models/nftCollection.model';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { Address } from '@multiversx/sdk-core';
 
 @Resolver(() => BaseFarmModel)
 export class FarmResolver extends GenericResolver {

@@ -120,6 +120,15 @@ export class StakingGetterService extends GenericGetterService {
         );
     }
 
+    async getStakeFarmAPR(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            this.getCacheKey(stakeAddress, 'apr'),
+            () => this.computeService.computeStakeFarmAPR(stakeAddress),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
     async getMinUnbondEpochs(stakeAddress: string): Promise<number> {
         return await this.getData(
             this.getCacheKey(stakeAddress, 'minUnboundEpochs'),

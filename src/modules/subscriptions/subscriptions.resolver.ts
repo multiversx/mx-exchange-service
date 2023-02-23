@@ -3,7 +3,7 @@ import {
     PAIR_EVENTS,
     PROXY_EVENTS,
     SIMPLE_LOCK_ENERGY_EVENTS,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { Inject } from '@nestjs/common';
 import { Resolver, Subscription } from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';

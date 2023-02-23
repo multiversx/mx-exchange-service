@@ -2,7 +2,7 @@ import {
     BaseRewardsEvent,
     RewardsEventV1_2,
     RewardsEventV1_3,
-} from '@elrondnetwork/erdjs-dex';
+} from '@multiversx/sdk-exchange';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';

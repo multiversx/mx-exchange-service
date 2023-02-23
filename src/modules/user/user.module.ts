@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ContextModule } from '../../services/context/context.module';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
 import { ProxyFarmModule } from '../proxy/services/proxy-farm/proxy-farm.module';
 import { ProxyPairModule } from '../proxy/services/proxy-pair/proxy-pair.module';
@@ -28,16 +28,13 @@ import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { UserEnergyService } from './services/userEnergy/user.energy.service';
 import { UserEnergyGetterService } from './services/userEnergy/user.energy.getter.service';
 import { UserEnergyComputeService } from './services/userEnergy/user.energy.compute.service';
-import {
-    LockedTokenWrapperModule
-} from '../locked-token-wrapper/locked-token-wrapper.module';
-import {
-    UserEnergySetterService
-} from './services/userEnergy/user.energy.setter.service';
+import { LockedTokenWrapperModule } from '../locked-token-wrapper/locked-token-wrapper.module';
+import { UserEnergySetterService } from './services/userEnergy/user.energy.setter.service';
+import { UserInfoByWeekResolver } from './user.info-by-week.resolver';
 
 @Module({
     imports: [
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         ContextModule,
         RouterModule,
@@ -70,11 +67,13 @@ import {
         UserResolver,
         UserTokenResolver,
         UserNftsResolver,
+        UserInfoByWeekResolver,
     ],
     exports: [
         UserMetaEsdtService,
         UserEnergyGetterService,
-        UserEnergySetterService
+        UserEnergySetterService,
+        UserInfoByWeekResolver,
     ],
 })
 export class UserModule {}

@@ -7,7 +7,7 @@ import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { RabbitMqConsumer } from './rabbitmq.consumer';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { RouterModule } from '../router/router.module';
@@ -37,7 +37,7 @@ import { DataApiModule } from 'src/services/data-api/data-api.module';
 @Module({
     imports: [
         CommonAppModule,
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         AWSModule,
         DataApiModule,
         CachingModule,
