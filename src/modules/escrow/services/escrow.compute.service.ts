@@ -18,6 +18,6 @@ export class EscrowComputeService {
 
         return lastTransferEpoch === undefined
             ? false
-            : currentEpoch - lastTransferEpoch > epochsCooldownDuration;
+            : currentEpoch - lastTransferEpoch <= epochsCooldownDuration;
     }
 }

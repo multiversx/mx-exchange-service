@@ -54,8 +54,11 @@ export class MXGatewayService {
                 case 'string':
                     fullKey = fullKey.concat(Buffer.from(key).toString('hex'));
                     break;
-                case Address.name:
-                    fullKey = fullKey.concat(key.hex());
+                case 'object':
+                    if (key instanceof Address) {
+                        fullKey = fullKey.concat(key.hex());
+                        break;
+                    }
                     break;
             }
         }

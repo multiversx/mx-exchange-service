@@ -10,6 +10,7 @@ import { UserAuthResult } from '../auth/user.auth.result';
 import { EscrowModel, ScheduledTransferModel } from './models/escrow.model';
 import { EscrowGetterService } from './services/escrow.getter.service';
 import { EscrowTransactionService } from './services/escrow.transaction.service';
+import { SenderCooldownValidator } from './validators/sender.cooldown.validator';
 
 @Resolver(EscrowModel)
 export class EscrowResolver extends GenericResolver {
@@ -107,7 +108,7 @@ export class EscrowResolver extends GenericResolver {
     async lockFunds(
         @Args('receiver') receiver: string,
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @AuthUser() user: UserAuthResult,
+        @AuthUser(SenderCooldownValidator) user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
             this.escrowTransaction.lockFunds(

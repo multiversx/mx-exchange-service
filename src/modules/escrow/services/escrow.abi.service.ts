@@ -78,12 +78,9 @@ export class EscrowAbiService extends GenericAbiService {
             scAddress.escrow,
             ['addressLastTransferEpoch', Address.fromString(address)],
         );
-        console.log({
-            hexValue,
-        });
         return hexValue === ''
             ? undefined
-            : new U64Value(new BigNumber(hexValue)).valueOf().toNumber();
+            : new U64Value(new BigNumber(hexValue, 16)).valueOf().toNumber();
     }
 
     async getEnergyFactoryAddress(): Promise<string> {
