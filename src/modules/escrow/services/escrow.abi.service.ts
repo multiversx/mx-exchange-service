@@ -2,12 +2,15 @@ import {
     Address,
     AddressValue,
     Interaction,
+    TypedValue,
     U64Value,
 } from '@multiversx/sdk-core/out';
+import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
+import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
@@ -33,8 +36,27 @@ export class EscrowAbiService extends GenericAbiService {
                 new AddressValue(Address.fromString(receiverAddress)),
             ]);
         const response = await this.getGenericData(interaction);
-        return response.values.map(
-            (rawValue) => new ScheduledTransferModel(rawValue.valueOf()),
+
+        return response.firstValue.valueOf().map(
+            (rawValue: TypedValue) =>
+                new ScheduledTransferModel({
+                    sender: rawValue.valueOf().sender.bech32(),
+                    lockedFunds: {
+                        funds: rawValue
+                            .valueOf()
+                            .locked_funds.funds.map(
+                                (rawFunds) =>
+                                    new EsdtTokenPaymentModel(
+                                        EsdtTokenPayment.fromDecodedAttributes(
+                                            rawFunds,
+                                        ).toJSON(),
+                                    ),
+                            ),
+                        lockedEpoch: rawValue
+                            .valueOf()
+                            .locked_funds.locked_epoch.toNumber(),
+                    },
+                }),
         );
     }
 
@@ -44,7 +66,11 @@ export class EscrowAbiService extends GenericAbiService {
             [new AddressValue(Address.fromString(receiverAddress))],
         );
         const response = await this.getGenericData(interaction);
-        return response.values.map((rawAddress) => rawAddress.valueOf());
+        return response.firstValue
+            .valueOf()
+            .map((rawAddress: AddressValue) => rawAddress.valueOf().bech32());
+    }
+
     }
 
     async getEnergyFactoryAddress(): Promise<string> {

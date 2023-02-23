@@ -4,6 +4,7 @@ import { oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
+import { ScheduledTransferModel } from '../models/escrow.model';
 import { EscrowAbiService } from './escrow.abi.service';
 
 @Injectable()
@@ -53,4 +54,25 @@ export class EscrowGetterService extends GenericGetterService {
             oneSecond(),
         );
     }
+
+    async getScheduledTransfers(
+        receiverAddress: string,
+    ): Promise<ScheduledTransferModel[]> {
+        return await this.getData(
+            `scheduledTransfer.${receiverAddress}`,
+            () => this.escrowAbi.getScheduledTransfers(receiverAddress),
+            oneSecond(),
+            oneSecond(),
+        );
+    }
+
+    async getAllSenders(receiverAddress: string): Promise<string[]> {
+        return await this.getData(
+            `allSenders.${receiverAddress}`,
+            () => this.escrowAbi.getAllSenders(receiverAddress),
+            oneSecond(),
+            oneSecond(),
+        );
+    }
+
 }

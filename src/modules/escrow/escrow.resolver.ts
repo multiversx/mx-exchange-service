@@ -56,6 +56,24 @@ export class EscrowResolver extends GenericResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [ScheduledTransferModel])
+    async scheduledTransfers(
+        @AuthUser() user: UserAuthResult,
+    ): Promise<ScheduledTransferModel[]> {
+        return await this.genericQuery(() =>
+            this.escrowGetter.getScheduledTransfers(user.address),
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [String])
+    async senders(@AuthUser() user: UserAuthResult): Promise<string[]> {
+        return await this.genericQuery(() =>
+            this.escrowGetter.getAllSenders(user.address),
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async withdraw(
         @AuthUser() user: UserAuthResult,
