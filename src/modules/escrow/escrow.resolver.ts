@@ -11,6 +11,7 @@ import { EscrowModel, ScheduledTransferModel } from './models/escrow.model';
 import { EscrowGetterService } from './services/escrow.getter.service';
 import { EscrowTransactionService } from './services/escrow.transaction.service';
 import { SenderCooldownValidator } from './validators/sender.cooldown.validator';
+import { TransferTokensValidator } from './validators/transfer.tokens.validator';
 
 @Resolver(EscrowModel)
 export class EscrowResolver extends GenericResolver {
@@ -84,7 +85,7 @@ export class EscrowResolver extends GenericResolver {
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
-    async withdraw(
+    async escrowReceive(
         @Args('senderAddress') senderAddress: string,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
@@ -94,7 +95,7 @@ export class EscrowResolver extends GenericResolver {
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
-    async cancelTransfer(
+    async cancelEscrowTransfer(
         @Args('receiver') receiver: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
@@ -105,9 +106,10 @@ export class EscrowResolver extends GenericResolver {
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
-    async lockFunds(
+    async escrowTransfer(
         @Args('receiver') receiver: string,
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', TransferTokensValidator)
+        inputTokens: InputTokenModel,
         @AuthUser(SenderCooldownValidator) user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
