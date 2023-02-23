@@ -457,6 +457,11 @@
             "wrapLockedToken": 15000000,
             "unwrapLockedToken": 15000000
         },
+        "escrow": {
+            "withdraw": 50000000,
+            "cancelTransfer": 50000000,
+            "lockFunds": 50000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000

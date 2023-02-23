@@ -84,10 +84,10 @@ export class EscrowResolver extends GenericResolver {
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async withdraw(
-        @AuthUser() user: UserAuthResult,
+        @Args('senderAddress') senderAddress: string,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.escrowTransaction.withdraw(user.address),
+            this.escrowTransaction.withdraw(senderAddress),
         );
     }
 

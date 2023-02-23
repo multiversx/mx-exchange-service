@@ -33,7 +33,7 @@ export class EscrowTransactionService {
                 new AddressValue(Address.fromString(receiverAddress)),
             ])
             .withChainID(mxConfig.chainID)
-            .withGasLimit(gasConfig.escrow.withdraw)
+            .withGasLimit(gasConfig.escrow.cancelTransfer)
             .buildTransaction()
             .toPlainObject();
     }
@@ -56,7 +56,7 @@ export class EscrowTransactionService {
                 Address.fromString(senderAddress),
             )
             .withChainID(mxConfig.chainID)
-            .withGasLimit(gasConfig.escrow.withdraw)
+            .withGasLimit(gasConfig.escrow.lockFunds)
             .buildTransaction()
             .toPlainObject();
     }
