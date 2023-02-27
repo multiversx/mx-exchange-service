@@ -22,6 +22,8 @@ export class NativeAuthGuard implements CanActivate {
     ) {
         this.authServer = new NativeAuthServer({
             apiUrl: apiConfigService.getApiUrl(),
+            maxExpirySeconds: apiConfigService.getNativeAuthMaxExpirySeconds(),
+            acceptedOrigins: apiConfigService.getNativeAuthAcceptedOrigins(),
         });
     }
 
@@ -34,6 +36,7 @@ export class NativeAuthGuard implements CanActivate {
         }
 
         const authorization: string = req.headers['authorization'];
+        const origin = req.headers['origin'];
         if (!authorization) {
             throw new UnauthorizedException();
         }
@@ -41,6 +44,14 @@ export class NativeAuthGuard implements CanActivate {
 
         try {
             const userInfo = await this.authServer.validate(jwt);
+
+            if (
+                origin !== userInfo.origin &&
+                origin !== 'https://' + userInfo.origin
+            ) {
+                this.logger.info('Unhandled auth origin: ', { origin });
+                // TO DO:  throw new NativeAuthInvalidOriginError(userInfo.origin, origin);
+            }
 
             req.res.set('X-Native-Auth-Issued', userInfo.issued);
             req.res.set('X-Native-Auth-Expires', userInfo.expires);
@@ -50,6 +61,7 @@ export class NativeAuthGuard implements CanActivate {
                 Math.round(new Date().getTime() / 1000),
             );
             req.auth = userInfo;
+            req.jwt = userInfo;
 
             if (this.impersonateAddress) {
                 const admins = process.env.SECURITY_ADMINS.split(',');
