@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { CachingService } from 'src/services/caching/cache.service';
 import { Logger } from 'winston';
 import { GqlAuthGuard } from './gql.auth.guard';
 import { NativeAuthGuard } from './native.auth.guard';
@@ -14,6 +15,7 @@ import { NativeAuthGuard } from './native.auth.guard';
 export class JwtOrNativeAuthGuard implements CanActivate {
     constructor(
         private readonly apiConfigService: ApiConfigService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -21,6 +23,7 @@ export class JwtOrNativeAuthGuard implements CanActivate {
         const jwtGuard = new GqlAuthGuard(this.apiConfigService, this.logger);
         const nativeAuthGuard = new NativeAuthGuard(
             this.apiConfigService,
+            this.cachingService,
             this.logger,
         );
 
@@ -30,7 +33,8 @@ export class JwtOrNativeAuthGuard implements CanActivate {
             guards.map((guard) => {
                 try {
                     return guard.canActivate(context);
-                } catch {
+                } catch (error) {
+                    this.logger.error(`${JwtOrNativeAuthGuard.name}: `, error);
                     return false;
                 }
             }),
