@@ -9,6 +9,7 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { CachingService } from 'src/services/caching/cache.service';
 import { Logger } from 'winston';
 
 @Injectable()
@@ -17,13 +18,33 @@ export class NativeAuthGuard implements CanActivate {
     private impersonateAddress: string;
 
     constructor(
-        apiConfigService: ApiConfigService,
+        private readonly apiConfigService: ApiConfigService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.authServer = new NativeAuthServer({
-            apiUrl: apiConfigService.getApiUrl(),
-            maxExpirySeconds: apiConfigService.getNativeAuthMaxExpirySeconds(),
-            acceptedOrigins: apiConfigService.getNativeAuthAcceptedOrigins(),
+            apiUrl: this.apiConfigService.getApiUrl(),
+            maxExpirySeconds:
+                this.apiConfigService.getNativeAuthMaxExpirySeconds(),
+            acceptedOrigins:
+                this.apiConfigService.getNativeAuthAcceptedOrigins(),
+            cache: {
+                getValue: async <T>(key: string): Promise<T | undefined> => {
+                    if (key === 'block:timestamp:latest') {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        return new Date().getTime() / 1000;
+                    }
+                    return await this.cachingService.getCache<T>(key);
+                },
+                setValue: async <T>(
+                    key: string,
+                    value: T,
+                    ttl: number,
+                ): Promise<void> => {
+                    await this.cachingService.setCache(key, value, ttl);
+                },
+            },
         });
     }
 
@@ -37,6 +58,7 @@ export class NativeAuthGuard implements CanActivate {
 
         const authorization: string = req.headers['authorization'];
         const origin = req.headers['origin'];
+
         if (!authorization) {
             throw new UnauthorizedException();
         }
@@ -44,7 +66,6 @@ export class NativeAuthGuard implements CanActivate {
 
         try {
             const userInfo = await this.authServer.validate(jwt);
-
             if (
                 origin !== userInfo.origin &&
                 origin !== 'https://' + userInfo.origin
@@ -76,7 +97,7 @@ export class NativeAuthGuard implements CanActivate {
 
             return true;
         } catch (error: any) {
-            this.logger.error(error);
+            this.logger.error(`${NativeAuthGuard.name}`, { error });
             return false;
         }
     }
