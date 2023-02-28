@@ -186,7 +186,7 @@ export class ApiConfigService {
 
         return secret;
     }
-    
+
     getAWSRegion(): string {
         const region = this.configService.get<string>('AWS_REGION');
         if (!region) {
@@ -248,6 +248,27 @@ export class ApiConfigService {
             throw new Error('No AWS Timestream write flag present');
         }
         return writeFlag === 'true';
+    }
+
+    getNativeAuthMaxExpirySeconds(): number {
+        const maxExpiry = this.configService.get<string>(
+            'NATIVE_AUTH_MAX_EXPIRY_SECONDS',
+        );
+        if (!maxExpiry) {
+            throw new Error('No native auth max expiry in seconds present');
+        }
+        return parseInt(maxExpiry);
+    }
+
+    getNativeAuthAcceptedOrigins(): string[] {
+        const origins = this.configService.get<string>(
+            'NATIVE_AUTH_ACCEPTED_ORIGINS',
+        );
+        if (!origins) {
+            throw new Error('No accepted origins present');
+        }
+
+        return origins.split(',');
     }
 
     getSecurityAdmins(): string[] {
