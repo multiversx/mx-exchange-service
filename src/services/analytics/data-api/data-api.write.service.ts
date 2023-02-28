@@ -1,10 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { dataApiConfig, mxConfig } from 'src/config';
+import { mxConfig } from 'src/config';
 import { Logger } from 'winston';
 import { TimestreamWrite } from 'aws-sdk';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import { IngestRecord } from './entities/ingest.record';
 import moment from 'moment';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { MetricsCollector } from 'src/utils/metrics.collector';
@@ -12,31 +11,17 @@ import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
 import { DataApiClient } from '@multiversx/sdk-data-api-client';
 import fs from 'fs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { XExchangeAnalyticsEntity } from './entities/data.api.entities';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class DataApiWriteService implements AnalyticsWriteInterface {
-    private readonly dataApiClient: DataApiClient;
-
     constructor(
-        private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.dataApiClient = new DataApiClient({
-            host: 'dex-service',
-            dataApiUrl: process.env.ELRONDDATAAPI_URL,
-            multiversXApiUrl: this.apiConfigService.getApiUrl(),
-            proxyTimeout: mxConfig.proxyTimeout,
-            keepAlive: {
-                maxSockets: mxConfig.keepAliveMaxSockets,
-                maxFreeSockets: mxConfig.keepAliveMaxFreeSockets,
-                timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-                freeSocketTimeout: mxConfig.keepAliveFreeSocketTimeout,
-            },
-            signerPrivateKey: fs
-                .readFileSync(this.apiConfigService.getNativeAuthKeyPath())
-                .toString(),
-        });
-    }
+        @InjectRepository(XExchangeAnalyticsEntity)
+        private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
+    ) {}
 
     async ingest({ data, Time }) {
         try {
@@ -80,12 +65,13 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         }
     }
 
-    private async writeRecords(records: IngestRecord[]): Promise<void> {
+    private async writeRecords(
+        records: XExchangeAnalyticsEntity[],
+    ): Promise<void> {
         const profiler = new PerformanceProfiler('ingestData');
 
         try {
-            const mutation = this.generateIngestMutation(records);
-            await this.dataApiClient.executeRawQuery(mutation);
+            this.dexAnalytics.save(records);
         } catch (errors) {
             const logMessage = generateLogMessage(
                 DataApiWriteService.name,
@@ -109,17 +95,17 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         }
     }
 
-    createRecords({ data, Time }): IngestRecord[] {
-        const records: IngestRecord[] = [];
+    createRecords({ data, Time }): XExchangeAnalyticsEntity[] {
+        const records: XExchangeAnalyticsEntity[] = [];
         Object.keys(data).forEach((series) => {
             Object.keys(data[series]).forEach((key) => {
                 const value = data[series][key].toString();
                 records.push(
-                    new IngestRecord({
+                    new XExchangeAnalyticsEntity({
                         series,
                         key,
                         value,
-                        timestamp: Time,
+                        timestamp: new Date(Time * 1000),
                     }),
                 );
             });
@@ -127,30 +113,14 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         return records;
     }
 
-    private generateIngestMutation(records: IngestRecord[]): {
-        query: string;
-        variables: any;
-    } {
-        const query = `
-            mutation ingest($records: [GenericIngestInput!]!) {
-                ingestData(
-                    table: ${dataApiConfig.tableName}
-                    input: $records
-                )
-            }`;
-        const variables = {
-            records,
-        };
-
-        return { query, variables };
-    }
-
     private convertAWSRecordsToDataAPIRecords(
         Records: TimestreamWrite.Records,
-    ): IngestRecord[] {
+    ): XExchangeAnalyticsEntity[] {
         const ingestRecords = Records.map((record) => {
-            return new IngestRecord({
-                timestamp: moment(parseInt(record.Time) * 1000).unix(),
+            return new XExchangeAnalyticsEntity({
+                timestamp: new Date(
+                    moment(parseInt(record.Time) * 1000).unix(),
+                ),
                 series: record.Dimensions[0].Value,
                 key: record.MeasureName,
                 value: record.MeasureValue,
