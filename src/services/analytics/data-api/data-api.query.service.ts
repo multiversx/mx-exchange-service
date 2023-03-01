@@ -118,20 +118,48 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+        const latestTimestamp = await this.closeDaily
+            .createQueryBuilder()
+            .select('time')
+            .addSelect('last')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .orderBy('time', 'DESC')
+            .getRawOne();
+
+        if (!latestTimestamp) {
+            return [];
+        }
+
+        const startDate = moment
+            .utc(latestTimestamp.time)
+            .isBefore(moment.utc())
+            ? moment.utc(latestTimestamp.time)
+            : moment.utc().subtract(1, 'day');
+
         const query = await this.closeHourly
             .createQueryBuilder()
             .select("time_bucket_gapfill('1 hour', time) as hour")
             .addSelect('locf(last(last, time)) as last')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere("time between now() - INTERVAL '1 week' and now()")
+            .andWhere('time between :start and now()', {
+                start: startDate.toDate(),
+            })
             .groupBy('hour')
             .getRawMany();
 
-        const startDate = moment.utc().subtract(1, 'day');
+        const dayBefore = moment.utc().subtract(1, 'day');
         const results = query.filter((row) =>
-            moment.utc(row.hour).isSameOrAfter(startDate),
+            moment.utc(row.hour).isSameOrAfter(dayBefore),
         );
+
+        for (const result of results) {
+            if (result.last) {
+                break;
+            }
+            result.last = latestTimestamp.last;
+        }
 
         return (
             results.map(
