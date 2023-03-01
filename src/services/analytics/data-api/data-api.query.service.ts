@@ -65,19 +65,22 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         const query = await this.closeDaily
             .createQueryBuilder()
-            .select('time')
-            .addSelect('last')
+            .select("time_bucket_gapfill('1 day', time) as day")
+            .addSelect('locf(last(last, time)) as last')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
+            .andWhere("time between now() - INTERVAL '1 year' and now()")
+            .groupBy('day')
             .getRawMany();
+
         return (
             query?.map(
                 (row) =>
                     new HistoricDataModel({
                         timestamp: moment
-                            .utc(row.time)
+                            .utc(row.day)
                             .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.last,
+                        value: row.last ?? '0',
                     }),
             ) ?? []
         );
@@ -115,20 +118,21 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         const query = await this.closeHourly
             .createQueryBuilder()
-            .select('time')
-            .addSelect('last')
+            .select("time_bucket_gapfill('1 hour', time) as hour")
+            .addSelect('locf(last(last, time)) as last')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere("time > NOW() - INTERVAL '1 day'")
+            .andWhere("time between now() - INTERVAL '1 day' and now()")
+            .groupBy('hour')
             .getRawMany();
         return (
             query?.map(
                 (row) =>
                     new HistoricDataModel({
                         timestamp: moment
-                            .utc(row.time)
+                            .utc(row.hour)
                             .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.last,
+                        value: row.last ?? '0',
                     }),
             ) ?? []
         );
