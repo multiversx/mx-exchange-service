@@ -133,7 +133,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
         const startDate = moment
             .utc(latestTimestamp.time)
-            .isBefore(moment.utc())
+            .isBefore(moment.utc().subtract(1, 'day'))
             ? moment.utc(latestTimestamp.time)
             : moment.utc().subtract(1, 'day');
 
