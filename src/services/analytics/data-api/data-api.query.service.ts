@@ -69,7 +69,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
             .addSelect('locf(last(last, time)) as last')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere("time between now() - INTERVAL '1 year' and now()")
+            .andWhere("time between now() - INTERVAL '2 year' and now()")
             .groupBy('day')
             .getRawMany();
 
@@ -93,19 +93,21 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         const query = await this.sumDaily
             .createQueryBuilder()
-            .select('time')
-            .addSelect('sum')
+            .select("time_bucket_gapfill('1 day', time) as day")
+            .addSelect('sum(sum) as sum')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
+            .andWhere("time between now() - INTERVAL '2 years' and now()")
+            .groupBy('day')
             .getRawMany();
         return (
             query?.map(
                 (row) =>
                     new HistoricDataModel({
                         timestamp: moment
-                            .utc(row.time)
+                            .utc(row.day)
                             .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.sum,
+                        value: row.sum ?? '0',
                     }),
             ) ?? []
         );
@@ -122,11 +124,17 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
             .addSelect('locf(last(last, time)) as last')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere("time between now() - INTERVAL '1 day' and now()")
+            .andWhere("time between now() - INTERVAL '1 week' and now()")
             .groupBy('hour')
             .getRawMany();
+
+        const startDate = moment.utc().subtract(1, 'day');
+        const results = query.filter((row) =>
+            moment.utc(row.hour).isSameOrAfter(startDate),
+        );
+
         return (
-            query?.map(
+            results.map(
                 (row) =>
                     new HistoricDataModel({
                         timestamp: moment
@@ -145,20 +153,21 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         const query = await this.sumHourly
             .createQueryBuilder()
-            .select('time')
-            .addSelect('sum')
+            .select("time_bucket_gapfill('1 hour', time) as hour")
+            .addSelect('sum(sum) as sum')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere("time > NOW() - INTERVAL '1 day'")
+            .andWhere("time between now() - INTERVAL '1 day' and now()")
+            .groupBy('hour')
             .getRawMany();
         return (
             query?.map(
                 (row) =>
                     new HistoricDataModel({
                         timestamp: moment
-                            .utc(row.time)
+                            .utc(row.hour)
                             .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.sum,
+                        value: row.sum ?? '0',
                     }),
             ) ?? []
         );
