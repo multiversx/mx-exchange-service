@@ -281,7 +281,9 @@ export class ApiConfigService {
     }
 
     getNativeAuthKeyPath(): string {
-        const nativeAuthPemPath = this.configService.get<string>('NATIVE_AUTH_PEM_PATH');
+        const nativeAuthPemPath = this.configService.get<string>(
+            'NATIVE_AUTH_PEM_PATH',
+        );
         if (!nativeAuthPemPath) {
             throw new Error('No NATIVE_AUTH_PEM_PATH present');
         }

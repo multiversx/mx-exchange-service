@@ -8,8 +8,8 @@ import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
 import { delay } from 'src/helpers/helpers';
+import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class PairCacheWarmerService {
         private readonly routerGetter: RouterGetterService,
         private readonly apiService: MXApiService,
         private readonly tokenSetter: TokenSetterService,
-        private readonly awsQuery: AWSTimestreamQueryService,
+        private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -87,30 +87,30 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
-            const firstTokenVolume24h = await this.awsQuery.getAggregatedValue({
-                table: this.apiConfig.getAWSTableName(),
-                series: pairAddress,
-                metric: 'firstTokenVolume',
-                time,
-            });
+            const firstTokenVolume24h =
+                await this.analyticsQuery.getAggregatedValue({
+                    table: this.apiConfig.getAWSTableName(),
+                    series: pairAddress,
+                    metric: 'firstTokenVolume',
+                    time,
+                });
             delay(1000);
-            const secondTokenVolume24h = await this.awsQuery.getAggregatedValue(
-                {
+            const secondTokenVolume24h =
+                await this.analyticsQuery.getAggregatedValue({
                     table: this.apiConfig.getAWSTableName(),
                     series: pairAddress,
                     metric: 'secondTokenVolume',
                     time,
-                },
-            );
+                });
             delay(1000);
-            const volumeUSD24h = await this.awsQuery.getAggregatedValue({
+            const volumeUSD24h = await this.analyticsQuery.getAggregatedValue({
                 table: this.apiConfig.getAWSTableName(),
                 series: pairAddress,
                 metric: 'volumeUSD',
                 time,
             });
             delay(1000);
-            const feesUSD24h = await this.awsQuery.getAggregatedValue({
+            const feesUSD24h = await this.analyticsQuery.getAggregatedValue({
                 table: this.apiConfig.getAWSTableName(),
                 series: pairAddress,
                 metric: 'feesUSD',

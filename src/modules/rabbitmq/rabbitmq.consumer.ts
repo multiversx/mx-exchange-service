@@ -46,7 +46,6 @@ import {
     UserUnlockedTokensEvent,
 } from '@multiversx/sdk-exchange';
 import { RouterGetterService } from '../router/services/router.getter.service';
-import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
@@ -54,9 +53,9 @@ import { EnergyHandler } from './handlers/energy.handler.service';
 import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
-import { DataApiWriteService } from 'src/services/data-api/data-api.write';
-
+import { AnalyticsWriteService } from 'src/services/analytics/services/analytics.write.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
@@ -77,8 +76,7 @@ export class RabbitMqConsumer {
         private readonly feesCollectorHandler: FeesCollectorHandlerService,
         private readonly weeklyRewardsSplittingHandler: WeeklyRewardsSplittingHandlerService,
         private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
-        private readonly awsTimestreamWrite: AWSTimestreamWriteService,
-        private readonly dataApiWrite: DataApiWriteService,
+        private readonly analyticsWrite: AnalyticsWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -275,17 +273,11 @@ export class RabbitMqConsumer {
             Object.keys(this.data).length > 0 &&
             this.apiConfig.isAWSTimestreamWrite()
         ) {
-            await Promise.all([
-                this.awsTimestreamWrite.ingest({
-                    TableName: this.apiConfig.getAWSTableName(),
-                    data: this.data,
-                    Time: timestamp,
-                }),
-                this.dataApiWrite.ingest({
-                    data: this.data,
-                    Time: timestamp,
-                }),
-            ]);
+            await this.analyticsWrite.ingest({
+                TableName: this.apiConfig.getAWSTableName(),
+                data: this.data,
+                Time: timestamp,
+            });
         }
     }
 

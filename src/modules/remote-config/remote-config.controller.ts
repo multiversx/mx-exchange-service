@@ -23,16 +23,20 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { CacheKeysArgs } from './args/cacheKeys.args';
 import { CachingService } from 'src/services/caching/cache.service';
+import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
+import { AnalyticsModel } from './models/analytics.model';
+import { AnalyticsArgs } from './args/analytics.args';
 
 @Controller('remote-config')
 export class RemoteConfigController {
     constructor(
         private readonly flagRepositoryService: FlagRepositoryService,
         private readonly scAddressRepositoryService: SCAddressRepositoryService,
+        private readonly analyticsRepositoryService: AnalyticsRepositoryService,
         private readonly remoteConfigSetterService: RemoteConfigSetterService,
         private readonly cacheService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    ) {}
+    ) { }
 
     @UseGuards(JwtAdminGuard)
     @Post('/flags')
@@ -213,6 +217,43 @@ export class RemoteConfigController {
         }
 
         return false;
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Get('/analytics')
+    async getAnalyticsRemoteConfigs(): Promise<AnalyticsModel[]> {
+        return await this.analyticsRepositoryService.find({});
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Post('/analytics')
+    async upsertAnalyticsRemoteConfig(
+        @Body() analytics: AnalyticsArgs,
+        @Res() res: Response,
+    ): Promise<AnalyticsModel | Response> {
+        try {
+            if (analytics.name && analytics.value != null) {
+                const result = await this.analyticsRepositoryService.findOneAndUpdate(
+                    { name: analytics.name },
+                    analytics,
+                    undefined,
+                    true
+                )
+                this.remoteConfigSetterService.setAnalytics(
+                    result.name,
+                    result.value,
+                );
+                return res.status(201).send(result);
+            }
+
+            return res
+                .status(500)
+                .send(
+                    'Analytics name & value not found or not in application/json format.',
+                );
+        } catch (error) {
+            return res.status(500).send(error.message);
+        }
     }
 
     @UseGuards(JwtAdminGuard)

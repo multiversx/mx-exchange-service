@@ -7,7 +7,7 @@ import { HistoricDataModel } from '../models/analytics.model';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { oneMinute } from 'src/helpers/helpers';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import moment from 'moment';
 
@@ -16,7 +16,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly awsQuery: AWSTimestreamQueryService,
+        private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
     ) {
         super(cachingService, logger);
@@ -140,7 +140,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                this.awsQuery.getLatestHistoricData({
+                this.analyticsQuery.getLatestHistoricData({
                     table: this.apiConfig.getAWSTableName(),
                     series,
                     metric,
@@ -173,7 +173,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                this.awsQuery.getLatestBinnedHistoricData({
+                this.analyticsQuery.getLatestBinnedHistoricData({
                     table: this.apiConfig.getAWSTableName(),
                     series,
                     metric,

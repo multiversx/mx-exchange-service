@@ -19,7 +19,7 @@ import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module'
 import { TokenModule } from '../tokens/token.module';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
-import { AWSModule } from 'src/services/aws/aws.module';
+import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { PairHandler } from './handlers/pair.handler.service';
 import { EnergyHandler } from './handlers/energy.handler.service';
 import { SimpleLockModule } from '../simple-lock/simple.lock.module';
@@ -32,14 +32,12 @@ import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSp
 import { UserModule } from '../user/user.module';
 import { TokenUnstakeModule } from '../token-unstake/token.unstake.module';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
-import { DataApiModule } from 'src/services/data-api/data-api.module';
 
 @Module({
     imports: [
         CommonAppModule,
+        AnalyticsServicesModule,
         MXCommunicationModule,
-        AWSModule,
-        DataApiModule,
         CachingModule,
         ContextModule,
         PairModule,

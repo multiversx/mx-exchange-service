@@ -9,7 +9,6 @@ import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { oneMinute } from 'src/helpers/helpers';
-import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
 import { TimestreamWrite } from 'aws-sdk';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -22,7 +21,7 @@ import {
 } from '@multiversx/sdk-exchange';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { DataApiWriteService } from '../data-api/data-api.write';
+import { AnalyticsWriteService } from '../analytics/services/analytics.write.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
@@ -35,8 +34,7 @@ export class LogsProcessorService {
         private readonly cachingService: CachingService,
         private readonly apiService: MXApiService,
         private readonly elasticService: ElasticService,
-        private readonly awsWrite: AWSTimestreamWriteService,
-        private readonly dataApiWrite: DataApiWriteService,
+        private readonly analyticsWrite: AnalyticsWriteService,
         private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -237,13 +235,10 @@ export class LogsProcessorService {
         }
 
         try {
-            await Promise.all([
-                this.awsWrite.multiRecordsIngest(
-                    this.apiConfig.getAWSTableName(),
-                    Records,
-                ),
-                this.dataApiWrite.multiRecordsIngest(Records),
-            ]);
+            await this.analyticsWrite.multiRecordsIngest(
+                this.apiConfig.getAWSTableName(),
+                Records,
+            );
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(
