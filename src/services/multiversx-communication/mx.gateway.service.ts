@@ -7,6 +7,7 @@ import Agent, { HttpsAgent } from 'agentkeepalive';
 import axios, { AxiosRequestConfig } from 'axios';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { MetricsCollector } from 'src/utils/metrics.collector';
+import { Address } from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class MXGatewayService {
@@ -53,13 +54,20 @@ export class MXGatewayService {
                 case 'string':
                     fullKey = fullKey.concat(Buffer.from(key).toString('hex'));
                     break;
+                case 'object':
+                    if (key instanceof Address) {
+                        fullKey = fullKey.concat(key.hex());
+                        break;
+                    }
+                    break;
             }
         }
-        return await this.doGetGeneric(
+        const response = await this.doGetGeneric(
             this.getSCStorageKey.name,
             `address/${address}/key/${fullKey}`,
             (response) => response.data.value,
         );
+        return response;
     }
 
     /**
