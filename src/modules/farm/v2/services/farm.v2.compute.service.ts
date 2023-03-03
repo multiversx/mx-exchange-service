@@ -352,6 +352,45 @@ export class FarmComputeServiceV2 extends Mixin(
             .toFixed();
     }
 
+    async computeUndistributedBoostedRewards(
+        scAddress: string,
+        currentWeek: number,
+    ): Promise<string> {
+        const [
+            undistributedBoostedRewards,
+            lastUndistributedBoostedRewardsCollectWeek,
+        ] = await Promise.all([
+            this.farmGetter.getUndistributedBoostedRewardsClaimed(scAddress),
+            this.farmGetter.getLastUndistributedBoostedRewardsCollectWeek(
+                scAddress,
+            ),
+        ]);
+
+        const diffWeeks = currentWeek - lastUndistributedBoostedRewardsCollectWeek
+        if (diffWeeks <= constantsConfig.USER_MAX_CLAIM_WEEKS + 1) {
+            return undistributedBoostedRewards;
+        }
+        const weeksToCollect = diffWeeks - constantsConfig.USER_MAX_CLAIM_WEEKS - 1;
+        const promises = []
+        for (let i = 0; i < weeksToCollect; i++) {
+            promises.push(
+                this.farmGetter.getRemainingBoostedRewardsToDistribute(
+                    scAddress,
+                    lastUndistributedBoostedRewardsCollectWeek + i + 1,
+                )
+            )
+        }
+        const remainingRewards = await Promise.all(promises);
+        const totalRemainingRewards = remainingRewards.reduce((acc, curr) => {
+            return new BigNumber(acc).plus(curr).integerValue().toFixed();
+        });
+        return new BigNumber(undistributedBoostedRewards)
+            .plus(totalRemainingRewards)
+            .integerValue()
+            .toFixed();
+
+    }
+
     async computeBlocksInWeek(
         scAddress: string,
         week: number,

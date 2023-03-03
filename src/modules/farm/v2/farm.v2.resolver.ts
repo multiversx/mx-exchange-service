@@ -119,8 +119,20 @@ export class FarmResolverV2 extends FarmResolver {
     async undistributedBoostedRewards(
         @Parent() parent: FarmModelV2,
     ): Promise<string> {
+        const currentWeek = await this.farmGetter.getCurrentWeek(
+            parent.address,
+        );
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getUndistributedBoostedRewards(parent.address),
+            this.farmGetter.getTotalUndistributedBoostedRewards(parent.address, currentWeek),
+        );
+    }
+
+    @ResolveField()
+    async undistributedBoostedRewardsClaimed(
+        @Parent() parent: FarmModelV2,
+    ): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.farmGetter.getUndistributedBoostedRewardsClaimed(parent.address),
         );
     }
 

@@ -102,6 +102,14 @@ export class FarmAbiServiceV2 extends Mixin(
         return response.firstValue.valueOf().toFixed();
     }
 
+    async getLastUndistributedBoostedRewardsCollectWeek(
+        farmAddress: string,
+    ): Promise<number> {
+        return this.gatewayService.getSCStorageKey(farmAddress,
+            'lastUndistributedBoostedRewardsCollectWeek'
+        );
+    }
+
     async getUndistributedBoostedRewards(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 

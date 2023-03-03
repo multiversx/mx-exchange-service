@@ -164,10 +164,31 @@ export class FarmGetterServiceV2
         );
     }
 
-    async getUndistributedBoostedRewards(farmAddress: string): Promise<string> {
+    async getUndistributedBoostedRewardsClaimed(farmAddress: string): Promise<string> {
         return await this.getData(
             this.getCacheKey(farmAddress, 'undistributedBoostedRewards'),
             () => this.abiService.getUndistributedBoostedRewards(farmAddress),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async getTotalUndistributedBoostedRewards(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        return await this.getData(
+            this.getCacheKey(farmAddress, 'undistributedBoostedRewards'),
+            () => this.computeService.computeUndistributedBoostedRewards(farmAddress, week),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async getLastUndistributedBoostedRewardsCollectWeek(farmAddress: string) {
+        return await this.getData(
+            this.getCacheKey(farmAddress, 'lastUndistributedBoostedRewardsCollectWeek'),
+            () => this.abiService.getLastUndistributedBoostedRewardsCollectWeek(farmAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
