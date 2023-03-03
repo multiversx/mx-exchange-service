@@ -83,6 +83,7 @@ export class RabbitMqModule {
                             type: 'fanout',
                             options: {},
                             uri: process.env.RABBITMQ_URL,
+                            prefetchCount: 1,
                         };
                     },
                 }),
