@@ -121,7 +121,6 @@ export class AWSQueryCacheWarmerService {
             this.logger.info('Start refresh pairs analytics');
             const profiler = new PerformanceProfiler();
             for (const pairAddress of pairsAddresses) {
-                this.logger.info(`Refresh analytics for pair: ${pairAddress}`);
                 const lockedValueUSD24h =
                     await this.analyticsQuery.getValues24h({
                         table: this.apiConfig.getAWSTableName(),
