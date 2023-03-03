@@ -1,16 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { mxConfig } from 'src/config';
 import { Logger } from 'winston';
 import { TimestreamWrite } from 'aws-sdk';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import moment from 'moment';
-import { ApiConfigService } from 'src/helpers/api.config.service';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
-import { DataApiClient } from '@multiversx/sdk-data-api-client';
-import fs from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { XExchangeAnalyticsEntity } from './entities/data.api.entities';
 import { Repository } from 'typeorm';
@@ -69,9 +65,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         records: XExchangeAnalyticsEntity[],
     ): Promise<void> {
         const profiler = new PerformanceProfiler('ingestData');
-        for (const record of records) {
-            console.log(record);
-        }
+
         try {
             this.dexAnalytics.save(records);
         } catch (errors) {
