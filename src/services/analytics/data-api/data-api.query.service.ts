@@ -19,6 +19,7 @@ import {
 } from './entities/data.api.entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
 
 @Injectable()
 export class DataApiQueryService implements AnalyticsQueryInterface {
@@ -63,13 +64,27 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+        const firstRow = await this.dexAnalytics
+            .createQueryBuilder()
+            .select('timestamp')
+            .where('series = :series', { series })
+            .orderBy('timestamp', 'ASC')
+            .limit(1)
+            .getRawOne();
+
+        if (!firstRow) {
+            return [];
+        }
+
         const query = await this.closeDaily
             .createQueryBuilder()
             .select("time_bucket_gapfill('1 day', time) as day")
             .addSelect('locf(last(last, time)) as last')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere("time between now() - INTERVAL '2 year' and now()")
+            .andWhere('time between :start and now()', {
+                start: firstRow.timestamp,
+            })
             .groupBy('day')
             .getRawMany();
 
@@ -91,13 +106,27 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+        const firstRow = await this.dexAnalytics
+            .createQueryBuilder()
+            .select('timestamp')
+            .where('series = :series', { series })
+            .orderBy('timestamp', 'ASC')
+            .limit(1)
+            .getRawOne();
+
+        if (!firstRow) {
+            return [];
+        }
+
         const query = await this.sumDaily
             .createQueryBuilder()
             .select("time_bucket_gapfill('1 day', time) as day")
             .addSelect('sum(sum) as sum')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere("time between now() - INTERVAL '2 years' and now()")
+            .andWhere('time between :start and now()', {
+                start: firstRow.timestamp,
+            })
             .groupBy('day')
             .getRawMany();
         return (
@@ -125,6 +154,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
             .orderBy('time', 'DESC')
+            .limit(1)
             .getRawOne();
 
         if (!latestTimestamp) {
