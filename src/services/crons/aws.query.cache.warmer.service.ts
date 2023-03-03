@@ -24,7 +24,7 @@ export class AWSQueryCacheWarmerService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async updateHistoricTokensData(): Promise<void> {
         if (!this.apiConfig.isAWSTimestreamRead()) {
             return;
@@ -111,7 +111,7 @@ export class AWSQueryCacheWarmerService {
         });
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_MINUTE)
     async updateHistoricPairsData(): Promise<void> {
         if (!this.apiConfig.isAWSTimestreamRead()) {
             return;
