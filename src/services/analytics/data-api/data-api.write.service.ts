@@ -69,7 +69,9 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         records: XExchangeAnalyticsEntity[],
     ): Promise<void> {
         const profiler = new PerformanceProfiler('ingestData');
-
+        for (const record of records) {
+            console.log(record);
+        }
         try {
             this.dexAnalytics.save(records);
         } catch (errors) {
