@@ -366,17 +366,17 @@ export class FarmComputeServiceV2 extends Mixin(
             ),
         ]);
 
-        const diffWeeks = currentWeek - lastUndistributedBoostedRewardsCollectWeek
-        if (diffWeeks <= constantsConfig.USER_MAX_CLAIM_WEEKS + 1) {
+        const firstWeek = lastUndistributedBoostedRewardsCollectWeek + 1;
+        const lastWeek = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS - 1;
+        if (firstWeek > lastWeek) {
             return undistributedBoostedRewards;
         }
-        const weeksToCollect = diffWeeks - constantsConfig.USER_MAX_CLAIM_WEEKS - 1;
         const promises = []
-        for (let i = 0; i < weeksToCollect; i++) {
+        for (let week = firstWeek; week <= lastWeek; week++) {
             promises.push(
                 this.farmGetter.getRemainingBoostedRewardsToDistribute(
                     scAddress,
-                    lastUndistributedBoostedRewardsCollectWeek + i + 1,
+                    week,
                 )
             )
         }
