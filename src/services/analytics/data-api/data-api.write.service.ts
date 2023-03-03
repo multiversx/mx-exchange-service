@@ -3,7 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { TimestreamWrite } from 'aws-sdk';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import moment from 'moment';
+import * as moment from 'moment';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
@@ -114,9 +114,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
     ): XExchangeAnalyticsEntity[] {
         const ingestRecords = Records.map((record) => {
             return new XExchangeAnalyticsEntity({
-                timestamp: new Date(
-                    moment(parseInt(record.Time) * 1000).unix(),
-                ),
+                timestamp: moment.unix(parseInt(record.Time)).toDate(),
                 series: record.Dimensions[0].Value,
                 key: record.MeasureName,
                 value: record.MeasureValue,
