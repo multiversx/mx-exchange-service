@@ -85,7 +85,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
             .select('time')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .orderBy('timestamp', 'ASC')
+            .orderBy('time', 'ASC')
             .limit(1)
             .getRawOne();
 
@@ -143,7 +143,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
             .andWhere('time between :start and now()', {
-                start: firstRow.timestamp,
+                start: firstRow.time,
             })
             .groupBy('day')
             .getRawMany();
