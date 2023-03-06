@@ -152,6 +152,10 @@ export class UserEnergyComputeService {
     }
 
     async getFarmAddressForDualYieldToken(token: UserDualYiledToken) {
+        if (!token || token === undefined) {
+            return undefined;
+        }
+
         const stakingProxyAddress =
             await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(
                 token.collection,
