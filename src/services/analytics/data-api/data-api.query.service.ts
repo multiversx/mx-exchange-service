@@ -58,11 +58,6 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
                     end: endDate,
                 })
                 .getRawOne();
-            console.log({
-                series,
-                metric,
-                result: query.sum,
-            });
             return query.sum ?? '0';
         }
 
