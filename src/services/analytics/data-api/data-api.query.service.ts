@@ -20,13 +20,10 @@ import {
 } from './entities/data.api.entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CachingService } from 'src/services/caching/cache.service';
-import { oneMinute } from 'src/helpers/helpers';
 
 @Injectable()
 export class DataApiQueryService implements AnalyticsQueryInterface {
     constructor(
-        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
@@ -83,22 +80,16 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const firstRow = await this.cachingService.getOrSet(
-            `data-api.${series}.${metric}.firstRow`,
-            () =>
-                this.dexAnalytics
-                    .createQueryBuilder()
-                    .select('timestamp')
-                    .where('series = :series', { series })
-                    .andWhere('key = :metric', { metric })
-                    .orderBy('timestamp', 'ASC')
-                    .limit(1)
-                    .getRawOne(),
-            oneMinute() * 10,
-            oneMinute() * 8,
-        );
+        const firstRow = await this.closeDaily
+            .createQueryBuilder()
+            .select('time')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .orderBy('timestamp', 'ASC')
+            .limit(1)
+            .getRawOne();
 
-        if (!firstRow || firstRow === undefined) {
+        if (!firstRow) {
             return [];
         }
 
@@ -109,7 +100,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
             .andWhere('time between :start and now()', {
-                start: firstRow.timestamp,
+                start: firstRow.time,
             })
             .groupBy('day')
             .getRawMany();
@@ -132,22 +123,16 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const firstRow = await this.cachingService.getOrSet(
-            `data-api.${series}.${metric}.firstRow`,
-            () =>
-                this.dexAnalytics
-                    .createQueryBuilder()
-                    .select('timestamp')
-                    .where('series = :series', { series })
-                    .andWhere('key = :metric', { metric })
-                    .orderBy('timestamp', 'ASC')
-                    .limit(1)
-                    .getRawOne(),
-            oneMinute() * 10,
-            oneMinute() * 8,
-        );
+        const firstRow = await this.sumDaily
+            .createQueryBuilder()
+            .select('time')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .orderBy('time', 'ASC')
+            .limit(1)
+            .getRawOne();
 
-        if (!firstRow || firstRow === undefined) {
+        if (!firstRow) {
             return [];
         }
 
