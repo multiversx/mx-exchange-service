@@ -182,3 +182,34 @@ export class CloseHourly {
         Object.assign(this, init);
     }
 }
+
+@ViewEntity({
+    expression: `
+        SELECT
+            time_bucket('1 week', timestamp) AS time, series, key
+            sum(value) AS sum
+        FROM "hyper_xexchange_analytics"
+        WHERE key = 'feeBurned' OR key = 'penaltyBurned'
+        GROUP BY time, series, key ORDER BY time ASC;
+    `,
+    materialized: true,
+    name: 'token_burned_weekly',
+})
+export class TokenBurnedWeekly {
+    @ViewColumn()
+    @PrimaryColumn()
+    time: Date = new Date();
+
+    @ViewColumn()
+    series: string;
+
+    @ViewColumn()
+    key: string;
+
+    @ViewColumn()
+    sum = '0';
+
+    constructor(init?: Partial<SumDaily>) {
+        Object.assign(this, init);
+    }
+}

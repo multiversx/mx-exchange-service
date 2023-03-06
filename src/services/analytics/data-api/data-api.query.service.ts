@@ -15,11 +15,11 @@ import {
     CloseHourly,
     SumDaily,
     SumHourly,
+    TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
 } from './entities/data.api.entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PerformanceProfiler } from 'src/utils/performance.profiler';
 
 @Injectable()
 export class DataApiQueryService implements AnalyticsQueryInterface {
@@ -35,6 +35,8 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         private readonly closeDaily: Repository<CloseDaily>,
         @InjectRepository(CloseHourly)
         private readonly closeHourly: Repository<CloseHourly>,
+        @InjectRepository(TokenBurnedWeekly)
+        private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
     ) {}
 
     @DataApiQuery()
@@ -44,6 +46,25 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         time,
     }: AnalyticsQueryArgs): Promise<string> {
         const [startDate, endDate] = computeTimeInterval(time);
+
+        if (metric.includes('Burned')) {
+            const query = await this.tokenBurnedWeekly
+                .createQueryBuilder()
+                .select('sum(sum) as sum')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere('time between :start and :end', {
+                    start: startDate,
+                    end: endDate,
+                })
+                .getRawOne();
+            console.log({
+                series,
+                metric,
+                result: query.sum,
+            });
+            return query.sum ?? '0';
+        }
 
         const query = await this.dexAnalytics
             .createQueryBuilder()
