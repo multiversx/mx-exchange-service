@@ -20,10 +20,13 @@ import {
 } from './entities/data.api.entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CachingService } from 'src/services/caching/cache.service';
+import { oneMinute } from 'src/helpers/helpers';
 
 @Injectable()
 export class DataApiQueryService implements AnalyticsQueryInterface {
     constructor(
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
@@ -80,15 +83,22 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const firstRow = await this.dexAnalytics
-            .createQueryBuilder()
-            .select('timestamp')
-            .where('series = :series', { series })
-            .orderBy('timestamp', 'ASC')
-            .limit(1)
-            .getRawOne();
+        const firstRow = await this.cachingService.getOrSet(
+            `data-api.${series}.${metric}.firstRow`,
+            () =>
+                this.dexAnalytics
+                    .createQueryBuilder()
+                    .select('timestamp')
+                    .where('series = :series', { series })
+                    .andWhere('key = :metric', { metric })
+                    .orderBy('timestamp', 'ASC')
+                    .limit(1)
+                    .getRawOne(),
+            oneMinute() * 10,
+            oneMinute() * 8,
+        );
 
-        if (!firstRow) {
+        if (!firstRow || firstRow === undefined) {
             return [];
         }
 
@@ -122,15 +132,22 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const firstRow = await this.dexAnalytics
-            .createQueryBuilder()
-            .select('timestamp')
-            .where('series = :series', { series })
-            .orderBy('timestamp', 'ASC')
-            .limit(1)
-            .getRawOne();
+        const firstRow = await this.cachingService.getOrSet(
+            `data-api.${series}.${metric}.firstRow`,
+            () =>
+                this.dexAnalytics
+                    .createQueryBuilder()
+                    .select('timestamp')
+                    .where('series = :series', { series })
+                    .andWhere('key = :metric', { metric })
+                    .orderBy('timestamp', 'ASC')
+                    .limit(1)
+                    .getRawOne(),
+            oneMinute() * 10,
+            oneMinute() * 8,
+        );
 
-        if (!firstRow) {
+        if (!firstRow || firstRow === undefined) {
             return [];
         }
 
