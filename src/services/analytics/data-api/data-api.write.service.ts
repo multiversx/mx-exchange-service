@@ -101,7 +101,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
                         series,
                         key,
                         value,
-                        timestamp: new Date(Time * 1000),
+                        timestamp: moment.unix(Time).toDate(),
                     }),
                 );
             });
