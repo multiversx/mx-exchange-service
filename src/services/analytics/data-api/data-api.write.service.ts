@@ -1,16 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { mxConfig } from 'src/config';
 import { Logger } from 'winston';
 import { TimestreamWrite } from 'aws-sdk';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import moment from 'moment';
-import { ApiConfigService } from 'src/helpers/api.config.service';
+import * as moment from 'moment';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
-import { DataApiClient } from '@multiversx/sdk-data-api-client';
-import fs from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { XExchangeAnalyticsEntity } from './entities/data.api.entities';
 import { Repository } from 'typeorm';
@@ -105,7 +101,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
                         series,
                         key,
                         value,
-                        timestamp: new Date(Time * 1000),
+                        timestamp: moment.unix(Time).toDate(),
                     }),
                 );
             });
@@ -118,9 +114,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
     ): XExchangeAnalyticsEntity[] {
         const ingestRecords = Records.map((record) => {
             return new XExchangeAnalyticsEntity({
-                timestamp: new Date(
-                    moment(parseInt(record.Time) * 1000).unix(),
-                ),
+                timestamp: moment.unix(parseInt(record.Time)).toDate(),
                 series: record.Dimensions[0].Value,
                 key: record.MeasureName,
                 value: record.MeasureValue,

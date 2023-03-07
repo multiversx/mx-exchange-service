@@ -63,6 +63,7 @@ export class XExchangeAnalyticsEntity {
     GROUP BY time, series, key;
   `,
     materialized: true,
+    name: 'sum_daily',
 })
 export class SumDaily {
     @ViewColumn()
@@ -94,6 +95,7 @@ export class SumDaily {
     GROUP BY time, series, key;
   `,
     materialized: true,
+    name: 'sum_hourly',
 })
 export class SumHourly {
     @ViewColumn()
@@ -126,6 +128,7 @@ export class SumHourly {
     GROUP BY time, series, key;
   `,
     materialized: true,
+    name: 'close_daily',
 })
 export class CloseDaily {
     @ViewColumn()
@@ -159,6 +162,7 @@ export class CloseDaily {
     GROUP BY time, series, key;
   `,
     materialized: true,
+    name: 'close_hourly',
 })
 export class CloseHourly {
     @ViewColumn()
@@ -173,6 +177,37 @@ export class CloseHourly {
 
     @ViewColumn()
     key?: string;
+
+    constructor(init?: Partial<SumDaily>) {
+        Object.assign(this, init);
+    }
+}
+
+@ViewEntity({
+    expression: `
+        SELECT
+            time_bucket('1 week', timestamp) AS time, series, key
+            sum(value) AS sum
+        FROM "hyper_dex_analytics"
+        WHERE key = 'feeBurned' OR key = 'penaltyBurned'
+        GROUP BY time, series, key ORDER BY time ASC;
+    `,
+    materialized: true,
+    name: 'token_burned_weekly',
+})
+export class TokenBurnedWeekly {
+    @ViewColumn()
+    @PrimaryColumn()
+    time: Date = new Date();
+
+    @ViewColumn()
+    series: string;
+
+    @ViewColumn()
+    key: string;
+
+    @ViewColumn()
+    sum = '0';
 
     constructor(init?: Partial<SumDaily>) {
         Object.assign(this, init);

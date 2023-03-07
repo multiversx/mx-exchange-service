@@ -10,6 +10,7 @@ import {
     CloseHourly,
     SumDaily,
     SumHourly,
+    TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
 } from './entities/data.api.entities';
 
@@ -42,6 +43,7 @@ import {
             SumHourly,
             CloseDaily,
             CloseHourly,
+            TokenBurnedWeekly,
         ]),
     ],
     providers: [DataApiQueryService, DataApiWriteService],

@@ -85,6 +85,7 @@ export class RabbitMqConsumer {
         exchange: process.env.RABBITMQ_EXCHANGE,
     })
     async consumeEvents(rawEvents: any) {
+        this.logger.info('Start Processing events...');
         if (!rawEvents.events) {
             return;
         }
@@ -269,16 +270,14 @@ export class RabbitMqConsumer {
             }
         }
 
-        if (
-            Object.keys(this.data).length > 0 &&
-            this.apiConfig.isAWSTimestreamWrite()
-        ) {
+        if (Object.keys(this.data).length > 0) {
             await this.analyticsWrite.ingest({
                 TableName: this.apiConfig.getAWSTableName(),
                 data: this.data,
                 Time: timestamp,
             });
         }
+        this.logger.info('Finish Processing events...');
     }
 
     async getFilterAddresses(): Promise<void> {
