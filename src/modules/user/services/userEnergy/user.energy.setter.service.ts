@@ -23,7 +23,6 @@ export class UserEnergySetterService extends GenericSetterService {
             this.getCacheKey('userOutdatedContracts', userAddress),
             value,
             oneMinute(),
-            oneMinute(),
         );
     }
 

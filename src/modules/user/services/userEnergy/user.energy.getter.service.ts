@@ -23,7 +23,6 @@ export class UserEnergyGetterService extends GenericGetterService {
             this.getCacheKey('userOutdatedContracts', userAddress),
             () => this.userEnergyCompute.computeUserOutdatedContracts(userAddress),
             oneMinute(),
-            oneMinute(),
         )
     }
 
@@ -31,7 +30,6 @@ export class UserEnergyGetterService extends GenericGetterService {
         return this.getData(
             this.getCacheKey('userActiveFarms', userAddress),
             () => this.userEnergyCompute.computeActiveFarmsV2ForUser(userAddress),
-            oneMinute(),
             oneMinute(),
         )
     }
