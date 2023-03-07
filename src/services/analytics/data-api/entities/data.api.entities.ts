@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn, ViewColumn, ViewEntity } from 'typeorm';
 
-@Entity('hyper_dex_analytics_2')
+@Entity('hyper_dex_analytics')
 export class XExchangeAnalyticsEntity {
     @PrimaryColumn({ nullable: false, type: 'timestamp without time zone' })
     timestamp: Date;
@@ -63,7 +63,7 @@ export class XExchangeAnalyticsEntity {
     GROUP BY time, series, key;
   `,
     materialized: true,
-    name: 'sum_daily_2',
+    name: 'sum_daily',
 })
 export class SumDaily {
     @ViewColumn()
@@ -95,7 +95,7 @@ export class SumDaily {
     GROUP BY time, series, key;
   `,
     materialized: true,
-    name: 'sum_hourly_2',
+    name: 'sum_hourly',
 })
 export class SumHourly {
     @ViewColumn()
@@ -128,7 +128,7 @@ export class SumHourly {
     GROUP BY time, series, key;
   `,
     materialized: true,
-    name: 'close_daily_2',
+    name: 'close_daily',
 })
 export class CloseDaily {
     @ViewColumn()
@@ -162,7 +162,7 @@ export class CloseDaily {
     GROUP BY time, series, key;
   `,
     materialized: true,
-    name: 'close_hourly_2',
+    name: 'close_hourly',
 })
 export class CloseHourly {
     @ViewColumn()
@@ -188,7 +188,7 @@ export class CloseHourly {
         SELECT
             time_bucket('1 week', timestamp) AS time, series, key
             sum(value) AS sum
-        FROM "hyper_xexchange_analytics"
+        FROM "hyper_dex_analytics"
         WHERE key = 'feeBurned' OR key = 'penaltyBurned'
         GROUP BY time, series, key ORDER BY time ASC;
     `,
