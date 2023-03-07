@@ -26,4 +26,9 @@ export class UserEnergySetterService extends GenericSetterService {
             oneMinute(),
         );
     }
+
+    async delUserOutdatedContracts(userAddress: string): Promise<string> {
+        return this.delData(
+            this.getCacheKey('userOutdatedContracts', userAddress));
+    }
 }

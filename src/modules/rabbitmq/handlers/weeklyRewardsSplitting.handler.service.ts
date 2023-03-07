@@ -20,7 +20,6 @@ import { FarmSetterFactory } from '../../farm/farm.setter.factory';
 import { FarmGetterFactory } from '../../farm/farm.getter.factory';
 import { UserEnergySetterService } from '../../user/services/userEnergy/user.energy.setter.service';
 import { UserEnergyGetterService } from '../../user/services/userEnergy/user.energy.getter.service';
-import { OutdatedContract } from '../../user/models/user.model';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
@@ -68,14 +67,10 @@ export class WeeklyRewardsSplittingHandlerService {
     async handleUpdateUserEnergy(event: UpdateUserEnergyEvent): Promise<void> {
         const topics = event.getTopics();
 
-        let userOutdatedContracts =
-            await this.userEnergyGetter.getUserOutdatedContracts(
-                topics.caller.bech32(),
-            );
-        userOutdatedContracts = userOutdatedContracts.filter(
-            (item: OutdatedContract) => item.address != event.address,
-        );
         const keys = await Promise.all([
+            this.userEnergySetter.delUserOutdatedContracts(
+                topics.caller.bech32(),
+            ),
             this.getSetter(event.address).currentClaimProgress(
                 event.address,
                 topics.caller.bech32(),
@@ -94,10 +89,6 @@ export class WeeklyRewardsSplittingHandlerService {
                 event.address,
                 topics.caller.bech32(),
                 topics.currentWeek,
-            ),
-            this.userEnergySetter.setUserOutdatedContracts(
-                topics.caller.bech32(),
-                userOutdatedContracts,
             ),
         ]);
 
