@@ -46,7 +46,7 @@ export class GenericSetterService {
         } catch (error) {
             const logMessage = generateSetLogMessage(
                 this.constructor.name,
-                this.setData.name,
+                this.delData.name,
                 cacheKey,
                 error.message,
             );
