@@ -39,6 +39,22 @@ export class GenericSetterService {
         }
     }
 
+    protected async delData(cacheKey: string): Promise<string> {
+        try {
+            await this.cachingService.deleteInCache(cacheKey);
+            return cacheKey;
+        } catch (error) {
+            const logMessage = generateSetLogMessage(
+                this.constructor.name,
+                this.delData.name,
+                cacheKey,
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
     protected getCacheKey(...args: any) {
         if (!this.baseKey) {
             this.logger.error('baseKey was not set');
