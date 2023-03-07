@@ -1,80 +1,43 @@
-import {
-    AggregateValue,
-    DataApiClient,
-    DataApiQueryBuilder,
-    HistoricalValue,
-    TimeRange,
-    TimeResolution,
-} from '@multiversx/sdk-data-api-client';
-import {
-    DataApiAggregateQuery,
-    DataApiHistoricalQuery,
-} from '@multiversx/sdk-data-api-client/lib/src/queries';
-import {
-    DataApiAggregateResponse,
-    DataApiHistoricalResponse,
-} from '@multiversx/sdk-data-api-client/lib/src/responses';
 import { Inject, Injectable } from '@nestjs/common';
-import BigNumber from 'bignumber.js';
-import fs from 'fs';
 import moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { mxConfig } from 'src/config';
-import { ApiConfigService } from 'src/helpers/api.config.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import {
     computeTimeInterval,
     convertBinToTimeResolution,
     DataApiQuery,
 } from 'src/utils/analytics.utils';
-import { PendingExecutor } from 'src/utils/pending.executor';
 import { Logger } from 'winston';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
+import {
+    CloseDaily,
+    CloseHourly,
+    SumDaily,
+    SumHourly,
+    TokenBurnedWeekly,
+    XExchangeAnalyticsEntity,
+} from './entities/data.api.entities';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class DataApiQueryService implements AnalyticsQueryInterface {
-    private readonly dataApiClient: DataApiClient;
-    private readonly historicalQueryExecutor: PendingExecutor<
-        DataApiHistoricalQuery,
-        DataApiHistoricalResponse[]
-    >;
-    private readonly rawQueryExecutor: PendingExecutor<any, any>;
-    private readonly aggregateQueryExecutor: PendingExecutor<
-        DataApiAggregateQuery,
-        DataApiAggregateResponse
-    >;
-
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-        private readonly apiConfigService: ApiConfigService,
-    ) {
-        this.dataApiClient = new DataApiClient({
-            host: 'dex-service',
-            dataApiUrl: process.env.ELRONDDATAAPI_URL,
-            multiversXApiUrl: this.apiConfigService.getApiUrl(),
-            proxyTimeout: mxConfig.proxyTimeout,
-            keepAlive: {
-                maxSockets: mxConfig.keepAliveMaxSockets,
-                maxFreeSockets: mxConfig.keepAliveMaxFreeSockets,
-                timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-                freeSocketTimeout: mxConfig.keepAliveFreeSocketTimeout,
-            },
-            signerPrivateKey: fs
-                .readFileSync(this.apiConfigService.getNativeAuthKeyPath())
-                .toString(),
-        });
-
-        this.historicalQueryExecutor = new PendingExecutor((query) =>
-            this.dataApiClient.executeHistoricalQuery(query),
-        );
-        this.rawQueryExecutor = new PendingExecutor((query) =>
-            this.dataApiClient.executeRawQuery(query),
-        );
-        this.aggregateQueryExecutor = new PendingExecutor((query) =>
-            this.dataApiClient.executeAggregateQuery(query),
-        );
-    }
+        @InjectRepository(XExchangeAnalyticsEntity)
+        private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
+        @InjectRepository(SumDaily)
+        private readonly sumDaily: Repository<SumDaily>,
+        @InjectRepository(SumHourly)
+        private readonly sumHourly: Repository<SumHourly>,
+        @InjectRepository(CloseDaily)
+        private readonly closeDaily: Repository<CloseDaily>,
+        @InjectRepository(CloseHourly)
+        private readonly closeHourly: Repository<CloseHourly>,
+        @InjectRepository(TokenBurnedWeekly)
+        private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
+    ) {}
 
     @DataApiQuery()
     async getAggregatedValue({
@@ -84,15 +47,32 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     }: AnalyticsQueryArgs): Promise<string> {
         const [startDate, endDate] = computeTimeInterval(time);
 
-        const query = DataApiQueryBuilder.createXExchangeAnalyticsQuery()
-            .metric(series, metric)
-            .betweenDates(startDate, endDate)
-            .getAggregate(AggregateValue.sum);
+        if (metric.includes('Burned')) {
+            const query = await this.tokenBurnedWeekly
+                .createQueryBuilder()
+                .select('sum(sum) as sum')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere('time between :start and :end', {
+                    start: startDate,
+                    end: endDate,
+                })
+                .getRawOne();
+            return query.sum ?? '0';
+        }
 
-        const data = await this.aggregateQueryExecutor.execute(query);
+        const query = await this.dexAnalytics
+            .createQueryBuilder()
+            .select('sum(value)')
+            .where('series = :series', { series })
+            .andWhere('key = :key', { key: metric })
+            .andWhere('timestamp between :start and :end', {
+                start: startDate,
+                end: endDate,
+            })
+            .getRawOne();
 
-        const value = new BigNumber(data?.sum ?? '0').toFixed();
-        return value;
+        return query?.sum ?? '0';
     }
 
     @DataApiQuery()
@@ -100,18 +80,42 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const query = DataApiQueryBuilder.createXExchangeAnalyticsQuery()
-            .metric(series, metric)
-            .withTimeRange(TimeRange.ALL)
-            .withTimeResolution(TimeResolution.INTERVAL_DAY)
-            .getHistorical(HistoricalValue.last, HistoricalValue.time);
+        const firstRow = await this.closeDaily
+            .createQueryBuilder()
+            .select('time')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .orderBy('time', 'ASC')
+            .limit(1)
+            .getRawOne();
 
-        const rows = await this.historicalQueryExecutor.execute(query);
+        if (!firstRow) {
+            return [];
+        }
 
-        const data = rows.map((row) =>
-            HistoricDataModel.fromDataApiResponse(row, HistoricalValue.last),
+        const query = await this.closeDaily
+            .createQueryBuilder()
+            .select("time_bucket_gapfill('1 day', time) as day")
+            .addSelect('locf(last(last, time)) as last')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere('time between :start and now()', {
+                start: firstRow.time,
+            })
+            .groupBy('day')
+            .getRawMany();
+
+        return (
+            query?.map(
+                (row) =>
+                    new HistoricDataModel({
+                        timestamp: moment
+                            .utc(row.day)
+                            .format('yyyy-MM-DD HH:mm:ss'),
+                        value: row.last ?? '0',
+                    }),
+            ) ?? []
         );
-        return data;
     }
 
     @DataApiQuery()
@@ -119,19 +123,41 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const query = DataApiQueryBuilder.createXExchangeAnalyticsQuery()
-            .metric(series, metric)
-            .withTimeRange(TimeRange.ALL)
-            .withTimeResolution(TimeResolution.INTERVAL_DAY)
-            .fillDataGaps()
-            .getHistorical(HistoricalValue.sum, HistoricalValue.time);
+        const firstRow = await this.sumDaily
+            .createQueryBuilder()
+            .select('time')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .orderBy('time', 'ASC')
+            .limit(1)
+            .getRawOne();
 
-        const rows = await this.historicalQueryExecutor.execute(query);
+        if (!firstRow) {
+            return [];
+        }
 
-        const data = rows.map((row) =>
-            HistoricDataModel.fromDataApiResponse(row, HistoricalValue.sum),
+        const query = await this.sumDaily
+            .createQueryBuilder()
+            .select("time_bucket_gapfill('1 day', time) as day")
+            .addSelect('sum(sum) as sum')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere('time between :start and now()', {
+                start: firstRow.time,
+            })
+            .groupBy('day')
+            .getRawMany();
+        return (
+            query?.map(
+                (row) =>
+                    new HistoricDataModel({
+                        timestamp: moment
+                            .utc(row.day)
+                            .format('yyyy-MM-DD HH:mm:ss'),
+                        value: row.sum ?? '0',
+                    }),
+            ) ?? []
         );
-        return data;
     }
 
     @DataApiQuery()
@@ -139,18 +165,61 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const query = DataApiQueryBuilder.createXExchangeAnalyticsQuery()
-            .metric(series, metric)
-            .withTimeRange(TimeRange.DAY)
-            .withTimeResolution(TimeResolution.INTERVAL_HOUR)
-            .getHistorical(HistoricalValue.last, HistoricalValue.time);
+        const latestTimestamp = await this.closeDaily
+            .createQueryBuilder()
+            .select('time')
+            .addSelect('last')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .orderBy('time', 'DESC')
+            .limit(1)
+            .getRawOne();
 
-        const rows = await this.historicalQueryExecutor.execute(query);
+        if (!latestTimestamp) {
+            return [];
+        }
 
-        const data = rows.map((row) =>
-            HistoricDataModel.fromDataApiResponse(row, HistoricalValue.last),
+        const startDate = moment
+            .utc(latestTimestamp.time)
+            .isBefore(moment.utc().subtract(1, 'day'))
+            ? moment.utc(latestTimestamp.time)
+            : moment.utc().subtract(1, 'day');
+
+        const query = await this.closeHourly
+            .createQueryBuilder()
+            .select("time_bucket_gapfill('1 hour', time) as hour")
+            .addSelect('locf(last(last, time)) as last')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere('time between :start and now()', {
+                start: startDate.toDate(),
+            })
+            .groupBy('hour')
+            .getRawMany();
+
+        const dayBefore = moment.utc().subtract(1, 'day');
+        const results = query.filter((row) =>
+            moment.utc(row.hour).isSameOrAfter(dayBefore),
         );
-        return data;
+
+        for (const result of results) {
+            if (result.last) {
+                break;
+            }
+            result.last = latestTimestamp.last;
+        }
+
+        return (
+            results.map(
+                (row) =>
+                    new HistoricDataModel({
+                        timestamp: moment
+                            .utc(row.hour)
+                            .format('yyyy-MM-DD HH:mm:ss'),
+                        value: row.last ?? '0',
+                    }),
+            ) ?? []
+        );
     }
 
     @DataApiQuery()
@@ -158,19 +227,26 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const query = DataApiQueryBuilder.createXExchangeAnalyticsQuery()
-            .metric(series, metric)
-            .withTimeRange(TimeRange.DAY)
-            .withTimeResolution(TimeResolution.INTERVAL_HOUR)
-            .fillDataGaps()
-            .getHistorical(HistoricalValue.sum, HistoricalValue.time);
-
-        const rows = await this.historicalQueryExecutor.execute(query);
-
-        const data = rows.map((row) =>
-            HistoricDataModel.fromDataApiResponse(row, HistoricalValue.sum),
+        const query = await this.sumHourly
+            .createQueryBuilder()
+            .select("time_bucket_gapfill('1 hour', time) as hour")
+            .addSelect('sum(sum) as sum')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere("time between now() - INTERVAL '1 day' and now()")
+            .groupBy('hour')
+            .getRawMany();
+        return (
+            query?.map(
+                (row) =>
+                    new HistoricDataModel({
+                        timestamp: moment
+                            .utc(row.hour)
+                            .format('yyyy-MM-DD HH:mm:ss'),
+                        value: row.sum ?? '0',
+                    }),
+            ) ?? []
         );
-        return data;
     }
 
     @DataApiQuery()
@@ -181,39 +257,31 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         start,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         const [startDate, endDate] = computeTimeInterval(time, start);
-
-        const query = `query getLatestHistoricData($series: String!, $metric: String!, $startDate: DateTime!, $endDate: DateTime!) {
-            xExchangeAnalytics {
-                values(series: $series, key: $metric, filter: {
-                    sort: ASC, start_date: $startDate, end_date: $endDate
-                }) {
-                    value
-                    time
-                }
-            }
-        }`;
-
-        const variables = {
-            series,
-            metric,
-            startDate: moment.utc(startDate).format('YYYY-MM-DD HH:mm:ss'),
-            endDate: moment.utc(endDate).format('YYYY-MM-DD HH:mm:ss'),
-        };
-
-        const response = await this.rawQueryExecutor.execute({
-            query,
-            variables,
-        });
-        const rows = response.xExchangeAnalytics.values;
-
-        const data = rows.map(
-            (row: any) =>
-                new HistoricDataModel({
-                    timestamp: moment.utc(row.time).unix().toString(),
-                    value: new BigNumber(row.value ?? '0').toFixed(),
-                }),
+        const query = await this.dexAnalytics
+            .createQueryBuilder()
+            .select('time')
+            .addSelect('value')
+            .where('key = :metric', { metric })
+            .andWhere('series = :series', { series })
+            .andWhere(
+                endDate
+                    ? 'timestamp BETWEEN :startDate AND :endDate'
+                    : 'timestamp >= :startDate',
+                { startDate, endDate },
+            )
+            .orderBy('timestamp', 'ASC')
+            .getRawMany();
+        return (
+            query?.map(
+                (row) =>
+                    new HistoricDataModel({
+                        timestamp: moment
+                            .utc(row.timestamp)
+                            .format('yyyy-MM-DD HH:mm:ss'),
+                        value: row.value,
+                    }),
+            ) ?? []
         );
-        return data;
     }
 
     @DataApiQuery()
@@ -227,18 +295,28 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         const [startDate, endDate] = computeTimeInterval(time, start);
         const timeResolution = convertBinToTimeResolution(bin);
 
-        const query = DataApiQueryBuilder.createXExchangeAnalyticsQuery()
-            .metric(series, metric)
-            .betweenDates(startDate, endDate)
-            .withTimeResolution(timeResolution)
-            .fillDataGaps()
-            .getHistorical(HistoricalValue.avg, HistoricalValue.time);
+        const query = await this.dexAnalytics
+            .createQueryBuilder()
+            .select(`time_bucket(${timeResolution}, timestamp) as time`)
+            .addSelect('avg(value) as avg')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere('timestamp BETWEEN :startDate AND :endDate', {
+                startDate,
+                endDate,
+            })
+            .getRawMany();
 
-        const rows = await this.historicalQueryExecutor.execute(query);
-
-        const data = rows.map((row) =>
-            HistoricDataModel.fromDataApiResponse(row, HistoricalValue.max),
+        return (
+            query?.map(
+                (row) =>
+                    new HistoricDataModel({
+                        timestamp: moment
+                            .utc(row.time)
+                            .format('yyyy-MM-DD HH:mm:ss'),
+                        value: row.avg,
+                    }),
+            ) ?? []
         );
-        return data;
     }
 }
