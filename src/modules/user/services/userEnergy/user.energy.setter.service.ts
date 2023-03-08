@@ -19,15 +19,18 @@ export class UserEnergySetterService extends GenericSetterService {
     }
 
     async setUserOutdatedContracts(userAddress: string, value: OutdatedContract[]): Promise<string> {
+        const key = this.getCacheKey('userOutdatedContracts', userAddress);
+        this.logger.info(`Deleting user outdated contracts for user ${userAddress} with key ${key}`);
         return this.setData(
-            this.getCacheKey('userOutdatedContracts', userAddress),
+            key,
             value,
             oneMinute(),
         );
     }
 
     async delUserOutdatedContracts(userAddress: string): Promise<string> {
-        return this.delData(
-            this.getCacheKey('userOutdatedContracts', userAddress));
+        const key = this.getCacheKey('userOutdatedContracts', userAddress);
+        this.logger.info(`Deleting user outdated contracts for user ${userAddress} with key ${key}`);
+        return this.delData(key);
     }
 }
