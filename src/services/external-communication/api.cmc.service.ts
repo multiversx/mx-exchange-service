@@ -1,14 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { PendingExecutor } from 'src/utils/pending.executor';
+import { Logger } from 'winston';
 
 @Injectable()
 export class CMCApiService {
     private BASE_URL: string;
     private genericGetExecutor: PendingExecutor<any, any>;
 
-    constructor(private readonly apiConfigService: ApiConfigService) {
+    constructor(
+        private readonly apiConfigService: ApiConfigService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    ) {
         this.BASE_URL = apiConfigService.getCoinMarketCapURL();
 
         this.genericGetExecutor = new PendingExecutor(
@@ -26,7 +31,6 @@ export class CMCApiService {
                     );
                     return result.data;
                 } catch (error: any) {
-                    console.log(error);
                     const customError = {
                         method: 'GET',
                         uri: args.uri,
@@ -47,9 +51,17 @@ export class CMCApiService {
     }
 
     async getUSDCPrice(): Promise<number> {
-        const result = await this.get<any>('v2/cryptocurrency/quotes/latest', {
-            symbol: 'USDC',
-        });
-        return result.data.USDC[0].quote.USD.price;
+        try {
+            const result = await this.get<any>(
+                'v2/cryptocurrency/quotes/latest',
+                {
+                    symbol: 'USDC',
+                },
+            );
+            return result.data.USDC[0].quote.USD.price;
+        } catch (error) {
+            this.logger.error(`${CMCApiService}`, error);
+            return 1;
+        }
     }
 }
