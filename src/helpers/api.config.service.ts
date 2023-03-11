@@ -271,15 +271,6 @@ export class ApiConfigService {
         return origins.split(',');
     }
 
-    getSecurityAdmins(): string[] {
-        const admins = this.configService.get<string>('SECURITY_ADMINS');
-        if (!admins) {
-            throw new Error('No security admins present');
-        }
-
-        return admins.split(',');
-    }
-
     getCoinMarketCapURL(): string {
         const url = this.configService.get<string>('CMC_BASE_URL');
         if (!url) {
@@ -294,5 +285,14 @@ export class ApiConfigService {
             throw new Error('No CMC access token present');
         }
         return token;
+    }
+
+    getSecurityAdmins(): string[] {
+        const admins = this.configService.get<string>('SECURITY_ADMINS');
+        if (!admins) {
+            throw new Error('No security admins present');
+        }
+
+        return admins.split(',');
     }
 }
