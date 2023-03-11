@@ -44,6 +44,7 @@ import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-time
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
 import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
 import { EnergyGetterServiceProvider } from '../../energy/mocks/energy.getter.service.mock';
+import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
 
 describe('FarmService', () => {
     let factory: FarmFactoryService;
@@ -146,6 +147,7 @@ describe('FarmService', () => {
                     useValue: new ProgressComputeServiceMock({}),
                 },
                 EnergyGetterServiceProvider,
+                CMCApiGetterServiceProvider,
             ],
         }).compile();
 
