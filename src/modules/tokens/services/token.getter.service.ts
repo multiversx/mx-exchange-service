@@ -51,8 +51,8 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             this.getCacheKey(tokenID, 'type'),
             () => this.tokenRepositoryService.getTokenType(tokenID),
-            CacheTtlInfo.Token.remoteTtl,
-            CacheTtlInfo.Token.localTtl,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 

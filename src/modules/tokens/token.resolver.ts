@@ -27,9 +27,6 @@ export class TokensResolver extends GenericResolver {
 
     @ResolveField(() => String)
     async price(@Parent() parent: EsdtToken): Promise<string> {
-        if (constantsConfig.USDC_TOKEN_ID === parent.identifier) {
-            return '1';
-        }
         return await this.genericFieldResolver(() =>
             this.tokenGetter.getDerivedUSD(parent.identifier),
         );
