@@ -14,11 +14,13 @@ import { TokenSetterService } from './services/token.setter.service';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { NftCollectionResolver } from './nftCollection.resolver';
 import { NftTokenResolver } from './nftToken.resolver';
+import { ExternalCommunication } from 'src/services/external-communication/external.communication.module';
 
 @Module({
     imports: [
         MXCommunicationModule,
         CachingModule,
+        ExternalCommunication,
         forwardRef(() => PairModule),
         forwardRef(() => RouterModule),
         DatabaseModule,

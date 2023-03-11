@@ -9,6 +9,7 @@ import {
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { CMCApiGetterService } from 'src/services/external-communication/api.cmc.getter.service';
 import { ITokenComputeService } from '../interfaces';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly pairGetter: PairGetterService,
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetter: RouterGetterService,
+        private readonly cmcApiGetter: CMCApiGetterService,
     ) {}
 
     async getEgldPriceInUSD(): Promise<string> {
@@ -112,11 +114,15 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
-        const [egldPriceUSD, derivedEGLD] = await Promise.all([
+        const [egldPriceUSD, derivedEGLD, usdcPrice] = await Promise.all([
             this.getEgldPriceInUSD(),
             this.computeTokenPriceDerivedEGLD(tokenID),
+            this.cmcApiGetter.getUSDCPrice(),
         ]);
 
-        return new BigNumber(derivedEGLD).times(egldPriceUSD).toFixed();
+        return new BigNumber(derivedEGLD)
+            .times(egldPriceUSD)
+            .times(usdcPrice)
+            .toFixed();
     }
 }
