@@ -47,6 +47,7 @@ import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.servic
 import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
+import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -118,6 +119,7 @@ describe('AnalyticsService', () => {
                 WrapServiceProvider,
                 RouterGetterServiceProvider,
                 TokenGetterServiceProvider,
+                CMCApiGetterServiceProvider,
                 TokenComputeService,
                 AnalyticsComputeService,
                 {
