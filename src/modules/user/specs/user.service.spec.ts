@@ -85,6 +85,7 @@ import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-s
 import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { LockedTokenWrapperGetterServiceMock } from '../../locked-token-wrapper/mocks/locked-token-wrapper.getter.service.mock';
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
+import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -282,6 +283,7 @@ describe('UserService', () => {
                 UserMetaEsdtComputeService,
                 UserEsdtComputeService,
                 RemoteConfigGetterServiceProvider,
+                CMCApiGetterServiceProvider,
             ],
             imports: [
                 WinstonModule.forRoot({

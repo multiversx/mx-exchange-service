@@ -3,6 +3,7 @@ import { BigNumber } from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { CMCApiGetterService } from 'src/services/external-communication/api.cmc.getter.service';
 import { leastType } from 'src/utils/token.type.compare';
 import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
@@ -18,6 +19,7 @@ export class PairComputeService {
         private readonly tokenGetter: TokenGetterService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
+        private readonly cmcApiGetter: CMCApiGetterService,
     ) {}
 
     async computeFirstTokenPrice(pairAddress: string): Promise<string> {
@@ -94,11 +96,16 @@ export class PairComputeService {
         ]);
 
         if (firstTokenID === constantsConfig.USDC_TOKEN_ID) {
-            return new BigNumber(1).toFixed();
+            const usdcPrice = await this.cmcApiGetter.getUSDCPrice();
+            return usdcPrice.toFixed();
         }
 
         if (secondTokenID === constantsConfig.USDC_TOKEN_ID) {
-            return await this.computeFirstTokenPrice(pairAddress);
+            const [tokenPrice, usdcPrice] = await Promise.all([
+                this.computeFirstTokenPrice(pairAddress),
+                this.cmcApiGetter.getUSDCPrice(),
+            ]);
+            return new BigNumber(tokenPrice).times(usdcPrice).toFixed();
         }
 
         return await this.tokenCompute.computeTokenPriceDerivedUSD(
@@ -113,11 +120,16 @@ export class PairComputeService {
         ]);
 
         if (secondTokenID === constantsConfig.USDC_TOKEN_ID) {
-            return new BigNumber(1).toFixed();
+            const usdcPrice = await this.cmcApiGetter.getUSDCPrice();
+            return usdcPrice.toString();
         }
 
         if (firstTokenID === constantsConfig.USDC_TOKEN_ID) {
-            return await this.computeSecondTokenPrice(pairAddress);
+            const [tokenPrice, usdcPrice] = await Promise.all([
+                this.computeSecondTokenPrice(pairAddress),
+                this.cmcApiGetter.getUSDCPrice(),
+            ]);
+            return new BigNumber(tokenPrice).times(usdcPrice).toFixed();
         }
 
         return await this.tokenCompute.computeTokenPriceDerivedUSD(

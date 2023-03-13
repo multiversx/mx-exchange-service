@@ -17,6 +17,7 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { AbiFarmServiceProvider } from '../mocks/abi.farm.service.mock';
 import { FarmComputeServiceV1_3 } from '../v1.3/services/farm.v1.3.compute.service';
 import { FarmGetterServiceProviderV1_3 } from '../mocks/farm.v1.3.getter.service.mock';
+import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
 
 describe('FarmService', () => {
     let service: FarmComputeServiceV1_3;
@@ -57,6 +58,7 @@ describe('FarmService', () => {
                 TokenComputeService,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
+                CMCApiGetterServiceProvider,
             ],
         }).compile();
 

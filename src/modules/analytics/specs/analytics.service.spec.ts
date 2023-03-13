@@ -49,6 +49,7 @@ import { AnalyticsQueryService } from 'src/services/analytics/services/analytics
 import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
 import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
 import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
+import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -120,6 +121,7 @@ describe('AnalyticsService', () => {
                 WrapServiceProvider,
                 RouterGetterServiceProvider,
                 TokenGetterServiceProvider,
+                CMCApiGetterServiceProvider,
                 TokenComputeService,
                 AnalyticsComputeService,
                 {
