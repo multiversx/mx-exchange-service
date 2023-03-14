@@ -8,7 +8,7 @@ export class xExchange1678783387115 implements MigrationInterface {
         await queryRunner.query(
             `DROP INDEX "public"."hyper_dex_analytics_timestamp_idx"`,
         );
-        await queryRunner.query(`CREATE MATERIALIZED VIEW "token_burned_weekly" AS 
+        await queryRunner.query(`CREATE MATERIALIZED VIEW "token_burned_weekly" WITH (timescaledb.continuous) AS 
         SELECT
             time_bucket('1 week', timestamp) AS time, series, key
             sum(value) AS sum
