@@ -120,7 +120,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     })
                     .then((res) => {
                         if (!res?.value) {
-                            return false; // default value
+                            return true; // default value
                         }
                         return res.value === 'true';
                     }),
@@ -164,11 +164,16 @@ export class RemoteConfigGetterService extends GenericGetterService {
                         }
 
                         const value = res.value as AnalyticsQueryMode;
-                        if (value === AnalyticsQueryMode.AWS_TIMESTREAM || value === AnalyticsQueryMode.DATA_API) {
+                        if (
+                            value === AnalyticsQueryMode.AWS_TIMESTREAM ||
+                            value === AnalyticsQueryMode.DATA_API
+                        ) {
                             return value;
                         }
 
-                        throw new Error('Invalid value for analytics.QUERY_MODE present');
+                        throw new Error(
+                            'Invalid value for analytics.QUERY_MODE present',
+                        );
                     }),
             oneHour(),
         );
