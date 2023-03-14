@@ -5,12 +5,9 @@ export class xExchange1678783387115 implements MigrationInterface {
     transaction = false;
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(
-            `DROP INDEX "public"."hyper_dex_analytics_timestamp_idx"`,
-        );
         await queryRunner.query(`CREATE MATERIALIZED VIEW "token_burned_weekly" WITH (timescaledb.continuous) AS 
         SELECT
-            time_bucket('1 week', timestamp) AS time, series, key
+            time_bucket('1 week', timestamp) AS time, series, key,
             sum(value) AS sum
         FROM "hyper_dex_analytics"
         WHERE key = 'feeBurned' OR key = 'penaltyBurned'
@@ -33,8 +30,5 @@ export class xExchange1678783387115 implements MigrationInterface {
             ['MATERIALIZED_VIEW', 'token_burned_weekly', 'public'],
         );
         await queryRunner.query(`DROP MATERIALIZED VIEW "token_burned_weekly"`);
-        await queryRunner.query(
-            `CREATE INDEX "hyper_dex_analytics_timestamp_idx" ON "hyper_dex_analytics" ("timestamp") `,
-        );
     }
 }
