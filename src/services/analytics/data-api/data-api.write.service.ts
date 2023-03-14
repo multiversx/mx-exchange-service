@@ -67,7 +67,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         const profiler = new PerformanceProfiler('ingestData');
 
         try {
-            this.dexAnalytics.save(records);
+            await this.dexAnalytics.save(records);
         } catch (errors) {
             const logMessage = generateLogMessage(
                 DataApiWriteService.name,
