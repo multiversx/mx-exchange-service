@@ -80,42 +80,50 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const firstRow = await this.closeDaily
-            .createQueryBuilder()
-            .select('time')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .orderBy('time', 'ASC')
-            .limit(1)
-            .getRawOne();
+        try {
+            const firstRow = await this.closeDaily
+                .createQueryBuilder()
+                .select('time')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .orderBy('time', 'ASC')
+                .limit(1)
+                .getRawOne();
 
-        if (!firstRow) {
-            return [];
+            if (!firstRow) {
+                return [];
+            }
+
+            const query = await this.closeDaily
+                .createQueryBuilder()
+                .select("time_bucket_gapfill('1 day', time) as day")
+                .addSelect('locf(last(last, time)) as last')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere('time between :start and now()', {
+                    start: firstRow.time,
+                })
+                .groupBy('day')
+                .getRawMany();
+
+            return (
+                query?.map(
+                    (row) =>
+                        new HistoricDataModel({
+                            timestamp: moment
+                                .utc(row.day)
+                                .format('yyyy-MM-DD HH:mm:ss'),
+                            value: row.last ?? '0',
+                        }),
+                ) ?? []
+            );
+        } catch (error) {
+            console.log({
+                series,
+                metric,
+            });
+            throw error;
         }
-
-        const query = await this.closeDaily
-            .createQueryBuilder()
-            .select("time_bucket_gapfill('1 day', time) as day")
-            .addSelect('locf(last(last, time)) as last')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .andWhere('time between :start and now()', {
-                start: firstRow.time,
-            })
-            .groupBy('day')
-            .getRawMany();
-
-        return (
-            query?.map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row.day)
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.last ?? '0',
-                    }),
-            ) ?? []
-        );
     }
 
     @DataApiQuery()
