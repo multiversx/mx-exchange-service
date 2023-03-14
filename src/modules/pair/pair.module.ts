@@ -15,10 +15,12 @@ import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
 import { CommonAppModule } from 'src/common.app.module';
+import { ExternalCommunication } from 'src/services/external-communication/external.communication.module';
 @Module({
     imports: [
         CommonAppModule,
         MXCommunicationModule,
+        ExternalCommunication,
         ContextModule,
         WrappingModule,
         CachingModule,

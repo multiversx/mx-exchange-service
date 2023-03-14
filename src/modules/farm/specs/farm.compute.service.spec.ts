@@ -19,6 +19,7 @@ import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.servi
 import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service';
 import { FarmGetterServiceMockV1_2 } from '../mocks/farm.v1.2.getter.service.mock';
 import { CalculateRewardsArgs } from '../models/farm.args';
+import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
 
 describe('FarmService', () => {
     let service: FarmComputeServiceV1_2;
@@ -61,6 +62,7 @@ describe('FarmService', () => {
                 TokenComputeService,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
+                CMCApiGetterServiceProvider,
                 FarmComputeServiceV1_2,
             ],
         }).compile();
