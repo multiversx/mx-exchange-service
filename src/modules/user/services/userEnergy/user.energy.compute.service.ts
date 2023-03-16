@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { scAddress } from '../../../../config';
-import { EnergyGetterService } from '../../../energy/services/energy.getter.service';
 import { FeesCollectorService } from '../../../fees-collector/services/fees-collector.service';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
@@ -14,82 +13,76 @@ import { FarmGetterFactory } from '../../../farm/farm.getter.factory';
 import { FarmGetterServiceV2 } from '../../../farm/v2/services/farm.v2.getter.service';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
 import { PaginationArgs } from '../../../dex.model';
-import { ProxyFarmGetterService } from '../../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyService } from '../../../proxy/services/proxy.service';
 import { StakingProxyService } from '../../../staking-proxy/services/staking.proxy.service';
 import { FarmVersion } from '../../../farm/models/farm.model';
 import { farmVersion } from '../../../../utils/farm.utils';
 import { BigNumber } from 'bignumber.js';
 import { StakingProxyGetterService } from '../../../staking-proxy/services/staking.proxy.getter.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class UserEnergyComputeService {
     constructor(
-        private readonly energyGetter: EnergyGetterService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorService: FeesCollectorService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
-        private readonly proxyFarmGetter: ProxyFarmGetterService,
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyGetter: StakingProxyGetterService,
         private readonly proxyService: ProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async computeUserOutdatedContracts(
+    async computeUserOutdatedContract(
         userAddress: string,
-    ): Promise<OutdatedContract[]> {
-        const [activeFarms, currentUserEnergy] = await Promise.all([
-            this.computeActiveFarmsV2ForUser(userAddress),
-            this.energyGetter.getEnergyEntryForUser(userAddress),
-        ]);
+        userEnergy: EnergyType,
+        contractAddress: string,
+    ): Promise<OutdatedContract> {
+        const isFarmAddress = contractAddress !== scAddress.feesCollector;
 
-        const promisesList = activeFarms.map(async (address) => {
+        if (isFarmAddress) {
             const farmGetter = this.farmGetter.useGetter(
-                address,
+                contractAddress,
             ) as FarmGetterServiceV2;
             const [currentClaimProgress, currentWeek, farmToken] =
                 await Promise.all([
-                    farmGetter.currentClaimProgress(address, userAddress),
-                    farmGetter.getCurrentWeek(address),
-                    farmGetter.getFarmToken(address),
+                    farmGetter.currentClaimProgress(
+                        contractAddress,
+                        userAddress,
+                    ),
+                    farmGetter.getCurrentWeek(contractAddress),
+                    farmGetter.getFarmToken(contractAddress),
                 ]);
-            if (
-                this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)
-            ) {
+
+            if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
                 return new OutdatedContract({
-                    address: address,
+                    address: contractAddress,
                     type: ContractType.Farm,
                     claimProgressOutdated:
-                        currentClaimProgress.week != currentWeek,
+                        currentClaimProgress.week !== currentWeek,
                     farmToken: farmToken.collection,
                 });
             }
-            return undefined;
-        });
-
-        const outdatedContracts = (await Promise.all(promisesList)).filter(
-            (contract) => contract !== undefined,
-        );
+            return new OutdatedContract();
+        }
 
         const [currentClaimProgress, currentWeek] = await Promise.all([
             this.feesCollectorService.getUserCurrentClaimProgress(
-                scAddress.feesCollector,
+                contractAddress,
                 userAddress,
             ),
-            this.feesCollectorService.getCurrentWeek(scAddress.feesCollector),
+            this.feesCollectorService.getCurrentWeek(contractAddress),
         ]);
 
-        if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {
-            outdatedContracts.push(
-                new OutdatedContract({
-                    address: scAddress.feesCollector,
-                    type: ContractType.FeesCollector,
-                    claimProgressOutdated:
-                        currentClaimProgress.week != currentWeek,
-                }),
-            );
+        if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
+            return new OutdatedContract({
+                address: scAddress.feesCollector,
+                type: ContractType.FeesCollector,
+                claimProgressOutdated: currentClaimProgress.week != currentWeek,
+            });
         }
-        return outdatedContracts;
+        return new OutdatedContract();
     }
 
     async computeActiveFarmsV2ForUser(userAddress: string): Promise<string[]> {
