@@ -11,6 +11,7 @@ import { TokenSetterService } from 'src/modules/tokens/services/token.setter.ser
 import { delay } from 'src/helpers/helpers';
 import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { Locker } from 'src/utils/locker';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -83,65 +84,69 @@ export class PairCacheWarmerService {
         if (!this.apiConfig.isAWSTimestreamRead()) {
             return;
         }
+        Locker.lock('pairsAnalytics', async () => {
+            const pairsAddresses = await this.routerGetter.getAllPairsAddress();
+            const time = '24h';
+            for (const pairAddress of pairsAddresses) {
+                const firstTokenVolume24h =
+                    await this.analyticsQuery.getAggregatedValue({
+                        table: this.apiConfig.getAWSTableName(),
+                        series: pairAddress,
+                        metric: 'firstTokenVolume',
+                        time,
+                    });
+                await delay(1000);
+                const secondTokenVolume24h =
+                    await this.analyticsQuery.getAggregatedValue({
+                        table: this.apiConfig.getAWSTableName(),
+                        series: pairAddress,
+                        metric: 'secondTokenVolume',
+                        time,
+                    });
+                await delay(1000);
+                const volumeUSD24h =
+                    await this.analyticsQuery.getAggregatedValue({
+                        table: this.apiConfig.getAWSTableName(),
+                        series: pairAddress,
+                        metric: 'volumeUSD',
+                        time,
+                    });
+                await delay(1000);
+                const feesUSD24h = await this.analyticsQuery.getAggregatedValue(
+                    {
+                        table: this.apiConfig.getAWSTableName(),
+                        series: pairAddress,
+                        metric: 'feesUSD',
+                        time,
+                    },
+                );
+                await delay(1000);
 
-        const pairsAddresses = await this.routerGetter.getAllPairsAddress();
-        const time = '24h';
-        for (const pairAddress of pairsAddresses) {
-            const firstTokenVolume24h =
-                await this.analyticsQuery.getAggregatedValue({
-                    table: this.apiConfig.getAWSTableName(),
-                    series: pairAddress,
-                    metric: 'firstTokenVolume',
-                    time,
-                });
-            delay(1000);
-            const secondTokenVolume24h =
-                await this.analyticsQuery.getAggregatedValue({
-                    table: this.apiConfig.getAWSTableName(),
-                    series: pairAddress,
-                    metric: 'secondTokenVolume',
-                    time,
-                });
-            delay(1000);
-            const volumeUSD24h = await this.analyticsQuery.getAggregatedValue({
-                table: this.apiConfig.getAWSTableName(),
-                series: pairAddress,
-                metric: 'volumeUSD',
-                time,
-            });
-            delay(1000);
-            const feesUSD24h = await this.analyticsQuery.getAggregatedValue({
-                table: this.apiConfig.getAWSTableName(),
-                series: pairAddress,
-                metric: 'feesUSD',
-                time,
-            });
-            delay(1000);
-
-            const cachedKeys = await Promise.all([
-                this.pairSetterService.setFirstTokenVolume(
-                    pairAddress,
-                    firstTokenVolume24h,
-                    time,
-                ),
-                this.pairSetterService.setSecondTokenVolume(
-                    pairAddress,
-                    secondTokenVolume24h,
-                    time,
-                ),
-                this.pairSetterService.setVolumeUSD(
-                    pairAddress,
-                    volumeUSD24h,
-                    time,
-                ),
-                this.pairSetterService.setFeesUSD(
-                    pairAddress,
-                    feesUSD24h,
-                    time,
-                ),
-            ]);
-            await this.deleteCacheKeys(cachedKeys);
-        }
+                const cachedKeys = await Promise.all([
+                    this.pairSetterService.setFirstTokenVolume(
+                        pairAddress,
+                        firstTokenVolume24h,
+                        time,
+                    ),
+                    this.pairSetterService.setSecondTokenVolume(
+                        pairAddress,
+                        secondTokenVolume24h,
+                        time,
+                    ),
+                    this.pairSetterService.setVolumeUSD(
+                        pairAddress,
+                        volumeUSD24h,
+                        time,
+                    ),
+                    this.pairSetterService.setFeesUSD(
+                        pairAddress,
+                        feesUSD24h,
+                        time,
+                    ),
+                ]);
+                await this.deleteCacheKeys(cachedKeys);
+            }
+        });
     }
 
     @Cron(CronExpression.EVERY_MINUTE)

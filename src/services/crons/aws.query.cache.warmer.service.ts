@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { delay } from 'src/helpers/helpers';
 import { AnalyticsAWSSetterService } from 'src/modules/analytics/services/analytics.aws.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
@@ -24,7 +25,7 @@ export class AWSQueryCacheWarmerService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     async updateHistoricTokensData(): Promise<void> {
         if (!this.apiConfig.isAWSTimestreamRead()) {
             return;
@@ -39,36 +40,42 @@ export class AWSQueryCacheWarmerService {
                     series: tokenID,
                     metric: 'priceUSD',
                 });
+                await delay(1000);
                 const priceUSDCompleteValues =
                     await this.analyticsQuery.getLatestCompleteValues({
                         table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'priceUSD',
                     });
+                await delay(1000);
                 const lockedValueUSD24h =
                     await this.analyticsQuery.getValues24h({
                         table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'lockedValueUSD',
                     });
+                await delay(1000);
                 const lockedValueUSDCompleteValues =
                     await this.analyticsQuery.getLatestCompleteValues({
                         table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'lockedValueUSD',
                     });
+                await delay(1000);
                 const volumeUSD24hSum =
                     await this.analyticsQuery.getValues24hSum({
                         table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'volumeUSD',
                     });
+                await delay(1000);
                 const volumeUSDCompleteValuesSum =
                     await this.analyticsQuery.getSumCompleteValues({
                         table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'volumeUSD',
                     });
+                await delay(1000);
 
                 const cachedKeys = await Promise.all([
                     this.analyticsAWSSetter.setValues24h(
@@ -111,7 +118,7 @@ export class AWSQueryCacheWarmerService {
         });
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     async updateHistoricPairsData(): Promise<void> {
         if (!this.apiConfig.isAWSTimestreamRead()) {
             return;
@@ -127,35 +134,41 @@ export class AWSQueryCacheWarmerService {
                         series: pairAddress,
                         metric: 'lockedValueUSD',
                     });
+                delay(1000);
                 const lockedValueUSDCompleteValues =
                     await this.analyticsQuery.getLatestCompleteValues({
                         table: this.apiConfig.getAWSTableName(),
                         series: pairAddress,
                         metric: 'lockedValueUSD',
                     });
+                delay(1000);
                 const feesUSD = await this.analyticsQuery.getValues24hSum({
                     table: this.apiConfig.getAWSTableName(),
                     series: pairAddress,
                     metric: 'feesUSD',
                 });
+                delay(1000);
                 const volumeUSD24hSum =
                     await this.analyticsQuery.getValues24hSum({
                         table: this.apiConfig.getAWSTableName(),
                         series: pairAddress,
                         metric: 'volumeUSD',
                     });
+                delay(1000);
                 const volumeUSDCompleteValuesSum =
                     await this.analyticsQuery.getSumCompleteValues({
                         table: this.apiConfig.getAWSTableName(),
                         series: pairAddress,
                         metric: 'volumeUSD',
                     });
+                delay(1000);
                 const feesUSDCompleteValuesSum =
                     await this.analyticsQuery.getSumCompleteValues({
                         table: this.apiConfig.getAWSTableName(),
                         series: pairAddress,
                         metric: 'feesUSD',
                     });
+                delay(1000);
 
                 const cachedKeys = await Promise.all([
                     this.analyticsAWSSetter.setValues24h(

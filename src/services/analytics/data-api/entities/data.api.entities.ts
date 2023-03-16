@@ -186,7 +186,7 @@ export class CloseHourly {
 @ViewEntity({
     expression: `
         SELECT
-            time_bucket('1 week', timestamp) AS time, series, key
+            time_bucket('1 week', timestamp) AS time, series, key,
             sum(value) AS sum
         FROM "hyper_dex_analytics"
         WHERE key = 'feeBurned' OR key = 'penaltyBurned'
