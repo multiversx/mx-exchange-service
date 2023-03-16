@@ -4,12 +4,14 @@ import {
 } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { EnergySetterService } from 'src/modules/energy/services/energy.setter.service';
 import { UserEnergyComputeService } from 'src/modules/user/services/userEnergy/user.energy.compute.service';
 import { UserEnergyGetterService } from 'src/modules/user/services/userEnergy/user.energy.getter.service';
 import { UserEnergySetterService } from 'src/modules/user/services/userEnergy/user.energy.setter.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
+import { Logger } from 'winston';
 
 @Injectable()
 export class EnergyHandler {
@@ -19,6 +21,7 @@ export class EnergyHandler {
         private readonly userEnergySetter: UserEnergySetterService,
         private readonly userEnergyCompute: UserEnergyComputeService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async handleUpdateEnergy(event: EnergyEvent): Promise<void> {
@@ -63,7 +66,6 @@ export class EnergyHandler {
         }
 
         await this.deleteCacheKeys(cachedKeys);
-
         await this.pubSub.publish(SIMPLE_LOCK_ENERGY_EVENTS.ENERGY_UPDATED, {
             updatedEnergy: event,
         });
