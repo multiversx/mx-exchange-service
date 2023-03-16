@@ -24,8 +24,6 @@ import { UserEnergyComputeService } from 'src/modules/user/services/userEnergy/u
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
-    private invalidatedKeys = [];
-
     constructor(
         private readonly farmSetter: FarmSetterFactory,
         private readonly farmGetter: FarmGetterFactory,
@@ -56,8 +54,7 @@ export class WeeklyRewardsSplittingHandlerService {
             ),
         ]);
 
-        this.invalidatedKeys.push(keys);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(keys);
         await this.pubSub.publish(
             WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS,
             {
@@ -111,8 +108,7 @@ export class WeeklyRewardsSplittingHandlerService {
             ),
         );
 
-        this.invalidatedKeys.push(keys);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(keys);
         await this.pubSub.publish(
             WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY,
             {
@@ -155,8 +151,7 @@ export class WeeklyRewardsSplittingHandlerService {
             ),
         ]);
 
-        this.invalidatedKeys.push(keys);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(keys);
         await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS.CLAIM_MULTI, {
             claimMultiEvent: event,
         });
@@ -176,8 +171,7 @@ export class WeeklyRewardsSplittingHandlerService {
         return this.farmGetter.useGetter(address) as FarmGetterServiceV2;
     }
 
-    private async deleteCacheKeys() {
-        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
-        this.invalidatedKeys = [];
+    private async deleteCacheKeys(invalidatedKeys: string[]) {
+        await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }

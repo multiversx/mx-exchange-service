@@ -56,6 +56,6 @@ export class EnergySetterService extends GenericSetterService {
     }
 
     private getEnergyCacheKey(...args: any): string {
-        return generateCacheKeyFromParams('energy', args);
+        return generateCacheKeyFromParams('energy', ...args);
     }
 }
