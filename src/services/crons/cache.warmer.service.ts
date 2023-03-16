@@ -9,20 +9,29 @@ import { oneMinute, oneSecond } from 'src/helpers/helpers';
 import axios from 'axios';
 import moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { RouterService } from 'src/modules/router/services/router.service';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { Locker } from 'src/utils/locker';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { CMCApiService } from '../external-communication/api.cmc.service';
+import { CMCApiSetterService } from '../external-communication/api.cmc.setter.service';
 
 @Injectable()
 export class CacheWarmerService {
     constructor(
         private readonly apiService: MXApiService,
         private readonly cachingService: CachingService,
-        private readonly routerService: RouterService,
+        private readonly cmcApi: CMCApiService,
+        private readonly cmcApiSetter: CMCApiSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
+
+    @Cron('*/2 * * * *') // EVERY_2_MINUTES
+    async cacheUSDCPrice(): Promise<void> {
+        const usdcPrice = await this.cmcApi.getUSDCPrice();
+        const key = await this.cmcApiSetter.setUSDCPrice(usdcPrice);
+        await this.deleteCacheKeys([key]);
+    }
 
     @Cron('*/6 * * * * *')
     async cacheCurrentEpoch(): Promise<void> {

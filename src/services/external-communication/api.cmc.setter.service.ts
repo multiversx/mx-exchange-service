@@ -3,24 +3,23 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute } from 'src/helpers/helpers';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
-import { GenericGetterService } from '../generics/generic.getter.service';
-import { CMCApiService } from './api.cmc.service';
+import { GenericSetterService } from '../generics/generic.setter.service';
 
 @Injectable()
-export class CMCApiGetterService extends GenericGetterService {
+export class CMCApiSetterService extends GenericSetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly cmcApi: CMCApiService,
     ) {
         super(cachingService, logger);
+
         this.baseKey = 'cmc';
     }
 
-    async getUSDCPrice(): Promise<number> {
-        return await this.getData(
+    async setUSDCPrice(value: number): Promise<string> {
+        return await this.setData(
             this.getCacheKey('price', 'usdc'),
-            () => this.cmcApi.getUSDCPrice(),
+            value,
             oneMinute() * 5,
             oneMinute() * 3,
         );
