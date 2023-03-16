@@ -25,11 +25,7 @@ export class UserEnergyTransactionService {
                 userAddress,
             );
             farms.forEach((farm) => {
-                if (!farm.claimProgressOutdated) {
-                    endpointArgs.push(
-                        new AddressValue(Address.fromString(farm.address)),
-                    );
-                }
+                endpointArgs.push(new AddressValue(Address.fromString(farm)));
             });
             endpointArgs.push(
                 new AddressValue(Address.fromString(scAddress.feesCollector)),
@@ -40,7 +36,7 @@ export class UserEnergyTransactionService {
                     userAddress,
                 );
             contracts.forEach((contract) => {
-                if (!contract.claimProgressOutdated) {
+                if (contract !== undefined && !contract.claimProgressOutdated) {
                     endpointArgs.push(
                         new AddressValue(Address.fromString(contract.address)),
                     );
