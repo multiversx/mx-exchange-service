@@ -35,6 +35,54 @@ export interface IWeeklyRewardsSplittingGetterService {
     totalLockedTokensForWeek(scAddress: string, week: number): Promise<string>;
 }
 
+export interface IWeeklyRewardsSplittingSetterService {
+    currentClaimProgress(
+        scAddress: string,
+        userAddress: string,
+        value: ClaimProgress,
+    ): Promise<string>;
+
+    userEnergyForWeek(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+        value: EnergyType,
+    ): Promise<string>;
+
+    userRewardsForWeek(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+        value: EsdtTokenPayment[],
+    ): Promise<string>;
+
+    lastActiveWeekForUser(
+        scAddress: string,
+        userAddress: string,
+        value: number,
+    ): Promise<string>;
+
+    lastGlobalUpdateWeek(scAddress: string, value: number): Promise<string>;
+
+    totalRewardsForWeek(
+        scAddress: string,
+        week: number,
+        value: EsdtTokenPayment[],
+    ): Promise<string>;
+
+    totalEnergyForWeek(
+        scAddress: string,
+        week: number,
+        value: string,
+    ): Promise<string>;
+
+    totalLockedTokensForWeek(
+        scAddress: string,
+        week: number,
+        value: string,
+    ): Promise<string>;
+}
+
 export interface IWeeklyRewardsSplittingComputeService {
     computeUserAllRewards(
         scAddress: string,

@@ -3,9 +3,7 @@ import { CachingService } from '../../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { OutdatedContract } from '../../models/user.model';
-import {
-    GenericSetterService
-} from '../../../../services/generics/generic.setter.service';
+import { GenericSetterService } from '../../../../services/generics/generic.setter.service';
 import { oneMinute } from '../../../../helpers/helpers';
 
 @Injectable()
@@ -18,16 +16,21 @@ export class UserEnergySetterService extends GenericSetterService {
         this.baseKey = 'userEnergy';
     }
 
-    async setUserOutdatedContracts(userAddress: string, value: OutdatedContract[]): Promise<string> {
-        return this.setData(
-            this.getCacheKey('userOutdatedContracts', userAddress),
+    async setUserOutdatedContract(
+        userAddress: string,
+        contractAddress: string,
+        value: OutdatedContract,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('outdatedContract', userAddress, contractAddress),
             value,
-            oneMinute(),
+            oneMinute() * 10,
         );
     }
 
     async delUserOutdatedContracts(userAddress: string): Promise<string> {
         return this.delData(
-            this.getCacheKey('userOutdatedContracts', userAddress));
+            this.getCacheKey('userOutdatedContracts', userAddress),
+        );
     }
 }

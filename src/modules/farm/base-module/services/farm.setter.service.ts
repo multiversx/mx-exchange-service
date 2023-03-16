@@ -281,7 +281,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         );
     }
 
-    private getFarmCacheKey(farmAddress: string, ...args: any) {
+    protected getFarmCacheKey(farmAddress: string, ...args: any) {
         return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }
 }
