@@ -6,6 +6,9 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { OutdatedContract } from '../../models/user.model';
 import { oneMinute } from '../../../../helpers/helpers';
+import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
+import { EnergyType } from '@multiversx/sdk-exchange';
+import { scAddress } from 'src/config';
 
 @Injectable()
 export class UserEnergyGetterService extends GenericGetterService {
@@ -13,24 +16,60 @@ export class UserEnergyGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly userEnergyCompute: UserEnergyComputeService,
+        private readonly energyGetter: EnergyGetterService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'userEnergy';
     }
 
-    async getUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
-        return this.getData(
-            this.getCacheKey('userOutdatedContracts', userAddress),
-            () => this.userEnergyCompute.computeUserOutdatedContracts(userAddress),
-            oneMinute(),
-        )
+    async getUserOutdatedContract(
+        userAddress: string,
+        userEnergy: EnergyType,
+        contractAddress: string,
+    ): Promise<OutdatedContract> {
+        return await this.getData(
+            this.getCacheKey('outdatedContract', userAddress, contractAddress),
+            () =>
+                this.userEnergyCompute.computeUserOutdatedContract(
+                    userAddress,
+                    userEnergy,
+                    contractAddress,
+                ),
+            oneMinute() * 10,
+        );
     }
 
-    async getUserActiveFarmsV2(userAddress: string): Promise<OutdatedContract[]> {
+    async getUserOutdatedContracts(
+        userAddress: string,
+    ): Promise<OutdatedContract[]> {
+        const activeFarms = await this.getUserActiveFarmsV2(userAddress);
+        const userEnergy = await this.energyGetter.getEnergyEntryForUser(
+            userAddress,
+        );
+
+        const promises = activeFarms.map((farm) =>
+            this.getUserOutdatedContract(userAddress, userEnergy, farm),
+        );
+        promises.push(
+            this.getUserOutdatedContract(
+                userAddress,
+                userEnergy,
+                scAddress.feesCollector,
+            ),
+        );
+
+        const outdatedContracts = await Promise.all(promises);
+        return outdatedContracts.filter(
+            (contract) => contract && contract.address,
+        );
+    }
+
+    async getUserActiveFarmsV2(userAddress: string): Promise<string[]> {
         return this.getData(
             this.getCacheKey('userActiveFarms', userAddress),
-            () => this.userEnergyCompute.computeActiveFarmsV2ForUser(userAddress),
+            () =>
+                this.userEnergyCompute.computeActiveFarmsV2ForUser(userAddress),
             oneMinute(),
-        )
+        );
     }
 }

@@ -124,6 +124,6 @@ export class EnergyGetterService
     }
 
     private getEnergyCacheKey(...args: any): string {
-        return generateCacheKeyFromParams('energy', args);
+        return generateCacheKeyFromParams('energy', ...args);
     }
 }
