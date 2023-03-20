@@ -32,12 +32,14 @@ import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSp
 import { UserModule } from '../user/user.module';
 import { TokenUnstakeModule } from '../token-unstake/token.unstake.module';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
+import { ExternalCommunication } from 'src/services/external-communication/external.communication.module';
 
 @Module({
     imports: [
         CommonAppModule,
         AnalyticsServicesModule,
         MXCommunicationModule,
+        ExternalCommunication,
         CachingModule,
         ContextModule,
         PairModule,
