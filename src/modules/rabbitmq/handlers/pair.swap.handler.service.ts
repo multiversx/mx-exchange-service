@@ -15,6 +15,7 @@ import {
 } from '@multiversx/sdk-exchange';
 import { PairHandler } from './pair.handler.service';
 import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
+import { CMCApiGetterService } from 'src/services/external-communication/api.cmc.getter.service';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -29,6 +30,7 @@ export class SwapEventHandler {
         private readonly pairCompute: PairComputeService,
         private readonly routerCompute: RouterComputeService,
         private readonly pairHandler: PairHandler,
+        private readonly cmcApiGetter: CMCApiGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -65,6 +67,8 @@ export class SwapEventHandler {
             secondTokenReserve,
         );
 
+        const usdcPrice = await this.cmcApiGetter.getUSDCPrice();
+
         const [
             firstTokenPrice,
             secondTokenPrice,
@@ -90,7 +94,9 @@ export class SwapEventHandler {
                 firstTokenReserve,
                 firstToken.decimals,
                 firstTokenPriceUSD,
-            ).toFixed(),
+            )
+                .dividedBy(usdcPrice)
+                .toFixed(),
             firstTokenVolume: firstTokenAmount,
         };
         const secondTokenValues = {
@@ -100,7 +106,9 @@ export class SwapEventHandler {
                 secondTokenReserve,
                 secondToken.decimals,
                 secondTokenPriceUSD,
-            ).toFixed(),
+            )
+                .dividedBy(usdcPrice)
+                .toFixed(),
             secondTokenVolume: secondTokenAmount,
         };
 
@@ -114,12 +122,12 @@ export class SwapEventHandler {
             firstTokenValues.firstTokenVolume,
             firstToken.decimals,
             firstTokenPriceUSD,
-        );
+        ).dividedBy(usdcPrice);
         const secondTokenVolumeUSD = computeValueUSD(
             secondTokenValues.secondTokenVolume,
             secondToken.decimals,
             secondTokenPriceUSD,
-        );
+        ).dividedBy(usdcPrice);
         const volumeUSD = firstTokenVolumeUSD
             .plus(secondTokenVolumeUSD)
             .dividedBy(2);
@@ -144,7 +152,7 @@ export class SwapEventHandler {
             lockedValueUSD,
             liquidity,
             volumeUSD: volumeUSD.toFixed(),
-            feesUSD: feesUSD.toFixed(),
+            feesUSD: feesUSD.dividedBy(usdcPrice).toFixed(),
         };
 
         const [firstTokenTotalLockedValue, secondTokenTotalLockedValue] =
@@ -162,8 +170,12 @@ export class SwapEventHandler {
                 firstTokenTotalLockedValue,
                 firstToken.decimals,
                 firstTokenPriceUSD,
-            ),
-            priceUSD: firstTokenPriceUSD,
+            )
+                .dividedBy(usdcPrice)
+                .toFixed(),
+            priceUSD: new BigNumber(firstTokenPriceUSD)
+                .dividedBy(usdcPrice)
+                .toFixed(),
             volume: firstTokenAmount,
             volumeUSD: firstTokenVolumeUSD.toFixed(),
         };
@@ -173,14 +185,20 @@ export class SwapEventHandler {
                 secondTokenTotalLockedValue,
                 secondToken.decimals,
                 secondTokenPriceUSD,
-            ),
-            priceUSD: secondTokenPriceUSD,
+            )
+                .dividedBy(usdcPrice)
+                .toFixed(),
+            priceUSD: new BigNumber(secondTokenPriceUSD)
+                .dividedBy(usdcPrice)
+                .toFixed(),
             volume: secondTokenAmount,
             volumeUSD: secondTokenVolumeUSD.toFixed(),
         };
 
         data['factory'] = {
-            totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
+            totalLockedValueUSD: newTotalLockedValueUSD
+                .dividedBy(usdcPrice)
+                .toFixed(),
         };
 
         await this.updatePairPrices(
