@@ -49,7 +49,7 @@ async function bootstrap() {
         pubSubApp.listen();
 
         app.enableCors({
-            origin: '*'
+            origin: '*',
         });
 
         await app.listen(
@@ -66,6 +66,7 @@ async function bootstrap() {
         );
     }
     if (apiConfigService.isCacheWarmerCronActive()) {
+        pubSubApp.listen();
         const processorApp = await NestFactory.create(CacheWarmerModule);
         await processorApp.listen(
             apiConfigService.getCacheWarmerPort(),

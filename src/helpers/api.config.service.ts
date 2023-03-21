@@ -295,4 +295,54 @@ export class ApiConfigService {
 
         return admins.split(',');
     }
+
+    getNativeAuthKeyPath(): string {
+        const nativeAuthPemPath = this.configService.get<string>(
+            'NATIVE_AUTH_PEM_PATH',
+        );
+        if (!nativeAuthPemPath) {
+            throw new Error('No NATIVE_AUTH_PEM_PATH present');
+        }
+        return nativeAuthPemPath;
+    }
+
+    getTimescaleDbHost(): string {
+        const host = this.configService.get<string>('TIMESCALEDB_URL');
+        if (!host) {
+            throw new Error('No TIMESCALEDB_URL present');
+        }
+        return host;
+    }
+
+    getTimescaleDbPort(): number {
+        const port = this.configService.get<string>('TIMESCALEDB_PORT');
+        if (!port) {
+            throw new Error('No TIMESCALEDB_PORT present');
+        }
+        return parseInt(port);
+    }
+
+    getTimescaleDbDatabase(): string {
+        const database = this.configService.get<string>('TIMESCALEDB_DATABASE');
+        if (!database) {
+            throw new Error('No TIMESCALEDB_DATABASE present');
+        }
+        return database;
+    }
+
+    getTimescaleDbUsername(): string {
+        const username = this.configService.get<string>('TIMESCALEDB_USERNAME');
+        if (!username) {
+            throw new Error('No TIMESCALEDB_USERNAME present');
+        }
+        return username;
+    }
+
+    getTimescaleDbPassword(): string {
+        const password = this.configService.get<string>('TIMESCALEDB_PASSWORD');
+        if (!password) {
+            throw new Error('No TIMESCALEDB_PASSWORD present');
+        }
+        return password;
+    }
 }

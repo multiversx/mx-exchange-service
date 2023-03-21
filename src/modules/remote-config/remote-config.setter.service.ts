@@ -46,6 +46,10 @@ export class RemoteConfigSetterService extends GenericSetterService {
         );
     }
 
+    async setAnalytics(name: string, value: string): Promise<string> {
+        return await this.setData(this.getAnalyticsCacheKey(name), value, oneHour());
+    }
+
     async deleteFlag(name: string): Promise<void> {
         const cacheKey = this.getFlagCacheKey(name);
         await this.cachingService.deleteInCache(cacheKey);
@@ -64,6 +68,10 @@ export class RemoteConfigSetterService extends GenericSetterService {
 
     private getFlagCacheKey(flagName: string, ...args: any) {
         return generateCacheKeyFromParams('flag', flagName, ...args);
+    }
+
+    private getAnalyticsCacheKey(flagName: string, ...args: any) {
+        return generateCacheKeyFromParams('analytics', flagName, ...args);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]): Promise<void> {

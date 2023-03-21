@@ -7,13 +7,13 @@ import {
 } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -31,7 +31,7 @@ export class AnalyticsComputeService {
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
     ) {}
 
@@ -169,7 +169,7 @@ export class AnalyticsComputeService {
         time: string,
         metric: string,
     ): Promise<string> {
-        return await this.awsTimestreamQuery.getAggregatedValue({
+        return await this.analyticsQuery.getAggregatedValue({
             table: this.apiConfig.getAWSTableName(),
             series: tokenID,
             metric,

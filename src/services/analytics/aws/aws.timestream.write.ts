@@ -3,10 +3,11 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import AWS, { TimestreamWrite } from 'aws-sdk';
 import { HttpsAgent } from 'agentkeepalive';
+import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
-export class AWSTimestreamWriteService {
+export class AWSTimestreamWriteService implements AnalyticsWriteInterface {
     private writeClient: TimestreamWrite;
     private readonly DatabaseName: string;
 
@@ -92,7 +93,10 @@ export class AWSTimestreamWriteService {
     }
 
     async writeRecords({ TableName, Records }): Promise<void> {
-        let request: AWS.Request<{}, AWS.AWSError>;
+        let request: AWS.Request<
+            TimestreamWrite.Types.WriteRecordsResponse,
+            AWS.AWSError
+        >;
         try {
             const params: TimestreamWrite.WriteRecordsRequest = {
                 DatabaseName: this.DatabaseName,

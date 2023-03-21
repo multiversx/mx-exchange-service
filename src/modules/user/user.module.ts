@@ -25,12 +25,12 @@ import { FarmModule } from '../farm/farm.module';
 import { EnergyModule } from '../energy/energy.module';
 import { UserNftsResolver } from './user.nfts.resolver';
 import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
-import { UserEnergyService } from './services/userEnergy/user.energy.service';
 import { UserEnergyGetterService } from './services/userEnergy/user.energy.getter.service';
 import { UserEnergyComputeService } from './services/userEnergy/user.energy.compute.service';
 import { LockedTokenWrapperModule } from '../locked-token-wrapper/locked-token-wrapper.module';
 import { UserEnergySetterService } from './services/userEnergy/user.energy.setter.service';
 import { UserInfoByWeekResolver } from './user.info-by-week.resolver';
+import { UserEnergyTransactionService } from './services/userEnergy/user.energy.transaction.service';
 
 @Module({
     imports: [
@@ -58,12 +58,12 @@ import { UserInfoByWeekResolver } from './user.info-by-week.resolver';
     providers: [
         UserEsdtService,
         UserMetaEsdtService,
-        UserEnergyService,
-        UserEnergyGetterService,
-        UserEnergySetterService,
-        UserEnergyComputeService,
         UserEsdtComputeService,
         UserMetaEsdtComputeService,
+        UserEnergyComputeService,
+        UserEnergyGetterService,
+        UserEnergySetterService,
+        UserEnergyTransactionService,
         UserResolver,
         UserTokenResolver,
         UserNftsResolver,
@@ -71,9 +71,11 @@ import { UserInfoByWeekResolver } from './user.info-by-week.resolver';
     ],
     exports: [
         UserMetaEsdtService,
+        UserInfoByWeekResolver,
+        UserEnergyComputeService,
         UserEnergyGetterService,
         UserEnergySetterService,
-        UserInfoByWeekResolver,
+        UserEnergyTransactionService,
     ],
 })
 export class UserModule {}

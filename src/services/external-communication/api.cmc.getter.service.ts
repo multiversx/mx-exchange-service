@@ -19,9 +19,10 @@ export class CMCApiGetterService extends GenericGetterService {
 
     async getUSDCPrice(): Promise<number> {
         return await this.getData(
-            'price.usdc',
+            this.getCacheKey('price', 'usdc'),
             () => this.cmcApi.getUSDCPrice(),
-            oneMinute() * 4,
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 }

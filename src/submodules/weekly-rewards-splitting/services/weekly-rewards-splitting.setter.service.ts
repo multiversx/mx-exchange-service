@@ -8,9 +8,13 @@ import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
+import { IWeeklyRewardsSplittingSetterService } from '../interfaces';
 
 @Injectable()
-export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
+export class WeeklyRewardsSplittingSetterService
+    extends GenericSetterService
+    implements IWeeklyRewardsSplittingSetterService
+{
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
@@ -23,7 +27,7 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         userAddress: string,
         value: ClaimProgress,
     ): Promise<string> {
-        return this.setData(
+        return await this.setData(
             this.getWeeklyRewardsCacheKey(
                 scAddress,
                 'currentClaimProgress',
@@ -41,7 +45,7 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         week: number,
         value: EnergyType,
     ): Promise<string> {
-        return this.setData(
+        return await this.setData(
             this.getWeeklyRewardsCacheKey(
                 scAddress,
                 'userEnergyForWeek',
@@ -60,7 +64,7 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         week: number,
         value: EsdtTokenPayment[],
     ): Promise<string> {
-        return this.setData(
+        return await this.setData(
             this.getWeeklyRewardsCacheKey(
                 scAddress,
                 'userRewardsForWeek',
@@ -78,7 +82,7 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         userAddress: string,
         value: number,
     ): Promise<string> {
-        return this.setData(
+        return await this.setData(
             this.getWeeklyRewardsCacheKey(
                 scAddress,
                 'lastActiveWeekForUser',
@@ -94,7 +98,7 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         scAddress: string,
         value: number,
     ): Promise<string> {
-        return this.setData(
+        return await this.setData(
             this.getWeeklyRewardsCacheKey(scAddress, 'lastGlobalUpdateWeek'),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
@@ -107,7 +111,7 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         week: number,
         value: EsdtTokenPayment[],
     ): Promise<string> {
-        return this.setData(
+        return await this.setData(
             this.getWeeklyRewardsCacheKey(
                 scAddress,
                 'totalRewardsForWeek',
@@ -124,7 +128,7 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         week: number,
         value: string,
     ): Promise<string> {
-        return this.setData(
+        return await this.setData(
             this.getWeeklyRewardsCacheKey(
                 scAddress,
                 'totalEnergyForWeek',
@@ -141,7 +145,7 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         week: number,
         value: string,
     ): Promise<string> {
-        return this.setData(
+        return await this.setData(
             this.getWeeklyRewardsCacheKey(
                 scAddress,
                 'totalLockedTokensForWeek',

@@ -9,7 +9,6 @@ import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { MXApiServiceMock } from 'src/services/multiversx-communication/mx.api.service.mock';
-import { AWSModule } from 'src/services/aws/aws.module';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
@@ -46,6 +45,9 @@ import { StakingGetterServiceProvider } from '../../staking/mocks/staking.getter
 import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
 import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
+import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
 import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
 import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
 
@@ -90,7 +92,7 @@ describe('AnalyticsService', () => {
     beforeEach(async () => {
         const feesCollectorGetter = new FeesCollectorGetterServiceMock({});
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule, AWSModule],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
@@ -146,6 +148,9 @@ describe('AnalyticsService', () => {
                     useValue: feesCollectorGetter,
                 },
                 RemoteConfigGetterServiceProvider,
+                AnalyticsQueryService,
+                AWSTimestreamQueryService,
+                DataApiQueryServiceProvider,
             ],
         }).compile();
 
