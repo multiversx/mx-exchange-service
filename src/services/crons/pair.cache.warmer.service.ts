@@ -12,6 +12,7 @@ import { delay } from 'src/helpers/helpers';
 import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Locker } from 'src/utils/locker';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -27,7 +28,7 @@ export class PairCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_MINUTE)
     async cachePairs(): Promise<void> {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
         for (const pairMetadata of pairsMetadata) {
@@ -62,18 +63,22 @@ export class PairCacheWarmerService {
                     await this.tokenSetter.setTokenMetadata(lpTokenID, lpToken),
                 );
             }
-            cachedKeys.push(
-                await this.tokenSetter.setTokenMetadata(
-                    pairMetadata.firstTokenID,
-                    firstToken,
-                ),
-            );
-            cachedKeys.push(
-                await this.tokenSetter.setTokenMetadata(
-                    pairMetadata.secondTokenID,
-                    secondToken,
-                ),
-            );
+            if (this.checkEsdtToken(firstToken)) {
+                cachedKeys.push(
+                    await this.tokenSetter.setTokenMetadata(
+                        pairMetadata.firstTokenID,
+                        firstToken,
+                    ),
+                );
+            }
+            if (this.checkEsdtToken(secondToken)) {
+                cachedKeys.push(
+                    await this.tokenSetter.setTokenMetadata(
+                        pairMetadata.secondTokenID,
+                        secondToken,
+                    ),
+                );
+            }
 
             await this.deleteCacheKeys(cachedKeys);
         }
@@ -264,6 +269,18 @@ export class PairCacheWarmerService {
             invalidatedKeys.push(cachedKeys);
         }
         await this.deleteCacheKeys(invalidatedKeys);
+    }
+
+    private checkEsdtToken(token: EsdtToken): boolean {
+        if (
+            !token.identifier ||
+            !token.decimals ||
+            token.identifier === undefined ||
+            token.decimals === undefined
+        ) {
+            return false;
+        }
+        return true;
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
