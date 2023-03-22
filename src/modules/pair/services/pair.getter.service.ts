@@ -72,12 +72,12 @@ export class PairGetterService
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
-        return this.tokenGetter.getTokenMetadata(firstTokenID);
+        return await this.tokenGetter.getTokenMetadata(firstTokenID);
     }
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return this.tokenGetter.getTokenMetadata(secondTokenID);
+        return await this.tokenGetter.getTokenMetadata(secondTokenID);
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
