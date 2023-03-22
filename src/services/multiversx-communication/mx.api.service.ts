@@ -87,6 +87,7 @@ export class MXApiService {
             }
             this.logger.error(`${error.message} after ${retries} retries`, {
                 path: `${MXApiService.name}.${name}`,
+                resourceUrl,
             });
             throw new Error(error);
         } finally {
