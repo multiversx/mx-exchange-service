@@ -9,7 +9,10 @@ export class CacheTtlInfo {
         this.localTtl = localTtl ? localTtl : this.remoteTtl / 2;
     }
 
-    static Token: CacheTtlInfo = new CacheTtlInfo(oneHour() * 6, oneHour() * 3);
+    static Token: CacheTtlInfo = new CacheTtlInfo(
+        oneMinute() * 5,
+        oneMinute() * 3,
+    );
 
     static ContractState: CacheTtlInfo = new CacheTtlInfo(
         oneMinute() * 10,

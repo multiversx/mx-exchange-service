@@ -13,6 +13,8 @@ import { AnalyticsQueryService } from '../analytics/services/analytics.query.ser
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Locker } from 'src/utils/locker';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -26,6 +28,7 @@ export class PairCacheWarmerService {
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     @Cron(CronExpression.EVERY_MINUTE)
@@ -70,6 +73,11 @@ export class PairCacheWarmerService {
                         firstToken,
                     ),
                 );
+            } else {
+                this.logger.error('Failed to check token', {
+                    tokenID: pairMetadata.firstTokenID,
+                    firstToken,
+                });
             }
             if (this.checkEsdtToken(secondToken)) {
                 cachedKeys.push(
@@ -78,6 +86,11 @@ export class PairCacheWarmerService {
                         secondToken,
                     ),
                 );
+            } else {
+                this.logger.error('Failed to check token', {
+                    tokenID: pairMetadata.secondTokenID,
+                    secondToken,
+                });
             }
 
             await this.deleteCacheKeys(cachedKeys);
