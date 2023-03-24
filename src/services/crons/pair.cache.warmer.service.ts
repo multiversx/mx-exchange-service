@@ -12,9 +12,9 @@ import { delay } from 'src/helpers/helpers';
 import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Locker } from 'src/utils/locker';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { checkEsdtToken } from 'src/utils/token.type.compare';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -71,7 +71,7 @@ export class PairCacheWarmerService {
                         ),
                     );
                 }
-                if (this.checkEsdtToken(firstToken)) {
+                if (checkEsdtToken(firstToken)) {
                     cachedKeys.push(
                         await this.tokenSetter.setTokenMetadata(
                             pairMetadata.firstTokenID,
@@ -84,7 +84,7 @@ export class PairCacheWarmerService {
                         firstToken,
                     });
                 }
-                if (this.checkEsdtToken(secondToken)) {
+                if (checkEsdtToken(secondToken)) {
                     cachedKeys.push(
                         await this.tokenSetter.setTokenMetadata(
                             pairMetadata.secondTokenID,
@@ -289,18 +289,6 @@ export class PairCacheWarmerService {
             invalidatedKeys.push(cachedKeys);
         }
         await this.deleteCacheKeys(invalidatedKeys);
-    }
-
-    private checkEsdtToken(token: EsdtToken): boolean {
-        if (
-            !token.identifier ||
-            !token.decimals ||
-            token.identifier === undefined ||
-            token.decimals === undefined
-        ) {
-            return false;
-        }
-        return true;
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
