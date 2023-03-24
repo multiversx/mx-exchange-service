@@ -71,32 +71,18 @@ export class PairCacheWarmerService {
                         ),
                     );
                 }
-                if (checkEsdtToken(firstToken)) {
-                    cachedKeys.push(
-                        await this.tokenSetter.setTokenMetadata(
-                            pairMetadata.firstTokenID,
-                            firstToken,
-                        ),
-                    );
-                } else {
-                    this.logger.error('Failed to check token', {
-                        tokenID: pairMetadata.firstTokenID,
+                cachedKeys.push(
+                    await this.tokenSetter.setTokenMetadata(
+                        pairMetadata.firstTokenID,
                         firstToken,
-                    });
-                }
-                if (checkEsdtToken(secondToken)) {
-                    cachedKeys.push(
-                        await this.tokenSetter.setTokenMetadata(
-                            pairMetadata.secondTokenID,
-                            secondToken,
-                        ),
-                    );
-                } else {
-                    this.logger.error('Failed to check token', {
-                        tokenID: pairMetadata.secondTokenID,
+                    ),
+                );
+                cachedKeys.push(
+                    await this.tokenSetter.setTokenMetadata(
+                        pairMetadata.secondTokenID,
                         secondToken,
-                    });
-                }
+                    ),
+                );
 
                 await this.deleteCacheKeys(cachedKeys);
             }
