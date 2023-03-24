@@ -167,6 +167,16 @@ export class MXApiService {
             if (!isNftCollection(collection)) {
                 return undefined;
             }
+            if (
+                !collection.decimals ||
+                collection.decimals === undefined ||
+                collection.decimals === 0
+            ) {
+                const gatewayCollection = await this.mxProxy
+                    .getService()
+                    .getDefinitionOfTokenCollection(tokenID);
+                collection.decimals = gatewayCollection.decimals;
+            }
             return collection;
         } catch (error) {
             return undefined;
