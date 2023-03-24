@@ -89,3 +89,15 @@ export function isNftToken(
         (token as NftToken).collection !== undefined
     );
 }
+
+export function checkEsdtToken(token: EsdtToken): boolean {
+    if (
+        !token.identifier ||
+        !token.decimals ||
+        token.identifier === undefined ||
+        token.decimals === undefined
+    ) {
+        return false;
+    }
+    return true;
+}

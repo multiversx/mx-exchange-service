@@ -12,6 +12,9 @@ import { delay } from 'src/helpers/helpers';
 import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Locker } from 'src/utils/locker';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { checkEsdtToken } from 'src/utils/token.type.compare';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -25,58 +28,66 @@ export class PairCacheWarmerService {
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_MINUTE)
     async cachePairs(): Promise<void> {
-        const pairsMetadata = await this.routerGetter.getPairsMetadata();
-        for (const pairMetadata of pairsMetadata) {
-            const lpTokenID = await this.abiPairService.getLpTokenID(
-                pairMetadata.address,
-            );
-
-            const [firstToken, secondToken] = await Promise.all([
-                this.apiService.getToken(pairMetadata.firstTokenID),
-                this.apiService.getToken(pairMetadata.secondTokenID),
-            ]);
-
-            const cachedKeys = await Promise.all([
-                this.pairSetterService.setFirstTokenID(
+        Locker.lock('CachePairs', async () => {
+            this.logger.info('Start refresh cached pairs');
+            const pairsMetadata = await this.routerGetter.getPairsMetadata();
+            for (const pairMetadata of pairsMetadata) {
+                const lpTokenID = await this.abiPairService.getLpTokenID(
                     pairMetadata.address,
-                    pairMetadata.firstTokenID,
-                ),
-                this.pairSetterService.setSecondTokenID(
-                    pairMetadata.address,
-                    pairMetadata.secondTokenID,
-                ),
-            ]);
-            if (lpTokenID !== undefined) {
-                const lpToken = await this.apiService.getToken(lpTokenID);
-                cachedKeys.push(
-                    await this.pairSetterService.setLpTokenID(
+                );
+
+                const [firstToken, secondToken] = await Promise.all([
+                    this.apiService.getToken(pairMetadata.firstTokenID),
+                    this.apiService.getToken(pairMetadata.secondTokenID),
+                ]);
+
+                const cachedKeys = await Promise.all([
+                    this.pairSetterService.setFirstTokenID(
                         pairMetadata.address,
-                        lpTokenID,
+                        pairMetadata.firstTokenID,
+                    ),
+                    this.pairSetterService.setSecondTokenID(
+                        pairMetadata.address,
+                        pairMetadata.secondTokenID,
+                    ),
+                ]);
+                if (lpTokenID !== undefined) {
+                    const lpToken = await this.apiService.getToken(lpTokenID);
+                    cachedKeys.push(
+                        await this.pairSetterService.setLpTokenID(
+                            pairMetadata.address,
+                            lpTokenID,
+                        ),
+                    );
+                    cachedKeys.push(
+                        await this.tokenSetter.setTokenMetadata(
+                            lpTokenID,
+                            lpToken,
+                        ),
+                    );
+                }
+                cachedKeys.push(
+                    await this.tokenSetter.setTokenMetadata(
+                        pairMetadata.firstTokenID,
+                        firstToken,
                     ),
                 );
                 cachedKeys.push(
-                    await this.tokenSetter.setTokenMetadata(lpTokenID, lpToken),
+                    await this.tokenSetter.setTokenMetadata(
+                        pairMetadata.secondTokenID,
+                        secondToken,
+                    ),
                 );
-            }
-            cachedKeys.push(
-                await this.tokenSetter.setTokenMetadata(
-                    pairMetadata.firstTokenID,
-                    firstToken,
-                ),
-            );
-            cachedKeys.push(
-                await this.tokenSetter.setTokenMetadata(
-                    pairMetadata.secondTokenID,
-                    secondToken,
-                ),
-            );
 
-            await this.deleteCacheKeys(cachedKeys);
-        }
+                await this.deleteCacheKeys(cachedKeys);
+            }
+            this.logger.info('Finished refresh cached pairs');
+        });
     }
 
     @Cron(CronExpression.EVERY_5_MINUTES)
