@@ -11,8 +11,13 @@ import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
-import { isEsdtToken, isNftCollection } from 'src/utils/token.type.compare';
+import {
+    checkEsdtToken,
+    isEsdtToken,
+    isNftCollection,
+} from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
+import { MXProxyService } from './mx.proxy.service';
 
 type GenericGetArgs = {
     methodName: string;
@@ -28,6 +33,7 @@ export class MXApiService {
     constructor(
         private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        private readonly mxProxy: MXProxyService,
     ) {
         const keepAliveOptions = {
             maxSockets: mxConfig.keepAliveMaxSockets,
@@ -136,6 +142,15 @@ export class MXApiService {
             if (!isEsdtToken(esdtToken)) {
                 return undefined;
             }
+
+            if (!checkEsdtToken(esdtToken) || esdtToken.decimals === 0) {
+                const gatewayToken = await this.mxProxy
+                    .getService()
+                    .getDefinitionOfFungibleToken(tokenID);
+                esdtToken.identifier = gatewayToken.identifier;
+                esdtToken.decimals = gatewayToken.decimals;
+            }
+
             return esdtToken;
         } catch (error) {
             return undefined;
