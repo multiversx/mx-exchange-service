@@ -13,6 +13,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
 import {
     checkEsdtToken,
+    checkNftCollection,
     isEsdtToken,
     isNftCollection,
 } from 'src/utils/token.type.compare';
@@ -167,11 +168,7 @@ export class MXApiService {
             if (!isNftCollection(collection)) {
                 return undefined;
             }
-            if (
-                !collection.decimals ||
-                collection.decimals === undefined ||
-                collection.decimals === 0
-            ) {
+            if (!checkNftCollection(collection)) {
                 const gatewayCollection = await this.mxProxy
                     .getService()
                     .getDefinitionOfTokenCollection(tokenID);
@@ -242,11 +239,22 @@ export class MXApiService {
             resourceUrl: `accounts/${address}/nfts?type=${type}&size=${constantsConfig.MAX_USER_NFTS}&fields=identifier,collection,ticker,decimals,timestamp,attributes,nonce,type,name,creator,royalties,uris,url,tags,balance,assets`,
         });
 
-        return collections
+        const userNfts = collections
             ? nfts
                   .filter((nft) => collections.includes(nft.collection))
                   .slice(from, size)
             : nfts.slice(from, size);
+
+        for (const nft of userNfts) {
+            if (!checkNftCollection(nft)) {
+                const gatewayCollection = await this.mxProxy
+                    .getService()
+                    .getDefinitionOfTokenCollection(nft.collection);
+                nft.decimals = gatewayCollection.decimals;
+            }
+        }
+
+        return userNfts;
     }
 
     async getNftByTokenIdentifier(

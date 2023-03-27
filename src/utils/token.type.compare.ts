@@ -101,3 +101,16 @@ export function checkEsdtToken(token: EsdtToken): boolean {
     }
     return true;
 }
+
+export function checkNftCollection(
+    collection: NftCollection | NftToken,
+): boolean {
+    if (
+        !collection.decimals ||
+        collection.decimals === undefined ||
+        collection.decimals === 0
+    ) {
+        return false;
+    }
+    return true;
+}
