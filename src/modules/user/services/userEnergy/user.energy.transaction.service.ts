@@ -15,6 +15,7 @@ export class UserEnergyTransactionService {
     async updateFarmsEnergyForUser(
         userAddress: string,
         includeAllContracts = false,
+        skipFeesCollector = false,
     ): Promise<TransactionModel | null> {
         const endpointArgs: TypedValue[] = [
             new AddressValue(Address.fromString(userAddress)),
@@ -27,13 +28,18 @@ export class UserEnergyTransactionService {
             farms.forEach((farm) => {
                 endpointArgs.push(new AddressValue(Address.fromString(farm)));
             });
-            endpointArgs.push(
-                new AddressValue(Address.fromString(scAddress.feesCollector)),
-            );
+            if (!skipFeesCollector) {
+                endpointArgs.push(
+                    new AddressValue(
+                        Address.fromString(scAddress.feesCollector),
+                    ),
+                );
+            }
         } else {
             const contracts =
                 await this.userEnergyGetter.getUserOutdatedContracts(
                     userAddress,
+                    skipFeesCollector,
                 );
             contracts.forEach((contract) => {
                 if (contract !== undefined && !contract.claimProgressOutdated) {

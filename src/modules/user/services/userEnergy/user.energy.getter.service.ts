@@ -41,6 +41,7 @@ export class UserEnergyGetterService extends GenericGetterService {
 
     async getUserOutdatedContracts(
         userAddress: string,
+        skipFeesCollector = false,
     ): Promise<OutdatedContract[]> {
         const activeFarms = await this.getUserActiveFarmsV2(userAddress);
         const userEnergy = await this.energyGetter.getEnergyEntryForUser(
@@ -50,13 +51,15 @@ export class UserEnergyGetterService extends GenericGetterService {
         const promises = activeFarms.map((farm) =>
             this.getUserOutdatedContract(userAddress, userEnergy, farm),
         );
-        promises.push(
-            this.getUserOutdatedContract(
-                userAddress,
-                userEnergy,
-                scAddress.feesCollector,
-            ),
-        );
+        if (!skipFeesCollector) {
+            promises.push(
+                this.getUserOutdatedContract(
+                    userAddress,
+                    userEnergy,
+                    scAddress.feesCollector,
+                ),
+            );
+        }
 
         const outdatedContracts = await Promise.all(promises);
         return outdatedContracts.filter(
