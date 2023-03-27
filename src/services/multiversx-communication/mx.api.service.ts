@@ -199,10 +199,21 @@ export class MXApiService {
         from = 0,
         size = 100,
     ): Promise<EsdtToken[]> {
-        return this.doGetGeneric<EsdtToken[]>(
+        const userTokens = await this.doGetGeneric<EsdtToken[]>(
             this.getTokensForUser.name,
             `accounts/${address}/tokens?from=${from}&size=${size}`,
         );
+
+        for (const token of userTokens) {
+            if (!checkEsdtToken(token) || token.decimals === 0) {
+                const gatewayToken = await this.mxProxy
+                    .getService()
+                    .getDefinitionOfFungibleToken(token.identifier);
+                token.decimals = gatewayToken.decimals;
+            }
+        }
+
+        return userTokens;
     }
 
     async getTokenForUser(
