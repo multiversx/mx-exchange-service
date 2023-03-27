@@ -50,10 +50,13 @@ export class UserResolver {
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [OutdatedContract])
     async userOutdatedContracts(
+        @Args('skipFeesCollector', { nullable: true })
+        skipFeesCollector: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<OutdatedContract[]> {
         return await this.userEnergyGetter.getUserOutdatedContracts(
             user.address,
+            skipFeesCollector,
         );
     }
 
@@ -63,10 +66,13 @@ export class UserResolver {
         @AuthUser() user: UserAuthResult,
         @Args('includeAllContracts', { nullable: true })
         includeAllContracts: boolean,
+        @Args('skipFeesCollector', { nullable: true })
+        skipFeesCollector: boolean,
     ): Promise<TransactionModel | null> {
         return await this.userEnergyTransaction.updateFarmsEnergyForUser(
             user.address,
             includeAllContracts,
+            skipFeesCollector,
         );
     }
 
