@@ -58,6 +58,11 @@ export class NativeAuthGuard implements CanActivate {
 
         const authorization: string = req.headers['authorization'];
         const origin = req.headers['origin'];
+        const requestUrl = new URL(origin);
+
+        const isLocalhostOrigin =
+            requestUrl.hostname === 'localhost' &&
+            requestUrl.protocol === 'https:';
 
         if (!authorization) {
             throw new UnauthorizedException();
@@ -67,10 +72,14 @@ export class NativeAuthGuard implements CanActivate {
         try {
             const userInfo = await this.authServer.validate(jwt);
             if (
+                !isLocalhostOrigin &&
                 origin !== userInfo.origin &&
                 origin !== 'https://' + userInfo.origin
             ) {
-                this.logger.info('Unhandled auth origin: ', { origin });
+                this.logger.info('Unhandled auth origin: ', {
+                    origin,
+                    userInfo,
+                });
                 // TO DO:  throw new NativeAuthInvalidOriginError(userInfo.origin, origin);
             }
 
