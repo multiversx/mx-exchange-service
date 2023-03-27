@@ -72,7 +72,7 @@ export class EnergyService {
 
         const prevLockEpochs = decodedAttributes.unlockEpoch - currentEpoch;
         if (prevLockEpochs <= 0) {
-            throw new Error('Token can be unlocked already');
+            return '0';
         }
 
         if (newLockPeriod > prevLockEpochs) {
