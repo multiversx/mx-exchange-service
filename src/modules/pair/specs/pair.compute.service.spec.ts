@@ -10,7 +10,7 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { CachingModule } from 'src/services/caching/cache.module';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
-import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
+import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 
 describe('PairService', () => {
     let service: PairComputeService;
@@ -35,7 +35,7 @@ describe('PairService', () => {
                 WrapServiceProvider,
                 TokenGetterServiceProvider,
                 RouterGetterServiceProvider,
-                CMCApiGetterServiceProvider,
+                MXDataApiServiceProvider,
                 TokenComputeService,
             ],
         }).compile();
