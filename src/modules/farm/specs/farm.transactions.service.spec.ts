@@ -23,7 +23,7 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { FarmTransactionServiceV1_2 } from '../v1.2/services/farm.v1.2.transaction.service';
-import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
+import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 
 describe('FarmService', () => {
     let transactionV1_2: FarmTransactionServiceV1_2;
@@ -76,7 +76,7 @@ describe('FarmService', () => {
                 WrapServiceProvider,
                 MXProxyServiceProvider,
                 FarmTransactionServiceV1_2,
-                CMCApiGetterServiceProvider,
+                MXDataApiServiceProvider,
             ],
         }).compile();
 

@@ -33,7 +33,6 @@ import { FarmModuleV1_2 } from 'src/modules/farm/v1.2/farm.v1.2.module';
 import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
-import { ExternalCommunication } from './external-communication/external.communication.module';
 
 @Module({
     imports: [
@@ -43,7 +42,6 @@ import { ExternalCommunication } from './external-communication/external.communi
         PairModule,
         RouterModule,
         MXCommunicationModule,
-        ExternalCommunication,
         ContextModule,
         FarmModule,
         FarmModuleV1_2,

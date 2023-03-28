@@ -5,7 +5,7 @@ import { PairSetterService } from 'src/modules/pair/services/pair.setter.service
 import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
 import { RouterSetterService } from 'src/modules/router/services/router.setter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
-import { CMCApiGetterService } from 'src/services/external-communication/api.cmc.getter.service';
+import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { PairHandler } from './pair.handler.service';
@@ -18,7 +18,7 @@ export class LiquidityHandler {
         private readonly routerSetter: RouterSetterService,
         private readonly tokenGetter: TokenGetterService,
         private readonly pairHandler: PairHandler,
-        private readonly cmcApiGetter: CMCApiGetterService,
+        private readonly dataApi: MXDataApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -31,7 +31,7 @@ export class LiquidityHandler {
             event.getSecondTokenReserves().toFixed(),
             event.getLiquidityPoolSupply().toFixed(),
         );
-        const usdcPrice = await this.cmcApiGetter.getUSDCPrice();
+        const usdcPrice = await this.dataApi.getTokenPrice('USDC');
         const [
             firstToken,
             secondToken,

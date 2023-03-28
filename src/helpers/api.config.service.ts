@@ -287,6 +287,14 @@ export class ApiConfigService {
         return token;
     }
 
+    getMXDataApiURL(): string {
+        const url = this.configService.get<string>('MX_DATA_API_URL');
+        if (!url) {
+            throw new Error('No MX Data API url present');
+        }
+        return url;
+    }
+
     getSecurityAdmins(): string[] {
         const admins = this.configService.get<string>('SECURITY_ADMINS');
         if (!admins) {

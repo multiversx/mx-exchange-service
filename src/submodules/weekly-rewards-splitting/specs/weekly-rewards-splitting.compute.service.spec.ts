@@ -56,7 +56,7 @@ import {
 } from '../../../modules/tokens/mocks/token.compute.service.mock';
 import { EnergyModel } from 'src/modules/energy/models/energy.model';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
-import { CMCApiGetterServiceProvider } from 'src/services/external-communication/mocks/api.cmc.getter.service.mock';
+import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     const dummyScAddress = 'erd';
@@ -1033,7 +1033,7 @@ async function createService(handlers: {
                 useValue: progressCompute,
             },
             WeeklyRewardsSplittingComputeService,
-            CMCApiGetterServiceProvider,
+            MXDataApiServiceProvider,
         ],
     }).compile();
     return module.get<WeeklyRewardsSplittingComputeService>(

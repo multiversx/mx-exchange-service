@@ -15,7 +15,7 @@ import {
 } from '@multiversx/sdk-exchange';
 import { PairHandler } from './pair.handler.service';
 import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
-import { CMCApiGetterService } from 'src/services/external-communication/api.cmc.getter.service';
+import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -30,7 +30,7 @@ export class SwapEventHandler {
         private readonly pairCompute: PairComputeService,
         private readonly routerCompute: RouterComputeService,
         private readonly pairHandler: PairHandler,
-        private readonly cmcApiGetter: CMCApiGetterService,
+        private readonly dataApi: MXDataApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -67,7 +67,7 @@ export class SwapEventHandler {
             secondTokenReserve,
         );
 
-        const usdcPrice = await this.cmcApiGetter.getUSDCPrice();
+        const usdcPrice = await this.dataApi.getTokenPrice('USDC');
 
         const [
             firstTokenPrice,
