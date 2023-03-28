@@ -271,22 +271,6 @@ export class ApiConfigService {
         return origins.split(',');
     }
 
-    getCoinMarketCapURL(): string {
-        const url = this.configService.get<string>('CMC_BASE_URL');
-        if (!url) {
-            throw new Error('No CMC base url present');
-        }
-        return url;
-    }
-
-    getCoinMarketCapAccessToken(): string {
-        const token = this.configService.get<string>('CMC_ACCESS_TOKEN');
-        if (!token) {
-            throw new Error('No CMC access token present');
-        }
-        return token;
-    }
-
     getMXDataApiURL(): string {
         const url = this.configService.get<string>('MX_DATA_API_URL');
         if (!url) {
