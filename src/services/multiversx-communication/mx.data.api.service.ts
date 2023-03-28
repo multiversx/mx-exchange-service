@@ -48,17 +48,9 @@ export class MXDataApiService {
 
     async getTokenPriceRaw(tokenTicker: string): Promise<number> {
         try {
-            const result = await this.get<any>(
+            return await this.get<number>(
                 `v1/quotes/cex/${tokenTicker}?extract=price`,
             );
-            this.logger.debug(
-                `${MXDataApiService.name}:${this.getTokenPriceRaw.name}`,
-                {
-                    tokenTicker,
-                    price: result,
-                },
-            );
-            return result;
         } catch (error) {
             this.logger.error(`${MXDataApiService.name}`, error);
             return 1;
