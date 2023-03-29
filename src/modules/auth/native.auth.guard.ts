@@ -10,6 +10,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingService } from 'src/services/caching/cache.service';
+import { UrlUtils } from 'src/utils/url.utils';
 import { Logger } from 'winston';
 
 @Injectable()
@@ -58,11 +59,6 @@ export class NativeAuthGuard implements CanActivate {
 
         const authorization: string = req.headers['authorization'];
         const origin = req.headers['origin'];
-        const requestUrl = new URL(origin);
-
-        const isLocalhostOrigin =
-            requestUrl.hostname === 'localhost' &&
-            requestUrl.protocol === 'https:';
 
         if (!authorization) {
             throw new UnauthorizedException();
@@ -72,7 +68,7 @@ export class NativeAuthGuard implements CanActivate {
         try {
             const userInfo = await this.authServer.validate(jwt);
             if (
-                !isLocalhostOrigin &&
+                !UrlUtils.isLocalhost(origin) &&
                 origin !== userInfo.origin &&
                 origin !== 'https://' + userInfo.origin
             ) {
