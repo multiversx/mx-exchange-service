@@ -1,4 +1,4 @@
-import { DynamicModule, forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CachingModule } from '../../services/caching/cache.module';
 import { WeeklyRewardsSplittingAbiService } from './services/weekly-rewards-splitting.abi.service';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
@@ -14,7 +14,6 @@ import { TokenModule } from '../../modules/tokens/token.module';
 import { EnergyModule } from 'src/modules/energy/energy.module';
 import { FarmModuleV2 } from '../../modules/farm/v2/farm.v2.module';
 import { ContextModule } from '../../services/context/context.module';
-import { WeeklyRewardsSplittingSetterService } from './services/weekly-rewards-splitting.setter.service';
 import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.module';
 
 @Module({
@@ -35,7 +34,6 @@ import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.m
         ProgressComputeService,
         WeeklyRewardsSplittingService,
         WeeklyRewardsSplittingAbiService,
-        WeeklyRewardsSplittingSetterService,
         WeeklyRewardsSplittingComputeService,
         GlobalInfoByWeekResolver,
     ],
@@ -43,7 +41,6 @@ import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.m
         ProgressComputeService,
         GlobalInfoByWeekResolver,
         WeeklyRewardsSplittingService,
-        WeeklyRewardsSplittingSetterService,
         WeeklyRewardsSplittingAbiService,
         WeeklyRewardsSplittingComputeService,
     ],
