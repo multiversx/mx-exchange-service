@@ -10,8 +10,6 @@ import { CalculateRewardsArgs } from '../../models/farm.args';
 import { RewardsModel } from '../../models/farm.model';
 import { FarmTokenAttributesModelV2 } from '../../models/farmTokenAttributes.model';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
-import { WeeklyRewardsSplittingService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
-import { Mixin } from 'ts-mixer';
 import { FarmTokenAttributesV2 } from '@multiversx/sdk-exchange';
 import BigNumber from 'bignumber.js';
 import {
@@ -21,10 +19,7 @@ import {
 import { constantsConfig } from '../../../../config';
 
 @Injectable()
-export class FarmServiceV2 extends Mixin(
-    FarmServiceBase,
-    WeeklyRewardsSplittingService,
-) {
+export class FarmServiceV2 extends FarmServiceBase {
     constructor(
         protected readonly abiService: FarmAbiServiceV2,
         @Inject(forwardRef(() => FarmGetterServiceV2))
@@ -114,11 +109,11 @@ export class FarmServiceV2 extends Mixin(
                 if (week < 1) {
                     continue;
                 }
-                const model = this.getUserInfoByWeek(
-                    positon.farmAddress,
-                    positon.user,
-                    week,
-                );
+                const model = new UserInfoByWeekModel({
+                    scAddress: positon.farmAddress,
+                    userAddress: positon.user,
+                    week: week,
+                });
                 model.positionAmount = positon.liquidity;
                 modelsList.push(model);
             }

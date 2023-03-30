@@ -2,7 +2,6 @@ import { forwardRef, Module } from '@nestjs/common';
 import { CachingModule } from '../../services/caching/cache.module';
 import { WeeklyRewardsSplittingAbiService } from './services/weekly-rewards-splitting.abi.service';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
-import { WeeklyRewardsSplittingService } from './services/weekly-rewards-splitting.service';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import { WeeklyRewardsSplittingComputeService } from './services/weekly-rewards-splitting.compute.service';
 import { WeekTimekeepingModule } from '../week-timekeeping/week-timekeeping.module';
@@ -32,7 +31,6 @@ import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.m
     providers: [
         ApiConfigService,
         ProgressComputeService,
-        WeeklyRewardsSplittingService,
         WeeklyRewardsSplittingAbiService,
         WeeklyRewardsSplittingComputeService,
         GlobalInfoByWeekResolver,
@@ -40,7 +38,6 @@ import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.m
     exports: [
         ProgressComputeService,
         GlobalInfoByWeekResolver,
-        WeeklyRewardsSplittingService,
         WeeklyRewardsSplittingAbiService,
         WeeklyRewardsSplittingComputeService,
     ],

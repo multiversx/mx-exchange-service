@@ -65,7 +65,10 @@ export class FarmResolverV2 extends FarmResolver {
                 continue;
             }
             modelsList.push(
-                this.farmService.getGlobalInfoByWeek(parent.address, week),
+                new GlobalInfoByWeekModel({
+                    scAddress: parent.address,
+                    week: week,
+                }),
             );
         }
         return modelsList;

@@ -106,15 +106,6 @@ export interface IWeeklyRewardsSplittingComputeService {
     ): Promise<EsdtTokenPayment[]>;
 }
 
-export interface IWeeklyRewardsSplittingService {
-    getGlobalInfoByWeek(scAddress: string, week: number): GlobalInfoByWeekModel;
-    getUserInfoByWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): UserInfoByWeekModel;
-}
-
 export interface IProgressComputeService {
     advanceWeek(
         progress: ClaimProgress,

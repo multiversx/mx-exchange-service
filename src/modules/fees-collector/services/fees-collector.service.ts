@@ -6,7 +6,6 @@ import {
 } from '../models/fees-collector.model';
 import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
-import { WeeklyRewardsSplittingService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
 import {
     ClaimProgress,
     GlobalInfoByWeekModel,
@@ -24,7 +23,6 @@ export class FeesCollectorService {
     constructor(
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly mxProxy: MXProxyService,
-        private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
     ) {}
 
     async claimRewardsBatch(
@@ -185,10 +183,10 @@ export class FeesCollectorService {
                 continue;
             }
             modelsList.push(
-                this.weeklyRewardsSplittingService.getGlobalInfoByWeek(
+                new GlobalInfoByWeekModel({
                     scAddress,
                     week,
-                ),
+                }),
             );
         }
         return modelsList;
@@ -206,11 +204,11 @@ export class FeesCollectorService {
                 continue;
             }
             modelsList.push(
-                this.weeklyRewardsSplittingService.getUserInfoByWeek(
+                new UserInfoByWeekModel({
                     scAddress,
                     userAddress,
                     week,
-                ),
+                }),
             );
         }
         return modelsList;
