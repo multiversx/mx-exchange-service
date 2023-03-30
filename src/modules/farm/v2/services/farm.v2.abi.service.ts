@@ -23,25 +23,21 @@ import { farmType } from 'src/utils/farm.utils';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { Mixin } from 'ts-mixer';
 import { WeeklyRewardsSplittingAbiService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import { WeekTimekeepingAbiService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { MXGatewayService } from '../../../../services/multiversx-communication/mx.gateway.service';
 import { tokenNonce } from '../../../../utils/token.converters';
-import { WeekTimekeepingGetterService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 
 @Injectable()
 export class FarmAbiServiceV2 extends Mixin(
     AbiFarmService,
     WeeklyRewardsSplittingAbiService,
-    WeekTimekeepingAbiService,
 ) {
     constructor(
         protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly gatewayService: MXGatewayService,
-        protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
         super(mxProxy, logger, gatewayService);
         this.getContractHandler = this.getContract;

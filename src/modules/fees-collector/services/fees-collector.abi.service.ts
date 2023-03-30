@@ -12,19 +12,15 @@ import {
 import { WeeklyRewardsSplittingAbiService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { Mixin } from 'ts-mixer';
 import BigNumber from 'bignumber.js';
-import { WeekTimekeepingAbiService } from '../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 
 @Injectable()
 export class FeesCollectorAbiService extends Mixin(
     GenericAbiService,
     WeeklyRewardsSplittingAbiService,
-    WeekTimekeepingAbiService,
 ) {
     constructor(
         protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
         super(mxProxy, logger);
         this.getContractHandler = this.getContract;

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TokenModule } from 'src/modules/tokens/token.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
@@ -26,11 +26,8 @@ import { EnergyModule } from '../../energy/energy.module';
         PairModule,
         TokenModule,
         EnergyModule,
-        WeekTimekeepingModule.register(FarmAbiServiceV2),
-        WeeklyRewardsSplittingModule.register(
-            FarmAbiServiceV2,
-            FarmComputeServiceV2,
-        ),
+        forwardRef(() => WeekTimekeepingModule),
+        forwardRef(() => WeeklyRewardsSplittingModule),
     ],
     providers: [
         FarmServiceV2,

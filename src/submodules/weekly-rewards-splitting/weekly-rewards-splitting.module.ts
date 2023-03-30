@@ -1,5 +1,4 @@
 import { DynamicModule, forwardRef, Module } from '@nestjs/common';
-import { WeeklyRewardsSplittingGetterService } from './services/weekly-rewards-splitting.getter.service';
 import { CachingModule } from '../../services/caching/cache.module';
 import { WeeklyRewardsSplittingAbiService } from './services/weekly-rewards-splitting.abi.service';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
@@ -16,6 +15,7 @@ import { EnergyModule } from 'src/modules/energy/energy.module';
 import { FarmModuleV2 } from '../../modules/farm/v2/farm.v2.module';
 import { ContextModule } from '../../services/context/context.module';
 import { WeeklyRewardsSplittingSetterService } from './services/weekly-rewards-splitting.setter.service';
+import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.module';
 
 @Module({
     imports: [
@@ -26,40 +26,26 @@ import { WeeklyRewardsSplittingSetterService } from './services/weekly-rewards-s
         PairModule,
         TokenModule,
         forwardRef(() => FarmModuleV2),
+        forwardRef(() => FeesCollectorModule),
         forwardRef(() => ContextModule),
+        forwardRef(() => WeekTimekeepingModule),
+    ],
+    providers: [
+        ApiConfigService,
+        ProgressComputeService,
+        WeeklyRewardsSplittingService,
+        WeeklyRewardsSplittingAbiService,
+        WeeklyRewardsSplittingSetterService,
+        WeeklyRewardsSplittingComputeService,
+        GlobalInfoByWeekResolver,
+    ],
+    exports: [
+        ProgressComputeService,
+        GlobalInfoByWeekResolver,
+        WeeklyRewardsSplittingService,
+        WeeklyRewardsSplittingSetterService,
+        WeeklyRewardsSplittingAbiService,
+        WeeklyRewardsSplittingComputeService,
     ],
 })
-export class WeeklyRewardsSplittingModule {
-    static register(abiProvider: any, computeProvider?: any): DynamicModule {
-        return {
-            module: WeeklyRewardsSplittingModule,
-            imports: [WeekTimekeepingModule.register(abiProvider)],
-            providers: [
-                ApiConfigService,
-                ProgressComputeService,
-                WeeklyRewardsSplittingService,
-                {
-                    provide: WeeklyRewardsSplittingAbiService,
-                    useClass: abiProvider,
-                },
-                WeeklyRewardsSplittingGetterService,
-                WeeklyRewardsSplittingSetterService,
-                {
-                    provide: WeeklyRewardsSplittingComputeService,
-                    useClass:
-                        computeProvider ?? WeeklyRewardsSplittingComputeService,
-                },
-                GlobalInfoByWeekResolver,
-            ],
-            exports: [
-                ProgressComputeService,
-                GlobalInfoByWeekResolver,
-                WeeklyRewardsSplittingService,
-                WeeklyRewardsSplittingGetterService,
-                WeeklyRewardsSplittingSetterService,
-                WeeklyRewardsSplittingAbiService,
-                WeeklyRewardsSplittingComputeService,
-            ],
-        };
-    }
-}
+export class WeeklyRewardsSplittingModule {}

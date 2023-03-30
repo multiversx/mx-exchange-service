@@ -19,14 +19,12 @@ import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { WeekTimekeepingGetterService } from '../../week-timekeeping/services/week-timekeeping.getter.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
         super(mxProxy, logger);
     }
@@ -66,6 +64,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         scAddress: string,
         user: string,
         week: number,
+        endEpochForWeek: number,
     ): Promise<EnergyType> {
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction =
@@ -91,11 +90,6 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
                     totalLockedTokens: '0',
                 };
             }
-            const endEpochForWeek =
-                await this.timekeepingGetter.getEndEpochForWeek(
-                    scAddress,
-                    week,
-                );
             if (endEpochForWeek > claimProgress.energy.lastUpdateEpoch) {
                 claimProgress.energy.amount = new BigNumber(
                     claimProgress.energy.amount,

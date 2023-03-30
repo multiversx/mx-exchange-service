@@ -16,6 +16,7 @@ export interface IWeeklyRewardsSplittingGetterService {
         scAddress: string,
         userAddress: string,
         week: number,
+        endEpochForWeek: number,
     ): Promise<EnergyModel>;
     userRewardsForWeek(
         scAddress: string,
@@ -84,21 +85,24 @@ export interface IWeeklyRewardsSplittingSetterService {
 }
 
 export interface IWeeklyRewardsSplittingComputeService {
-    computeUserAllRewards(
-        scAddress: string,
-        userAddress: string,
-    ): Promise<EsdtTokenPayment[]>;
-    advanceWeek(
-        scAddress: string,
-        userAddress: string,
-        progress: ClaimProgress,
-    ): Promise<ClaimProgress>;
+    // computeUserAllRewards(
+    //     scAddress: string,
+    //     userAddress: string,
+    //     currentWeek: number,
+    // ): Promise<EsdtTokenPayment[]>;
+    // advanceWeek(
+    //     scAddress: string,
+    //     userAddress: string,
+    //     progress: ClaimProgress,
+    //     endEpochForWeek: number,
+    // ): Promise<ClaimProgress>;
     computeUserRewardsForWeek(
         scAddress: string,
-        week: number,
-        userAddress: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+        userEnergyForWeek: EnergyType,
+        totalEnergyForWeek: string,
         energyAmount?: string,
-        positionAmount?: string,
+        liquidity?: string,
     ): Promise<EsdtTokenPayment[]>;
 }
 

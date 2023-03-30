@@ -21,12 +21,14 @@ import { BigNumber } from 'bignumber.js';
 import { StakingProxyGetterService } from '../../../staking-proxy/services/staking.proxy.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { FeesCollectorGetterService } from 'src/modules/fees-collector/services/fees-collector.getter.service';
 
 @Injectable()
 export class UserEnergyComputeService {
     constructor(
         private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorService: FeesCollectorService,
+        private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyGetter: StakingProxyGetterService,
@@ -72,7 +74,7 @@ export class UserEnergyComputeService {
                 contractAddress,
                 userAddress,
             ),
-            this.feesCollectorService.getCurrentWeek(contractAddress),
+            this.feesCollectorGetter.getCurrentWeek(contractAddress),
         ]);
 
         if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
