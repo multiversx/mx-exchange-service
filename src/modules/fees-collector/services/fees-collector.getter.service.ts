@@ -16,6 +16,7 @@ import { EnergyType } from '@multiversx/sdk-exchange';
 import { IWeekTimekeepingGetterService } from 'src/submodules/week-timekeeping/interfaces';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class FeesCollectorGetterService
@@ -31,6 +32,7 @@ export class FeesCollectorGetterService
         protected readonly abiService: FeesCollectorAbiService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
         @Inject(forwardRef(() => FeesCollectorComputeService))
         private readonly computeService: FeesCollectorComputeService,
@@ -98,7 +100,11 @@ export class FeesCollectorGetterService
     ): Promise<ClaimProgress> {
         return this.getData(
             this.getCacheKey(scAddress, 'currentClaimProgress', userAddress),
-            () => this.abiService.currentClaimProgress(scAddress, userAddress),
+            () =>
+                this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    scAddress,
+                    userAddress,
+                ),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
         );
@@ -113,7 +119,7 @@ export class FeesCollectorGetterService
         return this.getData(
             this.getCacheKey(scAddress, 'userEnergyForWeek', userAddress, week),
             () =>
-                this.abiService.userEnergyForWeek(
+                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
                     scAddress,
                     userAddress,
                     week,
@@ -218,7 +224,11 @@ export class FeesCollectorGetterService
     ): Promise<number> {
         return this.getData(
             this.getCacheKey(scAddress, 'lastActiveWeekForUser', userAddress),
-            () => this.abiService.lastActiveWeekForUser(scAddress, userAddress),
+            () =>
+                this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
+                    scAddress,
+                    userAddress,
+                ),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
         );
@@ -227,7 +237,8 @@ export class FeesCollectorGetterService
     async lastGlobalUpdateWeek(scAddress: string): Promise<number> {
         return this.getData(
             this.getCacheKey(scAddress, 'lastGlobalUpdateWeek'),
-            () => this.abiService.lastGlobalUpdateWeek(scAddress),
+            () =>
+                this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(scAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
@@ -239,7 +250,11 @@ export class FeesCollectorGetterService
     ): Promise<EsdtTokenPayment[]> {
         return this.getData(
             this.getCacheKey(scAddress, 'totalRewardsForWeek', week),
-            () => this.abiService.totalRewardsForWeek(scAddress, week),
+            () =>
+                this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                    scAddress,
+                    week,
+                ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
@@ -248,7 +263,11 @@ export class FeesCollectorGetterService
     async totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
         return this.getData(
             this.getCacheKey(scAddress, 'totalEnergyForWeek', week),
-            () => this.abiService.totalEnergyForWeek(scAddress, week),
+            () =>
+                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+                    scAddress,
+                    week,
+                ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
@@ -260,7 +279,11 @@ export class FeesCollectorGetterService
     ): Promise<string> {
         return this.getData(
             this.getCacheKey(scAddress, 'totalLockedTokensForWeek', week),
-            () => this.abiService.totalLockedTokensForWeek(scAddress, week),
+            () =>
+                this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
+                    scAddress,
+                    week,
+                ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
@@ -317,7 +340,7 @@ export class FeesCollectorGetterService
                 week,
                 token,
             ),
-            () => this.abiService.accumulatedFees(scAddress, week, token),
+            () => this.abiService.accumulatedFees(week, token),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
         );
@@ -346,7 +369,7 @@ export class FeesCollectorGetterService
     async getLockedTokenId(scAddress: string): Promise<string> {
         return this.getData(
             this.getFeesCollectorCacheKey(scAddress, 'lockedTokenId'),
-            () => this.abiService.lockedTokenId(scAddress),
+            () => this.abiService.lockedTokenId(),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );
@@ -355,7 +378,7 @@ export class FeesCollectorGetterService
     async getLockedTokensPerBlock(scAddress: string): Promise<string> {
         return this.getData(
             this.getFeesCollectorCacheKey(scAddress, 'lockedTokensPerBlock'),
-            () => this.abiService.lockedTokensPerBlock(scAddress),
+            () => this.abiService.lockedTokensPerBlock(),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );
@@ -364,7 +387,7 @@ export class FeesCollectorGetterService
     async getAllTokens(scAddress: string): Promise<string[]> {
         return this.getData(
             this.getFeesCollectorCacheKey(scAddress, 'allTokens'),
-            () => this.abiService.allTokens(scAddress),
+            () => this.abiService.allTokens(),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );

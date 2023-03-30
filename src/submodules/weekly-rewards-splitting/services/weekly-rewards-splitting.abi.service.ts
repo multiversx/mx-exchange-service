@@ -10,15 +10,13 @@ import BigNumber from 'bignumber.js';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
-import {
-    ErrorGetContractHandlerNotSet,
-    VmQueryError,
-} from '../../../utils/errors.constants';
+import { VmQueryError } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@multiversx/sdk-exchange';
 import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { scAddress } from 'src/config';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
@@ -28,6 +26,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     ) {
         super(mxProxy, logger);
     }
+
     async currentClaimProgress(
         scAddress: string,
         user: string,
@@ -180,9 +179,13 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    protected getContractHandler: (
-        scAddress: string,
-    ) => Promise<SmartContract> = (scAddress) => {
-        throw ErrorGetContractHandlerNotSet();
-    };
+    private getContractHandler(
+        contractAddress: string,
+    ): Promise<SmartContract> {
+        if (scAddress.feesCollector === contractAddress) {
+            return this.mxProxy.getFeesCollectorContract();
+        }
+
+        return this.mxProxy.getFarmSmartContract(contractAddress);
+    }
 }

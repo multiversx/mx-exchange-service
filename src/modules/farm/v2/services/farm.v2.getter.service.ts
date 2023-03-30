@@ -16,6 +16,7 @@ import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
 import { IWeekTimekeepingGetterService } from 'src/submodules/week-timekeeping/interfaces';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class FarmGetterServiceV2
@@ -33,6 +34,7 @@ export class FarmGetterServiceV2
         protected readonly apiService: MXApiService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
         super(
             cachingService,
@@ -271,7 +273,11 @@ export class FarmGetterServiceV2
     ): Promise<ClaimProgress> {
         return this.getData(
             this.getCacheKey(scAddress, 'currentClaimProgress', userAddress),
-            () => this.abiService.currentClaimProgress(scAddress, userAddress),
+            () =>
+                this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    scAddress,
+                    userAddress,
+                ),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
         );
@@ -286,7 +292,7 @@ export class FarmGetterServiceV2
         return this.getData(
             this.getCacheKey(scAddress, 'userEnergyForWeek', userAddress, week),
             () =>
-                this.abiService.userEnergyForWeek(
+                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
                     scAddress,
                     userAddress,
                     week,
@@ -385,7 +391,11 @@ export class FarmGetterServiceV2
     ): Promise<number> {
         return this.getData(
             this.getCacheKey(scAddress, 'lastActiveWeekForUser', userAddress),
-            () => this.abiService.lastActiveWeekForUser(scAddress, userAddress),
+            () =>
+                this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
+                    scAddress,
+                    userAddress,
+                ),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
         );
@@ -394,7 +404,8 @@ export class FarmGetterServiceV2
     async lastGlobalUpdateWeek(scAddress: string): Promise<number> {
         return this.getData(
             this.getCacheKey(scAddress, 'lastGlobalUpdateWeek'),
-            () => this.abiService.lastGlobalUpdateWeek(scAddress),
+            () =>
+                this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(scAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
@@ -406,7 +417,11 @@ export class FarmGetterServiceV2
     ): Promise<EsdtTokenPayment[]> {
         return this.getData(
             this.getCacheKey(scAddress, 'totalRewardsForWeek', week),
-            () => this.abiService.totalRewardsForWeek(scAddress, week),
+            () =>
+                this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                    scAddress,
+                    week,
+                ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
@@ -415,7 +430,11 @@ export class FarmGetterServiceV2
     async totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
         return this.getData(
             this.getCacheKey(scAddress, 'totalEnergyForWeek', week),
-            () => this.abiService.totalEnergyForWeek(scAddress, week),
+            () =>
+                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+                    scAddress,
+                    week,
+                ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
@@ -427,7 +446,11 @@ export class FarmGetterServiceV2
     ): Promise<string> {
         return this.getData(
             this.getCacheKey(scAddress, 'totalLockedTokensForWeek', week),
-            () => this.abiService.totalLockedTokensForWeek(scAddress, week),
+            () =>
+                this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
+                    scAddress,
+                    week,
+                ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );

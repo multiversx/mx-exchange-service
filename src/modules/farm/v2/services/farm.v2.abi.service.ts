@@ -21,8 +21,6 @@ import { FarmTokenAttributesV1_3 } from '@multiversx/sdk-exchange';
 import { FarmRewardType } from '../../models/farm.model';
 import { farmType } from 'src/utils/farm.utils';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
-import { Mixin } from 'ts-mixer';
-import { WeeklyRewardsSplittingAbiService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -30,17 +28,13 @@ import { MXGatewayService } from '../../../../services/multiversx-communication/
 import { tokenNonce } from '../../../../utils/token.converters';
 
 @Injectable()
-export class FarmAbiServiceV2 extends Mixin(
-    AbiFarmService,
-    WeeklyRewardsSplittingAbiService,
-) {
+export class FarmAbiServiceV2 extends AbiFarmService {
     constructor(
         protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly gatewayService: MXGatewayService,
     ) {
         super(mxProxy, logger, gatewayService);
-        this.getContractHandler = this.getContract;
     }
 
     async getContract(farmAddress: string): Promise<SmartContract> {
@@ -138,7 +132,7 @@ export class FarmAbiServiceV2 extends Mixin(
         ]);
         return new BigNumber(hexValue, 16).integerValue().toFixed();
         // TODO: remove the code above after the contracts are upgraded with the required view
-        const contract = await this.getContractHandler(scAddress);
+        const contract = await this.getContract(scAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getAccumulatedFees([
                 new U32Value(new BigNumber(week)),
