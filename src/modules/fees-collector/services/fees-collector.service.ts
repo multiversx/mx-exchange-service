@@ -7,7 +7,6 @@ import {
 import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import {
-    ClaimProgress,
     GlobalInfoByWeekModel,
     UserInfoByWeekModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
@@ -160,16 +159,6 @@ export class FeesCollectorService {
                 currentWeek: currentWeek,
             }),
         });
-    }
-
-    async getUserCurrentClaimProgress(
-        scAddress: string,
-        userAddress: string,
-    ): Promise<ClaimProgress> {
-        return await this.feesCollectorGetter.currentClaimProgress(
-            scAddress,
-            userAddress,
-        );
     }
 
     getWeeklyRewardsSplit(

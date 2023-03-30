@@ -4,7 +4,6 @@ import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { IFeesCollectorGetterService } from '../interfaces';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
@@ -334,12 +333,7 @@ export class FeesCollectorGetterService
         token: string,
     ): Promise<string> {
         return this.getData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'accumulatedFees',
-                week,
-                token,
-            ),
+            this.getCacheKey(scAddress, 'accumulatedFees', week, token),
             () => this.abiService.accumulatedFees(week, token),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -351,11 +345,7 @@ export class FeesCollectorGetterService
         week: number,
     ): Promise<string> {
         return this.getData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'accumulatedFeesForInflation',
-                week,
-            ),
+            this.getCacheKey(scAddress, 'accumulatedFeesForInflation', week),
             () =>
                 this.computeService.computeAccumulatedFeesUntilNow(
                     scAddress,
@@ -368,7 +358,7 @@ export class FeesCollectorGetterService
 
     async getLockedTokenId(scAddress: string): Promise<string> {
         return this.getData(
-            this.getFeesCollectorCacheKey(scAddress, 'lockedTokenId'),
+            this.getCacheKey(scAddress, 'lockedTokenId'),
             () => this.abiService.lockedTokenId(),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -377,7 +367,7 @@ export class FeesCollectorGetterService
 
     async getLockedTokensPerBlock(scAddress: string): Promise<string> {
         return this.getData(
-            this.getFeesCollectorCacheKey(scAddress, 'lockedTokensPerBlock'),
+            this.getCacheKey(scAddress, 'lockedTokensPerBlock'),
             () => this.abiService.lockedTokensPerBlock(),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -386,14 +376,10 @@ export class FeesCollectorGetterService
 
     async getAllTokens(scAddress: string): Promise<string[]> {
         return this.getData(
-            this.getFeesCollectorCacheKey(scAddress, 'allTokens'),
+            this.getCacheKey(scAddress, 'allTokens'),
             () => this.abiService.allTokens(),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );
-    }
-
-    private getFeesCollectorCacheKey(address: string, ...args: any) {
-        return generateCacheKeyFromParams(address, ...args);
     }
 }

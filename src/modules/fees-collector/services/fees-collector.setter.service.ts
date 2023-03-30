@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { GenericSetterService } from '../../../services/generics/generic.setter.service';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
@@ -20,6 +19,7 @@ export class FeesCollectorSetterService
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'feesCollector';
     }
 
     async currentClaimProgress(
@@ -28,16 +28,13 @@ export class FeesCollectorSetterService
         value: ClaimProgress,
     ): Promise<string> {
         return await this.setData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'currentClaimProgress',
-                userAddress,
-            ),
+            this.getCacheKey(scAddress, 'currentClaimProgress', userAddress),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
         );
     }
+
     async userEnergyForWeek(
         scAddress: string,
         userAddress: string,
@@ -45,12 +42,7 @@ export class FeesCollectorSetterService
         value: EnergyType,
     ): Promise<string> {
         return await this.setData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'userEnergyForWeek',
-                userAddress,
-                week,
-            ),
+            this.getCacheKey(scAddress, 'userEnergyForWeek', userAddress, week),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -64,7 +56,7 @@ export class FeesCollectorSetterService
         value: EsdtTokenPayment[],
     ): Promise<string> {
         return await this.setData(
-            this.getFeesCollectorCacheKey(
+            this.getCacheKey(
                 scAddress,
                 'userRewardsForWeek',
                 userAddress,
@@ -82,11 +74,7 @@ export class FeesCollectorSetterService
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'lastActiveWeekForUser',
-                userAddress,
-            ),
+            this.getCacheKey(scAddress, 'lastActiveWeekForUser', userAddress),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -98,7 +86,7 @@ export class FeesCollectorSetterService
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getFeesCollectorCacheKey(scAddress, 'lastGlobalUpdateWeek'),
+            this.getCacheKey(scAddress, 'lastGlobalUpdateWeek'),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -111,11 +99,7 @@ export class FeesCollectorSetterService
         value: EsdtTokenPayment[],
     ): Promise<string> {
         return await this.setData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'totalRewardsForWeek',
-                week,
-            ),
+            this.getCacheKey(scAddress, 'totalRewardsForWeek', week),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -128,11 +112,7 @@ export class FeesCollectorSetterService
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'totalEnergyForWeek',
-                week,
-            ),
+            this.getCacheKey(scAddress, 'totalEnergyForWeek', week),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -145,11 +125,7 @@ export class FeesCollectorSetterService
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'totalLockedTokensForWeek',
-                week,
-            ),
+            this.getCacheKey(scAddress, 'totalLockedTokensForWeek', week),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -163,12 +139,7 @@ export class FeesCollectorSetterService
         value: string,
     ): Promise<string> {
         return this.setData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'accumulatedFees',
-                week,
-                token,
-            ),
+            this.getCacheKey(scAddress, 'accumulatedFees', week, token),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -182,19 +153,10 @@ export class FeesCollectorSetterService
         value: EsdtTokenPayment[],
     ): Promise<string> {
         return this.setData(
-            this.getFeesCollectorCacheKey(
-                scAddress,
-                'accumulatedLockedFees',
-                week,
-                token,
-            ),
+            this.getCacheKey(scAddress, 'accumulatedLockedFees', week, token),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );
-    }
-
-    private getFeesCollectorCacheKey(address: string, ...args: any) {
-        return generateCacheKeyFromParams(address, ...args);
     }
 }

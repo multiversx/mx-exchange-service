@@ -70,7 +70,7 @@ export class UserEnergyComputeService {
         }
 
         const [currentClaimProgress, currentWeek] = await Promise.all([
-            this.feesCollectorService.getUserCurrentClaimProgress(
+            this.feesCollectorGetter.currentClaimProgress(
                 contractAddress,
                 userAddress,
             ),
