@@ -95,8 +95,6 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
         );
         return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingCompute.computeApr(
-                parent.scAddress,
-                parent.week,
                 totalLockedTokensForWeek,
                 totalRewardsForWeek,
             ),

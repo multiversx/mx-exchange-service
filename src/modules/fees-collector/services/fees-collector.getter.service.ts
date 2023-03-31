@@ -315,8 +315,6 @@ export class FeesCollectorGetterService
             this.getCacheKey(scAddress, 'userApr', userAddress, week),
             () =>
                 this.weeklyRewardsSplittingCompute.computeUserApr(
-                    scAddress,
-                    week,
                     totalLockedTokensForWeek,
                     totalRewardsForWeek,
                     totalEnergyForWeek,

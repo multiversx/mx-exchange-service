@@ -182,8 +182,6 @@ export class WeeklyRewardsSplittingComputeService
     }
 
     async computeTotalRewardsForWeekPriceUSD(
-        scAddress: string,
-        week: number,
         totalRewardsForWeek: EsdtTokenPayment[],
     ): Promise<string> {
         let totalPriceUSD = new BigNumber('0');
@@ -208,8 +206,6 @@ export class WeeklyRewardsSplittingComputeService
     }
 
     async computeTotalLockedTokensForWeekPriceUSD(
-        address: string,
-        week: number,
         totalLockedTokensForWeek: string,
     ): Promise<string> {
         const baseAssetTokenID = await this.energyGetter.getBaseAssetTokenID();
@@ -225,23 +221,15 @@ export class WeeklyRewardsSplittingComputeService
     }
 
     async computeAprGivenLockedTokensAndRewards(
-        scAddress: string,
-        week: number,
         totalLockedTokensForWeek: string,
         totalRewardsForWeek: EsdtTokenPayment[],
     ): Promise<string> {
         const totalLockedTokensForWeekPriceUSD =
             await this.computeTotalLockedTokensForWeekPriceUSD(
-                scAddress,
-                week,
                 totalLockedTokensForWeek,
             );
         const totalRewardsForWeekPriceUSD =
-            await this.computeTotalRewardsForWeekPriceUSD(
-                scAddress,
-                week,
-                totalRewardsForWeek,
-            );
+            await this.computeTotalRewardsForWeekPriceUSD(totalRewardsForWeek);
 
         return new BigNumber(totalRewardsForWeekPriceUSD)
             .times(52)
@@ -250,30 +238,22 @@ export class WeeklyRewardsSplittingComputeService
     }
 
     async computeApr(
-        scAddress: string,
-        week: number,
         totalLockedTokensForWeek: string,
         totalRewardsForWeek: EsdtTokenPayment[],
     ): Promise<string> {
         return this.computeAprGivenLockedTokensAndRewards(
-            scAddress,
-            week,
             totalLockedTokensForWeek,
             totalRewardsForWeek,
         );
     }
 
     async computeUserApr(
-        scAddress: string,
-        week: number,
         totalLockedTokensForWeek: string,
         totalRewardsForWeek: EsdtTokenPayment[],
         totalEnergyForWeek: string,
         userEnergyForWeek: EnergyType,
     ): Promise<string> {
         const globalApr = await this.computeAprGivenLockedTokensAndRewards(
-            scAddress,
-            week,
             totalLockedTokensForWeek,
             totalRewardsForWeek,
         );

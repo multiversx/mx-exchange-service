@@ -126,8 +126,6 @@ export class FarmGetterServiceV2
             this.getCacheKey(scAddress, 'userApr', userAddress, week),
             () =>
                 this.computeService.computeUserApr(
-                    scAddress,
-                    week,
                     totalLockedTokensForWeek,
                     totalRewardsForWeek,
                     totalEnergyForWeek,
