@@ -1,8 +1,7 @@
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
 import {
     ClaimProgress,
-    GlobalInfoByWeekModel,
-    UserInfoByWeekModel,
+    TokenDistributionModel,
 } from './models/weekly-rewards-splitting.model';
 import { EnergyModel } from '../../modules/energy/models/energy.model';
 import { EnergyType } from '@multiversx/sdk-exchange';
@@ -85,17 +84,6 @@ export interface IWeeklyRewardsSplittingSetterService {
 }
 
 export interface IWeeklyRewardsSplittingComputeService {
-    // computeUserAllRewards(
-    //     scAddress: string,
-    //     userAddress: string,
-    //     currentWeek: number,
-    // ): Promise<EsdtTokenPayment[]>;
-    // advanceWeek(
-    //     scAddress: string,
-    //     userAddress: string,
-    //     progress: ClaimProgress,
-    //     endEpochForWeek: number,
-    // ): Promise<ClaimProgress>;
     computeUserRewardsForWeek(
         scAddress: string,
         totalRewardsForWeek: EsdtTokenPayment[],
@@ -104,6 +92,35 @@ export interface IWeeklyRewardsSplittingComputeService {
         energyAmount?: string,
         liquidity?: string,
     ): Promise<EsdtTokenPayment[]>;
+
+    computeDistribution(
+        payments: EsdtTokenPayment[],
+    ): Promise<TokenDistributionModel[]>;
+
+    computeTotalRewardsForWeekPriceUSD(
+        totalRewardsForWeek: EsdtTokenPayment[],
+    ): Promise<string>;
+
+    computeTotalLockedTokensForWeekPriceUSD(
+        totalLockedTokensForWeek: string,
+    ): Promise<string>;
+
+    computeAprGivenLockedTokensAndRewards(
+        totalLockedTokensForWeek: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+    ): Promise<string>;
+
+    computeApr(
+        totalLockedTokensForWeek: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+    ): Promise<string>;
+
+    computeUserApr(
+        totalLockedTokensForWeek: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+        totalEnergyForWeek: string,
+        userEnergyForWeek: EnergyType,
+    ): Promise<string>;
 }
 
 export interface IProgressComputeService {
