@@ -1,20 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.66.0-nightly",
-            "commitHash": "b8c35ca26b191bb9a9ac669a4b3f4d3d52d97fb1",
-            "commitDate": "2022-10-15",
+            "version": "1.70.0-nightly",
+            "commitHash": "3a8a131e9509c478ece1c58fe0ea2d49463d2300",
+            "commitDate": "2023-04-02",
             "channel": "Nightly",
-            "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
+            "short": "rustc 1.70.0-nightly (3a8a131e9 2023-04-02)"
         },
         "contractCrate": {
             "name": "lkmex-transfer",
             "version": "0.0.0",
-            "git_version": "v1.6.0-1089-g6e516522-modified"
+            "gitVersion": "v1.6.0-1262-gbd0806ab"
         },
         "framework": {
-            "name": "elrond-wasm",
-            "version": "0.36.1"
+            "name": "multiversx-sc",
+            "version": "0.39.4"
         }
     },
     "name": "LkmexTransfer",
