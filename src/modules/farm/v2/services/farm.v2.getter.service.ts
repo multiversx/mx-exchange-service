@@ -17,6 +17,7 @@ import { IWeekTimekeepingGetterService } from 'src/submodules/week-timekeeping/i
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 
 @Injectable()
 export class FarmGetterServiceV2
@@ -35,6 +36,7 @@ export class FarmGetterServiceV2
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
         super(
             cachingService,
@@ -125,7 +127,7 @@ export class FarmGetterServiceV2
         return this.getData(
             this.getCacheKey(scAddress, 'userApr', userAddress, week),
             () =>
-                this.computeService.computeUserApr(
+                this.weeklyRewardsSplittingCompute.computeUserApr(
                     totalLockedTokensForWeek,
                     totalRewardsForWeek,
                     totalEnergyForWeek,
@@ -360,7 +362,10 @@ export class FarmGetterServiceV2
                 userAddress,
                 week,
             ),
-            () => this.computeService.computeDistribution(userRewardsForWeek),
+            () =>
+                this.weeklyRewardsSplittingCompute.computeDistribution(
+                    userRewardsForWeek,
+                ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
@@ -377,7 +382,10 @@ export class FarmGetterServiceV2
                 'totalRewardsDistributionForWeek',
                 week,
             ),
-            () => this.computeService.computeDistribution(totalRewardsForWeek),
+            () =>
+                this.weeklyRewardsSplittingCompute.computeDistribution(
+                    totalRewardsForWeek,
+                ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
