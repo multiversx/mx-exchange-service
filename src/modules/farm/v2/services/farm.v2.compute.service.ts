@@ -1,8 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
 import BigNumber from 'bignumber.js';
-import { WeeklyRewardsSplittingComputeService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
-import { Mixin } from 'ts-mixer';
 import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
 import { FarmGetterServiceV2 } from './farm.v2.getter.service';
 import { PairComputeService } from '../../../pair/services/pair.compute.service';
@@ -20,10 +18,7 @@ import { ContextGetterService } from '../../../../services/context/context.gette
 import { EnergyType } from '@multiversx/sdk-exchange';
 
 @Injectable()
-export class FarmComputeServiceV2 extends Mixin(
-    FarmComputeService,
-    WeeklyRewardsSplittingComputeService,
-) {
+export class FarmComputeServiceV2 extends FarmComputeService {
     constructor(
         @Inject(forwardRef(() => FarmGetterServiceV2))
         protected readonly farmGetter: FarmGetterServiceV2,
