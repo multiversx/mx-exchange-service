@@ -8,37 +8,14 @@ import {
     FeesCollectorGetterServiceMock,
 } from '../mocks/fees-collector.getter.service.mock';
 import { FeesCollectorService } from '../services/fees-collector.service';
-import { WeekTimekeepingService } from '../../../submodules/week-timekeeping/services/week-timekeeping.service';
-import {
-    WeeklyRewardsSplittingHandlers,
-    WeeklyRewardsSplittingServiceMock,
-} from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.service.mock';
-import {
-    WeekTimekeepingHandlers,
-    WeekTimekeepingServiceMock,
-} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.service.mock';
-import { WeeklyRewardsSplittingService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
-import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
-import {
-    WeekTimekeepingGetterHandlers,
-    WeekTimekeepingGetterServiceMock,
-} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
-import {
-    WeeklyRewardsSplittingGetterHandlers,
-    WeeklyRewardsSplittingGetterServiceMock,
-} from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
-import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
-import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
+import { WeeklyRewardsSplittingHandlers } from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.service.mock';
 
 describe('FeesCollectorService', () => {
     const dummyScAddress = 'erd';
     it('init service; should be defined', async () => {
         const service = await createService({
             getter: {},
-            weekTimekeeping: {},
             weeklyRewards: {},
-            weekTimekeepingGetter: {},
-            weeklyRewardsGetter: {},
         });
         expect(service).toBeDefined();
     });
@@ -64,9 +41,6 @@ describe('FeesCollectorService', () => {
                 },
             },
             weeklyRewards: {},
-            weekTimekeeping: {},
-            weekTimekeepingGetter: {},
-            weeklyRewardsGetter: {},
         });
         const tokens = [];
         const firstToken = 'WEGLD-abcabc';
@@ -126,10 +100,7 @@ describe('FeesCollectorService', () => {
                     return Promise.resolve(rewardsMinted);
                 },
             },
-            weekTimekeeping: {},
             weeklyRewards: {},
-            weekTimekeepingGetter: {},
-            weeklyRewardsGetter: {},
         });
         const tokens = [];
 
@@ -167,29 +138,12 @@ describe('FeesCollectorService', () => {
                     expect(scAddress).toEqual(dummyScAddress);
                     return Promise.resolve([]);
                 },
-            },
-            weekTimekeeping: {
-                getWeeklyTimekeeping: (scAddress: string) => {
+                getCurrentWeek: (scAddress: string) => {
                     expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve(
-                        new WeekTimekeepingModel({
-                            scAddress: dummyScAddress,
-                            currentWeek: expectedCurrentWeek,
-                        }),
-                    );
+                    return Promise.resolve(expectedCurrentWeek);
                 },
             },
             weeklyRewards: {},
-            weekTimekeepingGetter: {
-                getCurrentWeek: (scAddress: string) => {
-                    return Promise.resolve(10);
-                },
-            },
-            weeklyRewardsGetter: {
-                lastGlobalUpdateWeek: (scAddress: string) => {
-                    return Promise.resolve(1);
-                },
-            },
         });
 
         const model = await service.feesCollector(dummyScAddress);
@@ -209,29 +163,12 @@ describe('FeesCollectorService', () => {
                     expect(scAddress).toEqual(dummyScAddress);
                     return Promise.resolve(expectedTokens);
                 },
-            },
-            weekTimekeeping: {
-                getWeeklyTimekeeping: (scAddress: string) => {
+                getCurrentWeek: (scAddress: string) => {
                     expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve(
-                        new WeekTimekeepingModel({
-                            scAddress: dummyScAddress,
-                            currentWeek: expectedCurrentWeek,
-                        }),
-                    );
+                    return Promise.resolve(expectedCurrentWeek);
                 },
             },
             weeklyRewards: {},
-            weekTimekeepingGetter: {
-                getCurrentWeek: (scAddress: string) => {
-                    return Promise.resolve(10);
-                },
-            },
-            weeklyRewardsGetter: {
-                lastGlobalUpdateWeek: (scAddress: string) => {
-                    return Promise.resolve(1);
-                },
-            },
         });
         const model = await service.feesCollector(dummyScAddress);
         expect(model.time.currentWeek).toEqual(expectedCurrentWeek);
@@ -244,24 +181,10 @@ describe('FeesCollectorService', () => {
 
 async function createService(handlers: {
     getter: Partial<FeesCollectorGetterHandlers>;
-    weekTimekeeping: Partial<WeekTimekeepingHandlers>;
     weeklyRewards: Partial<WeeklyRewardsSplittingHandlers>;
-    weekTimekeepingGetter: Partial<WeekTimekeepingGetterHandlers>;
-    weeklyRewardsGetter: Partial<WeeklyRewardsSplittingGetterHandlers>;
 }) {
     const getter = new FeesCollectorGetterServiceMock(handlers.getter);
-    const timekeepingService = new WeekTimekeepingServiceMock(
-        handlers.weekTimekeeping,
-    );
-    const weeklyRewardsService = new WeeklyRewardsSplittingServiceMock(
-        handlers.weeklyRewards,
-    );
-    const timekeepingGetter = new WeekTimekeepingGetterServiceMock(
-        handlers.weekTimekeepingGetter,
-    );
-    const weeklyRewardsGetter = new WeeklyRewardsSplittingGetterServiceMock(
-        handlers.weeklyRewardsGetter,
-    );
+
     const module: TestingModule = await Test.createTestingModule({
         imports: [MXCommunicationModule, CachingModule],
         providers: [
@@ -269,22 +192,6 @@ async function createService(handlers: {
             {
                 provide: FeesCollectorGetterService,
                 useValue: getter,
-            },
-            {
-                provide: WeekTimekeepingService,
-                useValue: timekeepingService,
-            },
-            {
-                provide: WeeklyRewardsSplittingService,
-                useValue: weeklyRewardsService,
-            },
-            {
-                provide: WeekTimekeepingGetterService,
-                useValue: timekeepingGetter,
-            },
-            {
-                provide: WeeklyRewardsSplittingGetterService,
-                useValue: weeklyRewardsGetter,
             },
             FeesCollectorService,
         ],
