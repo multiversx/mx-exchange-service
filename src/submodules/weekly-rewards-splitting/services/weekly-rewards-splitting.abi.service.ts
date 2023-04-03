@@ -10,26 +10,23 @@ import BigNumber from 'bignumber.js';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
-import {
-    ErrorGetContractHandlerNotSet,
-    VmQueryError,
-} from '../../../utils/errors.constants';
+import { VmQueryError } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@multiversx/sdk-exchange';
 import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { WeekTimekeepingGetterService } from '../../week-timekeeping/services/week-timekeeping.getter.service';
+import { scAddress } from 'src/config';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
         super(mxProxy, logger);
     }
+
     async currentClaimProgress(
         scAddress: string,
         user: string,
@@ -66,6 +63,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         scAddress: string,
         user: string,
         week: number,
+        endEpochForWeek: number,
     ): Promise<EnergyType> {
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction =
@@ -91,11 +89,6 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
                     totalLockedTokens: '0',
                 };
             }
-            const endEpochForWeek =
-                await this.timekeepingGetter.getEndEpochForWeek(
-                    scAddress,
-                    week,
-                );
             if (endEpochForWeek > claimProgress.energy.lastUpdateEpoch) {
                 claimProgress.energy.amount = new BigNumber(
                     claimProgress.energy.amount,
@@ -186,9 +179,13 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    protected getContractHandler: (
-        scAddress: string,
-    ) => Promise<SmartContract> = (scAddress) => {
-        throw ErrorGetContractHandlerNotSet();
-    };
+    private getContractHandler(
+        contractAddress: string,
+    ): Promise<SmartContract> {
+        if (scAddress.feesCollector === contractAddress) {
+            return this.mxProxy.getFeesCollectorContract();
+        }
+
+        return this.mxProxy.getFarmSmartContract(contractAddress);
+    }
 }

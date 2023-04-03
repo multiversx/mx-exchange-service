@@ -1,8 +1,11 @@
-import { WeekForEpochModel, WeekTimekeepingModel } from './models/week-timekeeping.model';
+import {
+    WeekForEpochModel,
+    WeekTimekeepingModel,
+} from './models/week-timekeeping.model';
 
 export interface IWeekTimekeepingAbiService {
-    getCurrentWeek(scAddress: string): Promise<number>
-    firstWeekStartEpoch(scAddress: string): Promise<number>
+    getCurrentWeek(scAddress: string): Promise<number>;
+    firstWeekStartEpoch(scAddress: string): Promise<number>;
 }
 
 export interface IWeekTimekeepingGetterService {
@@ -13,12 +16,24 @@ export interface IWeekTimekeepingGetterService {
 }
 
 export interface IWeekTimekeepingComputeService {
-    computeWeekForEpoch(scAddress: string, epoch: number): Promise<number>;
-    computeStartEpochForWeek(scAddress: string, week: number): Promise<number>;
-    computeEndEpochForWeek(scAddress: string, week: number): Promise<number>;
+    computeWeekForEpoch(
+        epoch: number,
+        firstWeekStartEpoch: number,
+    ): Promise<number>;
+    computeStartEpochForWeek(
+        week: number,
+        firstWeekStartEpoch: number,
+    ): Promise<number>;
+    computeEndEpochForWeek(
+        week: number,
+        firstWeekStartEpoch: number,
+    ): Promise<number>;
 }
 
 export interface IWeekTimekeepingService {
     getWeeklyTimekeeping(scAddress: string): Promise<WeekTimekeepingModel>;
-    getWeekForEpoch(scAddress: string, epoch: number): Promise<WeekForEpochModel>;
+    getWeekForEpoch(
+        scAddress: string,
+        epoch: number,
+    ): Promise<WeekForEpochModel>;
 }

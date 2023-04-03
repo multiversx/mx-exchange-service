@@ -1,37 +1,40 @@
 import { IWeekTimekeepingComputeService } from '../interfaces';
 import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
-
-export class WeekTimekeepingComputeHandlers implements IWeekTimekeepingComputeService {
-    computeWeekForEpoch:(scAddress: string, epoch: number) => Promise<number>;
-    computeStartEpochForWeek:(scAddress: string, week: number) => Promise<number>;
-    computeEndEpochForWeek:(scAddress: string, week: number) => Promise<number>;
+export class WeekTimekeepingComputeHandlers
+    implements IWeekTimekeepingComputeService
+{
+    computeWeekForEpoch: (epoch: number) => Promise<number>;
+    computeStartEpochForWeek: (week: number) => Promise<number>;
+    computeEndEpochForWeek: (week: number) => Promise<number>;
     constructor(init: Partial<WeekTimekeepingComputeHandlers>) {
         Object.assign(this, init);
     }
 }
 
-export class WeekTimekeepingComputeServiceMock implements IWeekTimekeepingComputeService {
+export class WeekTimekeepingComputeServiceMock
+    implements IWeekTimekeepingComputeService
+{
     handlers: WeekTimekeepingComputeHandlers;
-    computeEndEpochForWeek(scAddress: string, week: number): Promise<number> {
+    computeEndEpochForWeek(week: number): Promise<number> {
         if (this.handlers.computeWeekForEpoch !== undefined) {
-            return this.handlers.computeWeekForEpoch(scAddress, week);
+            return this.handlers.computeWeekForEpoch(week);
         }
-        ErrorNotImplemented()
+        ErrorNotImplemented();
     }
 
-    computeStartEpochForWeek(scAddress: string, week: number): Promise<number> {
+    computeStartEpochForWeek(week: number): Promise<number> {
         if (this.handlers.computeStartEpochForWeek !== undefined) {
-            return this.handlers.computeStartEpochForWeek(scAddress, week);
+            return this.handlers.computeStartEpochForWeek(week);
         }
-        ErrorNotImplemented()
+        ErrorNotImplemented();
     }
 
-    computeWeekForEpoch(scAddress: string, epoch: number): Promise<number> {
+    computeWeekForEpoch(epoch: number): Promise<number> {
         if (this.handlers.computeEndEpochForWeek !== undefined) {
-            return this.handlers.computeEndEpochForWeek(scAddress, epoch);
+            return this.handlers.computeEndEpochForWeek(epoch);
         }
-        ErrorNotImplemented()
+        ErrorNotImplemented();
     }
 
     constructor(init: Partial<WeekTimekeepingComputeHandlers>) {

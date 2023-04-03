@@ -35,10 +35,6 @@ import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from '../v2/services/farm.v2.compute.service';
 import { FarmGetterService } from '../base-module/services/farm.getter.service';
 import { RewardsModel } from '../models/farm.model';
-import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import { WeeklyRewardsSplittingGetterServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
-import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
-import { WeekTimekeepingGetterServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
@@ -130,14 +126,6 @@ describe('FarmService', () => {
                 FarmServiceV1_2,
                 FarmServiceV1_3,
                 FarmServiceV2,
-                {
-                    provide: WeeklyRewardsSplittingGetterService,
-                    useValue: new WeeklyRewardsSplittingGetterServiceMock({}),
-                },
-                {
-                    provide: WeekTimekeepingGetterService,
-                    useValue: new WeekTimekeepingGetterServiceMock({}),
-                },
                 {
                     provide: WeekTimekeepingComputeService,
                     useValue: new WeekTimekeepingComputeServiceMock({}),

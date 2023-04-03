@@ -2,15 +2,11 @@ import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { BoostedYieldsFactors, FarmModelV2 } from '../models/farm.v2.model';
 import { FarmGetterServiceV2 } from './services/farm.v2.getter.service';
 import { FarmResolver } from '../base-module/farm.resolver';
-import { FarmServiceV2 } from "./services/farm.v2.service";
-import {
-    GlobalInfoByWeekModel,
-} from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
-import {
-    WeekTimekeepingModel
-} from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
-import { FarmComputeServiceV2 } from "./services/farm.v2.compute.service";
-import { constantsConfig } from "../../../config";
+import { FarmServiceV2 } from './services/farm.v2.service';
+import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
+import { FarmComputeServiceV2 } from './services/farm.v2.compute.service';
+import { constantsConfig } from '../../../config';
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
@@ -23,21 +19,20 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
-    async accumulatedRewards(
-        @Parent() parent: FarmModelV2
-    ): Promise<string> {
+    async accumulatedRewards(@Parent() parent: FarmModelV2): Promise<string> {
         const currentWeek = await this.farmGetter.getCurrentWeek(
             parent.address,
         );
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getAccumulatedRewardsForWeek(parent.address, currentWeek),
+            this.farmGetter.getAccumulatedRewardsForWeek(
+                parent.address,
+                currentWeek,
+            ),
         );
     }
 
     @ResolveField()
-    async optimalEnergyPerLp(
-        @Parent() parent: FarmModelV2
-    ): Promise<string> {
+    async optimalEnergyPerLp(@Parent() parent: FarmModelV2): Promise<string> {
         const currentWeek = await this.farmGetter.getCurrentWeek(
             parent.address,
         );
@@ -70,7 +65,10 @@ export class FarmResolverV2 extends FarmResolver {
                 continue;
             }
             modelsList.push(
-                this.farmService.getGlobalInfoByWeek(parent.address, week),
+                new GlobalInfoByWeekModel({
+                    scAddress: parent.address,
+                    week: week,
+                }),
             );
         }
         return modelsList;
@@ -78,9 +76,15 @@ export class FarmResolverV2 extends FarmResolver {
 
     @ResolveField()
     async time(@Parent() parent: FarmModelV2): Promise<WeekTimekeepingModel> {
-        return await this.genericFieldResolver(() =>
-            this.farmService.getWeeklyTimekeeping(parent.address),
-        );
+        return await this.genericFieldResolver(async () => {
+            const currentWeek = await this.farmGetter.getCurrentWeek(
+                parent.address,
+            );
+            return new WeekTimekeepingModel({
+                scAddress: parent.address,
+                currentWeek: currentWeek,
+            });
+        });
     }
 
     @ResolveField()
@@ -127,9 +131,7 @@ export class FarmResolverV2 extends FarmResolver {
     @ResolveField()
     async lastGlobalUpdateWeek(@Parent() parent: FarmModelV2): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.lastGlobalUpdateWeek(
-                parent.address,
-            ),
+            this.farmGetter.lastGlobalUpdateWeek(parent.address),
         );
     }
 

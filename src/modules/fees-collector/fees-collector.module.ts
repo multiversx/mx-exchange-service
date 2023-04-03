@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
 import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
 import {
@@ -18,8 +18,8 @@ import { ContextModule } from '../../services/context/context.module';
     imports: [
         MXCommunicationModule,
         CachingModule,
-        WeekTimekeepingModule.register(FeesCollectorAbiService),
-        WeeklyRewardsSplittingModule.register(FeesCollectorAbiService),
+        forwardRef(() => WeekTimekeepingModule),
+        forwardRef(() => WeeklyRewardsSplittingModule),
         ContextModule,
     ],
     providers: [

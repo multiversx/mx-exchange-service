@@ -18,7 +18,6 @@ import { FarmModule } from '../farm/farm.module';
 import { EnergyModule } from '../energy/energy.module';
 import { StakingModule } from '../staking/staking.module';
 import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-timekeeping.module';
-import { FeesCollectorAbiService } from '../fees-collector/services/fees-collector.abi.service';
 import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
@@ -39,7 +38,7 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         StakingModule,
         FeesCollectorModule,
         RemoteConfigModule,
-        WeekTimekeepingModule.register(FeesCollectorAbiService),
+        WeekTimekeepingModule,
     ],
     providers: [
         AnalyticsResolver,
