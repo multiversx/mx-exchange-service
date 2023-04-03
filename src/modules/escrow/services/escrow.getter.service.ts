@@ -4,7 +4,7 @@ import { oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
-import { ScheduledTransferModel } from '../models/escrow.model';
+import { SCPermissions, ScheduledTransferModel } from '../models/escrow.model';
 import { EscrowAbiService } from './escrow.abi.service';
 
 @Injectable()
@@ -79,6 +79,16 @@ export class EscrowGetterService extends GenericGetterService {
         return await this.getData(
             `lastTransferEpoch.${address}`,
             () => this.escrowAbi.getAddressLastTransferEpoch(address),
+            oneSecond(),
+            oneSecond(),
+        );
+    }
+
+    // Get permission for address as SCPermission from cache or from blockchain
+    async getAddressPermission(address: string): Promise<SCPermissions[]> {
+        return await this.getData(
+            `permission.${address}`,
+            () => this.escrowAbi.getAddressPermission(address),
             oneSecond(),
             oneSecond(),
         );

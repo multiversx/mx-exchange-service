@@ -7,7 +7,11 @@ import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { AuthUser } from '../auth/auth.user';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { UserAuthResult } from '../auth/user.auth.result';
-import { EscrowModel, ScheduledTransferModel } from './models/escrow.model';
+import {
+    EscrowModel,
+    SCPermissions,
+    ScheduledTransferModel,
+} from './models/escrow.model';
 import { EscrowGetterService } from './services/escrow.getter.service';
 import { EscrowTransactionService } from './services/escrow.transaction.service';
 import { SenderCooldownValidator } from './validators/sender.cooldown.validator';
@@ -118,6 +122,17 @@ export class EscrowResolver extends GenericResolver {
                 receiver,
                 inputTokens,
             ),
+        );
+    }
+
+    // Query address permissions with authenticated gql query
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [SCPermissions], { description: 'Get address permissions' })
+    async escrowPermissions(
+        @AuthUser() user: UserAuthResult,
+    ): Promise<SCPermissions[]> {
+        return await this.genericQuery(() =>
+            this.escrowGetter.getAddressPermission(user.address),
         );
     }
 }

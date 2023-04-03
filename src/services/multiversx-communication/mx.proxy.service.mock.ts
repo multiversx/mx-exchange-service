@@ -6,10 +6,19 @@ import {
 } from '@multiversx/sdk-core';
 import { promises } from 'fs';
 import { MXProxyService } from './mx.proxy.service';
+import { abiConfig } from 'src/config';
 
-export class MXProxyServiceMock extends MXProxyService {
+export class MXProxyServiceMock {
     async getAddressShardID(address: string): Promise<number> {
         return 0;
+    }
+
+    async getEscrowContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            Address.Zero().bech32(),
+            abiConfig.escrow,
+            'LkmexTransfer',
+        );
     }
 
     async getSmartContract(
@@ -30,3 +39,8 @@ export class MXProxyServiceMock extends MXProxyService {
         });
     }
 }
+
+export const MXProxyServiceProvider = {
+    provide: MXProxyService,
+    useClass: MXProxyServiceMock,
+};
