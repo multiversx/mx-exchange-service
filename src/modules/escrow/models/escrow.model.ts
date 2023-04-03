@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 
 @ObjectType()
@@ -42,3 +42,14 @@ export class ScheduledTransferModel {
         Object.assign(this, init);
     }
 }
+
+export enum SCPermissions {
+    NONE,
+    OWNER,
+    ADMIN,
+    PAUSE,
+}
+
+registerEnumType(SCPermissions, {
+    name: 'SCPermissions',
+});

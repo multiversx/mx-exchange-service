@@ -15,7 +15,7 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { Logger } from 'winston';
-import { ScheduledTransferModel } from '../models/escrow.model';
+import { SCPermissions, ScheduledTransferModel } from '../models/escrow.model';
 
 @Injectable()
 export class EscrowAbiService extends GenericAbiService {
@@ -115,5 +115,30 @@ export class EscrowAbiService extends GenericAbiService {
         );
 
         return new U64Value(new BigNumber(hexValue)).valueOf().toNumber();
+    }
+
+    async getAddressPermission(address: string): Promise<SCPermissions[]> {
+        const contract = await this.mxProxy.getEscrowContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getPermissions([
+                new AddressValue(Address.fromString(address)),
+            ]);
+
+        const response = await this.getGenericData(interaction);
+        const permissions = response.firstValue.valueOf().toNumber();
+        switch (permissions) {
+            case 0:
+                return [SCPermissions.NONE];
+            case 1:
+                return [SCPermissions.OWNER];
+            case 2:
+                return [SCPermissions.ADMIN];
+            case 3:
+                return [SCPermissions.OWNER, SCPermissions.ADMIN];
+            case 4:
+                return [SCPermissions.PAUSE];
+            default:
+                return [];
+        }
     }
 }
