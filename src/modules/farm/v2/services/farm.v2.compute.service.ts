@@ -8,9 +8,6 @@ import { TokenComputeService } from '../../../tokens/services/token.compute.serv
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { constantsConfig } from '../../../../config';
-import { WeekTimekeepingComputeService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { ProgressComputeService } from '../../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import { EnergyGetterService } from '../../../energy/services/energy.getter.service';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { PairService } from '../../../pair/services/pair.service';
 import { PairGetterService } from '../../../pair/services/pair.getter.service';
@@ -22,14 +19,11 @@ export class FarmComputeServiceV2 extends FarmComputeService {
     constructor(
         @Inject(forwardRef(() => FarmGetterServiceV2))
         protected readonly farmGetter: FarmGetterServiceV2,
-        protected readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
-        protected readonly progressCompute: ProgressComputeService,
-        protected readonly pairCompute: PairComputeService,
-        protected readonly energyGetter: EnergyGetterService,
-        protected readonly tokenCompute: TokenComputeService,
         protected readonly pairService: PairService,
         protected readonly pairGetter: PairGetterService,
+        protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
+        protected readonly tokenCompute: TokenComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(
