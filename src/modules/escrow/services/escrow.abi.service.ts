@@ -71,12 +71,24 @@ export class EscrowAbiService extends GenericAbiService {
             .map((rawAddress: AddressValue) => rawAddress.valueOf().bech32());
     }
 
-    async getAddressLastTransferEpoch(
+    async getSenderLastTransferEpoch(
         address: string,
     ): Promise<number | undefined> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
-            ['addressLastTransferEpoch', Address.fromString(address)],
+            ['senderLastTransferEpoch', Address.fromString(address)],
+        );
+        return hexValue === ''
+            ? undefined
+            : new U64Value(new BigNumber(hexValue, 16)).valueOf().toNumber();
+    }
+
+    async getReceiverLastTransferEpoch(
+        address: string,
+    ): Promise<number | undefined> {
+        const hexValue = await this.mxGateway.getSCStorageKeys(
+            scAddress.escrow,
+            ['receiverLastTransferEpoch', Address.fromString(address)],
         );
         return hexValue === ''
             ? undefined

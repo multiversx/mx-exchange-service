@@ -72,8 +72,10 @@ export class EscrowResolver extends GenericResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => [String])
-    async senders(@AuthUser() user: UserAuthResult): Promise<string[]> {
+    @Query(() => [String], {
+        description: 'Get all senders for a given receiver',
+    })
+    async escrowSenders(@AuthUser() user: UserAuthResult): Promise<string[]> {
         return await this.genericQuery(() =>
             this.escrowGetter.getAllSenders(user.address),
         );
@@ -81,9 +83,21 @@ export class EscrowResolver extends GenericResolver {
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => Number, { nullable: true })
-    async lastTransferEpoch(@AuthUser() user: UserAuthResult): Promise<number> {
+    async senderLastTransferEpoch(
+        @AuthUser() user: UserAuthResult,
+    ): Promise<number> {
         return await this.genericQuery(() =>
-            this.escrowGetter.getAddressLastTransferEpoch(user.address),
+            this.escrowGetter.getSenderLastTransferEpoch(user.address),
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => Number, { nullable: true })
+    async receiverLastTransferEpoch(
+        @AuthUser() user: UserAuthResult,
+    ): Promise<number> {
+        return await this.genericQuery(() =>
+            this.escrowGetter.getReceiverLastTransferEpoch(user.address),
         );
     }
 
