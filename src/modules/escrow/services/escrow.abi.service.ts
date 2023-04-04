@@ -71,6 +71,32 @@ export class EscrowAbiService extends GenericAbiService {
             .map((rawAddress: AddressValue) => rawAddress.valueOf().bech32());
     }
 
+    async getAllReceivers(senderAddress: string): Promise<string[]> {
+        const hexValues = await this.mxGateway.getSCStorageKeys(
+            scAddress.escrow,
+            [],
+        );
+        const receivers = [];
+        const allSendersHex = Buffer.from('allSenders').toString('hex');
+        const itemHex = Buffer.from('.item').toString('hex');
+
+        for (const key of Object.keys(hexValues)) {
+            const value = hexValues[key];
+            if (
+                key.includes(allSendersHex) &&
+                key.includes(itemHex) &&
+                Address.fromHex(value).bech32() === senderAddress
+            ) {
+                const receiverHex = key
+                    .split(allSendersHex)[1]
+                    .split(itemHex)[0];
+                receivers.push(Address.fromHex(receiverHex).bech32());
+            }
+        }
+
+        return receivers.filter((v, i, a) => a.indexOf(v) === i);
+    }
+
     async getSenderLastTransferEpoch(
         address: string,
     ): Promise<number | undefined> {

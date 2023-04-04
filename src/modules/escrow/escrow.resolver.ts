@@ -80,6 +80,15 @@ export class EscrowResolver extends GenericResolver {
             this.escrowGetter.getAllSenders(user.address),
         );
     }
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [String], {
+        description: 'Get all receivers for a given sender',
+    })
+    async escrowReceivers(@AuthUser() user: UserAuthResult): Promise<string[]> {
+        return await this.genericQuery(() =>
+            this.escrowGetter.getAllReceivers(user.address),
+        );
+    }
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => Number, { nullable: true })
@@ -139,7 +148,6 @@ export class EscrowResolver extends GenericResolver {
         );
     }
 
-    // Query address permissions with authenticated gql query
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [SCPermissions], { description: 'Get address permissions' })
     async escrowPermissions(

@@ -62,12 +62,18 @@ export class MXGatewayService {
                     break;
             }
         }
+
+        const uri =
+            fullKey !== ''
+                ? `address/${address}/key/${fullKey}`
+                : `address/${address}/keys`;
+
         const response = await this.doGetGeneric(
             this.getSCStorageKey.name,
-            `address/${address}/key/${fullKey}`,
-            (response) => response.data.value,
+            uri,
+            (response) => response.data,
         );
-        return response;
+        return fullKey !== '' ? response.value : response.pairs;
     }
 
     /**

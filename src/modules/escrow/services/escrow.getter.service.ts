@@ -75,6 +75,15 @@ export class EscrowGetterService extends GenericGetterService {
         );
     }
 
+    async getAllReceivers(senderAddress: string): Promise<string[]> {
+        return await this.getData(
+            `allReceivers.${senderAddress}`,
+            () => this.escrowAbi.getAllReceivers(senderAddress),
+            oneSecond(),
+            oneSecond(),
+        );
+    }
+
     async getSenderLastTransferEpoch(address: string): Promise<number> {
         return await this.getData(
             `senderLastTransferEpoch.${address}`,
@@ -88,14 +97,6 @@ export class EscrowGetterService extends GenericGetterService {
         return await this.getData(
             `receiverLastTransferEpoch.${address}`,
             () => this.escrowAbi.getReceiverLastTransferEpoch(address),
-            oneSecond(),
-            oneSecond(),
-        );
-    }
-
-        return await this.getData(
-            `lastTransferEpoch.${address}`,
-            () => this.escrowAbi.getAddressLastTransferEpoch(address),
             oneSecond(),
             oneSecond(),
         );
