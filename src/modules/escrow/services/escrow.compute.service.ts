@@ -9,12 +9,12 @@ export class EscrowComputeService {
         private readonly escrowGetter: EscrowGetterService,
     ) {}
 
-    async isAddressOnCooldown(address: string): Promise<boolean> {
+    async isSenderAddressOnCooldown(address: string): Promise<boolean> {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
         const epochsCooldownDuration =
             await this.escrowGetter.getEpochCooldownDuration();
         const lastTransferEpoch =
-            await this.escrowGetter.getAddressLastTransferEpoch(address);
+            await this.escrowGetter.getSenderLastTransferEpoch(address);
 
         return lastTransferEpoch === undefined
             ? false

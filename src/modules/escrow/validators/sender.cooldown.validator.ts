@@ -9,7 +9,7 @@ export class SenderCooldownValidator implements PipeTransform {
 
     async transform(value: UserAuthResult, metadata: ArgumentMetadata) {
         const isAddressOnCooldown =
-            await this.escrowCompute.isAddressOnCooldown(value.address);
+            await this.escrowCompute.isSenderAddressOnCooldown(value.address);
         if (isAddressOnCooldown) {
             throw new ForbiddenError('Sender in cooldown period');
         }
