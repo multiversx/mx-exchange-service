@@ -118,7 +118,6 @@ export class FeesCollectorService {
             this.feesCollectorGetter.getAllTokens(scAddress),
             this.feesCollectorGetter.getCurrentWeek(scAddress),
         ]);
-        const lastWeek = currentWeek - 1;
         return new FeesCollectorModel({
             address: scAddress,
             time: new WeekTimekeepingModel({
@@ -126,7 +125,7 @@ export class FeesCollectorService {
                 currentWeek: currentWeek,
             }),
             startWeek: currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
-            endWeek: lastWeek,
+            endWeek: currentWeek,
             allTokens: allToken,
         });
     }
