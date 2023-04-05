@@ -10,7 +10,10 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { FeesCollectorComputeService } from './fees-collector.compute.service';
 import { IWeeklyRewardsSplittingGetterService } from 'src/submodules/weekly-rewards-splitting/interfaces';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
-import { ClaimProgress } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import {
+    ClaimProgress,
+    TokenDistributionModel,
+} from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { IWeekTimekeepingGetterService } from 'src/submodules/week-timekeeping/interfaces';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
@@ -197,7 +200,10 @@ export class FeesCollectorGetterService
         );
     }
 
-    async totalRewardsDistributionForWeek(scAddress: string, week: number) {
+    async totalRewardsDistributionForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<TokenDistributionModel[]> {
         const totalRewardsForWeek = await this.totalRewardsForWeek(
             scAddress,
             week,

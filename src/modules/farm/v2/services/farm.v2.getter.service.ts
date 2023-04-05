@@ -10,7 +10,10 @@ import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
 import { IWeeklyRewardsSplittingGetterService } from '../../../../submodules/weekly-rewards-splitting/interfaces';
-import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import {
+    ClaimProgress,
+    TokenDistributionModel,
+} from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
 import { IWeekTimekeepingGetterService } from 'src/submodules/week-timekeeping/interfaces';
@@ -371,7 +374,10 @@ export class FarmGetterServiceV2
         );
     }
 
-    async totalRewardsDistributionForWeek(scAddress: string, week: number) {
+    async totalRewardsDistributionForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<TokenDistributionModel[]> {
         const totalRewardsForWeek = await this.totalRewardsForWeek(
             scAddress,
             week,
