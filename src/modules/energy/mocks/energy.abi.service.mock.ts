@@ -6,10 +6,10 @@ import { EnergyAbiService } from '../services/energy.abi.service';
 
 export class EnergyAbiServiceMock implements IEnergyAbiService {
     async baseAssetTokenID(): Promise<string> {
-        return 'ELKMEX-123456';
+        return 'MEX-27f4cd';
     }
     async lockedTokenID(): Promise<string> {
-        throw new Error('Method not implemented.');
+        return 'ELKMEX-123456';
     }
     async legacyLockedTokenID(): Promise<string> {
         throw new Error('Method not implemented.');

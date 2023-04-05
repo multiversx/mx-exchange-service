@@ -24,10 +24,6 @@ import { TokenGetterServiceProvider } from '../../../modules/tokens/mocks/token.
 import { RouterGetterServiceProvider } from '../../../modules/router/mocks/router.getter.service.stub';
 import { RouterGetterService } from '../../../modules/router/services/router.getter.service';
 import {
-    EnergyGetterHandlers,
-    EnergyGetterServiceMock,
-} from '../../../modules/simple-lock/mocks/energy.getter.service.mock';
-import {
     RouterGetterHandlers,
     RouterGetterServiceMock,
 } from '../../../modules/router/mocks/router.getter.service.mock';
@@ -54,7 +50,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             pairGetter: {},
             progressCompute: {},
             routerGetter: {},
-            energyGetter: {},
             tokenCompute: {},
         });
         expect(service).toBeDefined();
@@ -73,7 +68,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
-                energyGetter: {},
                 tokenCompute: {},
             });
 
@@ -100,7 +94,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             progressCompute: {},
             routerGetter: {},
             pairGetter: {},
-            energyGetter: {},
             tokenCompute: {},
         });
 
@@ -139,7 +132,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
-                energyGetter: {},
                 tokenCompute: {},
             });
 
@@ -178,7 +170,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                     return Promise.resolve('55');
                 },
             },
-            energyGetter: {},
             tokenCompute: {},
         });
         const usdValue = await service.computeTotalRewardsForWeekPriceUSD([]);
@@ -194,7 +185,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             progressCompute: {},
             routerGetter: {},
             pairGetter: {},
-            energyGetter: {},
             tokenCompute: {
                 computeTokenPriceDerivedUSD: (tokenID) => {
                     return Promise.resolve(priceMap.get(tokenID));
@@ -229,24 +219,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         ]);
         expect(usdValue).toEqual('10000');
     });
-    it('computeTotalRewardsForWeekPriceUSD' + 'bad configuration', async () => {
-        const service = await createService({
-            compute: {},
-            progressCompute: {},
-            routerGetter: {},
-            pairGetter: {},
-            energyGetter: {
-                getBaseAssetTokenID: () => {
-                    return Promise.resolve('invalid token');
-                },
-            },
-            tokenCompute: {},
-        });
-        const usdValue = await service.computeTotalLockedTokensForWeekPriceUSD(
-            '0',
-        );
-        expect(usdValue).toEqual('0');
-    });
     it(
         'computeTotalRewardsForWeekPriceUSD' + 'MEX-27f4cd has price 10',
         async () => {
@@ -256,11 +228,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
-                energyGetter: {
-                    getBaseAssetTokenID: () => {
-                        return Promise.resolve(mex);
-                    },
-                },
                 tokenCompute: {
                     computeTokenPriceDerivedUSD: (tokenID: string) => {
                         expect(tokenID).toEqual(mex);
@@ -296,11 +263,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
-                energyGetter: {
-                    getBaseAssetTokenID: () => {
-                        return Promise.resolve(mex);
-                    },
-                },
                 tokenCompute: {
                     computeTokenPriceDerivedUSD: (tokenID: string) => {
                         return Promise.resolve(priceMap.get(tokenID));
@@ -352,11 +314,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             progressCompute: {},
             routerGetter: {},
             pairGetter: {},
-            energyGetter: {
-                getBaseAssetTokenID: () => {
-                    return Promise.resolve(mex);
-                },
-            },
             tokenCompute: {
                 computeTokenPriceDerivedUSD: (tokenID: string) => {
                     return Promise.resolve(priceMap.get(tokenID));
@@ -399,11 +356,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             progressCompute: {},
             routerGetter: {},
             pairGetter: {},
-            energyGetter: {
-                getBaseAssetTokenID: () => {
-                    return Promise.resolve(mex);
-                },
-            },
             tokenCompute: {
                 computeTokenPriceDerivedUSD: (tokenID: string) => {
                     return Promise.resolve(priceMap.get(tokenID));
@@ -455,11 +407,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
-                energyGetter: {
-                    getBaseAssetTokenID: () => {
-                        return Promise.resolve(mex);
-                    },
-                },
                 tokenCompute: {
                     computeTokenPriceDerivedUSD: (tokenID: string) => {
                         return Promise.resolve(priceMap.get(tokenID));
@@ -523,11 +470,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
-                energyGetter: {
-                    getBaseAssetTokenID: () => {
-                        return Promise.resolve(mex);
-                    },
-                },
                 tokenCompute: {
                     computeTokenPriceDerivedUSD: (tokenID: string) => {
                         return Promise.resolve(priceMap.get(tokenID));
@@ -600,11 +542,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
-                energyGetter: {
-                    getBaseAssetTokenID: () => {
-                        return Promise.resolve(mex);
-                    },
-                },
                 tokenCompute: {
                     computeTokenPriceDerivedUSD: (tokenID: string) => {
                         return Promise.resolve(priceMap.get(tokenID));
@@ -665,7 +602,6 @@ async function createService(handlers: {
     progressCompute: Partial<ProgressComputeHandlers>;
     routerGetter: Partial<RouterGetterHandlers>;
     pairGetter: Partial<PairGetterHandlers>;
-    energyGetter: Partial<EnergyGetterHandlers>;
     tokenCompute: Partial<TokenComputeHandlers>;
 }) {
     const compute = new WeekTimekeepingComputeServiceMock(handlers.compute);
@@ -674,7 +610,6 @@ async function createService(handlers: {
     );
     const routerGetter = new RouterGetterServiceMock(handlers.routerGetter);
     const pairGetter = new PairGetterServiceMock(handlers.pairGetter);
-    const energyGetter = new EnergyGetterServiceMock(handlers.energyGetter);
     const tokenCompute = new TokenComputeServiceMock(handlers.tokenCompute);
 
     const module: TestingModule = await Test.createTestingModule({

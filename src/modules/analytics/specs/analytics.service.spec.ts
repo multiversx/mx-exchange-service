@@ -36,7 +36,6 @@ import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeep
 import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
 import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
-import { EnergyGetterServiceProvider } from '../../energy/mocks/energy.getter.service.mock';
 import { StakingGetterServiceProvider } from '../../staking/mocks/staking.getter.service.mock';
 import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
 import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
@@ -128,7 +127,6 @@ describe('AnalyticsService', () => {
                     provide: ProgressComputeService,
                     useValue: new ProgressComputeServiceMock({}),
                 },
-                EnergyGetterServiceProvider,
                 StakingGetterServiceProvider,
                 AnalyticsGetterServiceProvider,
                 {
