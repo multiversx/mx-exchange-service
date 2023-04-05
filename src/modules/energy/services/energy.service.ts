@@ -6,30 +6,46 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { EnergyModel } from '../models/energy.model';
 import { EnergyAbiService } from './energy.abi.service';
 import { EnergyComputeService } from './energy.compute.service';
-import { EnergyGetterService } from './energy.getter.service';
 import { constantsConfig } from '../../../config';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @Injectable()
 export class EnergyService {
     constructor(
         private readonly energyAbi: EnergyAbiService,
-        private readonly energyGetter: EnergyGetterService,
         private readonly energyCompute: EnergyComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
     ) {}
+
+    async getBaseAssetToken(): Promise<EsdtToken> {
+        const tokenID = await this.energyAbi.baseAssetTokenID();
+        return await this.tokenGetter.getTokenMetadata(tokenID);
+    }
+
+    async getLockedToken(): Promise<NftCollection> {
+        const collection = await this.energyAbi.lockedTokenID();
+        return await this.tokenGetter.getNftCollectionMetadata(collection);
+    }
+
+    async getLegacyLockedToken(): Promise<NftCollection> {
+        const collection = await this.energyAbi.legacyLockedTokenID();
+        return await this.tokenGetter.getNftCollectionMetadata(collection);
+    }
 
     async getUserEnergy(
         userAddress: string,
         vmQuery = false,
     ): Promise<EnergyModel> {
         if (vmQuery) {
-            const userEnergyEntry = await this.energyAbi.getEnergyEntryForUser(
-                userAddress,
-            );
+            const userEnergyEntry =
+                await this.energyAbi.getEnergyEntryForUserRaw(userAddress);
             return new EnergyModel(userEnergyEntry);
         }
         const [userEnergyEntry, currentEpoch] = await Promise.all([
-            this.energyGetter.getEnergyEntryForUser(userAddress),
+            this.energyAbi.energyEntryForUser(userAddress),
             this.contextGetter.getCurrentEpoch(),
         ]);
 
@@ -52,7 +68,7 @@ export class EnergyService {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
         const isFullUnlock = newLockPeriod === 0;
         if (!isFullUnlock) {
-            const lockOptions = await this.energyGetter.getLockOptions();
+            const lockOptions = await this.energyAbi.lockOptions();
             if (
                 lockOptions.find(
                     (lockOption) => lockOption.lockEpochs === newLockPeriod,

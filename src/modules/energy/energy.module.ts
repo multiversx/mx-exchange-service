@@ -7,7 +7,6 @@ import { TokenModule } from '../tokens/token.module';
 import { EnergyResolver } from './energy.resolver';
 import { EnergyAbiService } from './services/energy.abi.service';
 import { EnergyComputeService } from './services/energy.compute.service';
-import { EnergyGetterService } from './services/energy.getter.service';
 import { EnergyService } from './services/energy.service';
 import { EnergySetterService } from './services/energy.setter.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
@@ -23,12 +22,11 @@ import { EnergyTransactionService } from './services/energy.transaction.service'
     providers: [
         EnergyService,
         EnergyAbiService,
-        EnergyGetterService,
         EnergySetterService,
         EnergyComputeService,
         EnergyTransactionService,
         EnergyResolver,
     ],
-    exports: [EnergyGetterService, EnergySetterService, EnergyComputeService],
+    exports: [EnergyAbiService, EnergySetterService, EnergyComputeService],
 })
 export class EnergyModule {}

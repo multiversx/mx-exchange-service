@@ -39,7 +39,6 @@ import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeep
 import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
 import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
-import { EnergyGetterServiceProvider } from '../../energy/mocks/energy.getter.service.mock';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 
 describe('FarmService', () => {
@@ -134,7 +133,6 @@ describe('FarmService', () => {
                     provide: ProgressComputeService,
                     useValue: new ProgressComputeServiceMock({}),
                 },
-                EnergyGetterServiceProvider,
                 MXDataApiServiceProvider,
             ],
         }).compile();

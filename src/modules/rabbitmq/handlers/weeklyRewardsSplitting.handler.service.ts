@@ -19,8 +19,8 @@ import { scAddress } from '../../../config';
 import { FarmSetterFactory } from '../../farm/farm.setter.factory';
 import { FarmGetterFactory } from '../../farm/farm.getter.factory';
 import { UserEnergySetterService } from '../../user/services/userEnergy/user.energy.setter.service';
-import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
 import { UserEnergyComputeService } from 'src/modules/user/services/userEnergy/user.energy.compute.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
@@ -29,9 +29,9 @@ export class WeeklyRewardsSplittingHandlerService {
         private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorSetter: FeesCollectorSetterService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly energyAbi: EnergyAbiService,
         private readonly userEnergyCompute: UserEnergyComputeService,
         private readonly userEnergySetter: UserEnergySetterService,
-        private readonly energyGetter: EnergyGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -90,9 +90,7 @@ export class WeeklyRewardsSplittingHandlerService {
             ),
         ]);
 
-        const userEnergy = await this.energyGetter.getEnergyEntryForUser(
-            userAddress,
-        );
+        const userEnergy = await this.energyAbi.energyEntryForUser(userAddress);
         const outdatedContract =
             await this.userEnergyCompute.computeUserOutdatedContract(
                 userAddress,
