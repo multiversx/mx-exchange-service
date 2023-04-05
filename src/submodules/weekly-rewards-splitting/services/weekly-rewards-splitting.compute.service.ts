@@ -7,9 +7,9 @@ import { TokenDistributionModel } from '../models/weekly-rewards-splitting.model
 import { IWeeklyRewardsSplittingComputeService } from '../interfaces';
 import { scAddress } from '../../../config';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
-import { EnergyGetterService } from '../../../modules/energy/services/energy.getter.service';
 import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
 import { EnergyType } from '@multiversx/sdk-exchange';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingComputeService
@@ -19,7 +19,7 @@ export class WeeklyRewardsSplittingComputeService
         protected readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         protected readonly progressCompute: ProgressComputeService,
         protected readonly pairCompute: PairComputeService,
-        protected readonly energyGetter: EnergyGetterService,
+        protected readonly energyAbi: EnergyAbiService,
         protected readonly tokenCompute: TokenComputeService,
     ) {}
 
@@ -131,7 +131,7 @@ export class WeeklyRewardsSplittingComputeService
     async computeTotalLockedTokensForWeekPriceUSD(
         totalLockedTokensForWeek: string,
     ): Promise<string> {
-        const baseAssetTokenID = await this.energyGetter.getBaseAssetTokenID();
+        const baseAssetTokenID = await this.energyAbi.baseAssetTokenID();
         let tokenPriceUSD = '0';
         if (scAddress.has(baseAssetTokenID)) {
             tokenPriceUSD = await this.tokenCompute.computeTokenPriceDerivedUSD(

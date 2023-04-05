@@ -16,17 +16,17 @@ import {
     LockOption,
     SimpleLockEnergyModel,
 } from './models/simple.lock.energy.model';
-import { EnergyGetterService } from './services/energy.getter.service';
 import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
 import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.validator';
+import { EnergyAbiService } from './services/energy.abi.service';
 
 @Resolver(() => SimpleLockEnergyModel)
 export class EnergyResolver extends GenericResolver {
     constructor(
-        protected readonly energyGetter: EnergyGetterService,
         protected readonly energyTransaction: EnergyTransactionService,
         private readonly energyService: EnergyService,
+        private readonly energyAbi: EnergyAbiService,
     ) {
         super();
     }
@@ -34,42 +34,42 @@ export class EnergyResolver extends GenericResolver {
     @ResolveField()
     async baseAssetToken(): Promise<EsdtToken> {
         return await this.genericFieldResolver<EsdtToken>(() =>
-            this.energyGetter.getBaseAssetToken(),
+            this.energyService.getBaseAssetToken(),
         );
     }
 
     @ResolveField()
     async lockedToken(): Promise<NftCollection> {
         return await this.genericFieldResolver<NftCollection>(() =>
-            this.energyGetter.getLockedToken(),
+            this.energyService.getLockedToken(),
         );
     }
 
     @ResolveField()
     async legacyLockedToken(): Promise<NftCollection> {
         return await this.genericFieldResolver<NftCollection>(() =>
-            this.energyGetter.getLegacyLockedToken(),
+            this.energyService.getLegacyLockedToken(),
         );
     }
 
     @ResolveField()
     async tokenUnstakeAddress(): Promise<string> {
         return await this.genericFieldResolver<string>(() =>
-            this.energyGetter.getTokenUnstakeAddress(),
+            this.energyAbi.tokenUnstakeScAddress(),
         );
     }
 
     @ResolveField()
     async lockOptions(): Promise<LockOption[]> {
         return await this.genericFieldResolver<LockOption[]>(() =>
-            this.energyGetter.getLockOptions(),
+            this.energyAbi.lockOptions(),
         );
     }
 
     @ResolveField()
     async pauseState(): Promise<boolean> {
         return await this.genericFieldResolver<boolean>(() =>
-            this.energyGetter.getPauseState(),
+            this.energyAbi.isPaused(),
         );
     }
 
@@ -179,7 +179,7 @@ export class EnergyResolver extends GenericResolver {
         @Args('remove', { nullable: true }) remove: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwnerAddress();
+        const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
@@ -196,7 +196,7 @@ export class EnergyResolver extends GenericResolver {
         @Args('maxPenaltyPercentage') maxPenaltyPercentage: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwnerAddress();
+        const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
@@ -215,7 +215,7 @@ export class EnergyResolver extends GenericResolver {
         @Args('percentage') percentage: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwnerAddress();
+        const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
@@ -231,7 +231,7 @@ export class EnergyResolver extends GenericResolver {
         @Args('collectorAddress') collectorAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwnerAddress();
+        const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
@@ -248,7 +248,7 @@ export class EnergyResolver extends GenericResolver {
         oldLockedAssetFactoryAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwnerAddress();
+        const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
@@ -258,5 +258,12 @@ export class EnergyResolver extends GenericResolver {
                 oldLockedAssetFactoryAddress,
             ),
         );
+    }
+
+    // Get energy amount for authenticated user
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => String)
+    async userEnergyAmount(@AuthUser() user: UserAuthResult): Promise<string> {
+        return await this.energyAbi.energyAmountForUser(user.address);
     }
 }

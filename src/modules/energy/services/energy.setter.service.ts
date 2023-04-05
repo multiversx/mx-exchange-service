@@ -5,7 +5,6 @@ import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 
 @Injectable()
@@ -15,11 +14,12 @@ export class EnergySetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'energy';
     }
 
     async setBaseAssetTokenID(value: string): Promise<string> {
         return await this.setData(
-            this.getEnergyCacheKey('baseAssetTokenID'),
+            this.getCacheKey('baseAssetTokenID'),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -28,7 +28,7 @@ export class EnergySetterService extends GenericSetterService {
 
     async setLockOptions(values: number[]): Promise<string> {
         return await this.setData(
-            this.getEnergyCacheKey('lockOptions'),
+            this.getCacheKey('lockOptions'),
             values,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -37,7 +37,7 @@ export class EnergySetterService extends GenericSetterService {
 
     async setPauseState(value: boolean): Promise<string> {
         return await this.setData(
-            this.getEnergyCacheKey('pauseState'),
+            this.getCacheKey('isPaused'),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -49,13 +49,9 @@ export class EnergySetterService extends GenericSetterService {
         value: EnergyType,
     ): Promise<string> {
         return await this.setData(
-            this.getEnergyCacheKey('energyEntry', userAddress),
+            this.getCacheKey('energyEntryForUser', userAddress),
             value,
             oneMinute(),
         );
-    }
-
-    private getEnergyCacheKey(...args: any): string {
-        return generateCacheKeyFromParams('energy', ...args);
     }
 }

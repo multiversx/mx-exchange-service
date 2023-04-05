@@ -17,7 +17,7 @@ import {
 } from 'src/modules/tokens/models/lockedFarmToken.model';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { CachingService } from '../../../services/caching/cache.service';
-import { oneHour, oneSecond } from '../../../helpers/helpers';
+import { oneHour } from '../../../helpers/helpers';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -34,7 +34,6 @@ import { RemoteConfigGetterService } from '../../remote-config/remote-config.get
 import { INFTToken } from '../../tokens/models/nft.interface';
 import { constantsConfig, scAddress } from 'src/config';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
-import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
 import {
     UserDualYiledToken,
     UserFarmToken,
@@ -55,6 +54,7 @@ import {
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
 import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
 import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -87,7 +87,7 @@ export class UserMetaEsdtService {
         private priceDiscoveryService: PriceDiscoveryService,
         private priceDiscoveryGetter: PriceDiscoveryGetterService,
         private simpleLockGetter: SimpleLockGetterService,
-        private energyGetter: EnergyGetterService,
+        private readonly energyAbi: EnergyAbiService,
         private lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -436,7 +436,7 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedTokenEnergy[]> {
-        const lockedTokenEnergyID = await this.energyGetter.getLockedTokenID();
+        const lockedTokenEnergyID = await this.energyAbi.lockedTokenID();
         const nfts = await this.apiService.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -621,7 +621,7 @@ export class UserMetaEsdtService {
             return NftTokenType.LockedAssetToken;
         }
 
-        const lockedTokenEnergy = await this.energyGetter.getLockedTokenID();
+        const lockedTokenEnergy = await this.energyAbi.lockedTokenID();
         if (tokenID === lockedTokenEnergy) {
             return NftTokenType.LockedTokenEnergy;
         }

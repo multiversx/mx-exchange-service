@@ -16,7 +16,6 @@ import { ProgressComputeService } from '../services/progress.compute.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import BigNumber from 'bignumber.js';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
-import { EnergyGetterService } from '../../../modules/energy/services/energy.getter.service';
 import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
 import { PairService } from '../../../modules/pair/services/pair.service';
 import { WrapService } from '../../../modules/wrapping/wrap.service';
@@ -44,6 +43,7 @@ import {
 import { EnergyModel } from 'src/modules/energy/models/energy.model';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     const dummyScAddress = 'erd';
@@ -701,10 +701,7 @@ async function createService(handlers: {
                 useValue: pairGetter,
             },
             RouterGetterServiceProvider,
-            {
-                provide: EnergyGetterService,
-                useValue: energyGetter,
-            },
+            EnergyAbiServiceProvider,
             {
                 provide: WeekTimekeepingComputeService,
                 useValue: compute,
