@@ -33,6 +33,10 @@ export interface IWeeklyRewardsSplittingGetterService {
     ): Promise<EsdtTokenPayment[]>;
     totalEnergyForWeek(scAddress: string, week: number): Promise<string>;
     totalLockedTokensForWeek(scAddress: string, week: number): Promise<string>;
+    totalRewardsDistributionForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<TokenDistributionModel[]>;
 }
 
 export interface IWeeklyRewardsSplittingSetterService {
