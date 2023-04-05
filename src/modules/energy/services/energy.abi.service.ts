@@ -204,8 +204,8 @@ export class EnergyAbiService
 
     @GetOrSetCache({
         baseKey: 'energy',
-        remoteTtl: oneSecond(),
-        localTtl: oneSecond(),
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async isPaused(): Promise<boolean> {
         return await this.isPausedRaw();
