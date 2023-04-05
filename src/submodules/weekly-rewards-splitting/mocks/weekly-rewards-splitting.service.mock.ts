@@ -1,30 +1,50 @@
-import { GlobalInfoByWeekModel, UserInfoByWeekModel, } from '../models/weekly-rewards-splitting.model';
-import { IWeeklyRewardsSplittingService } from '../interfaces';
+import {
+    GlobalInfoByWeekModel,
+    UserInfoByWeekModel,
+} from '../models/weekly-rewards-splitting.model';
 import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
-export class WeeklyRewardsSplittingHandlers implements IWeeklyRewardsSplittingService{
-    getGlobalInfoByWeek: (scAddress: string, week: number) => GlobalInfoByWeekModel;
-    getUserInfoByWeek:(scAddress: string, userAddress: string, week: number) => UserInfoByWeekModel;
+export class WeeklyRewardsSplittingHandlers {
+    getGlobalInfoByWeek: (
+        scAddress: string,
+        week: number,
+    ) => GlobalInfoByWeekModel;
+    getUserInfoByWeek: (
+        scAddress: string,
+        userAddress: string,
+        week: number,
+    ) => UserInfoByWeekModel;
 
     constructor(init: Partial<WeeklyRewardsSplittingServiceMock>) {
         Object.assign(this, init);
     }
 }
 
-export class WeeklyRewardsSplittingServiceMock implements IWeeklyRewardsSplittingService {
+export class WeeklyRewardsSplittingServiceMock {
     handlers: WeeklyRewardsSplittingHandlers;
-    getGlobalInfoByWeek(scAddress: string, week: number): GlobalInfoByWeekModel {
+    getGlobalInfoByWeek(
+        scAddress: string,
+        week: number,
+    ): GlobalInfoByWeekModel {
         if (this.handlers.getGlobalInfoByWeek !== undefined) {
             return this.handlers.getGlobalInfoByWeek(scAddress, week);
         }
-        ErrorNotImplemented()
+        ErrorNotImplemented();
     }
 
-    getUserInfoByWeek(scAddress: string, userAddress: string, week: number): UserInfoByWeekModel {
+    getUserInfoByWeek(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+    ): UserInfoByWeekModel {
         if (this.handlers.getUserInfoByWeek !== undefined) {
-            return this.handlers.getUserInfoByWeek(scAddress, userAddress, week);
+            return this.handlers.getUserInfoByWeek(
+                scAddress,
+                userAddress,
+                week,
+            );
         }
-        ErrorNotImplemented()
+        ErrorNotImplemented();
     }
 
     constructor(init: Partial<WeeklyRewardsSplittingHandlers>) {

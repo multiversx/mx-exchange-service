@@ -1,8 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
 import BigNumber from 'bignumber.js';
-import { WeeklyRewardsSplittingComputeService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
-import { Mixin } from 'ts-mixer';
 import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
 import { FarmGetterServiceV2 } from './farm.v2.getter.service';
 import { PairComputeService } from '../../../pair/services/pair.compute.service';
@@ -10,45 +8,32 @@ import { TokenComputeService } from '../../../tokens/services/token.compute.serv
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { constantsConfig } from '../../../../config';
-import { WeekTimekeepingGetterService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
-import { WeekTimekeepingComputeService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { WeeklyRewardsSplittingGetterService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import { ProgressComputeService } from '../../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import { EnergyGetterService } from '../../../energy/services/energy.getter.service';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { PairService } from '../../../pair/services/pair.service';
 import { PairGetterService } from '../../../pair/services/pair.getter.service';
 import { ContextGetterService } from '../../../../services/context/context.getter.service';
+import { EnergyType } from '@multiversx/sdk-exchange';
 
 @Injectable()
-export class FarmComputeServiceV2 extends Mixin(
-    FarmComputeService,
-    WeeklyRewardsSplittingComputeService,
-) {
+export class FarmComputeServiceV2 extends FarmComputeService {
     constructor(
         @Inject(forwardRef(() => FarmGetterServiceV2))
         protected readonly farmGetter: FarmGetterServiceV2,
-        protected readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
-        protected readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
-        @Inject(forwardRef(() => WeeklyRewardsSplittingGetterService))
-        protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
-        protected readonly progressCompute: ProgressComputeService,
-        protected readonly pairCompute: PairComputeService,
-        protected readonly energyGetter: EnergyGetterService,
-        protected readonly tokenCompute: TokenComputeService,
         protected readonly pairService: PairService,
         protected readonly pairGetter: PairGetterService,
+        protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
+        protected readonly tokenCompute: TokenComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(
-            weekTimekeepingGetter,
-            weekTimekeepingCompute,
-            weeklyRewardsSplittingGetter,
-            progressCompute,
+            farmGetter,
+            pairService,
+            pairGetter,
             pairCompute,
-            energyGetter,
+            contextGetter,
             tokenCompute,
+            logger,
         );
     }
 
@@ -197,10 +182,11 @@ export class FarmComputeServiceV2 extends Mixin(
 
     async computeUserRewardsForWeek(
         scAddress: string,
-        week: number,
-        userAddress: string,
-        energyAmount: string,
-        liquidity: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+        userEnergyForWeek: EnergyType,
+        totalEnergyForWeek: string,
+        energyAmount?: string,
+        liquidity?: string,
     ): Promise<EsdtTokenPayment[]> {
         const payments: EsdtTokenPayment[] = [];
 
@@ -208,13 +194,7 @@ export class FarmComputeServiceV2 extends Mixin(
             await this.farmGetter.getBoostedYieldsFactors(scAddress);
 
         if (energyAmount === undefined) {
-            const userEnergyModel =
-                await this.weeklyRewardsSplittingGetter.userEnergyForWeek(
-                    scAddress,
-                    userAddress,
-                    week,
-                );
-            energyAmount = userEnergyModel.amount;
+            energyAmount = userEnergyForWeek.amount;
         }
 
         const userHasMinEnergy = new BigNumber(energyAmount).isGreaterThan(
@@ -231,12 +211,7 @@ export class FarmComputeServiceV2 extends Mixin(
             return payments;
         }
 
-        const totalRewards =
-            await this.weeklyRewardsSplittingGetter.totalRewardsForWeek(
-                scAddress,
-                week,
-            );
-        if (totalRewards.length === 0) {
+        if (totalRewardsForWeek.length === 0) {
             return payments;
         }
 
@@ -244,21 +219,10 @@ export class FarmComputeServiceV2 extends Mixin(
             rewardsPerBlock,
             farmTokenSupply,
             boostedYieldsRewardsPercenatage,
-            totalEnergy,
-            userEnergy,
         ] = await Promise.all([
             this.farmGetter.getRewardsPerBlock(scAddress),
             this.farmGetter.getFarmTokenSupply(scAddress),
             this.farmGetter.getBoostedYieldsRewardsPercenatage(scAddress),
-            this.weeklyRewardsSplittingGetter.totalEnergyForWeek(
-                scAddress,
-                week,
-            ),
-            this.weeklyRewardsSplittingGetter.userEnergyForWeek(
-                scAddress,
-                userAddress,
-                week,
-            ),
         ]);
 
         const userMaxBoostedRewardsPerBlock = new BigNumber(rewardsPerBlock)
@@ -273,11 +237,11 @@ export class FarmComputeServiceV2 extends Mixin(
             .multipliedBy(userMaxBoostedRewardsPerBlock)
             .multipliedBy(constantsConfig.BLOCKS_PER_WEEK);
 
-        for (const weeklyRewards of totalRewards) {
+        for (const weeklyRewards of totalRewardsForWeek) {
             const boostedRewardsByEnergy = new BigNumber(weeklyRewards.amount)
                 .multipliedBy(boostedYieldsFactors.userRewardsEnergy)
-                .multipliedBy(userEnergy.amount)
-                .dividedBy(totalEnergy);
+                .multipliedBy(userEnergyForWeek.amount)
+                .dividedBy(totalEnergyForWeek);
 
             const boostedRewardsByTokens = new BigNumber(weeklyRewards.amount)
                 .multipliedBy(boostedYieldsFactors.userRewardsFarm)
@@ -357,7 +321,7 @@ export class FarmComputeServiceV2 extends Mixin(
         week: number,
     ): Promise<number> {
         const [startEpochForCurrentWeek, currentEpoch] = await Promise.all([
-            this.weekTimekeepingGetter.getStartEpochForWeek(scAddress, week),
+            this.farmGetter.getStartEpochForWeek(scAddress, week),
             this.contextGetter.getCurrentEpoch(),
         ]);
 

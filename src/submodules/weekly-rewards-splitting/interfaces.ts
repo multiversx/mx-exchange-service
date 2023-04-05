@@ -1,8 +1,7 @@
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
 import {
     ClaimProgress,
-    GlobalInfoByWeekModel,
-    UserInfoByWeekModel,
+    TokenDistributionModel,
 } from './models/weekly-rewards-splitting.model';
 import { EnergyModel } from '../../modules/energy/models/energy.model';
 import { EnergyType } from '@multiversx/sdk-exchange';
@@ -16,6 +15,7 @@ export interface IWeeklyRewardsSplittingGetterService {
         scAddress: string,
         userAddress: string,
         week: number,
+        endEpochForWeek: number,
     ): Promise<EnergyModel>;
     userRewardsForWeek(
         scAddress: string,
@@ -33,6 +33,10 @@ export interface IWeeklyRewardsSplittingGetterService {
     ): Promise<EsdtTokenPayment[]>;
     totalEnergyForWeek(scAddress: string, week: number): Promise<string>;
     totalLockedTokensForWeek(scAddress: string, week: number): Promise<string>;
+    totalRewardsDistributionForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<TokenDistributionModel[]>;
 }
 
 export interface IWeeklyRewardsSplittingSetterService {
@@ -84,31 +88,43 @@ export interface IWeeklyRewardsSplittingSetterService {
 }
 
 export interface IWeeklyRewardsSplittingComputeService {
-    computeUserAllRewards(
-        scAddress: string,
-        userAddress: string,
-    ): Promise<EsdtTokenPayment[]>;
-    advanceWeek(
-        scAddress: string,
-        userAddress: string,
-        progress: ClaimProgress,
-    ): Promise<ClaimProgress>;
     computeUserRewardsForWeek(
         scAddress: string,
-        week: number,
-        userAddress: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+        userEnergyForWeek: EnergyType,
+        totalEnergyForWeek: string,
         energyAmount?: string,
-        positionAmount?: string,
+        liquidity?: string,
     ): Promise<EsdtTokenPayment[]>;
-}
 
-export interface IWeeklyRewardsSplittingService {
-    getGlobalInfoByWeek(scAddress: string, week: number): GlobalInfoByWeekModel;
-    getUserInfoByWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): UserInfoByWeekModel;
+    computeDistribution(
+        payments: EsdtTokenPayment[],
+    ): Promise<TokenDistributionModel[]>;
+
+    computeTotalRewardsForWeekPriceUSD(
+        totalRewardsForWeek: EsdtTokenPayment[],
+    ): Promise<string>;
+
+    computeTotalLockedTokensForWeekPriceUSD(
+        totalLockedTokensForWeek: string,
+    ): Promise<string>;
+
+    computeAprGivenLockedTokensAndRewards(
+        totalLockedTokensForWeek: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+    ): Promise<string>;
+
+    computeApr(
+        totalLockedTokensForWeek: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+    ): Promise<string>;
+
+    computeUserApr(
+        totalLockedTokensForWeek: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+        totalEnergyForWeek: string,
+        userEnergyForWeek: EnergyType,
+    ): Promise<string>;
 }
 
 export interface IProgressComputeService {

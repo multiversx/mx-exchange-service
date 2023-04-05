@@ -1,25 +1,26 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { WeeklyRewardsSplittingGetterService } from './services/weekly-rewards-splitting.getter.service';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import {
     ClaimProgress,
     GlobalInfoByWeekModel,
-    GlobalInfoByWeekSubModel, TokenDistributionModel,
+    TokenDistributionModel,
     UserInfoByWeekModel,
     UserInfoByWeekSubModel,
 } from './models/weekly-rewards-splitting.model';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
 import { WeeklyRewardsSplittingComputeService } from './services/weekly-rewards-splitting.compute.service';
-import {
-    FeesCollectorModel,
-    UserEntryFeesCollectorModel,
-} from '../../modules/fees-collector/models/fees-collector.model';
+import { UserEntryFeesCollectorModel } from '../../modules/fees-collector/models/fees-collector.model';
+import { FarmGetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.getter.service';
+import { FeesCollectorGetterService } from 'src/modules/fees-collector/services/fees-collector.getter.service';
+import { scAddress } from 'src/config';
+import { IWeeklyRewardsSplittingGetterService } from './interfaces';
 
 @Resolver(() => GlobalInfoByWeekModel)
 export class GlobalInfoByWeekResolver extends GenericResolver {
     constructor(
-        protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
-        protected readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
+        private readonly farmGetter: FarmGetterServiceV2,
+        private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
         super();
     }
@@ -29,10 +30,9 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
         @Parent() parent: GlobalInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
         return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.totalRewardsForWeek(
+            this.weeklyRewardsSplittingGetter(
                 parent.scAddress,
-                parent.week,
-            ),
+            ).totalRewardsForWeek(parent.scAddress, parent.week),
         );
     }
 
@@ -41,10 +41,9 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
         @Parent() parent: GlobalInfoByWeekModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.totalEnergyForWeek(
+            this.weeklyRewardsSplittingGetter(
                 parent.scAddress,
-                parent.week,
-            ),
+            ).totalEnergyForWeek(parent.scAddress, parent.week),
         );
     }
 
@@ -53,10 +52,9 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<TokenDistributionModel[]> {
         return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.totalRewardsDistributionForWeek(
+            this.weeklyRewardsSplittingGetter(
                 parent.scAddress,
-                parent.week,
-            ),
+            ).totalRewardsDistributionForWeek(parent.scAddress, parent.week),
         );
     }
 
@@ -65,47 +63,43 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
         @Parent() parent: GlobalInfoByWeekModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(
+            this.weeklyRewardsSplittingGetter(
                 parent.scAddress,
-                parent.week,
-            ),
+            ).totalLockedTokensForWeek(parent.scAddress, parent.week),
         );
     }
 
     @ResolveField()
     async apr(@Parent() parent: GlobalInfoByWeekModel): Promise<string> {
+        const totalLockedTokensForWeek =
+            await this.weeklyRewardsSplittingGetter(
+                parent.scAddress,
+            ).totalLockedTokensForWeek(parent.scAddress, parent.week);
+        const totalRewardsForWeek = await this.weeklyRewardsSplittingGetter(
+            parent.scAddress,
+        ).totalRewardsForWeek(parent.scAddress, parent.week);
         return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingCompute.computeApr(
-                parent.scAddress,
-                parent.week,
+                totalLockedTokensForWeek,
+                totalRewardsForWeek,
             ),
         );
     }
-}
 
-@Resolver(() => GlobalInfoByWeekSubModel)
-export class GlobalInfoByWeekSubResolver extends GenericResolver {
-    constructor(
-        protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
-    ) {
-        super();
-    }
-    @ResolveField()
-    async lastGlobalUpdateWeek(
-        @Parent() parent: FeesCollectorModel,
-    ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(
-                parent.address,
-            ),
-        );
+    private weeklyRewardsSplittingGetter(
+        address: string,
+    ): IWeeklyRewardsSplittingGetterService {
+        return address === scAddress.feesCollector
+            ? this.feesCollectorGetter
+            : this.farmGetter;
     }
 }
 
 @Resolver(() => UserInfoByWeekSubModel)
 export class UserInfoByWeekSubResolver extends GenericResolver {
     constructor(
-        protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
+        private readonly farmGetter: FarmGetterServiceV2,
+        private readonly feesCollectorGetter: FeesCollectorGetterService,
     ) {
         super();
     }
@@ -115,10 +109,9 @@ export class UserInfoByWeekSubResolver extends GenericResolver {
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(
+            this.weeklyRewardsSplittingGetter(
                 parent.address,
-                parent.userAddress,
-            ),
+            ).lastActiveWeekForUser(parent.address, parent.userAddress),
         );
     }
     @ResolveField(() => ClaimProgress)
@@ -126,10 +119,17 @@ export class UserInfoByWeekSubResolver extends GenericResolver {
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<ClaimProgress> {
         return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.currentClaimProgress(
+            this.weeklyRewardsSplittingGetter(
                 parent.address,
-                parent.userAddress,
-            ),
+            ).currentClaimProgress(parent.address, parent.userAddress),
         );
+    }
+
+    private weeklyRewardsSplittingGetter(
+        address: string,
+    ): IWeeklyRewardsSplittingGetterService {
+        return address === scAddress.feesCollector
+            ? this.feesCollectorGetter
+            : this.farmGetter;
     }
 }
