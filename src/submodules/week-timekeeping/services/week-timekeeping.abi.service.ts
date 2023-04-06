@@ -1,9 +1,6 @@
 import { Interaction, SmartContract } from '@multiversx/sdk-core';
-import { Inject } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { Logger } from 'winston';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { IWeekTimekeepingAbiService } from '../interfaces';
 
@@ -11,11 +8,8 @@ export class WeekTimekeepingAbiService
     extends GenericAbiService
     implements IWeekTimekeepingAbiService
 {
-    constructor(
-        protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-    ) {
-        super(mxProxy, logger);
+    constructor(protected readonly mxProxy: MXProxyService) {
+        super(mxProxy);
     }
 
     async getCurrentWeek(scAddress: string): Promise<number> {

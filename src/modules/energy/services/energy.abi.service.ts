@@ -6,9 +6,8 @@ import {
     Interaction,
     U64Value,
 } from '@multiversx/sdk-core';
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { LockOption } from '../models/simple.lock.energy.model';
@@ -27,11 +26,9 @@ export class EnergyAbiService
 {
     constructor(
         protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_NEST_PROVIDER)
-        protected readonly logger: LoggerService,
         private readonly mxAPI: MXApiService,
     ) {
-        super(mxProxy, logger);
+        super(mxProxy);
     }
 
     @ErrorLoggerAsync({ className: EnergyAbiService.name })

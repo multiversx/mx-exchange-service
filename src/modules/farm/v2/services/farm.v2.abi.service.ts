@@ -13,7 +13,7 @@ import {
     U64Type,
     U64Value,
 } from '@multiversx/sdk-core';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
@@ -22,8 +22,6 @@ import { FarmRewardType } from '../../models/farm.model';
 import { farmType } from 'src/utils/farm.utils';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { MXGatewayService } from '../../../../services/multiversx-communication/mx.gateway.service';
 import { tokenNonce } from '../../../../utils/token.converters';
 
@@ -31,10 +29,9 @@ import { tokenNonce } from '../../../../utils/token.converters';
 export class FarmAbiServiceV2 extends AbiFarmService {
     constructor(
         protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly gatewayService: MXGatewayService,
     ) {
-        super(mxProxy, logger, gatewayService);
+        super(mxProxy, gatewayService);
     }
 
     async getContract(farmAddress: string): Promise<SmartContract> {

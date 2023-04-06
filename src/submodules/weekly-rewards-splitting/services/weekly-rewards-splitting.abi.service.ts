@@ -8,23 +8,18 @@ import {
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import BigNumber from 'bignumber.js';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { VmQueryError } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@multiversx/sdk-exchange';
 import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { scAddress } from 'src/config';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
-    constructor(
-        protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-    ) {
-        super(mxProxy, logger);
+    constructor(protected readonly mxProxy: MXProxyService) {
+        super(mxProxy);
     }
 
     async currentClaimProgress(
