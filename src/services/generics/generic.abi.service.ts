@@ -5,20 +5,19 @@ import {
     ResultsParser,
     TypedOutcomeBundle,
 } from '@multiversx/sdk-core';
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Inject, LoggerService } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { PendingExecutor } from 'src/utils/pending.executor';
-import { Logger } from 'winston';
 import { MXProxyService } from '../multiversx-communication/mx.proxy.service';
 
-@Injectable()
 export class GenericAbiService {
     private queryExecutor: PendingExecutor<Query, ContractQueryResponse>;
 
     constructor(
         protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        @Inject(WINSTON_MODULE_NEST_PROVIDER)
+        protected readonly logger: LoggerService,
     ) {
         this.queryExecutor = new PendingExecutor(
             async (query: Query) =>
