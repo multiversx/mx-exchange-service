@@ -104,9 +104,12 @@ export class EscrowResolver extends GenericResolver {
     @Query(() => Number, { nullable: true })
     async receiverLastTransferEpoch(
         @AuthUser() user: UserAuthResult,
+        @Args('receiver', { nullable: true }) receiver: string,
     ): Promise<number> {
         return await this.genericQuery(() =>
-            this.escrowGetter.getReceiverLastTransferEpoch(user.address),
+            this.escrowGetter.getReceiverLastTransferEpoch(
+                receiver ?? user.address,
+            ),
         );
     }
 
