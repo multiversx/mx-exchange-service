@@ -16,6 +16,8 @@ import { EscrowGetterService } from './services/escrow.getter.service';
 import { EscrowTransactionService } from './services/escrow.transaction.service';
 import { SenderCooldownValidator } from './validators/sender.cooldown.validator';
 import { TransferTokensValidator } from './validators/transfer.tokens.validator';
+import { EscrowAdminValidator } from './validators/admin.validator';
+import { ApolloError, ForbiddenError } from 'apollo-server-express';
 
 @Resolver(EscrowModel)
 export class EscrowResolver extends GenericResolver {
@@ -84,9 +86,24 @@ export class EscrowResolver extends GenericResolver {
     @Query(() => [String], {
         description: 'Get all receivers for a given sender',
     })
-    async escrowReceivers(@AuthUser() user: UserAuthResult): Promise<string[]> {
+    async escrowReceivers(
+        @AuthUser() user: UserAuthResult,
+        @Args('sender', { nullable: true })
+        sender: string,
+    ): Promise<string[]> {
+        let address = user.address;
+        if (sender) {
+            const permissions = await this.escrowGetter.getAddressPermission(
+                user.address,
+            );
+            if (permissions.includes(SCPermissions.ADMIN)) {
+                address = sender;
+            } else {
+                throw new ForbiddenError('Only admins can query other senders');
+            }
+        }
         return await this.genericQuery(() =>
-            this.escrowGetter.getAllReceivers(user.address),
+            this.escrowGetter.getAllReceivers(address),
         );
     }
 
@@ -104,9 +121,12 @@ export class EscrowResolver extends GenericResolver {
     @Query(() => Number, { nullable: true })
     async receiverLastTransferEpoch(
         @AuthUser() user: UserAuthResult,
+        @Args('receiver', { nullable: true }) receiver: string,
     ): Promise<number> {
         return await this.genericQuery(() =>
-            this.escrowGetter.getReceiverLastTransferEpoch(user.address),
+            this.escrowGetter.getReceiverLastTransferEpoch(
+                receiver ?? user.address,
+            ),
         );
     }
 
@@ -123,11 +143,12 @@ export class EscrowResolver extends GenericResolver {
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async cancelEscrowTransfer(
+        @Args('sender') sender: string,
         @Args('receiver') receiver: string,
-        @AuthUser() user: UserAuthResult,
+        @AuthUser(EscrowAdminValidator) user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.escrowTransaction.cancelTransfer(user.address, receiver),
+            this.escrowTransaction.cancelTransfer(sender, receiver),
         );
     }
 
