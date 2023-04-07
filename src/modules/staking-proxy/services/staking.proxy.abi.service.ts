@@ -1,17 +1,12 @@
 import { Interaction } from '@multiversx/sdk-core';
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Injectable } from '@nestjs/common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { Logger } from 'winston';
 
 @Injectable()
 export class AbiStakingProxyService extends GenericAbiService {
-    constructor(
-        protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-    ) {
-        super(mxProxy, logger);
+    constructor(protected readonly mxProxy: MXProxyService) {
+        super(mxProxy);
     }
 
     async getLpFarmAddress(stakingProxyAddress: string): Promise<string> {

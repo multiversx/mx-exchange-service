@@ -116,13 +116,13 @@ export class CachingService {
         const writeValue =
             typeof value === 'object'
                 ? {
-                    serialized: true,
-                    value: JSON.stringify(value),
-                }
+                      serialized: true,
+                      value: JSON.stringify(value),
+                  }
                 : {
-                    serialized: false,
-                    value,
-                };
+                      serialized: false,
+                      value,
+                  };
         localCache.set(key, writeValue, { ttl: ttl * 1000 });
         return value;
     }
@@ -191,29 +191,18 @@ export class CachingService {
             return cachedValue;
         }
 
-        try {
-            const value = await promise();
+        const value = await promise();
 
-            profiler.stop(`Cache miss for key ${key}`);
+        profiler.stop(`Cache miss for key ${key}`);
 
-            if (localTtl > 0) {
-                await this.setCacheLocal<T>(key, value, localTtl);
-            }
-
-            if (remoteTtl > 0) {
-                await this.setCacheRemote<T>(key, value, remoteTtl);
-            }
-            return value;
-        } catch (error) {
-            const logMessage = generateSetLogMessage(
-                CachingService.name,
-                this.getOrSet.name,
-                key,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
+        if (localTtl > 0) {
+            await this.setCacheLocal<T>(key, value, localTtl);
         }
+
+        if (remoteTtl > 0) {
+            await this.setCacheRemote<T>(key, value, remoteTtl);
+        }
+        return value;
     }
 
     async deleteInCacheLocal(key: string) {
@@ -240,7 +229,10 @@ export class CachingService {
         }
     }
 
-    async getMultipleFromHash(hashKey: string, keys: string[]): Promise<(string | null)[]> {
+    async getMultipleFromHash(
+        hashKey: string,
+        keys: string[],
+    ): Promise<(string | null)[]> {
         const profiler = new PerformanceProfiler();
 
         try {
@@ -254,7 +246,10 @@ export class CachingService {
         }
     }
 
-    async setMultipleInHash(hashKey: string, values: [string, string][]): Promise<void> {
+    async setMultipleInHash(
+        hashKey: string,
+        values: [string, string][],
+    ): Promise<void> {
         const profiler = new PerformanceProfiler();
 
         try {

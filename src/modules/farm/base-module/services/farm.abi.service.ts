@@ -1,4 +1,3 @@
-import { Inject } from '@nestjs/common';
 import {
     BigUIntValue,
     BytesValue,
@@ -7,18 +6,15 @@ import { Address, Interaction, ReturnCode } from '@multiversx/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
 export class AbiFarmService extends GenericAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly gatewayService: MXGatewayService,
     ) {
-        super(mxProxy, logger);
+        super(mxProxy);
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {

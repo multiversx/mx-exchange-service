@@ -1,6 +1,7 @@
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
@@ -17,6 +18,7 @@ export class EnergySetterService extends GenericSetterService {
         this.baseKey = 'energy';
     }
 
+    @ErrorLoggerAsync({ className: EnergySetterService.name })
     async setBaseAssetTokenID(value: string): Promise<string> {
         return await this.setData(
             this.getCacheKey('baseAssetTokenID'),
@@ -26,6 +28,7 @@ export class EnergySetterService extends GenericSetterService {
         );
     }
 
+    @ErrorLoggerAsync({ className: EnergySetterService.name })
     async setLockOptions(values: number[]): Promise<string> {
         return await this.setData(
             this.getCacheKey('lockOptions'),
@@ -35,6 +38,7 @@ export class EnergySetterService extends GenericSetterService {
         );
     }
 
+    @ErrorLoggerAsync({ className: EnergySetterService.name })
     async setPauseState(value: boolean): Promise<string> {
         return await this.setData(
             this.getCacheKey('isPaused'),
@@ -44,6 +48,7 @@ export class EnergySetterService extends GenericSetterService {
         );
     }
 
+    @ErrorLoggerAsync({ className: EnergySetterService.name })
     async setEnergyEntryForUser(
         userAddress: string,
         value: EnergyType,

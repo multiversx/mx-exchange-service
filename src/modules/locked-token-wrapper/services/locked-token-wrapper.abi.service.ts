@@ -1,17 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { Interaction } from '@multiversx/sdk-core';
 
 @Injectable()
 export class LockedTokenWrapperAbiService extends GenericAbiService {
-    constructor(
-        protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-    ) {
-        super(mxProxy, logger);
+    constructor(protected readonly mxProxy: MXProxyService) {
+        super(mxProxy);
     }
 
     async lockedTokenId(address: string): Promise<string> {

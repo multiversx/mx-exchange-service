@@ -33,7 +33,7 @@ export class PairAbiService extends GenericAbiService {
         protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
-        super(mxProxy, logger);
+        super(mxProxy);
     }
 
     async getFirstTokenID(pairAddress: string): Promise<string> {

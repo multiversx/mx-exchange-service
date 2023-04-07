@@ -1,5 +1,6 @@
 import {
     CacheModule,
+    LoggerService,
     MiddlewareConsumer,
     Module,
     RequestMethod,
@@ -17,9 +18,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { CommonAppModule } from './common.app.module';
 import { CachingService } from './services/caching/cache.service';
-import * as winston from 'winston';
-import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
-import * as Transport from 'winston-transport';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { StakingModule } from './modules/staking/staking.module';
 import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module';
@@ -41,83 +40,54 @@ import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
     imports: [
         CommonAppModule,
         CacheModule.register(),
-        GraphQLModule.forRoot<ApolloDriverConfig>({
+        GraphQLModule.forRootAsync<ApolloDriverConfig>({
             driver: ApolloDriver,
-            autoSchemaFile: 'schema.gql',
-            installSubscriptionHandlers: true,
-            buildSchemaOptions: {
-                fieldMiddleware: [deprecationLoggerMiddleware],
-            },
-            formatResponse: (
-                response: GraphQLResponse,
-                requestContext: GraphQLRequestContext,
-            ) => {
-                const { context } = requestContext;
-                const { req } = context;
-                const extensionResponse = req?.deprecationWarning
-                    ? {
-                          extensions: {
-                              deprecationWarning: req?.deprecationWarning,
-                          },
-                      }
-                    : {};
-                return {
-                    ...response,
-                    ...extensionResponse,
-                };
-            },
-            formatError: (error: GraphQLError) => {
-                const graphQLFormattedError: GraphQLFormattedError = {
-                    message: error.message,
-                    path: error.path,
-                    extensions: {
-                        code: error.extensions.code,
-                    },
-                };
+            imports: [CommonAppModule],
+            useFactory: async (logger: LoggerService) => ({
+                autoSchemaFile: 'schema.gql',
+                installSubscriptionHandlers: true,
+                buildSchemaOptions: {
+                    fieldMiddleware: [deprecationLoggerMiddleware],
+                },
+                formatResponse: (
+                    response: GraphQLResponse,
+                    requestContext: GraphQLRequestContext,
+                ) => {
+                    const { context } = requestContext;
+                    const { req } = context;
+                    const extensionResponse = req?.deprecationWarning
+                        ? {
+                              extensions: {
+                                  deprecationWarning: req?.deprecationWarning,
+                              },
+                          }
+                        : {};
+                    return {
+                        ...response,
+                        ...extensionResponse,
+                    };
+                },
+                formatError: (error: GraphQLError) => {
+                    const graphQLFormattedError: GraphQLFormattedError = {
+                        message: error.message,
+                        path: error.path,
+                        extensions: {
+                            code: error.extensions.code,
+                        },
+                    };
 
-                const loglevel = !!process.env.LOG_LEVEL
-                    ? process.env.LOG_LEVEL
-                    : 'error';
-                const logTransports: Transport[] = [
-                    new winston.transports.Console({
-                        format: winston.format.combine(
-                            winston.format.timestamp(),
-                            nestWinstonModuleUtilities.format.nestLike(),
-                        ),
-                        level: loglevel,
-                    }),
-                ];
-                if (!!process.env.LOG_FILE) {
-                    logTransports.push(
-                        new winston.transports.File({
-                            filename: process.env.LOG_FILE,
-                            dirname: 'logs',
-                            maxsize: 100000,
-                            level: loglevel,
-                        }),
-                    );
-                }
-                const logger = winston.createLogger({
-                    format: winston.format.combine(
-                        winston.format.timestamp(),
-                        nestWinstonModuleUtilities.format.nestLike(),
-                    ),
-                    level: loglevel,
-                    transports: logTransports,
-                });
-                const errorStatus = error.toJSON().extensions['code'];
-                switch (errorStatus) {
-                    case 'FORBIDDEN':
-                        logger.info(error.message, { path: error.path });
-                        break;
-                    default:
-                        logger.error(error.message, error.extensions);
-                        break;
-                }
+                    const errorStatus = error.toJSON().extensions['code'];
+                    switch (errorStatus) {
+                        case 'FORBIDDEN':
+                            logger.log(error.message, 'GraphQLModule');
+                            break;
+                    }
 
-                return graphQLFormattedError;
-            },
-            fieldResolverEnhancers: ['guards'],
+                    return graphQLFormattedError;
+                },
+                fieldResolverEnhancers: ['guards'],
+            }),
+            inject: [WINSTON_MODULE_NEST_PROVIDER],
         }),
         RouterModule,
         AutoRouterModule,

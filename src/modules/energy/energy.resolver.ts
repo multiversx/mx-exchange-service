@@ -6,7 +6,6 @@ import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
@@ -22,55 +21,41 @@ import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.val
 import { EnergyAbiService } from './services/energy.abi.service';
 
 @Resolver(() => SimpleLockEnergyModel)
-export class EnergyResolver extends GenericResolver {
+export class EnergyResolver {
     constructor(
-        protected readonly energyTransaction: EnergyTransactionService,
+        private readonly energyTransaction: EnergyTransactionService,
         private readonly energyService: EnergyService,
         private readonly energyAbi: EnergyAbiService,
-    ) {
-        super();
-    }
+    ) {}
 
     @ResolveField()
     async baseAssetToken(): Promise<EsdtToken> {
-        return await this.genericFieldResolver<EsdtToken>(() =>
-            this.energyService.getBaseAssetToken(),
-        );
+        return this.energyService.getBaseAssetToken();
     }
 
     @ResolveField()
     async lockedToken(): Promise<NftCollection> {
-        return await this.genericFieldResolver<NftCollection>(() =>
-            this.energyService.getLockedToken(),
-        );
+        return this.energyService.getLockedToken();
     }
 
     @ResolveField()
     async legacyLockedToken(): Promise<NftCollection> {
-        return await this.genericFieldResolver<NftCollection>(() =>
-            this.energyService.getLegacyLockedToken(),
-        );
+        return this.energyService.getLegacyLockedToken();
     }
 
     @ResolveField()
     async tokenUnstakeAddress(): Promise<string> {
-        return await this.genericFieldResolver<string>(() =>
-            this.energyAbi.tokenUnstakeScAddress(),
-        );
+        return this.energyAbi.tokenUnstakeScAddress();
     }
 
     @ResolveField()
     async lockOptions(): Promise<LockOption[]> {
-        return await this.genericFieldResolver<LockOption[]>(() =>
-            this.energyAbi.lockOptions(),
-        );
+        return this.energyAbi.lockOptions();
     }
 
     @ResolveField()
     async pauseState(): Promise<boolean> {
-        return await this.genericFieldResolver<boolean>(() =>
-            this.energyAbi.isPaused(),
-        );
+        return this.energyAbi.isPaused();
     }
 
     @Query(() => SimpleLockEnergyModel)
@@ -86,9 +71,7 @@ export class EnergyResolver extends GenericResolver {
         @AuthUser() user: UserAuthResult,
         @Args('vmQuery', { nullable: true }) vmQuery: boolean,
     ): Promise<EnergyModel> {
-        return await this.genericQuery(() =>
-            this.energyService.getUserEnergy(user.address, vmQuery),
-        );
+        return this.energyService.getUserEnergy(user.address, vmQuery);
     }
 
     @Query(() => String)
@@ -97,12 +80,10 @@ export class EnergyResolver extends GenericResolver {
         @Args('newLockPeriod') newLockPeriod: number,
         @Args('vmQuery', { nullable: true }) vmQuery: boolean,
     ): Promise<string> {
-        return await this.genericQuery(() =>
-            this.energyService.getPenaltyAmount(
-                inputToken,
-                newLockPeriod,
-                vmQuery,
-            ),
+        return this.energyService.getPenaltyAmount(
+            inputToken,
+            newLockPeriod,
+            vmQuery,
         );
     }
 
@@ -113,15 +94,11 @@ export class EnergyResolver extends GenericResolver {
         @Args('lockEpochs', { type: () => Int }) lockEpochs: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.energyTransaction.lockTokens(
-                user.address,
-                inputTokens,
-                lockEpochs,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.energyTransaction.lockTokens(
+            user.address,
+            inputTokens,
+            lockEpochs,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -133,13 +110,11 @@ export class EnergyResolver extends GenericResolver {
         @Args('newLockPeriod', { nullable: true }) newLockPeriod: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.energyTransaction.unlockTokens(
-                user.address,
-                inputToken,
-                unlockType,
-                newLockPeriod,
-            ),
+        return this.energyTransaction.unlockTokens(
+            user.address,
+            inputToken,
+            unlockType,
+            newLockPeriod,
         );
     }
 
@@ -154,9 +129,7 @@ export class EnergyResolver extends GenericResolver {
         inputTokens: InputTokenModel[],
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.energyTransaction.mergeTokens(user.address, inputTokens),
-        );
+        return this.energyTransaction.mergeTokens(user.address, inputTokens);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -166,10 +139,7 @@ export class EnergyResolver extends GenericResolver {
         args: InputTokenModel[],
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.energyTransaction.migrateOldTokens(
-            user.address,
-            args,
-        );
+        return this.energyTransaction.migrateOldTokens(user.address, args);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -184,9 +154,7 @@ export class EnergyResolver extends GenericResolver {
             throw new ApolloError('Invalid owner address');
         }
 
-        return await this.genericQuery(() =>
-            this.energyTransaction.updateLockOptions(lockOptions, remove),
-        );
+        return this.energyTransaction.updateLockOptions(lockOptions, remove);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -201,11 +169,9 @@ export class EnergyResolver extends GenericResolver {
             throw new ApolloError('Invalid owner address');
         }
 
-        return await this.genericQuery(() =>
-            this.energyTransaction.setPenaltyPercentage(
-                minPenaltyPercentage,
-                maxPenaltyPercentage,
-            ),
+        return this.energyTransaction.setPenaltyPercentage(
+            minPenaltyPercentage,
+            maxPenaltyPercentage,
         );
     }
 
@@ -220,9 +186,7 @@ export class EnergyResolver extends GenericResolver {
             throw new ApolloError('Invalid owner address');
         }
 
-        return await this.genericQuery(() =>
-            this.energyTransaction.setFeesBurnPercentage(percentage),
-        );
+        return this.energyTransaction.setFeesBurnPercentage(percentage);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -236,9 +200,7 @@ export class EnergyResolver extends GenericResolver {
             throw new ApolloError('Invalid owner address');
         }
 
-        return await this.genericQuery(() =>
-            this.energyTransaction.setFeesCollectorAddress(collectorAddress),
-        );
+        return this.energyTransaction.setFeesCollectorAddress(collectorAddress);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -253,10 +215,8 @@ export class EnergyResolver extends GenericResolver {
             throw new ApolloError('Invalid owner address');
         }
 
-        return await this.genericQuery(() =>
-            this.energyTransaction.setOldLockedAssetFactoryAddress(
-                oldLockedAssetFactoryAddress,
-            ),
+        return this.energyTransaction.setOldLockedAssetFactoryAddress(
+            oldLockedAssetFactoryAddress,
         );
     }
 
@@ -264,6 +224,6 @@ export class EnergyResolver extends GenericResolver {
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => String)
     async userEnergyAmount(@AuthUser() user: UserAuthResult): Promise<string> {
-        return await this.energyAbi.energyAmountForUser(user.address);
+        return this.energyAbi.energyAmountForUser(user.address);
     }
 }
