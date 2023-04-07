@@ -6,10 +6,10 @@ import {
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairService } from '../services/pair.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';

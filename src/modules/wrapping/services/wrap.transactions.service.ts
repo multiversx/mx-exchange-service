@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { TokenPayment } from '@multiversx/sdk-core';
-import { TransactionModel } from '../../models/transaction.model';
-import { mxConfig, gasConfig } from '../../config';
+import { TransactionModel } from '../../../models/transaction.model';
+import { mxConfig, gasConfig } from '../../../config';
 import { WrapService } from './wrap.service';
 import BigNumber from 'bignumber.js';
-import { MXProxyService } from '../../services/multiversx-communication/mx.proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 
 @Injectable()
 export class TransactionsWrapService {

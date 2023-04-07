@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { CachingModule } from '../../services/caching/cache.module';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { TokenModule } from '../tokens/token.module';
-import { AbiWrapService } from './abi-wrap.service';
-import { TransactionsWrapService } from './transactions-wrap.service';
+import { AbiWrapService } from './services/wrap.abi.service';
+import { TransactionsWrapService } from './services/wrap.transactions.service';
 import { WrapResolver } from './wrap.resolver';
-import { WrapService } from './wrap.service';
+import { WrapService } from './services/wrap.service';
 
 @Module({
     imports: [MXCommunicationModule, CachingModule, TokenModule],

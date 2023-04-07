@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairAbiService } from '../services/pair.abi.service';
 import { PairService } from '../services/pair.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';

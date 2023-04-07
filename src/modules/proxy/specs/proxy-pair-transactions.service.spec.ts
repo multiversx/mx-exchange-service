@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WrapService } from '../../wrapping/wrap.service';
+import { WrapService } from '../../wrapping/services/wrap.service';
 import winston from 'winston';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -13,7 +13,7 @@ import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
 import { Address } from '@multiversx/sdk-core';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { ProxyGetterServiceMock } from '../mocks/proxy.getter.service.mock';
 import { ProxyPairGetterService } from '../services/proxy-pair/proxy-pair.getter.service';
 import { ProxyPairGetterServiceMock } from '../mocks/proxy.pair.getter.service.mock';

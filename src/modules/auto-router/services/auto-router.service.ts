@@ -10,7 +10,7 @@ import {
     BestSwapRoute,
 } from './auto-router.compute.service';
 import { constantsConfig, mxConfig } from 'src/config';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { AutoRouterArgs } from '../models/auto-router.args';
 import { RouterGetterService } from '../../router/services/router.getter.service';
 import { AutoRouteModel, SWAP_TYPE } from '../models/auto-route.model';

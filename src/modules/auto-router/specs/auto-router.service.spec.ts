@@ -4,7 +4,7 @@ import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-servic
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import winston from 'winston';
 import {
@@ -23,7 +23,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TransactionRouterService } from 'src/modules/router/services/transactions.router.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { RouterService } from 'src/modules/router/services/router.service';
 import { AutoRouteModel } from '../models/auto-route.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';

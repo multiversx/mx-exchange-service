@@ -8,7 +8,7 @@ import {
     getAmountIn,
     getTokenForGivenPosition,
 } from '../pair.utils';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairGetterService } from './pair.getter.service';

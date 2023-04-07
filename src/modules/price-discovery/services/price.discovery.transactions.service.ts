@@ -4,8 +4,8 @@ import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
 

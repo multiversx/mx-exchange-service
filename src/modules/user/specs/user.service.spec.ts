@@ -12,7 +12,7 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
-import { WrapService } from '../../wrapping/wrap.service';
+import { WrapService } from '../../wrapping/services/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { UserFarmToken, UserToken } from '../models/user.model';

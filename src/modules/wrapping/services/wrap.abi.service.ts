@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
-import { MXProxyService } from '../../services/multiversx-communication/mx.proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
 @Injectable()

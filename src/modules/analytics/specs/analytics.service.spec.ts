@@ -17,7 +17,7 @@ import { AbiLockedAssetService } from 'src/modules/locked-asset-factory/services
 import { AbiLockedAssetServiceMock } from 'src/modules/locked-asset-factory/mocks/abi.locked.asset.service.mock';
 import { ProxyGetterService } from 'src/modules/proxy/services/proxy.getter.service';
 import { ProxyGetterServiceMock } from 'src/modules/proxy/mocks/proxy.getter.service.mock';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';

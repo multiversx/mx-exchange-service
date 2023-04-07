@@ -14,8 +14,8 @@ import {
     RemoveLiquidityProxyArgs,
 } from '../../models/proxy-pair.args';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

@@ -11,7 +11,7 @@ import { MXProxyService } from '../../../services/multiversx-communication/mx.pr
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
-import { WrapService } from '../../wrapping/wrap.service';
+import { WrapService } from '../../wrapping/services/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';

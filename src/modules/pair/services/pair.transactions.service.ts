@@ -18,8 +18,8 @@ import {
 } from '../models/pair.args';
 import BigNumber from 'bignumber.js';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
 import { InputTokenModel } from 'src/models/inputToken.model';

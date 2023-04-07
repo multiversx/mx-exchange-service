@@ -10,7 +10,7 @@ import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
-import { WrapService } from '../../wrapping/wrap.service';
+import { WrapService } from '../../wrapping/services/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';

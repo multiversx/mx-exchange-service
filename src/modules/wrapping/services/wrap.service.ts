@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { cacheConfig, scAddress, tokenProviderUSD } from '../../config';
-import { WrapModel } from './models/wrapping.model';
-import { AbiWrapService } from './abi-wrap.service';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { CachingService } from '../../services/caching/cache.service';
+import { cacheConfig, scAddress, tokenProviderUSD } from '../../../config';
+import { WrapModel } from '../models/wrapping.model';
+import { AbiWrapService } from './wrap.abi.service';
+import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
+import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { EsdtToken } from '../tokens/models/esdtToken.model';
-import { TokenGetterService } from '../tokens/services/token.getter.service';
+import { generateGetLogMessage } from '../../../utils/generate-log-message';
+import { EsdtToken } from '../../tokens/models/esdtToken.model';
+import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { oneHour } from 'src/helpers/helpers';
 
 @Injectable()

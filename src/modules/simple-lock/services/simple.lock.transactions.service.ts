@@ -20,8 +20,8 @@ import {
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';

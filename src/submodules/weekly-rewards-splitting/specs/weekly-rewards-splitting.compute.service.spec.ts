@@ -18,7 +18,7 @@ import BigNumber from 'bignumber.js';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
 import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
 import { PairService } from '../../../modules/pair/services/pair.service';
-import { WrapService } from '../../../modules/wrapping/wrap.service';
+import { WrapService } from '../../../modules/wrapping/services/wrap.service';
 import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
 import { TokenGetterServiceProvider } from '../../../modules/tokens/mocks/token.getter.service.mock';
 import { RouterGetterServiceProvider } from '../../../modules/router/mocks/router.getter.service.stub';
