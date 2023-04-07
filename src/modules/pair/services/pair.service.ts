@@ -8,7 +8,6 @@ import {
     getAmountIn,
     getTokenForGivenPosition,
 } from '../pair.utils';
-import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairGetterService } from './pair.getter.service';
@@ -16,6 +15,7 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneHour } from 'src/helpers/helpers';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 @Injectable()
 export class PairService {
@@ -24,8 +24,7 @@ export class PairService {
         private readonly pairGetterService: PairGetterService,
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetter: RouterGetterService,
-        @Inject(forwardRef(() => WrapService))
-        private readonly wrapService: WrapService,
+        private readonly wrapAbi: WrapAbiService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -42,7 +41,7 @@ export class PairService {
             pairInfo,
             totalFeePercent,
         ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
+            this.wrapAbi.wrappedEgldTokenID(),
             this.pairGetterService.getFirstTokenID(pairAddress),
             this.pairGetterService.getSecondTokenID(pairAddress),
             this.pairGetterService.getPairInfoMetadata(pairAddress),
@@ -84,7 +83,7 @@ export class PairService {
             pairInfo,
             totalFeePercent,
         ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
+            this.wrapAbi.wrappedEgldTokenID(),
             this.pairGetterService.getFirstTokenID(pairAddress),
             this.pairGetterService.getSecondTokenID(pairAddress),
             this.pairGetterService.getPairInfoMetadata(pairAddress),
@@ -123,7 +122,7 @@ export class PairService {
     ): Promise<BigNumber> {
         const [wrappedTokenID, firstTokenID, secondTokenID, pairInfo] =
             await Promise.all([
-                this.wrapService.getWrappedEgldTokenID(),
+                this.wrapAbi.wrappedEgldTokenID(),
                 this.pairGetterService.getFirstTokenID(pairAddress),
                 this.pairGetterService.getSecondTokenID(pairAddress),
                 this.pairGetterService.getPairInfoMetadata(pairAddress),

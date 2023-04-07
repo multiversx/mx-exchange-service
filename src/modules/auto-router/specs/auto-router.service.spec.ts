@@ -23,7 +23,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TransactionRouterService } from 'src/modules/router/services/transactions.router.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { RouterService } from 'src/modules/router/services/router.service';
 import { AutoRouteModel } from '../models/auto-route.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
@@ -97,7 +97,7 @@ describe('AutoRouterService', () => {
                 PairService,
                 PairTransactionService,
                 WrapServiceProvider,
-                TransactionsWrapService,
+                WrapTransactionsService,
                 TransactionRouterService,
                 RemoteConfigGetterServiceProvider,
                 AutoRouterService,

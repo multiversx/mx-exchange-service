@@ -14,14 +14,14 @@ import {
     RemoveLiquidityProxyArgs,
 } from '../../models/proxy-pair.args';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { WrapService } from 'src/modules/wrapping/services/wrap.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { ProxyGetterService } from '../proxy.getter.service';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 @Injectable()
 export class TransactionsProxyPairService {
@@ -30,8 +30,8 @@ export class TransactionsProxyPairService {
         private readonly proxyGetter: ProxyGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly wrapService: WrapService,
-        private readonly wrapTransaction: TransactionsWrapService,
+        private readonly wrapAbi: WrapAbiService,
+        private readonly wrapTransaction: WrapTransactionsService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -152,7 +152,7 @@ export class TransactionsProxyPairService {
             liquidityPosition,
             contract,
         ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
+            this.wrapAbi.wrappedEgldTokenID(),
             this.pairGetterService.getFirstTokenID(args.pairAddress),
             this.pairGetterService.getSecondTokenID(args.pairAddress),
             this.pairService.getLiquidityPosition(
@@ -255,7 +255,7 @@ export class TransactionsProxyPairService {
     private async convertInputTokenstoESDTTokens(
         tokens: InputTokenModel[],
     ): Promise<InputTokenModel[]> {
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
+        const wrappedTokenID = await this.wrapAbi.wrappedEgldTokenID();
 
         switch (mxConfig.EGLDIdentifier) {
             case tokens[0].tokenID:

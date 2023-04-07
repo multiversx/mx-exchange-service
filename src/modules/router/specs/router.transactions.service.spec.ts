@@ -9,7 +9,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
 import { RouterGetterServiceStub } from '../mocks/router.getter.service.stub';
-import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import winston from 'winston';
@@ -73,7 +73,7 @@ describe('RouterService', () => {
                 PairService,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
-                TransactionsWrapService,
+                WrapTransactionsService,
                 ApiConfigService,
                 MXProxyService,
                 TransactionRouterService,

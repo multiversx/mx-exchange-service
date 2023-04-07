@@ -6,7 +6,7 @@ import {
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/services/wrap.transactions.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairService } from '../services/pair.service';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
@@ -64,7 +64,7 @@ describe('TransactionPairService', () => {
                 PairGetterServiceProvider,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
-                TransactionsWrapService,
+                WrapTransactionsService,
                 TokenGetterServiceProvider,
                 PairTransactionService,
             ],

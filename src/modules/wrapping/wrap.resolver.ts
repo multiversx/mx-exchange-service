@@ -1,11 +1,10 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { WrapModel } from './models/wrapping.model';
 import { WrapService } from './services/wrap.service';
-import { TransactionsWrapService } from './services/wrap.transactions.service';
-import { ApolloError } from 'apollo-server-express';
+import { WrapTransactionsService } from './services/wrap.transactions.service';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -13,19 +12,13 @@ import { UserAuthResult } from '../auth/user.auth.result';
 @Resolver(() => WrapModel)
 export class WrapResolver {
     constructor(
-        @Inject(WrapService)
         private wrapService: WrapService,
-        @Inject(TransactionsWrapService)
-        private transactionService: TransactionsWrapService,
+        private transactionService: WrapTransactionsService,
     ) {}
 
     @ResolveField()
     async wrappedToken(): Promise<EsdtToken> {
-        try {
-            return await this.wrapService.getWrappedEgldToken();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.wrapService.wrappedEgldToken();
     }
 
     @Query(() => [WrapModel])
