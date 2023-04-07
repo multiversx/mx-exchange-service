@@ -4,8 +4,6 @@ import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-servic
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { WrapService } from 'src/modules/wrapping/services/wrap.service';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import winston from 'winston';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -35,6 +33,8 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { gasConfig } from 'src/config';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -52,11 +52,6 @@ describe('AutoRouterService', () => {
     const RouterGetterServiceProvider = {
         provide: RouterGetterService,
         useClass: RouterGetterServiceStub,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
     };
 
     const MXProxyServiceProvider = {
@@ -96,7 +91,8 @@ describe('AutoRouterService', () => {
                 PairGetterServiceProvider,
                 PairService,
                 PairTransactionService,
-                WrapServiceProvider,
+                WrapAbiServiceProvider,
+                WrapService,
                 WrapTransactionsService,
                 TransactionRouterService,
                 RemoteConfigGetterServiceProvider,

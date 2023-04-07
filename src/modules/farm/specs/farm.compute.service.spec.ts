@@ -10,8 +10,6 @@ import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
-import { WrapService } from '../../wrapping/services/wrap.service';
-import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
@@ -20,6 +18,7 @@ import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service
 import { FarmGetterServiceMockV1_2 } from '../mocks/farm.v1.2.getter.service.mock';
 import { CalculateRewardsArgs } from '../models/farm.args';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 
 describe('FarmService', () => {
     let service: FarmComputeServiceV1_2;
@@ -39,11 +38,6 @@ describe('FarmService', () => {
         useClass: PairGetterServiceStub,
     };
 
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
-    };
-
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
@@ -61,7 +55,7 @@ describe('FarmService', () => {
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 RouterGetterServiceProvider,
-                WrapServiceProvider,
+                WrapAbiServiceProvider,
                 MXDataApiServiceProvider,
                 FarmComputeServiceV1_2,
             ],

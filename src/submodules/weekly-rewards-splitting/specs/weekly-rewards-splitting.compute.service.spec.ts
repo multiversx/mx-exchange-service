@@ -18,7 +18,6 @@ import BigNumber from 'bignumber.js';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
 import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
 import { PairService } from '../../../modules/pair/services/pair.service';
-import { WrapService } from '../../../modules/wrapping/services/wrap.service';
 import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
 import { TokenGetterServiceProvider } from '../../../modules/tokens/mocks/token.getter.service.mock';
 import { RouterGetterServiceProvider } from '../../../modules/router/mocks/router.getter.service.stub';
@@ -37,9 +36,9 @@ import {
     TokenComputeServiceMock,
 } from '../../../modules/tokens/mocks/token.compute.service.mock';
 import { EnergyModel } from 'src/modules/energy/models/energy.model';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     const dummyScAddress = 'erd';
@@ -626,10 +625,6 @@ async function createService(handlers: {
                 useValue: routerGetter,
             },
             TokenGetterServiceProvider,
-            {
-                provide: WrapService,
-                useClass: WrapServiceMock,
-            },
             ApiConfigService,
             {
                 provide: PairGetterService,
@@ -647,6 +642,7 @@ async function createService(handlers: {
             },
             WeeklyRewardsSplittingComputeService,
             MXDataApiServiceProvider,
+            WrapAbiServiceProvider,
         ],
     }).compile();
     return module.get<WeeklyRewardsSplittingComputeService>(
