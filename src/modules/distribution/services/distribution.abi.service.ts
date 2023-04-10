@@ -6,6 +6,7 @@ import { CommunityDistributionModel } from '../models/distribution.model';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 
 @Injectable()
 export class DistributionAbiService extends GenericAbiService {
@@ -13,6 +14,9 @@ export class DistributionAbiService extends GenericAbiService {
         super(mxProxy);
     }
 
+    @ErrorLoggerAsync({
+        className: DistributionAbiService.name,
+    })
     @GetOrSetCache({
         baseKey: 'communityDistribution',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -33,6 +37,9 @@ export class DistributionAbiService extends GenericAbiService {
         });
     }
 
+    @ErrorLoggerAsync({
+        className: DistributionAbiService.name,
+    })
     @GetOrSetCache({
         baseKey: 'distributedLockedAssets',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
