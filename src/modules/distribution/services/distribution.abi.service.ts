@@ -4,6 +4,8 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import BigNumber from 'bignumber.js';
 import { CommunityDistributionModel } from '../models/distribution.model';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class DistributionAbiService extends GenericAbiService {
@@ -11,7 +13,16 @@ export class DistributionAbiService extends GenericAbiService {
         super(mxProxy);
     }
 
-    async getCommunityDistribution(): Promise<CommunityDistributionModel> {
+    @GetOrSetCache({
+        baseKey: 'communityDistribution',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async communityDistribution(): Promise<CommunityDistributionModel> {
+        return await this.getCommunityDistributionRaw();
+    }
+
+    async getCommunityDistributionRaw(): Promise<CommunityDistributionModel> {
         const contract = await this.mxProxy.getDistributionSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLastCommunityDistributionAmountAndEpoch();
@@ -22,7 +33,18 @@ export class DistributionAbiService extends GenericAbiService {
         });
     }
 
-    async getDistributedLockedAssets(userAddress: string): Promise<BigNumber> {
+    @GetOrSetCache({
+        baseKey: 'distributedLockedAssets',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async distributedLockedAssets(userAddress: string): Promise<BigNumber> {
+        return await this.getDistributedLockedAssetsRaw(userAddress);
+    }
+
+    async getDistributedLockedAssetsRaw(
+        userAddress: string,
+    ): Promise<BigNumber> {
         const contract = await this.mxProxy.getDistributionSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.calculateLockedAssets([

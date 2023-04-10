@@ -11,20 +11,21 @@ import { ApolloError } from 'apollo-server-express';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
-import { DistributionGetterService } from './services/distribution.getter.service';
+import { DistributionAbiService } from './services/distribution.abi.service';
+import { scAddress } from 'src/config';
 
 @Resolver(() => DistributionModel)
 export class DistributionResolver {
     constructor(
         private readonly distributionService: DistributionService,
-        private readonly distributionGetter: DistributionGetterService,
+        private readonly distributionAbi: DistributionAbiService,
         private readonly transactionsService: DistributionTransactionsService,
     ) {}
 
     @ResolveField()
     async communityDistribution(): Promise<CommunityDistributionModel> {
         try {
-            return await this.distributionGetter.getCommunityDistribution();
+            return await this.distributionAbi.communityDistribution();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -33,7 +34,9 @@ export class DistributionResolver {
     @Query(() => DistributionModel)
     async distribution(): Promise<DistributionModel> {
         try {
-            return await this.distributionService.getDistributionInfo();
+            return new DistributionModel({
+                address: scAddress.distributionAddress,
+            });
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -55,9 +58,10 @@ export class DistributionResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<string> {
         try {
-            return await this.distributionService.getDistributedLockedAssets(
+            const assets = await this.distributionAbi.distributedLockedAssets(
                 user.address,
             );
+            return assets.toFixed();
         } catch (error) {
             throw new ApolloError(error);
         }
