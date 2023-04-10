@@ -13,6 +13,7 @@ import {
 import { MetabondingService } from './services/metabonding.service';
 import { MetabondingTransactionService } from './services/metabonding.transactions.service';
 import { MetabondingAbiService } from './services/metabonding.abi.service';
+import { LockedTokenValidator } from './validators/locked.token.validator';
 
 @Resolver(() => MetabondingStakingModel)
 export class MetabondingResolver {
@@ -48,7 +49,7 @@ export class MetabondingResolver {
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async stakeLockedAssetMetabonding(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', LockedTokenValidator) inputTokens: InputTokenModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.metabondingTransactions.stakeLockedAsset(
