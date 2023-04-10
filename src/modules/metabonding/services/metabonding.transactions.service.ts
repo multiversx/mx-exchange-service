@@ -10,12 +10,12 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { MetabondingGetterService } from './metabonding.getter.service';
+import { MetabondingAbiService } from './metabonding.abi.service';
 
 @Injectable()
 export class MetabondingTransactionService {
     constructor(
-        private readonly metabondingGetter: MetabondingGetterService,
+        private readonly metabondingAbi: MetabondingAbiService,
         private readonly mxProxy: MXProxyService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -40,7 +40,7 @@ export class MetabondingTransactionService {
 
         const [contract, userEntry] = await Promise.all([
             this.mxProxy.getMetabondingStakingSmartContract(),
-            this.metabondingGetter.getUserEntry(sender),
+            this.metabondingAbi.userEntry(sender),
         ]);
 
         const gasLimit =
@@ -91,7 +91,7 @@ export class MetabondingTransactionService {
         inputToken: InputTokenModel,
     ): Promise<void> {
         const lockedAssetTokenID =
-            await this.metabondingGetter.getLockedAssetTokenID();
+            await this.metabondingAbi.lockedAssetTokenID();
 
         if (
             lockedAssetTokenID !== inputToken.tokenID ||

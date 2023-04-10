@@ -3,6 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { UserEntryModel } from '../models/metabonding.model';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 
 @Injectable()
 export class MetabondingAbiService extends GenericAbiService {
@@ -10,7 +13,17 @@ export class MetabondingAbiService extends GenericAbiService {
         super(mxProxy);
     }
 
-    async getLockedAssetTokenID(): Promise<string> {
+    @ErrorLoggerAsync({ className: MetabondingAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'metabonding',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async lockedAssetTokenID(): Promise<string> {
+        return await this.getLockedAssetTokenIDRaw();
+    }
+
+    async getLockedAssetTokenIDRaw(): Promise<string> {
         const contract =
             await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction =
@@ -20,7 +33,17 @@ export class MetabondingAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getTotalLockedAssetSupply(): Promise<string> {
+    @ErrorLoggerAsync({ className: MetabondingAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'metabonding',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async totalLockedAssetSupply(): Promise<string> {
+        return await this.getTotalLockedAssetSupplyRaw();
+    }
+
+    async getTotalLockedAssetSupplyRaw(): Promise<string> {
         const contract =
             await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction =
@@ -30,7 +53,17 @@ export class MetabondingAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getStakedAmountForUser(userAddress: string): Promise<string> {
+    @ErrorLoggerAsync({ className: MetabondingAbiService.name, logArgs: true })
+    @GetOrSetCache({
+        baseKey: 'metabonding',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async stakedAmountForUser(userAddress: string): Promise<string> {
+        return await this.getStakedAmountForUserRaw(userAddress);
+    }
+
+    async getStakedAmountForUserRaw(userAddress: string): Promise<string> {
         const contract =
             await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction =
@@ -42,7 +75,17 @@ export class MetabondingAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getUserEntry(userAddress: string): Promise<UserEntryModel> {
+    @ErrorLoggerAsync({ className: MetabondingAbiService.name, logArgs: true })
+    @GetOrSetCache({
+        baseKey: 'metabonding',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async userEntry(userAddress: string): Promise<UserEntryModel> {
+        return await this.getUserEntryRaw(userAddress);
+    }
+
+    async getUserEntryRaw(userAddress: string): Promise<UserEntryModel> {
         const contract =
             await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getUserEntry([

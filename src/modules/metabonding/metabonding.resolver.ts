@@ -1,30 +1,27 @@
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { ResolveField, Resolver, Query, Args } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { Logger } from 'winston';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import {
     MetabondingStakingModel,
     UserEntryModel,
 } from './models/metabonding.model';
-import { MetabondingGetterService } from './services/metabonding.getter.service';
 import { MetabondingService } from './services/metabonding.service';
 import { MetabondingTransactionService } from './services/metabonding.transactions.service';
 import { GenericResolver } from '../../services/generics/generic.resolver';
+import { MetabondingAbiService } from './services/metabonding.abi.service';
 
 @Resolver(() => MetabondingStakingModel)
 export class MetabondingResolver extends GenericResolver {
     constructor(
         private readonly metabondingService: MetabondingService,
-        private readonly metabondingGetter: MetabondingGetterService,
+        private readonly metabondingAbi: MetabondingAbiService,
         private readonly metabondingTransactions: MetabondingTransactionService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         super();
     }
@@ -32,14 +29,14 @@ export class MetabondingResolver extends GenericResolver {
     @ResolveField()
     async lockedAssetToken(): Promise<NftCollection> {
         return await this.genericFieldResolver(() =>
-            this.metabondingGetter.getLockedAssetToken(),
+            this.metabondingService.lockedAssetToken(),
         );
     }
 
     @ResolveField()
     async lockedAssetTokenSupply(): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.metabondingGetter.getTotalLockedAssetSupply(),
+            this.metabondingAbi.totalLockedAssetSupply(),
         );
     }
 
@@ -54,7 +51,7 @@ export class MetabondingResolver extends GenericResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<UserEntryModel> {
         try {
-            return await this.metabondingGetter.getUserEntry(user.address);
+            return await this.metabondingAbi.userEntry(user.address);
         } catch (error) {
             throw new ApolloError(error);
         }

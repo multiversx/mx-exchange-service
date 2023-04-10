@@ -16,7 +16,7 @@ export class MetabondingCacheWarmerService {
     @Cron(CronExpression.EVERY_HOUR)
     async cacheMetabonding(): Promise<void> {
         const lockedAssetTokenID =
-            await this.metabondingAbi.getLockedAssetTokenID();
+            await this.metabondingAbi.getLockedAssetTokenIDRaw();
         const invalidatedKeys = await Promise.all([
             this.metabondingSetter.setLockedAssetTokenID(lockedAssetTokenID),
         ]);
@@ -26,7 +26,7 @@ export class MetabondingCacheWarmerService {
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheMetabondingInfo(): Promise<void> {
         const lockedAssetsSupply =
-            await this.metabondingAbi.getTotalLockedAssetSupply();
+            await this.metabondingAbi.getTotalLockedAssetSupplyRaw();
         const invalidatedKeys = await Promise.all([
             this.metabondingSetter.setTotalLockedAssetSupply(
                 lockedAssetsSupply,
