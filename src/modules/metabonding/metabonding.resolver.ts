@@ -1,6 +1,5 @@
 import { UseGuards } from '@nestjs/common';
 import { ResolveField, Resolver, Query, Args } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -13,31 +12,24 @@ import {
 } from './models/metabonding.model';
 import { MetabondingService } from './services/metabonding.service';
 import { MetabondingTransactionService } from './services/metabonding.transactions.service';
-import { GenericResolver } from '../../services/generics/generic.resolver';
 import { MetabondingAbiService } from './services/metabonding.abi.service';
 
 @Resolver(() => MetabondingStakingModel)
-export class MetabondingResolver extends GenericResolver {
+export class MetabondingResolver {
     constructor(
         private readonly metabondingService: MetabondingService,
         private readonly metabondingAbi: MetabondingAbiService,
         private readonly metabondingTransactions: MetabondingTransactionService,
-    ) {
-        super();
-    }
+    ) {}
 
     @ResolveField()
     async lockedAssetToken(): Promise<NftCollection> {
-        return await this.genericFieldResolver(() =>
-            this.metabondingService.lockedAssetToken(),
-        );
+        return this.metabondingService.lockedAssetToken();
     }
 
     @ResolveField()
     async lockedAssetTokenSupply(): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.metabondingAbi.totalLockedAssetSupply(),
-        );
+        return this.metabondingAbi.totalLockedAssetSupply();
     }
 
     @Query(() => MetabondingStakingModel)
@@ -50,11 +42,7 @@ export class MetabondingResolver extends GenericResolver {
     async metabondingStakedPosition(
         @AuthUser() user: UserAuthResult,
     ): Promise<UserEntryModel> {
-        try {
-            return await this.metabondingAbi.userEntry(user.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.metabondingAbi.userEntry(user.address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -63,14 +51,10 @@ export class MetabondingResolver extends GenericResolver {
         @Args('inputTokens') inputTokens: InputTokenModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.metabondingTransactions.stakeLockedAsset(
-                user.address,
-                inputTokens,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.metabondingTransactions.stakeLockedAsset(
+            user.address,
+            inputTokens,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -78,11 +62,7 @@ export class MetabondingResolver extends GenericResolver {
     async unstakeMetabonding(
         @Args('unstakeAmount') unstakeAmount: string,
     ): Promise<TransactionModel> {
-        try {
-            return await this.metabondingTransactions.unstake(unstakeAmount);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.metabondingTransactions.unstake(unstakeAmount);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -90,10 +70,6 @@ export class MetabondingResolver extends GenericResolver {
     async unbondMetabonding(
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.metabondingTransactions.unbond(user.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.metabondingTransactions.unbond(user.address);
     }
 }
