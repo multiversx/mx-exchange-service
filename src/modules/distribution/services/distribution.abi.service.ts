@@ -6,7 +6,7 @@ import { CommunityDistributionModel } from '../models/distribution.model';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
 @Injectable()
-export class AbiDistributionService extends GenericAbiService {
+export class DistributionAbiService extends GenericAbiService {
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }

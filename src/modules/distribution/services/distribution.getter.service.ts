@@ -5,14 +5,14 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
 import { CommunityDistributionModel } from '../models/distribution.model';
-import { AbiDistributionService } from './abi-distribution.service';
+import { DistributionAbiService } from './distribution.abi.service';
 
 @Injectable()
 export class DistributionGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly abiService: AbiDistributionService,
+        private readonly abiService: DistributionAbiService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'distribution';

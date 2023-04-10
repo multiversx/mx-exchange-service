@@ -6,7 +6,7 @@ import {
     CommunityDistributionModel,
     DistributionModel,
 } from './models/distribution.model';
-import { TransactionsDistributionService } from './services/transaction-distribution.service';
+import { DistributionTransactionsService } from './services/distribution.transactions.service';
 import { ApolloError } from 'apollo-server-express';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -18,7 +18,7 @@ export class DistributionResolver {
     constructor(
         private readonly distributionService: DistributionService,
         private readonly distributionGetter: DistributionGetterService,
-        private readonly transactionsService: TransactionsDistributionService,
+        private readonly transactionsService: DistributionTransactionsService,
     ) {}
 
     @ResolveField()

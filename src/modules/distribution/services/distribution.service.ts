@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { scAddress } from '../../../config';
 import { DistributionModel } from '../models/distribution.model';
-import { AbiDistributionService } from './abi-distribution.service';
+import { DistributionAbiService } from './distribution.abi.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
@@ -9,7 +9,7 @@ import { generateGetLogMessage } from '../../../utils/generate-log-message';
 @Injectable()
 export class DistributionService {
     constructor(
-        private abiService: AbiDistributionService,
+        private abiService: DistributionAbiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -21,9 +21,8 @@ export class DistributionService {
 
     async getDistributedLockedAssets(userAddress: string): Promise<string> {
         try {
-            const distributedLockedAssets = await this.abiService.getDistributedLockedAssets(
-                userAddress,
-            );
+            const distributedLockedAssets =
+                await this.abiService.getDistributedLockedAssets(userAddress);
             return distributedLockedAssets.toFixed();
         } catch (error) {
             const logMessage = generateGetLogMessage(
