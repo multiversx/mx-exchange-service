@@ -1,10 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { UserEntryModel } from '../models/metabonding.model';
 
@@ -15,11 +13,12 @@ export class MetabondingSetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'metabonding';
     }
 
     async setLockedAssetTokenID(value: string): Promise<string> {
         return await this.setData(
-            this.getMetabondingCacheKey('lockedAssetTokenID'),
+            this.getCacheKey('lockedAssetTokenID'),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -28,10 +27,10 @@ export class MetabondingSetterService extends GenericSetterService {
 
     async setTotalLockedAssetSupply(value: string): Promise<string> {
         return await this.setData(
-            this.getMetabondingCacheKey('lockedAssetTokenSupply'),
+            this.getCacheKey('totalLockedAssetSupply'),
             value,
-            CacheTtlInfo.ContractInfo.remoteTtl,
-            CacheTtlInfo.ContractInfo.localTtl,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -40,13 +39,10 @@ export class MetabondingSetterService extends GenericSetterService {
         value: UserEntryModel,
     ): Promise<string> {
         return await this.setData(
-            this.getMetabondingCacheKey(`${userAddress}.userEntry`),
+            this.getCacheKey(`userEntry.${userAddress}`),
             value,
-            oneMinute() * 10,
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
-    }
-
-    private getMetabondingCacheKey(...args: any) {
-        return generateCacheKeyFromParams('metabonding', ...args);
     }
 }
