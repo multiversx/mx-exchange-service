@@ -8,9 +8,13 @@ import { UnstakePairModel } from '../models/token.unstake.model';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ITokenUnstakeAbiService } from './interfaces';
 
 @Injectable()
-export class TokenUnstakeAbiService extends GenericAbiService {
+export class TokenUnstakeAbiService
+    extends GenericAbiService
+    implements ITokenUnstakeAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }
