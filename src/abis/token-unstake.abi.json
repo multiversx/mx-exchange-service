@@ -10,11 +10,11 @@
         "contractCrate": {
             "name": "token-unstake",
             "version": "0.0.0",
-            "git_version": "v1.6.0-797-gc44c75ad-modified"
+            "gitVersion": "v1.6.0-1266-g30817f6c"
         },
         "framework": {
-            "name": "elrond-wasm",
-            "version": "0.36.1"
+            "name": "multiversx-sc",
+            "version": "0.39.4"
         }
     },
     "name": "TokenUnstakeModule",
@@ -38,11 +38,6 @@
             {
                 "name": "fees_collector_address",
                 "type": "Address"
-            },
-            {
-                "name": "lock_options",
-                "type": "variadic<multi<u64,u64>>",
-                "multi_arg": true
             }
         ],
         "outputs": []
@@ -139,16 +134,6 @@
             ]
         },
         {
-            "name": "getLastEpochFeeSentToCollector",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
             "name": "setEnergyFactoryAddress",
             "onlyOwner": true,
             "mutability": "mutable",
@@ -171,7 +156,37 @@
             ]
         }
     ],
-    "events": [],
+    "events": [
+        {
+            "identifier": "userUnlockedTokens",
+            "inputs": [
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "block",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "data",
+                    "type": "List<UnstakePair>"
+                }
+            ]
+        }
+    ],
     "hasCallback": false,
     "types": {
         "EsdtTokenPayment": {

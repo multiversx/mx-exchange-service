@@ -35,11 +35,6 @@ export class TokenUnstakeResolver {
     }
 
     @ResolveField()
-    async lastEpochFeeSentToCollector(): Promise<number> {
-        return this.tokenUnstakeAbi.lastEpochFeeSentToCollector();
-    }
-
-    @ResolveField()
     async energyFactoryAddress(): Promise<string> {
         return this.tokenUnstakeAbi.energyFactoryAddress();
     }

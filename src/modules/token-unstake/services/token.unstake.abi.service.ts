@@ -79,24 +79,6 @@ export class TokenUnstakeAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async lastEpochFeeSentToCollector(): Promise<number> {
-        return await this.getLastEpochFeeSentToCollectorRaw();
-    }
-
-    async getLastEpochFeeSentToCollectorRaw(): Promise<number> {
-        const contract = await this.mxProxy.getTokenUnstakeContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastEpochFeeSentToCollector();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toNumber();
-    }
-
-    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'tokenUnstake',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
     async energyFactoryAddress(): Promise<string> {
         return await this.getEnergyFactoryAddressRaw();
     }

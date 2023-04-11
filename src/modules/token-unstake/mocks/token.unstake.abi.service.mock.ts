@@ -13,9 +13,6 @@ export class TokenUnstakeAbiServiceMock implements ITokenUnstakeAbiService {
     feesCollectorAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    lastEpochFeeSentToCollector(): Promise<number> {
-        throw new Error('Method not implemented.');
-    }
     energyFactoryAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
