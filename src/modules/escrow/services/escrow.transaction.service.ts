@@ -41,17 +41,19 @@ export class EscrowTransactionService {
     async lockFunds(
         senderAddress: string,
         receiverAddress: string,
-        payment: InputTokenModel,
+        payments: InputTokenModel[],
     ): Promise<TransactionModel> {
         const contract = await this.mxProxy.getEscrowContract();
 
         return contract.methodsExplicit
             .lockFunds([new AddressValue(Address.fromString(receiverAddress))])
-            .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
-                    payment.tokenID,
-                    payment.nonce,
-                    new BigNumber(payment.amount),
+            .withMultiESDTNFTTransfer(
+                payments.map((payment) =>
+                    TokenPayment.metaEsdtFromBigInteger(
+                        payment.tokenID,
+                        payment.nonce,
+                        new BigNumber(payment.amount),
+                    ),
                 ),
                 Address.fromString(senderAddress),
             )

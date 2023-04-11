@@ -7,10 +7,12 @@ import { EscrowGetterService } from '../services/escrow.getter.service';
 export class TransferTokensValidator implements PipeTransform {
     constructor(private readonly escrowGetter: EscrowGetterService) {}
 
-    async transform(value: InputTokenModel, metadata: ArgumentMetadata) {
+    async transform(value: InputTokenModel[], metadata: ArgumentMetadata) {
         const lockedTokenID = await this.escrowGetter.getLockedTokenID();
-        if (value.tokenID !== lockedTokenID || value.nonce < 1) {
-            throw new UserInputError('Invalid transfer tokens');
+        for (const payment of value) {
+            if (payment.tokenID !== lockedTokenID || payment.nonce < 1) {
+                throw new UserInputError('Invalid transfer tokens');
+            }
         }
         return value;
     }
