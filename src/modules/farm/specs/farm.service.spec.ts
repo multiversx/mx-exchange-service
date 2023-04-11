@@ -10,8 +10,6 @@ import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-servic
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
@@ -40,6 +38,7 @@ import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-time
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
 import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 
 describe('FarmService', () => {
     let factory: FarmFactoryService;
@@ -82,11 +81,6 @@ describe('FarmService', () => {
         useClass: PairGetterServiceStub,
     };
 
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
-    };
-
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
@@ -119,7 +113,7 @@ describe('FarmService', () => {
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
-                WrapServiceProvider,
+                WrapAbiServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 FarmServiceV1_2,

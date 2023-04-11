@@ -10,7 +10,6 @@ import {
     BestSwapRoute,
 } from './auto-router.compute.service';
 import { constantsConfig, mxConfig } from 'src/config';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { AutoRouterArgs } from '../models/auto-router.args';
 import { RouterGetterService } from '../../router/services/router.getter.service';
 import { AutoRouteModel, SWAP_TYPE } from '../models/auto-route.model';
@@ -24,6 +23,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneMinute } from 'src/helpers/helpers';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 @Injectable()
 export class AutoRouterService {
@@ -34,7 +34,7 @@ export class AutoRouterService {
         private readonly autoRouterComputeService: AutoRouterComputeService,
         private readonly autoRouterTransactionService: AutoRouterTransactionService,
         private readonly pairTransactionService: PairTransactionService,
-        private readonly wrapService: WrapService,
+        private readonly wrapAbi: WrapAbiService,
         private readonly pairService: PairService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cacheService: CachingService,
@@ -362,8 +362,7 @@ export class AutoRouterService {
     }
 
     private async toWrappedIfEGLD(tokensIDs: string[]) {
-        const wrappedEgldTokenID =
-            await this.wrapService.getWrappedEgldTokenID();
+        const wrappedEgldTokenID = await this.wrapAbi.wrappedEgldTokenID();
 
         return tokensIDs.map((t) => {
             return mxConfig.EGLDIdentifier === t ? wrappedEgldTokenID : t;

@@ -9,9 +9,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
 import { RouterGetterServiceStub } from '../mocks/router.getter.service.stub';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import winston from 'winston';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -25,6 +23,9 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
 import { mxConfig, gasConfig } from 'src/config';
 import { PairService } from 'src/modules/pair/services/pair.service';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('RouterService', () => {
     let service: TransactionRouterService;
@@ -42,11 +43,6 @@ describe('RouterService', () => {
     const RouterGetterServiceProvider = {
         provide: RouterGetterService,
         useClass: RouterGetterServiceStub,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
     };
 
     const logTransports: Transport[] = [
@@ -72,11 +68,13 @@ describe('RouterService', () => {
                 PairGetterServiceProvider,
                 PairService,
                 RouterGetterServiceProvider,
-                WrapServiceProvider,
-                TransactionsWrapService,
+                WrapAbiServiceProvider,
+                WrapService,
+                WrapTransactionsService,
                 ApiConfigService,
                 MXProxyService,
                 TransactionRouterService,
+                TokenGetterServiceProvider,
                 RouterService,
             ],
         }).compile();

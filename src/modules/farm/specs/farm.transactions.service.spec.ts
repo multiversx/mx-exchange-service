@@ -11,8 +11,6 @@ import { MXProxyService } from '../../../services/multiversx-communication/mx.pr
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
-import { WrapService } from '../../wrapping/wrap.service';
-import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
 import { MXProxyServiceMock } from '../../../services/multiversx-communication/mx.proxy.service.mock';
@@ -24,6 +22,7 @@ import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.get
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { FarmTransactionServiceV1_2 } from '../v1.2/services/farm.v1.2.transaction.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 
 describe('FarmService', () => {
     let transactionV1_2: FarmTransactionServiceV1_2;
@@ -48,11 +47,6 @@ describe('FarmService', () => {
         useClass: PairGetterServiceStub,
     };
 
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
-    };
-
     const MXProxyServiceProvider = {
         provide: MXProxyService,
         useClass: MXProxyServiceMock,
@@ -73,7 +67,7 @@ describe('FarmService', () => {
                 TokenComputeService,
                 TokenGetterServiceProvider,
                 RouterGetterServiceProvider,
-                WrapServiceProvider,
+                WrapAbiServiceProvider,
                 MXProxyServiceProvider,
                 FarmTransactionServiceV1_2,
                 MXDataApiServiceProvider,

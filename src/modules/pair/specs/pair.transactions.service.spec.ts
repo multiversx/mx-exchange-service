@@ -6,11 +6,9 @@ import {
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairService } from '../services/pair.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';
 import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
@@ -24,6 +22,9 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { mxConfig, gasConfig } from 'src/config';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CachingModule } from 'src/services/caching/cache.module';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
@@ -41,11 +42,6 @@ describe('TransactionPairService', () => {
     const PairGetterServiceProvider = {
         provide: PairGetterService,
         useClass: PairGetterServiceStub,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
     };
 
     const logTransports: Transport[] = [
@@ -73,8 +69,10 @@ describe('TransactionPairService', () => {
                 PairService,
                 PairGetterServiceProvider,
                 RouterGetterServiceProvider,
-                WrapServiceProvider,
-                TransactionsWrapService,
+                WrapAbiServiceProvider,
+                WrapTransactionsService,
+                WrapService,
+                TokenGetterServiceProvider,
                 PairTransactionService,
             ],
         }).compile();

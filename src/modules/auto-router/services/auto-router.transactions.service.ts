@@ -9,7 +9,7 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { TransactionModel } from '../../../models/transaction.model';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
@@ -18,7 +18,7 @@ import { SWAP_TYPE } from '../models/auto-route.model';
 export class AutoRouterTransactionService {
     constructor(
         private readonly mxProxy: MXProxyService,
-        private readonly transactionsWrapService: TransactionsWrapService,
+        private readonly transactionsWrapService: WrapTransactionsService,
     ) {}
 
     async multiPairSwap(

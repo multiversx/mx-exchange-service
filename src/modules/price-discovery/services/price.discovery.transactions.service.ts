@@ -4,18 +4,18 @@ import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 @Injectable()
 export class PriceDiscoveryTransactionService {
     constructor(
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly mxProxy: MXProxyService,
-        private readonly wrappingService: WrapService,
-        private readonly wrappingTransactions: TransactionsWrapService,
+        private readonly wrapAbi: WrapAbiService,
+        private readonly wrappingTransactions: WrapTransactionsService,
     ) {}
 
     async depositBatch(
@@ -23,8 +23,7 @@ export class PriceDiscoveryTransactionService {
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel[]> {
-        const wrappedTokenID =
-            await this.wrappingService.getWrappedEgldTokenID();
+        const wrappedTokenID = await this.wrapAbi.wrappedEgldTokenID();
         const transactions: TransactionModel[] = [];
         if (inputToken.tokenID === mxConfig.EGLDIdentifier) {
             transactions.push(
@@ -94,7 +93,7 @@ export class PriceDiscoveryTransactionService {
                 this.priceDiscoveryGetter.getAcceptedTokenID(
                     priceDiscoveryAddress,
                 ),
-                this.wrappingService.getWrappedEgldTokenID(),
+                this.wrapAbi.wrappedEgldTokenID(),
             ]);
 
         transactions.push(
