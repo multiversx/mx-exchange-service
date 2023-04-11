@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DistributionTransactionsService } from './distribution.transactions.service';
+import { DistributionTransactionsService } from '../services/distribution.transactions.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { CommonAppModule } from 'src/common.app.module';
 import { TransactionModel } from 'src/models/transaction.model';
