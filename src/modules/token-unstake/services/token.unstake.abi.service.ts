@@ -5,6 +5,9 @@ import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.paym
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { UnstakePairModel } from '../models/token.unstake.model';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 
 @Injectable()
 export class TokenUnstakeAbiService extends GenericAbiService {
@@ -12,7 +15,17 @@ export class TokenUnstakeAbiService extends GenericAbiService {
         super(mxProxy);
     }
 
-    async getUnbondEpochs(): Promise<number> {
+    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'tokenUnstake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async unbondEpochs(): Promise<number> {
+        return await this.getUnbondEpochsRaw();
+    }
+
+    async getUnbondEpochsRaw(): Promise<number> {
         const contract = await this.mxProxy.getTokenUnstakeContract();
         const interaction: Interaction =
             contract.methodsExplicit.getUnbondEpochs();
@@ -20,7 +33,17 @@ export class TokenUnstakeAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getFeesBurnPercentage(): Promise<number> {
+    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'tokenUnstake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async feesBurnPercentage(): Promise<number> {
+        return await this.getFeesBurnPercentageRaw();
+    }
+
+    async getFeesBurnPercentageRaw(): Promise<number> {
         const contract = await this.mxProxy.getTokenUnstakeContract();
         const interaction: Interaction =
             contract.methodsExplicit.getFeesBurnPercentage();
@@ -28,7 +51,17 @@ export class TokenUnstakeAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getFeesCollectorAddress(): Promise<string> {
+    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'tokenUnstake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async feesCollectorAddress(): Promise<string> {
+        return await this.feesCollectorAddressRaw();
+    }
+
+    async feesCollectorAddressRaw(): Promise<string> {
         const contract = await this.mxProxy.getTokenUnstakeContract();
         const interaction: Interaction =
             contract.methodsExplicit.getFeesCollectorAddress();
@@ -36,7 +69,17 @@ export class TokenUnstakeAbiService extends GenericAbiService {
         return response.firstValue.valueOf().bech32();
     }
 
-    async getLastEpochFeeSentToCollector(): Promise<number> {
+    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'tokenUnstake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async lastEpochFeeSentToCollector(): Promise<number> {
+        return await this.getLastEpochFeeSentToCollectorRaw();
+    }
+
+    async getLastEpochFeeSentToCollectorRaw(): Promise<number> {
         const contract = await this.mxProxy.getTokenUnstakeContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLastEpochFeeSentToCollector();
@@ -44,7 +87,17 @@ export class TokenUnstakeAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getEnergyFactoryAddress(): Promise<string> {
+    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'tokenUnstake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async energyFactoryAddress(): Promise<string> {
+        return await this.getEnergyFactoryAddressRaw();
+    }
+
+    async getEnergyFactoryAddressRaw(): Promise<string> {
         const contract = await this.mxProxy.getTokenUnstakeContract();
         const interaction: Interaction =
             contract.methodsExplicit.getEnergyFactoryAddress();
@@ -52,7 +105,19 @@ export class TokenUnstakeAbiService extends GenericAbiService {
         return response.firstValue.valueOf().bech32();
     }
 
-    async getUnlockedTokensForUser(
+    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name, logArgs: true })
+    @GetOrSetCache({
+        baseKey: 'tokenUnstake',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async unlockedTokensForUser(
+        userAddress: string,
+    ): Promise<UnstakePairModel[]> {
+        return await this.getUnlockedTokensForUserRaw(userAddress);
+    }
+
+    async getUnlockedTokensForUserRaw(
         userAddress: string,
     ): Promise<UnstakePairModel[]> {
         const contract = await this.mxProxy.getTokenUnstakeContract();

@@ -10,13 +10,13 @@ import {
     TokenUnstakeModel,
     UnstakePairModel,
 } from './models/token.unstake.model';
-import { TokenUnstakeGetterService } from './services/token.unstake.getter.service';
 import { TokenUnstakeTransactionService } from './services/token.unstake.transaction.service';
+import { TokenUnstakeAbiService } from './services/token.unstake.abi.service';
 
 @Resolver(() => TokenUnstakeModel)
 export class TokenUnstakeResolver extends GenericResolver {
     constructor(
-        private readonly tokenUnstakeGetter: TokenUnstakeGetterService,
+        private readonly tokenUnstakeAbi: TokenUnstakeAbiService,
         private readonly tokenUnstakeTransactions: TokenUnstakeTransactionService,
     ) {
         super();
@@ -25,35 +25,35 @@ export class TokenUnstakeResolver extends GenericResolver {
     @ResolveField()
     async unbondEpochs(): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getUnbondEpochs(),
+            this.tokenUnstakeAbi.unbondEpochs(),
         );
     }
 
     @ResolveField()
     async feesBurnPercentage(): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getFeesBurnPercentage(),
+            this.tokenUnstakeAbi.feesBurnPercentage(),
         );
     }
 
     @ResolveField()
     async feesCollectorAddress(): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getFeesCollectorAddress(),
+            this.tokenUnstakeAbi.feesCollectorAddress(),
         );
     }
 
     @ResolveField()
     async lastEpochFeeSentToCollector(): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getLastEpochFeeSentToCollector(),
+            this.tokenUnstakeAbi.lastEpochFeeSentToCollector(),
         );
     }
 
     @ResolveField()
     async energyFactoryAddress(): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getEnergyFactoryAddress(),
+            this.tokenUnstakeAbi.energyFactoryAddress(),
         );
     }
 
@@ -70,7 +70,7 @@ export class TokenUnstakeResolver extends GenericResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<UnstakePairModel[]> {
         return await this.genericQuery(() =>
-            this.tokenUnstakeGetter.getUnlockedTokensForUser(user.address),
+            this.tokenUnstakeAbi.unlockedTokensForUser(user.address),
         );
     }
 
