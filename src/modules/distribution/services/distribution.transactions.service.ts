@@ -4,7 +4,7 @@ import { TransactionModel } from '../../../models/transaction.model';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 
 @Injectable()
-export class TransactionsDistributionService {
+export class DistributionTransactionsService {
     constructor(private mxProxy: MXProxyService) {}
 
     async claimLockedAssets(): Promise<TransactionModel> {
