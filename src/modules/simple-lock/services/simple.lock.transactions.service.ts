@@ -20,14 +20,14 @@ import {
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTypeEnumType, SimpleLockType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
 import { SimpleLockService } from './simple.lock.service';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 @Injectable()
 export class SimpleLockTransactionService {
@@ -38,8 +38,8 @@ export class SimpleLockTransactionService {
         protected readonly simpleLockGetter: SimpleLockGetterService,
         protected readonly pairService: PairService,
         protected readonly pairGetterService: PairGetterService,
-        protected readonly wrapService: WrapService,
-        protected readonly wrapTransaction: TransactionsWrapService,
+        protected readonly wrapAbi: WrapAbiService,
+        protected readonly wrapTransaction: WrapTransactionsService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly mxProxy: MXProxyService,
     ) {
@@ -105,7 +105,7 @@ export class SimpleLockTransactionService {
         tolerance: number,
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
+        const wrappedTokenID = await this.wrapAbi.wrappedEgldTokenID();
 
         if (inputTokens.length !== 2) {
             throw new Error('Invalid input tokens length');

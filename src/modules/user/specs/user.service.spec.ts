@@ -12,8 +12,6 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
-import { WrapService } from '../../wrapping/wrap.service';
-import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModelV1_2 } from '../../farm/models/farmTokenAttributes.model';
@@ -82,6 +80,7 @@ import { LockedTokenWrapperGetterServiceMock } from '../../locked-token-wrapper/
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -135,11 +134,6 @@ describe('UserService', () => {
     const AbiLockedAssetServiceProvider = {
         provide: AbiLockedAssetService,
         useClass: AbiLockedAssetServiceMock,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
     };
 
     const StakingServiceProvider = {
@@ -253,7 +247,7 @@ describe('UserService', () => {
                 LockedAssetProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
-                WrapServiceProvider,
+                WrapAbiServiceProvider,
                 StakingServiceProvider,
                 StakingGetterServiceProvider,
                 StakingProxyServiceProvider,
