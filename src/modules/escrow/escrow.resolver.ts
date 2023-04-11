@@ -156,8 +156,12 @@ export class EscrowResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async escrowTransfer(
         @Args('receiver') receiver: string,
-        @Args('inputTokens', TransferTokensValidator)
-        inputTokens: InputTokenModel,
+        @Args(
+            'inputTokens',
+            { type: () => [InputTokenModel] },
+            TransferTokensValidator,
+        )
+        inputTokens: InputTokenModel[],
         @AuthUser(SenderCooldownValidator) user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
