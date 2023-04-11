@@ -6,9 +6,13 @@ import { UserEntryModel } from '../models/metabonding.model';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { IMetabondingAbiService } from './interfaces';
 
 @Injectable()
-export class MetabondingAbiService extends GenericAbiService {
+export class MetabondingAbiService
+    extends GenericAbiService
+    implements IMetabondingAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }
