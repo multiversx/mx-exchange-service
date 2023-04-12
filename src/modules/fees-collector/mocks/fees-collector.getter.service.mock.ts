@@ -1,9 +1,6 @@
-import { IFeesCollectorGetterService } from '../interfaces';
 import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
-export class FeesCollectorGetterHandlers
-    implements IFeesCollectorGetterService
-{
+export class FeesCollectorGetterHandlers {
     getAccumulatedFees: (
         scAddress: string,
         week: number,
@@ -23,9 +20,7 @@ export class FeesCollectorGetterHandlers
     }
 }
 
-export class FeesCollectorGetterServiceMock
-    implements IFeesCollectorGetterService
-{
+export class FeesCollectorGetterServiceMock {
     handlers: FeesCollectorGetterHandlers;
     getAccumulatedFees(
         scAddress: string,

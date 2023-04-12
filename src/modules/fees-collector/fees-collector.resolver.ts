@@ -19,10 +19,12 @@ import {
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { TransactionModel } from '../../models/transaction.model';
 import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
+import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver extends GenericResolver {
     constructor(
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
     ) {
@@ -63,18 +65,16 @@ export class FeesCollectorResolver extends GenericResolver {
     }
 
     @ResolveField()
-    async lockedTokenId(@Parent() parent: FeesCollectorModel): Promise<string> {
+    async lockedTokenId(): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.getLockedTokenId(parent.address),
+            this.feesCollectorAbi.lockedTokenID(),
         );
     }
 
     @ResolveField()
-    async lockedTokensPerBlock(
-        @Parent() parent: FeesCollectorModel,
-    ): Promise<string> {
+    async lockedTokensPerBlock(): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.getLockedTokensPerBlock(parent.address),
+            this.feesCollectorAbi.lockedTokensPerBlock(),
         );
     }
 

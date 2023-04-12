@@ -4,7 +4,6 @@ import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
-import { IFeesCollectorGetterService } from '../interfaces';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FeesCollectorComputeService } from './fees-collector.compute.service';
@@ -24,7 +23,6 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 export class FeesCollectorGetterService
     extends GenericGetterService
     implements
-        IFeesCollectorGetterService,
         IWeekTimekeepingGetterService,
         IWeeklyRewardsSplittingGetterService
 {
@@ -331,20 +329,7 @@ export class FeesCollectorGetterService
         );
     }
 
-    async getAccumulatedFees(
-        scAddress: string,
-        week: number,
-        token: string,
-    ): Promise<string> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'accumulatedFees', week, token),
-            () => this.abiService.accumulatedFees(week, token),
-            CacheTtlInfo.ContractBalance.remoteTtl,
-            CacheTtlInfo.ContractBalance.localTtl,
-        );
-    }
-
-    getAccumulatedTokenForInflation(
+    async getAccumulatedTokenForInflation(
         scAddress: string,
         week: number,
     ): Promise<string> {
@@ -357,33 +342,6 @@ export class FeesCollectorGetterService
                 ),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
-        );
-    }
-
-    async getLockedTokenId(scAddress: string): Promise<string> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'lockedTokenId'),
-            () => this.abiService.lockedTokenId(),
-            CacheTtlInfo.ContractInfo.remoteTtl,
-            CacheTtlInfo.ContractInfo.localTtl,
-        );
-    }
-
-    async getLockedTokensPerBlock(scAddress: string): Promise<string> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'lockedTokensPerBlock'),
-            () => this.abiService.lockedTokensPerBlock(),
-            CacheTtlInfo.ContractInfo.remoteTtl,
-            CacheTtlInfo.ContractInfo.localTtl,
-        );
-    }
-
-    async getAllTokens(scAddress: string): Promise<string[]> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'allTokens'),
-            () => this.abiService.allTokens(),
-            CacheTtlInfo.ContractInfo.remoteTtl,
-            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 }

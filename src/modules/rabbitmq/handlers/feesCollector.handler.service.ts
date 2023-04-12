@@ -4,21 +4,21 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import { FeesCollectorSetterService } from '../../fees-collector/services/fees-collector.setter.service';
-import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import { scAddress } from '../../../config';
 import BigNumber from 'bignumber.js';
 import {
     DepositSwapFeesEvent,
     FEES_COLLECTOR_EVENTS,
 } from '@multiversx/sdk-exchange';
+import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fees-collector.abi.service';
 
 @Injectable()
 export class FeesCollectorHandlerService {
     private invalidatedKeys = [];
 
     constructor(
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly setter: FeesCollectorSetterService,
-        private readonly getter: FeesCollectorGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -27,8 +27,7 @@ export class FeesCollectorHandlerService {
         event: DepositSwapFeesEvent,
     ): Promise<void> {
         const topics = event.getTopics();
-        const accumulatedFees = await this.getter.getAccumulatedFees(
-            scAddress.feesCollector,
+        const accumulatedFees = await this.feesCollectorAbi.accumulatedFees(
             topics.currentWeek,
             topics.payment.tokenIdentifier,
         );

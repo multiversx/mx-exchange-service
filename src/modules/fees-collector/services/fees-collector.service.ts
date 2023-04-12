@@ -16,10 +16,12 @@ import { MXProxyService } from '../../../services/multiversx-communication/mx.pr
 import { Address, AddressValue } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { FeesCollectorAbiService } from './fees-collector.abi.service';
 
 @Injectable()
 export class FeesCollectorService {
     constructor(
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly mxProxy: MXProxyService,
     ) {}
@@ -77,7 +79,7 @@ export class FeesCollectorService {
         const accumulatedFees: EsdtTokenPayment[] = [];
 
         const promises = allTokens.map((token) =>
-            this.feesCollectorGetter.getAccumulatedFees(scAddress, week, token),
+            this.feesCollectorAbi.accumulatedFees(week, token),
         );
 
         const accumulatedFeesByToken = await Promise.all(promises);
@@ -94,7 +96,7 @@ export class FeesCollectorService {
 
         const [lockedTokenId, accumulatedTokenForInflation] = await Promise.all(
             [
-                this.feesCollectorGetter.getLockedTokenId(scAddress),
+                this.feesCollectorAbi.lockedTokenID(),
                 this.feesCollectorGetter.getAccumulatedTokenForInflation(
                     scAddress,
                     week,
@@ -115,7 +117,7 @@ export class FeesCollectorService {
 
     async feesCollector(scAddress: string): Promise<FeesCollectorModel> {
         const [allToken, currentWeek] = await Promise.all([
-            this.feesCollectorGetter.getAllTokens(scAddress),
+            this.feesCollectorAbi.allTokens(),
             this.feesCollectorGetter.getCurrentWeek(scAddress),
         ]);
         return new FeesCollectorModel({
@@ -219,9 +221,7 @@ export class FeesCollectorService {
         userAddress: string,
         currentWeek: number,
     ): Promise<EsdtTokenPayment[]> {
-        const allTokens = await this.feesCollectorGetter.getAllTokens(
-            scAddress,
-        );
+        const allTokens = await this.feesCollectorAbi.allTokens();
         const [accumulatedFees, totalEnergyForWeek, currentClaimProgress] =
             await Promise.all([
                 this.getAccumulatedFees(scAddress, currentWeek, allTokens),

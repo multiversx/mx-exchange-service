@@ -2,10 +2,12 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { BigNumber } from 'bignumber.js';
+import { FeesCollectorAbiService } from './fees-collector.abi.service';
 
 @Injectable()
 export class FeesCollectorComputeService {
     constructor(
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
         @Inject(forwardRef(() => FeesCollectorGetterService))
         protected readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly contextGetter: ContextGetterService,
@@ -16,7 +18,7 @@ export class FeesCollectorComputeService {
         week: number,
     ): Promise<string> {
         const [lockedTokensPerBlock, blocksInWeek] = await Promise.all([
-            this.feesCollectorGetter.getLockedTokensPerBlock(scAddress),
+            this.feesCollectorAbi.lockedTokensPerBlock(),
             this.computeBlocksInWeek(scAddress, week),
         ]);
 
