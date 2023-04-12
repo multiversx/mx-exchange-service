@@ -17,11 +17,13 @@ import { Address, AddressValue } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
+import { FeesCollectorComputeService } from './fees-collector.compute.service';
 
 @Injectable()
 export class FeesCollectorService {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly mxProxy: MXProxyService,
     ) {}
@@ -97,7 +99,7 @@ export class FeesCollectorService {
         const [lockedTokenId, accumulatedTokenForInflation] = await Promise.all(
             [
                 this.feesCollectorAbi.lockedTokenID(),
-                this.feesCollectorGetter.getAccumulatedTokenForInflation(
+                this.feesCollectorCompute.accumulatedFeesUntilNow(
                     scAddress,
                     week,
                 ),

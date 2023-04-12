@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { scAddress } from '../../../../config';
-import { FeesCollectorService } from '../../../fees-collector/services/fees-collector.service';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import {
@@ -27,7 +26,6 @@ import { FeesCollectorGetterService } from 'src/modules/fees-collector/services/
 export class UserEnergyComputeService {
     constructor(
         private readonly farmGetter: FarmGetterFactory,
-        private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,

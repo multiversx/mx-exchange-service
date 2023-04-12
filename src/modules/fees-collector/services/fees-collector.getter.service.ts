@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { GenericGetterService } from '../../../services/generics/generic.getter.service';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -6,7 +6,6 @@ import { Logger } from 'winston';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
-import { FeesCollectorComputeService } from './fees-collector.compute.service';
 import { IWeeklyRewardsSplittingGetterService } from 'src/submodules/weekly-rewards-splitting/interfaces';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import {
@@ -34,8 +33,6 @@ export class FeesCollectorGetterService
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
-        @Inject(forwardRef(() => FeesCollectorComputeService))
-        private readonly computeService: FeesCollectorComputeService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'feesCollector';
@@ -326,22 +323,6 @@ export class FeesCollectorGetterService
                 ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getAccumulatedTokenForInflation(
-        scAddress: string,
-        week: number,
-    ): Promise<string> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'accumulatedFeesForInflation', week),
-            () =>
-                this.computeService.computeAccumulatedFeesUntilNow(
-                    scAddress,
-                    week,
-                ),
-            CacheTtlInfo.ContractBalance.remoteTtl,
-            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 }

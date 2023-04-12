@@ -3,6 +3,9 @@ import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { BigNumber } from 'bignumber.js';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class FeesCollectorComputeService {
@@ -12,6 +15,22 @@ export class FeesCollectorComputeService {
         protected readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly contextGetter: ContextGetterService,
     ) {}
+
+    @ErrorLoggerAsync({
+        className: FeesCollectorComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async accumulatedFeesUntilNow(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
+        return await this.computeAccumulatedFeesUntilNow(scAddress, week);
+    }
 
     async computeAccumulatedFeesUntilNow(
         scAddress: string,
@@ -27,7 +46,7 @@ export class FeesCollectorComputeService {
             .toFixed();
     }
 
-    async computeBlocksInWeek(
+    private async computeBlocksInWeek(
         scAddress: string,
         week: number,
     ): Promise<number> {
