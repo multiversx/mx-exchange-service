@@ -28,7 +28,7 @@ export class EscrowTransactionService {
         const contract = await this.mxProxy.getEscrowContract();
 
         return contract.methodsExplicit
-            .withdraw([
+            .cancelTransfer([
                 new AddressValue(Address.fromString(senderAddress)),
                 new AddressValue(Address.fromString(receiverAddress)),
             ])
