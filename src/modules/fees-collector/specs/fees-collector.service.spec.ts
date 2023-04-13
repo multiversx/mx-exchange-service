@@ -9,6 +9,8 @@ import {
 } from '../mocks/fees-collector.getter.service.mock';
 import { FeesCollectorService } from '../services/fees-collector.service';
 import { WeeklyRewardsSplittingHandlers } from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.service.mock';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 
 describe('FeesCollectorService', () => {
     const dummyScAddress = 'erd';
@@ -47,7 +49,7 @@ describe('FeesCollectorService', () => {
         tokens.push(firstToken);
         let rewards = await service.getAccumulatedFees(
             dummyScAddress,
-            10,
+            250,
             tokens,
         );
         expect(rewards.length).toEqual(2);
@@ -107,7 +109,7 @@ describe('FeesCollectorService', () => {
         tokens.push(firstToken);
         let rewards = await service.getAccumulatedFees(
             dummyScAddress,
-            10,
+            250,
             tokens,
         );
         expect(rewards.length).toEqual(2);
@@ -131,7 +133,7 @@ describe('FeesCollectorService', () => {
         expectedTokens.push('token2');
         expectedTokens.push('token3');
         expectedTokens.push('token4');
-        const expectedCurrentWeek = 10;
+        const expectedCurrentWeek = 250;
         const service = await createService({
             getter: {
                 getAllTokens: (scAddress: string) => {
@@ -156,7 +158,7 @@ describe('FeesCollectorService', () => {
         expectedTokens.push('token2');
         expectedTokens.push('token3');
         expectedTokens.push('token4');
-        const expectedCurrentWeek = 10;
+        const expectedCurrentWeek = 250;
         const service = await createService({
             getter: {
                 getAllTokens: (scAddress: string) => {
@@ -194,6 +196,8 @@ async function createService(handlers: {
                 useValue: getter,
             },
             FeesCollectorService,
+            WeekTimekeepingComputeService,
+            WeekTimekeepingAbiServiceProvider,
         ],
     }).compile();
     return module.get<FeesCollectorService>(FeesCollectorService);
