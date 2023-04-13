@@ -35,6 +35,7 @@ import { EnergyModule } from './modules/energy/energy.module';
 import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
 import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-token-wrapper.module';
 import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
+import { EscrowModule } from './modules/escrow/escrow.module';
 
 @Module({
     imports: [
@@ -110,6 +111,7 @@ import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
         EnergyModule,
         TokenUnstakeModule,
         LockedTokenWrapperModule,
+        EscrowModule,
     ],
     providers: [CachingService],
 })

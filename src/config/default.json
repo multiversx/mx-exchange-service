@@ -38,7 +38,8 @@
             "erd1qqqqqqqqqqqqqpgqpgl505hxumyjdtqnjrhmds9wsf4tyydu0n4skwfkf0",
             "erd1qqqqqqqqqqqqqpgqkq58a23glv6dzyz8a8fsc30wzc59y6m60n4szjktz0"
         ],
-        "feesCollector": "erd1qqqqqqqqqqqqqpgqagq2v9exkrn3wnauq3lw4xcetwsmgmwjd8ssjt4k7s"
+        "feesCollector": "erd1qqqqqqqqqqqqqpgqagq2v9exkrn3wnauq3lw4xcetwsmgmwjd8ssjt4k7s",
+        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a"
     },
     "tokenProviderUSD": "WEGLD-71e90a",
     "tokensSupply": ["MEX-27f4cd"],
@@ -457,6 +458,11 @@
             "wrapLockedToken": 15000000,
             "unwrapLockedToken": 15000000
         },
+        "escrow": {
+            "withdraw": 50000000,
+            "cancelTransfer": 50000000,
+            "lockFunds": 50000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
@@ -492,7 +498,8 @@
         "feesCollector": "./src/abis/fees-collector.abi.json",
         "energyUpdate": "./src/abis/energy-update.abi.json",
         "tokenUnstake": "./src/abis/token-unstake.abi.json",
-        "lockedTokenWrapper": "./src/abis/locked-token-wrapper.abi.json"
+        "lockedTokenWrapper": "./src/abis/locked-token-wrapper.abi.json",
+        "escrow": "./src/abis/lkmex-transfer.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,

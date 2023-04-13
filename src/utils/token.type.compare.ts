@@ -90,12 +90,26 @@ export function isNftToken(
     );
 }
 
-export function checkEsdtToken(token: EsdtToken): boolean {
+export function isEsdtTokenValid(token: EsdtToken): boolean {
     if (
         !token.identifier ||
         !token.decimals ||
         token.identifier === undefined ||
-        token.decimals === undefined
+        token.decimals === undefined ||
+        token.decimals === 0
+    ) {
+        return false;
+    }
+    return true;
+}
+
+export function isNftCollectionValid(
+    collection: NftCollection | NftToken,
+): boolean {
+    if (
+        !collection.decimals ||
+        collection.decimals === undefined ||
+        collection.decimals === 0
     ) {
         return false;
     }
