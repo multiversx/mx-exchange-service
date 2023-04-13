@@ -3,40 +3,47 @@ import { GenericGetterService } from '../../../services/generics/generic.getter.
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import {
-    LockedTokenWrapperAbiService
-} from './locked-token-wrapper.abi.service';
+import { LockedTokenWrapperAbiService } from './locked-token-wrapper.abi.service';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { ILockedTokenWrapperGetterService } from '../interfaces';
 import { scAddress } from '../../../config';
+import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
 
 @Injectable()
-export class LockedTokenWrapperGetterService extends GenericGetterService implements ILockedTokenWrapperGetterService {
+export class LockedTokenWrapperGetterService
+    extends GenericGetterService
+    implements ILockedTokenWrapperGetterService
+{
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: LockedTokenWrapperAbiService,
+        private readonly energyGetter: EnergyGetterService,
     ) {
         super(cachingService, logger);
-        this.baseKey = 'lockedTokenWrapper'
+        this.baseKey = 'lockedTokenWrapper';
     }
 
-    async getLockedTokenId(address: string = scAddress.lockedTokenWrapper): Promise<string> {
+    async getLockedTokenId(
+        address: string = scAddress.lockedTokenWrapper,
+    ): Promise<string> {
         return this.getData(
             this.getCacheKey('lockedTokenId', address),
-            () => this.abiService.lockedTokenId(address),
+            () => this.energyGetter.getLockedTokenID(),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
-        )
+        );
     }
 
-    async getWrappedTokenId(address: string = scAddress.lockedTokenWrapper): Promise<string> {
+    async getWrappedTokenId(
+        address: string = scAddress.lockedTokenWrapper,
+    ): Promise<string> {
         return this.getData(
             this.getCacheKey('wrappedTokenId', address),
             () => this.abiService.wrappedTokenId(address),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
-        )
+        );
     }
 
     async getEnergyFactoryAddress(address: string): Promise<string> {
@@ -45,7 +52,6 @@ export class LockedTokenWrapperGetterService extends GenericGetterService implem
             () => this.abiService.energyFactoryAddress(address),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
-        )
+        );
     }
-
 }
