@@ -106,7 +106,7 @@ export class EscrowAbiService extends GenericAbiService {
         );
         return hexValue === ''
             ? undefined
-            : new U64Value(new BigNumber(hexValue, 16)).valueOf().toNumber();
+            : new BigNumber(hexValue, 16).toNumber();
     }
 
     async getReceiverLastTransferEpoch(
@@ -118,7 +118,7 @@ export class EscrowAbiService extends GenericAbiService {
         );
         return hexValue === ''
             ? undefined
-            : new U64Value(new BigNumber(hexValue, 16)).valueOf().toNumber();
+            : new BigNumber(hexValue, 16).toNumber();
     }
 
     async getEnergyFactoryAddress(): Promise<string> {
@@ -143,16 +143,16 @@ export class EscrowAbiService extends GenericAbiService {
             ['minLockEpochs'],
         );
 
-        return new U64Value(new BigNumber(hexValue)).valueOf().toNumber();
+        return new BigNumber(hexValue, 16).toNumber();
     }
 
     async getEpochCooldownDuration(): Promise<number> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
-            ['minLockEpochs'],
+            ['epochsCooldownDuration'],
         );
 
-        return new U64Value(new BigNumber(hexValue)).valueOf().toNumber();
+        return new BigNumber(hexValue, 16).toNumber();
     }
 
     async getAddressPermission(address: string): Promise<SCPermissions[]> {
