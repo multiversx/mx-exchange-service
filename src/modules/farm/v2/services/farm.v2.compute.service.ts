@@ -13,6 +13,7 @@ import { PairService } from '../../../pair/services/pair.service';
 import { PairGetterService } from '../../../pair/services/pair.getter.service';
 import { ContextGetterService } from '../../../../services/context/context.getter.service';
 import { EnergyType } from '@multiversx/sdk-exchange';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 
 @Injectable()
 export class FarmComputeServiceV2 extends FarmComputeService {
@@ -25,6 +26,7 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
     ) {
         super(
             farmGetter,
@@ -321,7 +323,7 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         week: number,
     ): Promise<number> {
         const [startEpochForCurrentWeek, currentEpoch] = await Promise.all([
-            this.farmGetter.getStartEpochForWeek(scAddress, week),
+            this.weekTimekeepingCompute.startEpochForWeek(scAddress, week),
             this.contextGetter.getCurrentEpoch(),
         ]);
 

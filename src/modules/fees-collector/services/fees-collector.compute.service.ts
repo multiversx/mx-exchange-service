@@ -2,12 +2,14 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { BigNumber } from 'bignumber.js';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 
 @Injectable()
 export class FeesCollectorComputeService {
     constructor(
         @Inject(forwardRef(() => FeesCollectorGetterService))
         protected readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly contextGetter: ContextGetterService,
     ) {}
 
@@ -30,7 +32,7 @@ export class FeesCollectorComputeService {
         week: number,
     ): Promise<number> {
         const [startEpochForCurrentWeek, currentEpoch] = await Promise.all([
-            this.feesCollectorGetter.getStartEpochForWeek(scAddress, week),
+            this.weekTimekeepingCompute.startEpochForWeek(scAddress, week),
             this.contextGetter.getCurrentEpoch(),
         ]);
 

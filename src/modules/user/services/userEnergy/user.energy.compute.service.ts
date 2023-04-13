@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { scAddress } from '../../../../config';
-import { FeesCollectorService } from '../../../fees-collector/services/fees-collector.service';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import {
@@ -22,13 +21,14 @@ import { StakingProxyGetterService } from '../../../staking-proxy/services/staki
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FeesCollectorGetterService } from 'src/modules/fees-collector/services/fees-collector.getter.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Injectable()
 export class UserEnergyComputeService {
     constructor(
         private readonly farmGetter: FarmGetterFactory,
-        private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyGetter: StakingProxyGetterService,
@@ -53,7 +53,7 @@ export class UserEnergyComputeService {
                         contractAddress,
                         userAddress,
                     ),
-                    farmGetter.getCurrentWeek(contractAddress),
+                    this.weekTimekeepingAbi.currentWeek(contractAddress),
                     farmGetter.getFarmToken(contractAddress),
                 ]);
 
@@ -74,7 +74,7 @@ export class UserEnergyComputeService {
                 contractAddress,
                 userAddress,
             ),
-            this.feesCollectorGetter.getCurrentWeek(contractAddress),
+            this.weekTimekeepingAbi.currentWeek(contractAddress),
         ]);
 
         if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
