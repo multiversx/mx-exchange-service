@@ -1,5 +1,5 @@
 import { Interaction, SmartContract } from '@multiversx/sdk-core';
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
@@ -7,6 +7,7 @@ import { Logger } from 'winston';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { IWeekTimekeepingAbiService } from '../interfaces';
 
+@Injectable()
 export class WeekTimekeepingAbiService
     extends GenericAbiService
     implements IWeekTimekeepingAbiService
