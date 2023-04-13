@@ -12,8 +12,8 @@ import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
 import {
-    checkEsdtToken,
-    checkNftCollection,
+    isEsdtTokenValid,
+    isNftCollectionValid,
     isEsdtToken,
     isNftCollection,
 } from 'src/utils/token.type.compare';
@@ -144,7 +144,7 @@ export class MXApiService {
                 return undefined;
             }
 
-            if (!checkEsdtToken(esdtToken) || esdtToken.decimals === 0) {
+            if (!isEsdtTokenValid(esdtToken)) {
                 const gatewayToken = await this.mxProxy
                     .getService()
                     .getDefinitionOfFungibleToken(tokenID);
@@ -168,7 +168,7 @@ export class MXApiService {
             if (!isNftCollection(collection)) {
                 return undefined;
             }
-            if (!checkNftCollection(collection)) {
+            if (!isNftCollectionValid(collection)) {
                 const gatewayCollection = await this.mxProxy
                     .getService()
                     .getDefinitionOfTokenCollection(tokenID);
@@ -205,7 +205,7 @@ export class MXApiService {
         );
 
         for (const token of userTokens) {
-            if (!checkEsdtToken(token) || token.decimals === 0) {
+            if (!isEsdtTokenValid(token)) {
                 const gatewayToken = await this.mxProxy
                     .getService()
                     .getDefinitionOfFungibleToken(token.identifier);
@@ -257,7 +257,7 @@ export class MXApiService {
             : nfts.slice(from, size);
 
         for (const nft of userNfts) {
-            if (!checkNftCollection(nft)) {
+            if (!isNftCollectionValid(nft)) {
                 const gatewayCollection = await this.mxProxy
                     .getService()
                     .getDefinitionOfTokenCollection(nft.collection);
