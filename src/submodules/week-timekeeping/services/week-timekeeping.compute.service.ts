@@ -14,7 +14,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 export class WeekTimekeepingComputeService
     implements IWeekTimekeepingComputeService
 {
-    private readonly epochsInWeek: number;
+    readonly epochsInWeek: number;
 
     constructor(
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
