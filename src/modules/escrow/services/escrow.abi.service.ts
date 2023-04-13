@@ -3,7 +3,6 @@ import {
     AddressValue,
     Interaction,
     TypedValue,
-    U64Value,
 } from '@multiversx/sdk-core/out';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
@@ -24,7 +23,7 @@ export class EscrowAbiService extends GenericAbiService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly mxGateway: MXGatewayService,
     ) {
-        super(mxProxy, logger);
+        super(mxProxy);
     }
 
     async getScheduledTransfers(
