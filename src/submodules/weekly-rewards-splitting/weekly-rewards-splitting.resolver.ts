@@ -74,20 +74,10 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
 
     @ResolveField()
     async apr(@Parent() parent: GlobalInfoByWeekModel): Promise<string> {
-        const totalLockedTokensForWeek =
-            await this.weekyRewardsSplittingAbi.totalLockedTokensForWeek(
-                parent.scAddress,
-                parent.week,
-            );
-        const totalRewardsForWeek =
-            await this.weekyRewardsSplittingAbi.totalRewardsForWeek(
-                parent.scAddress,
-                parent.week,
-            );
         return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingCompute.computeApr(
-                totalLockedTokensForWeek,
-                totalRewardsForWeek,
+            this.weeklyRewardsSplittingCompute.weekAPR(
+                parent.scAddress,
+                parent.week,
             ),
         );
     }

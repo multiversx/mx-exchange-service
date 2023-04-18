@@ -34,7 +34,6 @@ export class FeesCollectorGetterService
         scAddress: string,
         userAddress: string,
         week: number,
-        energyAmount?: string,
     ): Promise<EsdtTokenPayment[]> {
         return this.getData(
             this.getCacheKey(
@@ -44,11 +43,10 @@ export class FeesCollectorGetterService
                 week,
             ),
             () =>
-                this.weeklyRewardsSplittingCompute.computeUserRewardsForWeek(
+                this.computeService.computeUserRewardsForWeek(
                     scAddress,
                     userAddress,
                     week,
-                    energyAmount,
                 ),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -100,44 +98,6 @@ export class FeesCollectorGetterService
             () =>
                 this.weeklyRewardsSplittingCompute.computeDistribution(
                     totalRewardsForWeek,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getUserApr(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<string> {
-        const [
-            totalLockedTokensForWeek,
-            totalRewardsForWeek,
-            totalEnergyForWeek,
-            userEnergyForWeek,
-        ] = await Promise.all([
-            this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
-                scAddress,
-                week,
-            ),
-            this.weeklyRewardsSplittingAbi.totalRewardsForWeek(scAddress, week),
-            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
-            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
-                scAddress,
-                userAddress,
-                week,
-            ),
-        ]);
-
-        return this.getData(
-            this.getCacheKey(scAddress, 'userApr', userAddress, week),
-            () =>
-                this.weeklyRewardsSplittingCompute.computeUserApr(
-                    totalLockedTokensForWeek,
-                    totalRewardsForWeek,
-                    totalEnergyForWeek,
-                    userEnergyForWeek,
                 ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,

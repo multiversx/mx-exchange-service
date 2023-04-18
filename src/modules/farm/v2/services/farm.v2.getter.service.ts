@@ -36,45 +36,6 @@ export class FarmGetterServiceV2 extends FarmGetterService {
         );
     }
 
-    async getUserApr(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<string> {
-        const [
-            totalLockedTokensForWeek,
-            totalRewardsForWeek,
-
-            totalEnergyForWeek,
-            userEnergyForWeek,
-        ] = await Promise.all([
-            this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
-                scAddress,
-                week,
-            ),
-            this.weeklyRewardsSplittingAbi.totalRewardsForWeek(scAddress, week),
-            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
-            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
-                scAddress,
-                userAddress,
-                week,
-            ),
-        ]);
-
-        return this.getData(
-            this.getCacheKey(scAddress, 'userApr', userAddress, week),
-            () =>
-                this.weeklyRewardsSplittingCompute.computeUserApr(
-                    totalLockedTokensForWeek,
-                    totalRewardsForWeek,
-                    totalEnergyForWeek,
-                    userEnergyForWeek,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
     async getAccumulatedRewardsForWeek(
         scAddress: string,
         week: number,
@@ -208,7 +169,6 @@ export class FarmGetterServiceV2 extends FarmGetterService {
         scAddress: string,
         userAddress: string,
         week: number,
-        energyAmount?: string,
         liquidity?: string,
     ): Promise<EsdtTokenPayment[]> {
         const [totalRewardsForWeek, userEnergyForWeek, totalEnergyForWeek] =
@@ -241,7 +201,6 @@ export class FarmGetterServiceV2 extends FarmGetterService {
                     totalRewardsForWeek,
                     userEnergyForWeek,
                     totalEnergyForWeek,
-                    energyAmount,
                     liquidity,
                 ),
             CacheTtlInfo.ContractBalance.remoteTtl,

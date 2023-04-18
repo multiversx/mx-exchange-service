@@ -193,7 +193,6 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         totalRewardsForWeek: EsdtTokenPayment[],
         userEnergyForWeek: EnergyType,
         totalEnergyForWeek: string,
-        energyAmount?: string,
         liquidity?: string,
     ): Promise<EsdtTokenPayment[]> {
         const payments: EsdtTokenPayment[] = [];
@@ -201,13 +200,9 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         const boostedYieldsFactors =
             await this.farmGetter.getBoostedYieldsFactors(scAddress);
 
-        if (energyAmount === undefined) {
-            energyAmount = userEnergyForWeek.amount;
-        }
-
-        const userHasMinEnergy = new BigNumber(energyAmount).isGreaterThan(
-            boostedYieldsFactors.minEnergyAmount,
-        );
+        const userHasMinEnergy = new BigNumber(
+            userEnergyForWeek.amount,
+        ).isGreaterThan(boostedYieldsFactors.minEnergyAmount);
         if (!userHasMinEnergy) {
             return payments;
         }

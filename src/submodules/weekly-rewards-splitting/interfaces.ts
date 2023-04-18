@@ -71,40 +71,22 @@ export interface IWeeklyRewardsSplittingSetterService {
 }
 
 export interface IWeeklyRewardsSplittingComputeService {
-    computeUserRewardsForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-        energyAmount?: string,
-    ): Promise<EsdtTokenPayment[]>;
-
     computeDistribution(
         payments: EsdtTokenPayment[],
     ): Promise<TokenDistributionModel[]>;
 
-    computeTotalRewardsForWeekPriceUSD(
-        totalRewardsForWeek: EsdtTokenPayment[],
-    ): Promise<string>;
+    computeWeekAPR(scAddress: string, week: number): Promise<string>;
 
-    computeTotalLockedTokensForWeekPriceUSD(
-        totalLockedTokensForWeek: string,
-    ): Promise<string>;
-
-    computeAprGivenLockedTokensAndRewards(
-        totalLockedTokensForWeek: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
-    ): Promise<string>;
-
-    computeApr(
-        totalLockedTokensForWeek: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
+    userApr(
+        scAddress: string,
+        userAddress: string,
+        week: number,
     ): Promise<string>;
 
     computeUserApr(
-        totalLockedTokensForWeek: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
-        totalEnergyForWeek: string,
-        userEnergyForWeek: EnergyType,
+        scAddress: string,
+        userAddress: string,
+        week: number,
     ): Promise<string>;
 }
 
