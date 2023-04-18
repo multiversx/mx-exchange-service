@@ -72,7 +72,6 @@ import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compu
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
 import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
 import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
@@ -81,6 +80,7 @@ import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/l
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -194,10 +194,8 @@ describe('UserService', () => {
                     provide: FarmServiceV1_2,
                     useClass: FarmServiceMock,
                 },
-                {
-                    provide: WeekTimekeepingComputeService,
-                    useValue: new WeekTimekeepingComputeServiceMock({}),
-                },
+                WeekTimekeepingComputeService,
+                WeekTimekeepingAbiServiceProvider,
                 {
                     provide: ProgressComputeService,
                     useValue: new ProgressComputeServiceMock({}),

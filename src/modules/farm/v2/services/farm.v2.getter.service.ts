@@ -16,8 +16,6 @@ import {
 } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
-import { IWeekTimekeepingGetterService } from 'src/submodules/week-timekeeping/interfaces';
-import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
@@ -25,9 +23,7 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 @Injectable()
 export class FarmGetterServiceV2
     extends FarmGetterService
-    implements
-        IWeeklyRewardsSplittingGetterService,
-        IWeekTimekeepingGetterService
+    implements IWeeklyRewardsSplittingGetterService
 {
     constructor(
         protected readonly cachingService: CachingService,
@@ -36,7 +32,6 @@ export class FarmGetterServiceV2
         protected readonly computeService: FarmComputeServiceV2,
         protected readonly tokenGetter: TokenGetterService,
         protected readonly apiService: MXApiService,
-        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
@@ -48,59 +43,6 @@ export class FarmGetterServiceV2
             computeService,
             tokenGetter,
             apiService,
-        );
-    }
-
-    async getCurrentWeek(scAddress: string): Promise<number> {
-        return await this.getData(
-            this.getCacheKey(scAddress, 'currentWeek'),
-            () => this.weekTimekeepingAbi.getCurrentWeek(scAddress),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getFirstWeekStartEpoch(scAddress: string): Promise<number> {
-        return await this.getData(
-            this.getCacheKey(scAddress, 'firstWeekStartEpoch'),
-            () => this.weekTimekeepingAbi.firstWeekStartEpoch(scAddress),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getStartEpochForWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<number> {
-        const firstWeekStartEpoch = await this.getFirstWeekStartEpoch(
-            scAddress,
-        );
-        return await this.getData(
-            this.getCacheKey(scAddress, week, 'startEpochForWeek'),
-            () =>
-                this.weekTimekeepingCompute.computeStartEpochForWeek(
-                    week,
-                    firstWeekStartEpoch,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getEndEpochForWeek(scAddress: string, week: number): Promise<number> {
-        const firstWeekStartEpoch = await this.getFirstWeekStartEpoch(
-            scAddress,
-        );
-        return await this.getData(
-            this.getCacheKey(scAddress, week, 'endEpochForWeek'),
-            () =>
-                this.weekTimekeepingCompute.computeEndEpochForWeek(
-                    week,
-                    firstWeekStartEpoch,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -291,7 +233,8 @@ export class FarmGetterServiceV2
         userAddress: string,
         week: number,
     ): Promise<EnergyType> {
-        const endEpochForWeek = await this.getEndEpochForWeek(scAddress, week);
+        const endEpochForWeek =
+            await this.weekTimekeepingCompute.endEpochForWeek(scAddress, week);
         return this.getData(
             this.getCacheKey(scAddress, 'userEnergyForWeek', userAddress, week),
             () =>

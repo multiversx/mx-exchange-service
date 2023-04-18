@@ -2,10 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { MXCommunicationModule } from '../../../services/multiversx-communication/mx.communication.module';
 import { ApiConfigService } from '../../../helpers/api.config.service';
-import {
-    WeekTimekeepingComputeHandlers,
-    WeekTimekeepingComputeServiceMock,
-} from '../../week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { WeeklyRewardsSplittingComputeService } from '../services/weekly-rewards-splitting.compute.service';
 import { WeekTimekeepingComputeService } from '../../week-timekeeping/services/week-timekeeping.compute.service';
 import {
@@ -39,13 +35,13 @@ import { EnergyModel } from 'src/modules/energy/models/energy.model';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     const dummyScAddress = 'erd';
 
     it('init service; should be defined', async () => {
         const service = await createService({
-            compute: {},
             pairGetter: {},
             progressCompute: {},
             routerGetter: {},
@@ -63,7 +59,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 totalLockedTokens: '500',
             };
             const service = await createService({
-                compute: {},
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
@@ -89,7 +84,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             totalLockedTokens: '500',
         };
         const service = await createService({
-            compute: {},
             progressCompute: {},
             routerGetter: {},
             pairGetter: {},
@@ -127,7 +121,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             const expectedTokenType = 0;
             const expectedTokenNonce = 0;
             const service = await createService({
-                compute: {},
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
@@ -160,7 +153,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
 
     it('computeTotalRewardsForWeekPriceUSD' + 'no rewards', async () => {
         const service = await createService({
-            compute: {},
             progressCompute: {},
             routerGetter: {},
             pairGetter: {
@@ -180,7 +172,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         priceMap.set('secondToken', '20');
         priceMap.set('thirdToken', '30');
         const service = await createService({
-            compute: {},
             progressCompute: {},
             routerGetter: {},
             pairGetter: {},
@@ -223,7 +214,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         async () => {
             const mex = 'MEX-27f4cd';
             const service = await createService({
-                compute: {},
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
@@ -258,7 +248,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             priceMap.set('thirdToken', '30');
             priceMap.set(mex, '1');
             const service = await createService({
-                compute: {},
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
@@ -309,7 +298,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         priceMap.set('thirdToken', '30');
         priceMap.set(mex, '1');
         const service = await createService({
-            compute: {},
             progressCompute: {},
             routerGetter: {},
             pairGetter: {},
@@ -351,7 +339,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         const totalEnergyForWeek = '1000';
         const totalLockedTokensForWeek = '1000';
         const service = await createService({
-            compute: {},
             progressCompute: {},
             routerGetter: {},
             pairGetter: {},
@@ -402,7 +389,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             const totalEnergyForWeek = '1000';
             const totalLockedTokensForWeek = '1000';
             const service = await createService({
-                compute: {},
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
@@ -465,7 +451,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             const totalEnergyForWeek = '3000';
             const totalLockedTokensForWeek = '1000';
             const service = await createService({
-                compute: {},
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
@@ -537,7 +522,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             const totalEnergyForWeek = '3000';
             const totalLockedTokensForWeek = '1000';
             const service = await createService({
-                compute: {},
                 progressCompute: {},
                 routerGetter: {},
                 pairGetter: {},
@@ -597,13 +581,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
 });
 
 async function createService(handlers: {
-    compute: Partial<WeekTimekeepingComputeHandlers>;
     progressCompute: Partial<ProgressComputeHandlers>;
     routerGetter: Partial<RouterGetterHandlers>;
     pairGetter: Partial<PairGetterHandlers>;
     tokenCompute: Partial<TokenComputeHandlers>;
 }) {
-    const compute = new WeekTimekeepingComputeServiceMock(handlers.compute);
     const progressCompute = new ProgressComputeServiceMock(
         handlers.progressCompute,
     );
@@ -632,10 +614,8 @@ async function createService(handlers: {
             },
             RouterGetterServiceProvider,
             EnergyAbiServiceProvider,
-            {
-                provide: WeekTimekeepingComputeService,
-                useValue: compute,
-            },
+            WeekTimekeepingComputeService,
+            WeekTimekeepingAbiServiceProvider,
             {
                 provide: ProgressComputeService,
                 useValue: progressCompute,
