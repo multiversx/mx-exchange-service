@@ -20,7 +20,7 @@ export class TokenUnstakeSetterService extends GenericSetterService {
         value: UnstakePairModel[],
     ): Promise<string> {
         return await this.setData(
-            this.getCacheKey(userAddress, 'unlockedTokens'),
+            this.getCacheKey('unlockedTokensForUser', userAddress),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,

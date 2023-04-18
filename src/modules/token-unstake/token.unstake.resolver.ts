@@ -4,57 +4,39 @@ import { scAddress } from 'src/config';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
-import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import {
     TokenUnstakeModel,
     UnstakePairModel,
 } from './models/token.unstake.model';
-import { TokenUnstakeGetterService } from './services/token.unstake.getter.service';
 import { TokenUnstakeTransactionService } from './services/token.unstake.transaction.service';
+import { TokenUnstakeAbiService } from './services/token.unstake.abi.service';
 
 @Resolver(() => TokenUnstakeModel)
-export class TokenUnstakeResolver extends GenericResolver {
+export class TokenUnstakeResolver {
     constructor(
-        private readonly tokenUnstakeGetter: TokenUnstakeGetterService,
+        private readonly tokenUnstakeAbi: TokenUnstakeAbiService,
         private readonly tokenUnstakeTransactions: TokenUnstakeTransactionService,
-    ) {
-        super();
-    }
+    ) {}
 
     @ResolveField()
     async unbondEpochs(): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getUnbondEpochs(),
-        );
+        return this.tokenUnstakeAbi.unbondEpochs();
     }
 
     @ResolveField()
     async feesBurnPercentage(): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getFeesBurnPercentage(),
-        );
+        return this.tokenUnstakeAbi.feesBurnPercentage();
     }
 
     @ResolveField()
     async feesCollectorAddress(): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getFeesCollectorAddress(),
-        );
-    }
-
-    @ResolveField()
-    async lastEpochFeeSentToCollector(): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getLastEpochFeeSentToCollector(),
-        );
+        return this.tokenUnstakeAbi.feesCollectorAddress();
     }
 
     @ResolveField()
     async energyFactoryAddress(): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenUnstakeGetter.getEnergyFactoryAddress(),
-        );
+        return this.tokenUnstakeAbi.energyFactoryAddress();
     }
 
     @Query(() => TokenUnstakeModel)
@@ -69,9 +51,7 @@ export class TokenUnstakeResolver extends GenericResolver {
     async getUnlockedTokensForUser(
         @AuthUser() user: UserAuthResult,
     ): Promise<UnstakePairModel[]> {
-        return await this.genericQuery(() =>
-            this.tokenUnstakeGetter.getUnlockedTokensForUser(user.address),
-        );
+        return this.tokenUnstakeAbi.unlockedTokensForUser(user.address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -79,16 +59,12 @@ export class TokenUnstakeResolver extends GenericResolver {
     async claimUnlockedTokens(
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.tokenUnstakeTransactions.claimUnlockedTokens(user.address),
-        );
+        return this.tokenUnstakeTransactions.claimUnlockedTokens(user.address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async cancelUnbond(): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.tokenUnstakeTransactions.cancelUnbond(),
-        );
+        return this.tokenUnstakeTransactions.cancelUnbond();
     }
 }

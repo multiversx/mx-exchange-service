@@ -11,8 +11,6 @@ export class TokenUnstakeModel {
     feesBurnPercentage: number;
     @Field()
     feesCollectorAddress: string;
-    @Field(() => Int)
-    lastEpochFeeSentToCollector: number;
     @Field()
     energyFactoryAddress: string;
 
