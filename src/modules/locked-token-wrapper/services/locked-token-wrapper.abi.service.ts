@@ -9,16 +9,6 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
         super(mxProxy);
     }
 
-    async lockedTokenId(address: string): Promise<string> {
-        const contract = await this.mxProxy.getLockedTokenWrapperContract(
-            address,
-        );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedTokenId();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
-    }
-
     async wrappedTokenId(address: string): Promise<string> {
         const contract = await this.mxProxy.getLockedTokenWrapperContract(
             address,

@@ -208,6 +208,14 @@ export class MXProxyService {
         );
     }
 
+    async getEscrowContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.escrow,
+            abiConfig.escrow,
+            'LkmexTransfer',
+        );
+    }
+
     async getSmartContract(
         contractAddress: string,
         contractAbiPath: string,
