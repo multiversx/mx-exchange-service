@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { constantsConfig, scAddress } from 'src/config';
 import {
@@ -12,11 +12,11 @@ import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
-import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -27,9 +27,8 @@ export class AnalyticsComputeService {
         private readonly pairGetter: PairGetterService,
         private readonly stakingGetter: StakingGetterService,
         private readonly tokenGetter: TokenGetterService,
-        @Inject(forwardRef(() => FeesCollectorGetterService))
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
@@ -153,7 +152,7 @@ export class AnalyticsComputeService {
             await Promise.all([
                 this.tokenGetter.getDerivedUSD(constantsConfig.MEX_TOKEN_ID),
                 this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
-                this.feesCollectorGetter.totalLockedTokensForWeek(
+                this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
                     scAddress.feesCollector,
                     currentWeek,
                 ),

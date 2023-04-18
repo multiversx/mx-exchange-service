@@ -8,6 +8,7 @@ import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/model
 import { FarmComputeServiceV2 } from './services/farm.v2.compute.service';
 import { constantsConfig } from '../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
@@ -16,6 +17,7 @@ export class FarmResolverV2 extends FarmResolver {
         protected readonly farmService: FarmServiceV2,
         protected readonly farmCompute: FarmComputeServiceV2,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
         super(farmGetter);
     }
@@ -133,7 +135,7 @@ export class FarmResolverV2 extends FarmResolver {
     @ResolveField()
     async lastGlobalUpdateWeek(@Parent() parent: FarmModelV2): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.lastGlobalUpdateWeek(parent.address),
+            this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(parent.address),
         );
     }
 

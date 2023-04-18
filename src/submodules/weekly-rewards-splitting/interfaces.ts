@@ -6,22 +6,16 @@ import {
 import { EnergyModel } from '../../modules/energy/models/energy.model';
 import { EnergyType } from '@multiversx/sdk-exchange';
 
-export interface IWeeklyRewardsSplittingGetterService {
+export interface IWeeklyRewardsSplittingAbiService {
     currentClaimProgress(
         scAddress: string,
-        userAddress: string,
+        user: string,
     ): Promise<ClaimProgress>;
     userEnergyForWeek(
         scAddress: string,
         userAddress: string,
         week: number,
-        endEpochForWeek: number,
     ): Promise<EnergyModel>;
-    userRewardsForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<EsdtTokenPayment[]>;
     lastActiveWeekForUser(
         scAddress: string,
         userAddress: string,
@@ -33,10 +27,6 @@ export interface IWeeklyRewardsSplittingGetterService {
     ): Promise<EsdtTokenPayment[]>;
     totalEnergyForWeek(scAddress: string, week: number): Promise<string>;
     totalLockedTokensForWeek(scAddress: string, week: number): Promise<string>;
-    totalRewardsDistributionForWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<TokenDistributionModel[]>;
 }
 
 export interface IWeeklyRewardsSplittingSetterService {
@@ -90,11 +80,9 @@ export interface IWeeklyRewardsSplittingSetterService {
 export interface IWeeklyRewardsSplittingComputeService {
     computeUserRewardsForWeek(
         scAddress: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
-        userEnergyForWeek: EnergyType,
-        totalEnergyForWeek: string,
+        userAddress: string,
+        week: number,
         energyAmount?: string,
-        liquidity?: string,
     ): Promise<EsdtTokenPayment[]>;
 
     computeDistribution(

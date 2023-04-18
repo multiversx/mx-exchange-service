@@ -21,6 +21,7 @@ import { FarmGetterFactory } from '../../farm/farm.getter.factory';
 import { UserEnergySetterService } from '../../user/services/userEnergy/user.energy.setter.service';
 import { UserEnergyComputeService } from 'src/modules/user/services/userEnergy/user.energy.compute.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
@@ -32,6 +33,7 @@ export class WeeklyRewardsSplittingHandlerService {
         private readonly energyAbi: EnergyAbiService,
         private readonly userEnergyCompute: UserEnergyComputeService,
         private readonly userEnergySetter: UserEnergySetterService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -118,9 +120,11 @@ export class WeeklyRewardsSplittingHandlerService {
     async handleClaimMulti(event: ClaimMultiEvent): Promise<void> {
         const topics = event.getTopics();
 
-        let totalRewardsForWeek = await this.getGetter(
-            event.address,
-        ).totalRewardsForWeek(event.address, topics.currentWeek);
+        let totalRewardsForWeek =
+            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                event.address,
+                topics.currentWeek,
+            );
 
         totalRewardsForWeek = totalRewardsForWeek.map((token) => {
             for (const payment of event.allPayments) {

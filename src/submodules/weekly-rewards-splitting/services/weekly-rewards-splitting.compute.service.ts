@@ -1,36 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
-import { WeekTimekeepingComputeService } from '../../week-timekeeping/services/week-timekeeping.compute.service';
-import { ProgressComputeService } from './progress.compute.service';
 import { TokenDistributionModel } from '../models/weekly-rewards-splitting.model';
 import { IWeeklyRewardsSplittingComputeService } from '../interfaces';
 import { scAddress } from '../../../config';
-import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
 import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { WeeklyRewardsSplittingAbiService } from './weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingComputeService
     implements IWeeklyRewardsSplittingComputeService
 {
     constructor(
-        protected readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
-        protected readonly progressCompute: ProgressComputeService,
-        protected readonly pairCompute: PairComputeService,
-        protected readonly energyAbi: EnergyAbiService,
-        protected readonly tokenCompute: TokenComputeService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly energyAbi: EnergyAbiService,
+        private readonly tokenCompute: TokenComputeService,
     ) {}
 
     async computeUserRewardsForWeek(
         scAddress: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
-        userEnergyForWeek: EnergyType,
-        totalEnergyForWeek: string,
+        userAddress: string,
+        week: number,
         energyAmount?: string,
-        liquidity?: string,
     ): Promise<EsdtTokenPayment[]> {
+        const [totalRewardsForWeek, userEnergyForWeek, totalEnergyForWeek] =
+            await Promise.all([
+                this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                    scAddress,
+                    week,
+                ),
+                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                    scAddress,
+                    userAddress,
+                    week,
+                ),
+                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+                    scAddress,
+                    week,
+                ),
+            ]);
+
         const payments: EsdtTokenPayment[] = [];
         if (totalRewardsForWeek.length === 0) {
             return payments;

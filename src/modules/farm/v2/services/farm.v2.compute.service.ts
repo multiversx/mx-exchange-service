@@ -14,6 +14,7 @@ import { PairGetterService } from '../../../pair/services/pair.getter.service';
 import { ContextGetterService } from '../../../../services/context/context.getter.service';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class FarmComputeServiceV2 extends FarmComputeService {
@@ -27,6 +28,7 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         protected readonly tokenCompute: TokenComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
         super(
             farmGetter,
@@ -116,11 +118,15 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         ] = await Promise.all([
             this.farmGetter.getBoostedYieldsFactors(scAddress),
             this.farmGetter.getBoostedYieldsRewardsPercenatage(scAddress),
-            this.farmGetter.userEnergyForWeek(scAddress, userAddress, week),
+            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                scAddress,
+                userAddress,
+                week,
+            ),
             this.farmGetter.getAccumulatedRewardsForWeek(scAddress, week),
             this.farmGetter.getRewardsPerBlock(scAddress),
             this.farmGetter.getFarmTokenSupply(scAddress),
-            this.farmGetter.totalEnergyForWeek(scAddress, week),
+            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
             this.computeBlocksInWeek(scAddress, week),
         ]);
 
@@ -300,7 +306,7 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         const [factors, farmSupply, energySupply] = await Promise.all([
             this.farmGetter.getBoostedYieldsFactors(scAddress),
             this.farmGetter.getFarmTokenSupply(scAddress),
-            this.farmGetter.totalEnergyForWeek(scAddress, week),
+            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
         ]);
 
         const u = factors.maxRewardsFactor;
