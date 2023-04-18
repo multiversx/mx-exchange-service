@@ -43,13 +43,6 @@ export interface IWeeklyRewardsSplittingSetterService {
         value: EnergyType,
     ): Promise<string>;
 
-    userRewardsForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-        value: EsdtTokenPayment[],
-    ): Promise<string>;
-
     lastActiveWeekForUser(
         scAddress: string,
         userAddress: string,
