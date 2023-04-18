@@ -12,8 +12,6 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
-import { WrapService } from '../../wrapping/wrap.service';
-import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModelV1_2 } from '../../farm/models/farmTokenAttributes.model';
@@ -73,7 +71,6 @@ import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
-import { EnergyGetterServiceProvider } from 'src/modules/energy/mocks/energy.getter.service.mock';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
@@ -82,6 +79,8 @@ import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/serv
 import { LockedTokenWrapperGetterServiceMock } from '../../locked-token-wrapper/mocks/locked-token-wrapper.getter.service.mock';
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -135,11 +134,6 @@ describe('UserService', () => {
     const AbiLockedAssetServiceProvider = {
         provide: AbiLockedAssetService,
         useClass: AbiLockedAssetServiceMock,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
     };
 
     const StakingServiceProvider = {
@@ -253,7 +247,7 @@ describe('UserService', () => {
                 LockedAssetProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
-                WrapServiceProvider,
+                WrapAbiServiceProvider,
                 StakingServiceProvider,
                 StakingGetterServiceProvider,
                 StakingProxyServiceProvider,
@@ -262,7 +256,7 @@ describe('UserService', () => {
                 PriceDiscoveryGetterServiceProvider,
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
-                EnergyGetterServiceProvider,
+                EnergyAbiServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 TokenService,

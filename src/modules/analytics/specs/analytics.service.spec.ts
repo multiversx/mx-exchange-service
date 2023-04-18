@@ -17,8 +17,6 @@ import { AbiLockedAssetService } from 'src/modules/locked-asset-factory/services
 import { AbiLockedAssetServiceMock } from 'src/modules/locked-asset-factory/mocks/abi.locked.asset.service.mock';
 import { ProxyGetterService } from 'src/modules/proxy/services/proxy.getter.service';
 import { ProxyGetterServiceMock } from 'src/modules/proxy/mocks/proxy.getter.service.mock';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
@@ -36,7 +34,6 @@ import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeep
 import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
 import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
-import { EnergyGetterServiceProvider } from '../../energy/mocks/energy.getter.service.mock';
 import { StakingGetterServiceProvider } from '../../staking/mocks/staking.getter.service.mock';
 import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
 import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
@@ -46,6 +43,7 @@ import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timest
 import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
 import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -80,11 +78,6 @@ describe('AnalyticsService', () => {
         useClass: MXProxyServiceMock,
     };
 
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
-    };
-
     beforeEach(async () => {
         const feesCollectorGetter = new FeesCollectorGetterServiceMock({});
         const module: TestingModule = await Test.createTestingModule({
@@ -114,7 +107,7 @@ describe('AnalyticsService', () => {
                 ProxyGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
-                WrapServiceProvider,
+                WrapAbiServiceProvider,
                 RouterGetterServiceProvider,
                 TokenGetterServiceProvider,
                 MXDataApiServiceProvider,
@@ -128,7 +121,6 @@ describe('AnalyticsService', () => {
                     provide: ProgressComputeService,
                     useValue: new ProgressComputeServiceMock({}),
                 },
-                EnergyGetterServiceProvider,
                 StakingGetterServiceProvider,
                 AnalyticsGetterServiceProvider,
                 {

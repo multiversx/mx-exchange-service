@@ -18,8 +18,7 @@ import {
 } from '../models/pair.args';
 import BigNumber from 'bignumber.js';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -27,6 +26,7 @@ import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { BPConfig } from '../models/pair.model';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 @Injectable()
 export class PairTransactionService {
@@ -34,8 +34,8 @@ export class PairTransactionService {
         private readonly mxProxy: MXProxyService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly wrapService: WrapService,
-        private readonly wrapTransaction: TransactionsWrapService,
+        private readonly wrapAbi: WrapAbiService,
+        private readonly wrapTransaction: WrapTransactionsService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -230,7 +230,7 @@ export class PairTransactionService {
             liquidityPosition,
             contract,
         ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
+            this.wrapAbi.wrappedEgldTokenID(),
             this.pairGetterService.getFirstTokenID(args.pairAddress),
             this.pairGetterService.getSecondTokenID(args.pairAddress),
             this.pairService.getLiquidityPosition(
@@ -304,7 +304,7 @@ export class PairTransactionService {
         const transactions = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
+            this.wrapAbi.wrappedEgldTokenID(),
             this.mxProxy.getPairSmartContract(args.pairAddress),
             this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
         ]);
@@ -414,7 +414,7 @@ export class PairTransactionService {
         const transactions: TransactionModel[] = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
+            this.wrapAbi.wrappedEgldTokenID(),
             this.mxProxy.getPairSmartContract(args.pairAddress),
             this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
         ]);
@@ -579,7 +579,7 @@ export class PairTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<InputTokenModel[]> {
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
+        const wrappedTokenID = await this.wrapAbi.wrappedEgldTokenID();
         if (firstToken.tokenID === firstTokenID) {
             return [
                 firstToken,

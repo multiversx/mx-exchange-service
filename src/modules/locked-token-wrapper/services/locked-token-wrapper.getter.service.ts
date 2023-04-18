@@ -7,7 +7,7 @@ import { LockedTokenWrapperAbiService } from './locked-token-wrapper.abi.service
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { ILockedTokenWrapperGetterService } from '../interfaces';
 import { scAddress } from '../../../config';
-import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 
 @Injectable()
 export class LockedTokenWrapperGetterService
@@ -18,7 +18,7 @@ export class LockedTokenWrapperGetterService
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: LockedTokenWrapperAbiService,
-        private readonly energyGetter: EnergyGetterService,
+        private readonly energyAbi: EnergyAbiService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'lockedTokenWrapper';
@@ -29,7 +29,7 @@ export class LockedTokenWrapperGetterService
     ): Promise<string> {
         return this.getData(
             this.getCacheKey('lockedTokenId', address),
-            () => this.energyGetter.getLockedTokenID(),
+            () => this.energyAbi.lockedTokenID(),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );

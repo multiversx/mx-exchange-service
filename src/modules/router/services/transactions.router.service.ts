@@ -16,7 +16,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -34,7 +34,7 @@ export class TransactionRouterService {
         private readonly pairGetterService: PairGetterService,
         private readonly pairService: PairService,
         private readonly contextGetter: ContextGetterService,
-        private readonly transactionsWrapService: TransactionsWrapService,
+        private readonly transactionsWrapService: WrapTransactionsService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
