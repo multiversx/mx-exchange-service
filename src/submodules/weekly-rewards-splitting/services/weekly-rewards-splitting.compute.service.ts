@@ -151,7 +151,7 @@ export class WeeklyRewardsSplittingComputeService
         return apr;
     }
 
-    private async computeTotalRewardsForWeekPriceUSD(
+    async computeTotalRewardsForWeekPriceUSD(
         totalRewardsForWeek: EsdtTokenPayment[],
     ): Promise<string> {
         let totalPriceUSD = new BigNumber('0');
@@ -175,7 +175,7 @@ export class WeeklyRewardsSplittingComputeService
         return totalPriceUSD.toFixed();
     }
 
-    private async computeTotalLockedTokensForWeekPriceUSD(
+    async computeTotalLockedTokensForWeekPriceUSD(
         totalLockedTokensForWeek: string,
     ): Promise<string> {
         const baseAssetTokenID = await this.energyAbi.baseAssetTokenID();
