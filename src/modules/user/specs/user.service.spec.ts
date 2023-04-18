@@ -73,7 +73,6 @@ import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.servi
 import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
 import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { LockedTokenWrapperGetterServiceMock } from '../../locked-token-wrapper/mocks/locked-token-wrapper.getter.service.mock';
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
@@ -81,6 +80,8 @@ import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
+import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -196,10 +197,8 @@ describe('UserService', () => {
                 },
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,
-                {
-                    provide: ProgressComputeService,
-                    useValue: new ProgressComputeServiceMock({}),
-                },
+                WeeklyRewardsSplittingAbiServiceProvider,
+                ProgressComputeService,
                 FarmComputeServiceV1_2,
                 {
                     provide: FarmAbiServiceV1_2,
@@ -255,6 +254,7 @@ describe('UserService', () => {
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
                 EnergyAbiServiceProvider,
+                EnergyComputeService,
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 TokenService,

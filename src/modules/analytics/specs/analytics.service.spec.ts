@@ -31,8 +31,6 @@ import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
 import { StakingGetterServiceProvider } from '../../staking/mocks/staking.getter.service.mock';
 import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
 import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
@@ -44,6 +42,7 @@ import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/rem
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
+import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -115,10 +114,7 @@ describe('AnalyticsService', () => {
                 AnalyticsComputeService,
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,
-                {
-                    provide: ProgressComputeService,
-                    useValue: new ProgressComputeServiceMock({}),
-                },
+                WeeklyRewardsSplittingAbiServiceProvider,
                 StakingGetterServiceProvider,
                 AnalyticsGetterServiceProvider,
                 {
