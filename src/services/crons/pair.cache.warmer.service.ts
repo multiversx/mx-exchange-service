@@ -14,7 +14,6 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Locker } from 'src/utils/locker';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { checkEsdtToken } from 'src/utils/token.type.compare';
 
 @Injectable()
 export class PairCacheWarmerService {

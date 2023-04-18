@@ -7,6 +7,7 @@ import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitt
 import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import { FarmComputeServiceV2 } from './services/farm.v2.compute.service';
 import { constantsConfig } from '../../../config';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
@@ -14,13 +15,14 @@ export class FarmResolverV2 extends FarmResolver {
         protected readonly farmGetter: FarmGetterServiceV2,
         protected readonly farmService: FarmServiceV2,
         protected readonly farmCompute: FarmComputeServiceV2,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
     ) {
         super(farmGetter);
     }
 
     @ResolveField()
     async accumulatedRewards(@Parent() parent: FarmModelV2): Promise<string> {
-        const currentWeek = await this.farmGetter.getCurrentWeek(
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
         return await this.genericFieldResolver(() =>
@@ -33,7 +35,7 @@ export class FarmResolverV2 extends FarmResolver {
 
     @ResolveField()
     async optimalEnergyPerLp(@Parent() parent: FarmModelV2): Promise<string> {
-        const currentWeek = await this.farmGetter.getCurrentWeek(
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
         return await this.genericFieldResolver(() =>
@@ -53,7 +55,7 @@ export class FarmResolverV2 extends FarmResolver {
         @Parent() parent: FarmModelV2,
     ): Promise<GlobalInfoByWeekModel[]> {
         const modelsList = [];
-        const currentWeek = await this.farmGetter.getCurrentWeek(
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
         for (
@@ -77,7 +79,7 @@ export class FarmResolverV2 extends FarmResolver {
     @ResolveField()
     async time(@Parent() parent: FarmModelV2): Promise<WeekTimekeepingModel> {
         return await this.genericFieldResolver(async () => {
-            const currentWeek = await this.farmGetter.getCurrentWeek(
+            const currentWeek = await this.weekTimekeepingAbi.currentWeek(
                 parent.address,
             );
             return new WeekTimekeepingModel({

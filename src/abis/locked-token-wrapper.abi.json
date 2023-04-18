@@ -1,29 +1,25 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.66.0-nightly",
-            "commitHash": "bed4ad65bf7a1cef39e3d66b3670189581b3b073",
-            "commitDate": "2022-10-25",
+            "version": "1.70.0-nightly",
+            "commitHash": "3a8a131e9509c478ece1c58fe0ea2d49463d2300",
+            "commitDate": "2023-04-02",
             "channel": "Nightly",
-            "short": "rustc 1.66.0-nightly (bed4ad65b 2022-10-25)"
+            "short": "rustc 1.70.0-nightly (3a8a131e9 2023-04-02)"
         },
         "contractCrate": {
             "name": "locked-token-wrapper",
             "version": "0.0.0",
-            "git_version": "v1.6.0-836-g93483745"
+            "gitVersion": "v1.6.0-1262-gbd0806ab"
         },
         "framework": {
-            "name": "elrond-wasm",
-            "version": "0.36.1"
+            "name": "multiversx-sc",
+            "version": "0.39.4"
         }
     },
     "name": "LockedTokenWrapper",
     "constructor": {
         "inputs": [
-            {
-                "name": "locked_token_id",
-                "type": "TokenIdentifier"
-            },
             {
                 "name": "energy_factory_address",
                 "type": "Address"
@@ -98,14 +94,19 @@
             "outputs": []
         },
         {
-            "name": "getLockedTokenId",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
+            "docs": [
+                "Removes the transfer role for the given address."
+            ],
+            "name": "unsetTransferRoleWrappedToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
                 {
-                    "type": "TokenIdentifier"
+                    "name": "address",
+                    "type": "Address"
                 }
-            ]
+            ],
+            "outputs": []
         },
         {
             "name": "getWrappedTokenId",

@@ -31,6 +31,7 @@ import { LockedTokenWrapperModule } from '../locked-token-wrapper/locked-token-w
 import { UserEnergySetterService } from './services/userEnergy/user.energy.setter.service';
 import { UserInfoByWeekResolver } from './user.info-by-week.resolver';
 import { UserEnergyTransactionService } from './services/userEnergy/user.energy.transaction.service';
+import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 
 @Module({
     imports: [
@@ -54,6 +55,7 @@ import { UserEnergyTransactionService } from './services/userEnergy/user.energy.
         RemoteConfigModule,
         FeesCollectorModule,
         LockedTokenWrapperModule,
+        WeekTimekeepingModule,
     ],
     providers: [
         UserEsdtService,
