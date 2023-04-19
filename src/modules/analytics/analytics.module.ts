@@ -21,6 +21,7 @@ import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-ti
 import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
+import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 
 @Module({
     imports: [
@@ -39,6 +40,7 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         FeesCollectorModule,
         RemoteConfigModule,
         WeekTimekeepingModule,
+        WeeklyRewardsSplittingModule,
     ],
     providers: [
         AnalyticsResolver,

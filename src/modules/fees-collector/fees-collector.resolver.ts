@@ -19,12 +19,14 @@ import {
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { TransactionModel } from '../../models/transaction.model';
 import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver extends GenericResolver {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
         super();
     }
@@ -34,7 +36,7 @@ export class FeesCollectorResolver extends GenericResolver {
         @Parent() parent: FeesCollectorModel,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.lastGlobalUpdateWeek(parent.address),
+            this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(parent.address),
         );
     }
 
@@ -91,6 +93,7 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
         super();
     }
@@ -123,7 +126,7 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.lastActiveWeekForUser(
+            this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
                 parent.address,
                 parent.userAddress,
             ),
@@ -135,7 +138,7 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<ClaimProgress> {
         return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.currentClaimProgress(
+            this.weeklyRewardsSplittingAbi.currentClaimProgress(
                 parent.address,
                 parent.userAddress,
             ),

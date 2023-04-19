@@ -8,16 +8,15 @@ import {
     FeesCollectorGetterServiceMock,
 } from '../mocks/fees-collector.getter.service.mock';
 import { FeesCollectorService } from '../services/fees-collector.service';
-import { WeeklyRewardsSplittingHandlers } from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.service.mock';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
+import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 
 describe('FeesCollectorService', () => {
     const dummyScAddress = 'erd';
     it('init service; should be defined', async () => {
         const service = await createService({
             getter: {},
-            weeklyRewards: {},
         });
         expect(service).toBeDefined();
     });
@@ -42,7 +41,6 @@ describe('FeesCollectorService', () => {
                     return Promise.resolve('0');
                 },
             },
-            weeklyRewards: {},
         });
         const tokens = [];
         const firstToken = 'WEGLD-abcabc';
@@ -102,7 +100,6 @@ describe('FeesCollectorService', () => {
                     return Promise.resolve(rewardsMinted);
                 },
             },
-            weeklyRewards: {},
         });
         const tokens = [];
 
@@ -145,7 +142,6 @@ describe('FeesCollectorService', () => {
                     return Promise.resolve(expectedCurrentWeek);
                 },
             },
-            weeklyRewards: {},
         });
 
         const model = await service.feesCollector(dummyScAddress);
@@ -170,7 +166,6 @@ describe('FeesCollectorService', () => {
                     return Promise.resolve(expectedCurrentWeek);
                 },
             },
-            weeklyRewards: {},
         });
         const model = await service.feesCollector(dummyScAddress);
         expect(model.time.currentWeek).toEqual(expectedCurrentWeek);
@@ -183,7 +178,6 @@ describe('FeesCollectorService', () => {
 
 async function createService(handlers: {
     getter: Partial<FeesCollectorGetterHandlers>;
-    weeklyRewards: Partial<WeeklyRewardsSplittingHandlers>;
 }) {
     const getter = new FeesCollectorGetterServiceMock(handlers.getter);
 
@@ -198,6 +192,7 @@ async function createService(handlers: {
             FeesCollectorService,
             WeekTimekeepingComputeService,
             WeekTimekeepingAbiServiceProvider,
+            WeeklyRewardsSplittingAbiServiceProvider,
         ],
     }).compile();
     return module.get<FeesCollectorService>(FeesCollectorService);

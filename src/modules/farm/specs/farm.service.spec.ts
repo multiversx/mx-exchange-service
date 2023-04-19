@@ -35,10 +35,12 @@ import { FarmGetterService } from '../base-module/services/farm.getter.service';
 import { RewardsModel } from '../models/farm.model';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
 
 describe('FarmService', () => {
     let factory: FarmFactoryService;
@@ -121,10 +123,10 @@ describe('FarmService', () => {
                 FarmServiceV2,
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,
-                {
-                    provide: ProgressComputeService,
-                    useValue: new ProgressComputeServiceMock({}),
-                },
+                WeeklyRewardsSplittingAbiServiceProvider,
+                ProgressComputeService,
+                EnergyAbiServiceProvider,
+                EnergyComputeService,
                 MXDataApiServiceProvider,
             ],
         }).compile();

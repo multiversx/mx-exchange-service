@@ -8,30 +8,19 @@ import { IFeesCollectorGetterService } from '../interfaces';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FeesCollectorComputeService } from './fees-collector.compute.service';
-import { IWeeklyRewardsSplittingGetterService } from 'src/submodules/weekly-rewards-splitting/interfaces';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
-import {
-    ClaimProgress,
-    TokenDistributionModel,
-} from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { EnergyType } from '@multiversx/sdk-exchange';
-import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class FeesCollectorGetterService
     extends GenericGetterService
-    implements
-        IFeesCollectorGetterService,
-        IWeeklyRewardsSplittingGetterService
+    implements IFeesCollectorGetterService
 {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly abiService: FeesCollectorAbiService,
-        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
-        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
         @Inject(forwardRef(() => FeesCollectorComputeService))
@@ -41,63 +30,11 @@ export class FeesCollectorGetterService
         this.baseKey = 'feesCollector';
     }
 
-    async currentClaimProgress(
-        scAddress: string,
-        userAddress: string,
-    ): Promise<ClaimProgress> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'currentClaimProgress', userAddress),
-            () =>
-                this.weeklyRewardsSplittingAbi.currentClaimProgress(
-                    scAddress,
-                    userAddress,
-                ),
-            CacheTtlInfo.ContractBalance.remoteTtl,
-            CacheTtlInfo.ContractBalance.localTtl,
-        );
-    }
-
-    async userEnergyForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<EnergyType> {
-        const endEpochForWeek =
-            await this.weekTimekeepingCompute.endEpochForWeek(scAddress, week);
-        return this.getData(
-            this.getCacheKey(scAddress, 'userEnergyForWeek', userAddress, week),
-            () =>
-                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
-                    scAddress,
-                    userAddress,
-                    week,
-                    endEpochForWeek,
-                ),
-            CacheTtlInfo.ContractBalance.remoteTtl,
-            CacheTtlInfo.ContractBalance.localTtl,
-        );
-    }
-
     async userRewardsForWeek(
         scAddress: string,
         userAddress: string,
         week: number,
-        energyAmount?: string,
-        liquidity?: string,
     ): Promise<EsdtTokenPayment[]> {
-        const totalRewardsForWeek = await this.totalRewardsForWeek(
-            scAddress,
-            week,
-        );
-        const userEnergyForWeek = await this.userEnergyForWeek(
-            scAddress,
-            userAddress,
-            week,
-        );
-        const totalEnergyForWeek = await this.totalEnergyForWeek(
-            scAddress,
-            week,
-        );
         return this.getData(
             this.getCacheKey(
                 scAddress,
@@ -106,13 +43,10 @@ export class FeesCollectorGetterService
                 week,
             ),
             () =>
-                this.weeklyRewardsSplittingCompute.computeUserRewardsForWeek(
+                this.computeService.computeUserRewardsForWeek(
                     scAddress,
-                    totalRewardsForWeek,
-                    userEnergyForWeek,
-                    totalEnergyForWeek,
-                    energyAmount,
-                    liquidity,
+                    userAddress,
+                    week,
                 ),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -150,10 +84,11 @@ export class FeesCollectorGetterService
         scAddress: string,
         week: number,
     ): Promise<TokenDistributionModel[]> {
-        const totalRewardsForWeek = await this.totalRewardsForWeek(
-            scAddress,
-            week,
-        );
+        const totalRewardsForWeek =
+            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                scAddress,
+                week,
+            );
         return this.getData(
             this.getCacheKey(
                 scAddress,
@@ -163,114 +98,6 @@ export class FeesCollectorGetterService
             () =>
                 this.weeklyRewardsSplittingCompute.computeDistribution(
                     totalRewardsForWeek,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async lastActiveWeekForUser(
-        scAddress: string,
-        userAddress: string,
-    ): Promise<number> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'lastActiveWeekForUser', userAddress),
-            () =>
-                this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
-                    scAddress,
-                    userAddress,
-                ),
-            CacheTtlInfo.ContractBalance.remoteTtl,
-            CacheTtlInfo.ContractBalance.localTtl,
-        );
-    }
-
-    async lastGlobalUpdateWeek(scAddress: string): Promise<number> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'lastGlobalUpdateWeek'),
-            () =>
-                this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(scAddress),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async totalRewardsForWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<EsdtTokenPayment[]> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'totalRewardsForWeek', week),
-            () =>
-                this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
-                    scAddress,
-                    week,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'totalEnergyForWeek', week),
-            () =>
-                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
-                    scAddress,
-                    week,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async totalLockedTokensForWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<string> {
-        return this.getData(
-            this.getCacheKey(scAddress, 'totalLockedTokensForWeek', week),
-            () =>
-                this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
-                    scAddress,
-                    week,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getUserApr(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<string> {
-        const totalLockedTokensForWeek = await this.totalLockedTokensForWeek(
-            scAddress,
-            week,
-        );
-        const totalRewardsForWeek = await this.totalRewardsForWeek(
-            scAddress,
-            week,
-        );
-        const totalEnergyForWeek = await this.totalEnergyForWeek(
-            scAddress,
-            week,
-        );
-        const userEnergyForWeek = await this.userEnergyForWeek(
-            scAddress,
-            userAddress,
-            week,
-        );
-
-        return this.getData(
-            this.getCacheKey(scAddress, 'userApr', userAddress, week),
-            () =>
-                this.weeklyRewardsSplittingCompute.computeUserApr(
-                    totalLockedTokensForWeek,
-                    totalRewardsForWeek,
-                    totalEnergyForWeek,
-                    userEnergyForWeek,
                 ),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,

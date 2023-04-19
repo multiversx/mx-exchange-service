@@ -22,6 +22,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FeesCollectorGetterService } from 'src/modules/fees-collector/services/fees-collector.getter.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -29,6 +30,7 @@ export class UserEnergyComputeService {
         private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyGetter: StakingProxyGetterService,
@@ -49,7 +51,7 @@ export class UserEnergyComputeService {
             ) as FarmGetterServiceV2;
             const [currentClaimProgress, currentWeek, farmToken] =
                 await Promise.all([
-                    farmGetter.currentClaimProgress(
+                    this.weeklyRewardsSplittingAbi.currentClaimProgress(
                         contractAddress,
                         userAddress,
                     ),
@@ -70,7 +72,7 @@ export class UserEnergyComputeService {
         }
 
         const [currentClaimProgress, currentWeek] = await Promise.all([
-            this.feesCollectorGetter.currentClaimProgress(
+            this.weeklyRewardsSplittingAbi.currentClaimProgress(
                 contractAddress,
                 userAddress,
             ),
