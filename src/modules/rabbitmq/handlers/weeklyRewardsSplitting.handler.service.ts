@@ -21,6 +21,8 @@ import { FarmGetterFactory } from '../../farm/farm.getter.factory';
 import { UserEnergySetterService } from '../../user/services/userEnergy/user.energy.setter.service';
 import { UserEnergyComputeService } from 'src/modules/user/services/userEnergy/user.energy.compute.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { WeeklyRewardsSplittingSetterService } from 'src/submodules/weekly-rewards-splitting/services/weekly.rewarrds.splitting.setter.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
@@ -32,6 +34,8 @@ export class WeeklyRewardsSplittingHandlerService {
         private readonly energyAbi: EnergyAbiService,
         private readonly userEnergyCompute: UserEnergyComputeService,
         private readonly userEnergySetter: UserEnergySetterService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly weeklyRewardsSplittingSetter: WeeklyRewardsSplittingSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -42,12 +46,12 @@ export class WeeklyRewardsSplittingHandlerService {
         const topics = event.getTopics();
 
         const keys = await Promise.all([
-            this.getSetter(event.address).totalEnergyForWeek(
+            this.weeklyRewardsSplittingSetter.totalEnergyForWeek(
                 event.address,
                 topics.currentWeek,
                 topics.totalEnergy,
             ),
-            this.getSetter(event.address).totalLockedTokensForWeek(
+            this.weeklyRewardsSplittingSetter.totalLockedTokensForWeek(
                 event.address,
                 topics.currentWeek,
                 topics.totalLockedTokens,
@@ -69,7 +73,7 @@ export class WeeklyRewardsSplittingHandlerService {
         const contractAddress = event.address;
 
         const keys = await Promise.all([
-            this.getSetter(contractAddress).currentClaimProgress(
+            this.weeklyRewardsSplittingSetter.currentClaimProgress(
                 contractAddress,
                 userAddress,
                 new ClaimProgress({
@@ -77,13 +81,13 @@ export class WeeklyRewardsSplittingHandlerService {
                     week: topics.currentWeek,
                 }),
             ),
-            this.getSetter(contractAddress).userEnergyForWeek(
+            this.weeklyRewardsSplittingSetter.userEnergyForWeek(
                 contractAddress,
                 userAddress,
                 topics.currentWeek,
                 topics.energy,
             ),
-            this.getSetter(contractAddress).lastActiveWeekForUser(
+            this.weeklyRewardsSplittingSetter.lastActiveWeekForUser(
                 contractAddress,
                 userAddress,
                 topics.currentWeek,
@@ -118,9 +122,11 @@ export class WeeklyRewardsSplittingHandlerService {
     async handleClaimMulti(event: ClaimMultiEvent): Promise<void> {
         const topics = event.getTopics();
 
-        let totalRewardsForWeek = await this.getGetter(
-            event.address,
-        ).totalRewardsForWeek(event.address, topics.currentWeek);
+        let totalRewardsForWeek =
+            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                event.address,
+                topics.currentWeek,
+            );
 
         totalRewardsForWeek = totalRewardsForWeek.map((token) => {
             for (const payment of event.allPayments) {
@@ -142,7 +148,7 @@ export class WeeklyRewardsSplittingHandlerService {
                 topics.currentWeek,
                 [],
             ),
-            this.getSetter(event.address).totalRewardsForWeek(
+            this.weeklyRewardsSplittingSetter.totalRewardsForWeek(
                 event.address,
                 topics.currentWeek,
                 totalRewardsForWeek,

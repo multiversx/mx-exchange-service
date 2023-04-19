@@ -32,6 +32,7 @@ import { UserEnergySetterService } from './services/userEnergy/user.energy.sette
 import { UserInfoByWeekResolver } from './user.info-by-week.resolver';
 import { UserEnergyTransactionService } from './services/userEnergy/user.energy.transaction.service';
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
+import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 
 @Module({
     imports: [
@@ -56,6 +57,7 @@ import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-time
         FeesCollectorModule,
         LockedTokenWrapperModule,
         WeekTimekeepingModule,
+        WeeklyRewardsSplittingModule,
     ],
     providers: [
         UserEsdtService,

@@ -3,20 +3,20 @@ import { UserInfoByWeekModel } from '../../submodules/weekly-rewards-splitting/m
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import { EnergyModel } from '../energy/models/energy.model';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
-import { FarmSetterFactory } from '../farm/farm.setter.factory';
 import { FarmGetterFactory } from '../farm/farm.getter.factory';
-import { FeesCollectorSetterService } from '../fees-collector/services/fees-collector.setter.service';
 import { FeesCollectorGetterService } from '../fees-collector/services/fees-collector.getter.service';
 import { scAddress } from '../../config';
 import { FarmGetterServiceV2 } from '../farm/v2/services/farm.v2.getter.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 
 @Resolver(() => UserInfoByWeekModel)
 export class UserInfoByWeekResolver extends GenericResolver {
     constructor(
-        private readonly farmSetter: FarmSetterFactory,
         private readonly farmGetter: FarmGetterFactory,
-        private readonly feesCollectorSetter: FeesCollectorSetterService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
         super();
     }
@@ -26,7 +26,7 @@ export class UserInfoByWeekResolver extends GenericResolver {
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<EnergyModel> {
         return await this.genericFieldResolver(() =>
-            this.getGetter(parent.scAddress).userEnergyForWeek(
+            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
@@ -37,7 +37,7 @@ export class UserInfoByWeekResolver extends GenericResolver {
     @ResolveField()
     async apr(@Parent() parent: UserInfoByWeekModel): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.getGetter(parent.scAddress).getUserApr(
+            this.weeklyRewardsSplittingCompute.userApr(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
@@ -54,7 +54,6 @@ export class UserInfoByWeekResolver extends GenericResolver {
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
-                undefined,
                 parent.positionAmount,
             ),
         );
@@ -75,8 +74,8 @@ export class UserInfoByWeekResolver extends GenericResolver {
 
     private getGetter(address: string) {
         if (address === scAddress.feesCollector) {
-            return this.feesCollectorGetter
+            return this.feesCollectorGetter;
         }
-        return (this.farmGetter.useGetter(address) as FarmGetterServiceV2)
+        return this.farmGetter.useGetter(address) as FarmGetterServiceV2;
     }
 }

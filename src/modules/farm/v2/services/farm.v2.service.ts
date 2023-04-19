@@ -18,6 +18,7 @@ import {
 } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { constantsConfig } from '../../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class FarmServiceV2 extends FarmServiceBase {
@@ -30,6 +31,7 @@ export class FarmServiceV2 extends FarmServiceBase {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
         super(
             abiService,
@@ -95,7 +97,7 @@ export class FarmServiceV2 extends FarmServiceBase {
             );
             modelsList = [];
             let lastActiveWeekUser =
-                await this.farmGetter.lastActiveWeekForUser(
+                await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
                     positon.farmAddress,
                     positon.user,
                 );
@@ -120,10 +122,11 @@ export class FarmServiceV2 extends FarmServiceBase {
                 modelsList.push(model);
             }
 
-            currentClaimProgress = await this.farmGetter.currentClaimProgress(
-                positon.farmAddress,
-                positon.user,
-            );
+            currentClaimProgress =
+                await this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    positon.farmAddress,
+                    positon.user,
+                );
 
             userAccumulatedRewards =
                 await this.farmGetter.getUserAccumulatedRewardsForWeek(

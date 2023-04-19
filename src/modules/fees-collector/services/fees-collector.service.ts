@@ -19,6 +19,7 @@ import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/wee
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
 import { FeesCollectorComputeService } from './fees-collector.compute.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class FeesCollectorService {
@@ -27,6 +28,7 @@ export class FeesCollectorService {
         private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly mxProxy: MXProxyService,
     ) {}
 
@@ -38,7 +40,7 @@ export class FeesCollectorService {
             scAddress,
         );
         const lastActiveWeekForUser =
-            await this.feesCollectorGetter.lastActiveWeekForUser(
+            await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
                 scAddress,
                 userAddress,
             );
@@ -141,7 +143,7 @@ export class FeesCollectorService {
         userAddress: string,
     ): Promise<UserEntryFeesCollectorModel> {
         const [lastActiveWeekForUser, currentWeek] = await Promise.all([
-            this.feesCollectorGetter.lastActiveWeekForUser(
+            this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
                 scAddress,
                 userAddress,
             ),
@@ -229,11 +231,11 @@ export class FeesCollectorService {
         const [accumulatedFees, totalEnergyForWeek, currentClaimProgress] =
             await Promise.all([
                 this.getAccumulatedFees(scAddress, currentWeek, allTokens),
-                this.feesCollectorGetter.totalEnergyForWeek(
+                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
                     scAddress,
                     currentWeek,
                 ),
-                this.feesCollectorGetter.currentClaimProgress(
+                this.weeklyRewardsSplittingAbi.currentClaimProgress(
                     scAddress,
                     userAddress,
                 ),
