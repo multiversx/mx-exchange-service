@@ -17,6 +17,7 @@ import {
     UserInfoByWeekModel,
 } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { constantsConfig } from '../../../../config';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Injectable()
 export class FarmServiceV2 extends FarmServiceBase {
@@ -28,6 +29,7 @@ export class FarmServiceV2 extends FarmServiceBase {
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
     ) {
         super(
             abiService,
@@ -88,7 +90,7 @@ export class FarmServiceV2 extends FarmServiceBase {
         let currentClaimProgress: ClaimProgress = undefined;
         let userAccumulatedRewards: string = undefined;
         if (computeBoosted) {
-            const currentWeek = await this.farmGetter.getCurrentWeek(
+            const currentWeek = await this.weekTimekeepingAbi.currentWeek(
                 positon.farmAddress,
             );
             modelsList = [];

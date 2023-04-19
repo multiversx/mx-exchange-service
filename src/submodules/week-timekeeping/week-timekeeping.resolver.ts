@@ -3,50 +3,35 @@ import {
     WeekForEpochModel,
     WeekTimekeepingModel,
 } from './models/week-timekeeping.model';
-import { GenericResolver } from '../../services/generics/generic.resolver';
-import { FeesCollectorGetterService } from 'src/modules/fees-collector/services/fees-collector.getter.service';
-import { IWeekTimekeepingGetterService } from './interfaces';
-import { scAddress } from 'src/config';
-import { FarmGetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.getter.service';
+import { WeekTimekeepingAbiService } from './services/week-timekeeping.abi.service';
+import { WeekTimekeepingComputeService } from './services/week-timekeeping.compute.service';
 
 @Resolver(() => WeekTimekeepingModel)
-export class WeekTimekeepingResolver extends GenericResolver {
+export class WeekTimekeepingResolver {
     constructor(
-        private readonly farmGetterV2: FarmGetterServiceV2,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
-    ) {
-        super();
-    }
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
+    ) {}
 
     @ResolveField()
     async firstWeekStartEpoch(
         @Parent() parent: WeekTimekeepingModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.getterHandler(parent.scAddress).getFirstWeekStartEpoch(
-                parent.scAddress,
-            ),
-        );
+        return this.weekTimekeepingAbi.firstWeekStartEpoch(parent.scAddress);
     }
 
     @ResolveField()
     async currentWeek(@Parent() parent: WeekTimekeepingModel): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.getterHandler(parent.scAddress).getCurrentWeek(
-                parent.scAddress,
-            ),
-        );
+        return this.weekTimekeepingAbi.currentWeek(parent.scAddress);
     }
 
     @ResolveField()
     async startEpochForWeek(
         @Parent() parent: WeekTimekeepingModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.getterHandler(parent.scAddress).getStartEpochForWeek(
-                parent.scAddress,
-                parent.currentWeek,
-            ),
+        return this.weekTimekeepingCompute.startEpochForWeek(
+            parent.scAddress,
+            parent.currentWeek,
         );
     }
 
@@ -54,11 +39,9 @@ export class WeekTimekeepingResolver extends GenericResolver {
     async endEpochForWeek(
         @Parent() parent: WeekTimekeepingModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.getterHandler(parent.scAddress).getEndEpochForWeek(
-                parent.scAddress,
-                parent.currentWeek,
-            ),
+        return this.weekTimekeepingCompute.endEpochForWeek(
+            parent.scAddress,
+            parent.currentWeek,
         );
     }
 
@@ -66,14 +49,12 @@ export class WeekTimekeepingResolver extends GenericResolver {
     async weeklyTimekeeping(
         @Args('scAddress') scAddress: string,
     ): Promise<WeekTimekeepingModel> {
-        return await this.genericQuery(async () => {
-            const currentWeek = await this.getterHandler(
-                scAddress,
-            ).getCurrentWeek(scAddress);
-            return new WeekTimekeepingModel({
-                scAddress: scAddress,
-                currentWeek: currentWeek,
-            });
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            scAddress,
+        );
+        return new WeekTimekeepingModel({
+            scAddress: scAddress,
+            currentWeek: currentWeek,
         });
     }
 
@@ -86,14 +67,5 @@ export class WeekTimekeepingResolver extends GenericResolver {
             scAddress: scAddress,
             epoch: epoch,
         });
-    }
-
-    private getterHandler(
-        contractAddress: string,
-    ): IWeekTimekeepingGetterService {
-        if (scAddress.feesCollector === contractAddress) {
-            return this.feesCollectorGetter;
-        }
-        return this.farmGetterV2;
     }
 }

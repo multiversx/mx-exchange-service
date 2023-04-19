@@ -16,6 +16,7 @@ import { FeesCollectorGetterService } from '../../fees-collector/services/fees-c
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -28,6 +29,7 @@ export class AnalyticsComputeService {
         private readonly tokenGetter: TokenGetterService,
         @Inject(forwardRef(() => FeesCollectorGetterService))
         private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
@@ -144,7 +146,7 @@ export class AnalyticsComputeService {
     }
 
     async computeTotalLockedMexStakedUSD(): Promise<string> {
-        const currentWeek = await this.feesCollectorGetter.getCurrentWeek(
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             scAddress.feesCollector,
         );
         const [mexTokenPrice, tokenMetadata, totalLockedTokens] =

@@ -13,7 +13,6 @@ import {
     TokenDistributionModel,
 } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { EnergyType } from '@multiversx/sdk-exchange';
-import { IWeekTimekeepingGetterService } from 'src/submodules/week-timekeeping/interfaces';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
@@ -21,9 +20,7 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 @Injectable()
 export class FeesCollectorGetterService
     extends GenericGetterService
-    implements
-        IWeekTimekeepingGetterService,
-        IWeeklyRewardsSplittingGetterService
+    implements IWeeklyRewardsSplittingGetterService
 {
     constructor(
         protected readonly cachingService: CachingService,
@@ -36,59 +33,6 @@ export class FeesCollectorGetterService
     ) {
         super(cachingService, logger);
         this.baseKey = 'feesCollector';
-    }
-
-    async getCurrentWeek(scAddress: string): Promise<number> {
-        return await this.getData(
-            this.getCacheKey(scAddress, 'currentWeek'),
-            () => this.weekTimekeepingAbi.getCurrentWeek(scAddress),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getFirstWeekStartEpoch(scAddress: string): Promise<number> {
-        return await this.getData(
-            this.getCacheKey(scAddress, 'firstWeekStartEpoch'),
-            () => this.weekTimekeepingAbi.firstWeekStartEpoch(scAddress),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getStartEpochForWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<number> {
-        const firstWeekStartEpoch = await this.getFirstWeekStartEpoch(
-            scAddress,
-        );
-        return await this.getData(
-            this.getCacheKey(scAddress, week, 'startEpochForWeek'),
-            () =>
-                this.weekTimekeepingCompute.computeStartEpochForWeek(
-                    week,
-                    firstWeekStartEpoch,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getEndEpochForWeek(scAddress: string, week: number): Promise<number> {
-        const firstWeekStartEpoch = await this.getFirstWeekStartEpoch(
-            scAddress,
-        );
-        return await this.getData(
-            this.getCacheKey(scAddress, week, 'endEpochForWeek'),
-            () =>
-                this.weekTimekeepingCompute.computeEndEpochForWeek(
-                    week,
-                    firstWeekStartEpoch,
-                ),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
     }
 
     async currentClaimProgress(
@@ -112,7 +56,8 @@ export class FeesCollectorGetterService
         userAddress: string,
         week: number,
     ): Promise<EnergyType> {
-        const endEpochForWeek = await this.getEndEpochForWeek(scAddress, week);
+        const endEpochForWeek =
+            await this.weekTimekeepingCompute.endEpochForWeek(scAddress, week);
         return this.getData(
             this.getCacheKey(scAddress, 'userEnergyForWeek', userAddress, week),
             () =>

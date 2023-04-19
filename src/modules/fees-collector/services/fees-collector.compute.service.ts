@@ -6,6 +6,7 @@ import { FeesCollectorAbiService } from './fees-collector.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 
 @Injectable()
 export class FeesCollectorComputeService {
@@ -13,6 +14,7 @@ export class FeesCollectorComputeService {
         private readonly feesCollectorAbi: FeesCollectorAbiService,
         @Inject(forwardRef(() => FeesCollectorGetterService))
         protected readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly contextGetter: ContextGetterService,
     ) {}
 
@@ -51,7 +53,7 @@ export class FeesCollectorComputeService {
         week: number,
     ): Promise<number> {
         const [startEpochForCurrentWeek, currentEpoch] = await Promise.all([
-            this.feesCollectorGetter.getStartEpochForWeek(scAddress, week),
+            this.weekTimekeepingCompute.startEpochForWeek(scAddress, week),
             this.contextGetter.getCurrentEpoch(),
         ]);
 

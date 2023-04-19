@@ -18,6 +18,7 @@ import BigNumber from 'bignumber.js';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
 import { FeesCollectorComputeService } from './fees-collector.compute.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Injectable()
 export class FeesCollectorService {
@@ -25,6 +26,7 @@ export class FeesCollectorService {
         private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly mxProxy: MXProxyService,
     ) {}
 
@@ -32,7 +34,7 @@ export class FeesCollectorService {
         scAddress: string,
         userAddress: string,
     ): Promise<FeesCollectorTransactionModel> {
-        const currentWeek = await this.feesCollectorGetter.getCurrentWeek(
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             scAddress,
         );
         const lastActiveWeekForUser =
@@ -120,7 +122,7 @@ export class FeesCollectorService {
     async feesCollector(scAddress: string): Promise<FeesCollectorModel> {
         const [allToken, currentWeek] = await Promise.all([
             this.feesCollectorAbi.allTokens(),
-            this.feesCollectorGetter.getCurrentWeek(scAddress),
+            this.weekTimekeepingAbi.currentWeek(scAddress),
         ]);
         return new FeesCollectorModel({
             address: scAddress,
@@ -143,7 +145,7 @@ export class FeesCollectorService {
                 scAddress,
                 userAddress,
             ),
-            this.feesCollectorGetter.getCurrentWeek(scAddress),
+            this.weekTimekeepingAbi.currentWeek(scAddress),
         ]);
         const lastWeek = currentWeek - 1;
         return new UserEntryFeesCollectorModel({

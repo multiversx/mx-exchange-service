@@ -6,9 +6,10 @@ import { LockedTokenWrapperGetterService } from './services/locked-token-wrapper
 import { LockedTokenWrapperTransactionService } from './services/locked-token-wrapper.transaction.service';
 import { LockedTokenWrapperResolver } from './locked-token-wrapper.resolver';
 import { LockedTokenWrapperService } from './services/locked-token-wrapper.service';
+import { EnergyModule } from '../energy/energy.module';
 
 @Module({
-    imports: [MXCommunicationModule, CachingModule],
+    imports: [MXCommunicationModule, CachingModule, EnergyModule],
     providers: [
         LockedTokenWrapperAbiService,
         LockedTokenWrapperGetterService,
