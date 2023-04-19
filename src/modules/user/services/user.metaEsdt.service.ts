@@ -53,8 +53,8 @@ import {
 } from '../models/user.model';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
 import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
-import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { LockedTokenWrapperAbiService } from 'src/modules/locked-token-wrapper/services/locked-token-wrapper.abi.service';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -88,7 +88,7 @@ export class UserMetaEsdtService {
         private priceDiscoveryGetter: PriceDiscoveryGetterService,
         private simpleLockGetter: SimpleLockGetterService,
         private readonly energyAbi: EnergyAbiService,
-        private lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
+        private lockedTokenWrapperAbi: LockedTokenWrapperAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -456,7 +456,7 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
     ): Promise<UserWrappedLockedToken[]> {
         const lockedTokenEnergyID =
-            await this.lockedTokenWrapperGetter.getWrappedTokenId();
+            await this.lockedTokenWrapperAbi.wrappedTokenId();
         const nfts = await this.apiService.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -627,7 +627,7 @@ export class UserMetaEsdtService {
         }
 
         const wrappedlockedToken =
-            await this.lockedTokenWrapperGetter.getWrappedTokenId();
+            await this.lockedTokenWrapperAbi.wrappedTokenId();
         if (tokenID === wrappedlockedToken) {
             return NftTokenType.WrappedLockedToken;
         }

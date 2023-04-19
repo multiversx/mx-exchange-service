@@ -1,4 +1,4 @@
-export interface ILockedTokenWrapperGetterService {
-    getLockedTokenId(address: string): Promise<string>;
-    getWrappedTokenId(address: string): Promise<string>;
+export interface ILockedTokenWrapperAbiService {
+    wrappedTokenId(address: string): Promise<string>;
+    energyFactoryAddress(address: string): Promise<string>;
 }
