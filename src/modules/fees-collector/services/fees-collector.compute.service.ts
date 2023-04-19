@@ -134,39 +134,6 @@ export class FeesCollectorComputeService {
     })
     @GetOrSetCache({
         baseKey: 'feesCollector',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async totalRewardsDistributionForWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<TokenDistributionModel[]> {
-        return await this.computeTotalRewardsDistributionForWeek(
-            scAddress,
-            week,
-        );
-    }
-
-    async computeTotalRewardsDistributionForWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<TokenDistributionModel[]> {
-        const totalRewardsForWeek =
-            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
-                scAddress,
-                week,
-            );
-        return await this.weeklyRewardsSplittingCompute.computeDistribution(
-            totalRewardsForWeek,
-        );
-    }
-
-    @ErrorLoggerAsync({
-        className: FeesCollectorComputeService.name,
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'feesCollector',
         remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
