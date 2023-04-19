@@ -19,6 +19,7 @@ import {
 import { TransactionModel } from '../../models/transaction.model';
 import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver {
@@ -79,6 +80,7 @@ export class FeesCollectorResolver {
 export class UserEntryFeesCollectorResolver {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
+        private readonly feesCollectorTransaction: FeesCollectorTransactionService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {}
 
@@ -141,7 +143,7 @@ export class UserEntryFeesCollectorResolver {
     async claimFeesRewards(
         @AuthUser() user: UserAuthResult,
     ): Promise<FeesCollectorTransactionModel> {
-        return this.feesCollectorService.claimRewardsBatch(
+        return this.feesCollectorTransaction.claimRewardsBatch(
             scAddress.feesCollector,
             user.address,
         );
@@ -152,6 +154,6 @@ export class UserEntryFeesCollectorResolver {
     async updateEnergyForUser(
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.feesCollectorService.updateEnergyForUser(user.address);
+        return this.feesCollectorTransaction.updateEnergyForUser(user.address);
     }
 }
