@@ -10,9 +10,13 @@ import BigNumber from 'bignumber.js';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { IFeesCollectorAbiService } from './interfaces';
 
 @Injectable()
-export class FeesCollectorAbiService extends GenericAbiService {
+export class FeesCollectorAbiService
+    extends GenericAbiService
+    implements IFeesCollectorAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }

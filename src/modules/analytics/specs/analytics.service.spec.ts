@@ -33,8 +33,6 @@ import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.ge
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { StakingGetterServiceProvider } from '../../staking/mocks/staking.getter.service.mock';
 import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
-import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
-import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
 import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
@@ -78,7 +76,6 @@ describe('AnalyticsService', () => {
     };
 
     beforeEach(async () => {
-        const feesCollectorGetter = new FeesCollectorGetterServiceMock({});
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
             providers: [
@@ -117,10 +114,6 @@ describe('AnalyticsService', () => {
                 WeeklyRewardsSplittingAbiServiceProvider,
                 StakingGetterServiceProvider,
                 AnalyticsGetterServiceProvider,
-                {
-                    provide: FeesCollectorGetterService,
-                    useValue: feesCollectorGetter,
-                },
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryService,
                 AWSTimestreamQueryService,
