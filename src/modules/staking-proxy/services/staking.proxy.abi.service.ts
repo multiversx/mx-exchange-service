@@ -6,9 +6,13 @@ import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { oneHour } from 'src/helpers/helpers';
+import { IStakingProxyAbiService } from './interfaces';
 
 @Injectable()
-export class StakingProxyAbiService extends GenericAbiService {
+export class StakingProxyAbiService
+    extends GenericAbiService
+    implements IStakingProxyAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }
