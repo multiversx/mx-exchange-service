@@ -1,6 +1,5 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -37,83 +36,47 @@ export class StakingProxyResolver {
 
     @ResolveField()
     async lpFarmAddress(@Parent() parent: StakingProxyModel): Promise<string> {
-        try {
-            return await this.stakingProxyAbi.lpFarmAddress(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyAbi.lpFarmAddress(parent.address);
     }
 
     @ResolveField()
     async stakingFarmAddress(
         @Parent() parent: StakingProxyModel,
     ): Promise<string> {
-        try {
-            return await this.stakingProxyAbi.stakingFarmAddress(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyAbi.stakingFarmAddress(parent.address);
     }
 
     @ResolveField()
     async pairAddress(@Parent() parent: StakingProxyModel): Promise<string> {
-        try {
-            return await this.stakingProxyAbi.pairAddress(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyAbi.pairAddress(parent.address);
     }
 
     @ResolveField()
     async stakingToken(
         @Parent() parent: StakingProxyModel,
     ): Promise<EsdtToken> {
-        try {
-            return await this.stakingProxyService.getStakingToken(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyService.getStakingToken(parent.address);
     }
 
     @ResolveField()
     async farmToken(
         @Parent() parent: StakingProxyModel,
     ): Promise<NftCollection> {
-        try {
-            return await this.stakingProxyService.getFarmToken(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyService.getFarmToken(parent.address);
     }
 
     @ResolveField()
     async dualYieldToken(
         @Parent() parent: StakingProxyModel,
     ): Promise<NftCollection> {
-        try {
-            return await this.stakingProxyService.getDualYieldToken(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyService.getDualYieldToken(parent.address);
     }
 
     @ResolveField()
     async lpFarmToken(
         @Parent() parent: StakingProxyModel,
     ): Promise<NftCollection> {
-        try {
-            return await this.stakingProxyService.getLpFarmToken(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyService.getLpFarmToken(parent.address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -121,22 +84,12 @@ export class StakingProxyResolver {
     dualYieldTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
     ): DualYieldTokenAttributesModel[] {
-        try {
-            return this.stakingProxyService.decodeDualYieldTokenAttributes(
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyService.decodeDualYieldTokenAttributes(args);
     }
 
     @Query(() => [StakingProxyModel])
     async stakingProxies(): Promise<StakingProxyModel[]> {
-        try {
-            return await this.stakingProxyService.getStakingProxies();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyService.getStakingProxies();
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -145,14 +98,7 @@ export class StakingProxyResolver {
         @Args() args: ProxyStakeFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingProxyTransaction.stakeFarmTokens(
-                user.address,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyTransaction.stakeFarmTokens(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -161,14 +107,7 @@ export class StakingProxyResolver {
         @Args() args: ClaimDualYieldArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingProxyTransaction.claimDualYield(
-                user.address,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyTransaction.claimDualYield(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -177,14 +116,10 @@ export class StakingProxyResolver {
         @Args() args: UnstakeFarmTokensArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingProxyTransaction.unstakeFarmTokens(
-                user.address,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyTransaction.unstakeFarmTokens(
+            user.address,
+            args,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -192,25 +127,15 @@ export class StakingProxyResolver {
     async getDualYieldRewardsForPosition(
         @Args('proxyStakingPositions') args: BatchFarmRewardsComputeArgs,
     ): Promise<DualYieldRewardsModel[]> {
-        try {
-            return await this.stakingProxyService.getBatchRewardsForPosition(
-                args.farmsPositions,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyService.getBatchRewardsForPosition(
+            args.farmsPositions,
+        );
     }
 
     @Query(() => UnstakeFarmTokensReceiveModel)
     async getUnstakeTokensReceived(
         @Args('position') position: CalculateRewardsArgs,
     ): Promise<UnstakeFarmTokensReceiveModel> {
-        try {
-            return await this.stakingProxyService.getUnstakeTokensReceived(
-                position,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingProxyService.getUnstakeTokensReceived(position);
     }
 }
