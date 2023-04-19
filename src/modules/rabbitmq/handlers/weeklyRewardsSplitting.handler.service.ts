@@ -12,12 +12,9 @@ import {
     WEEKLY_REWARDS_SPLITTING_EVENTS,
 } from '@multiversx/sdk-exchange';
 import { FarmSetterServiceV2 } from '../../farm/v2/services/farm.v2.setter.service';
-import { FarmGetterServiceV2 } from '../../farm/v2/services/farm.v2.getter.service';
 import { FeesCollectorSetterService } from '../../fees-collector/services/fees-collector.setter.service';
-import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import { scAddress } from '../../../config';
 import { FarmSetterFactory } from '../../farm/farm.setter.factory';
-import { FarmGetterFactory } from '../../farm/farm.getter.factory';
 import { UserEnergySetterService } from '../../user/services/userEnergy/user.energy.setter.service';
 import { UserEnergyComputeService } from 'src/modules/user/services/userEnergy/user.energy.compute.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
@@ -28,9 +25,7 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 export class WeeklyRewardsSplittingHandlerService {
     constructor(
         private readonly farmSetter: FarmSetterFactory,
-        private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorSetter: FeesCollectorSetterService,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly energyAbi: EnergyAbiService,
         private readonly userEnergyCompute: UserEnergyComputeService,
         private readonly userEnergySetter: UserEnergySetterService,
@@ -166,13 +161,6 @@ export class WeeklyRewardsSplittingHandlerService {
             return this.feesCollectorSetter;
         }
         return this.farmSetter.useSetter(address) as FarmSetterServiceV2;
-    }
-
-    private getGetter(address: string) {
-        if (address === scAddress.feesCollector) {
-            return this.feesCollectorGetter;
-        }
-        return this.farmGetter.useGetter(address) as FarmGetterServiceV2;
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

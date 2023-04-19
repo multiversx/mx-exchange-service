@@ -1,5 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { FeesCollectorGetterService } from './fees-collector.getter.service';
+import { Injectable } from '@nestjs/common';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { BigNumber } from 'bignumber.js';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
@@ -9,17 +8,39 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 
 @Injectable()
 export class FeesCollectorComputeService {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
-        @Inject(forwardRef(() => FeesCollectorGetterService))
-        protected readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
         private readonly contextGetter: ContextGetterService,
     ) {}
+
+    @ErrorLoggerAsync({
+        className: FeesCollectorComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async userRewardsForWeek(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+    ): Promise<EsdtTokenPayment[]> {
+        return await this.computeUserRewardsForWeek(
+            scAddress,
+            userAddress,
+            week,
+        );
+    }
 
     async computeUserRewardsForWeek(
         scAddress: string,
@@ -69,6 +90,75 @@ export class FeesCollectorComputeService {
         }
 
         return payments;
+    }
+
+    @ErrorLoggerAsync({
+        className: FeesCollectorComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async userRewardsDistributionForWeek(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+    ): Promise<TokenDistributionModel[]> {
+        return await this.computeUserRewardsDistributionForWeek(
+            scAddress,
+            userAddress,
+            week,
+        );
+    }
+
+    async computeUserRewardsDistributionForWeek(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+    ): Promise<TokenDistributionModel[]> {
+        const userRewardsForWeek = await this.userRewardsForWeek(
+            scAddress,
+            userAddress,
+            week,
+        );
+        return await this.weeklyRewardsSplittingCompute.computeDistribution(
+            userRewardsForWeek,
+        );
+    }
+
+    @ErrorLoggerAsync({
+        className: FeesCollectorComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async totalRewardsDistributionForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<TokenDistributionModel[]> {
+        return await this.computeTotalRewardsDistributionForWeek(
+            scAddress,
+            week,
+        );
+    }
+
+    async computeTotalRewardsDistributionForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<TokenDistributionModel[]> {
+        const totalRewardsForWeek =
+            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                scAddress,
+                week,
+            );
+        return await this.weeklyRewardsSplittingCompute.computeDistribution(
+            totalRewardsForWeek,
+        );
     }
 
     @ErrorLoggerAsync({

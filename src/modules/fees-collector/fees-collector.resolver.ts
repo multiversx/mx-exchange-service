@@ -18,7 +18,6 @@ import {
     UserInfoByWeekModel,
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { TransactionModel } from '../../models/transaction.model';
-import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
 import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
@@ -27,7 +26,6 @@ export class FeesCollectorResolver extends GenericResolver {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorService: FeesCollectorService,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
         super();
@@ -92,7 +90,6 @@ export class FeesCollectorResolver extends GenericResolver {
 export class UserEntryFeesCollectorResolver extends GenericResolver {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
         super();

@@ -4,7 +4,6 @@ import {
     FeesCollectorTransactionModel,
     UserEntryFeesCollectorModel,
 } from '../models/fees-collector.model';
-import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import {
     GlobalInfoByWeekModel,
@@ -26,7 +25,6 @@ export class FeesCollectorService {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorCompute: FeesCollectorComputeService,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly mxProxy: MXProxyService,

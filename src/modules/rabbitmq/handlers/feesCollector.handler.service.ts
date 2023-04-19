@@ -18,7 +18,7 @@ export class FeesCollectorHandlerService {
 
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
-        private readonly setter: FeesCollectorSetterService,
+        private readonly feesCollectorSetter: FeesCollectorSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -31,8 +31,7 @@ export class FeesCollectorHandlerService {
             topics.currentWeek,
             topics.payment.tokenIdentifier,
         );
-        const cacheKey = await this.setter.setAccumulatedFees(
-            scAddress.feesCollector,
+        const cacheKey = await this.feesCollectorSetter.accumulatedFees(
             topics.currentWeek,
             topics.payment.tokenIdentifier,
             new BigNumber(accumulatedFees)

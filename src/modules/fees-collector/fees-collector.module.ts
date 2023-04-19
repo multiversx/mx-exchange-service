@@ -1,5 +1,4 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
 import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
 import {
     FeesCollectorResolver,
@@ -25,7 +24,6 @@ import { ContextModule } from '../../services/context/context.module';
     providers: [
         FeesCollectorService,
         FeesCollectorAbiService,
-        FeesCollectorGetterService,
         FeesCollectorSetterService,
         FeesCollectorComputeService,
         FeesCollectorResolver,
@@ -34,7 +32,6 @@ import { ContextModule } from '../../services/context/context.module';
     exports: [
         FeesCollectorAbiService,
         FeesCollectorSetterService,
-        FeesCollectorGetterService,
         FeesCollectorService,
     ],
 })

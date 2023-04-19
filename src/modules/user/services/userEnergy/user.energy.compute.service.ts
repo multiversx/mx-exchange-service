@@ -20,7 +20,6 @@ import { BigNumber } from 'bignumber.js';
 import { StakingProxyGetterService } from '../../../staking-proxy/services/staking.proxy.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { FeesCollectorGetterService } from 'src/modules/fees-collector/services/fees-collector.getter.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
@@ -28,7 +27,6 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 export class UserEnergyComputeService {
     constructor(
         private readonly farmGetter: FarmGetterFactory,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
