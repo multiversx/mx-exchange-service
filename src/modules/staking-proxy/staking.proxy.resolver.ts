@@ -23,24 +23,22 @@ import {
     StakingProxyModel,
     UnstakeFarmTokensReceiveModel,
 } from './models/staking.proxy.model';
-import { StakingProxyGetterService } from './services/staking.proxy.getter.service';
 import { StakingProxyService } from './services/staking.proxy.service';
 import { StakingProxyTransactionService } from './services/staking.proxy.transactions.service';
+import { StakingProxyAbiService } from './services/staking.proxy.abi.service';
 
 @Resolver(() => StakingProxyModel)
 export class StakingProxyResolver {
     constructor(
         private readonly stakingProxyService: StakingProxyService,
-        private readonly stakingProxyGetter: StakingProxyGetterService,
+        private readonly stakingProxyAbi: StakingProxyAbiService,
         private readonly stakingProxyTransaction: StakingProxyTransactionService,
     ) {}
 
     @ResolveField()
     async lpFarmAddress(@Parent() parent: StakingProxyModel): Promise<string> {
         try {
-            return await this.stakingProxyGetter.getLpFarmAddress(
-                parent.address,
-            );
+            return await this.stakingProxyAbi.lpFarmAddress(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -51,7 +49,7 @@ export class StakingProxyResolver {
         @Parent() parent: StakingProxyModel,
     ): Promise<string> {
         try {
-            return await this.stakingProxyGetter.getStakingFarmAddress(
+            return await this.stakingProxyAbi.stakingFarmAddress(
                 parent.address,
             );
         } catch (error) {
@@ -62,7 +60,7 @@ export class StakingProxyResolver {
     @ResolveField()
     async pairAddress(@Parent() parent: StakingProxyModel): Promise<string> {
         try {
-            return await this.stakingProxyGetter.getPairAddress(parent.address);
+            return await this.stakingProxyAbi.pairAddress(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -73,7 +71,7 @@ export class StakingProxyResolver {
         @Parent() parent: StakingProxyModel,
     ): Promise<EsdtToken> {
         try {
-            return await this.stakingProxyGetter.getStakingToken(
+            return await this.stakingProxyService.getStakingToken(
                 parent.address,
             );
         } catch (error) {
@@ -86,7 +84,7 @@ export class StakingProxyResolver {
         @Parent() parent: StakingProxyModel,
     ): Promise<NftCollection> {
         try {
-            return await this.stakingProxyGetter.getFarmToken(parent.address);
+            return await this.stakingProxyService.getFarmToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -97,7 +95,7 @@ export class StakingProxyResolver {
         @Parent() parent: StakingProxyModel,
     ): Promise<NftCollection> {
         try {
-            return await this.stakingProxyGetter.getDualYieldToken(
+            return await this.stakingProxyService.getDualYieldToken(
                 parent.address,
             );
         } catch (error) {
@@ -110,7 +108,9 @@ export class StakingProxyResolver {
         @Parent() parent: StakingProxyModel,
     ): Promise<NftCollection> {
         try {
-            return await this.stakingProxyGetter.getLpFarmToken(parent.address);
+            return await this.stakingProxyService.getLpFarmToken(
+                parent.address,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }

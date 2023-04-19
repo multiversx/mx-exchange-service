@@ -2,14 +2,30 @@ import { Interaction } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { oneHour } from 'src/helpers/helpers';
 
 @Injectable()
-export class AbiStakingProxyService extends GenericAbiService {
+export class StakingProxyAbiService extends GenericAbiService {
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }
 
-    async getLpFarmAddress(stakingProxyAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: StakingProxyAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stakeProxy',
+        remoteTtl: oneHour(),
+    })
+    async lpFarmAddress(stakingProxyAddress: string): Promise<string> {
+        return await this.getlpFarmAddressRaw(stakingProxyAddress);
+    }
+
+    async getlpFarmAddressRaw(stakingProxyAddress: string): Promise<string> {
         const contract = await this.mxProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
@@ -19,7 +35,21 @@ export class AbiStakingProxyService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getStakingFarmAddress(stakingProxyAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: StakingProxyAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stakeProxy',
+        remoteTtl: oneHour(),
+    })
+    async stakingFarmAddress(stakingProxyAddress: string): Promise<string> {
+        return await this.getStakingFarmAddressRaw(stakingProxyAddress);
+    }
+
+    async getStakingFarmAddressRaw(
+        stakingProxyAddress: string,
+    ): Promise<string> {
         const contract = await this.mxProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
@@ -29,7 +59,19 @@ export class AbiStakingProxyService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getPairAddress(stakingProxyAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: StakingProxyAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stakeProxy',
+        remoteTtl: oneHour(),
+    })
+    async pairAddress(stakingProxyAddress: string): Promise<string> {
+        return await this.getPairAddressRaw(stakingProxyAddress);
+    }
+
+    async getPairAddressRaw(stakingProxyAddress: string): Promise<string> {
         const contract = await this.mxProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
@@ -39,7 +81,19 @@ export class AbiStakingProxyService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getStakingTokenID(stakingProxyAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: StakingProxyAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stakeProxy',
+        remoteTtl: oneHour(),
+    })
+    async stakingTokenID(stakingProxyAddress: string): Promise<string> {
+        return await this.getStakingTokenIDRaw(stakingProxyAddress);
+    }
+
+    async getStakingTokenIDRaw(stakingProxyAddress: string): Promise<string> {
         const contract = await this.mxProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
@@ -49,7 +103,20 @@ export class AbiStakingProxyService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getFarmTokenID(stakingProxyAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: StakingProxyAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stakeProxy',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async farmTokenID(stakingProxyAddress: string): Promise<string> {
+        return await this.getFarmTokenIDRaw(stakingProxyAddress);
+    }
+
+    async getFarmTokenIDRaw(stakingProxyAddress: string): Promise<string> {
         const contract = await this.mxProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
@@ -59,7 +126,20 @@ export class AbiStakingProxyService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getDualYieldTokenID(stakingProxyAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: StakingProxyAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stakeProxy',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async dualYieldTokenID(stakingProxyAddress: string): Promise<string> {
+        return await this.getDualYieldTokenIDRaw(stakingProxyAddress);
+    }
+
+    async getDualYieldTokenIDRaw(stakingProxyAddress: string): Promise<string> {
         const contract = await this.mxProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
@@ -69,7 +149,20 @@ export class AbiStakingProxyService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getLpFarmTokenID(stakingProxyAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: StakingProxyAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stakeProxy',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async lpFarmTokenID(stakingProxyAddress: string): Promise<string> {
+        return await this.getLpFarmTokenIDRaw(stakingProxyAddress);
+    }
+
+    async getLpFarmTokenIDRaw(stakingProxyAddress: string): Promise<string> {
         const contract = await this.mxProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
