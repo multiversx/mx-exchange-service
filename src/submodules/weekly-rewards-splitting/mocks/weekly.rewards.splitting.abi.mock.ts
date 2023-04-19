@@ -20,12 +20,14 @@ export class WeeklyRewardsSplittingAbiServiceMock
     ): Promise<EnergyModel> {
         throw new Error('Method not implemented.');
     }
-    lastActiveWeekForUser(
+
+    async lastActiveWeekForUser(
         scAddress: string,
         userAddress: string,
     ): Promise<number> {
-        throw new Error('Method not implemented.');
+        return 0;
     }
+
     lastGlobalUpdateWeek(scAddress: string): Promise<number> {
         throw new Error('Method not implemented.');
     }
