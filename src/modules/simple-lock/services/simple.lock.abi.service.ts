@@ -5,9 +5,13 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { ISimpleLockAbiService } from './interfaces';
 
 @Injectable()
-export class SimpleLockAbiService extends GenericAbiService {
+export class SimpleLockAbiService
+    extends GenericAbiService
+    implements ISimpleLockAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }
