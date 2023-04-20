@@ -6,7 +6,7 @@ import {
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-transactions.service';
+import { ProxyPairTransactionsService } from '../services/proxy-pair/proxy.pair.transactions.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
@@ -25,7 +25,7 @@ import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('TransactionProxyPairService', () => {
-    let service: TransactionsProxyPairService;
+    let service: ProxyPairTransactionsService;
     let mxProxy: MXProxyService;
     let pairGetterService: PairGetterService;
 
@@ -74,12 +74,12 @@ describe('TransactionProxyPairService', () => {
                 WrapService,
                 TokenGetterServiceProvider,
                 RouterGetterServiceProvider,
-                TransactionsProxyPairService,
+                ProxyPairTransactionsService,
             ],
         }).compile();
 
-        service = module.get<TransactionsProxyPairService>(
-            TransactionsProxyPairService,
+        service = module.get<ProxyPairTransactionsService>(
+            ProxyPairTransactionsService,
         );
         mxProxy = module.get<MXProxyService>(MXProxyService);
         pairGetterService = module.get<PairGetterService>(PairGetterService);

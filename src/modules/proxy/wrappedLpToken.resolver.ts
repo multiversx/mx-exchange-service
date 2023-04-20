@@ -7,13 +7,13 @@ import { LockedAssetAttributesModel } from '../locked-asset-factory/models/locke
 import { DecodeAttributesArgs } from './models/proxy.args';
 import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
 import { ProxyService } from './services/proxy.service';
-import { ProxyGetterServiceV1 } from './v1/services/proxy.v1.getter.service';
+import { ProxyAbiService } from './services/proxy.abi.service';
 
 @Resolver(() => WrappedLpTokenAttributesModel)
 export class WrappedLpTokenResolver {
     constructor(
         private readonly proxyService: ProxyService,
-        private readonly proxyGetter: ProxyGetterServiceV1,
+        private readonly proxyAbi: ProxyAbiService,
     ) {}
 
     @ResolveField()
@@ -25,7 +25,7 @@ export class WrappedLpTokenResolver {
                 tokenCollection(parent.identifier),
             );
             const lockedAssetTokenCollection =
-                await this.proxyGetter.getLockedAssetTokenID(proxyAddress);
+                await this.proxyAbi.lockedAssetTokenID(proxyAddress);
             return await this.proxyService.getLockedAssetsAttributes(
                 proxyAddress,
                 lockedAssetTokenCollection[0],
@@ -41,6 +41,6 @@ export class WrappedLpTokenResolver {
     async wrappedLpTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
     ): Promise<WrappedLpTokenAttributesModel[]> {
-        return await this.proxyService.getWrappedLpTokenAttributes(args);
+        return this.proxyService.getWrappedLpTokenAttributes(args);
     }
 }

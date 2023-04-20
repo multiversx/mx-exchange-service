@@ -1,10 +1,10 @@
 import { Interaction, TokenIdentifierValue } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
-import { AbiProxyService } from '../../services/proxy-abi.service';
+import { ProxyAbiService } from '../../services/proxy.abi.service';
 
 @Injectable()
-export class ProxyAbiServiceV2 extends AbiProxyService {
-    async getLockedAssetTokenID(proxyAddress: string): Promise<string[]> {
+export class ProxyAbiServiceV2 extends ProxyAbiService {
+    async getLockedAssetTokenIDRaw(proxyAddress: string): Promise<string[]> {
         const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );

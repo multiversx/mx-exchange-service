@@ -1,23 +1,19 @@
 import { Resolver, ResolveField, Parent } from '@nestjs/graphql';
-import { ProxyPairGetterService } from './services/proxy-pair/proxy-pair.getter.service';
 import { ProxyModel } from './models/proxy.model';
-import { ProxyFarmGetterService } from './services/proxy-farm/proxy-farm.getter.service';
 import { ProxyService } from './services/proxy.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { ApolloError } from 'apollo-server-express';
-import { ProxyGetterServiceV1 } from './v1/services/proxy.v1.getter.service';
-import { ProxyGetterServiceV2 } from './v2/services/proxy.v2.getter.service';
 import { proxyVersion } from 'src/utils/proxy.utils';
+import { ProxyPairAbiService } from './services/proxy-pair/proxy.pair.abi.service';
+import { ProxyFarmAbiService } from './services/proxy-farm/proxy.farm.abi.service';
 
 @Resolver(() => ProxyModel)
 export class ProxyResolver {
     constructor(
-        protected readonly proxyGetter: ProxyGetterServiceV1,
-        protected readonly proxyGetterV2: ProxyGetterServiceV2,
-        protected readonly proxyService: ProxyService,
-        protected readonly proxyPairGetter: ProxyPairGetterService,
-        protected readonly proxyFarmGetter: ProxyFarmGetterService,
+        private readonly proxyService: ProxyService,
+        private readonly proxyPairAbi: ProxyPairAbiService,
+        private readonly proxyFarmAbi: ProxyFarmAbiService,
     ) {}
 
     @ResolveField()
@@ -28,11 +24,11 @@ export class ProxyResolver {
             const version = proxyVersion(parent.address);
             switch (version) {
                 case 'v1':
-                    return await this.proxyGetter.getlockedAssetToken(
+                    return await this.proxyService.getlockedAssetToken(
                         parent.address,
                     );
                 case 'v2':
-                    return await this.proxyGetterV2.getlockedAssetToken(
+                    return await this.proxyService.getlockedAssetToken(
                         parent.address,
                     );
             }
@@ -44,7 +40,7 @@ export class ProxyResolver {
     @ResolveField()
     async wrappedLpToken(@Parent() parent: ProxyModel): Promise<NftCollection> {
         try {
-            return await this.proxyPairGetter.getwrappedLpToken(parent.address);
+            return await this.proxyService.getwrappedLpToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -55,9 +51,7 @@ export class ProxyResolver {
         @Parent() parent: ProxyModel,
     ): Promise<NftCollection> {
         try {
-            return await this.proxyFarmGetter.getwrappedFarmToken(
-                parent.address,
-            );
+            return await this.proxyService.getwrappedFarmToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -66,7 +60,7 @@ export class ProxyResolver {
     @ResolveField()
     async assetToken(@Parent() parent: ProxyModel): Promise<EsdtToken> {
         try {
-            return await this.proxyGetter.getAssetToken(parent.address);
+            return await this.proxyService.getAssetToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -75,9 +69,7 @@ export class ProxyResolver {
     @ResolveField()
     async intermediatedPairs(@Parent() parent: ProxyModel): Promise<string[]> {
         try {
-            return await this.proxyPairGetter.getIntermediatedPairs(
-                parent.address,
-            );
+            return await this.proxyPairAbi.intermediatedPairs(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -86,9 +78,7 @@ export class ProxyResolver {
     @ResolveField()
     async intermediatedFarms(@Parent() parent: ProxyModel): Promise<string[]> {
         try {
-            return await this.proxyFarmGetter.getIntermediatedFarms(
-                parent.address,
-            );
+            return await this.proxyFarmAbi.intermediatedFarms(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }

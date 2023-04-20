@@ -1,6 +1,6 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
-import { TransactionsProxyFarmService } from './services/proxy-farm/proxy-farm-transactions.service';
-import { TransactionsProxyPairService } from './services/proxy-pair/proxy-pair-transactions.service';
+import { ProxyFarmTransactionsService } from './services/proxy-farm/proxy.farm.transactions.service';
+import { ProxyPairTransactionsService } from './services/proxy-pair/proxy.pair.transactions.service';
 import {
     AddLiquidityProxyArgs,
     RemoveLiquidityProxyArgs,
@@ -30,8 +30,8 @@ import { scAddress } from 'src/config';
 export class ProxyTransactionResolver {
     constructor(
         private readonly proxyService: ProxyService,
-        private readonly transactionsProxyPairService: TransactionsProxyPairService,
-        private readonly transactionsProxyFarmService: TransactionsProxyFarmService,
+        private readonly transactionsProxyPairService: ProxyPairTransactionsService,
+        private readonly transactionsProxyFarmService: ProxyFarmTransactionsService,
     ) {}
 
     @UseGuards(JwtOrNativeAuthGuard)

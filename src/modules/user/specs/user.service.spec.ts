@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
+import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy.farm.getter.service';
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
 import { UserMetaEsdtService } from '../services/user.metaEsdt.service';

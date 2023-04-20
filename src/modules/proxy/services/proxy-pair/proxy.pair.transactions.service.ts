@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { constantsConfig, mxConfig, gasConfig } from 'src/config';
 import {
     BigUIntValue,
@@ -17,22 +17,19 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { generateLogMessage } from 'src/utils/generate-log-message';
-import { ProxyGetterService } from '../proxy.getter.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ProxyAbiServiceV2 } from 'src/modules/proxy/v2/services/proxy.v2.abi.service';
 
 @Injectable()
-export class TransactionsProxyPairService {
+export class ProxyPairTransactionsService {
     constructor(
+        private readonly proxyAbiV2: ProxyAbiServiceV2,
         private readonly mxProxy: MXProxyService,
-        private readonly proxyGetter: ProxyGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
         private readonly wrapAbi: WrapAbiService,
         private readonly wrapTransaction: WrapTransactionsService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async addLiquidityProxyBatch(
@@ -70,31 +67,24 @@ export class TransactionsProxyPairService {
         return transactions;
     }
 
+    @ErrorLoggerAsync({
+        className: ProxyPairTransactionsService.name,
+    })
     async addLiquidityProxy(
         sender: string,
         proxyAddress: string,
         args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
         let liquidityTokens: InputTokenModel[];
-        try {
-            liquidityTokens = await this.convertInputTokenstoESDTTokens(
-                args.tokens,
-            );
-            liquidityTokens = await this.getLiquidityTokens(
-                args.pairAddress,
-                liquidityTokens,
-                proxyAddress,
-            );
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                TransactionsProxyPairService.name,
-                this.addLiquidityProxy.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        liquidityTokens = await this.convertInputTokenstoESDTTokens(
+            args.tokens,
+        );
+        liquidityTokens = await this.getLiquidityTokens(
+            args.pairAddress,
+            liquidityTokens,
+            proxyAddress,
+        );
+
         const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
@@ -295,7 +285,7 @@ export class TransactionsProxyPairService {
     ): Promise<InputTokenModel[]> {
         const [firstTokenID, secondTokenID] = await Promise.all([
             this.pairGetterService.getFirstTokenID(pairAddress),
-            this.proxyGetter.getLockedAssetTokenID(proxyAddress),
+            this.proxyAbiV2.lockedAssetTokenID(proxyAddress),
         ]);
 
         switch (firstTokenID) {
