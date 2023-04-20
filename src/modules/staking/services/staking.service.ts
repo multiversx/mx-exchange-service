@@ -182,10 +182,12 @@ export class StakingService {
             throw new Error('SC not whitelisted.');
     }
 
-    async requireOwner(stakeAddress: string, sender: string): Promise<boolean> {
-        return (
+    async requireOwner(stakeAddress: string, sender: string): Promise<void> {
+        if (
             (await this.apiService.getAccountStats(stakeAddress))
-                .ownerAddress === sender
-        );
+                .ownerAddress !== sender
+        ) {
+            throw new Error('Sender is not the owner of the contract.');
+        }
     }
 }
