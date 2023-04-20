@@ -26,71 +26,55 @@ export class WrappedFarmTokenResolver {
     async farmTokenAttributes(
         @Parent() parent: WrappedFarmTokenAttributesModel,
     ): Promise<typeof FarmTokenAttributesUnion> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokenCollection(parent.identifier),
-            );
-            return await this.proxyService.getFarmTokenAttributes(
-                proxyAddress,
-                parent.farmTokenID,
-                parent.farmTokenNonce,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            tokenCollection(parent.identifier),
+        );
+        return this.proxyService.getFarmTokenAttributes(
+            proxyAddress,
+            parent.farmTokenID,
+            parent.farmTokenNonce,
+        );
     }
 
     @ResolveField()
     async lockedAssetsAttributes(
         @Parent() parent: WrappedFarmTokenAttributesModel,
     ): Promise<LockedAssetAttributesModel> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokenCollection(parent.identifier),
-            );
-            const lockedAssetTokenCollection =
-                await this.proxyAbi.lockedAssetTokenID(proxyAddress);
-            if (!lockedAssetTokenCollection.includes(parent.farmingTokenID)) {
-                return null;
-            }
-            return await this.proxyService.getLockedAssetsAttributes(
-                proxyAddress,
-                parent.farmingTokenID,
-                parent.farmingTokenNonce,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            tokenCollection(parent.identifier),
+        );
+        const lockedAssetTokenCollection =
+            await this.proxyAbi.lockedAssetTokenID(proxyAddress);
+        if (!lockedAssetTokenCollection.includes(parent.farmingTokenID)) {
+            return null;
         }
+        return this.proxyService.getLockedAssetsAttributes(
+            proxyAddress,
+            parent.farmingTokenID,
+            parent.farmingTokenNonce,
+        );
     }
 
     @ResolveField()
     async lockedLpProxyTokenAttributes(
         @Parent() parent: WrappedFarmTokenAttributesModel,
     ): Promise<WrappedLpTokenAttributesModel> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokenCollection(parent.identifier),
-            );
-            const wrappedLpTokenCollection =
-                await this.proxyPairAbi.wrappedLpTokenID(proxyAddress);
-            if (wrappedLpTokenCollection != parent.farmingTokenID) {
-                return null;
-            }
-            const wrappedLpToken =
-                await this.apiService.getNftByTokenIdentifier(
-                    proxyAddress,
-                    tokenIdentifier(
-                        parent.farmingTokenID,
-                        parent.farmingTokenNonce,
-                    ),
-                );
-            return this.proxyService.decodeWrappedLpTokenAttributes({
-                attributes: wrappedLpToken.attributes,
-                identifier: wrappedLpToken.identifier,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            tokenCollection(parent.identifier),
+        );
+        const wrappedLpTokenCollection =
+            await this.proxyPairAbi.wrappedLpTokenID(proxyAddress);
+        if (wrappedLpTokenCollection != parent.farmingTokenID) {
+            return null;
         }
+        const wrappedLpToken = await this.apiService.getNftByTokenIdentifier(
+            proxyAddress,
+            tokenIdentifier(parent.farmingTokenID, parent.farmingTokenNonce),
+        );
+        return this.proxyService.decodeWrappedLpTokenAttributes({
+            attributes: wrappedLpToken.attributes,
+            identifier: wrappedLpToken.identifier,
+        });
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

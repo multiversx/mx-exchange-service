@@ -22,7 +22,6 @@ import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { LiquidityTokensValidationPipe } from './validators/add.liquidity.input.validator';
-import { ApolloError } from 'apollo-server-express';
 import { ProxyService } from './services/proxy.service';
 import { scAddress } from 'src/config';
 
@@ -40,15 +39,11 @@ export class ProxyTransactionResolver {
         @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
-        try {
-            return await this.transactionsProxyPairService.addLiquidityProxyBatch(
-                user.address,
-                scAddress.proxyDexAddress.v2,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.transactionsProxyPairService.addLiquidityProxyBatch(
+            user.address,
+            scAddress.proxyDexAddress.v2,
+            args,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -57,15 +52,11 @@ export class ProxyTransactionResolver {
         @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.transactionsProxyPairService.addLiquidityProxy(
-                user.address,
-                scAddress.proxyDexAddress.v2,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.transactionsProxyPairService.addLiquidityProxy(
+            user.address,
+            scAddress.proxyDexAddress.v2,
+            args,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -77,7 +68,7 @@ export class ProxyTransactionResolver {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.wrappedLpTokenID,
         );
-        return await this.transactionsProxyPairService.removeLiquidityProxy(
+        return this.transactionsProxyPairService.removeLiquidityProxy(
             user.address,
             proxyAddress,
             args,
@@ -90,15 +81,11 @@ export class ProxyTransactionResolver {
         @Args(EnterFarmProxyValidationPipe) args: EnterFarmProxyArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.transactionsProxyFarmService.enterFarmProxy(
-                user.address,
-                scAddress.proxyDexAddress.v2,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.transactionsProxyFarmService.enterFarmProxy(
+            user.address,
+            scAddress.proxyDexAddress.v2,
+            args,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -110,7 +97,7 @@ export class ProxyTransactionResolver {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.wrappedFarmTokenID,
         );
-        return await this.transactionsProxyFarmService.exitFarmProxy(
+        return this.transactionsProxyFarmService.exitFarmProxy(
             user.address,
             proxyAddress,
             args,
@@ -126,7 +113,7 @@ export class ProxyTransactionResolver {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.wrappedFarmTokenID,
         );
-        return await this.transactionsProxyFarmService.claimFarmRewardsProxy(
+        return this.transactionsProxyFarmService.claimFarmRewardsProxy(
             user.address,
             proxyAddress,
             args,
@@ -144,18 +131,14 @@ export class ProxyTransactionResolver {
         tokens: InputTokenModel[],
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokens[0].tokenID,
-            );
-            return await this.transactionsProxyPairService.mergeWrappedLPTokens(
-                user.address,
-                proxyAddress,
-                tokens,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            tokens[0].tokenID,
+        );
+        return this.transactionsProxyPairService.mergeWrappedLPTokens(
+            user.address,
+            proxyAddress,
+            tokens,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -170,19 +153,15 @@ export class ProxyTransactionResolver {
         tokens: InputTokenModel[],
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokens[0].tokenID,
-            );
-            return await this.transactionsProxyFarmService.mergeWrappedFarmTokens(
-                user.address,
-                proxyAddress,
-                farmAddress,
-                tokens,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            tokens[0].tokenID,
+        );
+        return this.transactionsProxyFarmService.mergeWrappedFarmTokens(
+            user.address,
+            proxyAddress,
+            farmAddress,
+            tokens,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -194,7 +173,7 @@ export class ProxyTransactionResolver {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.tokenID,
         );
-        return await this.transactionsProxyFarmService.compoundRewardsProxy(
+        return this.transactionsProxyFarmService.compoundRewardsProxy(
             user.address,
             proxyAddress,
             args,
@@ -210,7 +189,7 @@ export class ProxyTransactionResolver {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             args.wrappedFarmTokenID,
         );
-        return await this.transactionsProxyFarmService.migrateToNewFarmProxy(
+        return this.transactionsProxyFarmService.migrateToNewFarmProxy(
             user.address,
             proxyAddress,
             args,

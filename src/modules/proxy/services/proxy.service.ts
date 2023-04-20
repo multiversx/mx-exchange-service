@@ -46,6 +46,7 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { ProxyAbiServiceV2 } from '../v2/services/proxy.v2.abi.service';
 import { ProxyPairAbiService } from './proxy-pair/proxy.pair.abi.service';
 import { ProxyFarmAbiService } from './proxy-farm/proxy.farm.abi.service';
+import { proxyVersion } from 'src/utils/proxy.utils';
 
 @Injectable()
 export class ProxyService {
@@ -61,28 +62,17 @@ export class ProxyService {
         private readonly tokenGetter: TokenGetterService,
     ) {}
 
-    getProxyInfo(): ProxyModel[] {
-        return [
-            new ProxyModel({
-                address: scAddress.proxyDexAddress.v1,
-                version: 'v1',
-            }),
-            new ProxyModel({
-                address: scAddress.proxyDexAddress.v2,
-                version: 'v2',
-            }),
-        ];
-    }
-
     async getAssetToken(proxyAddress: string): Promise<EsdtToken> {
         const assetTokenID = await this.proxyAbi.assetTokenID(proxyAddress);
         return this.tokenGetter.getTokenMetadata(assetTokenID);
     }
 
     async getlockedAssetToken(proxyAddress: string): Promise<NftCollection[]> {
-        const lockedAssetTokenIDs = await this.proxyAbi.lockedAssetTokenID(
-            proxyAddress,
-        );
+        const version = proxyVersion(proxyAddress);
+        const lockedAssetTokenIDs =
+            version === 'v1'
+                ? await this.proxyAbi.lockedAssetTokenID(proxyAddress)
+                : await this.proxyAbiV2.lockedAssetTokenID(proxyAddress);
         return await Promise.all(
             lockedAssetTokenIDs.map((tokenID: string) =>
                 this.tokenGetter.getNftCollectionMetadata(tokenID),
