@@ -1,9 +1,7 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig } from 'src/config';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { Logger } from 'winston';
 import { StakingTokenAttributesModel } from '../models/stakingTokenAttributes.model';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { StakingAbiService } from './staking.abi.service';
@@ -20,7 +18,6 @@ export class StakingComputeService {
         private readonly stakingService: StakingService,
         private readonly contextGetter: ContextGetterService,
         private readonly tokenGetter: TokenGetterService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async computeStakeRewardsForPosition(

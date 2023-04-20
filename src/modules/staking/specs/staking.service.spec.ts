@@ -1,72 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { ConfigModule } from '@nestjs/config';
-import winston from 'winston';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as Transport from 'winston-transport';
 import { StakingService } from '../services/staking.service';
-import { StakingAbiService } from '../services/staking.abi.service';
-import { StakingGetterService } from '../services/staking.getter.service';
-import { StakingGetterServiceMock } from '../mocks/staking.getter.service.mock';
 import { StakingComputeService } from '../services/staking.compute.service';
-import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
+import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
-import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { MXApiServiceMock } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { Address } from '@multiversx/sdk-core';
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
+import { StakingAbiServiceProvider } from '../mocks/staking.abi.service.mock';
+import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('StakingService', () => {
-    let service: StakingService;
-
-    const StakingGetterServiceProvider = {
-        provide: StakingGetterService,
-        useClass: StakingGetterServiceMock,
-    };
-
-    const MXProxyServiceProvider = {
-        provide: MXProxyService,
-        useClass: MXProxyServiceMock,
-    };
-
-    const ContextGetterServiceProvider = {
-        provide: ContextGetterService,
-        useClass: ContextGetterServiceMock,
-    };
-
-    const logTransports: Transport[] = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                nestWinstonModuleUtilities.format.nestLike(),
-            ),
-        }),
-    ];
-
-    const MXApiServiceProvider = {
-        provide: MXApiService,
-        useClass: MXApiServiceMock,
-    };
+    let module: TestingModule;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                WinstonModule.forRoot({
-                    transports: logTransports,
-                }),
-                ConfigModule,
-            ],
+        module = await Test.createTestingModule({
+            imports: [CachingModule],
             providers: [
                 StakingService,
-                StakingAbiService,
-                StakingGetterServiceProvider,
+                StakingAbiServiceProvider,
                 StakingComputeService,
                 ContextGetterServiceProvider,
                 RemoteConfigGetterServiceProvider,
@@ -77,20 +31,24 @@ describe('StakingService', () => {
                 TokenGetterServiceProvider,
             ],
         }).compile();
-
-        service = module.get<StakingService>(StakingService);
     });
 
     it('should be defined', () => {
+        const service: StakingService =
+            module.get<StakingService>(StakingService);
         expect(service).toBeDefined();
     });
 
     it('should get farms staking', async () => {
+        const service: StakingService =
+            module.get<StakingService>(StakingService);
         const farmsStaking = await service.getFarmsStaking();
         expect(farmsStaking.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should get rewards for position', async () => {
+        const service: StakingService =
+            module.get<StakingService>(StakingService);
         const rewards = await service.getRewardsForPosition({
             farmAddress:
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
@@ -117,6 +75,8 @@ describe('StakingService', () => {
     });
 
     it('should get batch rewards for position', async () => {
+        const service: StakingService =
+            module.get<StakingService>(StakingService);
         const batchRewards = await service.getBatchRewardsForPosition([
             {
                 farmAddress:

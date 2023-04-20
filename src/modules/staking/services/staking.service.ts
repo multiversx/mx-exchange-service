@@ -2,15 +2,13 @@ import {
     StakingFarmTokenAttributes,
     UnbondFarmTokenAttributes,
 } from '@multiversx/sdk-exchange';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { Logger } from 'winston';
 import { StakingModel, StakingRewardsModel } from '../models/staking.model';
 import {
     StakingTokenAttributesModel,
@@ -26,12 +24,12 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 export class StakingService {
     constructor(
         private readonly stakingAbi: StakingAbiService,
+        @Inject(forwardRef(() => StakingComputeService))
         private readonly stakingCompute: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
         private readonly tokenGetter: TokenGetterService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetter: RemoteConfigGetterService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getFarmsStaking(): Promise<StakingModel[]> {

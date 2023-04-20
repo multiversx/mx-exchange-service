@@ -7,42 +7,31 @@ import {
     TypedValue,
     U64Value,
 } from '@multiversx/sdk-core';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { generateLogMessage } from 'src/utils/generate-log-message';
-import { Logger } from 'winston';
 import { StakingAbiService } from './staking.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 
 @Injectable()
 export class StakingTransactionService {
     constructor(
         private readonly stakingAbi: StakingAbiService,
         private readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    @ErrorLoggerAsync({
+        className: StakingTransactionService.name,
+    })
     async stakeFarm(
         sender: string,
         stakeAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        try {
-            await this.validateInputTokens(stakeAddress, payments);
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                StakingTransactionService.name,
-                this.stakeFarm.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        await this.validateInputTokens(stakeAddress, payments);
 
         const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
