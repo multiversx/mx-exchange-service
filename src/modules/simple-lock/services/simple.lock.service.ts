@@ -3,9 +3,8 @@ import {
     LockedLpTokenAttributes,
     LockedTokenAttributes,
 } from '@multiversx/sdk-exchange';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import {
@@ -19,30 +18,31 @@ import {
 } from 'src/modules/proxy/models/proxy.args';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
-import { Logger } from 'winston';
 import {
     FarmProxyTokenAttributesModel,
     LockedTokenAttributesModel,
     LpProxyTokenAttributesModel,
     SimpleLockModel,
 } from '../models/simple.lock.model';
-import { SimpleLockGetterService } from './simple.lock.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { SimpleLockAbiService } from './simple.lock.abi.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @Injectable()
 export class SimpleLockService {
     constructor(
-        private readonly simpleLockGetter: SimpleLockGetterService,
+        private readonly simpleLockAbi: SimpleLockAbiService,
         private readonly farmFactory: FarmFactoryService,
         private readonly farmGetterFactory: FarmGetterFactory,
+        private readonly tokenGetter: TokenGetterService,
         private readonly apiService: MXApiService,
         private readonly cacheService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     getSimpleLock(): SimpleLockModel[] {
@@ -54,6 +54,27 @@ export class SimpleLockService {
         );
     }
 
+    async getLockedToken(simpleLockAddress: string): Promise<NftCollection> {
+        const tokenID = await this.simpleLockAbi.lockedTokenID(
+            simpleLockAddress,
+        );
+        return await this.tokenGetter.getNftCollectionMetadata(tokenID);
+    }
+
+    async getLpProxyToken(simpleLockAddress: string): Promise<NftCollection> {
+        const tokenID = await this.simpleLockAbi.lpProxyTokenID(
+            simpleLockAddress,
+        );
+        return await this.tokenGetter.getNftCollectionMetadata(tokenID);
+    }
+
+    async getFarmProxyToken(simpleLockAddress: string): Promise<NftCollection> {
+        const tokenID = await this.simpleLockAbi.farmProxyTokenID(
+            simpleLockAddress,
+        );
+        return await this.tokenGetter.getNftCollectionMetadata(tokenID);
+    }
+
     async getLockedTokenAttributes(
         tokenID: string,
         tokenNonce: number,
@@ -61,8 +82,9 @@ export class SimpleLockService {
         const simpleLockAddress = await this.getSimpleLockAddressByTokenID(
             tokenID,
         );
-        const lockedEsdtCollection =
-            await this.simpleLockGetter.getLockedTokenID(simpleLockAddress);
+        const lockedEsdtCollection = await this.simpleLockAbi.lockedTokenID(
+            simpleLockAddress,
+        );
         const lockedTokenIdentifier = tokenIdentifier(
             lockedEsdtCollection,
             tokenNonce,
@@ -115,8 +137,9 @@ export class SimpleLockService {
         const simpleLockAddress = await this.getSimpleLockAddressByTokenID(
             lockedLpTokenID,
         );
-        const lockedLpTokenCollection =
-            await this.simpleLockGetter.getLpProxyTokenID(simpleLockAddress);
+        const lockedLpTokenCollection = await this.simpleLockAbi.lpProxyTokenID(
+            simpleLockAddress,
+        );
         const lockedLpTokenIdentifier = tokenIdentifier(
             lockedLpTokenCollection,
             tokenNonce,
@@ -237,9 +260,9 @@ export class SimpleLockService {
         for (const address of scAddress.simpleLockAddress) {
             const [lockedTokenID, lockedLpTokenID, lockedFarmTokenID] =
                 await Promise.all([
-                    this.simpleLockGetter.getLockedTokenID(address),
-                    this.simpleLockGetter.getLpProxyTokenID(address),
-                    this.simpleLockGetter.getFarmProxyTokenID(address),
+                    this.simpleLockAbi.lockedTokenID(address),
+                    this.simpleLockAbi.lpProxyTokenID(address),
+                    this.simpleLockAbi.farmProxyTokenID(address),
                 ]);
 
             if (

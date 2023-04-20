@@ -10,7 +10,6 @@ import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { farmVersion } from 'src/utils/farm.utils';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { FarmGetterFactory } from '../farm/farm.getter.factory';
-import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
 import { EmterFarmProxyTokensValidationPipe } from './validators/enter.farm.tokens.validator';
@@ -18,12 +17,13 @@ import { FarmProxyTokensValidationPipe } from './validators/farm.token.validator
 import { LiquidityTokensValidationPipe } from './validators/liquidity.token.validator';
 import { LpProxyTokensValidationPipe } from './validators/lpProxy.token.validator';
 import { UnlockTokensValidationPipe } from './validators/unlock.tokens.validator';
+import { SimpleLockAbiService } from './services/simple.lock.abi.service';
 
 @Resolver()
 export class TransactionResolver extends GenericResolver {
     constructor(
         private readonly simpleLockService: SimpleLockService,
-        private readonly simpleLockGetter: SimpleLockGetterService,
+        private readonly simpleLockAbi: SimpleLockAbiService,
         private readonly farmGetterFactory: FarmGetterFactory,
         private readonly simpleLockTransactions: SimpleLockTransactionService,
     ) {
@@ -171,7 +171,7 @@ export class TransactionResolver extends GenericResolver {
                 inputTokens.attributes,
             );
             const [lockedTokenID, farmAddress] = await Promise.all([
-                this.simpleLockGetter.getLockedTokenID(simpleLockAddress),
+                this.simpleLockAbi.lockedTokenID(simpleLockAddress),
                 this.farmGetterFactory.getFarmAddressByFarmTokenID(
                     decodedAttributes.farmTokenID,
                 ),

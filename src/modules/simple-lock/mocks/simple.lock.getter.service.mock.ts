@@ -1,5 +1,3 @@
-import { SimpleLockGetterService } from '../services/simple.lock.getter.service';
-
 class SimpleLockGetterServiceMock {
     async getLockedTokenID(): Promise<string> {
         return 'LKESDT-1234';
@@ -15,6 +13,6 @@ class SimpleLockGetterServiceMock {
 }
 
 export const SimpleLockGetterServiceProvider = {
-    provide: SimpleLockGetterService,
+    provide: 'SimpleLockGetterService',
     useClass: SimpleLockGetterServiceMock,
 };

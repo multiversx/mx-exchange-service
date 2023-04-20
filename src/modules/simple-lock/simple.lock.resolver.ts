@@ -8,15 +8,15 @@ import {
     LockedTokenAttributesModel,
     SimpleLockModel,
 } from './models/simple.lock.model';
-import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
+import { SimpleLockAbiService } from './services/simple.lock.abi.service';
 
 @Resolver(() => SimpleLockModel)
 export class SimpleLockResolver extends GenericResolver {
     constructor(
         protected readonly simpleLockService: SimpleLockService,
-        protected readonly simpleLockGetter: SimpleLockGetterService,
+        protected readonly simpleLockAbi: SimpleLockAbiService,
     ) {
         super();
     }
@@ -26,7 +26,7 @@ export class SimpleLockResolver extends GenericResolver {
         @Parent() parent: SimpleLockModel,
     ): Promise<NftCollection> {
         return await this.genericFieldResolver(() =>
-            this.simpleLockGetter.getLockedToken(parent.address),
+            this.simpleLockService.getLockedToken(parent.address),
         );
     }
 
@@ -35,7 +35,7 @@ export class SimpleLockResolver extends GenericResolver {
         @Parent() parent: SimpleLockModel,
     ): Promise<NftCollection> {
         return await this.genericFieldResolver(() =>
-            this.simpleLockGetter.getLpProxyToken(parent.address),
+            this.simpleLockService.getLpProxyToken(parent.address),
         );
     }
 
@@ -44,7 +44,7 @@ export class SimpleLockResolver extends GenericResolver {
         @Parent() parent: SimpleLockModel,
     ): Promise<NftCollection> {
         return await this.genericFieldResolver(() =>
-            this.simpleLockGetter.getFarmProxyToken(parent.address),
+            this.simpleLockService.getFarmProxyToken(parent.address),
         );
     }
 
@@ -53,7 +53,7 @@ export class SimpleLockResolver extends GenericResolver {
         @Parent() parent: SimpleLockModel,
     ): Promise<string[]> {
         return await this.genericFieldResolver(() =>
-            this.simpleLockGetter.getIntermediatedPairs(parent.address),
+            this.simpleLockAbi.intermediatedPairs(parent.address),
         );
     }
 
@@ -62,7 +62,7 @@ export class SimpleLockResolver extends GenericResolver {
         @Parent() parent: SimpleLockModel,
     ): Promise<string[]> {
         return await this.genericFieldResolver(() =>
-            this.simpleLockGetter.getIntermediatedFarms(parent.address),
+            this.simpleLockAbi.intermediatedFarms(parent.address),
         );
     }
 
