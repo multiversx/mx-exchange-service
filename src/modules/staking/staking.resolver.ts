@@ -34,188 +34,104 @@ export class StakingResolver {
 
     @ResolveField()
     async farmToken(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingService.getFarmToken(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingService.getFarmToken(parent.address);
     }
 
     @ResolveField()
     async farmingToken(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingService.getFarmingToken(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingService.getFarmingToken(parent.address);
     }
 
     @ResolveField()
     async rewardToken(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingService.getRewardToken(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingService.getRewardToken(parent.address);
     }
 
     @ResolveField()
     async farmTokenSupply(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.farmTokenSupply(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.farmTokenSupply(parent.address);
     }
 
     @ResolveField()
     async rewardPerShare(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.rewardPerShare(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.rewardPerShare(parent.address);
     }
 
     @ResolveField()
     async accumulatedRewards(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.accumulatedRewards(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.accumulatedRewards(parent.address);
     }
 
     @ResolveField()
     async rewardCapacity(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.rewardCapacity(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.rewardCapacity(parent.address);
     }
 
     @ResolveField()
     async annualPercentageRewards(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.annualPercentageRewards(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.annualPercentageRewards(parent.address);
     }
 
     @ResolveField()
     async apr(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingCompute.stakeFarmAPR(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingCompute.stakeFarmAPR(parent.address);
     }
 
     @ResolveField()
     async minUnboundEpochs(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.minUnbondEpochs(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.minUnbondEpochs(parent.address);
     }
 
     @ResolveField()
     async perBlockRewards(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.perBlockRewardsAmount(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.perBlockRewardsAmount(parent.address);
     }
 
     @ResolveField()
     async lastRewardBlockNonce(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.lastRewardBlockNonce(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.lastRewardBlockNonce(parent.address);
     }
 
     @ResolveField()
     async divisionSafetyConstant(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.divisionSafetyConstant(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.divisionSafetyConstant(parent.address);
     }
 
     @ResolveField()
     async produceRewardsEnabled(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.produceRewardsEnabled(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.produceRewardsEnabled(parent.address);
     }
 
     @ResolveField()
     async lockedAssetFactoryManagedAddress(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.lockedAssetFactoryAddress(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.lockedAssetFactoryAddress(parent.address);
     }
 
     @ResolveField()
     async pairContractManagedAddress(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.pairContractAddress(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.pairContractAddress(parent.address);
     }
 
     @ResolveField()
     async burnGasLimit(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.burnGasLimit(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.burnGasLimit(parent.address);
     }
 
     @ResolveField()
     async transferExecGasLimit(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.transferExecGasLimit(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.transferExecGasLimit(parent.address);
     }
 
     @ResolveField()
     async state(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingAbi.state(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.state(parent.address);
     }
 
     @Query(() => String)
     async getLastErrorMessage(
         @Args('stakeAddress') stakeAddress: string,
     ): Promise<string> {
-        try {
-            return await this.stakingAbi.lastErrorMessage(stakeAddress);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingAbi.lastErrorMessage(stakeAddress);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -223,11 +139,7 @@ export class StakingResolver {
     async stakingTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
     ): Promise<StakingTokenAttributesModel[]> {
-        try {
-            return this.stakingService.decodeStakingTokenAttributes(args);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingService.decodeStakingTokenAttributes(args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -235,11 +147,7 @@ export class StakingResolver {
     async unboundTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
     ): Promise<UnbondTokenAttributesModel[]> {
-        try {
-            return this.stakingService.decodeUnboundTokenAttributes(args);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingService.decodeUnboundTokenAttributes(args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -247,22 +155,14 @@ export class StakingResolver {
     async getStakingRewardsForPosition(
         @Args('stakingPositions') args: BatchFarmRewardsComputeArgs,
     ): Promise<StakingRewardsModel[]> {
-        try {
-            return await this.stakingService.getBatchRewardsForPosition(
-                args.farmsPositions,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingService.getBatchRewardsForPosition(
+            args.farmsPositions,
+        );
     }
 
     @Query(() => [StakingModel])
     async stakingFarms(): Promise<StakingModel[]> {
-        try {
-            return await this.stakingService.getFarmsStaking();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingService.getFarmsStaking();
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -271,15 +171,11 @@ export class StakingResolver {
         @Args() args: StakeFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingTransactionService.stakeFarm(
-                user.address,
-                args.farmStakeAddress,
-                args.payments,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingTransactionService.stakeFarm(
+            user.address,
+            args.farmStakeAddress,
+            args.payments,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -288,15 +184,11 @@ export class StakingResolver {
         @Args() args: GenericStakeFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingTransactionService.unstakeFarm(
-                user.address,
-                args.farmStakeAddress,
-                args.payment,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingTransactionService.unstakeFarm(
+            user.address,
+            args.farmStakeAddress,
+            args.payment,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -306,18 +198,11 @@ export class StakingResolver {
         @Args('percent') percent: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setPenaltyPercent(
-                farmStakeAddress,
-                percent,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setPenaltyPercent(
+            farmStakeAddress,
+            percent,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -327,18 +212,11 @@ export class StakingResolver {
         @Args('epochs') epochs: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setMinimumFarmingEpochs(
-                farmStakeAddress,
-                epochs,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setMinimumFarmingEpochs(
+            farmStakeAddress,
+            epochs,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -348,18 +226,11 @@ export class StakingResolver {
         @Args('perBlockAmount') perBlockAmount: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setPerBlockRewardAmount(
-                farmStakeAddress,
-                perBlockAmount,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setPerBlockRewardAmount(
+            farmStakeAddress,
+            perBlockAmount,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -369,18 +240,11 @@ export class StakingResolver {
         @Args('maxApr') maxApr: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setMaxApr(
-                farmStakeAddress,
-                maxApr,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setMaxApr(
+            farmStakeAddress,
+            maxApr,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -390,18 +254,11 @@ export class StakingResolver {
         @Args('minUnboundEpoch') minUnboundEpoch: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setMinUnbondEpochs(
-                farmStakeAddress,
-                minUnboundEpoch,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setMinUnbondEpochs(
+            farmStakeAddress,
+            minUnboundEpoch,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -410,18 +267,11 @@ export class StakingResolver {
         @Args('farmStakeAddress') farmStakeAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setRewardsState(
-                farmStakeAddress,
-                true,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setRewardsState(
+            farmStakeAddress,
+            true,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -430,18 +280,11 @@ export class StakingResolver {
         @Args('farmStakeAddress') farmStakeAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setRewardsState(
-                farmStakeAddress,
-                false,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setRewardsState(
+            farmStakeAddress,
+            false,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -451,18 +294,11 @@ export class StakingResolver {
         @Args('gasLimit') gasLimit: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setBurnGasLimit(
-                farmStakeAddress,
-                gasLimit,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setBurnGasLimit(
+            farmStakeAddress,
+            gasLimit,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -472,18 +308,11 @@ export class StakingResolver {
         @Args('gasLimit') gasLimit: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setTransferExecGasLimit(
-                farmStakeAddress,
-                gasLimit,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setTransferExecGasLimit(
+            farmStakeAddress,
+            gasLimit,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -493,19 +322,12 @@ export class StakingResolver {
         @Args('address') address: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setAddressWhitelist(
-                farmStakeAddress,
-                address,
-                true,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setAddressWhitelist(
+            farmStakeAddress,
+            address,
+            true,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -515,19 +337,12 @@ export class StakingResolver {
         @Args('address') address: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setAddressWhitelist(
-                farmStakeAddress,
-                address,
-                false,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setAddressWhitelist(
+            farmStakeAddress,
+            address,
+            false,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -539,20 +354,13 @@ export class StakingResolver {
         @Args('decimals') decimals: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.registerFarmToken(
-                farmStakeAddress,
-                tokenDisplayName,
-                tokenTicker,
-                decimals,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.registerFarmToken(
+            farmStakeAddress,
+            tokenDisplayName,
+            tokenTicker,
+            decimals,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -561,18 +369,11 @@ export class StakingResolver {
         @Args('farmStakeAddress') farmStakeAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setState(
-                farmStakeAddress,
-                false,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return await this.stakingTransactionService.setState(
+            farmStakeAddress,
+            false,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -581,18 +382,8 @@ export class StakingResolver {
         @Args('farmStakeAddress') farmStakeAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setState(
-                farmStakeAddress,
-                true,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setState(farmStakeAddress, true);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -601,17 +392,10 @@ export class StakingResolver {
         @Args('farmStakeAddress') farmStakeAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.setLocalRolesFarmToken(
-                farmStakeAddress,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(farmStakeAddress, user.address);
+        return this.stakingTransactionService.setLocalRolesFarmToken(
+            farmStakeAddress,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -620,15 +404,11 @@ export class StakingResolver {
         @Args() args: GenericStakeFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingTransactionService.unbondFarm(
-                user.address,
-                args.farmStakeAddress,
-                args.payment,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingTransactionService.unbondFarm(
+            user.address,
+            args.farmStakeAddress,
+            args.payment,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -637,15 +417,11 @@ export class StakingResolver {
         @Args() args: GenericStakeFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingTransactionService.claimRewards(
-                user.address,
-                args.farmStakeAddress,
-                args.payment,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingTransactionService.claimRewards(
+            user.address,
+            args.farmStakeAddress,
+            args.payment,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -654,16 +430,12 @@ export class StakingResolver {
         @Args() args: ClaimRewardsWithNewValueArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingTransactionService.claimRewardsWithNewValue(
-                user.address,
-                args.farmStakeAddress,
-                args.payment,
-                args.newValue,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingTransactionService.claimRewardsWithNewValue(
+            user.address,
+            args.farmStakeAddress,
+            args.payment,
+            args.newValue,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -672,15 +444,11 @@ export class StakingResolver {
         @Args() args: GenericStakeFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingTransactionService.compoundRewards(
-                user.address,
-                args.farmStakeAddress,
-                args.payment,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingTransactionService.compoundRewards(
+            user.address,
+            args.farmStakeAddress,
+            args.payment,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -689,18 +457,14 @@ export class StakingResolver {
         @Args() args: GenericStakeFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireOwner(
-                args.farmStakeAddress,
-                user.address,
-            );
-            return await this.stakingTransactionService.topUpRewards(
-                args.farmStakeAddress,
-                args.payment,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.stakingService.requireOwner(
+            args.farmStakeAddress,
+            user.address,
+        );
+        return this.stakingTransactionService.topUpRewards(
+            args.farmStakeAddress,
+            args.payment,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -709,14 +473,10 @@ export class StakingResolver {
         @Args() args: StakeFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.stakingTransactionService.mergeFarmTokens(
-                user.address,
-                args.farmStakeAddress,
-                args.payments,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.stakingTransactionService.mergeFarmTokens(
+            user.address,
+            args.farmStakeAddress,
+            args.payments,
+        );
     }
 }
