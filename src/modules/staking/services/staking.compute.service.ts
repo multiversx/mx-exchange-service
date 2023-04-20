@@ -1,18 +1,23 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig } from 'src/config';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { Logger } from 'winston';
 import { StakingTokenAttributesModel } from '../models/stakingTokenAttributes.model';
-import { StakingGetterService } from './staking.getter.service';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
+import { StakingAbiService } from './staking.abi.service';
+import { StakingService } from './staking.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class StakingComputeService {
     constructor(
-        @Inject(forwardRef(() => StakingGetterService))
-        private readonly stakingGetterService: StakingGetterService,
+        private readonly stakingAbi: StakingAbiService,
+        @Inject(forwardRef(() => StakingService))
+        private readonly stakingService: StakingService,
         private readonly contextGetter: ContextGetterService,
         private readonly tokenGetter: TokenGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -26,9 +31,7 @@ export class StakingComputeService {
         const [futureRewardsPerShare, divisionSafetyConstant] =
             await Promise.all([
                 this.computeFutureRewardsPerShare(stakeAddress),
-                this.stakingGetterService.getDivisionSafetyConstant(
-                    stakeAddress,
-                ),
+                this.stakingAbi.divisionSafetyConstant(stakeAddress),
             ]);
 
         const amountBig = new BigNumber(liquidity);
@@ -59,11 +62,11 @@ export class StakingComputeService {
             farmTokenSupply,
             divisionSafetyConstant,
         ] = await Promise.all([
-            this.stakingGetterService.getAccumulatedRewards(stakeAddress),
-            this.stakingGetterService.getRewardCapacity(stakeAddress),
-            this.stakingGetterService.getRewardPerShare(stakeAddress),
-            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
-            this.stakingGetterService.getDivisionSafetyConstant(stakeAddress),
+            this.stakingAbi.accumulatedRewards(stakeAddress),
+            this.stakingAbi.rewardCapacity(stakeAddress),
+            this.stakingAbi.rewardPerShare(stakeAddress),
+            this.stakingAbi.farmTokenSupply(stakeAddress),
+            this.stakingAbi.divisionSafetyConstant(stakeAddress),
         ]);
 
         const farmRewardPerShareBig = new BigNumber(farmRewardPerShare);
@@ -97,9 +100,9 @@ export class StakingComputeService {
             produceRewardsEnabled,
         ] = await Promise.all([
             this.contextGetter.getShardCurrentBlockNonce(1),
-            this.stakingGetterService.getLastRewardBlockNonce(stakeAddress),
-            this.stakingGetterService.getPerBlockRewardAmount(stakeAddress),
-            this.stakingGetterService.getProduceRewardsEnabled(stakeAddress),
+            this.stakingAbi.lastRewardBlockNonce(stakeAddress),
+            this.stakingAbi.perBlockRewardsAmount(stakeAddress),
+            this.stakingAbi.produceRewardsEnabled(stakeAddress),
         ]);
 
         const currentBlockBig = new BigNumber(currentNonce);
@@ -129,8 +132,8 @@ export class StakingComputeService {
         blockDifferenceBig: BigNumber,
     ): Promise<BigNumber> {
         const [farmTokenSupply, annualPercentageRewards] = await Promise.all([
-            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
-            this.stakingGetterService.getAnnualPercentageRewards(stakeAddress),
+            this.stakingAbi.farmTokenSupply(stakeAddress),
+            this.stakingAbi.annualPercentageRewards(stakeAddress),
         ]);
         const extraRewardsAPRBoundedPerBlock = new BigNumber(farmTokenSupply)
             .multipliedBy(annualPercentageRewards)
@@ -140,11 +143,24 @@ export class StakingComputeService {
         return extraRewardsAPRBoundedPerBlock.multipliedBy(blockDifferenceBig);
     }
 
+    @ErrorLoggerAsync({
+        className: StakingComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async stakedValueUSD(stakeAddress: string): Promise<string> {
+        return this.computeStakedValueUSD(stakeAddress);
+    }
+
     async computeStakedValueUSD(stakeAddress: string): Promise<string> {
         const [farmTokenSupply, farmingToken] = await Promise.all([
-            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
+            this.stakingAbi.farmTokenSupply(stakeAddress),
             this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
-            this.stakingGetterService.getFarmingToken(stakeAddress),
+            this.stakingService.getFarmingToken(stakeAddress),
         ]);
 
         const farmingTokenPrice = await this.tokenGetter.getDerivedUSD(
@@ -156,6 +172,19 @@ export class StakingComputeService {
             .toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: StakingComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async stakeFarmAPR(stakeAddress: string): Promise<string> {
+        return await this.computeStakeFarmAPR(stakeAddress);
+    }
+
     async computeStakeFarmAPR(stakeAddress: string): Promise<string> {
         const [
             annualPercentageRewards,
@@ -163,13 +192,13 @@ export class StakingComputeService {
             rewardsAPRBoundedBig,
             stakedValue,
         ] = await Promise.all([
-            this.stakingGetterService.getAnnualPercentageRewards(stakeAddress),
-            this.stakingGetterService.getPerBlockRewardAmount(stakeAddress),
+            this.stakingAbi.annualPercentageRewards(stakeAddress),
+            this.stakingAbi.perBlockRewardsAmount(stakeAddress),
             this.computeExtraRewardsBounded(
                 stakeAddress,
                 constantsConfig.BLOCKS_IN_YEAR,
             ),
-            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
+            this.stakingAbi.farmTokenSupply(stakeAddress),
         ]);
 
         const rewardsUnboundedBig = new BigNumber(perBlockRewardAmount).times(

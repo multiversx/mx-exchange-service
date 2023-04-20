@@ -16,25 +16,27 @@ import {
     StakingTokenAttributesModel,
     UnbondTokenAttributesModel,
 } from '../models/stakingTokenAttributes.model';
-import { AbiStakingService } from './staking.abi.service';
+import { StakingAbiService } from './staking.abi.service';
 import { StakingComputeService } from './staking.compute.service';
-import { StakingGetterService } from './staking.getter.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @Injectable()
 export class StakingService {
     constructor(
-        private readonly abiService: AbiStakingService,
-        private readonly stakingGetterService: StakingGetterService,
-        private readonly stakingComputeService: StakingComputeService,
+        private readonly stakingAbi: StakingAbiService,
+        private readonly stakingCompute: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
         private readonly apiService: MXApiService,
-        private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly remoteConfigGetter: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getFarmsStaking(): Promise<StakingModel[]> {
         const farmsStakingAddresses =
-            await this.remoteConfigGetterService.getStakingAddresses();
+            await this.remoteConfigGetter.getStakingAddresses();
 
         const farmsStaking: StakingModel[] = [];
         for (const address of farmsStakingAddresses) {
@@ -46,6 +48,23 @@ export class StakingService {
         }
 
         return farmsStaking;
+    }
+
+    async getFarmToken(stakeAddress: string): Promise<NftCollection> {
+        const farmTokenID = await this.stakingAbi.farmTokenID(stakeAddress);
+        return await this.tokenGetter.getNftCollectionMetadata(farmTokenID);
+    }
+
+    async getFarmingToken(stakeAddress: string): Promise<EsdtToken> {
+        const farmingTokenID = await this.stakingAbi.farmingTokenID(
+            stakeAddress,
+        );
+        return await this.tokenGetter.getTokenMetadata(farmingTokenID);
+    }
+
+    async getRewardToken(stakeAddress: string): Promise<EsdtToken> {
+        const rewardTokenID = await this.stakingAbi.rewardTokenID(stakeAddress);
+        return await this.tokenGetter.getTokenMetadata(rewardTokenID);
     }
 
     decodeStakingTokenAttributes(
@@ -105,18 +124,17 @@ export class StakingService {
         });
         let rewards: BigNumber;
         if (positon.vmQuery) {
-            rewards = await this.abiService.calculateRewardsForGivenPosition(
+            rewards = await this.stakingAbi.calculateRewardsForGivenPosition(
                 positon.farmAddress,
                 positon.liquidity,
                 positon.attributes,
             );
         } else {
-            rewards =
-                await this.stakingComputeService.computeStakeRewardsForPosition(
-                    positon.farmAddress,
-                    positon.liquidity,
-                    stakeTokenAttributes[0],
-                );
+            rewards = await this.stakingCompute.computeStakeRewardsForPosition(
+                positon.farmAddress,
+                positon.liquidity,
+                stakeTokenAttributes[0],
+            );
         }
 
         return new StakingRewardsModel({
@@ -137,11 +155,10 @@ export class StakingService {
         tokenID: string,
     ): Promise<string> {
         const stakeFarmAddresses: string[] =
-            await this.remoteConfigGetterService.getStakingAddresses();
+            await this.remoteConfigGetter.getStakingAddresses();
 
         for (const address of stakeFarmAddresses) {
-            const stakeFarmTokenID =
-                await this.stakingGetterService.getFarmTokenID(address);
+            const stakeFarmTokenID = await this.stakingAbi.farmTokenID(address);
             if (tokenID === stakeFarmTokenID) {
                 return address;
             }
@@ -154,15 +171,18 @@ export class StakingService {
         stakeAddress: string,
         address: string,
     ): Promise<boolean> {
-        return await this.abiService.isWhitelisted(stakeAddress, address);
+        return await this.stakingAbi.isWhitelisted(stakeAddress, address);
     }
 
-    async requireWhitelist(stakeAddress, scAddress) {
-        if (!(await this.abiService.isWhitelisted(stakeAddress, scAddress)))
+    async requireWhitelist(
+        stakeAddress: string,
+        scAddress: string,
+    ): Promise<void> {
+        if (!(await this.stakingAbi.isWhitelisted(stakeAddress, scAddress)))
             throw new Error('SC not whitelisted.');
     }
 
-    async requireOwner(stakeAddress: string, sender: string) {
+    async requireOwner(stakeAddress: string, sender: string): Promise<boolean> {
         return (
             (await this.apiService.getAccountStats(stakeAddress))
                 .ownerAddress === sender

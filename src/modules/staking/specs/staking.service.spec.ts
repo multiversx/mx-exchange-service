@@ -11,7 +11,7 @@ import {
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { StakingService } from '../services/staking.service';
-import { AbiStakingService } from '../services/staking.abi.service';
+import { StakingAbiService } from '../services/staking.abi.service';
 import { StakingGetterService } from '../services/staking.getter.service';
 import { StakingGetterServiceMock } from '../mocks/staking.getter.service.mock';
 import { StakingComputeService } from '../services/staking.compute.service';
@@ -65,7 +65,7 @@ describe('StakingService', () => {
             ],
             providers: [
                 StakingService,
-                AbiStakingService,
+                StakingAbiService,
                 StakingGetterServiceProvider,
                 StakingComputeService,
                 ContextGetterServiceProvider,

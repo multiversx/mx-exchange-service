@@ -1,6 +1,5 @@
 import { Address } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
-import { StakingGetterService } from '../services/staking.getter.service';
 
 export class StakingGetterServiceMock {
     async getPairContractManagedAddress(stakeAddress: string): Promise<string> {
@@ -63,6 +62,6 @@ export class StakingGetterServiceMock {
 }
 
 export const StakingGetterServiceProvider = {
-    provide: StakingGetterService,
+    provide: 'StakingGetterService',
     useClass: StakingGetterServiceMock,
 };

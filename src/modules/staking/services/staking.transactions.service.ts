@@ -16,12 +16,12 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { StakingGetterService } from './staking.getter.service';
+import { StakingAbiService } from './staking.abi.service';
 
 @Injectable()
 export class StakingTransactionService {
     constructor(
-        private readonly stakeGetterService: StakingGetterService,
+        private readonly stakingAbi: StakingAbiService,
         private readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -472,8 +472,8 @@ export class StakingTransactionService {
         tokens: InputTokenModel[],
     ): Promise<void> {
         const [farmTokenID, farmingTokenID] = await Promise.all([
-            this.stakeGetterService.getFarmTokenID(stakeAddress),
-            this.stakeGetterService.getFarmingTokenID(stakeAddress),
+            this.stakingAbi.farmTokenID(stakeAddress),
+            this.stakingAbi.farmingTokenID(stakeAddress),
         ]);
 
         if (tokens[0].tokenID !== farmingTokenID || tokens[0].nonce > 0) {

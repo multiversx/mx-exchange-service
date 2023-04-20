@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
-import { AbiStakingService } from 'src/modules/staking/services/staking.abi.service';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
@@ -12,7 +12,7 @@ import { PUB_SUB } from '../redis.pubSub.module';
 @Injectable()
 export class StakingCacheWarmerService {
     constructor(
-        private readonly abiStakeService: AbiStakingService,
+        private readonly stakingAbi: StakingAbiService,
         private readonly stakeSetterService: StakingSetterService,
         private readonly stakeCompute: StakingComputeService,
         private readonly apiService: MXApiService,
@@ -28,9 +28,9 @@ export class StakingCacheWarmerService {
         for (const address of farmsStakingAddresses) {
             const [farmTokenID, farmingTokenID, rewardTokenID] =
                 await Promise.all([
-                    this.abiStakeService.getFarmTokenID(address),
-                    this.abiStakeService.getFarmingTokenID(address),
-                    this.abiStakeService.getRewardTokenID(address),
+                    this.stakingAbi.getFarmTokenIDRaw(address),
+                    this.stakingAbi.getFarmingTokenIDRaw(address),
+                    this.stakingAbi.getRewardTokenIDRaw(address),
                 ]);
 
             const [farmToken, farmingToken, rewardToken] = await Promise.all([
@@ -73,10 +73,10 @@ export class StakingCacheWarmerService {
                 state,
                 apr,
             ] = await Promise.all([
-                this.abiStakeService.getAnnualPercentageRewards(address),
-                this.abiStakeService.getMinUnbondEpochs(address),
-                this.abiStakeService.getDivisionSafetyConstant(address),
-                this.abiStakeService.getState(address),
+                this.stakingAbi.getAnnualPercentageRewardsRaw(address),
+                this.stakingAbi.getMinUnbondEpochsRaw(address),
+                this.stakingAbi.getDivisionSafetyConstantRaw(address),
+                this.stakingAbi.getStateRaw(address),
                 this.stakeCompute.computeStakeFarmAPR(address),
             ]);
 
@@ -114,12 +114,12 @@ export class StakingCacheWarmerService {
                 perBlockRewards,
                 lastRewardBlockNonce,
             ] = await Promise.all([
-                this.abiStakeService.getFarmTokenSupply(address),
-                this.abiStakeService.getRewardPerShare(address),
-                this.abiStakeService.getAccumulatedRewards(address),
-                this.abiStakeService.getRewardCapacity(address),
-                this.abiStakeService.getPerBlockRewardAmount(address),
-                this.abiStakeService.getLastRewardBlockNonce(address),
+                this.stakingAbi.getFarmTokenSupplyRaw(address),
+                this.stakingAbi.getRewardPerShareRaw(address),
+                this.stakingAbi.getAccumulatedRewardsRaw(address),
+                this.stakingAbi.getRewardCapacityRaw(address),
+                this.stakingAbi.getPerBlockRewardsAmountRaw(address),
+                this.stakingAbi.getLastRewardBlockNonceRaw(address),
             ]);
 
             const cacheKeys = await Promise.all([

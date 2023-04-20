@@ -18,22 +18,24 @@ import {
     StakingTokenAttributesModel,
     UnbondTokenAttributesModel,
 } from './models/stakingTokenAttributes.model';
-import { StakingGetterService } from './services/staking.getter.service';
 import { StakingService } from './services/staking.service';
 import { StakingTransactionService } from './services/staking.transactions.service';
+import { StakingAbiService } from './services/staking.abi.service';
+import { StakingComputeService } from './services/staking.compute.service';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
     constructor(
         private readonly stakingService: StakingService,
-        private readonly stakingGetterService: StakingGetterService,
+        private readonly stakingAbi: StakingAbiService,
+        private readonly stakingCompute: StakingComputeService,
         private readonly stakingTransactionService: StakingTransactionService,
     ) {}
 
     @ResolveField()
     async farmToken(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getFarmToken(parent.address);
+            return await this.stakingService.getFarmToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -42,9 +44,7 @@ export class StakingResolver {
     @ResolveField()
     async farmingToken(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getFarmingToken(
-                parent.address,
-            );
+            return await this.stakingService.getFarmingToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -53,9 +53,7 @@ export class StakingResolver {
     @ResolveField()
     async rewardToken(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getRewardToken(
-                parent.address,
-            );
+            return await this.stakingService.getRewardToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -64,9 +62,7 @@ export class StakingResolver {
     @ResolveField()
     async farmTokenSupply(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getFarmTokenSupply(
-                parent.address,
-            );
+            return await this.stakingAbi.farmTokenSupply(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -75,9 +71,7 @@ export class StakingResolver {
     @ResolveField()
     async rewardPerShare(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getRewardPerShare(
-                parent.address,
-            );
+            return await this.stakingAbi.rewardPerShare(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -86,9 +80,7 @@ export class StakingResolver {
     @ResolveField()
     async accumulatedRewards(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getAccumulatedRewards(
-                parent.address,
-            );
+            return await this.stakingAbi.accumulatedRewards(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -97,9 +89,7 @@ export class StakingResolver {
     @ResolveField()
     async rewardCapacity(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getRewardCapacity(
-                parent.address,
-            );
+            return await this.stakingAbi.rewardCapacity(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -108,7 +98,7 @@ export class StakingResolver {
     @ResolveField()
     async annualPercentageRewards(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getAnnualPercentageRewards(
+            return await this.stakingAbi.annualPercentageRewards(
                 parent.address,
             );
         } catch (error) {
@@ -119,9 +109,7 @@ export class StakingResolver {
     @ResolveField()
     async apr(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getStakeFarmAPR(
-                parent.address,
-            );
+            return await this.stakingCompute.stakeFarmAPR(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -130,9 +118,7 @@ export class StakingResolver {
     @ResolveField()
     async minUnboundEpochs(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getMinUnbondEpochs(
-                parent.address,
-            );
+            return await this.stakingAbi.minUnbondEpochs(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -141,9 +127,7 @@ export class StakingResolver {
     @ResolveField()
     async perBlockRewards(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getPerBlockRewardAmount(
-                parent.address,
-            );
+            return await this.stakingAbi.perBlockRewardsAmount(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -152,9 +136,7 @@ export class StakingResolver {
     @ResolveField()
     async lastRewardBlockNonce(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getLastRewardBlockNonce(
-                parent.address,
-            );
+            return await this.stakingAbi.lastRewardBlockNonce(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -163,9 +145,7 @@ export class StakingResolver {
     @ResolveField()
     async divisionSafetyConstant(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getDivisionSafetyConstant(
-                parent.address,
-            );
+            return await this.stakingAbi.divisionSafetyConstant(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -174,9 +154,7 @@ export class StakingResolver {
     @ResolveField()
     async produceRewardsEnabled(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getProduceRewardsEnabled(
-                parent.address,
-            );
+            return await this.stakingAbi.produceRewardsEnabled(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -185,7 +163,7 @@ export class StakingResolver {
     @ResolveField()
     async lockedAssetFactoryManagedAddress(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getLockedAssetFactoryManagedAddress(
+            return await this.stakingAbi.lockedAssetFactoryAddress(
                 parent.address,
             );
         } catch (error) {
@@ -196,9 +174,7 @@ export class StakingResolver {
     @ResolveField()
     async pairContractManagedAddress(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getPairContractManagedAddress(
-                parent.address,
-            );
+            return await this.stakingAbi.pairContractAddress(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -207,9 +183,7 @@ export class StakingResolver {
     @ResolveField()
     async burnGasLimit(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getBurnGasLimit(
-                parent.address,
-            );
+            return await this.stakingAbi.burnGasLimit(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -218,9 +192,7 @@ export class StakingResolver {
     @ResolveField()
     async transferExecGasLimit(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getTransferExecGasLimit(
-                parent.address,
-            );
+            return await this.stakingAbi.transferExecGasLimit(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -229,7 +201,7 @@ export class StakingResolver {
     @ResolveField()
     async state(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getState(parent.address);
+            return await this.stakingAbi.state(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -240,9 +212,7 @@ export class StakingResolver {
         @Args('stakeAddress') stakeAddress: string,
     ): Promise<string> {
         try {
-            return await this.stakingGetterService.getLastErrorMessage(
-                stakeAddress,
-            );
+            return await this.stakingAbi.lastErrorMessage(stakeAddress);
         } catch (error) {
             throw new ApolloError(error);
         }

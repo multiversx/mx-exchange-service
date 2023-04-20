@@ -39,7 +39,6 @@ import {
     tokenIdentifier,
 } from '../../../utils/token.converters';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
-import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { StakingService } from '../../staking/services/staking.service';
 import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
@@ -75,7 +74,6 @@ export class UserMetaEsdtComputeService {
         private readonly lockedAssetService: LockedAssetService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly proxyService: ProxyService,
-        private readonly stakingGetter: StakingGetterService,
         private readonly stakingService: StakingService,
         private readonly stakingProxyAbi: StakingProxyAbiService,
         private readonly stakingProxyService: StakingProxyService,
@@ -395,7 +393,7 @@ export class UserMetaEsdtComputeService {
                     },
                 ],
             });
-        const farmingToken = await this.stakingGetter.getFarmingToken(
+        const farmingToken = await this.stakingService.getFarmingToken(
             nftToken.creator,
         );
         const priceUSD = await this.pairGetterService.getTokenPriceUSD(
@@ -416,7 +414,7 @@ export class UserMetaEsdtComputeService {
     async unbondFarmUSD(
         nftToken: UnbondFarmToken,
     ): Promise<UserUnbondFarmToken> {
-        const farmingToken = await this.stakingGetter.getFarmingToken(
+        const farmingToken = await this.stakingService.getFarmingToken(
             nftToken.creator,
         );
         const priceUSD = await this.pairGetterService.getTokenPriceUSD(
