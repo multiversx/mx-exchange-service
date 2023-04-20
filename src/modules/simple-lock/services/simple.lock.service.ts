@@ -22,7 +22,6 @@ import {
     FarmProxyTokenAttributesModel,
     LockedTokenAttributesModel,
     LpProxyTokenAttributesModel,
-    SimpleLockModel,
 } from '../models/simple.lock.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
@@ -44,15 +43,6 @@ export class SimpleLockService {
         private readonly apiService: MXApiService,
         private readonly cacheService: CachingService,
     ) {}
-
-    getSimpleLock(): SimpleLockModel[] {
-        return scAddress.simpleLockAddress.map(
-            (address: string) =>
-                new SimpleLockModel({
-                    address,
-                }),
-        );
-    }
 
     async getLockedToken(simpleLockAddress: string): Promise<NftCollection> {
         const tokenID = await this.simpleLockAbi.lockedTokenID(
