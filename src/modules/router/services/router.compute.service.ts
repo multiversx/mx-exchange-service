@@ -51,6 +51,7 @@ export class RouterComputeService {
 
     @ErrorLoggerAsync({
         className: RouterComputeService.name,
+        logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'router',
@@ -81,6 +82,7 @@ export class RouterComputeService {
 
     @ErrorLoggerAsync({
         className: RouterComputeService.name,
+        logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'router',
