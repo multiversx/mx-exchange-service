@@ -20,7 +20,7 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { TransactionRouterService } from 'src/modules/router/services/transactions.router.service';
+import { RouterTransactionService } from 'src/modules/router/services/router.transactions.service';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { RouterService } from 'src/modules/router/services/router.service';
 import { AutoRouteModel } from '../models/auto-route.model';
@@ -94,7 +94,7 @@ describe('AutoRouterService', () => {
                 WrapAbiServiceProvider,
                 WrapService,
                 WrapTransactionsService,
-                TransactionRouterService,
+                RouterTransactionService,
                 RemoteConfigGetterServiceProvider,
                 AutoRouterService,
                 AutoRouterComputeService,

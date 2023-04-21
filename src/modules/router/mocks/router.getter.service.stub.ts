@@ -1,16 +1,15 @@
 import { PairMetadata } from '../models/pair.metadata.model';
 import { pairs } from 'src/modules/pair/mocks/pair.constants';
-import { RouterGetterService } from '../services/router.getter.service';
 
 export class RouterGetterServiceStub {
     async getAllPairsAddress(): Promise<string[]> {
-        return pairs.map(p => {
+        return pairs.map((p) => {
             return p.address;
         });
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
-        return pairs.map(p => {
+        return pairs.map((p) => {
             return new PairMetadata({
                 firstTokenID: p.firstToken.identifier,
                 secondTokenID: p.secondToken.identifier,
@@ -21,11 +20,11 @@ export class RouterGetterServiceStub {
 
     async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
         const pairs = await this.getPairsMetadata();
-        return pairs.find(pair => pair.address === pairAddress);
+        return pairs.find((pair) => pair.address === pairAddress);
     }
 }
 
 export const RouterGetterServiceProvider = {
-    provide: RouterGetterService,
+    provide: 'RouterGetterService',
     useClass: RouterGetterServiceStub,
 };

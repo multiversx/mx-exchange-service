@@ -3,7 +3,7 @@ import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-servic
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { TransactionRouterService } from '../services/transactions.router.service';
+import { RouterTransactionService } from '../services/router.transactions.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
@@ -28,7 +28,7 @@ import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('RouterService', () => {
-    let service: TransactionRouterService;
+    let service: RouterTransactionService;
 
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
@@ -73,14 +73,14 @@ describe('RouterService', () => {
                 WrapTransactionsService,
                 ApiConfigService,
                 MXProxyService,
-                TransactionRouterService,
+                RouterTransactionService,
                 TokenGetterServiceProvider,
                 RouterService,
             ],
         }).compile();
 
-        service = module.get<TransactionRouterService>(
-            TransactionRouterService,
+        service = module.get<RouterTransactionService>(
+            RouterTransactionService,
         );
     });
 

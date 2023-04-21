@@ -1,24 +1,20 @@
 import { FactoryModel } from '../models/factory.model';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../../config';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { PairModel } from '../../pair/models/pair.model';
-import { RouterGetterService } from '../services/router.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneSecond } from 'src/helpers/helpers';
+import { RouterAbiService } from './router.abi.service';
 
 @Injectable()
 export class RouterService {
     constructor(
-        private readonly routerGetterService: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly pairGetterService: PairGetterService,
         private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getFactory(): Promise<FactoryModel> {
@@ -27,12 +23,17 @@ export class RouterService {
         });
     }
 
+    async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
+        const pairs = await this.routerAbi.pairsMetadata();
+        return pairs.find((pair) => pair.address === pairAddress);
+    }
+
     async getAllPairs(
         offset: number,
         limit: number,
         pairFilter: PairFilterArgs,
     ): Promise<PairModel[]> {
-        let pairsMetadata = await this.routerGetterService.getPairsMetadata();
+        let pairsMetadata = await this.routerAbi.pairsMetadata();
         if (pairFilter.issuedLpToken) {
             pairsMetadata = await this.filterPairsByIssuedLpToken(
                 pairsMetadata,
@@ -151,12 +152,8 @@ export class RouterService {
         return filteredPairsMetadata;
     }
 
-    private getRouterCacheKey(...args: any) {
-        return generateCacheKeyFromParams('router', ...args);
-    }
-
     async requireOwner(sender: string) {
-        if ((await this.routerGetterService.getOwner()) !== sender)
+        if ((await this.routerAbi.owner()) !== sender)
             throw new Error('You are not the owner.');
     }
 }
