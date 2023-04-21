@@ -7,9 +7,13 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { oneHour } from 'src/helpers/helpers';
 import { AddressValue } from '@multiversx/sdk-core/out';
+import { IProxyPairAbiService } from '../interfaces';
 
 @Injectable()
-export class ProxyPairAbiService extends GenericAbiService {
+export class ProxyPairAbiService
+    extends GenericAbiService
+    implements IProxyPairAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }
