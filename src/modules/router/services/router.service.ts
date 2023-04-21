@@ -5,16 +5,15 @@ import { PairModel } from '../../pair/models/pair.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
-import { CachingService } from 'src/services/caching/cache.service';
 import { oneSecond } from 'src/helpers/helpers';
 import { RouterAbiService } from './router.abi.service';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()
 export class RouterService {
     constructor(
         private readonly routerAbi: RouterAbiService,
         private readonly pairGetterService: PairGetterService,
-        private readonly cachingService: CachingService,
     ) {}
 
     async getFactory(): Promise<FactoryModel> {
@@ -35,9 +34,7 @@ export class RouterService {
     ): Promise<PairModel[]> {
         let pairsMetadata = await this.routerAbi.pairsMetadata();
         if (pairFilter.issuedLpToken) {
-            pairsMetadata = await this.filterPairsByIssuedLpToken(
-                pairsMetadata,
-            );
+            pairsMetadata = await this.pairsByIssuedLpToken(pairsMetadata);
         }
 
         pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
@@ -95,15 +92,15 @@ export class RouterService {
         return pairsMetadata;
     }
 
-    private async filterPairsByIssuedLpToken(
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneSecond() * 30,
+        localTtl: oneSecond() * 6,
+    })
+    private async pairsByIssuedLpToken(
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        return await this.cachingService.getOrSet(
-            'getPairsByIssuedLpToken',
-            async () => await this.filterPairsByIssuedLpTokenRaw(pairsMetadata),
-            oneSecond() * 30,
-            oneSecond() * 6,
-        );
+        return await this.filterPairsByIssuedLpTokenRaw(pairsMetadata);
     }
 
     private async filterPairsByIssuedLpTokenRaw(

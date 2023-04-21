@@ -9,9 +9,13 @@ import { PairMetadata } from '../models/pair.metadata.model';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { IRouterAbiService } from './interfaces';
 
 @Injectable()
-export class RouterAbiService extends GenericAbiService {
+export class RouterAbiService
+    extends GenericAbiService
+    implements IRouterAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }
