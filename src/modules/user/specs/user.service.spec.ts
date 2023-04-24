@@ -19,9 +19,6 @@ import { UserMetaEsdtComputeService } from '../services/metaEsdt.compute.service
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
-import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
-import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ProxyGetterServiceMock } from '../../proxy/mocks/proxy.getter.service.mock';
 import { LockedAssetServiceMock } from '../../locked-asset-factory/mocks/locked.asset.service.mock';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
@@ -82,6 +79,8 @@ import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.serv
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -100,11 +99,6 @@ describe('UserService', () => {
     const RouterGetterServiceProvider = {
         provide: RouterGetterService,
         useClass: RouterGetterServiceStub,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
     };
 
     const ProxyServiceProvider = {
@@ -187,8 +181,8 @@ describe('UserService', () => {
                 ContextGetterServiceProvider,
                 RouterGetterServiceProvider,
                 PairService,
-                PairGetterServiceProvider,
-                PairComputeService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 FarmFactoryService,
                 FarmGetterFactory,
                 {

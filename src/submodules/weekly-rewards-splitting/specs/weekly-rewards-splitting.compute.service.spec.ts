@@ -6,14 +6,18 @@ import { EnergyModel } from 'src/modules/energy/models/energy.model';
 import { WeeklyRewardsSplittingAbiServiceProvider } from '../mocks/weekly.rewards.splitting.abi.mock';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair-getter-service-mock.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WeeklyRewardsSplittingAbiService } from '../services/weekly-rewards-splitting.abi.service';
 import { Address } from '@multiversx/sdk-core/out';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { CommonAppModule } from 'src/common.app.module';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     let module: TestingModule;
@@ -26,12 +30,14 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 WeeklyRewardsSplittingAbiServiceProvider,
                 EnergyAbiServiceProvider,
                 TokenComputeService,
-                {
-                    provide: PairGetterService,
-                    useClass: PairGetterServiceMock,
-                },
+                TokenGetterServiceProvider,
+                PairService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 RouterGetterServiceProvider,
+                WrapAbiServiceProvider,
                 MXDataApiServiceProvider,
+                ContextGetterServiceProvider,
             ],
         }).compile();
     });

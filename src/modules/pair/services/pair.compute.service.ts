@@ -12,9 +12,10 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { IPairComputeService } from '../interfaces';
 
 @Injectable()
-export class PairComputeService {
+export class PairComputeService implements IPairComputeService {
     constructor(
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairService))

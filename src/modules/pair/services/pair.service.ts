@@ -29,6 +29,7 @@ export class PairService {
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetter: RouterGetterService,
         private readonly wrapAbi: WrapAbiService,
+        @Inject(forwardRef(() => TokenGetterService))
         private readonly tokenGetter: TokenGetterService,
         private readonly cachingService: CachingService,
         private readonly contextGetter: ContextGetterService,

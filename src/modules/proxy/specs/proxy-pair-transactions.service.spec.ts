@@ -8,8 +8,6 @@ import * as Transport from 'winston-transport';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-transactions.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
 import { Address } from '@multiversx/sdk-core';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { ProxyGetterServiceMock } from '../mocks/proxy.getter.service.mock';
@@ -23,11 +21,15 @@ import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.get
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
     let mxProxy: MXProxyService;
-    let pairGetterService: PairGetterService;
+    let pairAbi: PairAbiService;
 
     const ProxyGetterServiceProvider = {
         provide: ProxyGetterService,
@@ -37,11 +39,6 @@ describe('TransactionProxyPairService', () => {
     const ProxyPairGetterServiceProvider = {
         provide: ProxyPairGetterService,
         useClass: ProxyPairGetterServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
     };
 
     const logTransports: Transport[] = [
@@ -68,13 +65,15 @@ describe('TransactionProxyPairService', () => {
                 ProxyGetterServiceProvider,
                 ProxyPairGetterServiceProvider,
                 PairService,
-                PairGetterServiceProvider,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 WrapAbiServiceProvider,
                 WrapTransactionsService,
                 WrapService,
                 TokenGetterServiceProvider,
                 RouterGetterServiceProvider,
                 TransactionsProxyPairService,
+                ContextGetterServiceProvider,
             ],
         }).compile();
 
@@ -82,7 +81,7 @@ describe('TransactionProxyPairService', () => {
             TransactionsProxyPairService,
         );
         mxProxy = module.get<MXProxyService>(MXProxyService);
-        pairGetterService = module.get<PairGetterService>(PairGetterService);
+        pairAbi = module.get<PairAbiService>(PairAbiService);
     });
 
     it('should be defined', () => {
@@ -95,12 +94,13 @@ describe('TransactionProxyPairService', () => {
         jest.spyOn(mxProxy, 'getAddressShardID').mockImplementation(
             async () => 0,
         );
-        jest.spyOn(pairGetterService, 'getFirstTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
             async () => 'TOK1-1111',
         );
-        jest.spyOn(pairGetterService, 'getSecondTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
             async () => 'TOK2-2222',
         );
+
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
@@ -136,12 +136,13 @@ describe('TransactionProxyPairService', () => {
         jest.spyOn(mxProxy, 'getAddressShardID').mockImplementation(
             async () => 0,
         );
-        jest.spyOn(pairGetterService, 'getFirstTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
             async () => 'TOK1-1111',
         );
-        jest.spyOn(pairGetterService, 'getSecondTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
             async () => 'TOK2-2222',
         );
+
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',

@@ -3,9 +3,6 @@ import { MXProxyService } from '../../../services/multiversx-communication/mx.pr
 import { PairService } from '../../pair/services/pair.service';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
-import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { MXApiServiceMock } from 'src/services/multiversx-communication/mx.api.service.mock';
@@ -43,14 +40,11 @@ import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
 
     const ProxyGetterServiceProvider = {
         provide: ProxyGetterService,
@@ -101,16 +95,16 @@ describe('AnalyticsService', () => {
                 FarmComputeServiceV1_3,
                 FarmComputeServiceV2,
                 PairService,
-                PairGetterServiceProvider,
-                PairComputeService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 ProxyGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
                 WrapAbiServiceProvider,
                 RouterGetterServiceProvider,
                 TokenGetterServiceProvider,
-                MXDataApiServiceProvider,
                 TokenComputeService,
+                MXDataApiServiceProvider,
                 AnalyticsComputeService,
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,

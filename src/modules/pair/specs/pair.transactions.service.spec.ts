@@ -1,19 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import winston from 'winston';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as Transport from 'winston-transport';
-import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairService } from '../services/pair.service';
-import { PairGetterService } from '../services/pair.getter.service';
-import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';
-import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
+import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -21,53 +10,29 @@ import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { mxConfig, gasConfig } from 'src/config';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
+import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { PairComputeServiceProvider } from '../mocks/pair.compute.service.mock';
+import { CachingModule } from 'src/services/caching/cache.module';
+import { CommonAppModule } from 'src/common.app.module';
 
 describe('TransactionPairService', () => {
-    let service: PairTransactionService;
-
-    const MXProxyServiceProvider = {
-        provide: MXProxyService,
-        useClass: MXProxyServiceMock,
-    };
-
-    const ContextGetterServiceProvider = {
-        provide: ContextGetterService,
-        useClass: ContextGetterServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
-    const logTransports: Transport[] = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                nestWinstonModuleUtilities.format.nestLike(),
-            ),
-        }),
-    ];
+    let module: TestingModule;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                WinstonModule.forRoot({
-                    transports: logTransports,
-                }),
-                CachingModule,
-            ],
+        module = await Test.createTestingModule({
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 ConfigService,
                 ApiConfigService,
                 MXProxyServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
-                PairGetterServiceProvider,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 RouterGetterServiceProvider,
                 WrapAbiServiceProvider,
                 WrapTransactionsService,
@@ -76,17 +41,23 @@ describe('TransactionPairService', () => {
                 PairTransactionService,
             ],
         }).compile();
-
-        service = module.get<PairTransactionService>(PairTransactionService);
     });
 
     it('should be defined', () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         expect(service).toBeDefined();
     });
 
     it('should get add initial liquidity batch transaction', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
+
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
 
         const initialLiquidityBatchTransactions =
             await service.addInitialLiquidityBatch(Address.Zero().bech32(), {
@@ -146,6 +117,10 @@ describe('TransactionPairService', () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
 
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const addLiquidityTransaction = await service.addInitialLiquidity(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
@@ -187,6 +162,10 @@ describe('TransactionPairService', () => {
     it('should get add liquidity transaction', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
+
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
 
         const addLiquidityTransaction = await service.addLiquidity(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
@@ -230,6 +209,10 @@ describe('TransactionPairService', () => {
     it('should get add liquidity batch transaction EGLD first token', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
+
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
 
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
@@ -289,6 +272,10 @@ describe('TransactionPairService', () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
 
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
@@ -345,6 +332,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get remove liquidity transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transactions = await service.removeLiquidity(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
@@ -393,6 +384,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get swap tokens fixed input transaction + wrap tx', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transactions = await service.swapTokensFixedInput(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
@@ -441,6 +436,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get swap tokens fixed output transaction + unwrap tx', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transactions = await service.swapTokensFixedOutput(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
@@ -490,6 +489,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should validate tokens', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transactions = await service.validateTokens(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             [
@@ -533,6 +536,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get add to whitelist transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.whitelist({
             pairAddress:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -558,6 +565,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get remove from whitelist transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.removeWhitelist({
             pairAddress:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -583,6 +594,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get add trusted swap pair transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.addTrustedSwapPair(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
@@ -609,6 +624,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get remove trusted swap pair transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.removeTrustedSwapPair(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             'TOK1-1111',
@@ -634,6 +653,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set transfer execution gas limit transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setTransferExecGasLimit(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '50000000',
@@ -656,6 +679,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set extern swap gas limit transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setExternSwapGasLimit(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '50000000',
@@ -678,6 +705,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get pause transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.pause(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
@@ -699,6 +730,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get resume transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.resume(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
@@ -720,6 +755,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set state active no swaps transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setStateActiveNoSwaps(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
@@ -741,6 +780,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set fee percents transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setFeePercents(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             3,
@@ -764,6 +807,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set max observations per period transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setMaxObservationsPerRecord(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             1000,
@@ -786,6 +833,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set BP swap config transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setBPSwapConfig(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             {
@@ -814,6 +865,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set BP remove config transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setBPRemoveConfig(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             {
@@ -842,6 +897,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set BP add config transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setBPAddConfig(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             {
@@ -870,6 +929,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set locking deadline epoch transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setLockingDeadlineEpoch(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             1000,
@@ -892,6 +955,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set unlocking epoch transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setUnlockEpoch(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             1005,
@@ -914,6 +981,10 @@ describe('TransactionPairService', () => {
     });
 
     it('should get set locking SC address transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
         const transaction = await service.setLockingScAddress(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),

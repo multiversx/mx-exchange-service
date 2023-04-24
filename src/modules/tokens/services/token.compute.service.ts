@@ -20,6 +20,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
+        @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetter: RouterGetterService,

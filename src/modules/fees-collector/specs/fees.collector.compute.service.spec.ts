@@ -3,7 +3,10 @@ import { FeesCollectorComputeService } from '../services/fees-collector.compute.
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
-import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
+import {
+    ContextGetterServiceMock,
+    ContextGetterServiceProvider,
+} from 'src/services/context/mocks/context.getter.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { FeesCollectorGetterService } from '../services/fees-collector.getter.service';
 import { FeesCollectorAbiServiceProvider } from '../mocks/fees.collector.abi.service.mock';
@@ -12,13 +15,16 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair-getter-service-mock.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('FeesCollectorComputeService', () => {
     let module: TestingModule;
@@ -36,12 +42,14 @@ describe('FeesCollectorComputeService', () => {
                 WeeklyRewardsSplittingComputeService,
                 EnergyAbiServiceProvider,
                 TokenComputeService,
-                {
-                    provide: PairGetterService,
-                    useClass: PairGetterServiceMock,
-                },
+                TokenGetterServiceProvider,
+                PairService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 RouterGetterServiceProvider,
+                WrapAbiServiceProvider,
                 MXDataApiServiceProvider,
+                ContextGetterServiceProvider,
                 {
                     provide: ContextGetterService,
                     useClass: ContextGetterServiceMock,

@@ -1,6 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { TransactionRouterService } from '../services/transactions.router.service';
@@ -26,6 +24,8 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 
 describe('RouterService', () => {
     let service: TransactionRouterService;
@@ -33,11 +33,6 @@ describe('RouterService', () => {
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
     };
 
     const RouterGetterServiceProvider = {
@@ -65,7 +60,8 @@ describe('RouterService', () => {
             ],
             providers: [
                 ContextGetterServiceProvider,
-                PairGetterServiceProvider,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 PairService,
                 RouterGetterServiceProvider,
                 WrapAbiServiceProvider,

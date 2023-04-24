@@ -28,9 +28,13 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { IPairAbiService } from '../interfaces';
 
 @Injectable()
-export class PairAbiService extends GenericAbiService {
+export class PairAbiService
+    extends GenericAbiService
+    implements IPairAbiService
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
         private readonly cachingService: CachingService,

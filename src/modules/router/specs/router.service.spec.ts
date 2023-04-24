@@ -1,6 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
 import { RouterGetterServiceStub } from '../mocks/router.getter.service.stub';
@@ -14,14 +12,10 @@ import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { PairFilterArgs } from '../models/filter.args';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 
 describe('RouterService', () => {
     let service: RouterService;
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
 
     const RouterGetterServiceProvider = {
         provide: RouterGetterService,
@@ -47,7 +41,7 @@ describe('RouterService', () => {
                 CachingModule,
             ],
             providers: [
-                PairGetterServiceProvider,
+                PairAbiServiceProvider,
                 RouterGetterServiceProvider,
                 RouterService,
             ],

@@ -5,11 +5,6 @@ import { MXApiService } from '../../../services/multiversx-communication/mx.api.
 import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
@@ -41,6 +36,9 @@ import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeepi
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 
 describe('FarmService', () => {
     let factory: FarmFactoryService;
@@ -73,16 +71,6 @@ describe('FarmService', () => {
         useClass: MXApiServiceMock,
     };
 
-    const ContextGetterServiceProvider = {
-        provide: ContextGetterService,
-        useClass: ContextGetterServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
@@ -113,8 +101,8 @@ describe('FarmService', () => {
                 RouterGetterServiceProvider,
                 TokenGetterServiceProvider,
                 PairService,
-                PairGetterServiceProvider,
-                PairComputeService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 WrapAbiServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
