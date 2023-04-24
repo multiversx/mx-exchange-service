@@ -6,17 +6,17 @@ import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { PairModel } from '../../pair/models/pair.model';
 import { RouterGetterService } from '../services/router.getter.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneSecond } from 'src/helpers/helpers';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 @Injectable()
 export class RouterService {
     constructor(
         private readonly routerGetterService: RouterGetterService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -109,7 +109,7 @@ export class RouterService {
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
         const promises = pairsMetadata.map((pairMetadata) =>
-            this.pairGetterService.getLpTokenID(pairMetadata.address),
+            this.pairAbi.lpTokenID(pairMetadata.address),
         );
         const lpTokensIDs = await Promise.all(promises);
 
@@ -137,7 +137,7 @@ export class RouterService {
         }
 
         const promises = pairsMetadata.map((pairMetadata) =>
-            this.pairGetterService.getState(pairMetadata.address),
+            this.pairAbi.state(pairMetadata.address),
         );
         const pairsStates = await Promise.all(promises);
 

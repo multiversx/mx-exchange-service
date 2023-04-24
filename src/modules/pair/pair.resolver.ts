@@ -18,7 +18,6 @@ import {
 } from './models/pair.args';
 import { PairTransactionService } from './services/pair.transactions.service';
 import { ApolloError } from 'apollo-server-express';
-import { PairGetterService } from './services/pair.getter.service';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -26,19 +25,22 @@ import { PairInfoModel } from './models/pair-info.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
+import { PairAbiService } from './services/pair.abi.service';
+import { PairComputeService } from './services/pair.compute.service';
 
 @Resolver(() => PairModel)
 export class PairResolver {
     constructor(
         private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairAbi: PairAbiService,
+        private readonly pairCompute: PairComputeService,
         private readonly transactionService: PairTransactionService,
     ) {}
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel): Promise<EsdtToken> {
         try {
-            return await this.pairGetterService.getFirstToken(parent.address);
+            return await this.pairService.getFirstToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -47,7 +49,7 @@ export class PairResolver {
     @ResolveField()
     async secondToken(@Parent() parent: PairModel): Promise<EsdtToken> {
         try {
-            return await this.pairGetterService.getSecondToken(parent.address);
+            return await this.pairService.getSecondToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -56,7 +58,7 @@ export class PairResolver {
     @ResolveField()
     async liquidityPoolToken(@Parent() parent: PairModel): Promise<EsdtToken> {
         try {
-            return await this.pairGetterService.getLpToken(parent.address);
+            return await this.pairService.getLpToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -65,9 +67,7 @@ export class PairResolver {
     @ResolveField()
     async firstTokenPrice(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getFirstTokenPrice(
-                parent.address,
-            );
+            return await this.pairCompute.firstTokenPrice(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -76,9 +76,7 @@ export class PairResolver {
     @ResolveField()
     async firstTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getFirstTokenPriceUSD(
-                parent.address,
-            );
+            return await this.pairCompute.firstTokenPriceUSD(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -87,9 +85,7 @@ export class PairResolver {
     @ResolveField()
     async secondTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getSecondTokenPriceUSD(
-                parent.address,
-            );
+            return await this.pairCompute.secondTokenPriceUSD(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -98,9 +94,7 @@ export class PairResolver {
     @ResolveField()
     async secondTokenPrice(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getSecondTokenPrice(
-                parent.address,
-            );
+            return await this.pairCompute.secondTokenPrice(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -111,9 +105,7 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<string> {
         try {
-            return await this.pairGetterService.getLpTokenPriceUSD(
-                parent.address,
-            );
+            return await this.pairCompute.lpTokenPriceUSD(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -124,7 +116,7 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<string> {
         try {
-            return await this.pairGetterService.getFirstTokenLockedValueUSD(
+            return await this.pairCompute.firstTokenLockedValueUSD(
                 parent.address,
             );
         } catch (error) {
@@ -137,7 +129,7 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<string> {
         try {
-            return await this.pairGetterService.getSecondTokenLockedValueUSD(
+            return await this.pairCompute.secondTokenLockedValueUSD(
                 parent.address,
             );
         } catch (error) {
@@ -148,9 +140,7 @@ export class PairResolver {
     @ResolveField()
     async lockedValueUSD(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getLockedValueUSD(
-                parent.address,
-            );
+            return await this.pairCompute.lockedValueUSD(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -159,7 +149,7 @@ export class PairResolver {
     @ResolveField()
     async firstTokenVolume24h(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getFirstTokenVolume(
+            return await this.pairCompute.firstTokenVolume(
                 parent.address,
                 '24h',
             );
@@ -171,7 +161,7 @@ export class PairResolver {
     @ResolveField()
     async secondTokenVolume24h(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getSecondTokenVolume(
+            return await this.pairCompute.secondTokenVolume(
                 parent.address,
                 '24h',
             );
@@ -183,10 +173,7 @@ export class PairResolver {
     @ResolveField()
     async volumeUSD24h(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getVolumeUSD(
-                parent.address,
-                '24h',
-            );
+            return await this.pairCompute.volumeUSD(parent.address, '24h');
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -195,10 +182,7 @@ export class PairResolver {
     @ResolveField()
     async feesUSD24h(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getFeesUSD(
-                parent.address,
-                '24h',
-            );
+            return await this.pairCompute.feesUSD(parent.address, '24h');
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -207,7 +191,7 @@ export class PairResolver {
     @ResolveField()
     async feesAPR(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getFeesAPR(parent.address);
+            return await this.pairCompute.feesAPR(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -216,9 +200,7 @@ export class PairResolver {
     @ResolveField()
     async info(@Parent() parent: PairModel): Promise<PairInfoModel> {
         try {
-            return await this.pairGetterService.getPairInfoMetadata(
-                parent.address,
-            );
+            return await this.pairAbi.pairInfoMetadata(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -227,9 +209,7 @@ export class PairResolver {
     @ResolveField()
     async totalFeePercent(@Parent() parent: PairModel): Promise<number> {
         try {
-            return await this.pairGetterService.getTotalFeePercent(
-                parent.address,
-            );
+            return await this.pairAbi.totalFeePercent(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -238,9 +218,7 @@ export class PairResolver {
     @ResolveField()
     async specialFeePercent(@Parent() parent: PairModel): Promise<number> {
         try {
-            return await this.pairGetterService.getSpecialFeePercent(
-                parent.address,
-            );
+            return await this.pairAbi.specialFeePercent(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -249,17 +227,15 @@ export class PairResolver {
     @ResolveField()
     async type(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getType(parent.address);
+            return await this.pairCompute.type(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
-    async trustedSwapPairs(@Parent() parent: PairModel): Promise<String[]> {
+    async trustedSwapPairs(@Parent() parent: PairModel): Promise<string[]> {
         try {
-            return await this.pairGetterService.getTrustedSwapPairs(
-                parent.address,
-            );
+            return await this.pairAbi.trustedSwapPairs(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -268,7 +244,7 @@ export class PairResolver {
     @ResolveField()
     async state(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getState(parent.address);
+            return await this.pairAbi.state(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -277,7 +253,7 @@ export class PairResolver {
     @ResolveField()
     async feeState(@Parent() parent: PairModel): Promise<boolean> {
         try {
-            return await this.pairGetterService.getFeeState(parent.address);
+            return await this.pairAbi.feeState(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -288,9 +264,7 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<LockedTokensInfo> {
         try {
-            return await this.pairGetterService.getLockedTokensInfo(
-                parent.address,
-            );
+            return await this.pairService.getLockedTokensInfo(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -301,9 +275,7 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<string[]> {
         try {
-            return await this.pairGetterService.getWhitelistedManagedAddresses(
-                parent.address,
-            );
+            return await this.pairAbi.whitelistedAddresses(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -312,9 +284,7 @@ export class PairResolver {
     @ResolveField()
     async externSwapGasLimit(@Parent() parent: PairModel): Promise<number> {
         try {
-            return await this.pairGetterService.getExternSwapGasLimit(
-                parent.address,
-            );
+            return await this.pairAbi.externSwapGasLimit(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -323,9 +293,7 @@ export class PairResolver {
     @ResolveField()
     async initialLiquidityAdder(@Parent() parent: PairModel): Promise<string> {
         try {
-            return await this.pairGetterService.getInitialLiquidityAdder(
-                parent.address,
-            );
+            return await this.pairAbi.initialLiquidityAdder(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -334,9 +302,7 @@ export class PairResolver {
     @ResolveField()
     async transferExecGasLimit(@Parent() parent: PairModel): Promise<number> {
         try {
-            return await this.pairGetterService.getTransferExecGasLimit(
-                parent.address,
-            );
+            return await this.pairAbi.transferExecGasLimit(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -347,9 +313,7 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<FeeDestination[]> {
         try {
-            return await this.pairGetterService.getFeeDestinations(
-                parent.address,
-            );
+            return await this.pairAbi.feeDestinations(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -428,9 +392,9 @@ export class PairResolver {
     @Query(() => Boolean)
     async getFeeState(
         @Args('pairAddress') pairAddress: string,
-    ): Promise<Boolean> {
+    ): Promise<boolean> {
         try {
-            return await this.pairGetterService.getFeeState(pairAddress);
+            return await this.pairAbi.feeState(pairAddress);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -440,16 +404,14 @@ export class PairResolver {
     async getRouterManagedAddress(
         @Args('address') address: string,
     ): Promise<string> {
-        return await this.pairGetterService.getRouterManagedAddress(address);
+        return await this.pairAbi.routerAddress(address);
     }
 
     @Query(() => String)
     async getRouterOwnerManagedAddress(
         @Args('address') address: string,
     ): Promise<string> {
-        return await this.pairGetterService.getRouterOwnerManagedAddress(
-            address,
-        );
+        return await this.pairAbi.routerOwnerAddress(address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -489,7 +451,7 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('esdtTokenPayment') esdtTokenPayment: EsdtTokenPayment,
     ): Promise<EsdtTokenPayment> {
-        return await this.pairGetterService.updateAndGetSafePrice(
+        return await this.pairAbi.updateAndGetSafePrice(
             pairAddress,
             esdtTokenPayment,
         );
@@ -554,7 +516,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<number> {
         try {
-            return await this.pairGetterService.getNumSwapsByAddress(
+            return await this.pairAbi.numSwapsByAddress(
                 pairAddress,
                 user.address,
             );
@@ -570,7 +532,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<string> {
         try {
-            return await this.pairGetterService.getNumAddsByAddress(
+            return await this.pairAbi.numAddsByAddress(
                 pairAddress,
                 user.address,
             );

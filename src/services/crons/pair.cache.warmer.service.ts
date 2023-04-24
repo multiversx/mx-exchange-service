@@ -20,7 +20,7 @@ export class PairCacheWarmerService {
     constructor(
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
-        private readonly abiPairService: PairAbiService,
+        private readonly pairAbi: PairAbiService,
         private readonly routerGetter: RouterGetterService,
         private readonly apiService: MXApiService,
         private readonly tokenSetter: TokenSetterService,
@@ -36,7 +36,7 @@ export class PairCacheWarmerService {
             this.logger.info('Start refresh cached pairs');
             const pairsMetadata = await this.routerGetter.getPairsMetadata();
             for (const pairMetadata of pairsMetadata) {
-                const lpTokenID = await this.abiPairService.getLpTokenID(
+                const lpTokenID = await this.pairAbi.getLpTokenIDRaw(
                     pairMetadata.address,
                 );
 
@@ -173,11 +173,11 @@ export class PairCacheWarmerService {
                 specialFeePercent,
             ] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
-                this.abiPairService.getState(pairAddress),
+                this.pairAbi.getStateRaw(pairAddress),
                 this.pairComputeService.computeTypeFromTokens(pairAddress),
-                this.abiPairService.getFeeState(pairAddress),
-                this.abiPairService.getTotalFeePercent(pairAddress),
-                this.abiPairService.getSpecialFeePercent(pairAddress),
+                this.pairAbi.getFeeStateRaw(pairAddress),
+                this.pairAbi.getTotalFeePercentRaw(pairAddress),
+                this.pairAbi.getSpecialFeePercentRaw(pairAddress),
             ]);
 
             const cachedKeys = await Promise.all([
@@ -203,7 +203,7 @@ export class PairCacheWarmerService {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
         const invalidatedKeys = [];
         for (const pairAddress of pairsMetadata) {
-            const pairInfo = await this.abiPairService.getPairInfoMetadata(
+            const pairInfo = await this.pairAbi.getPairInfoMetadataRaw(
                 pairAddress.address,
             );
 

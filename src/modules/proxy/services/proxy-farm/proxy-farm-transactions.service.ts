@@ -25,9 +25,9 @@ import {
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { proxyVersion } from 'src/utils/proxy.utils';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 @Injectable()
 export class TransactionsProxyFarmService {
@@ -35,7 +35,7 @@ export class TransactionsProxyFarmService {
         private readonly mxProxy: MXProxyService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -307,8 +307,9 @@ export class TransactionsProxyFarmService {
         );
 
         if (pairAddress) {
-            const trustedSwapPairs =
-                await this.pairGetterService.getTrustedSwapPairs(pairAddress);
+            const trustedSwapPairs = await this.pairAbi.trustedSwapPairs(
+                pairAddress,
+            );
             const gasLimit = args.withPenalty
                 ? trustedSwapPairs.length > 0
                     ? gasConfig.proxy.farms[version][type].exitFarm.withPenalty

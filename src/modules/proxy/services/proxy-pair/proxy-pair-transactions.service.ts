@@ -15,13 +15,13 @@ import {
 } from '../../models/proxy-pair.args';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { ProxyGetterService } from '../proxy.getter.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 @Injectable()
 export class TransactionsProxyPairService {
@@ -29,7 +29,7 @@ export class TransactionsProxyPairService {
         private readonly mxProxy: MXProxyService,
         private readonly proxyGetter: ProxyGetterService,
         private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         private readonly wrapAbi: WrapAbiService,
         private readonly wrapTransaction: WrapTransactionsService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -153,8 +153,8 @@ export class TransactionsProxyPairService {
             contract,
         ] = await Promise.all([
             this.wrapAbi.wrappedEgldTokenID(),
-            this.pairGetterService.getFirstTokenID(args.pairAddress),
-            this.pairGetterService.getSecondTokenID(args.pairAddress),
+            this.pairAbi.firstTokenID(args.pairAddress),
+            this.pairAbi.secondTokenID(args.pairAddress),
             this.pairService.getLiquidityPosition(
                 args.pairAddress,
                 args.liquidity,
@@ -294,7 +294,7 @@ export class TransactionsProxyPairService {
         proxyAddress: string,
     ): Promise<InputTokenModel[]> {
         const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairAbi.firstTokenID(pairAddress),
             this.proxyGetter.getLockedAssetTokenID(proxyAddress),
         ]);
 

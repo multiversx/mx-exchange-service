@@ -5,7 +5,6 @@ import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
@@ -17,6 +16,8 @@ import { RemoteConfigGetterService } from '../../remote-config/remote-config.get
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -24,7 +25,8 @@ export class AnalyticsComputeService {
         private readonly routerGetter: RouterGetterService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly farmCompute: FarmComputeFactory,
-        private readonly pairGetter: PairGetterService,
+        private readonly pairAbi: PairAbiService,
+        private readonly pairCompute: PairComputeService,
         private readonly stakingGetter: StakingGetterService,
         private readonly tokenGetter: TokenGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
@@ -64,7 +66,7 @@ export class AnalyticsComputeService {
 
         let totalValueLockedUSD = new BigNumber(0);
         const promises = filteredPairs.map((pairAddress) =>
-            this.pairGetter.getLockedValueUSD(pairAddress),
+            this.pairCompute.lockedValueUSD(pairAddress),
         );
 
         const lockedValuesUSD = await Promise.all([...promises]);
@@ -182,7 +184,7 @@ export class AnalyticsComputeService {
         const unfilteredPairAddresses = await Promise.all(
             pairsAddress.map(async (pairAddress) => {
                 return {
-                    lpTokenId: await this.pairGetter.getLpTokenID(pairAddress),
+                    lpTokenId: await this.pairAbi.lpTokenID(pairAddress),
                     pairAddress,
                 };
             }),

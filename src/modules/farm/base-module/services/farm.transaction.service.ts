@@ -22,14 +22,14 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 export abstract class TransactionsFarmService {
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly farmGetterService: FarmGetterService,
         protected readonly pairService: PairService,
-        protected readonly pairGetterService: PairGetterService,
+        protected readonly pairAbi: PairAbiService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
@@ -99,8 +99,9 @@ export abstract class TransactionsFarmService {
         );
 
         if (pairAddress) {
-            const trustedSwapPairs =
-                await this.pairGetterService.getTrustedSwapPairs(pairAddress);
+            const trustedSwapPairs = await this.pairAbi.trustedSwapPairs(
+                pairAddress,
+            );
             const gasLimit = args.withPenalty
                 ? trustedSwapPairs.length > 0
                     ? gasConfig.farms[version][type].exitFarm.withPenalty

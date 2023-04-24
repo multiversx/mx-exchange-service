@@ -49,7 +49,7 @@ export class PairSetterService extends GenericSetterService {
 
     async setTotalFeePercent(
         pairAddress: string,
-        value: string,
+        value: number,
     ): Promise<string> {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'totalFeePercent'),
@@ -61,7 +61,7 @@ export class PairSetterService extends GenericSetterService {
 
     async setSpecialFeePercent(
         pairAddress: string,
-        value: string,
+        value: number,
     ): Promise<string> {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'specialFeePercent'),

@@ -14,7 +14,6 @@ import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -25,13 +24,14 @@ import { TransactionModel } from '../../../models/transaction.model';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SetLocalRoleOwnerArgs } from '../models/router.args';
 import { RouterGetterService } from './router.getter.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 @Injectable()
 export class TransactionRouterService {
     constructor(
         private readonly mxProxy: MXProxyService,
         private readonly routerGetterService: RouterGetterService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         private readonly pairService: PairService,
         private readonly contextGetter: ContextGetterService,
         private readonly transactionsWrapService: WrapTransactionsService,
@@ -129,7 +129,7 @@ export class TransactionRouterService {
         lpTokenName: string,
         lpTokenTicker: string,
     ): Promise<TransactionModel> {
-        const lpTokeID = await this.pairGetterService.getLpTokenID(pairAddress);
+        const lpTokeID = await this.pairAbi.lpTokenID(pairAddress);
         if (lpTokeID !== undefined) {
             throw new Error('LP Token already issued');
         }
@@ -247,8 +247,9 @@ export class TransactionRouterService {
             throw error;
         }
 
-        const initialLiquidityAdder =
-            await this.pairGetterService.getInitialLiquidityAdder(pairAddress);
+        const initialLiquidityAdder = await this.pairAbi.initialLiquidityAdder(
+            pairAddress,
+        );
         if (sender !== initialLiquidityAdder) {
             throw new Error('Invalid sender address');
         }
@@ -441,8 +442,8 @@ export class TransactionRouterService {
 
         const [firstTokenID, secondTokenID, liquidityTokens] =
             await Promise.all([
-                this.pairGetterService.getFirstTokenID(pairAddress),
-                this.pairGetterService.getSecondTokenID(pairAddress),
+                this.pairAbi.firstTokenID(pairAddress),
+                this.pairAbi.secondTokenID(pairAddress),
                 this.pairService.getLiquidityPosition(
                     pairAddress,
                     inputTokens.amount,

@@ -1,15 +1,15 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { quote } from 'src/modules/pair/pair.utils';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 
 @Injectable()
 export class PriceDiscoveryComputeService {
     constructor(
         @Inject(forwardRef(() => PriceDiscoveryGetterService))
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
-        private readonly pairGetter: PairGetterService,
+        private readonly pairCompute: PairComputeService,
     ) {}
 
     async computeLaunchedTokenPrice(
@@ -80,7 +80,7 @@ export class PriceDiscoveryComputeService {
         );
         const [launchedTokenPrice, acceptedTokenPriceUSD] = await Promise.all([
             this.computeLaunchedTokenPrice(priceDiscoveryAddress),
-            this.pairGetter.getTokenPriceUSD(acceptedToken.identifier),
+            this.pairCompute.tokenPriceUSD(acceptedToken.identifier),
         ]);
 
         return new BigNumber(launchedTokenPrice)

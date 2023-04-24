@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';
@@ -12,6 +11,7 @@ import { GenericGetterService } from 'src/services/generics/generic.getter.servi
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 
 @Injectable()
 export class PriceDiscoveryGetterService extends GenericGetterService {
@@ -22,7 +22,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         private readonly abiService: PriceDiscoveryAbiService,
         @Inject(forwardRef(() => PriceDiscoveryComputeService))
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
-        private readonly pairGetter: PairGetterService,
+        private readonly pairCompute: PairComputeService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'priceDiscovery';
@@ -186,7 +186,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         );
         return this.getData(
             this.getCacheKey(priceDiscoveryAddress, 'acceptedTokenPriceUSD'),
-            () => this.pairGetter.getTokenPriceUSD(acceptedTokenID),
+            () => this.pairCompute.tokenPriceUSD(acceptedTokenID),
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
         );

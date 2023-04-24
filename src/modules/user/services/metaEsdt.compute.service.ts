@@ -33,7 +33,6 @@ import {
     UserUnbondFarmToken,
     UserWrappedLockedToken,
 } from '../models/user.model';
-import { PairGetterService } from '../../pair/services/pair.getter.service';
 import {
     computeValueUSD,
     tokenIdentifier,
@@ -63,6 +62,7 @@ import { Logger } from 'winston';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 
 @Injectable()
 export class UserMetaEsdtComputeService {
@@ -71,7 +71,7 @@ export class UserMetaEsdtComputeService {
         private readonly farmFactory: FarmFactoryService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairCompute: PairComputeService,
         private readonly lockedAssetService: LockedAssetService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly proxyService: ProxyService,
@@ -149,7 +149,7 @@ export class UserMetaEsdtComputeService {
         }
 
         if (scAddress.has(farmingTokenID)) {
-            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairCompute.tokenPriceUSD(
                 farmingTokenID,
             );
             return new UserFarmToken({
@@ -398,7 +398,7 @@ export class UserMetaEsdtComputeService {
         const farmingToken = await this.stakingGetter.getFarmingToken(
             nftToken.creator,
         );
-        const priceUSD = await this.pairGetterService.getTokenPriceUSD(
+        const priceUSD = await this.pairCompute.tokenPriceUSD(
             farmingToken.identifier,
         );
         const valueUSD = computeValueUSD(
@@ -419,7 +419,7 @@ export class UserMetaEsdtComputeService {
         const farmingToken = await this.stakingGetter.getFarmingToken(
             nftToken.creator,
         );
-        const priceUSD = await this.pairGetterService.getTokenPriceUSD(
+        const priceUSD = await this.pairCompute.tokenPriceUSD(
             farmingToken.identifier,
         );
         const valueUSD = computeValueUSD(
@@ -533,9 +533,7 @@ export class UserMetaEsdtComputeService {
                 break;
         }
 
-        let tokenIDPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-            tokenID,
-        );
+        let tokenIDPriceUSD = await this.pairCompute.tokenPriceUSD(tokenID);
         if (new BigNumber(tokenIDPriceUSD).isZero()) {
             switch (nftToken.nonce) {
                 case 1:

@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { MetricsService } from 'src/endpoints/metrics/metrics.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { RouterGetterService } from './router.getter.service';
 
@@ -11,17 +10,16 @@ export class RouterComputeService {
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetterService: RouterGetterService,
         @Inject(forwardRef(() => PairComputeService))
-        private readonly pairComputeService: PairComputeService,
-        @Inject(forwardRef(() => PairGetterService))
-        private readonly pairGetter: PairGetterService,
+        private readonly pairCompute: PairComputeService,
         private readonly metrics: MetricsService,
     ) {}
 
     async computeTotalLockedValueUSD(): Promise<BigNumber> {
-        const pairsAddress = await this.routerGetterService.getAllPairsAddress();
+        const pairsAddress =
+            await this.routerGetterService.getAllPairsAddress();
         let totalValueLockedUSD = new BigNumber(0);
-        const promises = pairsAddress.map(pairAddress =>
-            this.pairComputeService.computeLockedValueUSD(pairAddress),
+        const promises = pairsAddress.map((pairAddress) =>
+            this.pairCompute.computeLockedValueUSD(pairAddress),
         );
 
         const pairsLockedValueUSD = await Promise.all(promises);
@@ -37,11 +35,12 @@ export class RouterComputeService {
     }
 
     async computeTotalVolumeUSD(time: string): Promise<BigNumber> {
-        const pairsAddress = await this.routerGetterService.getAllPairsAddress();
+        const pairsAddress =
+            await this.routerGetterService.getAllPairsAddress();
         let totalVolumeUSD = new BigNumber(0);
 
-        const promises = pairsAddress.map(pairAddress =>
-            this.pairGetter.getVolumeUSD(pairAddress, time),
+        const promises = pairsAddress.map((pairAddress) =>
+            this.pairCompute.volumeUSD(pairAddress, time),
         );
 
         const volumesUSD = await Promise.all(promises);
@@ -56,11 +55,12 @@ export class RouterComputeService {
     }
 
     async computeTotalFeesUSD(time: string): Promise<BigNumber> {
-        const pairsAddress = await this.routerGetterService.getAllPairsAddress();
+        const pairsAddress =
+            await this.routerGetterService.getAllPairsAddress();
         let totalFeesUSD = new BigNumber(0);
 
-        const promises = pairsAddress.map(pairAddress =>
-            this.pairGetter.getFeesUSD(pairAddress, time),
+        const promises = pairsAddress.map((pairAddress) =>
+            this.pairCompute.feesUSD(pairAddress, time),
         );
 
         const feesUSD = await Promise.all(promises);
@@ -75,12 +75,12 @@ export class RouterComputeService {
         let totalTxCount = 0;
         const addresses = await this.routerGetterService.getAllPairsAddress();
 
-        const promises = addresses.map(address =>
+        const promises = addresses.map((address) =>
             this.metrics.computeTxCount(address),
         );
         const txCounts = await Promise.all(promises);
 
-        txCounts.forEach(txCount => (totalTxCount += txCount));
+        txCounts.forEach((txCount) => (totalTxCount += txCount));
         return totalTxCount;
     }
 }

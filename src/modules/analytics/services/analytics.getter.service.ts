@@ -1,12 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute } from 'src/helpers/helpers';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
 import { AnalyticsComputeService } from './analytics.compute.service';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 
 @Injectable()
 export class AnalyticsGetterService extends GenericGetterService {
@@ -16,14 +16,14 @@ export class AnalyticsGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
         @Inject(forwardRef(() => AnalyticsComputeService))
         private readonly analyticsCompute: AnalyticsComputeService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairCompute: PairComputeService,
     ) {
-        super(cachingService, logger)
+        super(cachingService, logger);
         this.baseKey = 'analytics';
     }
 
     async getTokenPriceUSD(tokenID: string): Promise<string> {
-        return await this.pairGetterService.getTokenPriceUSD(tokenID);
+        return await this.pairCompute.tokenPriceUSD(tokenID);
     }
 
     async getTotalTokenSupply(tokenID: string): Promise<string> {
@@ -79,10 +79,7 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     async getTotalAggregatedRewards(days: number): Promise<string> {
-        const cacheKey = this.getCacheKey(
-            days,
-            'totalAggregatedRewards',
-        );
+        const cacheKey = this.getCacheKey(days, 'totalAggregatedRewards');
         return this.getData(
             cacheKey,
             () => this.analyticsCompute.computeTotalAggregatedRewards(days),
@@ -92,11 +89,7 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     async getFeeTokenBurned(tokenID: string, time: string): Promise<string> {
-        const cacheKey = this.getCacheKey(
-            tokenID,
-            time,
-            'feeTokenBurned',
-        );
+        const cacheKey = this.getCacheKey(tokenID, time, 'feeTokenBurned');
         return await this.getData(
             cacheKey,
             () =>
@@ -114,11 +107,7 @@ export class AnalyticsGetterService extends GenericGetterService {
         tokenID: string,
         time: string,
     ): Promise<string> {
-        const cacheKey = this.getCacheKey(
-            tokenID,
-            time,
-            'penaltyTokenBurned',
-        );
+        const cacheKey = this.getCacheKey(tokenID, time, 'penaltyTokenBurned');
         return await this.getData(
             cacheKey,
             () =>
