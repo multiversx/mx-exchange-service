@@ -50,16 +50,13 @@ export class TokenService {
                     const state = await this.pairGetter.getState(
                         iterator.address,
                     );
-                    if (state === 'Active') {
-                        tokenIDs.push(
-                            ...[iterator.firstTokenID, iterator.secondTokenID],
-                        );
+                    if (state !== 'Active') {
+                        return;
                     }
-                } else {
-                    tokenIDs.push(
-                        ...[iterator.firstTokenID, iterator.secondTokenID],
-                    );
                 }
+                tokenIDs.push(
+                    ...[iterator.firstTokenID, iterator.secondTokenID],
+                );
             }),
         );
         return [...new Set(tokenIDs)];
