@@ -12,6 +12,7 @@ import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-ti
 import { FeesCollectorSetterService } from './services/fees-collector.setter.service';
 import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
 import { ContextModule } from '../../services/context/context.module';
+import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { ContextModule } from '../../services/context/context.module';
         FeesCollectorAbiService,
         FeesCollectorSetterService,
         FeesCollectorComputeService,
+        FeesCollectorTransactionService,
         FeesCollectorResolver,
         UserEntryFeesCollectorResolver,
     ],
@@ -33,6 +35,7 @@ import { ContextModule } from '../../services/context/context.module';
         FeesCollectorAbiService,
         FeesCollectorSetterService,
         FeesCollectorService,
+        FeesCollectorComputeService,
     ],
 })
 export class FeesCollectorModule {}
