@@ -1,5 +1,4 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { scAddress } from 'src/config';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
@@ -20,37 +19,28 @@ export class WrappedFarmTokenResolverV2 {
     async farmTokenAttributes(
         @Parent() parent: WrappedFarmTokenAttributesModelV2,
     ): Promise<typeof FarmTokenAttributesUnion> {
-        try {
-            return await this.proxyService.getFarmTokenAttributes(
-                scAddress.proxyDexAddress.v2,
-                parent.farmToken.tokenIdentifier,
-                parent.farmToken.tokenNonce,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.proxyService.getFarmTokenAttributes(
+            scAddress.proxyDexAddress.v2,
+            parent.farmToken.tokenIdentifier,
+            parent.farmToken.tokenNonce,
+        );
     }
 
     @ResolveField()
     async lockedLpProxyTokenAttributes(
         @Parent() parent: WrappedFarmTokenAttributesModelV2,
     ): Promise<WrappedLpTokenAttributesModelV2> {
-        try {
-            const wrappedLpToken =
-                await this.apiService.getNftByTokenIdentifier(
-                    scAddress.proxyDexAddress.v2,
-                    tokenIdentifier(
-                        parent.proxyFarmingToken.tokenIdentifier,
-                        parent.proxyFarmingToken.tokenNonce,
-                    ),
-                );
-            return this.proxyService.decodeWrappedLpTokenAttributesV2({
-                attributes: wrappedLpToken.attributes,
-                identifier: wrappedLpToken.identifier,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        const wrappedLpToken = await this.apiService.getNftByTokenIdentifier(
+            scAddress.proxyDexAddress.v2,
+            tokenIdentifier(
+                parent.proxyFarmingToken.tokenIdentifier,
+                parent.proxyFarmingToken.tokenNonce,
+            ),
+        );
+        return this.proxyService.decodeWrappedLpTokenAttributesV2({
+            attributes: wrappedLpToken.attributes,
+            identifier: wrappedLpToken.identifier,
+        });
     }
 
     @Query(() => [WrappedFarmTokenAttributesModelV2])

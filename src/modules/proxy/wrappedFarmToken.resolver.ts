@@ -9,16 +9,16 @@ import { LockedAssetAttributesModel } from '../locked-asset-factory/models/locke
 import { DecodeAttributesArgs } from './models/proxy.args';
 import { WrappedFarmTokenAttributesModel } from './models/wrappedFarmTokenAttributes.model';
 import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
-import { ProxyPairGetterService } from './services/proxy-pair/proxy-pair.getter.service';
 import { ProxyService } from './services/proxy.service';
-import { ProxyGetterServiceV1 } from './v1/services/proxy.v1.getter.service';
+import { ProxyAbiService } from './services/proxy.abi.service';
+import { ProxyPairAbiService } from './services/proxy-pair/proxy.pair.abi.service';
 
 @Resolver(() => WrappedFarmTokenAttributesModel)
 export class WrappedFarmTokenResolver {
     constructor(
         private readonly proxyService: ProxyService,
-        private readonly proxyGetter: ProxyGetterServiceV1,
-        private readonly proxyPairGetter: ProxyPairGetterService,
+        private readonly proxyAbi: ProxyAbiService,
+        private readonly proxyPairAbi: ProxyPairAbiService,
         private readonly apiService: MXApiService,
     ) {}
 
@@ -26,71 +26,55 @@ export class WrappedFarmTokenResolver {
     async farmTokenAttributes(
         @Parent() parent: WrappedFarmTokenAttributesModel,
     ): Promise<typeof FarmTokenAttributesUnion> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokenCollection(parent.identifier),
-            );
-            return await this.proxyService.getFarmTokenAttributes(
-                proxyAddress,
-                parent.farmTokenID,
-                parent.farmTokenNonce,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            tokenCollection(parent.identifier),
+        );
+        return this.proxyService.getFarmTokenAttributes(
+            proxyAddress,
+            parent.farmTokenID,
+            parent.farmTokenNonce,
+        );
     }
 
     @ResolveField()
     async lockedAssetsAttributes(
         @Parent() parent: WrappedFarmTokenAttributesModel,
     ): Promise<LockedAssetAttributesModel> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokenCollection(parent.identifier),
-            );
-            const lockedAssetTokenCollection =
-                await this.proxyGetter.getLockedAssetTokenID(proxyAddress);
-            if (!lockedAssetTokenCollection.includes(parent.farmingTokenID)) {
-                return null;
-            }
-            return await this.proxyService.getLockedAssetsAttributes(
-                proxyAddress,
-                parent.farmingTokenID,
-                parent.farmingTokenNonce,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            tokenCollection(parent.identifier),
+        );
+        const lockedAssetTokenCollection =
+            await this.proxyAbi.lockedAssetTokenID(proxyAddress);
+        if (!lockedAssetTokenCollection.includes(parent.farmingTokenID)) {
+            return null;
         }
+        return this.proxyService.getLockedAssetsAttributes(
+            proxyAddress,
+            parent.farmingTokenID,
+            parent.farmingTokenNonce,
+        );
     }
 
     @ResolveField()
     async lockedLpProxyTokenAttributes(
         @Parent() parent: WrappedFarmTokenAttributesModel,
     ): Promise<WrappedLpTokenAttributesModel> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokenCollection(parent.identifier),
-            );
-            const wrappedLpTokenCollection =
-                await this.proxyPairGetter.getwrappedLpTokenID(proxyAddress);
-            if (wrappedLpTokenCollection != parent.farmingTokenID) {
-                return null;
-            }
-            const wrappedLpToken =
-                await this.apiService.getNftByTokenIdentifier(
-                    proxyAddress,
-                    tokenIdentifier(
-                        parent.farmingTokenID,
-                        parent.farmingTokenNonce,
-                    ),
-                );
-            return await this.proxyService.decodeWrappedLpTokenAttributes({
-                attributes: wrappedLpToken.attributes,
-                identifier: wrappedLpToken.identifier,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            tokenCollection(parent.identifier),
+        );
+        const wrappedLpTokenCollection =
+            await this.proxyPairAbi.wrappedLpTokenID(proxyAddress);
+        if (wrappedLpTokenCollection != parent.farmingTokenID) {
+            return null;
         }
+        const wrappedLpToken = await this.apiService.getNftByTokenIdentifier(
+            proxyAddress,
+            tokenIdentifier(parent.farmingTokenID, parent.farmingTokenNonce),
+        );
+        return this.proxyService.decodeWrappedLpTokenAttributes({
+            attributes: wrappedLpToken.attributes,
+            identifier: wrappedLpToken.identifier,
+        });
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -99,6 +83,6 @@ export class WrappedFarmTokenResolver {
         @Args('args')
         args: DecodeAttributesArgs,
     ): Promise<WrappedFarmTokenAttributesModel[]> {
-        return await this.proxyService.getWrappedFarmTokenAttributes(args);
+        return this.proxyService.getWrappedFarmTokenAttributes(args);
     }
 }
