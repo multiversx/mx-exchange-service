@@ -11,9 +11,7 @@ import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { EnableSwapByUserConfig, FactoryModel } from './models/factory.model';
-import { TransactionRouterService } from './services/transactions.router.service';
-import { ApolloError } from 'apollo-server-express';
-import { RouterGetterService } from './services/router.getter.service';
+import { RouterTransactionService } from './services/router.transactions.service';
 import { constantsConfig } from 'src/config';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
@@ -23,13 +21,16 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { SetLocalRoleOwnerArgs } from './models/router.args';
 import { PairFilterArgs } from './models/filter.args';
+import { RouterAbiService } from './services/router.abi.service';
+import { RouterComputeService } from './services/router.compute.service';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
     constructor(
         private readonly routerService: RouterService,
-        private readonly routerGetterService: RouterGetterService,
-        private readonly transactionService: TransactionRouterService,
+        private readonly routerabi: RouterAbiService,
+        private readonly routerCompute: RouterComputeService,
+        private readonly routerTransaction: RouterTransactionService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
     ) {}
 
@@ -40,128 +41,72 @@ export class RouterResolver {
 
     @ResolveField()
     async commonTokensForUserPairs(): Promise<string[]> {
-        try {
-            return await this.routerGetterService.getCommonTokensForUserPairs();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerabi.commonTokensForUserPairs();
     }
 
     @ResolveField()
     async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
-        try {
-            return await this.routerGetterService.getEnableSwapByUserConfig();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerabi.enableSwapByUserConfig();
     }
 
     @ResolveField(() => Int)
     async pairCount() {
-        try {
-            return await this.routerGetterService.getPairCount();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerCompute.pairCount();
     }
 
     @ResolveField(() => Int)
     async totalTxCount() {
-        try {
-            return await this.routerGetterService.getTotalTxCount();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerCompute.totalTxCount();
     }
 
     @ResolveField()
     async totalValueLockedUSD() {
-        try {
-            return await this.routerGetterService.getTotalLockedValueUSD();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerCompute.totalLockedValueUSD();
     }
 
     @ResolveField()
     async totalVolumeUSD24h() {
-        try {
-            return this.routerGetterService.getTotalVolumeUSD('24h');
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerCompute.totalVolumeUSD('24h');
     }
 
     @ResolveField()
     async totalFeesUSD24h() {
-        try {
-            return this.routerGetterService.getTotalFeesUSD('24h');
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerCompute.totalFeesUSD('24h');
     }
 
     @ResolveField()
     async maintenance() {
-        try {
-            return await this.remoteConfigGetterService.getMaintenanceFlagValue();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.remoteConfigGetterService.getMaintenanceFlagValue();
     }
 
     @ResolveField()
     async multiSwapStatus(): Promise<boolean> {
-        try {
-            return await this.remoteConfigGetterService.getMultiSwapStatus();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.remoteConfigGetterService.getMultiSwapStatus();
     }
 
     @ResolveField(() => Boolean)
     async pairCreationEnabled(): Promise<boolean> {
-        try {
-            return await this.routerGetterService.getPairCreationEnabled();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerabi.pairCreationEnabled();
     }
 
     @ResolveField(() => Boolean)
     async state(): Promise<boolean> {
-        try {
-            return await this.routerGetterService.getState();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerabi.state();
     }
 
     @ResolveField(() => String)
     async owner(): Promise<string> {
-        try {
-            return await this.routerGetterService.getOwner();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerabi.owner();
     }
 
     @ResolveField(() => String)
     async pairTemplateAddress(): Promise<string> {
-        try {
-            return await this.routerGetterService.getPairTemplateAddress();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerabi.pairTemplateAddress();
     }
 
     @ResolveField(() => String)
     async temporaryOwnerPeriod(): Promise<string> {
-        try {
-            return await this.routerGetterService.getTemporaryOwnerPeriod();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerabi.temporaryOwnerPeriod();
     }
 
     @ResolveField(() => Float)
@@ -191,20 +136,12 @@ export class RouterResolver {
 
     @ResolveField(() => String)
     async lastErrorMessage(): Promise<string> {
-        try {
-            return await this.routerGetterService.getLastErrorMessage();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerabi.lastErrorMessage();
     }
 
     @Query(() => [String])
     async pairAddresses(): Promise<string[]> {
-        try {
-            return await this.routerGetterService.getAllPairsAddress();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerabi.pairsAddress();
     }
 
     @Query(() => [PairModel])
@@ -212,15 +149,7 @@ export class RouterResolver {
         @Args() page: GetPairsArgs,
         @Args() filter: PairFilterArgs,
     ): Promise<PairModel[]> {
-        try {
-            return await this.routerService.getAllPairs(
-                page.offset,
-                page.limit,
-                filter,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerService.getAllPairs(page.offset, page.limit, filter);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -230,7 +159,7 @@ export class RouterResolver {
         @Args('secondTokenID') secondTokenID: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.transactionService.createPair(
+        return this.routerTransaction.createPair(
             user.address,
             firstTokenID,
             secondTokenID,
@@ -246,7 +175,7 @@ export class RouterResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
-        return this.transactionService.upgradePair(
+        return this.routerTransaction.upgradePair(
             firstTokenID,
             secondTokenID,
             fees,
@@ -260,7 +189,7 @@ export class RouterResolver {
         @Args('lpTokenName') lpTokenName: string,
         @Args('lpTokenTicker') lpTokenTicker: string,
     ): Promise<TransactionModel> {
-        return this.transactionService.issueLpToken(
+        return this.routerTransaction.issueLpToken(
             address,
             lpTokenName,
             lpTokenTicker,
@@ -272,7 +201,7 @@ export class RouterResolver {
     async setLocalRoles(
         @Args('address') address: string,
     ): Promise<TransactionModel> {
-        return this.transactionService.setLocalRoles(address);
+        return this.routerTransaction.setLocalRoles(address);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -282,12 +211,8 @@ export class RouterResolver {
         @Args('enable') enable: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.routerService.requireOwner(user.address);
-            return this.transactionService.setState(address, enable);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.routerService.requireOwner(user.address);
+        return this.routerTransaction.setState(address, enable);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -299,17 +224,13 @@ export class RouterResolver {
         @Args('enable') enable: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.routerService.requireOwner(user.address);
-            return this.transactionService.setFee(
-                pairAddress,
-                feeToAddress,
-                feeTokenID,
-                enable,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.routerService.requireOwner(user.address);
+        return this.routerTransaction.setFee(
+            pairAddress,
+            feeToAddress,
+            feeTokenID,
+            enable,
+        );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -318,21 +239,13 @@ export class RouterResolver {
         @Args('enabled') enabled: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.routerService.requireOwner(user.address);
-            return this.transactionService.setPairCreationEnabled(enabled);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.routerService.requireOwner(user.address);
+        return this.routerTransaction.setPairCreationEnabled(enabled);
     }
 
     @Query(() => String)
     async getLastErrorMessage(): Promise<string> {
-        try {
-            return await this.routerGetterService.getLastErrorMessage();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.routerabi.lastErrorMessage();
     }
 
     @UseGuards(GqlAdminGuard)
@@ -340,12 +253,8 @@ export class RouterResolver {
     async clearPairTemporaryOwnerStorage(
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.routerService.requireOwner(user.address);
-            return this.transactionService.clearPairTemporaryOwnerStorage();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.routerService.requireOwner(user.address);
+        return this.routerTransaction.clearPairTemporaryOwnerStorage();
     }
 
     @UseGuards(GqlAdminGuard)
@@ -354,14 +263,8 @@ export class RouterResolver {
         @Args('periodBlocks') periodBlocks: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.routerService.requireOwner(user.address);
-            return this.transactionService.setTemporaryOwnerPeriod(
-                periodBlocks,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.routerService.requireOwner(user.address);
+        return this.routerTransaction.setTemporaryOwnerPeriod(periodBlocks);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -370,12 +273,8 @@ export class RouterResolver {
         @Args('address') address: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.routerService.requireOwner(user.address);
-            return this.transactionService.setPairTemplateAddress(address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.routerService.requireOwner(user.address);
+        return this.routerTransaction.setPairTemplateAddress(address);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -385,12 +284,8 @@ export class RouterResolver {
         args: SetLocalRoleOwnerArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.routerService.requireOwner(user.address);
-            return this.transactionService.setLocalRolesOwner(args);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.routerService.requireOwner(user.address);
+        return this.routerTransaction.setLocalRolesOwner(args);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -400,15 +295,8 @@ export class RouterResolver {
         @Args('secondTokenID') secondTokenID: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.routerService.requireOwner(user.address);
-            return this.transactionService.removePair(
-                firstTokenID,
-                secondTokenID,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.routerService.requireOwner(user.address);
+        return this.routerTransaction.removePair(firstTokenID, secondTokenID);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -417,13 +305,9 @@ export class RouterResolver {
         @Args('inputTokens') inputTokens: InputTokenModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.transactionService.setSwapEnabledByUser(
-                user.address,
-                inputTokens,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.routerTransaction.setSwapEnabledByUser(
+            user.address,
+            inputTokens,
+        );
     }
 }

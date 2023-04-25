@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ProxyModel } from '../models/proxy.model';
 import {
     WrappedLpTokenAttributesModel,
@@ -13,8 +13,6 @@ import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
 } from '../models/proxy.args';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import {
     FarmTokenAttributesV1_2,
@@ -38,39 +36,64 @@ import { LockedAssetService } from 'src/modules/locked-asset-factory/services/lo
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
-import { ProxyPairGetterService } from './proxy-pair/proxy-pair.getter.service';
-import { ProxyFarmGetterService } from './proxy-farm/proxy-farm.getter.service';
-import { ProxyGetterService } from './proxy.getter.service';
-import { ProxyGetterServiceV2 } from '../v2/services/proxy.v2.getter.service';
 import { LockedTokenAttributesModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { ProxyAbiService } from './proxy.abi.service';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { ProxyAbiServiceV2 } from '../v2/services/proxy.v2.abi.service';
+import { ProxyPairAbiService } from './proxy-pair/proxy.pair.abi.service';
+import { ProxyFarmAbiService } from './proxy-farm/proxy.farm.abi.service';
+import { proxyVersion } from 'src/utils/proxy.utils';
 
 @Injectable()
 export class ProxyService {
     constructor(
-        private readonly proxyGetter: ProxyGetterService,
-        private readonly proxyGetterV2: ProxyGetterServiceV2,
-        private readonly proxyPairGetter: ProxyPairGetterService,
-        private readonly proxyFarmGetter: ProxyFarmGetterService,
+        private readonly proxyAbi: ProxyAbiService,
+        private readonly proxyAbiV2: ProxyAbiServiceV2,
+        private readonly proxyPairAbi: ProxyPairAbiService,
+        private readonly proxyFarmAbi: ProxyFarmAbiService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly apiService: MXApiService,
         private readonly lockedAssetService: LockedAssetService,
         private readonly cacheService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        private readonly tokenGetter: TokenGetterService,
     ) {}
 
-    getProxyInfo(): ProxyModel[] {
-        return [
-            new ProxyModel({
-                address: scAddress.proxyDexAddress.v1,
-                version: 'v1',
-            }),
-            new ProxyModel({
-                address: scAddress.proxyDexAddress.v2,
-                version: 'v2',
-            }),
-        ];
+    async getAssetToken(proxyAddress: string): Promise<EsdtToken> {
+        const assetTokenID = await this.proxyAbi.assetTokenID(proxyAddress);
+        return this.tokenGetter.getTokenMetadata(assetTokenID);
+    }
+
+    async getlockedAssetToken(proxyAddress: string): Promise<NftCollection[]> {
+        const version = proxyVersion(proxyAddress);
+        const lockedAssetTokenIDs =
+            version === 'v1'
+                ? await this.proxyAbi.lockedAssetTokenID(proxyAddress)
+                : await this.proxyAbiV2.lockedAssetTokenID(proxyAddress);
+        return await Promise.all(
+            lockedAssetTokenIDs.map((tokenID: string) =>
+                this.tokenGetter.getNftCollectionMetadata(tokenID),
+            ),
+        );
+    }
+
+    async getwrappedLpToken(proxyAddress: string): Promise<NftCollection> {
+        const wrappedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
+            proxyAddress,
+        );
+        return await this.tokenGetter.getNftCollectionMetadata(
+            wrappedLpTokenID,
+        );
+    }
+
+    async getwrappedFarmToken(proxyAddress: string): Promise<NftCollection> {
+        const wrappedFarmTokenID = await this.proxyFarmAbi.wrappedFarmTokenID(
+            proxyAddress,
+        );
+        return this.tokenGetter.getNftCollectionMetadata(wrappedFarmTokenID);
     }
 
     getWrappedLpTokenAttributes(
@@ -305,13 +328,11 @@ export class ProxyService {
     async getProxyAddressByToken(tokenID: string): Promise<string> {
         let [lockedTokenIDs, proxyLpTokenID, proxyFarmTokenID] =
             await Promise.all([
-                this.proxyGetter.getLockedAssetTokenID(
+                this.proxyAbi.lockedAssetTokenID(scAddress.proxyDexAddress.v1),
+                this.proxyPairAbi.wrappedLpTokenID(
                     scAddress.proxyDexAddress.v1,
                 ),
-                this.proxyPairGetter.getwrappedLpTokenID(
-                    scAddress.proxyDexAddress.v1,
-                ),
-                this.proxyFarmGetter.getwrappedFarmTokenID(
+                this.proxyFarmAbi.wrappedFarmTokenID(
                     scAddress.proxyDexAddress.v1,
                 ),
             ]);
@@ -325,15 +346,11 @@ export class ProxyService {
         }
 
         [lockedTokenIDs, proxyLpTokenID, proxyFarmTokenID] = await Promise.all([
-            await this.proxyGetterV2.getLockedAssetTokenID(
+            await this.proxyAbiV2.lockedAssetTokenID(
                 scAddress.proxyDexAddress.v2,
             ),
-            this.proxyPairGetter.getwrappedLpTokenID(
-                scAddress.proxyDexAddress.v2,
-            ),
-            this.proxyFarmGetter.getwrappedFarmTokenID(
-                scAddress.proxyDexAddress.v2,
-            ),
+            this.proxyPairAbi.wrappedLpTokenID(scAddress.proxyDexAddress.v2),
+            this.proxyFarmAbi.wrappedFarmTokenID(scAddress.proxyDexAddress.v2),
         ]);
 
         if (

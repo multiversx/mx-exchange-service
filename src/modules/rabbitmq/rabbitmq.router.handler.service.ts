@@ -6,7 +6,7 @@ import { constantsConfig } from 'src/config';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
-import { AbiRouterService } from '../router/services/abi.router.service';
+import { RouterAbiService } from '../router/services/router.abi.service';
 import { RouterSetterService } from '../router/services/router.setter.service';
 import { CreateTokenDto } from '../tokens/dto/create.token.dto';
 import { TokenGetterService } from '../tokens/services/token.getter.service';
@@ -17,7 +17,7 @@ import { TokenSetterService } from '../tokens/services/token.setter.service';
 @Injectable()
 export class RabbitMQRouterHandlerService {
     constructor(
-        private readonly routerAbiService: AbiRouterService,
+        private readonly routerAbiService: RouterAbiService,
         private readonly routerSetterService: RouterSetterService,
         private readonly tokenGetter: TokenGetterService,
         private readonly tokenService: TokenService,
@@ -39,8 +39,8 @@ export class RabbitMQRouterHandlerService {
             secondTokenType,
             uniqueTokens,
         ] = await Promise.all([
-            this.routerAbiService.getPairsMetadata(),
-            this.routerAbiService.getAllPairsAddress(),
+            this.routerAbiService.pairsMetadata(),
+            this.routerAbiService.pairsAddress(),
             this.tokenGetter.getEsdtTokenType(firstTokenID),
             this.tokenGetter.getEsdtTokenType(secondTokenID),
             this.tokenService.getUniqueTokenIDs(true),

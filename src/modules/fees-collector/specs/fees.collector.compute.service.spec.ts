@@ -14,11 +14,11 @@ import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.se
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair-getter-service-mock.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('FeesCollectorComputeService', () => {
     let module: TestingModule;
@@ -40,7 +40,7 @@ describe('FeesCollectorComputeService', () => {
                     provide: PairGetterService,
                     useClass: PairGetterServiceMock,
                 },
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
                 {
                     provide: ContextGetterService,

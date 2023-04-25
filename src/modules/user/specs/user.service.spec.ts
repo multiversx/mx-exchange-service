@@ -1,7 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
-import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
 import { UserMetaEsdtService } from '../services/user.metaEsdt.service';
 import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
@@ -22,16 +20,12 @@ import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
-import { ProxyGetterServiceMock } from '../../proxy/mocks/proxy.getter.service.mock';
 import { LockedAssetServiceMock } from '../../locked-asset-factory/mocks/locked.asset.service.mock';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { AbiLockedAssetService } from '../../locked-asset-factory/services/abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from '../../locked-asset-factory/mocks/abi.locked.asset.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ProxyPairGetterServiceMock } from '../../proxy/mocks/proxy.pair.getter.service.mock';
-import { ProxyFarmGetterServiceMock } from '../../proxy/mocks/proxy.farm.getter.service.mock';
-import { ProxyGetterService } from '../../proxy/services/proxy.getter.service';
 import { StakingService } from '../../staking/services/staking.service';
 import { StakingServiceMock } from '../../staking/mocks/staking.service.mock';
 import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
@@ -44,8 +38,6 @@ import { RemoteConfigGetterServiceMock } from '../../remote-config/mocks/remote-
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
@@ -75,6 +67,14 @@ import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.serv
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
+import {
+    ProxyAbiServiceMock,
+    ProxyAbiServiceProvider,
+    ProxyFarmAbiServiceProvider,
+    ProxyPairAbiServiceProvider,
+} from 'src/modules/proxy/mocks/proxy.abi.service.mock';
+import { ProxyAbiServiceV2 } from 'src/modules/proxy/v2/services/proxy.v2.abi.service';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { SimpleLockAbiServiceProvider } from 'src/modules/simple-lock/mocks/simple.lock.abi.service.mock';
@@ -94,34 +94,9 @@ describe('UserService', () => {
         useClass: ContextGetterServiceMock,
     };
 
-    const RouterGetterServiceProvider = {
-        provide: RouterGetterService,
-        useClass: RouterGetterServiceStub,
-    };
-
     const PairGetterServiceProvider = {
         provide: PairGetterService,
         useClass: PairGetterServiceStub,
-    };
-
-    const ProxyServiceProvider = {
-        provide: ProxyService,
-        useClass: ProxyGetterServiceMock,
-    };
-
-    const ProxyGetterServiceProvider = {
-        provide: ProxyGetterService,
-        useClass: ProxyGetterServiceMock,
-    };
-
-    const ProxyPairGetterServiceProvider = {
-        provide: ProxyPairGetterService,
-        useClass: ProxyPairGetterServiceMock,
-    };
-
-    const ProxyFarmGetterServiceProvider = {
-        provide: ProxyFarmGetterService,
-        useClass: ProxyFarmGetterServiceMock,
     };
 
     const LockedAssetProvider = {
@@ -163,7 +138,7 @@ describe('UserService', () => {
             providers: [
                 MXApiServiceProvider,
                 ContextGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
@@ -209,13 +184,17 @@ describe('UserService', () => {
                     provide: FarmAbiServiceV2,
                     useClass: AbiFarmServiceMock,
                 },
-                ProxyServiceProvider,
-                ProxyGetterServiceProvider,
                 LockedTokenWrapperAbiServiceProvider,
+                ProxyService,
+                ProxyAbiServiceProvider,
+                {
+                    provide: ProxyAbiServiceV2,
+                    useClass: ProxyAbiServiceMock,
+                },
+                ProxyPairAbiServiceProvider,
+                ProxyFarmAbiServiceProvider,
                 UserMetaEsdtComputeService,
                 LockedTokenWrapperService,
-                ProxyPairGetterServiceProvider,
-                ProxyFarmGetterServiceProvider,
                 LockedAssetProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
