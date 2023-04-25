@@ -24,8 +24,6 @@ import { Logger } from 'winston';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
-import { StakingGetterService } from '../../staking/services/staking.getter.service';
-import { StakingProxyGetterService } from '../../staking-proxy/services/staking.proxy.getter.service';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryService } from '../../price-discovery/services/price.discovery.service';
@@ -53,6 +51,8 @@ import {
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
 import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lock.abi.service';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 enum NftTokenType {
@@ -82,8 +82,8 @@ export class UserMetaEsdtService {
         private proxyFarmGetter: ProxyFarmGetterService,
         private farmGetter: FarmGetterFactory,
         private lockedAssetGetter: LockedAssetGetterService,
-        private stakeGetterService: StakingGetterService,
-        private proxyStakeGetter: StakingProxyGetterService,
+        private stakingAbi: StakingAbiService,
+        private proxyStakeAbi: StakingProxyAbiService,
         private priceDiscoveryService: PriceDiscoveryService,
         private priceDiscoveryAbi: PriceDiscoveryAbiService,
         private simpleLockAbi: SimpleLockAbiService,
@@ -254,7 +254,7 @@ export class UserMetaEsdtService {
             await this.remoteConfigGetterService.getStakingAddresses();
         const stakingTokenIDs = await Promise.all(
             stakingAddresses.map((address) =>
-                this.stakeGetterService.getFarmTokenID(address),
+                this.stakingAbi.farmTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -289,7 +289,7 @@ export class UserMetaEsdtService {
             await this.remoteConfigGetterService.getStakingAddresses();
         const stakingTokenIDs = await Promise.all(
             stakingAddresses.map((address) =>
-                this.stakeGetterService.getFarmTokenID(address),
+                this.stakingAbi.farmTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -324,7 +324,7 @@ export class UserMetaEsdtService {
             await this.remoteConfigGetterService.getStakingProxyAddresses();
         const dualYieldTokenIDs = await Promise.all(
             stakingProxyAddresses.map((address) =>
-                this.proxyStakeGetter.getDualYieldTokenID(address),
+                this.proxyStakeAbi.dualYieldTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -689,7 +689,7 @@ export class UserMetaEsdtService {
         const staking =
             await this.remoteConfigGetterService.getStakingAddresses();
         for (const address of staking) {
-            promises.push(this.stakeGetterService.getFarmTokenID(address));
+            promises.push(this.stakingAbi.farmTokenID(address));
         }
         const stakeFarmTokenIDs = await Promise.all(promises);
         if (
@@ -704,7 +704,7 @@ export class UserMetaEsdtService {
         const stakingProxy =
             await this.remoteConfigGetterService.getStakingProxyAddresses();
         for (const address of stakingProxy) {
-            promises.push(this.proxyStakeGetter.getDualYieldTokenID(address));
+            promises.push(this.proxyStakeAbi.dualYieldTokenID(address));
         }
         const dualYieldTokenIDs = await Promise.all(promises);
         if (

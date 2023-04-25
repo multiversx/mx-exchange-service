@@ -32,10 +32,6 @@ import { ContextGetterServiceMock } from 'src/services/context/mocks/context.get
 import { ProxyPairGetterServiceMock } from '../../proxy/mocks/proxy.pair.getter.service.mock';
 import { ProxyFarmGetterServiceMock } from '../../proxy/mocks/proxy.farm.getter.service.mock';
 import { ProxyGetterService } from '../../proxy/services/proxy.getter.service';
-import { StakingGetterService } from '../../staking/services/staking.getter.service';
-import { StakingGetterServiceMock } from '../../staking/mocks/staking.getter.service.mock';
-import { StakingProxyGetterService } from '../../staking-proxy/services/staking.proxy.getter.service';
-import { StakingProxyGetterServiceMock } from '../../staking-proxy/mocks/staking.proxy.getter.service.mock';
 import { StakingService } from '../../staking/services/staking.service';
 import { StakingServiceMock } from '../../staking/mocks/staking.service.mock';
 import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
@@ -80,6 +76,8 @@ import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.serv
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
+import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
+import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { SimpleLockAbiServiceProvider } from 'src/modules/simple-lock/mocks/simple.lock.abi.service.mock';
 import { PriceDiscoveryAbiServiceProvider } from 'src/modules/price-discovery/mocks/price.discovery.abi.service.mock';
 import { PriceDiscoveryComputeServiceProvider } from 'src/modules/price-discovery/mocks/price.discovery.compute.service.mock';
@@ -146,16 +144,6 @@ describe('UserService', () => {
     const StakingProxyServiceProvider = {
         provide: StakingProxyService,
         useClass: StakingProxyServiceMock,
-    };
-
-    const StakingGetterServiceProvider = {
-        provide: StakingGetterService,
-        useClass: StakingGetterServiceMock,
-    };
-
-    const StakingProxyGetterServiceProvider = {
-        provide: StakingProxyGetterService,
-        useClass: StakingProxyGetterServiceMock,
     };
 
     const RemoteConfigGetterServiceProvider = {
@@ -247,9 +235,9 @@ describe('UserService', () => {
                 LockedAssetGetterService,
                 WrapAbiServiceProvider,
                 StakingServiceProvider,
-                StakingGetterServiceProvider,
+                StakingAbiServiceProvider,
                 StakingProxyServiceProvider,
-                StakingProxyGetterServiceProvider,
+                StakingProxyAbiServiceProvider,
                 PriceDiscoveryServiceProvider,
                 PriceDiscoveryAbiServiceProvider,
                 PriceDiscoveryComputeServiceProvider,
