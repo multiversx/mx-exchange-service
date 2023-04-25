@@ -20,14 +20,14 @@ import {
     ProxyStakeFarmArgs,
     UnstakeFarmTokensArgs,
 } from '../models/staking.proxy.args.model';
-import { StakingProxyGetterService } from './staking.proxy.getter.service';
 import { StakingProxyService } from './staking.proxy.service';
+import { StakingProxyAbiService } from './staking.proxy.abi.service';
 
 @Injectable()
 export class StakingProxyTransactionService {
     constructor(
         private readonly stakeProxyService: StakingProxyService,
-        private readonly stakeProxyGetter: StakingProxyGetterService,
+        private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly pairService: PairService,
         private readonly farmFactory: FarmFactoryService,
         private readonly mxProxy: MXProxyService,
@@ -87,10 +87,9 @@ export class StakingProxyTransactionService {
         sender: string,
         args: ClaimDualYieldArgs,
     ): Promise<TransactionModel> {
-        const dualYieldTokenID =
-            await this.stakeProxyGetter.getDualYieldTokenID(
-                args.proxyStakingAddress,
-            );
+        const dualYieldTokenID = await this.stakeProxyAbi.dualYieldTokenID(
+            args.proxyStakingAddress,
+        );
         for (const payment of args.payments) {
             if (payment.tokenID !== dualYieldTokenID) {
                 throw new Error('invalid dual yield token for claim');
@@ -134,8 +133,8 @@ export class StakingProxyTransactionService {
                 ],
             });
         const [farmTokenID, farmAddress] = await Promise.all([
-            this.stakeProxyGetter.getLpFarmTokenID(args.proxyStakingAddress),
-            this.stakeProxyGetter.getLpFarmAddress(args.proxyStakingAddress),
+            this.stakeProxyAbi.lpFarmTokenID(args.proxyStakingAddress),
+            this.stakeProxyAbi.lpFarmAddress(args.proxyStakingAddress),
         ]);
         const farmTokenPosition = tokenIdentifier(
             farmTokenID,
@@ -146,7 +145,7 @@ export class StakingProxyTransactionService {
                 args.proxyStakingAddress,
                 farmTokenPosition,
             ),
-            this.stakeProxyGetter.getPairAddress(args.proxyStakingAddress),
+            this.stakeProxyAbi.pairAddress(args.proxyStakingAddress),
         ]);
 
         const liquidityPositionAmount = ruleOfThree(
@@ -211,8 +210,8 @@ export class StakingProxyTransactionService {
         tokens: InputTokenModel[],
     ): Promise<void> {
         const [lpFarmTokenID, dualYieldTokenID] = await Promise.all([
-            this.stakeProxyGetter.getLpFarmTokenID(proxyStakeAddress),
-            this.stakeProxyGetter.getDualYieldTokenID(proxyStakeAddress),
+            this.stakeProxyAbi.lpFarmTokenID(proxyStakeAddress),
+            this.stakeProxyAbi.dualYieldTokenID(proxyStakeAddress),
         ]);
 
         if (tokens[0].tokenID !== lpFarmTokenID) {

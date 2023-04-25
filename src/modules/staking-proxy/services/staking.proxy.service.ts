@@ -18,16 +18,20 @@ import {
     StakingProxyModel,
     UnstakeFarmTokensReceiveModel,
 } from '../models/staking.proxy.model';
-import { StakingProxyGetterService } from './staking.proxy.getter.service';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
+import { StakingProxyAbiService } from './staking.proxy.abi.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @Injectable()
 export class StakingProxyService {
     constructor(
-        private readonly stakingProxyGetter: StakingProxyGetterService,
+        private readonly stakingProxyAbi: StakingProxyAbiService,
         private readonly stakingService: StakingService,
         private readonly farmFactory: FarmFactoryService,
         private readonly pairService: PairService,
+        private readonly tokenGetter: TokenGetterService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cachingService: CachingService,
@@ -47,6 +51,38 @@ export class StakingProxyService {
             );
         }
         return stakingProxies;
+    }
+
+    async getStakingToken(stakingProxyAddress: string): Promise<EsdtToken> {
+        const stakingTokenID = await this.stakingProxyAbi.stakingTokenID(
+            stakingProxyAddress,
+        );
+        return await this.tokenGetter.getTokenMetadata(stakingTokenID);
+    }
+
+    async getFarmToken(stakingProxyAddress: string): Promise<NftCollection> {
+        const farmTokenID = await this.stakingProxyAbi.farmTokenID(
+            stakingProxyAddress,
+        );
+        return await this.tokenGetter.getNftCollectionMetadata(farmTokenID);
+    }
+
+    async getDualYieldToken(
+        stakingProxyAddress: string,
+    ): Promise<NftCollection> {
+        const dualYieldTokenID = await this.stakingProxyAbi.dualYieldTokenID(
+            stakingProxyAddress,
+        );
+        return await this.tokenGetter.getNftCollectionMetadata(
+            dualYieldTokenID,
+        );
+    }
+
+    async getLpFarmToken(stakingProxyAddress: string): Promise<NftCollection> {
+        const lpFarmTokenID = await this.stakingProxyAbi.lpFarmTokenID(
+            stakingProxyAddress,
+        );
+        return await this.tokenGetter.getNftCollectionMetadata(lpFarmTokenID);
     }
 
     async getBatchRewardsForPosition(
@@ -76,7 +112,7 @@ export class StakingProxyService {
             new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
         );
 
-        const pairAddress = await this.stakingProxyGetter.getPairAddress(
+        const pairAddress = await this.stakingProxyAbi.pairAddress(
             position.farmAddress,
         );
 
@@ -108,12 +144,10 @@ export class StakingProxyService {
 
         const [farmAddress, stakingFarmAddress, farmTokenID, stakingTokenID] =
             await Promise.all([
-                this.stakingProxyGetter.getLpFarmAddress(position.farmAddress),
-                this.stakingProxyGetter.getStakingFarmAddress(
-                    position.farmAddress,
-                ),
-                this.stakingProxyGetter.getLpFarmTokenID(position.farmAddress),
-                this.stakingProxyGetter.getFarmTokenID(position.farmAddress),
+                this.stakingProxyAbi.lpFarmAddress(position.farmAddress),
+                this.stakingProxyAbi.stakingFarmAddress(position.farmAddress),
+                this.stakingProxyAbi.lpFarmTokenID(position.farmAddress),
+                this.stakingProxyAbi.farmTokenID(position.farmAddress),
             ]);
 
         const [farmToken, stakingToken] = await Promise.all([
@@ -198,7 +232,7 @@ export class StakingProxyService {
 
         for (const address of stakingProxiesAddress) {
             const dualYieldTokenID =
-                await this.stakingProxyGetter.getDualYieldTokenID(address);
+                await this.stakingProxyAbi.dualYieldTokenID(address);
             if (dualYieldTokenID === tokenID) {
                 await this.cachingService.setCache(
                     `${tokenID}.stakingProxyAddress`,

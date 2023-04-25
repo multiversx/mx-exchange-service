@@ -29,7 +29,6 @@ import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { StakingGetterServiceProvider } from '../../staking/mocks/staking.getter.service.mock';
 import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
 import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
@@ -42,6 +41,9 @@ import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.serv
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 import { ProxyAbiServiceProvider } from 'src/modules/proxy/mocks/proxy.abi.service.mock';
+import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
+import { StakingService } from 'src/modules/staking/services/staking.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -109,7 +111,9 @@ describe('AnalyticsService', () => {
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,
                 WeeklyRewardsSplittingAbiServiceProvider,
-                StakingGetterServiceProvider,
+                StakingAbiServiceProvider,
+                StakingService,
+                StakingComputeService,
                 AnalyticsGetterServiceProvider,
                 {
                     provide: FeesCollectorGetterService,
@@ -119,6 +123,7 @@ describe('AnalyticsService', () => {
                 AnalyticsQueryService,
                 AWSTimestreamQueryService,
                 DataApiQueryServiceProvider,
+                TokenGetterServiceProvider,
             ],
         }).compile();
 
