@@ -39,7 +39,6 @@ import { StakingProxyServiceMock } from '../../staking-proxy/mocks/staking.proxy
 import { PriceDiscoveryGetterServiceProvider } from '../../price-discovery/mocks/price.discovery.getter.mock';
 import { PriceDiscoveryServiceProvider } from '../../price-discovery/mocks/price.discovery.service.mock';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
-import { SimpleLockGetterServiceProvider } from '../../simple-lock/mocks/simple.lock.getter.service.mock';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from '../../remote-config/mocks/remote-config.getter.mock';
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
@@ -80,6 +79,7 @@ import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
+import { SimpleLockAbiServiceProvider } from 'src/modules/simple-lock/mocks/simple.lock.abi.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -240,7 +240,7 @@ describe('UserService', () => {
                 PriceDiscoveryServiceProvider,
                 PriceDiscoveryGetterServiceProvider,
                 SimpleLockService,
-                SimpleLockGetterServiceProvider,
+                SimpleLockAbiServiceProvider,
                 EnergyAbiServiceProvider,
                 EnergyComputeService,
                 TokenGetterServiceProvider,
