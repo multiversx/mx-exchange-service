@@ -38,8 +38,6 @@ import { RemoteConfigGetterServiceMock } from '../../remote-config/mocks/remote-
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
@@ -78,6 +76,7 @@ import {
     ProxyPairAbiServiceProvider,
 } from 'src/modules/proxy/mocks/proxy.abi.service.mock';
 import { ProxyAbiServiceV2 } from 'src/modules/proxy/v2/services/proxy.v2.abi.service';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { SimpleLockAbiServiceProvider } from 'src/modules/simple-lock/mocks/simple.lock.abi.service.mock';
@@ -94,11 +93,6 @@ describe('UserService', () => {
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
-    };
-
-    const RouterGetterServiceProvider = {
-        provide: RouterGetterService,
-        useClass: RouterGetterServiceStub,
     };
 
     const PairGetterServiceProvider = {
@@ -154,7 +148,7 @@ describe('UserService', () => {
             providers: [
                 MXApiServiceProvider,
                 ContextGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,

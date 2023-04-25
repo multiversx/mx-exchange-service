@@ -9,18 +9,18 @@ import { Address } from '@multiversx/sdk-core';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
-import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
-import { WrapService } from 'src/modules/wrapping/services/wrap.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { CommonAppModule } from 'src/common.app.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import {
     ProxyAbiServiceMock,
     ProxyPairAbiServiceProvider,
 } from '../mocks/proxy.abi.service.mock';
 import { ProxyAbiServiceV2 } from '../v2/services/proxy.v2.abi.service';
+import { CachingModule } from 'src/services/caching/cache.module';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('TransactionProxyPairService', () => {
     let module: TestingModule;
@@ -43,13 +43,13 @@ describe('TransactionProxyPairService', () => {
                 WrapTransactionsService,
                 WrapService,
                 TokenGetterServiceProvider,
-                RouterGetterServiceProvider,
                 ProxyPairTransactionsService,
                 ProxyPairAbiServiceProvider,
                 {
                     provide: ProxyAbiServiceV2,
                     useClass: ProxyAbiServiceMock,
                 },
+                RouterAbiServiceProvider,
             ],
         }).compile();
     });

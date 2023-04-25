@@ -11,7 +11,6 @@ import {
 } from './auto-router.compute.service';
 import { constantsConfig, mxConfig } from 'src/config';
 import { AutoRouterArgs } from '../models/auto-router.args';
-import { RouterGetterService } from '../../router/services/router.getter.service';
 import { AutoRouteModel, SWAP_TYPE } from '../models/auto-route.model';
 import { AutoRouterTransactionService } from './auto-router.transactions.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -24,11 +23,12 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneMinute } from 'src/helpers/helpers';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class AutoRouterService {
     constructor(
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly tokenGetter: TokenGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
@@ -326,7 +326,7 @@ export class AutoRouterService {
     }
 
     private async getAllActivePairs() {
-        const pairAddresses = await this.routerGetter.getAllPairsAddress();
+        const pairAddresses = await this.routerAbi.pairsAddress();
         const statesPromises = pairAddresses.map((address) =>
             this.pairGetterService.getState(address),
         );

@@ -8,12 +8,12 @@ import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.se
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair-getter-service-mock.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WeeklyRewardsSplittingAbiService } from '../services/weekly-rewards-splitting.abi.service';
 import { Address } from '@multiversx/sdk-core/out';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { CommonAppModule } from 'src/common.app.module';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     let module: TestingModule;
@@ -30,7 +30,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                     provide: PairGetterService,
                     useClass: PairGetterServiceMock,
                 },
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
             ],
         }).compile();
