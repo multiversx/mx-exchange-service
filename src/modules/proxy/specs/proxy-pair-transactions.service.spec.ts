@@ -22,6 +22,7 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 
 describe('TransactionProxyPairService', () => {
     let module: TestingModule;
@@ -47,6 +48,7 @@ describe('TransactionProxyPairService', () => {
                     useClass: ProxyAbiServiceMock,
                 },
                 RouterAbiServiceProvider,
+                ContextGetterServiceProvider,
             ],
         }).compile();
     });

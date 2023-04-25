@@ -40,7 +40,6 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -71,7 +70,6 @@ describe('AnalyticsService', () => {
                 PairService,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
-                PairComputeService,
                 ProxyAbiServiceProvider,
                 {
                     provide: AbiLockedAssetService,

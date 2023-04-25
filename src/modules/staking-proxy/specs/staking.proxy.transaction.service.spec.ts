@@ -2,8 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { StakingProxyTransactionService } from '../services/staking.proxy.transactions.service';
 import { StakingProxyService } from '../services/staking.proxy.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair-getter-service-mock.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
@@ -33,7 +31,6 @@ import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
@@ -46,6 +43,8 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -62,11 +61,8 @@ describe('StakingProxyTransactionService', () => {
                     useClass: StakingServiceMock,
                 },
                 PairService,
-                {
-                    provide: PairGetterService,
-                    useClass: PairGetterServiceMock,
-                },
-                PairComputeService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 FarmFactoryService,
