@@ -142,6 +142,7 @@ export class PairResolver {
         return this.pairCompute.type(parent.address);
     }
 
+    @ResolveField()
     async trustedSwapPairs(@Parent() parent: PairModel): Promise<string[]> {
         return this.pairAbi.trustedSwapPairs(parent.address);
     }
