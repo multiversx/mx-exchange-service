@@ -9,9 +9,13 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { IPriceDiscoveryAbiService } from './interfaces';
 
 @Injectable()
-export class PriceDiscoveryAbiService extends GenericAbiService {
+export class PriceDiscoveryAbiService
+    extends GenericAbiService
+    implements IPriceDiscoveryAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }

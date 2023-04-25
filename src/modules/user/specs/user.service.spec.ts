@@ -40,7 +40,6 @@ import { StakingService } from '../../staking/services/staking.service';
 import { StakingServiceMock } from '../../staking/mocks/staking.service.mock';
 import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
 import { StakingProxyServiceMock } from '../../staking-proxy/mocks/staking.proxy.service.mock';
-import { PriceDiscoveryGetterServiceProvider } from '../../price-discovery/mocks/price.discovery.getter.mock';
 import { PriceDiscoveryServiceProvider } from '../../price-discovery/mocks/price.discovery.service.mock';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
@@ -82,6 +81,8 @@ import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeepi
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
 import { SimpleLockAbiServiceProvider } from 'src/modules/simple-lock/mocks/simple.lock.abi.service.mock';
+import { PriceDiscoveryAbiServiceProvider } from 'src/modules/price-discovery/mocks/price.discovery.abi.service.mock';
+import { PriceDiscoveryComputeServiceProvider } from 'src/modules/price-discovery/mocks/price.discovery.compute.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -250,7 +251,8 @@ describe('UserService', () => {
                 StakingProxyServiceProvider,
                 StakingProxyGetterServiceProvider,
                 PriceDiscoveryServiceProvider,
-                PriceDiscoveryGetterServiceProvider,
+                PriceDiscoveryAbiServiceProvider,
+                PriceDiscoveryComputeServiceProvider,
                 SimpleLockService,
                 SimpleLockAbiServiceProvider,
                 EnergyAbiServiceProvider,

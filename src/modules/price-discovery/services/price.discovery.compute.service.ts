@@ -7,9 +7,12 @@ import { PriceDiscoveryService } from './price.discovery.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { IPriceDiscoveryComputeService } from './interfaces';
 
 @Injectable()
-export class PriceDiscoveryComputeService {
+export class PriceDiscoveryComputeService
+    implements IPriceDiscoveryComputeService
+{
     constructor(
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly priceDiscoveryService: PriceDiscoveryService,
