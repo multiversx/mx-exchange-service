@@ -671,7 +671,7 @@ export class PairAbiService
         const interaction: Interaction =
             contract.methods.getTransferExecGasLimit([]);
         const response = await this.getGenericData(interaction);
-        const res = response.firstValue.valueOf();
+        const res = response.firstValue?.valueOf();
         return res !== undefined ? res.toFixed() : undefined;
     }
 

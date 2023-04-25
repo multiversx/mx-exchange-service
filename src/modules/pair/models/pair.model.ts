@@ -137,7 +137,7 @@ export class PairModel {
     @Field()
     externSwapGasLimit: string;
 
-    @Field()
+    @Field({ nullable: true })
     transferExecGasLimit: string;
 
     @Field()
