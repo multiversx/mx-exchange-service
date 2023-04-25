@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
-import { AbiStakingProxyService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingProxySetterService } from 'src/modules/staking-proxy/services/staking.proxy.setter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
@@ -11,7 +11,7 @@ import { PUB_SUB } from '../redis.pubSub.module';
 @Injectable()
 export class StakingProxyCacheWarmerService {
     constructor(
-        private readonly abiService: AbiStakingProxyService,
+        private readonly abiService: StakingProxyAbiService,
         private readonly stakingProxySetter: StakingProxySetterService,
         private readonly apiService: MXApiService,
         private readonly tokenSetter: TokenSetterService,
@@ -33,13 +33,13 @@ export class StakingProxyCacheWarmerService {
                 dualYieldTokenID,
                 lpFarmTokenID,
             ] = await Promise.all([
-                this.abiService.getLpFarmAddress(address),
-                this.abiService.getStakingFarmAddress(address),
-                this.abiService.getPairAddress(address),
-                this.abiService.getStakingTokenID(address),
-                this.abiService.getFarmTokenID(address),
-                this.abiService.getDualYieldTokenID(address),
-                this.abiService.getLpFarmTokenID(address),
+                this.abiService.getlpFarmAddressRaw(address),
+                this.abiService.getStakingFarmAddressRaw(address),
+                this.abiService.getPairAddressRaw(address),
+                this.abiService.getStakingTokenIDRaw(address),
+                this.abiService.getFarmTokenIDRaw(address),
+                this.abiService.getDualYieldTokenIDRaw(address),
+                this.abiService.getLpFarmTokenIDRaw(address),
             ]);
 
             const [stakingToken, farmToken, dualYieldToken, lpFarmToken] =

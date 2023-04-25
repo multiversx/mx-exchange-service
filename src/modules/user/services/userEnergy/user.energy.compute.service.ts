@@ -17,11 +17,11 @@ import { StakingProxyService } from '../../../staking-proxy/services/staking.pro
 import { FarmVersion } from '../../../farm/models/farm.model';
 import { farmVersion } from '../../../../utils/farm.utils';
 import { BigNumber } from 'bignumber.js';
-import { StakingProxyGetterService } from '../../../staking-proxy/services/staking.proxy.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -31,7 +31,7 @@ export class UserEnergyComputeService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,
-        private readonly stakeProxyGetter: StakingProxyGetterService,
+        private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly proxyService: ProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -155,7 +155,7 @@ export class UserEnergyComputeService {
             await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(
                 token.collection,
             );
-        return this.stakeProxyGetter.getLpFarmAddress(stakingProxyAddress);
+        return this.stakeProxyAbi.lpFarmAddress(stakingProxyAddress);
     }
 
     isEnergyOutdated(

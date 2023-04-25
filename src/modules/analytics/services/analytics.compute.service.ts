@@ -10,13 +10,13 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
-import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -25,7 +25,7 @@ export class AnalyticsComputeService {
         private readonly farmGetter: FarmGetterFactory,
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairGetter: PairGetterService,
-        private readonly stakingGetter: StakingGetterService,
+        private readonly stakingCompute: StakingComputeService,
         private readonly tokenGetter: TokenGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
@@ -85,7 +85,7 @@ export class AnalyticsComputeService {
         const stakingAddresses =
             await this.remoteConfigGetterService.getStakingAddresses();
         const promises = stakingAddresses.map((stakingAddress) =>
-            this.stakingGetter.getStakedValueUSD(stakingAddress),
+            this.stakingCompute.stakedValueUSD(stakingAddress),
         );
 
         promises.push(this.computeTotalLockedMexStakedUSD());
