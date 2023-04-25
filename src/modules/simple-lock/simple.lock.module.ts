@@ -8,7 +8,6 @@ import { WrappingModule } from '../wrapping/wrap.module';
 import { LockedFarmTokenResolver } from './lockedFarmToken.resolver';
 import { LockedLpTokenResolver } from './lockedLpToken.resolver';
 import { SimpleLockAbiService } from './services/simple.lock.abi.service';
-import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockSetterService } from './services/simple.lock.setter.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
@@ -31,7 +30,6 @@ import { FarmModule } from '../farm/farm.module';
     providers: [
         SimpleLockService,
         SimpleLockAbiService,
-        SimpleLockGetterService,
         SimpleLockSetterService,
         SimpleLockTransactionService,
         SimpleLockResolver,
@@ -39,6 +37,6 @@ import { FarmModule } from '../farm/farm.module';
         LockedFarmTokenResolver,
         TransactionResolver,
     ],
-    exports: [SimpleLockService, SimpleLockGetterService],
+    exports: [SimpleLockService, SimpleLockAbiService],
 })
 export class SimpleLockModule {}
