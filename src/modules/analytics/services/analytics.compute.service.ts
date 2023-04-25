@@ -5,11 +5,9 @@ import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
-import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
@@ -18,16 +16,18 @@ import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/servi
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
-        private readonly stakingGetter: StakingGetterService,
+        private readonly stakingCompute: StakingComputeService,
         private readonly tokenGetter: TokenGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
@@ -59,7 +59,7 @@ export class AnalyticsComputeService {
     }
 
     async computeTotalValueLockedUSD(): Promise<string> {
-        const pairsAddress = await this.routerGetter.getAllPairsAddress();
+        const pairsAddress = await this.routerAbi.pairsAddress();
         const filteredPairs = await this.fiterPairsByIssuedLpToken(
             pairsAddress,
         );
@@ -87,7 +87,7 @@ export class AnalyticsComputeService {
         const stakingAddresses =
             await this.remoteConfigGetterService.getStakingAddresses();
         const promises = stakingAddresses.map((stakingAddress) =>
-            this.stakingGetter.getStakedValueUSD(stakingAddress),
+            this.stakingCompute.stakedValueUSD(stakingAddress),
         );
 
         promises.push(this.computeTotalLockedMexStakedUSD());

@@ -3,11 +3,11 @@ import { PairService } from '../services/pair.service';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from '../mocks/pair.compute.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -21,8 +21,8 @@ describe('PairService', () => {
                 PairService,
                 WrapAbiServiceProvider,
                 TokenGetterServiceProvider,
-                RouterGetterServiceProvider,
                 ContextGetterServiceProvider,
+                RouterAbiServiceProvider,
             ],
         }).compile();
     });

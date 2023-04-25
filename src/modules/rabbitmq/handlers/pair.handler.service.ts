@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class PairHandler {
     constructor(
         private readonly pairAbi: PairAbiService,
         private readonly pairSetter: PairSetterService,
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -41,7 +41,7 @@ export class PairHandler {
     }
 
     async getTokenTotalLockedValue(tokenID: string): Promise<string> {
-        const pairs = await this.routerGetter.getPairsMetadata();
+        const pairs = await this.routerAbi.pairsMetadata();
         const promises = [];
         for (const pair of pairs) {
             switch (tokenID) {

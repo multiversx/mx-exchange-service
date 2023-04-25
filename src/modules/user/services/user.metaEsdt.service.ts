@@ -1,8 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
-import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { UserNftTokens } from '../models/nfttokens.union';
 import { UserMetaEsdtComputeService } from './metaEsdt.compute.service';
@@ -24,12 +22,9 @@ import { Logger } from 'winston';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
-import { StakingGetterService } from '../../staking/services/staking.getter.service';
-import { StakingProxyGetterService } from '../../staking-proxy/services/staking.proxy.getter.service';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryService } from '../../price-discovery/services/price.discovery.service';
-import { SimpleLockGetterService } from '../../simple-lock/services/simple.lock.getter.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { INFTToken } from '../../tokens/models/nft.interface';
 import { constantsConfig, scAddress } from 'src/config';
@@ -55,6 +50,11 @@ import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model
 import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
 import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { ProxyPairAbiService } from 'src/modules/proxy/services/proxy-pair/proxy.pair.abi.service';
+import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
+import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
+import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lock.abi.service';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -78,15 +78,15 @@ export class UserMetaEsdtService {
         private userComputeService: UserMetaEsdtComputeService,
         private apiService: MXApiService,
         private cachingService: CachingService,
-        private proxyPairGetter: ProxyPairGetterService,
-        private proxyFarmGetter: ProxyFarmGetterService,
+        private proxyPairAbi: ProxyPairAbiService,
+        private proxyFarmAbi: ProxyFarmAbiService,
         private farmGetter: FarmGetterFactory,
         private lockedAssetGetter: LockedAssetGetterService,
-        private stakeGetterService: StakingGetterService,
-        private proxyStakeGetter: StakingProxyGetterService,
+        private stakingAbi: StakingAbiService,
+        private proxyStakeAbi: StakingProxyAbiService,
         private priceDiscoveryService: PriceDiscoveryService,
         private priceDiscoveryGetter: PriceDiscoveryGetterService,
-        private simpleLockGetter: SimpleLockGetterService,
+        private simpleLockAbi: SimpleLockAbiService,
         private readonly energyAbi: EnergyAbiService,
         private lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
@@ -147,7 +147,7 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedLPToken[]> {
-        const lockedLpTokenID = await this.proxyPairGetter.getwrappedLpTokenID(
+        const lockedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             scAddress.proxyDexAddress.v1,
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -171,10 +171,9 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedFarmToken[]> {
-        const lockedFarmTokenID =
-            await this.proxyFarmGetter.getwrappedFarmTokenID(
-                scAddress.proxyDexAddress.v1,
-            );
+        const lockedFarmTokenID = await this.proxyFarmAbi.wrappedFarmTokenID(
+            scAddress.proxyDexAddress.v1,
+        );
         const nfts = await this.apiService.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -195,7 +194,7 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedLPTokenV2[]> {
-        const lockedLpTokenID = await this.proxyPairGetter.getwrappedLpTokenID(
+        const lockedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             scAddress.proxyDexAddress.v2,
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -221,7 +220,7 @@ export class UserMetaEsdtService {
     ): Promise<UserLockedFarmTokenV2[]> {
         try {
             const lockedFarmTokenID =
-                await this.proxyFarmGetter.getwrappedFarmTokenID(
+                await this.proxyFarmAbi.wrappedFarmTokenID(
                     scAddress.proxyDexAddress.v2,
                 );
             const nfts = await this.apiService.getNftsForUser(
@@ -254,7 +253,7 @@ export class UserMetaEsdtService {
             await this.remoteConfigGetterService.getStakingAddresses();
         const stakingTokenIDs = await Promise.all(
             stakingAddresses.map((address) =>
-                this.stakeGetterService.getFarmTokenID(address),
+                this.stakingAbi.farmTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -289,7 +288,7 @@ export class UserMetaEsdtService {
             await this.remoteConfigGetterService.getStakingAddresses();
         const stakingTokenIDs = await Promise.all(
             stakingAddresses.map((address) =>
-                this.stakeGetterService.getFarmTokenID(address),
+                this.stakingAbi.farmTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -324,7 +323,7 @@ export class UserMetaEsdtService {
             await this.remoteConfigGetterService.getStakingProxyAddresses();
         const dualYieldTokenIDs = await Promise.all(
             stakingProxyAddresses.map((address) =>
-                this.proxyStakeGetter.getDualYieldTokenID(address),
+                this.proxyStakeAbi.dualYieldTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -371,7 +370,7 @@ export class UserMetaEsdtService {
     ): Promise<UserLockedEsdtToken[]> {
         const lockedEsdtTokenIDs = await Promise.all(
             scAddress.simpleLockAddress.map((address: string) =>
-                this.simpleLockGetter.getLockedTokenID(address),
+                this.simpleLockAbi.lockedTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -392,7 +391,7 @@ export class UserMetaEsdtService {
     ): Promise<UserLockedSimpleLpToken[]> {
         const lockedSimpleLpTokenIDs = await Promise.all(
             scAddress.simpleLockAddress.map((address: string) =>
-                this.simpleLockGetter.getLpProxyTokenID(address),
+                this.simpleLockAbi.lpProxyTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -415,7 +414,7 @@ export class UserMetaEsdtService {
     ): Promise<UserLockedSimpleFarmToken[]> {
         const lockedSimpleFarmTokenIDs = await Promise.all(
             scAddress.simpleLockAddress.map((address: string) =>
-                this.simpleLockGetter.getFarmProxyTokenID(address),
+                this.simpleLockAbi.farmProxyTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -634,10 +633,10 @@ export class UserMetaEsdtService {
 
         for (const proxyVersion of Object.keys(scAddress.proxyDexAddress)) {
             const [lockedLpTokenID, lockedFarmTokenID] = await Promise.all([
-                this.proxyPairGetter.getwrappedLpTokenID(
+                this.proxyPairAbi.wrappedLpTokenID(
                     scAddress.proxyDexAddress[proxyVersion],
                 ),
-                this.proxyFarmGetter.getwrappedFarmTokenID(
+                this.proxyFarmAbi.wrappedFarmTokenID(
                     scAddress.proxyDexAddress[proxyVersion],
                 ),
             ]);
@@ -657,11 +656,9 @@ export class UserMetaEsdtService {
         for (const simpleLockAddress of scAddress.simpleLockAddress) {
             const [lockedTokenID, lpProxyTokenID, lpFarmProxyTokenID] =
                 await Promise.all([
-                    this.simpleLockGetter.getLockedTokenID(simpleLockAddress),
-                    this.simpleLockGetter.getLpProxyTokenID(simpleLockAddress),
-                    this.simpleLockGetter.getFarmProxyTokenID(
-                        simpleLockAddress,
-                    ),
+                    this.simpleLockAbi.lockedTokenID(simpleLockAddress),
+                    this.simpleLockAbi.lpProxyTokenID(simpleLockAddress),
+                    this.simpleLockAbi.farmProxyTokenID(simpleLockAddress),
                 ]);
 
             switch (tokenID) {
@@ -691,7 +688,7 @@ export class UserMetaEsdtService {
         const staking =
             await this.remoteConfigGetterService.getStakingAddresses();
         for (const address of staking) {
-            promises.push(this.stakeGetterService.getFarmTokenID(address));
+            promises.push(this.stakingAbi.farmTokenID(address));
         }
         const stakeFarmTokenIDs = await Promise.all(promises);
         if (
@@ -706,7 +703,7 @@ export class UserMetaEsdtService {
         const stakingProxy =
             await this.remoteConfigGetterService.getStakingProxyAddresses();
         for (const address of stakingProxy) {
-            promises.push(this.proxyStakeGetter.getDualYieldTokenID(address));
+            promises.push(this.proxyStakeAbi.dualYieldTokenID(address));
         }
         const dualYieldTokenIDs = await Promise.all(promises);
         if (

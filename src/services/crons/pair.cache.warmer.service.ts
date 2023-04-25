@@ -6,7 +6,6 @@ import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { delay } from 'src/helpers/helpers';
 import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
@@ -14,6 +13,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Locker } from 'src/utils/locker';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -21,7 +21,7 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly pairAbi: PairAbiService,
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
         private readonly tokenSetter: TokenSetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
@@ -34,7 +34,7 @@ export class PairCacheWarmerService {
     async cachePairs(): Promise<void> {
         Locker.lock('CachePairs', async () => {
             this.logger.info('Start refresh cached pairs');
-            const pairsMetadata = await this.routerGetter.getPairsMetadata();
+            const pairsMetadata = await this.routerAbi.pairsMetadata();
             for (const pairMetadata of pairsMetadata) {
                 const lpTokenID = await this.pairAbi.getLpTokenIDRaw(
                     pairMetadata.address,
@@ -95,7 +95,7 @@ export class PairCacheWarmerService {
             return;
         }
         Locker.lock('pairsAnalytics', async () => {
-            const pairsAddresses = await this.routerGetter.getAllPairsAddress();
+            const pairsAddresses = await this.routerAbi.pairsAddress();
             const time = '24h';
             for (const pairAddress of pairsAddresses) {
                 const firstTokenVolume24h =
@@ -161,7 +161,7 @@ export class PairCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cachePairsInfo(): Promise<void> {
-        const pairsAddresses = await this.routerGetter.getAllPairsAddress();
+        const pairsAddresses = await this.routerAbi.pairsAddress();
 
         for (const pairAddress of pairsAddresses) {
             const [
@@ -200,7 +200,7 @@ export class PairCacheWarmerService {
 
     @Cron('*/12 * * * * *') // Update prices and reserves every 12 seconds
     async cacheTokenPrices(): Promise<void> {
-        const pairsMetadata = await this.routerGetter.getPairsMetadata();
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
         const invalidatedKeys = [];
         for (const pairAddress of pairsMetadata) {
             const pairInfo = await this.pairAbi.getPairInfoMetadataRaw(

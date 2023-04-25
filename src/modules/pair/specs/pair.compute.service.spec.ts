@@ -5,12 +5,12 @@ import { PairService } from '../services/pair.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -24,7 +24,7 @@ describe('PairService', () => {
                 PairAbiServiceProvider,
                 WrapAbiServiceProvider,
                 TokenGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
                 TokenComputeService,
                 AnalyticsQueryServiceProvider,

@@ -13,7 +13,6 @@ import { MXApiService } from '../../../services/multiversx-communication/mx.api.
 import { encodeTransactionData } from '../../../helpers/helpers';
 import { mxConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { FarmTransactionServiceV1_2 } from '../v1.2/services/farm.v1.2.transaction.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
@@ -21,6 +20,7 @@ import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.serv
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('FarmService', () => {
     let transactionV1_2: FarmTransactionServiceV1_2;
@@ -54,7 +54,7 @@ describe('FarmService', () => {
                 PairComputeServiceProvider,
                 TokenComputeService,
                 TokenGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 MXProxyServiceProvider,
                 FarmTransactionServiceV1_2,

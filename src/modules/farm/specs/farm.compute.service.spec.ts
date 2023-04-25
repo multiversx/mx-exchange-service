@@ -7,7 +7,6 @@ import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { ContextGetterServiceProvider } from '../../../services/context/mocks/context.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.service';
 import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service';
@@ -17,6 +16,7 @@ import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('FarmService', () => {
     let service: FarmComputeServiceV1_2;
@@ -43,7 +43,7 @@ describe('FarmService', () => {
                 PairComputeServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 MXDataApiServiceProvider,
                 FarmComputeServiceV1_2,

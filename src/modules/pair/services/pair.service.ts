@@ -11,7 +11,6 @@ import {
 import { computeValueUSD } from 'src/utils/token.converters';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneHour } from 'src/helpers/helpers';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -19,6 +18,7 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { PairComputeService } from './pair.compute.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class PairService {
@@ -26,8 +26,7 @@ export class PairService {
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
-        @Inject(forwardRef(() => RouterGetterService))
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly wrapAbi: WrapAbiService,
         @Inject(forwardRef(() => TokenGetterService))
         private readonly tokenGetter: TokenGetterService,
@@ -226,7 +225,7 @@ export class PairService {
         if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
-        const pairsAddress = await this.routerGetter.getAllPairsAddress();
+        const pairsAddress = await this.routerAbi.pairsAddress();
         const promises = pairsAddress.map(async (pairAddress) =>
             this.pairAbi.lpTokenID(pairAddress),
         );
@@ -248,7 +247,7 @@ export class PairService {
     }
 
     async isPairEsdtToken(tokenID: string): Promise<boolean> {
-        const pairsAddress = await this.routerGetter.getAllPairsAddress();
+        const pairsAddress = await this.routerAbi.pairsAddress();
         for (const pairAddress of pairsAddress) {
             const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
                 this.pairAbi.firstTokenID(pairAddress),

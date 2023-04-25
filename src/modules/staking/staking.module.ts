@@ -5,9 +5,8 @@ import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { TokenModule } from '../tokens/token.module';
-import { AbiStakingService } from './services/staking.abi.service';
+import { StakingAbiService } from './services/staking.abi.service';
 import { StakingComputeService } from './services/staking.compute.service';
-import { StakingGetterService } from './services/staking.getter.service';
 import { StakingService } from './services/staking.service';
 import { StakingSetterService } from './services/staking.setter.service';
 import { StakingTransactionService } from './services/staking.transactions.service';
@@ -23,18 +22,16 @@ import { StakingResolver } from './staking.resolver';
         TokenModule,
     ],
     providers: [
-        AbiStakingService,
+        StakingAbiService,
         StakingService,
-        StakingGetterService,
         StakingSetterService,
         StakingComputeService,
         StakingTransactionService,
         StakingResolver,
     ],
     exports: [
-        AbiStakingService,
+        StakingAbiService,
         StakingService,
-        StakingGetterService,
         StakingSetterService,
         StakingComputeService,
     ],

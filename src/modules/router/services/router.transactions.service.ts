@@ -9,33 +9,30 @@ import {
     TokenPayment,
     TypedValue,
 } from '@multiversx/sdk-core';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
-import { Logger } from 'winston';
 import { constantsConfig, mxConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SetLocalRoleOwnerArgs } from '../models/router.args';
-import { RouterGetterService } from './router.getter.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { RouterAbiService } from './router.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 
 @Injectable()
-export class TransactionRouterService {
+export class RouterTransactionService {
     constructor(
         private readonly mxProxy: MXProxyService,
-        private readonly routerGetterService: RouterGetterService,
         private readonly pairAbi: PairAbiService,
+        private readonly routerAbi: RouterAbiService,
         private readonly pairService: PairService,
         private readonly contextGetter: ContextGetterService,
         private readonly transactionsWrapService: WrapTransactionsService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
     async createPair(
@@ -229,23 +226,17 @@ export class TransactionRouterService {
             .toPlainObject();
     }
 
+    @ErrorLoggerAsync({
+        className: RouterTransactionService.name,
+        logArgs: true,
+    })
     async setSwapEnabledByUser(
         sender: string,
         inputTokens: InputTokenModel,
     ): Promise<TransactionModel> {
-        let pairAddress: string;
-        try {
-            pairAddress = await this.validateSwapEnableInputTokens(inputTokens);
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                this.constructor.name,
-                this.setSwapEnabledByUser.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const pairAddress = await this.validateSwapEnableInputTokens(
+            inputTokens,
+        );
 
         const initialLiquidityAdder = await this.pairAbi.initialLiquidityAdder(
             pairAddress,
@@ -371,7 +362,7 @@ export class TransactionRouterService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<boolean> {
-        const pairsMetadata = await this.routerGetterService.getPairsMetadata();
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
         for (const pair of pairsMetadata) {
             if (
                 (pair.firstTokenID === firstTokenID &&
@@ -413,8 +404,8 @@ export class TransactionRouterService {
     ): Promise<string> {
         const [swapEnableConfig, commonTokensUserPair, currentEpoch] =
             await Promise.all([
-                this.routerGetterService.getEnableSwapByUserConfig(),
-                this.routerGetterService.getCommonTokensForUserPairs(),
+                this.routerAbi.enableSwapByUserConfig(),
+                this.routerAbi.commonTokensForUserPairs(),
                 this.contextGetter.getCurrentEpoch(),
             ]);
 

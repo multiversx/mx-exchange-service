@@ -7,12 +7,12 @@ import {
     tokenProviderUSD,
 } from 'src/config';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { ITokenComputeService } from '../interfaces';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -22,8 +22,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly pairCompute: PairComputeService,
         @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
-        @Inject(forwardRef(() => RouterGetterService))
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly dataApi: MXDataApiService,
     ) {}
 
@@ -36,7 +35,7 @@ export class TokenComputeService implements ITokenComputeService {
             return new BigNumber('1').toFixed();
         }
 
-        const pairsMetadata = await this.routerGetter.getPairsMetadata();
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
         const tokenPairs: PairMetadata[] = [];
         for (const pair of pairsMetadata) {
             if (

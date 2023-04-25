@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { constantsConfig, mxConfig, gasConfig } from '../../../../config';
 import {
     BigUIntValue,
@@ -16,8 +16,6 @@ import {
     ExitFarmProxyArgs,
 } from '../../models/proxy-farm.args';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import {
@@ -30,13 +28,12 @@ import { proxyVersion } from 'src/utils/proxy.utils';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 @Injectable()
-export class TransactionsProxyFarmService {
+export class ProxyFarmTransactionsService {
     constructor(
         private readonly mxProxy: MXProxyService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly pairService: PairService,
         private readonly pairAbi: PairAbiService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async enterFarmProxy(

@@ -7,7 +7,6 @@ import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { Address } from '@multiversx/sdk-core';
 import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
 import { FarmAbiServiceV1_2 } from '../v1.2/services/farm.v1.2.abi.service';
@@ -39,6 +38,7 @@ import { EnergyComputeService } from 'src/modules/energy/services/energy.compute
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('FarmService', () => {
     let factory: FarmFactoryService;
@@ -98,7 +98,7 @@ describe('FarmService', () => {
                 FarmComputeServiceV2,
                 MXApiServiceProvider,
                 ContextGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 TokenGetterServiceProvider,
                 PairService,
                 PairAbiServiceProvider,

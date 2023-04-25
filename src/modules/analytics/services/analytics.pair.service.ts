@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
 import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class AnalyticsPairService {
     constructor(
         private readonly pairAbi: PairAbiService,
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
     ) {}
 
@@ -108,7 +108,7 @@ export class AnalyticsPairService {
     }
 
     async getPairsDayDatas(): Promise<PairDayDataModel[]> {
-        const pairAddresses = await this.routerGetter.getAllPairsAddress();
+        const pairAddresses = await this.routerAbi.pairsAddress();
         const pairsDayDatas: PairDayDataModel[] = [];
 
         await Promise.all(

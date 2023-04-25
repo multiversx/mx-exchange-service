@@ -15,7 +15,6 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
@@ -25,6 +24,7 @@ import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('FeesCollectorComputeService', () => {
     let module: TestingModule;
@@ -46,8 +46,8 @@ describe('FeesCollectorComputeService', () => {
                 PairService,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
-                RouterGetterServiceProvider,
                 WrapAbiServiceProvider,
+                RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
                 ContextGetterServiceProvider,
                 {
