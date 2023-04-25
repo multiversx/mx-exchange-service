@@ -17,9 +17,9 @@ import { ConfigService } from '@nestjs/config';
 import { Address } from '@multiversx/sdk-core';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
@@ -57,7 +57,7 @@ describe('TransactionPairService', () => {
                 MXProxyServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 WrapService,
                 WrapTransactionsService,

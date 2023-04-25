@@ -10,13 +10,13 @@ import { PairComputeService } from '../../../modules/pair/services/pair.compute.
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { AbiFarmServiceProvider } from '../mocks/abi.farm.service.mock';
 import { FarmComputeServiceV1_3 } from '../v1.3/services/farm.v1.3.compute.service';
 import { FarmGetterServiceProviderV1_3 } from '../mocks/farm.v1.3.getter.service.mock';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('FarmService', () => {
     let service: FarmComputeServiceV1_3;
@@ -50,7 +50,7 @@ describe('FarmService', () => {
                 PairComputeService,
                 TokenGetterServiceProvider,
                 TokenComputeService,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 MXDataApiServiceProvider,
             ],

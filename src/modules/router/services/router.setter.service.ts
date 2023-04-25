@@ -3,7 +3,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { PairMetadata } from '../models/pair.metadata.model';
 
@@ -14,11 +13,12 @@ export class RouterSetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'router';
     }
 
     async setAllPairsAddress(value: string[]): Promise<string> {
         return await this.setData(
-            this.getRouterCacheKey('pairsAddress'),
+            this.getCacheKey('pairsAddress'),
             value,
             oneMinute(),
         );
@@ -26,43 +26,39 @@ export class RouterSetterService extends GenericSetterService {
 
     async setPairsMetadata(value: PairMetadata[]): Promise<string> {
         return await this.setData(
-            this.getRouterCacheKey('pairsMetadata'),
+            this.getCacheKey('pairsMetadata'),
             value,
             oneMinute(),
         );
     }
 
     async setAllPairTokens(value: string[]): Promise<string> {
-        const cacheKey = this.getRouterCacheKey('pairsTokens');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
-    }
-
-    async setAllPairsManagedAddresses(value: string[]): Promise<string> {
-        const cacheKey = this.getRouterCacheKey('pairsManagedAddresses');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
+        return await this.setData(
+            this.getCacheKey('pairsTokens'),
+            value,
+            oneMinute(),
+        );
     }
 
     async setTotalLockedValueUSD(value: string): Promise<string> {
         return await this.setData(
-            this.getRouterCacheKey('totalLockedValueUSD'),
+            this.getCacheKey('totalLockedValueUSD'),
             value,
             oneMinute(),
         );
     }
 
-    async setTotalVolumeUSD(value: string, time: string): Promise<string> {
+    async setTotalVolumeUSD(time: string, value: string): Promise<string> {
         return await this.setData(
-            this.getRouterCacheKey(`totalVolumeUSD.${time}`),
+            this.getCacheKey('totalVolumeUSD', time),
             value,
             oneMinute(),
         );
     }
 
-    async setTotalFeesUSD(value: string, time: string): Promise<string> {
+    async setTotalFeesUSD(time: string, value: string): Promise<string> {
         return await this.setData(
-            this.getRouterCacheKey(`totalFeesUSD.${time}`),
+            this.getCacheKey('totalFeesUSD', time),
             value,
             oneMinute(),
         );
@@ -70,13 +66,9 @@ export class RouterSetterService extends GenericSetterService {
 
     async setPairCount(value: number): Promise<string> {
         return await this.setData(
-            this.getRouterCacheKey('pairCount'),
+            this.getCacheKey('pairCount'),
             value,
             oneHour(),
         );
-    }
-
-    private getRouterCacheKey(...args: any) {
-        return generateCacheKeyFromParams('router', ...args);
     }
 }

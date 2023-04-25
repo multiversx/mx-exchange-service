@@ -19,7 +19,6 @@ import { ProxyGetterService } from 'src/modules/proxy/services/proxy.getter.serv
 import { ProxyGetterServiceMock } from 'src/modules/proxy/mocks/proxy.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
 import { FarmGetterServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
@@ -42,6 +41,7 @@ import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
@@ -109,7 +109,7 @@ describe('AnalyticsService', () => {
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
                 WrapAbiServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 TokenGetterServiceProvider,
                 MXDataApiServiceProvider,
                 TokenComputeService,

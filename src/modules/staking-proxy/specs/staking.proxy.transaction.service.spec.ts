@@ -6,7 +6,6 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair-getter-service-mock.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
@@ -46,6 +45,7 @@ import { Address } from '@multiversx/sdk-core/out';
 import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -67,7 +67,7 @@ describe('StakingProxyTransactionService', () => {
                     useClass: PairGetterServiceMock,
                 },
                 PairComputeService,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 FarmFactoryService,
                 FarmServiceV1_2,

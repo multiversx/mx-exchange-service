@@ -6,7 +6,6 @@ import {
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
@@ -16,12 +15,13 @@ import { RemoteConfigGetterService } from '../../remote-config/remote-config.get
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairGetter: PairGetterService,
@@ -57,7 +57,7 @@ export class AnalyticsComputeService {
     }
 
     async computeTotalValueLockedUSD(): Promise<string> {
-        const pairsAddress = await this.routerGetter.getAllPairsAddress();
+        const pairsAddress = await this.routerAbi.pairsAddress();
         const filteredPairs = await this.fiterPairsByIssuedLpToken(
             pairsAddress,
         );

@@ -12,7 +12,6 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { Address } from '@multiversx/sdk-core';
 import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
 import { FarmAbiServiceV1_2 } from '../v1.2/services/farm.v1.2.abi.service';
@@ -41,6 +40,7 @@ import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeepi
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('FarmService', () => {
     let factory: FarmFactoryService;
@@ -110,7 +110,7 @@ describe('FarmService', () => {
                 FarmComputeServiceV2,
                 MXApiServiceProvider,
                 ContextGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 TokenGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
