@@ -1,5 +1,3 @@
-import { PriceDiscoveryGetterService } from '../services/price.discovery.getter.service';
-
 class PriceDiscoveryGetterServiceMock {
     async getRedeemTokenID(priceDiscoveryAddress: string): Promise<string> {
         return 'RTOK-1234';
@@ -19,6 +17,6 @@ class PriceDiscoveryGetterServiceMock {
 }
 
 export const PriceDiscoveryGetterServiceProvider = {
-    provide: PriceDiscoveryGetterService,
+    provide: 'PriceDiscoveryGetterService',
     useClass: PriceDiscoveryGetterServiceMock,
 };

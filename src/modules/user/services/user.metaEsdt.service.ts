@@ -51,10 +51,10 @@ import {
     UserWrappedLockedToken,
 } from '../models/user.model';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
-import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
 import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lock.abi.service';
+import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -85,7 +85,7 @@ export class UserMetaEsdtService {
         private stakeGetterService: StakingGetterService,
         private proxyStakeGetter: StakingProxyGetterService,
         private priceDiscoveryService: PriceDiscoveryService,
-        private priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private priceDiscoveryAbi: PriceDiscoveryAbiService,
         private simpleLockAbi: SimpleLockAbiService,
         private readonly energyAbi: EnergyAbiService,
         private lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
@@ -350,7 +350,7 @@ export class UserMetaEsdtService {
     ): Promise<UserRedeemToken[]> {
         const redeemTokenIDs = await Promise.all(
             scAddress.priceDiscovery.map((address: string) =>
-                this.priceDiscoveryGetter.getRedeemTokenID(address),
+                this.priceDiscoveryAbi.redeemTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(

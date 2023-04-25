@@ -44,7 +44,6 @@ import { StakingProxyGetterService } from '../../staking-proxy/services/staking.
 import { StakingService } from '../../staking/services/staking.service';
 import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
-import { PriceDiscoveryGetterService } from '../../price-discovery/services/price.discovery.getter.service';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ruleOfThree } from 'src/helpers/helpers';
@@ -63,6 +62,8 @@ import { Logger } from 'winston';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
+import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
 
 @Injectable()
 export class UserMetaEsdtComputeService {
@@ -79,7 +80,8 @@ export class UserMetaEsdtComputeService {
         private readonly stakingService: StakingService,
         private readonly stakingProxyGetter: StakingProxyGetterService,
         private readonly stakingProxyService: StakingProxyService,
-        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
+        private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         private readonly simpleLockService: SimpleLockService,
         private readonly lockedTokenWrapperService: LockedTokenWrapperService,
         private readonly lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
@@ -513,12 +515,12 @@ export class UserMetaEsdtComputeService {
             launcedTokenPriceUSD,
             acceptedTokenPriceUSD,
         ] = await Promise.all([
-            this.priceDiscoveryGetter.getLaunchedTokenID(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getAcceptedTokenID(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getLaunchedTokenPriceUSD(
+            this.priceDiscoveryAbi.launchedTokenID(priceDiscoveryAddress),
+            this.priceDiscoveryAbi.acceptedTokenID(priceDiscoveryAddress),
+            this.priceDiscoveryCompute.launchedTokenPriceUSD(
                 priceDiscoveryAddress,
             ),
-            this.priceDiscoveryGetter.getAcceptedTokenPriceUSD(
+            this.priceDiscoveryCompute.acceptedTokenPriceUSD(
                 priceDiscoveryAddress,
             ),
         ]);

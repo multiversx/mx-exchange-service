@@ -5,21 +5,18 @@ import {
 } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
-import { Logger } from 'winston';
 import { PriceDiscoveryComputeService } from '../../price-discovery/services/price.discovery.compute.service';
-import { PriceDiscoveryGetterService } from '../../price-discovery/services/price.discovery.getter.service';
 import { PriceDiscoverySetterService } from '../../price-discovery/services/price.discovery.setter.service';
+import { PriceDiscoveryService } from 'src/modules/price-discovery/services/price.discovery.service';
 
 @Injectable()
 export class PriceDiscoveryEventHandler {
     constructor(
-        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private readonly priceDiscoveryService: PriceDiscoveryService,
         private readonly priceDiscoverySetter: PriceDiscoverySetterService,
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async handleEvent(
@@ -37,7 +34,7 @@ export class PriceDiscoveryEventHandler {
             event.launchedTokenPrice,
         ];
 
-        const launchedToken = await this.priceDiscoveryGetter.getLaunchedToken(
+        const launchedToken = await this.priceDiscoveryService.getLaunchedToken(
             priceDiscoveryAddress,
         );
 

@@ -1,16 +1,33 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { quote } from 'src/modules/pair/pair.utils';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
+import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
+import { PriceDiscoveryService } from './price.discovery.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class PriceDiscoveryComputeService {
     constructor(
-        @Inject(forwardRef(() => PriceDiscoveryGetterService))
-        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
+        private readonly priceDiscoveryService: PriceDiscoveryService,
         private readonly pairGetter: PairGetterService,
     ) {}
+
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async launchedTokenPrice(priceDiscoveryAddress: string): Promise<string> {
+        return await this.computeLaunchedTokenPrice(priceDiscoveryAddress);
+    }
 
     async computeLaunchedTokenPrice(
         priceDiscoveryAddress: string,
@@ -21,14 +38,10 @@ export class PriceDiscoveryComputeService {
             launchedTokenAmount,
             acceptedTokenAmount,
         ] = await Promise.all([
-            this.priceDiscoveryGetter.getLaunchedToken(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getAcceptedToken(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getLaunchedTokenAmount(
-                priceDiscoveryAddress,
-            ),
-            this.priceDiscoveryGetter.getAcceptedTokenAmount(
-                priceDiscoveryAddress,
-            ),
+            this.priceDiscoveryService.getLaunchedToken(priceDiscoveryAddress),
+            this.priceDiscoveryService.getAcceptedToken(priceDiscoveryAddress),
+            this.priceDiscoveryAbi.launchedTokenAmount(priceDiscoveryAddress),
+            this.priceDiscoveryAbi.acceptedTokenAmount(priceDiscoveryAddress),
         ]);
 
         const launchedTokenPrice = quote(
@@ -42,6 +55,19 @@ export class PriceDiscoveryComputeService {
             .toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async acceptedTokenPrice(priceDiscoveryAddress: string): Promise<string> {
+        return await this.computeAcceptedTokenPrice(priceDiscoveryAddress);
+    }
+
     async computeAcceptedTokenPrice(
         priceDiscoveryAddress: string,
     ): Promise<string> {
@@ -51,14 +77,10 @@ export class PriceDiscoveryComputeService {
             launchedTokenAmount,
             acceptedTokenAmount,
         ] = await Promise.all([
-            this.priceDiscoveryGetter.getLaunchedToken(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getAcceptedToken(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getLaunchedTokenAmount(
-                priceDiscoveryAddress,
-            ),
-            this.priceDiscoveryGetter.getAcceptedTokenAmount(
-                priceDiscoveryAddress,
-            ),
+            this.priceDiscoveryService.getLaunchedToken(priceDiscoveryAddress),
+            this.priceDiscoveryService.getAcceptedToken(priceDiscoveryAddress),
+            this.priceDiscoveryAbi.launchedTokenAmount(priceDiscoveryAddress),
+            this.priceDiscoveryAbi.acceptedTokenAmount(priceDiscoveryAddress),
         ]);
 
         const acceptedTokenPrice = quote(
@@ -72,10 +94,25 @@ export class PriceDiscoveryComputeService {
             .toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async launchedTokenPriceUSD(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return await this.computeLaunchedTokenPriceUSD(priceDiscoveryAddress);
+    }
+
     async computeLaunchedTokenPriceUSD(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const acceptedToken = await this.priceDiscoveryGetter.getAcceptedToken(
+        const acceptedToken = await this.priceDiscoveryService.getAcceptedToken(
             priceDiscoveryAddress,
         );
         const [launchedTokenPrice, acceptedTokenPriceUSD] = await Promise.all([
@@ -86,5 +123,29 @@ export class PriceDiscoveryComputeService {
         return new BigNumber(launchedTokenPrice)
             .multipliedBy(acceptedTokenPriceUSD)
             .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async acceptedTokenPriceUSD(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return await this.computeAcceptedTokenPriceUSD(priceDiscoveryAddress);
+    }
+
+    async computeAcceptedTokenPriceUSD(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const acceptedTokenID = await this.priceDiscoveryAbi.acceptedTokenID(
+            priceDiscoveryAddress,
+        );
+        return await this.pairGetter.getTokenPriceUSD(acceptedTokenID);
     }
 }

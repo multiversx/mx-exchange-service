@@ -12,17 +12,19 @@ import {
     PhaseModel,
     PriceDiscoveryModel,
 } from './models/price.discovery.model';
-import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
 import { PriceDiscoveryService } from './services/price.discovery.service';
 import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import { SimpleLockModel } from '../simple-lock/models/simple.lock.model';
+import { PriceDiscoveryAbiService } from './services/price.discovery.abi.service';
+import { PriceDiscoveryComputeService } from './services/price.discovery.compute.service';
 
 @Resolver(() => PriceDiscoveryModel)
 export class PriceDiscoveryResolver extends GenericResolver {
     constructor(
         private readonly priceDiscoveryService: PriceDiscoveryService,
-        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
+        private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         private readonly priceDiscoveryTransactions: PriceDiscoveryTransactionService,
     ) {
         super();
@@ -33,7 +35,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<EsdtToken> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedToken(parent.address),
+            this.priceDiscoveryService.getLaunchedToken(parent.address),
         );
     }
 
@@ -42,7 +44,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<EsdtToken> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedToken(parent.address),
+            this.priceDiscoveryService.getAcceptedToken(parent.address),
         );
     }
 
@@ -51,7 +53,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<NftCollection> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getRedeemToken(parent.address),
+            this.priceDiscoveryService.getRedeemToken(parent.address),
         );
     }
 
@@ -60,7 +62,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedTokenAmount(parent.address),
+            this.priceDiscoveryAbi.launchedTokenAmount(parent.address),
         );
     }
 
@@ -69,7 +71,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedTokenAmount(parent.address),
+            this.priceDiscoveryAbi.acceptedTokenAmount(parent.address),
         );
     }
 
@@ -78,9 +80,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedTokenRedeemBalance(
-                parent.address,
-            ),
+            this.priceDiscoveryAbi.launchedTokenRedeemAmount(parent.address),
         );
     }
 
@@ -89,9 +89,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedTokenRedeemBalance(
-                parent.address,
-            ),
+            this.priceDiscoveryAbi.acceptedTokenRedeemAmount(parent.address),
         );
     }
 
@@ -100,7 +98,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedTokenPrice(parent.address),
+            this.priceDiscoveryCompute.launchedTokenPrice(parent.address),
         );
     }
 
@@ -109,7 +107,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedTokenPrice(parent.address),
+            this.priceDiscoveryCompute.acceptedTokenPrice(parent.address),
         );
     }
 
@@ -118,7 +116,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedTokenPriceUSD(parent.address),
+            this.priceDiscoveryCompute.launchedTokenPriceUSD(parent.address),
         );
     }
 
@@ -127,21 +125,21 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedTokenPriceUSD(parent.address),
+            this.priceDiscoveryCompute.acceptedTokenPriceUSD(parent.address),
         );
     }
 
     @ResolveField()
     async startBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getStartBlock(parent.address),
+            this.priceDiscoveryAbi.startBlock(parent.address),
         );
     }
 
     @ResolveField()
     async endBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getEndBlock(parent.address),
+            this.priceDiscoveryAbi.endBlock(parent.address),
         );
     }
 
@@ -150,7 +148,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<PhaseModel> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getCurrentPhase(parent.address),
+            this.priceDiscoveryAbi.currentPhase(parent.address),
         );
     }
 
@@ -159,7 +157,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getMinLaunchedTokenPrice(parent.address),
+            this.priceDiscoveryAbi.minLaunchedTokenPrice(parent.address),
         );
     }
 
@@ -168,9 +166,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getNoLimitPhaseDurationBlocks(
-                parent.address,
-            ),
+            this.priceDiscoveryAbi.noLimitPhaseDurationBlocks(parent.address),
         );
     }
 
@@ -179,7 +175,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLinearPenaltyPhaseDurationBlocks(
+            this.priceDiscoveryAbi.linearPenaltyPhaseDurationBlocks(
                 parent.address,
             ),
         );
@@ -190,7 +186,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getFixedPenaltyPhaseDurationBlocks(
+            this.priceDiscoveryAbi.fixedPenaltyPhaseDurationBlocks(
                 parent.address,
             ),
         );
@@ -201,7 +197,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<SimpleLockModel> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLockingSC(parent.address),
+            this.priceDiscoveryService.getLockingSC(parent.address),
         );
     }
 
@@ -210,14 +206,14 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLockingScAddress(parent.address),
+            this.priceDiscoveryAbi.lockingScAddress(parent.address),
         );
     }
 
     @ResolveField()
     async unlockEpoch(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getUnlockEpoch(parent.address),
+            this.priceDiscoveryAbi.unlockEpoch(parent.address),
         );
     }
 
@@ -226,7 +222,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getPenaltyMinPercentage(parent.address),
+            this.priceDiscoveryAbi.penaltyMinPercentage(parent.address),
         );
     }
 
@@ -235,7 +231,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getPenaltyMaxPercentage(parent.address),
+            this.priceDiscoveryAbi.penaltyMaxPercentage(parent.address),
         );
     }
 
@@ -244,7 +240,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getFixedPenaltyPercentage(parent.address),
+            this.priceDiscoveryAbi.fixedPenaltyPercentage(parent.address),
         );
     }
 

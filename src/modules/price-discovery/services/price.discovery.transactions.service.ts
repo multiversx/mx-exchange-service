@@ -6,13 +6,13 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 
 @Injectable()
 export class PriceDiscoveryTransactionService {
     constructor(
-        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly mxProxy: MXProxyService,
         private readonly wrapAbi: WrapAbiService,
         private readonly wrappingTransactions: WrapTransactionsService,
@@ -87,12 +87,8 @@ export class PriceDiscoveryTransactionService {
 
         const [currentPhase, acceptedTokenID, wrappedTokenID] =
             await Promise.all([
-                this.priceDiscoveryGetter.getCurrentPhase(
-                    priceDiscoveryAddress,
-                ),
-                this.priceDiscoveryGetter.getAcceptedTokenID(
-                    priceDiscoveryAddress,
-                ),
+                this.priceDiscoveryAbi.currentPhase(priceDiscoveryAddress),
+                this.priceDiscoveryAbi.acceptedTokenID(priceDiscoveryAddress),
                 this.wrapAbi.wrappedEgldTokenID(),
             ]);
 
@@ -165,8 +161,8 @@ export class PriceDiscoveryTransactionService {
         inputToken: InputTokenModel,
     ): Promise<void> {
         const [launchedTokenID, acceptedTokenID] = await Promise.all([
-            this.priceDiscoveryGetter.getLaunchedTokenID(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getAcceptedTokenID(priceDiscoveryAddress),
+            this.priceDiscoveryAbi.launchedTokenID(priceDiscoveryAddress),
+            this.priceDiscoveryAbi.acceptedTokenID(priceDiscoveryAddress),
         ]);
 
         if (
@@ -182,7 +178,7 @@ export class PriceDiscoveryTransactionService {
         priceDiscoveryAddress: string,
         inputToken: InputTokenModel,
     ): Promise<void> {
-        const redeemTokenID = await this.priceDiscoveryGetter.getRedeemTokenID(
+        const redeemTokenID = await this.priceDiscoveryAbi.redeemTokenID(
             priceDiscoveryAddress,
         );
 
