@@ -32,6 +32,7 @@ import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSp
 import { UserModule } from '../user/user.module';
 import { TokenUnstakeModule } from '../token-unstake/token.unstake.module';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
+import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 
 @Module({
     imports: [
@@ -53,6 +54,7 @@ import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.ser
         EnergyModule,
         TokenUnstakeModule,
         UserModule,
+        WeeklyRewardsSplittingModule,
     ],
     providers: [
         RabbitMqConsumer,
