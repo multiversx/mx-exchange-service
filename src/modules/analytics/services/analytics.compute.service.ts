@@ -18,6 +18,9 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { oneMinute } from 'src/helpers/helpers';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -35,6 +38,18 @@ export class AnalyticsComputeService {
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
     ) {}
+
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async lockedValueUSDFarms(): Promise<string> {
+        return await this.computeLockedValueUSDFarms();
+    }
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
@@ -58,6 +73,18 @@ export class AnalyticsComputeService {
         return totalLockedValue.toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async totalValueLockedUSD(): Promise<string> {
+        return await this.computeTotalValueLockedUSD();
+    }
+
     async computeTotalValueLockedUSD(): Promise<string> {
         const pairsAddress = await this.routerAbi.pairsAddress();
         const filteredPairs = await this.fiterPairsByIssuedLpToken(
@@ -79,6 +106,18 @@ export class AnalyticsComputeService {
         }
 
         return totalValueLockedUSD.toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async totalValueStakedUSD(): Promise<string> {
+        return await this.computeTotalValueStakedUSD();
     }
 
     async computeTotalValueStakedUSD(): Promise<string> {
@@ -119,6 +158,18 @@ export class AnalyticsComputeService {
         return totalValueLockedUSD.toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async totalAggregatedRewards(days: number): Promise<string> {
+        return await this.computeTotalAggregatedRewards(days);
+    }
+
     async computeTotalAggregatedRewards(days: number): Promise<string> {
         const addresses: string[] = farmsAddresses();
         const promises = addresses.map(async (farmAddress) => {
@@ -146,6 +197,18 @@ export class AnalyticsComputeService {
         return totalAggregatedRewards.toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async totalLockedMexStakedUSD(): Promise<string> {
+        return await this.computeTotalLockedMexStakedUSD();
+    }
+
     async computeTotalLockedMexStakedUSD(): Promise<string> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             scAddress.feesCollector,
@@ -165,6 +228,31 @@ export class AnalyticsComputeService {
             .multipliedBy(`1e-${tokenMetadata.decimals}`)
             .toFixed();
     }
+
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 30,
+        localTtl: oneMinute() * 10,
+    })
+    async feeTokenBurned(tokenID: string, time: string): Promise<string> {
+        return await this.computeTokenBurned(tokenID, time, 'feeBurned');
+    }
+
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 30,
+        localTtl: oneMinute() * 10,
+    })
+    async penaltyTokenBurned(tokenID: string, time: string): Promise<string> {
+        return await this.computeTokenBurned(tokenID, time, 'penaltyBurned');
+    }
+
     async computeTokenBurned(
         tokenID: string,
         time: string,

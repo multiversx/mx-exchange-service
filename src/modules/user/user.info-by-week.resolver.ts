@@ -1,20 +1,22 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { UserInfoByWeekModel } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import {
+    TokenDistributionModel,
+    UserInfoByWeekModel,
+} from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import { EnergyModel } from '../energy/models/energy.model';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
-import { FarmGetterFactory } from '../farm/farm.getter.factory';
-import { FeesCollectorGetterService } from '../fees-collector/services/fees-collector.getter.service';
 import { scAddress } from '../../config';
 import { FarmGetterServiceV2 } from '../farm/v2/services/farm.v2.getter.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { FeesCollectorComputeService } from '../fees-collector/services/fees-collector.compute.service';
 
 @Resolver(() => UserInfoByWeekModel)
 export class UserInfoByWeekResolver extends GenericResolver {
     constructor(
-        private readonly farmGetter: FarmGetterFactory,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly farmGetterV2: FarmGetterServiceV2,
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
@@ -49,33 +51,35 @@ export class UserInfoByWeekResolver extends GenericResolver {
     async rewardsForWeek(
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
-        return await this.genericFieldResolver(() =>
-            this.getGetter(parent.scAddress).userRewardsForWeek(
+        if (parent.scAddress === scAddress.feesCollector) {
+            return this.feesCollectorCompute.userRewardsForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
-                parent.positionAmount,
-            ),
+            );
+        }
+        return this.farmGetterV2.userRewardsForWeek(
+            parent.scAddress,
+            parent.userAddress,
+            parent.week,
         );
     }
 
-    @ResolveField(() => [String])
+    @ResolveField(() => [TokenDistributionModel])
     async rewardsDistributionForWeek(
         @Parent() parent: UserInfoByWeekModel,
-    ): Promise<string[]> {
-        return await this.genericFieldResolver(() =>
-            this.getGetter(parent.scAddress).userRewardsDistributionForWeek(
+    ): Promise<TokenDistributionModel[]> {
+        if (parent.scAddress === scAddress.feesCollector) {
+            return this.feesCollectorCompute.userRewardsDistributionForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
-            ),
-        );
-    }
-
-    private getGetter(address: string) {
-        if (address === scAddress.feesCollector) {
-            return this.feesCollectorGetter;
+            );
         }
-        return this.farmGetter.useGetter(address) as FarmGetterServiceV2;
+        return this.farmGetterV2.userRewardsDistributionForWeek(
+            parent.scAddress,
+            parent.userAddress,
+            parent.week,
+        );
     }
 }

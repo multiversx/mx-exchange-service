@@ -47,14 +47,14 @@ import {
     UserWrappedLockedToken,
 } from '../models/user.model';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
-import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
-import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { LockedTokenWrapperAbiService } from 'src/modules/locked-token-wrapper/services/locked-token-wrapper.abi.service';
 import { ProxyPairAbiService } from 'src/modules/proxy/services/proxy-pair/proxy.pair.abi.service';
 import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lock.abi.service';
+import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -85,10 +85,10 @@ export class UserMetaEsdtService {
         private stakingAbi: StakingAbiService,
         private proxyStakeAbi: StakingProxyAbiService,
         private priceDiscoveryService: PriceDiscoveryService,
-        private priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private priceDiscoveryAbi: PriceDiscoveryAbiService,
         private simpleLockAbi: SimpleLockAbiService,
         private readonly energyAbi: EnergyAbiService,
-        private lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
+        private lockedTokenWrapperAbi: LockedTokenWrapperAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -349,7 +349,7 @@ export class UserMetaEsdtService {
     ): Promise<UserRedeemToken[]> {
         const redeemTokenIDs = await Promise.all(
             scAddress.priceDiscovery.map((address: string) =>
-                this.priceDiscoveryGetter.getRedeemTokenID(address),
+                this.priceDiscoveryAbi.redeemTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -455,7 +455,7 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
     ): Promise<UserWrappedLockedToken[]> {
         const lockedTokenEnergyID =
-            await this.lockedTokenWrapperGetter.getWrappedTokenId();
+            await this.lockedTokenWrapperAbi.wrappedTokenId();
         const nfts = await this.apiService.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -626,7 +626,7 @@ export class UserMetaEsdtService {
         }
 
         const wrappedlockedToken =
-            await this.lockedTokenWrapperGetter.getWrappedTokenId();
+            await this.lockedTokenWrapperAbi.wrappedTokenId();
         if (tokenID === wrappedlockedToken) {
             return NftTokenType.WrappedLockedToken;
         }

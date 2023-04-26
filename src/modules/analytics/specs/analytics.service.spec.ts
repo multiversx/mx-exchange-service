@@ -22,9 +22,6 @@ import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
-import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
-import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
 import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
@@ -42,11 +39,10 @@ import { StakingService } from 'src/modules/staking/services/staking.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 describe('AnalyticsService', () => {
-    let service: AnalyticsComputeService;
+    let module: TestingModule;
 
     beforeEach(async () => {
-        const feesCollectorGetter = new FeesCollectorGetterServiceMock({});
-        const module: TestingModule = await Test.createTestingModule({
+        module = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
             providers: [
                 ContextGetterServiceProvider,
@@ -88,11 +84,6 @@ describe('AnalyticsService', () => {
                 StakingAbiServiceProvider,
                 StakingService,
                 StakingComputeService,
-                AnalyticsGetterServiceProvider,
-                {
-                    provide: FeesCollectorGetterService,
-                    useValue: feesCollectorGetter,
-                },
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryService,
                 AWSTimestreamQueryService,
@@ -100,15 +91,21 @@ describe('AnalyticsService', () => {
                 TokenGetterServiceProvider,
             ],
         }).compile();
-
-        service = module.get<AnalyticsComputeService>(AnalyticsComputeService);
     });
 
     it('should be defined', () => {
+        const service = module.get<AnalyticsComputeService>(
+            AnalyticsComputeService,
+        );
+
         expect(service).toBeDefined();
     });
 
     it('should get total value locked in farms', async () => {
+        const service = module.get<AnalyticsComputeService>(
+            AnalyticsComputeService,
+        );
+
         const totalLockedValueUSDFarms =
             await service.computeLockedValueUSDFarms();
         expect(totalLockedValueUSDFarms.toString()).toEqual(

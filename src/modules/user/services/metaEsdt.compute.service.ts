@@ -41,7 +41,6 @@ import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { StakingService } from '../../staking/services/staking.service';
 import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
-import { PriceDiscoveryGetterService } from '../../price-discovery/services/price.discovery.getter.service';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ruleOfThree } from 'src/helpers/helpers';
@@ -54,13 +53,16 @@ import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { FarmTokenAttributesModelV1_2 } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
-import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
+import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
+import { LockedTokenWrapperAbiService } from 'src/modules/locked-token-wrapper/services/locked-token-wrapper.abi.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 
 @Injectable()
@@ -77,10 +79,12 @@ export class UserMetaEsdtComputeService {
         private readonly stakingService: StakingService,
         private readonly stakingProxyAbi: StakingProxyAbiService,
         private readonly stakingProxyService: StakingProxyService,
-        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
+        private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         private readonly simpleLockService: SimpleLockService,
         private readonly lockedTokenWrapperService: LockedTokenWrapperService,
-        private readonly lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
+        private readonly lockedTokenWrapperAbi: LockedTokenWrapperAbiService,
+        private readonly energyAbi: EnergyAbiService,
         private readonly userEsdtCompute: UserEsdtComputeService,
         private readonly tokenGetter: TokenGetterService,
         private readonly cacheService: CachingService,
@@ -511,12 +515,12 @@ export class UserMetaEsdtComputeService {
             launcedTokenPriceUSD,
             acceptedTokenPriceUSD,
         ] = await Promise.all([
-            this.priceDiscoveryGetter.getLaunchedTokenID(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getAcceptedTokenID(priceDiscoveryAddress),
-            this.priceDiscoveryGetter.getLaunchedTokenPriceUSD(
+            this.priceDiscoveryAbi.launchedTokenID(priceDiscoveryAddress),
+            this.priceDiscoveryAbi.acceptedTokenID(priceDiscoveryAddress),
+            this.priceDiscoveryCompute.launchedTokenPriceUSD(
                 priceDiscoveryAddress,
             ),
-            this.priceDiscoveryGetter.getAcceptedTokenPriceUSD(
+            this.priceDiscoveryCompute.acceptedTokenPriceUSD(
                 priceDiscoveryAddress,
             ),
         ]);
@@ -692,8 +696,7 @@ export class UserMetaEsdtComputeService {
                 attributes: nftWrappedToken.attributes,
             });
 
-        const originalTokenID =
-            await this.lockedTokenWrapperGetter.getLockedTokenId();
+        const originalTokenID = await this.energyAbi.lockedTokenID();
 
         let nftLockedToken: NftToken;
         try {

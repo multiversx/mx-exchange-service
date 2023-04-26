@@ -35,28 +35,13 @@ export class FeesCollectorSetterService extends GenericSetterService {
         );
     }
 
-    async setAccumulatedFees(
-        scAddress: string,
+    async accumulatedFees(
         week: number,
         token: string,
         value: string,
     ): Promise<string> {
         return this.setData(
-            this.getCacheKey(scAddress, 'accumulatedFees', week, token),
-            value,
-            CacheTtlInfo.ContractInfo.remoteTtl,
-            CacheTtlInfo.ContractInfo.localTtl,
-        );
-    }
-
-    async setAccumulatedLockedFees(
-        scAddress: string,
-        week: number,
-        token: string,
-        value: EsdtTokenPayment[],
-    ): Promise<string> {
-        return this.setData(
-            this.getCacheKey(scAddress, 'accumulatedLockedFees', week, token),
+            this.getCacheKey('accumulatedFees', week, token),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,

@@ -1,52 +1,79 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { MXCommunicationModule } from '../../../services/multiversx-communication/mx.communication.module';
-import { ApiConfigService } from '../../../helpers/api.config.service';
-import { FeesCollectorGetterService } from '../services/fees-collector.getter.service';
-import {
-    FeesCollectorGetterHandlers,
-    FeesCollectorGetterServiceMock,
-} from '../mocks/fees-collector.getter.service.mock';
 import { FeesCollectorService } from '../services/fees-collector.service';
-import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { FeesCollectorAbiServiceProvider } from '../mocks/fees.collector.abi.service.mock';
+import { FeesCollectorComputeService } from '../services/fees-collector.compute.service';
+import { Address } from '@multiversx/sdk-core/out';
+import { FeesCollectorAbiService } from '../services/fees-collector.abi.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair-getter-service-mock.service';
+import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('FeesCollectorService', () => {
-    const dummyScAddress = 'erd';
+    let module: TestingModule;
+
+    beforeEach(async () => {
+        module = await Test.createTestingModule({
+            imports: [MXCommunicationModule, CachingModule],
+            providers: [
+                FeesCollectorService,
+                FeesCollectorAbiServiceProvider,
+                FeesCollectorComputeService,
+                WeekTimekeepingAbiServiceProvider,
+                WeekTimekeepingComputeService,
+                WeeklyRewardsSplittingAbiServiceProvider,
+                WeeklyRewardsSplittingComputeService,
+                EnergyAbiServiceProvider,
+                TokenComputeService,
+                {
+                    provide: PairGetterService,
+                    useClass: PairGetterServiceMock,
+                },
+                RouterAbiServiceProvider,
+                MXDataApiServiceProvider,
+                {
+                    provide: ContextGetterService,
+                    useClass: ContextGetterServiceMock,
+                },
+            ],
+        }).compile();
+    });
+
     it('init service; should be defined', async () => {
-        const service = await createService({
-            getter: {},
-        });
+        const service = module.get<FeesCollectorService>(FeesCollectorService);
         expect(service).toBeDefined();
     });
-    it('getAccumulatedFees' + 'no rewards for tokens', async () => {
-        const energyToken = 'ELKMEX-123456';
-        const service = await createService({
-            getter: {
-                getAccumulatedFees: (
-                    scAddress: string,
-                    week: number,
-                    token: string,
-                ) => {
-                    expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve('0');
-                },
-                getLockedTokenId: (scAddress) => {
-                    expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve(energyToken);
-                },
-                getAccumulatedTokenForInflation: (scAddress) => {
-                    expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve('0');
-                },
-            },
-        });
+
+    it('getAccumulatedFees' + ' no rewards for tokens', async () => {
+        const service = module.get<FeesCollectorService>(FeesCollectorService);
+        const feesCollectorAbi = module.get<FeesCollectorAbiService>(
+            FeesCollectorAbiService,
+        );
+        const feesCollectorCompute = module.get<FeesCollectorComputeService>(
+            FeesCollectorComputeService,
+        );
+        jest.spyOn(
+            feesCollectorCompute,
+            'accumulatedFeesUntilNow',
+        ).mockReturnValue(Promise.resolve('0'));
+
+        const energyToken = await feesCollectorAbi.lockedTokenID();
         const tokens = [];
         const firstToken = 'WEGLD-abcabc';
         tokens.push(firstToken);
         let rewards = await service.getAccumulatedFees(
-            dummyScAddress,
+            Address.Zero().bech32(),
             250,
             tokens,
         );
@@ -57,7 +84,11 @@ describe('FeesCollectorService', () => {
         expect(rewards[1].amount).toEqual('0');
         const secondToken = 'MEX-abcabc';
         tokens.push(secondToken);
-        rewards = await service.getAccumulatedFees(dummyScAddress, 10, tokens);
+        rewards = await service.getAccumulatedFees(
+            Address.Zero().bech32(),
+            10,
+            tokens,
+        );
         expect(rewards.length).toEqual(3);
         expect(rewards[0].tokenID).toEqual(firstToken);
         expect(rewards[0].amount).toEqual('0');
@@ -66,46 +97,47 @@ describe('FeesCollectorService', () => {
         expect(rewards[2].tokenID).toEqual('Minted' + energyToken);
         expect(rewards[2].amount).toEqual('0');
     });
-    it('getAccumulatedFees' + 'should work', async () => {
+
+    it('getAccumulatedFees' + ' should work', async () => {
         const firstToken = 'WEGLD-abcabc';
         const secondToken = 'MEX-abcabc';
-        const energyToken = 'ELKMEX-123456';
         const rewardsFirstToken = '100';
         const rewardsSecondToken = '300';
         const rewardsMinted = '1000';
-        const service = await createService({
-            getter: {
-                getAccumulatedFees: (
-                    scAddress: string,
-                    week: number,
-                    token: string,
-                ) => {
-                    let rewards = '0';
-                    switch (token) {
-                        case firstToken:
-                            rewards = rewardsFirstToken;
-                            break;
-                        case secondToken:
-                            rewards = rewardsSecondToken;
-                            break;
-                    }
-                    return Promise.resolve(rewards);
-                },
-                getLockedTokenId: (scAddress) => {
-                    expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve(energyToken);
-                },
-                getAccumulatedTokenForInflation: (scAddress) => {
-                    expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve(rewardsMinted);
-                },
+
+        const service = module.get<FeesCollectorService>(FeesCollectorService);
+        const feesCollectorAbi = module.get<FeesCollectorAbiService>(
+            FeesCollectorAbiService,
+        );
+        const feesCollectorCompute = module.get<FeesCollectorComputeService>(
+            FeesCollectorComputeService,
+        );
+
+        jest.spyOn(feesCollectorAbi, 'accumulatedFees').mockImplementation(
+            (week: number, token: string) => {
+                let rewards = '0';
+                switch (token) {
+                    case firstToken:
+                        rewards = rewardsFirstToken;
+                        break;
+                    case secondToken:
+                        rewards = rewardsSecondToken;
+                        break;
+                }
+                return Promise.resolve(rewards);
             },
-        });
+        );
+        jest.spyOn(
+            feesCollectorCompute,
+            'accumulatedFeesUntilNow',
+        ).mockReturnValue(Promise.resolve(rewardsMinted));
+
+        const energyToken = await feesCollectorAbi.lockedTokenID();
         const tokens = [];
 
         tokens.push(firstToken);
         let rewards = await service.getAccumulatedFees(
-            dummyScAddress,
+            Address.Zero().bech32(),
             250,
             tokens,
         );
@@ -115,7 +147,11 @@ describe('FeesCollectorService', () => {
         expect(rewards[1].tokenID).toEqual('Minted' + energyToken);
         expect(rewards[1].amount).toEqual(rewardsMinted);
         tokens.push(secondToken);
-        rewards = await service.getAccumulatedFees(dummyScAddress, 10, tokens);
+        rewards = await service.getAccumulatedFees(
+            Address.Zero().bech32(),
+            10,
+            tokens,
+        );
         expect(rewards.length).toEqual(3);
         expect(rewards[0].tokenID).toEqual(firstToken);
         expect(rewards[0].amount).toEqual(rewardsFirstToken);
@@ -124,50 +160,51 @@ describe('FeesCollectorService', () => {
         expect(rewards[2].tokenID).toEqual('Minted' + energyToken);
         expect(rewards[2].amount).toEqual(rewardsMinted);
     });
-    it('feesCollector' + 'empty tokens should return []', async () => {
+
+    it('feesCollector' + ' empty tokens should return []', async () => {
         const expectedTokens = [];
         expectedTokens.push('token1');
         expectedTokens.push('token2');
         expectedTokens.push('token3');
         expectedTokens.push('token4');
         const expectedCurrentWeek = 250;
-        const service = await createService({
-            getter: {
-                getAllTokens: (scAddress: string) => {
-                    expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve([]);
-                },
-                getCurrentWeek: (scAddress: string) => {
-                    expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve(expectedCurrentWeek);
-                },
-            },
-        });
 
-        const model = await service.feesCollector(dummyScAddress);
+        const service = module.get<FeesCollectorService>(FeesCollectorService);
+        const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
+            WeekTimekeepingAbiService,
+        );
+        jest.spyOn(weekTimekeepingAbi, 'currentWeek').mockReturnValue(
+            Promise.resolve(expectedCurrentWeek),
+        );
+
+        const model = await service.feesCollector(Address.Zero().bech32());
         expect(model.allTokens).toEqual([]);
         expect(model.time.currentWeek).toEqual(expectedCurrentWeek);
     });
-    it('feesCollector' + 'should work', async () => {
+
+    it('feesCollector' + ' should work', async () => {
         const expectedTokens = [];
         expectedTokens.push('token1');
         expectedTokens.push('token2');
         expectedTokens.push('token3');
         expectedTokens.push('token4');
         const expectedCurrentWeek = 250;
-        const service = await createService({
-            getter: {
-                getAllTokens: (scAddress: string) => {
-                    expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve(expectedTokens);
-                },
-                getCurrentWeek: (scAddress: string) => {
-                    expect(scAddress).toEqual(dummyScAddress);
-                    return Promise.resolve(expectedCurrentWeek);
-                },
-            },
-        });
-        const model = await service.feesCollector(dummyScAddress);
+
+        const service = module.get<FeesCollectorService>(FeesCollectorService);
+        const feesCollectorAbi = module.get<FeesCollectorAbiService>(
+            FeesCollectorAbiService,
+        );
+        const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
+            WeekTimekeepingAbiService,
+        );
+        jest.spyOn(feesCollectorAbi, 'allTokens').mockReturnValue(
+            Promise.resolve(expectedTokens),
+        );
+        jest.spyOn(weekTimekeepingAbi, 'currentWeek').mockReturnValue(
+            Promise.resolve(expectedCurrentWeek),
+        );
+
+        const model = await service.feesCollector(Address.Zero().bech32());
         expect(model.time.currentWeek).toEqual(expectedCurrentWeek);
         expect(model.allTokens.length).toEqual(expectedTokens.length);
         for (const i in expectedTokens) {
@@ -175,25 +212,3 @@ describe('FeesCollectorService', () => {
         }
     });
 });
-
-async function createService(handlers: {
-    getter: Partial<FeesCollectorGetterHandlers>;
-}) {
-    const getter = new FeesCollectorGetterServiceMock(handlers.getter);
-
-    const module: TestingModule = await Test.createTestingModule({
-        imports: [MXCommunicationModule, CachingModule],
-        providers: [
-            ApiConfigService,
-            {
-                provide: FeesCollectorGetterService,
-                useValue: getter,
-            },
-            FeesCollectorService,
-            WeekTimekeepingComputeService,
-            WeekTimekeepingAbiServiceProvider,
-            WeeklyRewardsSplittingAbiServiceProvider,
-        ],
-    }).compile();
-    return module.get<FeesCollectorService>(FeesCollectorService);
-}
