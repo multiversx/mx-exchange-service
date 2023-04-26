@@ -21,6 +21,7 @@ import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
+import { AnalyticsSetterService } from './services/analytics.setter.service';
 
 @Module({
     imports: [
@@ -46,6 +47,7 @@ import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-spli
         AnalyticsAWSGetterService,
         AnalyticsAWSSetterService,
         AnalyticsComputeService,
+        AnalyticsSetterService,
         AnalyticsPairService,
         PairDayDataResolver,
     ],
@@ -53,6 +55,7 @@ import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-spli
         AnalyticsAWSGetterService,
         AnalyticsAWSSetterService,
         AnalyticsComputeService,
+        AnalyticsSetterService,
     ],
 })
 export class AnalyticsModule {}
