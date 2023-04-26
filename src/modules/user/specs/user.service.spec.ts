@@ -30,7 +30,6 @@ import { StakingService } from '../../staking/services/staking.service';
 import { StakingServiceMock } from '../../staking/mocks/staking.service.mock';
 import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
 import { StakingProxyServiceMock } from '../../staking-proxy/mocks/staking.proxy.service.mock';
-import { PriceDiscoveryGetterServiceProvider } from '../../price-discovery/mocks/price.discovery.getter.mock';
 import { PriceDiscoveryServiceProvider } from '../../price-discovery/mocks/price.discovery.service.mock';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
@@ -78,6 +77,8 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { SimpleLockAbiServiceProvider } from 'src/modules/simple-lock/mocks/simple.lock.abi.service.mock';
+import { PriceDiscoveryAbiServiceProvider } from 'src/modules/price-discovery/mocks/price.discovery.abi.service.mock';
+import { PriceDiscoveryComputeServiceProvider } from 'src/modules/price-discovery/mocks/price.discovery.compute.service.mock';
 import { LockedTokenWrapperAbiServiceProvider } from 'src/modules/locked-token-wrapper/mocks/locked.token.wrapper.abi.service.mock';
 
 describe('UserService', () => {
@@ -204,7 +205,8 @@ describe('UserService', () => {
                 StakingProxyServiceProvider,
                 StakingProxyAbiServiceProvider,
                 PriceDiscoveryServiceProvider,
-                PriceDiscoveryGetterServiceProvider,
+                PriceDiscoveryAbiServiceProvider,
+                PriceDiscoveryComputeServiceProvider,
                 SimpleLockService,
                 SimpleLockAbiServiceProvider,
                 EnergyAbiServiceProvider,
