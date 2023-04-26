@@ -184,9 +184,9 @@ export class MXProxyService {
         );
     }
 
-    async getLockedTokenWrapperContract(address: string) {
+    async getLockedTokenWrapperContract() {
         return this.getSmartContract(
-            address,
+            scAddress.lockedTokenWrapper,
             abiConfig.lockedTokenWrapper,
             'LockedTokenWrapper',
         );

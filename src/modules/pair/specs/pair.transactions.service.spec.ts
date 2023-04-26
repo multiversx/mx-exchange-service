@@ -20,11 +20,11 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { mxConfig, gasConfig } from 'src/config';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
@@ -68,7 +68,7 @@ describe('TransactionPairService', () => {
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 WrapTransactionsService,
                 WrapService,

@@ -7,8 +7,8 @@ import { PairAbiServiceMock } from '../mocks/pair.abi.service.mock';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('PairService', () => {
     let service: PairService;
@@ -32,7 +32,7 @@ describe('PairService', () => {
                 PairService,
                 WrapAbiServiceProvider,
                 TokenGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
             ],
         }).compile();
 

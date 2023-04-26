@@ -2,10 +2,9 @@ import { Module } from '@nestjs/common';
 import { RouterService } from './services/router.service';
 import { RouterResolver } from './router.resolver';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
-import { AbiRouterService } from './services/abi.router.service';
-import { TransactionRouterService } from './services/transactions.router.service';
+import { RouterAbiService } from './services/router.abi.service';
+import { RouterTransactionService } from './services/router.transactions.service';
 import { CachingModule } from '../../services/caching/cache.module';
-import { RouterGetterService } from './services/router.getter.service';
 import { RouterComputeService } from './services/router.compute.service';
 import { PairModule } from '../pair/pair.module';
 import { RouterSetterService } from './services/router.setter.service';
@@ -31,20 +30,18 @@ import { SimpleLockModule } from '../simple-lock/simple.lock.module';
     ],
     providers: [
         RouterService,
-        AbiRouterService,
-        RouterGetterService,
+        RouterAbiService,
         RouterSetterService,
         RouterComputeService,
-        TransactionRouterService,
+        RouterTransactionService,
         MetricsService,
         ElasticService,
         SwapEnableConfigResolver,
         RouterResolver,
     ],
     exports: [
-        AbiRouterService,
         RouterService,
-        RouterGetterService,
+        RouterAbiService,
         RouterSetterService,
         RouterComputeService,
     ],

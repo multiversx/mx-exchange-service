@@ -1,8 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
-import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { UserNftTokens } from '../models/nfttokens.union';
 import { UserMetaEsdtComputeService } from './metaEsdt.compute.service';
@@ -49,8 +47,10 @@ import {
     UserWrappedLockedToken,
 } from '../models/user.model';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
-import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { LockedTokenWrapperAbiService } from 'src/modules/locked-token-wrapper/services/locked-token-wrapper.abi.service';
+import { ProxyPairAbiService } from 'src/modules/proxy/services/proxy-pair/proxy.pair.abi.service';
+import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lock.abi.service';
@@ -78,8 +78,8 @@ export class UserMetaEsdtService {
         private userComputeService: UserMetaEsdtComputeService,
         private apiService: MXApiService,
         private cachingService: CachingService,
-        private proxyPairGetter: ProxyPairGetterService,
-        private proxyFarmGetter: ProxyFarmGetterService,
+        private proxyPairAbi: ProxyPairAbiService,
+        private proxyFarmAbi: ProxyFarmAbiService,
         private farmGetter: FarmGetterFactory,
         private lockedAssetGetter: LockedAssetGetterService,
         private stakingAbi: StakingAbiService,
@@ -88,7 +88,7 @@ export class UserMetaEsdtService {
         private priceDiscoveryAbi: PriceDiscoveryAbiService,
         private simpleLockAbi: SimpleLockAbiService,
         private readonly energyAbi: EnergyAbiService,
-        private lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
+        private lockedTokenWrapperAbi: LockedTokenWrapperAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -147,7 +147,7 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedLPToken[]> {
-        const lockedLpTokenID = await this.proxyPairGetter.getwrappedLpTokenID(
+        const lockedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             scAddress.proxyDexAddress.v1,
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -171,10 +171,9 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedFarmToken[]> {
-        const lockedFarmTokenID =
-            await this.proxyFarmGetter.getwrappedFarmTokenID(
-                scAddress.proxyDexAddress.v1,
-            );
+        const lockedFarmTokenID = await this.proxyFarmAbi.wrappedFarmTokenID(
+            scAddress.proxyDexAddress.v1,
+        );
         const nfts = await this.apiService.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -195,7 +194,7 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedLPTokenV2[]> {
-        const lockedLpTokenID = await this.proxyPairGetter.getwrappedLpTokenID(
+        const lockedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             scAddress.proxyDexAddress.v2,
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -221,7 +220,7 @@ export class UserMetaEsdtService {
     ): Promise<UserLockedFarmTokenV2[]> {
         try {
             const lockedFarmTokenID =
-                await this.proxyFarmGetter.getwrappedFarmTokenID(
+                await this.proxyFarmAbi.wrappedFarmTokenID(
                     scAddress.proxyDexAddress.v2,
                 );
             const nfts = await this.apiService.getNftsForUser(
@@ -456,7 +455,7 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
     ): Promise<UserWrappedLockedToken[]> {
         const lockedTokenEnergyID =
-            await this.lockedTokenWrapperGetter.getWrappedTokenId();
+            await this.lockedTokenWrapperAbi.wrappedTokenId();
         const nfts = await this.apiService.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -627,17 +626,17 @@ export class UserMetaEsdtService {
         }
 
         const wrappedlockedToken =
-            await this.lockedTokenWrapperGetter.getWrappedTokenId();
+            await this.lockedTokenWrapperAbi.wrappedTokenId();
         if (tokenID === wrappedlockedToken) {
             return NftTokenType.WrappedLockedToken;
         }
 
         for (const proxyVersion of Object.keys(scAddress.proxyDexAddress)) {
             const [lockedLpTokenID, lockedFarmTokenID] = await Promise.all([
-                this.proxyPairGetter.getwrappedLpTokenID(
+                this.proxyPairAbi.wrappedLpTokenID(
                     scAddress.proxyDexAddress[proxyVersion],
                 ),
-                this.proxyFarmGetter.getwrappedFarmTokenID(
+                this.proxyFarmAbi.wrappedFarmTokenID(
                     scAddress.proxyDexAddress[proxyVersion],
                 ),
             ]);
