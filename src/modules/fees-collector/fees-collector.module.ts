@@ -1,5 +1,4 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
 import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
 import {
     FeesCollectorResolver,
@@ -13,6 +12,7 @@ import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-ti
 import { FeesCollectorSetterService } from './services/fees-collector.setter.service';
 import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
 import { ContextModule } from '../../services/context/context.module';
+import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
 
 @Module({
     imports: [
@@ -25,17 +25,17 @@ import { ContextModule } from '../../services/context/context.module';
     providers: [
         FeesCollectorService,
         FeesCollectorAbiService,
-        FeesCollectorGetterService,
         FeesCollectorSetterService,
         FeesCollectorComputeService,
+        FeesCollectorTransactionService,
         FeesCollectorResolver,
         UserEntryFeesCollectorResolver,
     ],
     exports: [
         FeesCollectorAbiService,
         FeesCollectorSetterService,
-        FeesCollectorGetterService,
         FeesCollectorService,
+        FeesCollectorComputeService,
     ],
 })
 export class FeesCollectorModule {}

@@ -5,7 +5,6 @@ import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeepi
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { FeesCollectorGetterService } from '../services/fees-collector.getter.service';
 import { FeesCollectorAbiServiceProvider } from '../mocks/fees.collector.abi.service.mock';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
@@ -28,7 +27,6 @@ describe('FeesCollectorComputeService', () => {
             imports: [CommonAppModule, CachingModule],
             providers: [
                 FeesCollectorComputeService,
-                FeesCollectorGetterService,
                 FeesCollectorAbiServiceProvider,
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,

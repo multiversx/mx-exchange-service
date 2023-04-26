@@ -1,77 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import {
     FeesCollectorModel,
-    FeesCollectorTransactionModel,
     UserEntryFeesCollectorModel,
 } from '../models/fees-collector.model';
-import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import {
     GlobalInfoByWeekModel,
     UserInfoByWeekModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { TransactionModel } from '../../../models/transaction.model';
-import { constantsConfig, mxConfig, gasConfig } from '../../../config';
-import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { Address, AddressValue } from '@multiversx/sdk-core';
+import { constantsConfig } from '../../../config';
 import BigNumber from 'bignumber.js';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { FeesCollectorAbiService } from './fees-collector.abi.service';
+import { FeesCollectorComputeService } from './fees-collector.compute.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class FeesCollectorService {
     constructor(
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
-        private readonly mxProxy: MXProxyService,
     ) {}
-
-    async claimRewardsBatch(
-        scAddress: string,
-        userAddress: string,
-    ): Promise<FeesCollectorTransactionModel> {
-        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
-            scAddress,
-        );
-        const lastActiveWeekForUser =
-            await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
-                scAddress,
-                userAddress,
-            );
-        const weekToClaim = Math.min(
-            constantsConfig.USER_MAX_CLAIM_WEEKS,
-            currentWeek - lastActiveWeekForUser,
-        );
-        const transaction = await this.claimRewards(
-            userAddress,
-            weekToClaim * gasConfig.feesCollector.claimRewardsPerWeek +
-                gasConfig.feesCollector.baseClaimRewards,
-        );
-        const claimTransaction = new FeesCollectorTransactionModel({
-            transaction: transaction,
-            count: 0,
-        });
-        if (lastActiveWeekForUser === 0) return claimTransaction;
-        if (lastActiveWeekForUser >= currentWeek) return claimTransaction;
-
-        claimTransaction.count = 1;
-        return claimTransaction;
-    }
-
-    async claimRewards(
-        sender: string,
-        gasLimit: number,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        return contract.methodsExplicit
-            .claimRewards()
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
 
     async getAccumulatedFees(
         scAddress: string,
@@ -81,7 +33,7 @@ export class FeesCollectorService {
         const accumulatedFees: EsdtTokenPayment[] = [];
 
         const promises = allTokens.map((token) =>
-            this.feesCollectorGetter.getAccumulatedFees(scAddress, week, token),
+            this.feesCollectorAbi.accumulatedFees(week, token),
         );
 
         const accumulatedFeesByToken = await Promise.all(promises);
@@ -98,8 +50,8 @@ export class FeesCollectorService {
 
         const [lockedTokenId, accumulatedTokenForInflation] = await Promise.all(
             [
-                this.feesCollectorGetter.getLockedTokenId(scAddress),
-                this.feesCollectorGetter.getAccumulatedTokenForInflation(
+                this.feesCollectorAbi.lockedTokenID(),
+                this.feesCollectorCompute.accumulatedFeesUntilNow(
                     scAddress,
                     week,
                 ),
@@ -119,7 +71,7 @@ export class FeesCollectorService {
 
     async feesCollector(scAddress: string): Promise<FeesCollectorModel> {
         const [allToken, currentWeek] = await Promise.all([
-            this.feesCollectorGetter.getAllTokens(scAddress),
+            this.feesCollectorAbi.allTokens(),
             this.weekTimekeepingAbi.currentWeek(scAddress),
         ]);
         return new FeesCollectorModel({
@@ -206,26 +158,12 @@ export class FeesCollectorService {
         return modelsList;
     }
 
-    async updateEnergyForUser(userAddress: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        return contract.methodsExplicit
-            .updateEnergyForUser([
-                new AddressValue(Address.fromString(userAddress)),
-            ])
-            .withGasLimit(gasConfig.feesCollector.updateEnergyForUser)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
     async getUserAccumulatedRewards(
         scAddress: string,
         userAddress: string,
         currentWeek: number,
     ): Promise<EsdtTokenPayment[]> {
-        const allTokens = await this.feesCollectorGetter.getAllTokens(
-            scAddress,
-        );
+        const allTokens = await this.feesCollectorAbi.allTokens();
         const [accumulatedFees, totalEnergyForWeek, currentClaimProgress] =
             await Promise.all([
                 this.getAccumulatedFees(scAddress, currentWeek, allTokens),
