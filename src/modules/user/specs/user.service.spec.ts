@@ -60,8 +60,6 @@ import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.servi
 import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
-import { LockedTokenWrapperGetterServiceMock } from '../../locked-token-wrapper/mocks/locked-token-wrapper.getter.service.mock';
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
@@ -80,6 +78,7 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { SimpleLockAbiServiceProvider } from 'src/modules/simple-lock/mocks/simple.lock.abi.service.mock';
+import { LockedTokenWrapperAbiServiceProvider } from 'src/modules/locked-token-wrapper/mocks/locked.token.wrapper.abi.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -135,15 +134,6 @@ describe('UserService', () => {
     ];
 
     beforeEach(async () => {
-        const getter = new LockedTokenWrapperGetterServiceMock({
-            getLockedTokenId(address: string): Promise<string> {
-                return Promise.resolve('ELKMEX-7e6873');
-            },
-            getWrappedTokenId(address: string): Promise<string> {
-                return Promise.resolve('WELKMEX-4b8419');
-            },
-        });
-
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 MXApiServiceProvider,
@@ -194,6 +184,7 @@ describe('UserService', () => {
                     provide: FarmAbiServiceV2,
                     useClass: AbiFarmServiceMock,
                 },
+                LockedTokenWrapperAbiServiceProvider,
                 ProxyService,
                 ProxyAbiServiceProvider,
                 {
@@ -202,10 +193,6 @@ describe('UserService', () => {
                 },
                 ProxyPairAbiServiceProvider,
                 ProxyFarmAbiServiceProvider,
-                {
-                    provide: LockedTokenWrapperGetterService,
-                    useValue: getter,
-                },
                 UserMetaEsdtComputeService,
                 LockedTokenWrapperService,
                 LockedAssetProvider,
