@@ -1,25 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterService } from '../services/router.service';
 import { PairFilterArgs } from '../models/filter.args';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
 import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('RouterService', () => {
     let module: TestingModule;
 
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
     beforeEach(async () => {
         module = await Test.createTestingModule({
             imports: [CachingModule],
             providers: [
-                PairGetterServiceProvider,
+                PairAbiServiceProvider,
                 RouterAbiServiceProvider,
                 RouterService,
             ],

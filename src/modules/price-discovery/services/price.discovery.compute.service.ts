@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { quote } from 'src/modules/pair/pair.utils';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { PriceDiscoveryService } from './price.discovery.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
@@ -14,9 +14,9 @@ export class PriceDiscoveryComputeService
     implements IPriceDiscoveryComputeService
 {
     constructor(
+        private readonly pairCompute: PairComputeService,
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly priceDiscoveryService: PriceDiscoveryService,
-        private readonly pairGetter: PairGetterService,
     ) {}
 
     @ErrorLoggerAsync({
@@ -120,7 +120,7 @@ export class PriceDiscoveryComputeService
         );
         const [launchedTokenPrice, acceptedTokenPriceUSD] = await Promise.all([
             this.computeLaunchedTokenPrice(priceDiscoveryAddress),
-            this.pairGetter.getTokenPriceUSD(acceptedToken.identifier),
+            this.pairCompute.tokenPriceUSD(acceptedToken.identifier),
         ]);
 
         return new BigNumber(launchedTokenPrice)
@@ -149,6 +149,6 @@ export class PriceDiscoveryComputeService
         const acceptedTokenID = await this.priceDiscoveryAbi.acceptedTokenID(
             priceDiscoveryAddress,
         );
-        return await this.pairGetter.getTokenPriceUSD(acceptedTokenID);
+        return await this.pairCompute.tokenPriceUSD(acceptedTokenID);
     }
 }

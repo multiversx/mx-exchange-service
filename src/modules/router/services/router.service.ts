@@ -2,18 +2,18 @@ import { FactoryModel } from '../models/factory.model';
 import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../../config';
 import { PairModel } from '../../pair/models/pair.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
 import { oneSecond } from 'src/helpers/helpers';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from './router.abi.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()
 export class RouterService {
     constructor(
+        private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
-        private readonly pairGetterService: PairGetterService,
     ) {}
 
     async getFactory(): Promise<FactoryModel> {
@@ -107,7 +107,7 @@ export class RouterService {
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
         const promises = pairsMetadata.map((pairMetadata) =>
-            this.pairGetterService.getLpTokenID(pairMetadata.address),
+            this.pairAbi.lpTokenID(pairMetadata.address),
         );
         const lpTokensIDs = await Promise.all(promises);
 
@@ -135,7 +135,7 @@ export class RouterService {
         }
 
         const promises = pairsMetadata.map((pairMetadata) =>
-            this.pairGetterService.getState(pairMetadata.address),
+            this.pairAbi.state(pairMetadata.address),
         );
         const pairsStates = await Promise.all(promises);
 

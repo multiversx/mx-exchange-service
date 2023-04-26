@@ -3,8 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { ProxyPairTransactionsService } from '../services/proxy-pair/proxy.pair.transactions.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
 import { Address } from '@multiversx/sdk-core';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -21,14 +19,13 @@ import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.serv
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 
 describe('TransactionProxyPairService', () => {
     let module: TestingModule;
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
 
     beforeEach(async () => {
         module = await Test.createTestingModule({
@@ -38,7 +35,8 @@ describe('TransactionProxyPairService', () => {
                 ConfigService,
                 MXProxyServiceProvider,
                 PairService,
-                PairGetterServiceProvider,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 WrapAbiServiceProvider,
                 WrapTransactionsService,
                 WrapService,
@@ -50,6 +48,7 @@ describe('TransactionProxyPairService', () => {
                     useClass: ProxyAbiServiceMock,
                 },
                 RouterAbiServiceProvider,
+                ContextGetterServiceProvider,
             ],
         }).compile();
     });
@@ -71,17 +70,18 @@ describe('TransactionProxyPairService', () => {
                 ProxyPairTransactionsService,
             );
         const mxProxy = module.get<MXProxyService>(MXProxyService);
-        const pairGetter = module.get<PairGetterService>(PairGetterService);
+        const pairAbi = module.get<PairAbiService>(PairAbiService);
 
         jest.spyOn(mxProxy, 'getAddressShardID').mockImplementation(
             async () => 0,
         );
-        jest.spyOn(pairGetter, 'getFirstTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
             async () => 'TOK1-1111',
         );
-        jest.spyOn(pairGetter, 'getSecondTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
             async () => 'TOK2-2222',
         );
+
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
@@ -119,17 +119,18 @@ describe('TransactionProxyPairService', () => {
                 ProxyPairTransactionsService,
             );
         const mxProxy = module.get<MXProxyService>(MXProxyService);
-        const pairGetter = module.get<PairGetterService>(PairGetterService);
+        const pairAbi = module.get<PairAbiService>(PairAbiService);
 
         jest.spyOn(mxProxy, 'getAddressShardID').mockImplementation(
             async () => 0,
         );
-        jest.spyOn(pairGetter, 'getFirstTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
             async () => 'TOK1-1111',
         );
-        jest.spyOn(pairGetter, 'getSecondTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
             async () => 'TOK2-2222',
         );
+
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',

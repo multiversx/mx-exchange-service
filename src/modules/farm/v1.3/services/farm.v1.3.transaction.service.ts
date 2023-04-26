@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { farmType } from 'src/utils/farm.utils';
@@ -19,6 +18,7 @@ import { TransactionsFarmService } from '../../base-module/services/farm.transac
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Address, TokenPayment } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 @Injectable()
 export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
@@ -26,16 +26,10 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
         protected readonly mxProxy: MXProxyService,
         protected readonly farmGetterService: FarmGetterService,
         protected readonly pairService: PairService,
-        protected readonly pairGetterService: PairGetterService,
+        protected readonly pairAbi: PairAbiService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
-        super(
-            mxProxy,
-            farmGetterService,
-            pairService,
-            pairGetterService,
-            logger,
-        );
+        super(mxProxy, farmGetterService, pairService, pairAbi, logger);
     }
 
     async enterFarm(

@@ -5,14 +5,19 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { leastType } from 'src/utils/token.type.compare';
-import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
+import { PairAbiService } from './pair.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import { IPairComputeService } from '../interfaces';
 
 @Injectable()
-export class PairComputeService {
+export class PairComputeService implements IPairComputeService {
     constructor(
-        @Inject(forwardRef(() => PairGetterService))
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
         @Inject(forwardRef(() => TokenGetterService))
@@ -20,12 +25,41 @@ export class PairComputeService {
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly dataApi: MXDataApiService,
+        private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly apiConfig: ApiConfigService,
     ) {}
+
+    async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
+        const [firstTokenID, secondTokenID] = await Promise.all([
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
+        ]);
+
+        switch (tokenID) {
+            case firstTokenID:
+                return this.firstTokenPrice(pairAddress);
+            case secondTokenID:
+                return this.secondTokenPrice(pairAddress);
+        }
+    }
+
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async firstTokenPrice(pairAddress: string): Promise<string> {
+        return await this.computeFirstTokenPrice(pairAddress);
+    }
 
     async computeFirstTokenPrice(pairAddress: string): Promise<string> {
         const [firstToken, secondToken] = await Promise.all([
-            this.pairGetterService.getFirstToken(pairAddress),
-            this.pairGetterService.getSecondToken(pairAddress),
+            this.pairService.getFirstToken(pairAddress),
+            this.pairService.getSecondToken(pairAddress),
         ]);
 
         const firstTokenPrice =
@@ -39,10 +73,23 @@ export class PairComputeService {
             .toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async secondTokenPrice(pairAddress: string): Promise<string> {
+        return await this.computeSecondTokenPrice(pairAddress);
+    }
+
     async computeSecondTokenPrice(pairAddress: string): Promise<string> {
         const [firstToken, secondToken] = await Promise.all([
-            this.pairGetterService.getFirstToken(pairAddress),
-            this.pairGetterService.getSecondToken(pairAddress),
+            this.pairService.getFirstToken(pairAddress),
+            this.pairService.getSecondToken(pairAddress),
         ]);
 
         const secondTokenPrice =
@@ -56,11 +103,24 @@ export class PairComputeService {
             .toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async lpTokenPriceUSD(pairAddress: string): Promise<string> {
+        return await this.computeLpTokenPriceUSD(pairAddress);
+    }
+
     async computeLpTokenPriceUSD(pairAddress: string): Promise<string> {
         const [secondToken, lpToken, firstTokenPrice] = await Promise.all([
-            this.pairGetterService.getSecondToken(pairAddress),
-            this.pairGetterService.getLpToken(pairAddress),
-            this.pairGetterService.getFirstTokenPrice(pairAddress),
+            this.pairService.getSecondToken(pairAddress),
+            this.pairService.getLpToken(pairAddress),
+            this.firstTokenPrice(pairAddress),
         ]);
 
         if (lpToken === undefined) {
@@ -89,10 +149,36 @@ export class PairComputeService {
             .toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async tokenPriceUSD(tokenID: string): Promise<string> {
+        return await this.tokenCompute.computeTokenPriceDerivedUSD(tokenID);
+    }
+
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async firstTokenPriceUSD(pairAddress: string): Promise<string> {
+        return await this.computeFirstTokenPriceUSD(pairAddress);
+    }
+
     async computeFirstTokenPriceUSD(pairAddress: string): Promise<string> {
         const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
         ]);
 
         if (firstTokenID === constantsConfig.USDC_TOKEN_ID) {
@@ -113,10 +199,23 @@ export class PairComputeService {
         );
     }
 
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async secondTokenPriceUSD(pairAddress: string): Promise<string> {
+        return await this.computeSecondTokenPriceUSD(pairAddress);
+    }
+
     async computeSecondTokenPriceUSD(pairAddress: string): Promise<string> {
         const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
         ]);
 
         if (secondTokenID === constantsConfig.USDC_TOKEN_ID) {
@@ -137,14 +236,30 @@ export class PairComputeService {
         );
     }
 
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async firstTokenLockedValueUSD(pairAddress: string): Promise<string> {
+        const lockedValueUSD = await this.computeFirstTokenLockedValueUSD(
+            pairAddress,
+        );
+        return lockedValueUSD.toFixed();
+    }
+
     async computeFirstTokenLockedValueUSD(
         pairAddress: string,
     ): Promise<BigNumber> {
         const [firstToken, firstTokenPriceUSD, firstTokenReserve] =
             await Promise.all([
-                this.pairGetterService.getFirstToken(pairAddress),
-                this.pairGetterService.getFirstTokenPriceUSD(pairAddress),
-                this.pairGetterService.getFirstTokenReserve(pairAddress),
+                this.pairService.getFirstToken(pairAddress),
+                this.firstTokenPriceUSD(pairAddress),
+                this.pairAbi.firstTokenReserve(pairAddress),
             ]);
 
         return new BigNumber(firstTokenReserve)
@@ -152,19 +267,49 @@ export class PairComputeService {
             .multipliedBy(firstTokenPriceUSD);
     }
 
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async secondTokenLockedValueUSD(pairAddress: string): Promise<string> {
+        const lockedValueUSD = await this.computeSecondTokenLockedValueUSD(
+            pairAddress,
+        );
+        return lockedValueUSD.toFixed();
+    }
+
     async computeSecondTokenLockedValueUSD(
         pairAddress: string,
     ): Promise<BigNumber> {
         const [secondToken, secondTokenPriceUSD, secondTokenReserve] =
             await Promise.all([
-                this.pairGetterService.getSecondToken(pairAddress),
-                this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
-                this.pairGetterService.getSecondTokenReserve(pairAddress),
+                this.pairService.getSecondToken(pairAddress),
+                this.secondTokenPriceUSD(pairAddress),
+                this.pairAbi.secondTokenReserve(pairAddress),
             ]);
 
         return new BigNumber(secondTokenReserve)
             .multipliedBy(`1e-${secondToken.decimals}`)
             .multipliedBy(secondTokenPriceUSD);
+    }
+
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async lockedValueUSD(pairAddress: string): Promise<string> {
+        const lockedValueUSD = await this.computeLockedValueUSD(pairAddress);
+        return lockedValueUSD.toFixed();
     }
 
     async computeLockedValueUSD(pairAddress: string): Promise<BigNumber> {
@@ -179,13 +324,136 @@ export class PairComputeService {
         );
     }
 
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
+    })
+    async firstTokenVolume(pairAddress: string, time: string): Promise<string> {
+        return await this.computeFirstTokenVolume(pairAddress, time);
+    }
+
+    async computeFirstTokenVolume(
+        pairAddress: string,
+        time: string,
+    ): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+        return await this.analyticsQuery.getAggregatedValue({
+            table: this.apiConfig.getAWSTableName(),
+            series: pairAddress,
+            metric: 'firstTokenVolume',
+            time,
+        });
+    }
+
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
+    })
+    async secondTokenVolume(
+        pairAddress: string,
+        time: string,
+    ): Promise<string> {
+        return await this.computeSecondTokenVolume(pairAddress, time);
+    }
+
+    async computeSecondTokenVolume(
+        pairAddress: string,
+        time: string,
+    ): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+        return await this.analyticsQuery.getAggregatedValue({
+            table: this.apiConfig.getAWSTableName(),
+            series: pairAddress,
+            metric: 'secondTokenVolume',
+            time,
+        });
+    }
+
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
+    })
+    async volumeUSD(pairAddress: string, time: string): Promise<string> {
+        return await this.computeVolumeUSD(pairAddress, time);
+    }
+
+    async computeVolumeUSD(pairAddress: string, time: string): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+        return await this.analyticsQuery.getAggregatedValue({
+            table: this.apiConfig.getAWSTableName(),
+            series: pairAddress,
+            metric: 'volumeUSD',
+            time,
+        });
+    }
+
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
+    })
+    async feesUSD(pairAddress: string, time: string): Promise<string> {
+        return await this.computeFeesUSD(pairAddress, time);
+    }
+
+    async computeFeesUSD(pairAddress: string, time: string): Promise<string> {
+        if (!this.apiConfig.isAWSTimestreamRead()) {
+            return '0';
+        }
+
+        return await this.analyticsQuery.getAggregatedValue({
+            table: this.apiConfig.getAWSTableName(),
+            series: pairAddress,
+            metric: 'feesUSD',
+            time,
+        });
+    }
+
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async feesAPR(pairAddress: string): Promise<string> {
+        return await this.feesAPR(pairAddress);
+    }
+
     async computeFeesAPR(pairAddress: string): Promise<string> {
         const [fees24h, lockedValueUSD, specialFeePercent, totalFeesPercent] =
             await Promise.all([
-                this.pairGetterService.getFeesUSD(pairAddress, '24h'),
+                this.feesUSD(pairAddress, '24h'),
                 this.computeLockedValueUSD(pairAddress),
-                this.pairGetterService.getSpecialFeePercent(pairAddress),
-                this.pairGetterService.getTotalFeePercent(pairAddress),
+                this.pairAbi.specialFeePercent(pairAddress),
+                this.pairAbi.totalFeePercent(pairAddress),
             ]);
 
         const actualFees24hBig = new BigNumber(fees24h).multipliedBy(
@@ -197,10 +465,23 @@ export class PairComputeService {
         return actualFees24hBig.times(365).div(lockedValueUSD).toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: PairComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async type(pairAddress: string): Promise<string> {
+        return await this.computeTypeFromTokens(pairAddress);
+    }
+
     async computeTypeFromTokens(pairAddress: string): Promise<string> {
         const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
         ]);
 
         const [firstTokenType, secondTokenType] = await Promise.all([

@@ -1,19 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { Logger } from 'winston';
+import { Injectable } from '@nestjs/common';
 import { EsdtToken } from '../models/esdtToken.model';
 import { TokensFiltersArgs } from '../models/tokens.filter.args';
 import { TokenGetterService } from './token.getter.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class TokenService {
     constructor(
         private readonly tokenGetter: TokenGetterService,
+        private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
-        private readonly pairGetter: PairGetterService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
@@ -47,9 +44,7 @@ export class TokenService {
         await Promise.all(
             pairsMetadata.map(async (iterator) => {
                 if (activePool) {
-                    const state = await this.pairGetter.getState(
-                        iterator.address,
-                    );
+                    const state = await this.pairAbi.state(iterator.address);
                     if (state !== 'Active') {
                         return;
                     }

@@ -5,17 +5,15 @@ import { MXApiService } from '../../../services/multiversx-communication/mx.api.
 import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
-import { PairGetterServiceStub } from '../../../modules/pair/mocks/pair-getter-service-stub.service';
-import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
-import { ContextGetterService } from '../../../services/context/context.getter.service';
-import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.service';
 import { FarmGetterServiceProviderV1_2 } from '../mocks/farm.v1.2.getter.service.mock';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('FarmService', () => {
@@ -24,16 +22,6 @@ describe('FarmService', () => {
     const MXApiServiceProvider = {
         provide: MXApiService,
         useClass: MXApiServiceMock,
-    };
-
-    const ContextGetterServiceProvider = {
-        provide: ContextGetterService,
-        useClass: ContextGetterServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
     };
 
     beforeEach(async () => {
@@ -46,8 +34,8 @@ describe('FarmService', () => {
                 MXApiServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
-                PairGetterServiceProvider,
-                PairComputeService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 RouterAbiServiceProvider,

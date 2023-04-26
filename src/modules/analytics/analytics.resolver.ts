@@ -6,7 +6,7 @@ import { AWSQueryArgs } from './models/query.args';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { TokenGetterService } from '../tokens/services/token.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
-import { PairGetterService } from '../pair/services/pair.getter.service';
+import { PairComputeService } from '../pair/services/pair.compute.service';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -14,12 +14,12 @@ export class AnalyticsResolver {
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
         private readonly analyticsCompute: AnalyticsComputeService,
         private readonly tokenGetter: TokenGetterService,
-        private readonly pairGetter: PairGetterService,
+        private readonly pairCompute: PairComputeService,
     ) {}
 
     @Query(() => String)
     async getTokenPriceUSD(@Args('tokenID') tokenID: string): Promise<string> {
-        return this.pairGetter.getTokenPriceUSD(tokenID);
+        return this.pairCompute.tokenPriceUSD(tokenID);
     }
 
     @Query(() => String)

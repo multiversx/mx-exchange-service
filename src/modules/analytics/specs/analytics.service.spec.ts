@@ -2,9 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
-import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
@@ -33,6 +30,8 @@ import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { ProxyAbiServiceProvider } from 'src/modules/proxy/mocks/proxy.abi.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
@@ -41,16 +40,6 @@ import { StakingComputeService } from 'src/modules/staking/services/staking.comp
 
 describe('AnalyticsService', () => {
     let module: TestingModule;
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
-    const AbiLockedAssetServiceProvider = {
-        provide: AbiLockedAssetService,
-        useClass: AbiLockedAssetServiceMock,
-    };
 
     beforeEach(async () => {
         module = await Test.createTestingModule({
@@ -75,16 +64,19 @@ describe('AnalyticsService', () => {
                 FarmComputeServiceV1_3,
                 FarmComputeServiceV2,
                 PairService,
-                PairGetterServiceProvider,
-                PairComputeService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 ProxyAbiServiceProvider,
-                AbiLockedAssetServiceProvider,
+                {
+                    provide: AbiLockedAssetService,
+                    useClass: AbiLockedAssetServiceMock,
+                },
                 LockedAssetGetterService,
                 WrapAbiServiceProvider,
                 RouterAbiServiceProvider,
                 TokenGetterServiceProvider,
-                MXDataApiServiceProvider,
                 TokenComputeService,
+                MXDataApiServiceProvider,
                 AnalyticsComputeService,
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,

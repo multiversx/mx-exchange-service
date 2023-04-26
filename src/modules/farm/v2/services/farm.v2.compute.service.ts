@@ -10,7 +10,6 @@ import { Logger } from 'winston';
 import { constantsConfig } from '../../../../config';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { PairService } from '../../../pair/services/pair.service';
-import { PairGetterService } from '../../../pair/services/pair.getter.service';
 import { ContextGetterService } from '../../../../services/context/context.getter.service';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
@@ -22,7 +21,6 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         @Inject(forwardRef(() => FarmGetterServiceV2))
         protected readonly farmGetter: FarmGetterServiceV2,
         protected readonly pairService: PairService,
-        protected readonly pairGetter: PairGetterService,
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
@@ -33,7 +31,6 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         super(
             farmGetter,
             pairService,
-            pairGetter,
             pairCompute,
             contextGetter,
             tokenCompute,

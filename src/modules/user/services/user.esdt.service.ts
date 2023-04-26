@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { oneSecond } from 'src/helpers/helpers';
 import { PaginationArgs } from 'src/modules/dex.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { IEsdtToken } from 'src/modules/tokens/models/esdtToken.interface';
 import {
@@ -13,6 +12,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { UserToken } from '../models/user.model';
 import { UserEsdtComputeService } from './esdt.compute.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class UserEsdtService {
         private readonly apiService: MXApiService,
         private readonly pairService: PairService,
         private readonly tokenService: TokenService,
-        private readonly pairGetter: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly userEsdtCompute: UserEsdtComputeService,
         private readonly cachingService: CachingService,
@@ -44,7 +44,7 @@ export class UserEsdtService {
         ]);
 
         for (const address of pairsAddresses) {
-            promises.push(this.pairGetter.getLpTokenID(address));
+            promises.push(this.pairAbi.lpTokenID(address));
         }
 
         const lpTokensIDs = await Promise.all(promises);

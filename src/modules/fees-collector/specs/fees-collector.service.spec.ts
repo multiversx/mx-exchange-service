@@ -13,12 +13,15 @@ import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/s
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair-getter-service-mock.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 
 describe('FeesCollectorService', () => {
     let module: TestingModule;
@@ -36,10 +39,11 @@ describe('FeesCollectorService', () => {
                 WeeklyRewardsSplittingComputeService,
                 EnergyAbiServiceProvider,
                 TokenComputeService,
-                {
-                    provide: PairGetterService,
-                    useClass: PairGetterServiceMock,
-                },
+                TokenGetterServiceProvider,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
+                PairService,
+                WrapAbiServiceProvider,
                 RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
                 {

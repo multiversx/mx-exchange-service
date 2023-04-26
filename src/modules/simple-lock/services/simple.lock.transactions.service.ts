@@ -17,7 +17,6 @@ import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
@@ -27,6 +26,7 @@ import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTypeEnumType } from '../models/simple.lock.model';
 import { SimpleLockService } from './simple.lock.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
 
 @Injectable()
@@ -35,7 +35,7 @@ export class SimpleLockTransactionService {
         protected readonly simpleLockService: SimpleLockService,
         protected readonly simpleLockAbi: SimpleLockAbiService,
         protected readonly pairService: PairService,
-        protected readonly pairGetterService: PairGetterService,
+        protected readonly pairAbi: PairAbiService,
         protected readonly wrapAbi: WrapAbiService,
         protected readonly wrapTransaction: WrapTransactionsService,
         protected readonly contextGetter: ContextGetterService,
@@ -154,8 +154,8 @@ export class SimpleLockTransactionService {
 
         const [pairFirstTokenID, pairSecondTokenID, contract] =
             await Promise.all([
-                this.pairGetterService.getFirstTokenID(pairAddress),
-                this.pairGetterService.getSecondTokenID(pairAddress),
+                this.pairAbi.firstTokenID(pairAddress),
+                this.pairAbi.secondTokenID(pairAddress),
                 this.mxProxy.getSimpleLockSmartContract(simpleLockAddress),
             ]);
 

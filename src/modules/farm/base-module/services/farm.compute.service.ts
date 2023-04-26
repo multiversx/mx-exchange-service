@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig, scAddress } from 'src/config';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -17,7 +16,6 @@ export abstract class FarmComputeService {
         @Inject(forwardRef(() => FarmGetterService))
         protected readonly farmGetter: FarmGetterService,
         protected readonly pairService: PairService,
-        protected readonly pairGetter: PairGetterService,
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,

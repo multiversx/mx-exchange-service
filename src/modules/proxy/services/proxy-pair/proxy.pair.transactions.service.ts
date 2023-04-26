@@ -15,9 +15,9 @@ import {
 } from '../../models/proxy-pair.args';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { ProxyAbiServiceV2 } from 'src/modules/proxy/v2/services/proxy.v2.abi.service';
 
@@ -27,7 +27,7 @@ export class ProxyPairTransactionsService {
         private readonly proxyAbiV2: ProxyAbiServiceV2,
         private readonly mxProxy: MXProxyService,
         private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         private readonly wrapAbi: WrapAbiService,
         private readonly wrapTransaction: WrapTransactionsService,
     ) {}
@@ -143,8 +143,8 @@ export class ProxyPairTransactionsService {
             contract,
         ] = await Promise.all([
             this.wrapAbi.wrappedEgldTokenID(),
-            this.pairGetterService.getFirstTokenID(args.pairAddress),
-            this.pairGetterService.getSecondTokenID(args.pairAddress),
+            this.pairAbi.firstTokenID(args.pairAddress),
+            this.pairAbi.secondTokenID(args.pairAddress),
             this.pairService.getLiquidityPosition(
                 args.pairAddress,
                 args.liquidity,
@@ -284,7 +284,7 @@ export class ProxyPairTransactionsService {
         proxyAddress: string,
     ): Promise<InputTokenModel[]> {
         const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairAbi.firstTokenID(pairAddress),
             this.proxyAbiV2.lockedAssetTokenID(proxyAddress),
         ]);
 

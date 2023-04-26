@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -18,7 +17,6 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
         @Inject(forwardRef(() => FarmGetterServiceV1_2))
         protected readonly farmGetter: FarmGetterServiceV1_2,
         protected readonly pairService: PairService,
-        protected readonly pairGetter: PairGetterService,
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
@@ -27,7 +25,6 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
         super(
             farmGetter,
             pairService,
-            pairGetter,
             pairCompute,
             contextGetter,
             tokenCompute,
@@ -42,7 +39,7 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
         ]);
 
         if (scAddress.has(farmingToken.identifier)) {
-            const tokenPriceUSD = await this.pairGetter.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairCompute.tokenPriceUSD(
                 farmingToken.identifier,
             );
             return computeValueUSD(
@@ -101,7 +98,7 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
         ]);
 
         if (scAddress.has(farmingToken.identifier)) {
-            const tokenPriceUSD = await this.pairGetter.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairCompute.tokenPriceUSD(
                 farmingToken.identifier,
             );
             return computeValueUSD(
@@ -130,7 +127,7 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
         ]);
 
         if (scAddress.has(farmingToken.identifier)) {
-            const tokenPriceUSD = await this.pairGetter.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairCompute.tokenPriceUSD(
                 farmingToken.identifier,
             );
             return computeValueUSD(
@@ -200,7 +197,7 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
                     farmingTokenID,
                 );
             feesAPR = new BigNumber(
-                await this.pairGetter.getFeesAPR(pairAddress),
+                await this.pairCompute.feesAPR(pairAddress),
             );
         }
         return feesAPR.isNaN()
@@ -245,7 +242,7 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
                     farmingTokenID,
                 );
             feesAPR = new BigNumber(
-                await this.pairGetter.getFeesAPR(pairAddress),
+                await this.pairCompute.feesAPR(pairAddress),
             );
         }
         return feesAPR.isNaN()

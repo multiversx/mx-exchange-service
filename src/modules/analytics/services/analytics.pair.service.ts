@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
 import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class AnalyticsPairService {
     constructor(
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
     ) {}
@@ -47,8 +47,8 @@ export class AnalyticsPairService {
 
     async getPairDayDatas(pairAddress: string): Promise<PairDayDataModel[]> {
         const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
         ]);
         const [
             lockedValuesUSD,

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
@@ -9,7 +9,7 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 @Injectable()
 export class PairHandler {
     constructor(
-        private readonly pairGetter: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         private readonly pairSetter: PairSetterService,
         private readonly routerAbi: RouterAbiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -46,13 +46,11 @@ export class PairHandler {
         for (const pair of pairs) {
             switch (tokenID) {
                 case pair.firstTokenID:
-                    promises.push(
-                        this.pairGetter.getFirstTokenReserve(pair.address),
-                    );
+                    promises.push(this.pairAbi.firstTokenReserve(pair.address));
                     break;
                 case pair.secondTokenID:
                     promises.push(
-                        this.pairGetter.getSecondTokenReserve(pair.address),
+                        this.pairAbi.secondTokenReserve(pair.address),
                     );
                     break;
             }

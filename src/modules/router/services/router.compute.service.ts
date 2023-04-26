@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { MetricsService } from 'src/endpoints/metrics/metrics.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { RouterAbiService } from './router.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
@@ -13,9 +12,7 @@ export class RouterComputeService {
     constructor(
         private readonly routerAbi: RouterAbiService,
         @Inject(forwardRef(() => PairComputeService))
-        private readonly pairComputeService: PairComputeService,
-        @Inject(forwardRef(() => PairGetterService))
-        private readonly pairGetter: PairGetterService,
+        private readonly pairCompute: PairComputeService,
         private readonly metrics: MetricsService,
     ) {}
 
@@ -34,7 +31,7 @@ export class RouterComputeService {
         const pairsAddress = await this.routerAbi.pairsAddress();
         let totalValueLockedUSD = new BigNumber(0);
         const promises = pairsAddress.map((pairAddress) =>
-            this.pairComputeService.computeLockedValueUSD(pairAddress),
+            this.pairCompute.computeLockedValueUSD(pairAddress),
         );
 
         const pairsLockedValueUSD = await Promise.all(promises);
@@ -66,7 +63,7 @@ export class RouterComputeService {
         let totalVolumeUSD = new BigNumber(0);
 
         const promises = pairsAddress.map((pairAddress) =>
-            this.pairGetter.getVolumeUSD(pairAddress, time),
+            this.pairCompute.volumeUSD(pairAddress, time),
         );
 
         const volumesUSD = await Promise.all(promises);
@@ -97,7 +94,7 @@ export class RouterComputeService {
         let totalFeesUSD = new BigNumber(0);
 
         const promises = pairsAddress.map((pairAddress) =>
-            this.pairGetter.getFeesUSD(pairAddress, time),
+            this.pairCompute.feesUSD(pairAddress, time),
         );
 
         const feesUSD = await Promise.all(promises);
