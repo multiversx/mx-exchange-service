@@ -4,7 +4,6 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { ProxyModule } from '../proxy.module';
 import { ProxyAbiServiceV2 } from './services/proxy.v2.abi.service';
-import { ProxyGetterServiceV2 } from './services/proxy.v2.getter.service';
 
 @Module({
     imports: [
@@ -13,7 +12,7 @@ import { ProxyGetterServiceV2 } from './services/proxy.v2.getter.service';
         TokenModule,
         forwardRef(() => ProxyModule),
     ],
-    providers: [ProxyAbiServiceV2, ProxyGetterServiceV2],
-    exports: [ProxyGetterServiceV2],
+    providers: [ProxyAbiServiceV2],
+    exports: [ProxyAbiServiceV2],
 })
 export class ProxyModuleV2 {}

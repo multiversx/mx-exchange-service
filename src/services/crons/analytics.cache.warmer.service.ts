@@ -1,30 +1,24 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { CachingService } from '../caching/cache.service';
-import { cacheConfig, constantsConfig, tokensSupplyConfig } from 'src/config';
+import { constantsConfig } from 'src/config';
 import { AnalyticsComputeService } from 'src/modules/analytics/services/analytics.compute.service';
-import { AnalyticsGetterService } from 'src/modules/analytics/services/analytics.getter.service';
-import { awsOneYear, delay, oneMinute } from '../../helpers/helpers';
+import { awsOneYear, delay } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { AnalyticsSetterService } from 'src/modules/analytics/services/analytics.setter.service';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
     constructor(
-        private readonly analyticsGetterService: AnalyticsGetterService,
         private readonly analyticsCompute: AnalyticsComputeService,
-        private readonly cachingService: CachingService,
+        private readonly analyticsSetter: AnalyticsSetterService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheAnalytics(): Promise<void> {
-        for (const token of tokensSupplyConfig) {
-            await this.analyticsGetterService.getTotalTokenSupply(token);
-        }
         const [
             totalValueLockedUSD,
             totalAggregatedRewards,
@@ -35,24 +29,12 @@ export class AnalyticsCacheWarmerService {
             this.analyticsCompute.computeLockedValueUSDFarms(),
         ]);
         const cachedKeys = await Promise.all([
-            this.setAnalyticsCache(
-                ['totalValueLockedUSD'],
-                totalValueLockedUSD,
-                oneMinute() * 10,
-                oneMinute() * 5,
-            ),
-            this.setAnalyticsCache(
-                [30, 'totalAggregatedRewards'],
+            this.analyticsSetter.totalValueLockedUSD(totalValueLockedUSD),
+            this.analyticsSetter.totalAggregatedRewards(
+                30,
                 totalAggregatedRewards,
-                oneMinute() * 10,
-                oneMinute() * 5,
             ),
-            this.setAnalyticsCache(
-                ['lockedValueUSDFarms'],
-                totalValueLockedUSDFarms,
-                oneMinute() * 10,
-                oneMinute() * 5,
-            ),
+            this.analyticsSetter.lockedValueUSDFarms(totalValueLockedUSDFarms),
         ]);
 
         await this.deleteCacheKeys(cachedKeys);
@@ -77,40 +59,18 @@ export class AnalyticsCacheWarmerService {
         );
         delay(1000);
         const cachedKeys = await Promise.all([
-            this.setAnalyticsCache(
-                [constantsConfig.MEX_TOKEN_ID, awsOneYear(), 'feeTokenBurned'],
+            this.analyticsSetter.feeTokenBurned(
+                constantsConfig.MEX_TOKEN_ID,
+                awsOneYear(),
                 feeBurned,
-                oneMinute() * 30,
-                oneMinute() * 10,
             ),
-            this.setAnalyticsCache(
-                [
-                    constantsConfig.MEX_TOKEN_ID,
-                    awsOneYear(),
-                    'penaltyTokenBurned',
-                ],
+            this.analyticsSetter.penaltyTokenBurned(
+                constantsConfig.MEX_TOKEN_ID,
+                awsOneYear(),
                 penaltyBurned,
-                oneMinute() * 30,
-                oneMinute() * 10,
             ),
         ]);
         await this.deleteCacheKeys(cachedKeys);
-    }
-
-    private async setAnalyticsCache(
-        keys: any[],
-        value: any,
-        remoteTtl: number = cacheConfig.default,
-        localTtl?: number,
-    ): Promise<string> {
-        const cacheKey = generateCacheKeyFromParams('analytics', ...keys);
-        await this.cachingService.setCache(
-            cacheKey,
-            value,
-            remoteTtl,
-            localTtl,
-        );
-        return cacheKey;
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

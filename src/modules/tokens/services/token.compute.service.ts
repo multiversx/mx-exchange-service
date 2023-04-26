@@ -8,17 +8,16 @@ import {
 } from 'src/config';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { ITokenComputeService } from '../interfaces';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
     constructor(
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetter: PairGetterService,
-        @Inject(forwardRef(() => RouterGetterService))
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly dataApi: MXDataApiService,
     ) {}
 
@@ -31,7 +30,7 @@ export class TokenComputeService implements ITokenComputeService {
             return new BigNumber('1').toFixed();
         }
 
-        const pairsMetadata = await this.routerGetter.getPairsMetadata();
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
         const tokenPairs: PairMetadata[] = [];
         for (const pair of pairsMetadata) {
             if (

@@ -6,14 +6,32 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { EnableSwapByUserConfig } from '../models/factory.model';
 import { PairMetadata } from '../models/pair.metadata.model';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { IRouterAbiService } from './interfaces';
 
 @Injectable()
-export class AbiRouterService extends GenericAbiService {
+export class RouterAbiService
+    extends GenericAbiService
+    implements IRouterAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }
 
-    async getAllPairsAddress(): Promise<string[]> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneMinute(),
+    })
+    async pairsAddress(): Promise<string[]> {
+        return await this.getAllPairsAddressRaw();
+    }
+
+    async getAllPairsAddressRaw(): Promise<string[]> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairsManagedAddresses();
@@ -24,7 +42,18 @@ export class AbiRouterService extends GenericAbiService {
         });
     }
 
-    async getPairsMetadata(): Promise<PairMetadata[]> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneMinute(),
+    })
+    async pairsMetadata(): Promise<PairMetadata[]> {
+        return await this.getPairsMetadataRaw();
+    }
+
+    async getPairsMetadataRaw(): Promise<PairMetadata[]> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairContractMetadata();
@@ -39,7 +68,18 @@ export class AbiRouterService extends GenericAbiService {
         });
     }
 
-    async getPairCreationEnabled(): Promise<boolean> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneHour(),
+    })
+    async pairCreationEnabled(): Promise<boolean> {
+        return await this.getPairCreationEnabledRaw();
+    }
+
+    async getPairCreationEnabledRaw(): Promise<boolean> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getPairCreationEnabled();
@@ -47,7 +87,18 @@ export class AbiRouterService extends GenericAbiService {
         return response.firstValue.valueOf();
     }
 
-    async getLastErrorMessage(): Promise<string> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneMinute(),
+    })
+    async lastErrorMessage(): Promise<string> {
+        return await this.getLastErrorMessageRaw();
+    }
+
+    async getLastErrorMessageRaw(): Promise<string> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLastErrorMessage();
@@ -55,29 +106,54 @@ export class AbiRouterService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getState(): Promise<boolean> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneHour(),
+    })
+    async state(): Promise<boolean> {
+        return await this.getStateRaw();
+    }
+
+    async getStateRaw(): Promise<boolean> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getState();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 
-    async getOwner(): Promise<string> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneHour(),
+    })
+    async owner(): Promise<string> {
+        return await this.getOwnerRaw();
+    }
+
+    async getOwnerRaw(): Promise<string> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getOwner();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().bech32();
     }
 
-    async getAllPairsManagedAddresses(): Promise<string[]> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getAllPairsManagedAddresses();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().map((address) => address.bech32());
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneHour(),
+    })
+    async allPairTokens(): Promise<PairTokens[]> {
+        return await this.getAllPairTokensRaw();
     }
 
-    async getAllPairTokens(): Promise<PairTokens[]> {
+    async getAllPairTokensRaw(): Promise<PairTokens[]> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairTokens();
@@ -90,7 +166,18 @@ export class AbiRouterService extends GenericAbiService {
         });
     }
 
-    async getPairTemplateAddress(): Promise<string> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneHour(),
+    })
+    async pairTemplateAddress(): Promise<string> {
+        return await this.getPairTemplateAddressRaw();
+    }
+
+    async getPairTemplateAddressRaw(): Promise<string> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getPairTemplateAddress();
@@ -98,7 +185,18 @@ export class AbiRouterService extends GenericAbiService {
         return response.firstValue.valueOf().bech32();
     }
 
-    async getTemporaryOwnerPeriod(): Promise<string> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneMinute() * 10,
+    })
+    async temporaryOwnerPeriod(): Promise<string> {
+        return await this.getTemporaryOwnerPeriodRaw();
+    }
+
+    async getTemporaryOwnerPeriodRaw(): Promise<string> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getTemporaryOwnerPeriod();
@@ -106,7 +204,18 @@ export class AbiRouterService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getEnableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneHour(),
+    })
+    async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
+        return await this.getEnableSwapByUserConfigRaw();
+    }
+
+    async getEnableSwapByUserConfigRaw(): Promise<EnableSwapByUserConfig> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getEnableSwapByUserConfig();
@@ -124,7 +233,18 @@ export class AbiRouterService extends GenericAbiService {
         });
     }
 
-    async getCommonTokensForUserPairs(): Promise<string[]> {
+    @ErrorLoggerAsync({
+        className: RouterAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: oneHour(),
+    })
+    async commonTokensForUserPairs(): Promise<string[]> {
+        return await this.getCommonTokensForUserPairsRaw();
+    }
+
+    async getCommonTokensForUserPairsRaw(): Promise<string[]> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getCommonTokensForUserPairs();

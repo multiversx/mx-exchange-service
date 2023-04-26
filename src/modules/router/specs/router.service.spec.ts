@@ -1,66 +1,39 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { ConfigModule } from '@nestjs/config';
-import { RouterGetterService } from '../services/router.getter.service';
-import { RouterGetterServiceStub } from '../mocks/router.getter.service.stub';
-import winston from 'winston';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { PairFilterArgs } from '../models/filter.args';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
+import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('RouterService', () => {
-    let service: RouterService;
+    let module: TestingModule;
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
         useClass: PairGetterServiceStub,
     };
 
-    const RouterGetterServiceProvider = {
-        provide: RouterGetterService,
-        useClass: RouterGetterServiceStub,
-    };
-
-    const logTransports: Transport[] = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                nestWinstonModuleUtilities.format.nestLike(),
-            ),
-        }),
-    ];
-
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                WinstonModule.forRoot({
-                    transports: logTransports,
-                }),
-                ConfigModule,
-                CachingModule,
-            ],
+        module = await Test.createTestingModule({
+            imports: [CachingModule],
             providers: [
                 PairGetterServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 RouterService,
             ],
         }).compile();
-
-        service = module.get<RouterService>(RouterService);
     });
 
     it('should be defined', () => {
+        const service = module.get<RouterService>(RouterService);
         expect(service).toBeDefined();
     });
 
     it('should get all pairs', async () => {
+        const service = module.get<RouterService>(RouterService);
+
         const allPairs = await service.getAllPairs(
             0,
             Number.MAX_VALUE,
@@ -83,6 +56,8 @@ describe('RouterService', () => {
     });
 
     it('should get filtered pairs', async () => {
+        const service = module.get<RouterService>(RouterService);
+
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
             firstTokenID: 'TOK1-1111',
             issuedLpToken: true,

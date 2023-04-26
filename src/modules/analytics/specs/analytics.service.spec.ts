@@ -1,25 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { PairService } from '../../pair/services/pair.service';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
-import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { MXApiServiceMock } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { AbiLockedAssetService } from 'src/modules/locked-asset-factory/services/abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from 'src/modules/locked-asset-factory/mocks/abi.locked.asset.service.mock';
-import { ProxyGetterService } from 'src/modules/proxy/services/proxy.getter.service';
-import { ProxyGetterServiceMock } from 'src/modules/proxy/mocks/proxy.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
 import { FarmGetterServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
@@ -31,7 +25,6 @@ import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
 import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
@@ -40,21 +33,18 @@ import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { ProxyAbiServiceProvider } from 'src/modules/proxy/mocks/proxy.abi.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 describe('AnalyticsService', () => {
-    let service: AnalyticsComputeService;
+    let module: TestingModule;
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
         useClass: PairGetterServiceStub,
-    };
-
-    const ProxyGetterServiceProvider = {
-        provide: ProxyGetterService,
-        useClass: ProxyGetterServiceMock,
     };
 
     const AbiLockedAssetServiceProvider = {
@@ -62,23 +52,8 @@ describe('AnalyticsService', () => {
         useClass: AbiLockedAssetServiceMock,
     };
 
-    const ContextGetterServiceProvider = {
-        provide: ContextGetterService,
-        useClass: ContextGetterServiceMock,
-    };
-
-    const MXApiServiceProvider = {
-        provide: MXApiService,
-        useClass: MXApiServiceMock,
-    };
-
-    const MXProxyServiceProvider = {
-        provide: MXProxyService,
-        useClass: MXProxyServiceMock,
-    };
-
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
+        module = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
             providers: [
                 ContextGetterServiceProvider,
@@ -102,11 +77,11 @@ describe('AnalyticsService', () => {
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
-                ProxyGetterServiceProvider,
+                ProxyAbiServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
                 WrapAbiServiceProvider,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 TokenGetterServiceProvider,
                 MXDataApiServiceProvider,
                 TokenComputeService,
@@ -117,7 +92,6 @@ describe('AnalyticsService', () => {
                 StakingAbiServiceProvider,
                 StakingService,
                 StakingComputeService,
-                AnalyticsGetterServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryService,
                 AWSTimestreamQueryService,
@@ -125,15 +99,21 @@ describe('AnalyticsService', () => {
                 TokenGetterServiceProvider,
             ],
         }).compile();
-
-        service = module.get<AnalyticsComputeService>(AnalyticsComputeService);
     });
 
     it('should be defined', () => {
+        const service = module.get<AnalyticsComputeService>(
+            AnalyticsComputeService,
+        );
+
         expect(service).toBeDefined();
     });
 
     it('should get total value locked in farms', async () => {
+        const service = module.get<AnalyticsComputeService>(
+            AnalyticsComputeService,
+        );
+
         const totalLockedValueUSDFarms =
             await service.computeLockedValueUSDFarms();
         expect(totalLockedValueUSDFarms.toString()).toEqual(
