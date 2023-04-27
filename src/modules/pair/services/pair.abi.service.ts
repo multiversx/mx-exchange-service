@@ -21,7 +21,7 @@ import {
     U64Value,
 } from '@multiversx/sdk-core';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { mxConfig } from 'src/config';
+import { constantsConfig, mxConfig } from 'src/config';
 import { VmQueryError } from 'src/utils/errors.constants';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
@@ -204,7 +204,10 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async totalFeePercent(pairAddress: string): Promise<number> {
-        return await this.getTotalFeePercentRaw(pairAddress);
+        const totalFeePercent = await this.getTotalFeePercentRaw(pairAddress);
+        return new BigNumber(totalFeePercent)
+            .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+            .toNumber();
     }
 
     async getTotalFeePercentRaw(pairAddress: string): Promise<number> {
@@ -226,7 +229,12 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async specialFeePercent(pairAddress: string): Promise<number> {
-        return await this.getSpecialFeePercentRaw(pairAddress);
+        const specialFeePercent = await this.getSpecialFeePercentRaw(
+            pairAddress,
+        );
+        return new BigNumber(specialFeePercent)
+            .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+            .toNumber();
     }
 
     async getSpecialFeePercentRaw(pairAddress: string): Promise<number> {

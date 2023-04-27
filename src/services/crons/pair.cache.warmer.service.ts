@@ -14,6 +14,8 @@ import { Locker } from 'src/utils/locker';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import BigNumber from 'bignumber.js';
+import { constantsConfig } from 'src/config';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -187,11 +189,15 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setFeeState(pairAddress, feeState),
                 this.pairSetterService.setTotalFeePercent(
                     pairAddress,
-                    totalFeePercent,
+                    new BigNumber(totalFeePercent)
+                        .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+                        .toNumber(),
                 ),
                 this.pairSetterService.setSpecialFeePercent(
                     pairAddress,
-                    specialFeePercent,
+                    new BigNumber(specialFeePercent)
+                        .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+                        .toNumber(),
                 ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
