@@ -10,15 +10,26 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { computeValueUSD } from 'src/utils/token.converters';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { EnergyService } from 'src/modules/energy/services/energy.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 @Injectable()
 export class FeesCollectorComputeService {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly energyAbi: EnergyAbiService,
+        private readonly energyService: EnergyService,
+        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenCompute: TokenComputeService,
     ) {}
 
     @ErrorLoggerAsync({
@@ -156,6 +167,69 @@ export class FeesCollectorComputeService {
         return new BigNumber(lockedTokensPerBlock)
             .multipliedBy(blocksInWeek)
             .toFixed();
+    }
+
+    async computeUserRewardsAPR(
+        scAddress: string,
+        userAddress: string,
+        customEnergyAmount?: string,
+        customLockedTokens?: string,
+    ): Promise<BigNumber> {
+        const [currentWeek, baseAssetTokenID] = await Promise.all([
+            this.weekTimekeepingAbi.currentWeek(scAddress),
+            this.energyAbi.baseAssetTokenID(),
+        ]);
+        const lastWeek = currentWeek - 1;
+
+        const [baseToken, userEnergy, totalRewardsForWeekUSD] =
+            await Promise.all([
+                this.tokenGetter.getTokenMetadata(baseAssetTokenID),
+                this.energyService.getUserEnergy(userAddress),
+                this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
+                    scAddress,
+                    lastWeek,
+                ),
+            ]);
+
+        let totalEnergyForWeek =
+            await this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+                scAddress,
+                lastWeek,
+            );
+
+        if (customEnergyAmount) {
+            totalEnergyForWeek = new BigNumber(totalEnergyForWeek)
+                .minus(userEnergy.amount)
+                .plus(customEnergyAmount)
+                .toFixed();
+        }
+
+        const baseAssetTokenPriceUSD =
+            await this.tokenCompute.computeTokenPriceDerivedUSD(
+                baseToken.identifier,
+            );
+        const userLockedTokensValueUSD = computeValueUSD(
+            customLockedTokens ?? userEnergy.totalLockedTokens,
+            baseToken.decimals,
+            baseAssetTokenPriceUSD,
+        );
+
+        const userRewardsForWeekUSD = new BigNumber(totalRewardsForWeekUSD)
+            .multipliedBy(customEnergyAmount ?? userEnergy.amount)
+            .dividedBy(totalEnergyForWeek);
+        const userAPRForWeek = userRewardsForWeekUSD
+            .multipliedBy(52)
+            .dividedBy(userLockedTokensValueUSD)
+            .multipliedBy(100);
+
+        console.log({
+            userEnergy,
+            totalRewardsForWeekUSD,
+            userRewardsForWeekUSD: userRewardsForWeekUSD.toFixed(),
+            userAPRForWeek: userAPRForWeek.toFixed(),
+        });
+
+        return userAPRForWeek;
     }
 
     private async computeBlocksInWeek(

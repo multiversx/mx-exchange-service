@@ -13,6 +13,8 @@ import { FeesCollectorSetterService } from './services/fees-collector.setter.ser
 import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
 import { ContextModule } from '../../services/context/context.module';
 import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
+import { EnergyModule } from '../energy/energy.module';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
@@ -21,6 +23,8 @@ import { FeesCollectorTransactionService } from './services/fees-collector.trans
         forwardRef(() => WeekTimekeepingModule),
         forwardRef(() => WeeklyRewardsSplittingModule),
         ContextModule,
+        EnergyModule,
+        TokenModule,
     ],
     providers: [
         FeesCollectorService,

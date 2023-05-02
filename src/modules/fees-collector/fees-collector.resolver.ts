@@ -1,4 +1,4 @@
-import { Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import {
     FeesCollectorModel,
     FeesCollectorTransactionModel,
@@ -20,6 +20,7 @@ import { TransactionModel } from '../../models/transaction.model';
 import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
+import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver {
@@ -80,6 +81,7 @@ export class FeesCollectorResolver {
 export class UserEntryFeesCollectorResolver {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly feesCollectorTransaction: FeesCollectorTransactionService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {}
@@ -155,5 +157,23 @@ export class UserEntryFeesCollectorResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.feesCollectorTransaction.updateEnergyForUser(user.address);
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => String)
+    async userLastWeekRewards(
+        @AuthUser() user: UserAuthResult,
+        @Args('energyAmount', { nullable: true })
+        energyAmount: string,
+        @Args('lockedTokens', { nullable: true })
+        lockedTokens: string,
+    ): Promise<string> {
+        const apr = await this.feesCollectorCompute.computeUserRewardsAPR(
+            scAddress.feesCollector,
+            user.address,
+            energyAmount,
+            lockedTokens,
+        );
+        return apr.toFixed(4);
     }
 }
