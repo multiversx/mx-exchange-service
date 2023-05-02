@@ -24,6 +24,10 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { EnergyModel } from 'src/modules/energy/models/energy.model';
+import BigNumber from 'bignumber.js';
+import { EnergyService } from 'src/modules/energy/services/energy.service';
+import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
 
 describe('FeesCollectorComputeService', () => {
     let module: TestingModule;
@@ -38,6 +42,8 @@ describe('FeesCollectorComputeService', () => {
                 WeekTimekeepingAbiServiceProvider,
                 WeeklyRewardsSplittingAbiServiceProvider,
                 WeeklyRewardsSplittingComputeService,
+                EnergyService,
+                EnergyComputeService,
                 EnergyAbiServiceProvider,
                 TokenComputeService,
                 TokenGetterServiceProvider,
@@ -188,6 +194,182 @@ describe('FeesCollectorComputeService', () => {
             expect(rewards[0].tokenID).toEqual(expectedTokenID);
             expect(rewards[0].tokenType).toEqual(expectedTokenType);
             expect(rewards.length).toEqual(1);
+        },
+    );
+
+    it(
+        'computeUserApr' + ' last week' + ' with default user energy',
+        async () => {
+            const user1 = 'erd1';
+            const mex = 'MEX-27f4cd';
+            const priceMap = new Map<string, string>();
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
+            priceMap.set(mex, '1');
+
+            const totalEnergyForWeek = '3000000000000000000000000';
+            const totalLockedTokensForWeek = '1000000000000000000000000';
+            const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
+
+            const user1Energy = new EnergyModel({
+                amount: user1EnergyAmount.toFixed(),
+                totalLockedTokens: new BigNumber(
+                    totalLockedTokensForWeek,
+                ).toFixed(),
+            });
+
+            const service = module.get<FeesCollectorComputeService>(
+                FeesCollectorComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            const energyService = module.get<EnergyService>(EnergyService);
+
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            });
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
+                Promise.resolve(user1Energy),
+            );
+
+            const apr = await service.computeUserRewardsAPR(
+                Address.Zero().bech32(),
+                user1,
+            );
+
+            expect(apr.toFixed()).toEqual('52');
+        },
+    );
+
+    it(
+        'computeUserApr' + ' last week' + ' with custom user energy',
+        async () => {
+            const user1 = 'erd1';
+            const mex = 'MEX-27f4cd';
+            const priceMap = new Map<string, string>();
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
+            priceMap.set(mex, '1');
+
+            const totalEnergyForWeek = '3000000000000000000000000';
+            const totalLockedTokensForWeek = '1000000000000000000000000';
+            const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
+
+            const user1Energy = new EnergyModel({
+                amount: user1EnergyAmount.dividedBy(4).toFixed(),
+                totalLockedTokens: new BigNumber(
+                    totalLockedTokensForWeek,
+                ).toFixed(),
+            });
+
+            const service = module.get<FeesCollectorComputeService>(
+                FeesCollectorComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            const energyService = module.get<EnergyService>(EnergyService);
+
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            });
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
+                Promise.resolve(user1Energy),
+            );
+
+            const apr = await service.computeUserRewardsAPR(
+                Address.Zero().bech32(),
+                user1,
+                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+            );
+
+            expect(apr.toFixed()).toEqual('20.8');
+        },
+    );
+
+    it(
+        'computeUserApr' +
+            ' last week' +
+            ' with custom user energy and locked tokens',
+        async () => {
+            const user1 = 'erd1';
+            const mex = 'MEX-27f4cd';
+            const priceMap = new Map<string, string>();
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
+            priceMap.set(mex, '1');
+
+            const totalEnergyForWeek = '3000000000000000000000000';
+            const totalLockedTokensForWeek = '1000000000000000000000000';
+            const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
+
+            const user1Energy = new EnergyModel({
+                amount: user1EnergyAmount.dividedBy(4).toFixed(),
+                totalLockedTokens: new BigNumber(totalLockedTokensForWeek)
+                    .dividedBy(4)
+                    .toFixed(),
+            });
+
+            const service = module.get<FeesCollectorComputeService>(
+                FeesCollectorComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            const energyService = module.get<EnergyService>(EnergyService);
+
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            });
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
+                Promise.resolve(user1Energy),
+            );
+
+            const apr = await service.computeUserRewardsAPR(
+                Address.Zero().bech32(),
+                user1,
+                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+                new BigNumber(totalLockedTokensForWeek).dividedBy(2).toFixed(),
+            );
+
+            expect(apr.toFixed()).toEqual('41.6');
         },
     );
 });
