@@ -22,6 +22,8 @@ import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { EnergyService } from 'src/modules/energy/services/energy.service';
+import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
 
 describe('FeesCollectorService', () => {
     let module: TestingModule;
@@ -37,6 +39,8 @@ describe('FeesCollectorService', () => {
                 WeekTimekeepingComputeService,
                 WeeklyRewardsSplittingAbiServiceProvider,
                 WeeklyRewardsSplittingComputeService,
+                EnergyService,
+                EnergyComputeService,
                 EnergyAbiServiceProvider,
                 TokenComputeService,
                 TokenGetterServiceProvider,
