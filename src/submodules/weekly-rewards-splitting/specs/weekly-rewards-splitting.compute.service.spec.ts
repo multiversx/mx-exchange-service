@@ -53,7 +53,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         const service = module.get<WeeklyRewardsSplittingComputeService>(
             WeeklyRewardsSplittingComputeService,
         );
-        const usdValue = await service.computeTotalRewardsForWeekPriceUSD([]);
+        const usdValue = await service.computeTotalRewardsForWeekUSD([]);
         expect(usdValue).toEqual('0');
     });
 
@@ -75,7 +75,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             return Promise.resolve(priceMap.get(tokenID));
         });
 
-        let usdValue = await service.computeTotalRewardsForWeekPriceUSD([
+        let usdValue = await service.computeTotalRewardsForWeekUSD([
             new EsdtTokenPayment({
                 amount: '100',
                 tokenID: 'firstToken',
@@ -87,7 +87,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         ]);
         expect(usdValue).toEqual('7000'); // 100 * 10 + 200 * 30
 
-        usdValue = await service.computeTotalRewardsForWeekPriceUSD([
+        usdValue = await service.computeTotalRewardsForWeekUSD([
             new EsdtTokenPayment({
                 amount: '100',
                 tokenID: 'firstToken',

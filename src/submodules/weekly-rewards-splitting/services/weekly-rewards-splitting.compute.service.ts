@@ -10,6 +10,8 @@ import { WeeklyRewardsSplittingAbiService } from './weekly-rewards-splitting.abi
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { computeValueUSD } from 'src/utils/token.converters';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingComputeService
@@ -19,6 +21,7 @@ export class WeeklyRewardsSplittingComputeService
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly energyAbi: EnergyAbiService,
         private readonly tokenCompute: TokenComputeService,
+        private readonly tokenGetter: TokenGetterService,
     ) {}
 
     async computeDistribution(
@@ -77,24 +80,18 @@ export class WeeklyRewardsSplittingComputeService
     }
 
     async computeWeekAPR(scAddress: string, week: number): Promise<string> {
-        const [totalLockedTokensForWeek, totalRewardsForWeek] =
-            await Promise.all([
-                this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
-                    scAddress,
-                    week,
-                ),
-                this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
-                    scAddress,
-                    week,
-                ),
-            ]);
+        const totalLockedTokensForWeek =
+            await this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
+                scAddress,
+                week,
+            );
 
         const totalLockedTokensForWeekPriceUSD =
             await this.computeTotalLockedTokensForWeekPriceUSD(
                 totalLockedTokensForWeek,
             );
         const totalRewardsForWeekPriceUSD =
-            await this.computeTotalRewardsForWeekPriceUSD(totalRewardsForWeek);
+            await this.computeTotalRewardsForWeekUSD(scAddress, week);
 
         return new BigNumber(totalRewardsForWeekPriceUSD)
             .times(52)
@@ -151,21 +148,52 @@ export class WeeklyRewardsSplittingComputeService
         return apr;
     }
 
-    async computeTotalRewardsForWeekPriceUSD(
-        totalRewardsForWeek: EsdtTokenPayment[],
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async totalRewardsForWeekUSD(
+        scAddress: string,
+        week: number,
     ): Promise<string> {
-        let totalPriceUSD = new BigNumber('0');
+        return await this.computeTotalRewardsForWeekUSD(scAddress, week);
+    }
+
+    async computeTotalRewardsForWeekUSD(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
+        const [baseAssetTokenID, lockedTokenID, totalRewardsForWeek] =
+            await Promise.all([
+                this.energyAbi.baseAssetTokenID(),
+                this.energyAbi.lockedTokenID(),
+                this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                    scAddress,
+                    week,
+                ),
+            ]);
+        let totalPriceUSD = new BigNumber(0);
 
         const totalRewardsArray = await Promise.all(
-            totalRewardsForWeek.map(async (token) => {
-                const tokenPriceUSD =
-                    await this.tokenCompute.computeTokenPriceDerivedUSD(
-                        token.tokenID,
-                    );
-                const rewardsPriceUSD = new BigNumber(
-                    tokenPriceUSD,
-                ).multipliedBy(new BigNumber(token.amount));
-                return rewardsPriceUSD;
+            totalRewardsForWeek.map(async (reward) => {
+                const tokenID =
+                    reward.tokenID === lockedTokenID
+                        ? baseAssetTokenID
+                        : reward.tokenID;
+                const [token, rewardsPriceUSD] = await Promise.all([
+                    this.tokenGetter.getTokenMetadata(tokenID),
+                    this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
+                ]);
+                return computeValueUSD(
+                    reward.amount,
+                    token.decimals,
+                    rewardsPriceUSD,
+                );
             }),
         );
 
