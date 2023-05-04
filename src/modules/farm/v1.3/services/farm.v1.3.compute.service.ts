@@ -1,41 +1,43 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { Logger } from 'winston';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
-import { FarmGetterServiceV1_3 } from './farm.v1.3.getter.service';
+import { FarmAbiServiceV1_3 } from './farm.v1.3.abi.service';
+import { FarmServiceV1_3 } from './farm.v1.3.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { oneMinute } from 'src/helpers/helpers';
 
 @Injectable()
 export class FarmComputeServiceV1_3 extends FarmComputeService {
     constructor(
-        @Inject(forwardRef(() => FarmGetterServiceV1_3))
-        protected readonly farmGetter: FarmGetterServiceV1_3,
+        protected readonly farmAbi: FarmAbiServiceV1_3,
+        @Inject(forwardRef(() => FarmServiceV1_3))
+        protected readonly farmService: FarmServiceV1_3,
         protected readonly pairService: PairService,
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(
-            farmGetter,
+            farmAbi,
+            farmService,
             pairService,
             pairCompute,
             contextGetter,
             tokenCompute,
-            logger,
         );
     }
 
     async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
         const [farmingToken, farmTokenSupply] = await Promise.all([
-            this.farmGetter.getFarmingToken(farmAddress),
-            this.farmGetter.getFarmTokenSupply(farmAddress),
+            this.farmService.getFarmingToken(farmAddress),
+            this.farmAbi.farmTokenSupply(farmAddress),
         ]);
 
         if (scAddress.has(farmingToken.identifier)) {
@@ -59,6 +61,18 @@ export class FarmComputeServiceV1_3 extends FarmComputeService {
         return lockedValuesUSD;
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV1_3.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: oneMinute(),
+    })
+    async farmAPR(farmAddress: string): Promise<string> {
+        return this.computeFarmAPR(farmAddress);
+    }
+
     async computeFarmAPR(farmAddress: string): Promise<string> {
         const [
             farmedTokenID,
@@ -66,8 +80,8 @@ export class FarmComputeServiceV1_3 extends FarmComputeService {
             totalRewardsPerYearUSD,
             farmTokenSupplyUSD,
         ] = await Promise.all([
-            this.farmGetter.getFarmedTokenID(farmAddress),
-            this.farmGetter.getFarmingTokenID(farmAddress),
+            this.farmAbi.farmedTokenID(farmAddress),
+            this.farmAbi.farmingTokenID(farmAddress),
             this.computeAnualRewardsUSD(farmAddress),
             this.computeFarmLockedValueUSD(farmAddress),
         ]);

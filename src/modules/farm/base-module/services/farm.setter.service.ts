@@ -155,7 +155,7 @@ export abstract class FarmSetterService extends GenericSetterService {
 
     async setLastRewardBlockNonce(
         farmAddress: string,
-        value: string,
+        value: number,
     ): Promise<string> {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'lastRewardBlocknonce'),

@@ -23,15 +23,15 @@ import {
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { proxyVersion } from 'src/utils/proxy.utils';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 
 @Injectable()
 export class ProxyFarmTransactionsService {
     constructor(
         private readonly mxProxy: MXProxyService,
-        private readonly farmGetter: FarmGetterFactory,
+        private readonly farmAbi: FarmAbiFactory,
         private readonly pairService: PairService,
         private readonly pairAbi: PairAbiService,
     ) {}
@@ -283,12 +283,12 @@ export class ProxyFarmTransactionsService {
                 ? gasConfig.lockedAssetCreate
                 : 0;
         const [farmedTokenID, farmingTokenID] = await Promise.all([
-            this.farmGetter
-                .useGetter(args.farmAddress)
-                .getFarmedTokenID(args.farmAddress),
-            this.farmGetter
-                .useGetter(args.farmAddress)
-                .getFarmingTokenID(args.farmAddress),
+            this.farmAbi
+                .useAbi(args.farmAddress)
+                .farmedTokenID(args.farmAddress),
+            this.farmAbi
+                .useAbi(args.farmAddress)
+                .farmingTokenID(args.farmAddress),
         ]);
 
         if (farmedTokenID === farmingTokenID) {

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service';
 import { farms } from './farm.constants';
 import { FarmGetterServiceMock } from './farm.getter.service.mock';
 
@@ -30,6 +29,6 @@ export class FarmGetterServiceMockV1_2 extends FarmGetterServiceMock {
 }
 
 export const FarmGetterServiceProviderV1_2 = {
-    provide: FarmGetterServiceV1_2,
+    provide: 'FarmGetterServiceV1_2',
     useClass: FarmGetterServiceMockV1_2,
 };

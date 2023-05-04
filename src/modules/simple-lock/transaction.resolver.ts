@@ -7,7 +7,6 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { farmVersion } from 'src/utils/farm.utils';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
-import { FarmGetterFactory } from '../farm/farm.getter.factory';
 import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
 import { EmterFarmProxyTokensValidationPipe } from './validators/enter.farm.tokens.validator';
@@ -16,13 +15,14 @@ import { LiquidityTokensValidationPipe } from './validators/liquidity.token.vali
 import { LpProxyTokensValidationPipe } from './validators/lpProxy.token.validator';
 import { UnlockTokensValidationPipe } from './validators/unlock.tokens.validator';
 import { SimpleLockAbiService } from './services/simple.lock.abi.service';
+import { FarmAbiFactory } from '../farm/farm.abi.factory';
 
 @Resolver()
 export class TransactionResolver {
     constructor(
         private readonly simpleLockService: SimpleLockService,
         private readonly simpleLockAbi: SimpleLockAbiService,
-        private readonly farmGetterFactory: FarmGetterFactory,
+        private readonly farmAbi: FarmAbiFactory,
         private readonly simpleLockTransactions: SimpleLockTransactionService,
     ) {}
 
@@ -147,7 +147,7 @@ export class TransactionResolver {
         );
         const [lockedTokenID, farmAddress] = await Promise.all([
             this.simpleLockAbi.lockedTokenID(simpleLockAddress),
-            this.farmGetterFactory.getFarmAddressByFarmTokenID(
+            this.farmAbi.getFarmAddressByFarmTokenID(
                 decodedAttributes.farmTokenID,
             ),
         ]);

@@ -2,12 +2,18 @@ import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmMigrationConfig } from '../models/farm.model';
 import { FarmModelV1_2 } from '../models/farm.v1.2.model';
-import { FarmGetterServiceV1_2 } from './services/farm.v1.2.getter.service';
+import { FarmAbiServiceV1_2 } from './services/farm.v1.2.abi.service';
+import { FarmServiceV1_2 } from './services/farm.v1.2.service';
+import { FarmComputeServiceV1_2 } from './services/farm.v1.2.compute.service';
 
 @Resolver(() => FarmModelV1_2)
 export class FarmResolverV1_2 extends FarmResolver {
-    constructor(protected readonly farmGetter: FarmGetterServiceV1_2) {
-        super(farmGetter);
+    constructor(
+        protected readonly farmAbi: FarmAbiServiceV1_2,
+        protected readonly farmService: FarmServiceV1_2,
+        protected readonly farmCompute: FarmComputeServiceV1_2,
+    ) {
+        super(farmAbi, farmService, farmCompute);
     }
 
     @ResolveField()
@@ -15,63 +21,63 @@ export class FarmResolverV1_2 extends FarmResolver {
         @Parent() parent: FarmModelV1_2,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getFarmingTokenReserve(parent.address),
+            this.farmAbi.farmingTokenReserve(parent.address),
         );
     }
 
     @ResolveField()
     async undistributedFees(@Parent() parent: FarmModelV1_2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getUndistributedFees(parent.address),
+            this.farmAbi.undistributedFees(parent.address),
         );
     }
 
     @ResolveField()
     async currentBlockFee(@Parent() parent: FarmModelV1_2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getCurrentBlockFee(parent.address),
+            this.farmAbi.currentBlockFee(parent.address),
         );
     }
 
     @ResolveField()
     async aprMultiplier(@Parent() parent: FarmModelV1_2): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getLockedRewardAprMuliplier(parent.address),
+            this.farmAbi.lockedRewardAprMuliplier(parent.address),
         );
     }
 
     @ResolveField()
     async unlockedRewardsAPR(@Parent() parent: FarmModelV1_2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getUnlockedRewardsAPR(parent.address),
+            this.farmCompute.unlockedRewardsAPR(parent.address),
         );
     }
 
     @ResolveField()
     async lockedRewardsAPR(@Parent() parent: FarmModelV1_2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getLockedRewardsAPR(parent.address),
+            this.farmCompute.lockedRewardsAPR(parent.address),
         );
     }
 
     @ResolveField()
     async lockedFarmingTokenReserve(parent: FarmModelV1_2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getLockedFarmingTokenReserve(parent.address),
+            this.farmCompute.lockedFarmingTokenReserve(parent.address),
         );
     }
 
     @ResolveField()
     async unlockedFarmingTokenReserve(parent: FarmModelV1_2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getUnlockedFarmingTokenReserve(parent.address),
+            this.farmCompute.unlockedFarmingTokenReserve(parent.address),
         );
     }
 
     @ResolveField()
     async lockedFarmingTokenReserveUSD(parent: FarmModelV1_2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getLockedFarmingTokenReserveUSD(parent.address),
+            this.farmCompute.lockedFarmingTokenReserveUSD(parent.address),
         );
     }
 
@@ -80,7 +86,7 @@ export class FarmResolverV1_2 extends FarmResolver {
         parent: FarmModelV1_2,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getUnlockedFarmingTokenReserveUSD(parent.address),
+            this.farmCompute.unlockedFarmingTokenReserveUSD(parent.address),
         );
     }
 
@@ -89,7 +95,7 @@ export class FarmResolverV1_2 extends FarmResolver {
         @Parent() parent: FarmModelV1_2,
     ): Promise<FarmMigrationConfig> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getFarmMigrationConfiguration(parent.address),
+            this.farmAbi.farmMigrationConfiguration(parent.address),
         );
     }
 }

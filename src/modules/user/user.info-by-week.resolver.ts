@@ -7,15 +7,15 @@ import { GenericResolver } from '../../services/generics/generic.resolver';
 import { EnergyModel } from '../energy/models/energy.model';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
 import { scAddress } from '../../config';
-import { FarmGetterServiceV2 } from '../farm/v2/services/farm.v2.getter.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FeesCollectorComputeService } from '../fees-collector/services/fees-collector.compute.service';
+import { FarmComputeServiceV2 } from '../farm/v2/services/farm.v2.compute.service';
 
 @Resolver(() => UserInfoByWeekModel)
 export class UserInfoByWeekResolver extends GenericResolver {
     constructor(
-        private readonly farmGetterV2: FarmGetterServiceV2,
+        private readonly farmComputeV2: FarmComputeServiceV2,
         private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
@@ -58,10 +58,11 @@ export class UserInfoByWeekResolver extends GenericResolver {
                 parent.week,
             );
         }
-        return this.farmGetterV2.userRewardsForWeek(
+        return this.farmComputeV2.userRewardsForWeek(
             parent.scAddress,
             parent.userAddress,
             parent.week,
+            parent.positionAmount,
         );
     }
 
@@ -76,10 +77,11 @@ export class UserInfoByWeekResolver extends GenericResolver {
                 parent.week,
             );
         }
-        return this.farmGetterV2.userRewardsDistributionForWeek(
+        return this.farmComputeV2.userRewardsDistributionForWeek(
             parent.scAddress,
             parent.userAddress,
             parent.week,
+            parent.positionAmount,
         );
     }
 }

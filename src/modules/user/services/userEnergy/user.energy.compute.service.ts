@@ -8,8 +8,6 @@ import {
     UserDualYiledToken,
     UserLockedFarmTokenV2,
 } from '../../models/user.model';
-import { FarmGetterFactory } from '../../../farm/farm.getter.factory';
-import { FarmGetterServiceV2 } from '../../../farm/v2/services/farm.v2.getter.service';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
 import { PaginationArgs } from '../../../dex.model';
 import { ProxyService } from '../../../proxy/services/proxy.service';
@@ -22,11 +20,15 @@ import { Logger } from 'winston';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
+import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 
 @Injectable()
 export class UserEnergyComputeService {
     constructor(
-        private readonly farmGetter: FarmGetterFactory,
+        private readonly farmAbi: FarmAbiFactory,
+        private readonly farmService: FarmFactoryService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
@@ -44,9 +46,9 @@ export class UserEnergyComputeService {
         const isFarmAddress = contractAddress !== scAddress.feesCollector;
 
         if (isFarmAddress) {
-            const farmGetter = this.farmGetter.useGetter(
+            const farmService = this.farmService.useService(
                 contractAddress,
-            ) as FarmGetterServiceV2;
+            ) as FarmServiceV2;
             const [currentClaimProgress, currentWeek, farmToken] =
                 await Promise.all([
                     this.weeklyRewardsSplittingAbi.currentClaimProgress(
@@ -54,7 +56,7 @@ export class UserEnergyComputeService {
                         userAddress,
                     ),
                     this.weekTimekeepingAbi.currentWeek(contractAddress),
-                    farmGetter.getFarmToken(contractAddress),
+                    farmService.getFarmToken(contractAddress),
                 ]);
 
             if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
@@ -141,7 +143,7 @@ export class UserEnergyComputeService {
                 ],
             });
 
-        return this.farmGetter.getFarmAddressByFarmTokenID(
+        return this.farmAbi.getFarmAddressByFarmTokenID(
             decodedWFMTAttributes[0].farmToken.tokenIdentifier,
         );
     }

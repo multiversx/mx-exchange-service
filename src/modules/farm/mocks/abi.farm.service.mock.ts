@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import BigNumber from 'bignumber.js';
 import { CalculateRewardsArgs } from '../models/farm.args';
-import { AbiFarmService } from '../base-module/services/farm.abi.service';
+import { FarmAbiService } from '../base-module/services/farm.abi.service';
 
 export class AbiFarmServiceMock {
     async getPenaltyPercent(farmAddress: string): Promise<number> {
@@ -20,6 +20,6 @@ export class AbiFarmServiceMock {
 }
 
 export const AbiFarmServiceProvider = {
-    provide: AbiFarmService,
+    provide: FarmAbiService,
     useClass: AbiFarmServiceMock,
 };

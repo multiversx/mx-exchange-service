@@ -1,6 +1,5 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { BoostedYieldsFactors, FarmModelV2 } from '../models/farm.v2.model';
-import { FarmGetterServiceV2 } from './services/farm.v2.getter.service';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmServiceV2 } from './services/farm.v2.service';
 import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
@@ -9,17 +8,18 @@ import { FarmComputeServiceV2 } from './services/farm.v2.compute.service';
 import { constantsConfig } from '../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { FarmAbiServiceV2 } from './services/farm.v2.abi.service';
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
     constructor(
-        protected readonly farmGetter: FarmGetterServiceV2,
+        protected readonly farmAbi: FarmAbiServiceV2,
         protected readonly farmService: FarmServiceV2,
         protected readonly farmCompute: FarmComputeServiceV2,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
-        super(farmGetter);
+        super(farmAbi, farmService, farmCompute);
     }
 
     @ResolveField()
@@ -28,10 +28,7 @@ export class FarmResolverV2 extends FarmResolver {
             parent.address,
         );
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getAccumulatedRewardsForWeek(
-                parent.address,
-                currentWeek,
-            ),
+            this.farmAbi.accumulatedRewardsForWeek(parent.address, currentWeek),
         );
     }
 
@@ -41,14 +38,14 @@ export class FarmResolverV2 extends FarmResolver {
             parent.address,
         );
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getOptimalEnergyPerLp(parent.address, currentWeek),
+            this.farmCompute.optimalEnergyPerLP(parent.address, currentWeek),
         );
     }
 
     @ResolveField()
     async baseApr(@Parent() parent: FarmModelV2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmCompute.computeFarmBaseAPR(parent.address),
+            this.farmCompute.farmBaseAPR(parent.address),
         );
     }
 
@@ -96,7 +93,7 @@ export class FarmResolverV2 extends FarmResolver {
         @Parent() parent: FarmModelV2,
     ): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getBoostedYieldsRewardsPercenatage(parent.address),
+            this.farmAbi.boostedYieldsRewardsPercenatage(parent.address),
         );
     }
 
@@ -105,21 +102,21 @@ export class FarmResolverV2 extends FarmResolver {
         @Parent() parent: FarmModelV2,
     ): Promise<BoostedYieldsFactors> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getBoostedYieldsFactors(parent.address),
+            this.farmAbi.boostedYieldsFactors(parent.address),
         );
     }
 
     @ResolveField()
     async lockingScAddress(@Parent() parent: FarmModelV2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getLockingScAddress(parent.address),
+            this.farmAbi.lockingScAddress(parent.address),
         );
     }
 
     @ResolveField()
     async lockEpochs(@Parent() parent: FarmModelV2): Promise<number> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getLockEpochs(parent.address),
+            this.farmAbi.lockEpochs(parent.address),
         );
     }
 
@@ -128,7 +125,7 @@ export class FarmResolverV2 extends FarmResolver {
         @Parent() parent: FarmModelV2,
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getUndistributedBoostedRewards(parent.address),
+            this.farmAbi.undistributedBoostedRewards(parent.address),
         );
     }
 
@@ -142,7 +139,7 @@ export class FarmResolverV2 extends FarmResolver {
     @ResolveField()
     async energyFactoryAddress(@Parent() parent: FarmModelV2): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getEnergyFactoryAddress(parent.address),
+            this.farmAbi.energyFactoryAddress(parent.address),
         );
     }
 }

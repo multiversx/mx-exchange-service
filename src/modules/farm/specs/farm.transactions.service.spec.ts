@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { AbiFarmService } from '../base-module/services/farm.abi.service';
+import { FarmAbiService } from '../base-module/services/farm.abi.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../base-module/services/farm.getter.service';
@@ -26,7 +26,7 @@ describe('FarmService', () => {
     let transactionV1_2: FarmTransactionServiceV1_2;
 
     const AbiFarmServiceProvider = {
-        provide: AbiFarmService,
+        provide: FarmAbiService,
         useClass: AbiFarmServiceMock,
     };
 

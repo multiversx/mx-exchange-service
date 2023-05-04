@@ -1,47 +1,53 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
 import BigNumber from 'bignumber.js';
 import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
-import { FarmGetterServiceV2 } from './farm.v2.getter.service';
 import { PairComputeService } from '../../../pair/services/pair.compute.service';
 import { TokenComputeService } from '../../../tokens/services/token.compute.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { constantsConfig } from '../../../../config';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { PairService } from '../../../pair/services/pair.service';
 import { ContextGetterService } from '../../../../services/context/context.getter.service';
-import { EnergyType } from '@multiversx/sdk-exchange';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { FarmAbiServiceV2 } from './farm.v2.abi.service';
+import { FarmServiceV2 } from './farm.v2.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { CachingService } from 'src/services/caching/cache.service';
+import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 
 @Injectable()
 export class FarmComputeServiceV2 extends FarmComputeService {
     constructor(
-        @Inject(forwardRef(() => FarmGetterServiceV2))
-        protected readonly farmGetter: FarmGetterServiceV2,
+        protected readonly farmAbi: FarmAbiServiceV2,
+        @Inject(forwardRef(() => FarmServiceV2))
+        protected readonly farmService: FarmServiceV2,
         protected readonly pairService: PairService,
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
+        private readonly cachingService: CachingService,
     ) {
         super(
-            farmGetter,
+            farmAbi,
+            farmService,
             pairService,
             pairCompute,
             contextGetter,
             tokenCompute,
-            logger,
         );
     }
 
     async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
         const [farmTokenSupply, pairAddress] = await Promise.all([
-            this.farmGetter.getFarmTokenSupply(farmAddress),
-            this.farmGetter.getPairContractManagedAddress(farmAddress),
+            this.farmAbi.farmTokenSupply(farmAddress),
+            this.farmAbi.pairContractAddress(farmAddress),
         ]);
 
         const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
@@ -51,15 +57,28 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         return lockedValuesUSD;
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async farmBaseAPR(farmAddress: string): Promise<string> {
+        return await this.computeFarmBaseAPR(farmAddress);
+    }
+
     async computeFarmBaseAPR(farmAddress: string): Promise<string> {
         const [
             boostedYieldsRewardsPercenatage,
             totalRewardsPerYearUSD,
             farmTokenSupplyUSD,
         ] = await Promise.all([
-            this.farmGetter.getBoostedYieldsRewardsPercenatage(farmAddress),
+            this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
             this.computeAnualRewardsUSD(farmAddress),
-            this.farmGetter.getTotalValueLockedUSD(farmAddress),
+            super.farmLockedValueUSD(farmAddress),
         ]);
 
         return this.computeBaseRewards(
@@ -97,10 +116,75 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         return totalFarmRewards;
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV2.name,
+        logArgs: true,
+    })
+    async userRewardsDistributionForWeek(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+        liquidity: string,
+    ): Promise<TokenDistributionModel[]> {
+        return await this.cachingService.getOrSet(
+            `farm.userRewardsDistributionForWeek.${scAddress}.${userAddress}.${week}`,
+            () =>
+                this.computeUserRewardsDistributionForWeek(
+                    scAddress,
+                    userAddress,
+                    week,
+                    liquidity,
+                ),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        );
+    }
+
+    async computeUserRewardsDistributionForWeek(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+        liquidity: string,
+    ): Promise<TokenDistributionModel[]> {
+        const userRewardsForWeek = await this.userRewardsForWeek(
+            scAddress,
+            userAddress,
+            week,
+            liquidity,
+        );
+        return await this.weeklyRewardsSplittingCompute.computeDistribution(
+            userRewardsForWeek,
+        );
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV2.name,
+        logArgs: true,
+    })
+    async userAccumulatedRewards(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+        liquidity: string,
+    ): Promise<string> {
+        return await this.cachingService.getOrSet(
+            `farm.userAccumulatedRewards.${scAddress}.${userAddress}.${week}`,
+            () =>
+                this.computeUserAccumulatedRewards(
+                    scAddress,
+                    userAddress,
+                    week,
+                    liquidity,
+                ),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        );
+    }
+
     async computeUserAccumulatedRewards(
         scAddress: string,
-        week: number,
         userAddress: string,
+        week: number,
         liquidity: string,
     ): Promise<string> {
         const [
@@ -113,16 +197,16 @@ export class FarmComputeServiceV2 extends FarmComputeService {
             totalEnergy,
             blocksInWeek,
         ] = await Promise.all([
-            this.farmGetter.getBoostedYieldsFactors(scAddress),
-            this.farmGetter.getBoostedYieldsRewardsPercenatage(scAddress),
+            this.farmAbi.boostedYieldsFactors(scAddress),
+            this.farmAbi.boostedYieldsRewardsPercenatage(scAddress),
             this.weeklyRewardsSplittingAbi.userEnergyForWeek(
                 scAddress,
                 userAddress,
                 week,
             ),
-            this.farmGetter.getAccumulatedRewardsForWeek(scAddress, week),
-            this.farmGetter.getRewardsPerBlock(scAddress),
-            this.farmGetter.getFarmTokenSupply(scAddress),
+            this.farmAbi.accumulatedRewardsForWeek(scAddress, week),
+            this.farmAbi.rewardsPerBlock(scAddress),
+            this.farmAbi.farmTokenSupply(scAddress),
             this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
             this.computeBlocksInWeek(scAddress, week),
         ]);
@@ -185,17 +269,57 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         return paymentAmount.integerValue().toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV2.name,
+        logArgs: true,
+    })
+    async userRewardsForWeek(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+        liquidity: string,
+    ): Promise<EsdtTokenPayment[]> {
+        return await this.cachingService.getOrSet(
+            `farm.userRewardsForWeek.${scAddress}.${userAddress}.${week}`,
+            () =>
+                this.computeUserRewardsForWeek(
+                    scAddress,
+                    userAddress,
+                    week,
+                    liquidity,
+                ),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        );
+    }
+
     async computeUserRewardsForWeek(
         scAddress: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
-        userEnergyForWeek: EnergyType,
-        totalEnergyForWeek: string,
-        liquidity?: string,
+        userAddress: string,
+        week: number,
+        liquidity: string,
     ): Promise<EsdtTokenPayment[]> {
         const payments: EsdtTokenPayment[] = [];
+        const [totalRewardsForWeek, userEnergyForWeek, totalEnergyForWeek] =
+            await Promise.all([
+                this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                    scAddress,
+                    week,
+                ),
+                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                    scAddress,
+                    userAddress,
+                    week,
+                ),
+                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+                    scAddress,
+                    week,
+                ),
+            ]);
 
-        const boostedYieldsFactors =
-            await this.farmGetter.getBoostedYieldsFactors(scAddress);
+        const boostedYieldsFactors = await this.farmAbi.boostedYieldsFactors(
+            scAddress,
+        );
 
         const userHasMinEnergy = new BigNumber(
             userEnergyForWeek.amount,
@@ -220,9 +344,9 @@ export class FarmComputeServiceV2 extends FarmComputeService {
             farmTokenSupply,
             boostedYieldsRewardsPercenatage,
         ] = await Promise.all([
-            this.farmGetter.getRewardsPerBlock(scAddress),
-            this.farmGetter.getFarmTokenSupply(scAddress),
-            this.farmGetter.getBoostedYieldsRewardsPercenatage(scAddress),
+            this.farmAbi.rewardsPerBlock(scAddress),
+            this.farmAbi.farmTokenSupply(scAddress),
+            this.farmAbi.boostedYieldsRewardsPercenatage(scAddress),
         ]);
 
         const userMaxBoostedRewardsPerBlock = new BigNumber(rewardsPerBlock)
@@ -273,6 +397,19 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         return payments;
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async optimalEnergyPerLP(scAddress: string, week: number): Promise<string> {
+        return await this.computeOptimalEnergyPerLP(scAddress, week);
+    }
+
     //
     // The boosted rewards is min(MAX_REWARDS, COMPUTED_REWARDS)
     //
@@ -296,8 +433,8 @@ export class FarmComputeServiceV2 extends FarmComputeService {
         week: number,
     ): Promise<string> {
         const [factors, farmSupply, energySupply] = await Promise.all([
-            this.farmGetter.getBoostedYieldsFactors(scAddress),
-            this.farmGetter.getFarmTokenSupply(scAddress),
+            this.farmAbi.boostedYieldsFactors(scAddress),
+            this.farmAbi.farmTokenSupply(scAddress),
             this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
         ]);
 

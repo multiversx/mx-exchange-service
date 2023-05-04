@@ -47,7 +47,6 @@ import { ruleOfThree } from 'src/helpers/helpers';
 import { UserEsdtComputeService } from './esdt.compute.service';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
@@ -64,13 +63,14 @@ import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/servic
 import { LockedTokenWrapperAbiService } from 'src/modules/locked-token-wrapper/services/locked-token-wrapper.abi.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 
 @Injectable()
 export class UserMetaEsdtComputeService {
     constructor(
         private readonly apiService: MXApiService,
         private readonly farmFactory: FarmFactoryService,
-        private readonly farmGetter: FarmGetterFactory,
+        private readonly farmAbi: FarmAbiFactory,
         private readonly pairService: PairService,
         private readonly pairCompute: PairComputeService,
         private readonly lockedAssetService: LockedAssetService,
@@ -187,12 +187,12 @@ export class UserMetaEsdtComputeService {
                 async () => {
                     const farmAddress = nftToken.creator;
                     const [farmingTokenID, pairAddress] = await Promise.all([
-                        this.farmGetter
-                            .useGetter(farmAddress)
-                            .getFarmingTokenID(farmAddress),
-                        this.farmGetter
-                            .useGetter(farmAddress)
-                            .getPairContractManagedAddress(farmAddress),
+                        this.farmAbi
+                            .useAbi(farmAddress)
+                            .farmingTokenID(farmAddress),
+                        this.farmAbi
+                            .useAbi(farmAddress)
+                            .pairContractAddress(farmAddress),
                     ]);
                     return {
                         farmingTokenID,

@@ -28,7 +28,6 @@ import { PriceDiscoveryService } from '../../price-discovery/services/price.disc
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { INFTToken } from '../../tokens/models/nft.interface';
 import { constantsConfig, scAddress } from 'src/config';
-import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import {
     UserDualYiledToken,
     UserFarmToken,
@@ -55,6 +54,7 @@ import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staki
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lock.abi.service';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -80,7 +80,7 @@ export class UserMetaEsdtService {
         private cachingService: CachingService,
         private proxyPairAbi: ProxyPairAbiService,
         private proxyFarmAbi: ProxyFarmAbiService,
-        private farmGetter: FarmGetterFactory,
+        private farmAbi: FarmAbiFactory,
         private lockedAssetGetter: LockedAssetGetterService,
         private stakingAbi: StakingAbiService,
         private proxyStakeAbi: StakingProxyAbiService,
@@ -122,7 +122,7 @@ export class UserMetaEsdtService {
     ): Promise<UserFarmToken[]> {
         const farmTokenIDs = await Promise.all(
             farmsAddresses().map((address) =>
-                this.farmGetter.useGetter(address).getFarmTokenID(address),
+                this.farmAbi.useAbi(address).farmTokenID(address),
             ),
         );
         const nfts = await this.apiService.getNftsForUser(
@@ -674,9 +674,7 @@ export class UserMetaEsdtService {
         let promises: Promise<string>[] = [];
         for (const farmAddress of farmsAddresses()) {
             promises.push(
-                this.farmGetter
-                    .useGetter(farmAddress)
-                    .getFarmTokenID(farmAddress),
+                this.farmAbi.useAbi(farmAddress).farmTokenID(farmAddress),
             );
         }
         const farmTokenIDs = await Promise.all(promises);

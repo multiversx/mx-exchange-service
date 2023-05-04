@@ -1,37 +1,27 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { RewardsModel } from '../../models/farm.model';
 import { CalculateRewardsArgs } from '../../models/farm.args';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import BigNumber from 'bignumber.js';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { FarmAbiServiceV1_3 } from './farm.v1.3.abi.service';
-import { FarmGetterServiceV1_3 } from './farm.v1.3.getter.service';
 import { FarmComputeServiceV1_3 } from './farm.v1.3.compute.service';
 import { FarmTokenAttributesV1_3 } from '@multiversx/sdk-exchange';
 import { FarmTokenAttributesModelV1_3 } from '../../models/farmTokenAttributes.model';
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class FarmServiceV1_3 extends FarmServiceBase {
     constructor(
-        protected readonly abiService: FarmAbiServiceV1_3,
-        @Inject(forwardRef(() => FarmGetterServiceV1_3))
-        protected readonly farmGetter: FarmGetterServiceV1_3,
+        protected readonly farmAbi: FarmAbiServiceV1_3,
+        @Inject(forwardRef(() => FarmComputeServiceV1_3))
         protected readonly farmCompute: FarmComputeServiceV1_3,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        protected readonly tokenGetter: TokenGetterService,
     ) {
-        super(
-            abiService,
-            farmGetter,
-            farmCompute,
-            contextGetter,
-            cachingService,
-            logger,
-        );
+        super(farmAbi, farmCompute, contextGetter, cachingService, tokenGetter);
     }
 
     async getRewardsForPosition(
@@ -42,7 +32,7 @@ export class FarmServiceV1_3 extends FarmServiceBase {
         );
         let rewards: BigNumber;
         if (positon.vmQuery) {
-            rewards = await this.abiService.calculateRewardsForGivenPosition(
+            rewards = await this.farmAbi.calculateRewardsForGivenPosition(
                 positon,
             );
         } else {

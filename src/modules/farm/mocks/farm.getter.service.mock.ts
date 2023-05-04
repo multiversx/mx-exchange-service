@@ -3,7 +3,6 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { farms } from './farm.constants';
-import { FarmGetterService } from '../base-module/services/farm.getter.service';
 
 export class FarmGetterServiceMock {
     async getFarmedTokenID(farmAddress: string): Promise<string> {
@@ -108,6 +107,6 @@ export class FarmGetterServiceMock {
 }
 
 export const FarmGetterServiceProvider = {
-    provide: FarmGetterService,
+    provide: 'FarmGetterService',
     useClass: FarmGetterServiceMock,
 };
