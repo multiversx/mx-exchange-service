@@ -53,54 +53,69 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         const service = module.get<WeeklyRewardsSplittingComputeService>(
             WeeklyRewardsSplittingComputeService,
         );
-        const usdValue = await service.computeTotalRewardsForWeekPriceUSD([]);
+        const weeklyRewardsSplittingAbi =
+            module.get<WeeklyRewardsSplittingAbiService>(
+                WeeklyRewardsSplittingAbiService,
+            );
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'totalRewardsForWeek',
+        ).mockReturnValueOnce(Promise.resolve([]));
+
+        const usdValue = await service.computeTotalRewardsForWeekUSD(
+            Address.Zero().bech32(),
+            1,
+        );
         expect(usdValue).toEqual('0');
     });
 
     it('computeTotalRewardsForWeekPriceUSD' + ' should work', async () => {
         const priceMap = new Map<string, string>();
-        priceMap.set('firstToken', '10');
-        priceMap.set('secondToken', '20');
-        priceMap.set('thirdToken', '30');
+        priceMap.set('TOK1-1111', '10');
+        priceMap.set('TOK2-2222', '20');
+        priceMap.set('TOK4-4444', '30');
 
         const service = module.get<WeeklyRewardsSplittingComputeService>(
             WeeklyRewardsSplittingComputeService,
         );
         const tokenCompute =
             module.get<TokenComputeService>(TokenComputeService);
+        const weeklyRewardsSplittingAbi =
+            module.get<WeeklyRewardsSplittingAbiService>(
+                WeeklyRewardsSplittingAbiService,
+            );
+
         jest.spyOn(
             tokenCompute,
             'computeTokenPriceDerivedUSD',
         ).mockImplementation((tokenID) => {
             return Promise.resolve(priceMap.get(tokenID));
         });
-
-        let usdValue = await service.computeTotalRewardsForWeekPriceUSD([
-            new EsdtTokenPayment({
-                amount: '100',
-                tokenID: 'firstToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '200',
-                tokenID: 'thirdToken',
-            }),
-        ]);
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'totalRewardsForWeek',
+        ).mockReturnValueOnce(
+            Promise.resolve([
+                new EsdtTokenPayment({
+                    amount: '100000000000000000000',
+                    tokenID: 'TOK1-1111',
+                }),
+                new EsdtTokenPayment({
+                    amount: '200000000000000000000',
+                    tokenID: 'TOK4-4444',
+                }),
+            ]),
+        );
+        let usdValue = await service.computeTotalRewardsForWeekUSD(
+            Address.Zero().bech32(),
+            1,
+        );
         expect(usdValue).toEqual('7000'); // 100 * 10 + 200 * 30
 
-        usdValue = await service.computeTotalRewardsForWeekPriceUSD([
-            new EsdtTokenPayment({
-                amount: '100',
-                tokenID: 'firstToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '150',
-                tokenID: 'secondToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '200',
-                tokenID: 'thirdToken',
-            }),
-        ]);
+        usdValue = await service.computeTotalRewardsForWeekUSD(
+            Address.Zero().bech32(),
+            1,
+        );
         expect(usdValue).toEqual('10000');
     });
 
@@ -137,9 +152,9 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             const mex = 'MEX-27f4cd';
 
             const priceMap = new Map<string, string>();
-            priceMap.set('firstToken', '10');
-            priceMap.set('secondToken', '20');
-            priceMap.set('thirdToken', '30');
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
             priceMap.set(mex, '1');
 
             const service = module.get<WeeklyRewardsSplittingComputeService>(
@@ -163,12 +178,12 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             ).mockReturnValueOnce(
                 Promise.resolve([
                     new EsdtTokenPayment({
-                        amount: '100',
-                        tokenID: 'firstToken',
+                        amount: '100000000000000000000',
+                        tokenID: 'TOK1-1111',
                     }),
                     new EsdtTokenPayment({
-                        amount: '200',
-                        tokenID: 'thirdToken',
+                        amount: '200000000000000000000',
+                        tokenID: 'TOK4-4444',
                     }),
                 ]),
             );
@@ -184,9 +199,9 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         const mex = 'MEX-27f4cd';
 
         const priceMap = new Map<string, string>();
-        priceMap.set('firstToken', '10');
-        priceMap.set('secondToken', '20');
-        priceMap.set('thirdToken', '30');
+        priceMap.set('TOK1-1111', '10');
+        priceMap.set('TOK2-2222', '20');
+        priceMap.set('TOK4-4444', '30');
         priceMap.set(mex, '1');
 
         const service = module.get<WeeklyRewardsSplittingComputeService>(
@@ -210,9 +225,9 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         const mex = 'MEX-27f4cd';
 
         const priceMap = new Map<string, string>();
-        priceMap.set('firstToken', '10');
-        priceMap.set('secondToken', '20');
-        priceMap.set('thirdToken', '30');
+        priceMap.set('TOK1-1111', '10');
+        priceMap.set('TOK2-2222', '20');
+        priceMap.set('TOK4-4444', '30');
         priceMap.set(mex, '1');
 
         const totalEnergyForWeek = '1000';
@@ -260,9 +275,9 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             const mex = 'MEX-27f4cd';
 
             const priceMap = new Map<string, string>();
-            priceMap.set('firstToken', '10');
-            priceMap.set('secondToken', '20');
-            priceMap.set('thirdToken', '30');
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
             priceMap.set(mex, '1');
             const totalEnergyForWeek = '1000';
             const totalLockedTokensForWeek = '1000';
@@ -319,9 +334,9 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             const user2 = 'erd2';
             const mex = 'MEX-27f4cd';
             const priceMap = new Map<string, string>();
-            priceMap.set('firstToken', '10');
-            priceMap.set('secondToken', '20');
-            priceMap.set('thirdToken', '30');
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
             priceMap.set(mex, '1');
 
             const totalEnergyForWeek = '3000';
@@ -395,9 +410,9 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             const user2 = 'erd2';
             const mex = 'MEX-27f4cd';
             const priceMap = new Map<string, string>();
-            priceMap.set('firstToken', '10');
-            priceMap.set('secondToken', '20');
-            priceMap.set('thirdToken', '30');
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
             priceMap.set(mex, '1');
 
             const totalEnergyForWeek = '3000';

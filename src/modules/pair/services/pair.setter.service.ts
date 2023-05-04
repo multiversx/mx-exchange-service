@@ -172,7 +172,7 @@ export class PairSetterService extends GenericSetterService {
 
     async setTokenPriceUSD(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            this.getCacheKey('priceUSD', tokenID),
+            this.getCacheKey('tokenPriceUSD', tokenID),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
