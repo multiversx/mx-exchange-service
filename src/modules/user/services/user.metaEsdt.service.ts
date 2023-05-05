@@ -132,7 +132,7 @@ export class UserMetaEsdtService {
             'MetaESDT',
             farmTokenIDs,
         );
-        return await Promise.all(
+        const userTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.farmTokenUSD(
                     nft,
@@ -141,6 +141,8 @@ export class UserMetaEsdtService {
                 ),
             ),
         );
+
+        return userTokens.filter((token) => token !== undefined);
     }
 
     async getUserLockedLpTokens(
@@ -181,13 +183,15 @@ export class UserMetaEsdtService {
             'MetaESDT',
             [lockedFarmTokenID],
         );
-        return await Promise.all(
+        const userTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedFarmTokenUSD(
                     new LockedFarmToken(nft),
                 ),
             ),
         );
+
+        return userTokens.filter((token) => token !== undefined);
     }
 
     async getUserLockedLpTokensV2(
@@ -230,7 +234,7 @@ export class UserMetaEsdtService {
                 'MetaESDT',
                 [lockedFarmTokenID],
             );
-            return await Promise.all(
+            const userTokens = await Promise.all(
                 nfts.map((nft) =>
                     this.userComputeService.lockedFarmTokenV2USD(
                         new LockedFarmTokenV2(nft),
@@ -238,6 +242,7 @@ export class UserMetaEsdtService {
                     ),
                 ),
             );
+            return userTokens.filter((token) => token !== undefined);
         } catch (e) {
             this.logger.error(
                 `Cannot get locked farm tokens v2 for user ${userAddress}, error = ${e}`,
@@ -333,7 +338,7 @@ export class UserMetaEsdtService {
             'MetaESDT',
             dualYieldTokenIDs,
         );
-        return await Promise.all(
+        const userDualYieldTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.dualYieldTokenUSD(
                     new DualYieldToken(nft),
@@ -341,6 +346,8 @@ export class UserMetaEsdtService {
                 ),
             ),
         );
+
+        return userDualYieldTokens.filter((token) => token !== undefined);
     }
 
     async getUserRedeemToken(
@@ -424,11 +431,12 @@ export class UserMetaEsdtService {
             'MetaESDT',
             lockedSimpleFarmTokenIDs,
         );
-        return await Promise.all(
+        const userTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedSimpleFarmTokenUSD(nft),
             ),
         );
+        return userTokens.filter((token) => token !== undefined);
     }
 
     async getUserLockedTokenEnergy(
@@ -463,11 +471,13 @@ export class UserMetaEsdtService {
             'MetaESDT',
             [lockedTokenEnergyID],
         );
-        return await Promise.all(
+        const userTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.wrappedLockedTokenEnergyUSD(nft),
             ),
         );
+
+        return userTokens.filter((token) => token !== undefined);
     }
 
     async getAllNftTokens(
