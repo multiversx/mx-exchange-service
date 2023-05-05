@@ -5,6 +5,7 @@ import { FarmModelV1_2 } from '../models/farm.v1.2.model';
 import { FarmAbiServiceV1_2 } from './services/farm.v1.2.abi.service';
 import { FarmServiceV1_2 } from './services/farm.v1.2.service';
 import { FarmComputeServiceV1_2 } from './services/farm.v1.2.compute.service';
+import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 
 @Resolver(() => FarmModelV1_2)
 export class FarmResolverV1_2 extends FarmResolver {
@@ -14,6 +15,16 @@ export class FarmResolverV1_2 extends FarmResolver {
         protected readonly farmCompute: FarmComputeServiceV1_2,
     ) {
         super(farmAbi, farmService, farmCompute);
+    }
+
+    @ResolveField()
+    async lockedAssetFactory(
+        @Parent() parent: FarmModelV1_2,
+    ): Promise<LockedAssetModel> {
+        const address = await this.farmAbi.lockedAssetFactoryAddress(
+            parent.address,
+        );
+        return new LockedAssetModel({ address });
     }
 
     @ResolveField()

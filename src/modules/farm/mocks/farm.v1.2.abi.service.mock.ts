@@ -8,6 +8,9 @@ export class FarmAbiServiceMockV1_2
     extends FarmAbiServiceMock
     implements IFarmAbiServiceV1_2
 {
+    lockedAssetFactoryAddress(farmAddress: string): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
     async farmingTokenReserve(farmAddress: string): Promise<string> {
         const farm = farms.find((f) => f.address === farmAddress);
         if (farm === undefined) {

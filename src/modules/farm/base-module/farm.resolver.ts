@@ -128,16 +128,6 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async lockedAssetFactory(
-        @Parent() parent: BaseFarmModel,
-    ): Promise<LockedAssetModel> {
-        const address = await this.farmAbi.lockedAssetFactoryAddress(
-            parent.address,
-        );
-        return new LockedAssetModel({ address });
-    }
-
-    @ResolveField()
     async transferExecGasLimit(
         @Parent() parent: BaseFarmModel,
     ): Promise<string> {

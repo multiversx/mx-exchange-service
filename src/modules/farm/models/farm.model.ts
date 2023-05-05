@@ -33,11 +33,11 @@ export class RewardsModel {
     @Field(() => Int, { nullable: true })
     remainingFarmingEpochs?: number;
     @Field(() => [UserInfoByWeekModel], { nullable: true })
-    boostedRewardsWeeklyInfo: UserInfoByWeekModel[]
+    boostedRewardsWeeklyInfo: UserInfoByWeekModel[];
     @Field(() => ClaimProgress, { nullable: true })
     claimProgress: ClaimProgress;
     @Field({ nullable: true })
-    accumulatedRewards: string
+    accumulatedRewards: string;
     constructor(init?: Partial<RewardsModel>) {
         Object.assign(this, init);
     }
@@ -135,16 +135,13 @@ export class BaseFarmModel {
     @Field()
     burnGasLimit: string;
 
-    @Field()
+    @Field({ nullable: true })
     transferExecGasLimit: string;
 
     @Field({ nullable: true })
     pair: PairModel;
 
     @Field({ nullable: true })
-    lockedAssetFactory: LockedAssetModel;
-
-    @Field()
     lastErrorMessage: string;
 
     constructor(init?: Partial<BaseFarmModel>) {

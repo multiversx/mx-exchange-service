@@ -397,35 +397,6 @@ export class FarmAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async lockedAssetFactoryAddress(farmAddress: string): Promise<string> {
-        return await this.getLockedAssetFactoryAddressRaw(farmAddress);
-    }
-
-    async getLockedAssetFactoryAddressRaw(
-        farmAddress: string,
-    ): Promise<string> {
-        try {
-            const contract = await this.mxProxy.getFarmSmartContract(
-                farmAddress,
-            );
-            const interaction: Interaction =
-                contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
-            const response = await this.getGenericData(interaction);
-            return response.firstValue.valueOf().bech32();
-        } catch {
-            return undefined;
-        }
-    }
-
-    @ErrorLoggerAsync({
-        className: FarmAbiService.name,
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'farm',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
     async lastErrorMessage(farmAddress: string): Promise<string> {
         return await this.getLastErrorMessageRaw(farmAddress);
     }

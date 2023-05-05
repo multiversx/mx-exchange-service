@@ -5,6 +5,7 @@ import {
 import { FarmMigrationConfig } from '../../models/farm.model';
 
 export interface IFarmAbiServiceV1_2 extends IFarmAbiService {
+    lockedAssetFactoryAddress(farmAddress: string): Promise<string>;
     farmingTokenReserve(farmAddress: string): Promise<string>;
     undistributedFees(farmAddress: string): Promise<string>;
     currentBlockFee(farmAddress: string): Promise<string>;

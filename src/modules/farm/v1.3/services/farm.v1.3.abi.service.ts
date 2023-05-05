@@ -9,6 +9,7 @@ import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneHour } from 'src/helpers/helpers';
 import { IFarmAbiServiceV1_3 } from './interfaces';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class FarmAbiServiceV1_3
@@ -21,6 +22,37 @@ export class FarmAbiServiceV1_3
         protected readonly mxApi: MXApiService,
     ) {
         super(mxProxy, gatewayService, mxApi);
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async lockedAssetFactoryAddress(
+        farmAddress: string,
+    ): Promise<string | undefined> {
+        return await this.getLockedAssetFactoryAddressRaw(farmAddress);
+    }
+
+    async getLockedAssetFactoryAddressRaw(
+        farmAddress: string,
+    ): Promise<string | undefined> {
+        try {
+            const contract = await this.mxProxy.getFarmSmartContract(
+                farmAddress,
+            );
+            const interaction: Interaction =
+                contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
+            const response = await this.getGenericData(interaction);
+            return response.firstValue.valueOf().bech32();
+        } catch (error) {
+            return undefined;
+        }
     }
 
     @ErrorLoggerAsync({

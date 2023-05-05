@@ -21,7 +21,6 @@ export interface IFarmAbiService {
     burnGasLimit(farmAddress: string): Promise<string>;
     transferExecGasLimit(farmAddress: string): Promise<string>;
     pairContractAddress(farmAddress: string): Promise<string>;
-    lockedAssetFactoryAddress(farmAddress: string): Promise<string>;
     lastErrorMessage(farmAddress: string): Promise<string>;
     ownerAddress(farmAddress: string): Promise<string>;
 }

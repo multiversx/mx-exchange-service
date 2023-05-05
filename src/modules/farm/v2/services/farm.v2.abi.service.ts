@@ -42,6 +42,14 @@ export class FarmAbiServiceV2
         super(mxProxy, gatewayService, mxApi);
     }
 
+    async getLastErrorMessageRaw(farmAddress: string): Promise<string> {
+        return undefined;
+    }
+
+    async getTransferExecGasLimitRaw(farmAddress: string): Promise<string> {
+        return undefined;
+    }
+
     @ErrorLoggerAsync({
         className: FarmAbiServiceV2.name,
         logArgs: true,

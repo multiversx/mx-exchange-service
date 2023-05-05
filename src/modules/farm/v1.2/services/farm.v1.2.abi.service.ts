@@ -25,6 +25,29 @@ export class FarmAbiServiceV1_2
     }
 
     @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async lockedAssetFactoryAddress(farmAddress: string): Promise<string> {
+        return await this.getLockedAssetFactoryAddressRaw(farmAddress);
+    }
+
+    async getLockedAssetFactoryAddressRaw(
+        farmAddress: string,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().bech32();
+    }
+
+    @ErrorLoggerAsync({
         className: FarmAbiServiceV1_2.name,
         logArgs: true,
     })

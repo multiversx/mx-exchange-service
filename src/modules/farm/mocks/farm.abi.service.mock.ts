@@ -54,9 +54,6 @@ export class FarmAbiServiceMock implements IFarmAbiService {
     async pairContractAddress(farmAddress: string): Promise<string> {
         return 'erd1a42xw92g8n78v6y4p3qj9ed2gjmr20kd9h2pkhuuuxf5tgn44q3sxy8unx';
     }
-    lockedAssetFactoryAddress(farmAddress: string): Promise<string> {
-        throw new Error('Method not implemented.');
-    }
     lastErrorMessage(farmAddress: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
