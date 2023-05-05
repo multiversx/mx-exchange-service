@@ -15,8 +15,6 @@ import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModelV1_2 } from '../../farm/models/farmTokenAttributes.model';
 import { UserMetaEsdtComputeService } from '../services/metaEsdt.compute.service';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
-import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
 import { LockedAssetServiceMock } from '../../locked-asset-factory/mocks/locked.asset.service.mock';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { AbiLockedAssetService } from '../../locked-asset-factory/services/abi-locked-asset.service';
@@ -38,22 +36,14 @@ import { UserEsdtComputeService } from '../services/esdt.compute.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
-import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
-import { FarmGetterServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
-import { FarmGetterServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.getter.service.mock';
-import { FarmGetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.getter.service';
 import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
-import { FarmAbiServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.abi.service';
-import { AbiFarmServiceMock } from 'src/modules/farm/mocks/abi.farm.service.mock';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { FarmServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.service';
 import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
-import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
-import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
@@ -79,6 +69,15 @@ import { SimpleLockAbiServiceProvider } from 'src/modules/simple-lock/mocks/simp
 import { PriceDiscoveryAbiServiceProvider } from 'src/modules/price-discovery/mocks/price.discovery.abi.service.mock';
 import { PriceDiscoveryComputeServiceProvider } from 'src/modules/price-discovery/mocks/price.discovery.compute.service.mock';
 import { LockedTokenWrapperAbiServiceProvider } from 'src/modules/locked-token-wrapper/mocks/locked.token.wrapper.abi.service.mock';
+import { FarmAbiServiceMock } from 'src/modules/farm/mocks/farm.abi.service.mock';
+import { FarmAbiServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.abi.service.mock';
+import { FarmAbiServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.abi.service.mock';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import {
+    FarmServiceBaseMock,
+    FarmServiceProvider,
+} from 'src/modules/farm/mocks/farm.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -138,47 +137,27 @@ describe('UserService', () => {
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 FarmFactoryService,
-                FarmGetterFactory,
-                {
-                    provide: FarmServiceV1_2,
-                    useClass: FarmServiceMock,
-                },
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,
                 WeeklyRewardsSplittingAbiServiceProvider,
+                WeeklyRewardsSplittingComputeService,
                 ProgressComputeService,
-                FarmComputeServiceV1_2,
                 {
-                    provide: FarmAbiServiceV1_2,
-                    useClass: AbiFarmServiceMock,
-                },
-                FarmGetterServiceProviderV1_2,
-                {
-                    provide: FarmAbiServiceV1_3,
-                    useClass: AbiFarmServiceMock,
-                },
-                FarmComputeServiceV1_3,
-                FarmGetterServiceProviderV1_3,
-                {
-                    provide: FarmGetterService,
-                    useClass: FarmGetterServiceMock,
-                },
-                {
-                    provide: FarmGetterServiceV2,
-                    useClass: FarmGetterServiceMock,
+                    provide: FarmServiceV1_2,
+                    useClass: FarmServiceBaseMock,
                 },
                 FarmServiceV1_3,
-                {
-                    provide: FarmAbiServiceV1_3,
-                    useClass: AbiFarmServiceMock,
-                },
-                FarmComputeServiceV1_3,
                 FarmServiceV2,
+                FarmComputeServiceV1_2,
+                FarmComputeServiceV1_3,
                 FarmComputeServiceV2,
+                FarmAbiServiceProviderV1_2,
+                FarmAbiServiceProviderV1_3,
                 {
                     provide: FarmAbiServiceV2,
-                    useClass: AbiFarmServiceMock,
+                    useClass: FarmAbiServiceMock,
                 },
+                FarmAbiFactory,
                 LockedTokenWrapperAbiServiceProvider,
                 ProxyService,
                 ProxyAbiServiceProvider,

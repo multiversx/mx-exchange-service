@@ -4,7 +4,7 @@ import {
     IFarmComputeService,
 } from '../../base-module/services/interfaces';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
-import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
+import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
 
 export interface IFarmAbiServiceV2 extends IFarmAbiService {
     boostedYieldsRewardsPercenatage(farmAddress: string): Promise<number>;
