@@ -22,9 +22,9 @@ export class FarmSetterServiceV2 extends FarmSetterService {
         value: EsdtTokenPayment[],
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(
-                scAddress,
+            this.getCacheKey(
                 'userRewardsForWeek',
+                scAddress,
                 userAddress,
                 week,
             ),
