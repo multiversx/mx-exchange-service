@@ -13,8 +13,12 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { oneHour } from 'src/helpers/helpers';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { IFarmAbiService } from './interfaces';
 
-export class FarmAbiService extends GenericAbiService {
+export class FarmAbiService
+    extends GenericAbiService
+    implements IFarmAbiService
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,

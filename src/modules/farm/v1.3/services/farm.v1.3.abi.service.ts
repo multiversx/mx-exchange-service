@@ -8,9 +8,13 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneHour } from 'src/helpers/helpers';
+import { IFarmAbiServiceV1_3 } from './interfaces';
 
 @Injectable()
-export class FarmAbiServiceV1_3 extends FarmAbiService {
+export class FarmAbiServiceV1_3
+    extends FarmAbiService
+    implements IFarmAbiServiceV1_3
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,

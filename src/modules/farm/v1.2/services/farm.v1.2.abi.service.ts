@@ -9,9 +9,13 @@ import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { oneHour } from 'src/helpers/helpers';
+import { IFarmAbiServiceV1_2 } from './interfaces';
 
 @Injectable()
-export class FarmAbiServiceV1_2 extends FarmAbiService {
+export class FarmAbiServiceV1_2
+    extends FarmAbiService
+    implements IFarmAbiServiceV1_2
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,

@@ -18,9 +18,13 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { CachingService } from 'src/services/caching/cache.service';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { IFarmComputeServiceV2 } from './interfaces';
 
 @Injectable()
-export class FarmComputeServiceV2 extends FarmComputeService {
+export class FarmComputeServiceV2
+    extends FarmComputeService
+    implements IFarmComputeServiceV2
+{
     constructor(
         protected readonly farmAbi: FarmAbiServiceV2,
         @Inject(forwardRef(() => FarmServiceV2))

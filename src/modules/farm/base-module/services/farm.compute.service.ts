@@ -12,8 +12,9 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { FarmServiceBase } from './farm.base.service';
 import { Inject, forwardRef } from '@nestjs/common';
+import { IFarmComputeService } from './interfaces';
 
-export abstract class FarmComputeService {
+export abstract class FarmComputeService implements IFarmComputeService {
     constructor(
         protected readonly farmAbi: FarmAbiService,
         @Inject(forwardRef(() => FarmServiceBase))

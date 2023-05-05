@@ -12,9 +12,13 @@ import { FarmServiceV1_2 } from './farm.v1.2.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { IFarmComputeServiceV1_2 } from './interfaces';
 
 @Injectable()
-export class FarmComputeServiceV1_2 extends FarmComputeService {
+export class FarmComputeServiceV1_2
+    extends FarmComputeService
+    implements IFarmComputeServiceV1_2
+{
     constructor(
         protected readonly farmAbi: FarmAbiServiceV1_2,
         @Inject(forwardRef(() => FarmServiceV1_2))

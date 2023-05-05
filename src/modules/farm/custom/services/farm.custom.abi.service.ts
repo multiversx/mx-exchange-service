@@ -4,9 +4,13 @@ import { FarmAbiService } from '../../base-module/services/farm.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneHour } from 'src/helpers/helpers';
+import { IFarmCustomAbiService } from './interfaces';
 
 @Injectable()
-export class FarmCustomAbiService extends FarmAbiService {
+export class FarmCustomAbiService
+    extends FarmAbiService
+    implements IFarmCustomAbiService
+{
     @ErrorLoggerAsync({
         className: FarmCustomAbiService.name,
         logArgs: true,

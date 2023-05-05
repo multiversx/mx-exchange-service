@@ -27,9 +27,13 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { IFarmAbiServiceV2 } from './interfaces';
 
 @Injectable()
-export class FarmAbiServiceV2 extends FarmAbiService {
+export class FarmAbiServiceV2
+    extends FarmAbiService
+    implements IFarmAbiServiceV2
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,
