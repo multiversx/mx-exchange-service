@@ -4,7 +4,6 @@ import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { farmType } from 'src/utils/farm.utils';
-import { generateLogMessage } from 'src/utils/generate-log-message';
 import { TransactionsFarmService } from '../../base-module/services/farm.transaction.service';
 import {
     EnterFarmArgs,
@@ -13,9 +12,14 @@ import {
     CompoundRewardsArgs,
 } from '../../models/farm.args';
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 
 @Injectable()
 export class FarmTransactionServiceV2 extends TransactionsFarmService {
+    @ErrorLoggerAsync({
+        className: FarmTransactionServiceV2.name,
+        logArgs: true,
+    })
     async enterFarm(
         sender: string,
         args: EnterFarmArgs,
@@ -29,18 +33,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
                 ? gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge
                 : gasConfig.farms[FarmVersion.V2].enterFarm.default;
 
-        try {
-            await this.validateInputTokens(args.farmAddress, args.tokens);
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                TransactionsFarmService.name,
-                this.enterFarm.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        await this.validateInputTokens(args.farmAddress, args.tokens);
 
         const mappedPayments = args.tokens.map((tokenPayment) =>
             TokenPayment.metaEsdtFromBigInteger(
@@ -126,6 +119,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             .buildTransaction()
             .toPlainObject();
     }
+
     compoundRewards(
         sender: string,
         args: CompoundRewardsArgs,

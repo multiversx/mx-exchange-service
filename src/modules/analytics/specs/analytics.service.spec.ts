@@ -12,15 +12,9 @@ import { AbiLockedAssetServiceMock } from 'src/modules/locked-asset-factory/mock
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
-import { FarmGetterServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
-import { FarmGetterServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.getter.service.mock';
-import { FarmGetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.getter.service';
-import { FarmGetterServiceMock } from 'src/modules/farm/mocks/farm.getter.service.mock';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
-import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
-import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
@@ -37,6 +31,19 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import {
+    FarmAbiServiceMock,
+    FarmAbiServiceProvider,
+} from 'src/modules/farm/mocks/farm.abi.service.mock';
+import { FarmAbiServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.abi.service.mock';
+import { FarmAbiServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.abi.service.mock';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { FarmServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.service';
+import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
+import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 
 describe('AnalyticsService', () => {
     let module: TestingModule;
@@ -48,21 +55,21 @@ describe('AnalyticsService', () => {
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
                 MXApiServiceProvider,
-                FarmGetterFactory,
-                FarmGetterServiceProviderV1_2,
-                FarmGetterServiceProviderV1_3,
+                FarmAbiFactory,
+                FarmAbiServiceProvider,
+                FarmAbiServiceProviderV1_2,
+                FarmAbiServiceProviderV1_3,
                 {
-                    provide: FarmGetterServiceV2,
-                    useClass: FarmGetterServiceMock,
-                },
-                {
-                    provide: FarmGetterService,
-                    useClass: FarmGetterServiceMock,
+                    provide: FarmAbiServiceV2,
+                    useClass: FarmAbiServiceMock,
                 },
                 FarmComputeFactory,
                 FarmComputeServiceV1_2,
                 FarmComputeServiceV1_3,
                 FarmComputeServiceV2,
+                FarmServiceV1_2,
+                FarmServiceV1_3,
+                FarmServiceV2,
                 PairService,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
@@ -81,9 +88,11 @@ describe('AnalyticsService', () => {
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,
                 WeeklyRewardsSplittingAbiServiceProvider,
+                WeeklyRewardsSplittingComputeService,
                 StakingAbiServiceProvider,
                 StakingService,
                 StakingComputeService,
+                EnergyAbiServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryService,
                 AWSTimestreamQueryService,

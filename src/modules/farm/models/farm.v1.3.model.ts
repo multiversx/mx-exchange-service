@@ -4,11 +4,15 @@ import {
     FarmMigrationConfig,
     FarmRewardType,
 } from './farm.model';
+import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 
 @ObjectType()
 export class FarmModelV1_3 extends BaseFarmModel {
     @Field()
     apr: string;
+
+    @Field({ nullable: true })
+    lockedAssetFactory: LockedAssetModel;
 
     @Field()
     rewardType: FarmRewardType;

@@ -12,20 +12,11 @@ import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { FarmServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.service';
 import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
 import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
-import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
-import { FarmGetterServiceMock } from 'src/modules/farm/mocks/farm.getter.service.mock';
-import {
-    FarmGetterServiceMockV1_2,
-    FarmGetterServiceProviderV1_2,
-} from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
-import { FarmGetterServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.getter.service.mock';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
-import { AbiFarmServiceMock } from 'src/modules/farm/mocks/abi.farm.service.mock';
-import { FarmGetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.getter.service';
+import { FarmAbiServiceMock } from 'src/modules/farm/mocks/farm.abi.service.mock';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
-import { FarmGetterServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.getter.service';
 import { FarmAbiServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.abi.service';
 import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
@@ -45,6 +36,10 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { FarmAbiServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.abi.service.mock';
+import { FarmAbiServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.abi.service.mock';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -69,39 +64,21 @@ describe('StakingProxyTransactionService', () => {
                 FarmServiceV1_2,
                 FarmServiceV1_3,
                 FarmServiceV2,
-                {
-                    provide: FarmGetterService,
-                    useClass: FarmGetterServiceMock,
-                },
-                {
-                    provide: FarmGetterServiceV1_2,
-                    useClass: FarmGetterServiceMockV1_2,
-                },
-                FarmGetterServiceProviderV1_2,
                 FarmComputeServiceV1_2,
-                {
-                    provide: FarmAbiServiceV1_2,
-                    useClass: AbiFarmServiceMock,
-                },
-                {
-                    provide: FarmAbiServiceV1_3,
-                    useClass: AbiFarmServiceMock,
-                },
-                FarmGetterServiceProviderV1_3,
                 FarmComputeServiceV1_3,
+                FarmComputeServiceV2,
+                FarmAbiServiceProviderV1_2,
+                FarmAbiServiceProviderV1_3,
                 {
                     provide: FarmAbiServiceV2,
-                    useClass: AbiFarmServiceMock,
+                    useClass: FarmAbiServiceMock,
                 },
-                {
-                    provide: FarmGetterServiceV2,
-                    useClass: FarmGetterServiceMock,
-                },
-                FarmComputeServiceV2,
                 ContextGetterServiceProvider,
                 WeekTimekeepingAbiServiceProvider,
                 WeekTimekeepingComputeService,
                 WeeklyRewardsSplittingAbiServiceProvider,
+                WeeklyRewardsSplittingComputeService,
+                EnergyAbiServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 MXProxyServiceProvider,

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ProxyModel } from '../models/proxy.model';
 import {
     WrappedLpTokenAttributesModel,
     WrappedLpTokenAttributesModelV2,
@@ -35,7 +34,6 @@ import {
 import { LockedAssetService } from 'src/modules/locked-asset-factory/services/locked-asset.service';
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { LockedTokenAttributesModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
@@ -47,6 +45,7 @@ import { ProxyAbiServiceV2 } from '../v2/services/proxy.v2.abi.service';
 import { ProxyPairAbiService } from './proxy-pair/proxy.pair.abi.service';
 import { ProxyFarmAbiService } from './proxy-farm/proxy.farm.abi.service';
 import { proxyVersion } from 'src/utils/proxy.utils';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 
 @Injectable()
 export class ProxyService {
@@ -55,7 +54,7 @@ export class ProxyService {
         private readonly proxyAbiV2: ProxyAbiServiceV2,
         private readonly proxyPairAbi: ProxyPairAbiService,
         private readonly proxyFarmAbi: ProxyFarmAbiService,
-        private readonly farmGetter: FarmGetterFactory,
+        private readonly farmAbi: FarmAbiFactory,
         private readonly apiService: MXApiService,
         private readonly lockedAssetService: LockedAssetService,
         private readonly cacheService: CachingService,
@@ -257,7 +256,7 @@ export class ProxyService {
         farmTokenCollection: string,
         farmTokenNonce: number,
     ): Promise<typeof FarmTokenAttributesUnion> {
-        const farmAddress = await this.farmGetter.getFarmAddressByFarmTokenID(
+        const farmAddress = await this.farmAbi.getFarmAddressByFarmTokenID(
             farmTokenCollection,
         );
         const version = farmVersion(farmAddress);
