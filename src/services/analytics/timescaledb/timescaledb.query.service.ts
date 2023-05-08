@@ -5,7 +5,6 @@ import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model'
 import {
     computeTimeInterval,
     convertBinToTimeResolution,
-    DataApiQuery,
 } from 'src/utils/analytics.utils';
 import { Logger } from 'winston';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
@@ -20,6 +19,7 @@ import {
 } from './entities/timescaledb.entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
@@ -39,7 +39,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
     ) {}
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getAggregatedValue({
         series,
         metric,
@@ -75,7 +75,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         return query?.sum ?? '0';
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getLatestCompleteValues({
         series,
         metric,
@@ -126,7 +126,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         }
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getSumCompleteValues({
         series,
         metric,
@@ -168,7 +168,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getValues24h({
         series,
         metric,
@@ -230,7 +230,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getValues24hSum({
         series,
         metric,
@@ -257,7 +257,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getLatestHistoricData({
         time,
         series,
@@ -292,7 +292,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getLatestBinnedHistoricData({
         time,
         series,
