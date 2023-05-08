@@ -126,7 +126,6 @@ export class AnalyticsAWSGetterService {
         }
 
         return await this.analyticsQuery.getLatestHistoricData({
-            table: undefined,
             series,
             metric,
             time,
@@ -154,7 +153,6 @@ export class AnalyticsAWSGetterService {
         }
 
         return await this.analyticsQuery.getLatestBinnedHistoricData({
-            table: undefined,
             series,
             metric,
             time,

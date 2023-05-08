@@ -38,10 +38,7 @@ export class TimescaleDBWriteService implements AnalyticsWriteInterface {
         }
     }
 
-    async multiRecordsIngest(
-        _tableName: string,
-        Records: TimestreamWrite.Records,
-    ) {
+    async multiRecordsIngest(Records: TimestreamWrite.Records) {
         try {
             const ingestRecords =
                 this.convertAWSRecordsToDataAPIRecords(Records);

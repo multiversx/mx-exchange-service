@@ -272,7 +272,6 @@ export class RabbitMqConsumer {
 
         if (Object.keys(this.data).length > 0) {
             await this.analyticsWrite.ingest({
-                TableName: undefined,
                 data: this.data,
                 Time: timestamp,
             });

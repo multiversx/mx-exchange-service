@@ -7,7 +7,7 @@ import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface
 export class AnalyticsWriteService implements AnalyticsWriteInterface {
     constructor(private readonly timescaleDBWrite: TimescaleDBWriteService) {}
 
-    public async ingest({ TableName, data, Time }): Promise<void> {
+    public async ingest({ data, Time }): Promise<void> {
         const promises = [];
 
         promises.push(this.timescaleDBWrite.ingest({ data, Time }));
@@ -16,14 +16,11 @@ export class AnalyticsWriteService implements AnalyticsWriteInterface {
     }
 
     public async multiRecordsIngest(
-        TableName: string,
         Records: TimestreamWrite.Records,
     ): Promise<void> {
         const promises = [];
 
-        promises.push(
-            this.timescaleDBWrite.multiRecordsIngest(TableName, Records),
-        );
+        promises.push(this.timescaleDBWrite.multiRecordsIngest(Records));
 
         await Promise.all(promises);
     }

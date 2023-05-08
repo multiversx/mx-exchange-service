@@ -259,7 +259,6 @@ export class AnalyticsComputeService {
         metric: string,
     ): Promise<string> {
         return await this.analyticsQuery.getAggregatedValue({
-            table: undefined,
             series: tokenID,
             metric,
             time,

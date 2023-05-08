@@ -235,7 +235,7 @@ export class LogsProcessorService {
         }
 
         try {
-            await this.analyticsWrite.multiRecordsIngest(undefined, Records);
+            await this.analyticsWrite.multiRecordsIngest(Records);
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(

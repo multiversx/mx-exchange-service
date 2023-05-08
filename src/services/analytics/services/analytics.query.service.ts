@@ -8,7 +8,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     constructor(private readonly timescaleDBQuery: TimescaleDBQueryService) {}
 
     async getAggregatedValue(args: {
-        table: any;
         series: any;
         metric: any;
         time: any;
@@ -18,7 +17,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     }
 
     async getLatestCompleteValues(args: {
-        table: any;
         series: any;
         metric: any;
     }): Promise<HistoricDataModel[]> {
@@ -27,7 +25,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     }
 
     async getSumCompleteValues(args: {
-        table: any;
         series: any;
         metric: any;
     }): Promise<HistoricDataModel[]> {
@@ -36,7 +33,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     }
 
     async getValues24h(args: {
-        table: any;
         series: any;
         metric: any;
     }): Promise<HistoricDataModel[]> {
@@ -45,7 +41,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     }
 
     async getValues24hSum(args: {
-        table: any;
         series: any;
         metric: any;
     }): Promise<HistoricDataModel[]> {
@@ -54,7 +49,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     }
 
     async getLatestHistoricData(args: {
-        table: any;
         time: any;
         series: any;
         metric: any;
@@ -65,7 +59,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     }
 
     async getLatestBinnedHistoricData(args: {
-        table: any;
         time: any;
         series: any;
         metric: any;
