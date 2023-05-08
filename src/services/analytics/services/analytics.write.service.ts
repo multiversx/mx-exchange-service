@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { TimestreamWrite } from 'aws-sdk';
 import { TimescaleDBWriteService } from '../timescaledb/timescaledb.write.service';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
+import { IngestRecord } from '../entities/ingest.record';
 
 @Injectable()
 export class AnalyticsWriteService implements AnalyticsWriteInterface {
@@ -15,9 +15,7 @@ export class AnalyticsWriteService implements AnalyticsWriteInterface {
         await Promise.all(promises);
     }
 
-    public async multiRecordsIngest(
-        Records: TimestreamWrite.Records,
-    ): Promise<void> {
+    public async multiRecordsIngest(Records: IngestRecord[]): Promise<void> {
         const promises = [];
 
         promises.push(this.timescaleDBWrite.multiRecordsIngest(Records));

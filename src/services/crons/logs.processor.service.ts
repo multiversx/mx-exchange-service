@@ -9,7 +9,6 @@ import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { oneMinute } from 'src/helpers/helpers';
-import { TimestreamWrite } from 'aws-sdk';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -23,6 +22,7 @@ import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { AnalyticsWriteService } from '../analytics/services/analytics.write.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { IngestRecord } from '../analytics/entities/ingest.record';
 
 @Injectable()
 export class LogsProcessorService {
@@ -190,46 +190,37 @@ export class LogsProcessorService {
         recordsMap: Map<number, string>,
         MeasureName: string,
     ): Promise<number> {
-        const Dimensions = [
-            { Name: 'series', Value: constantsConfig.MEX_TOKEN_ID },
-        ];
-        const MeasureValueType = 'DOUBLE';
-        let Records: TimestreamWrite.Records = [];
+        let Records: IngestRecord[] = [];
 
         let totalWriteRecords = 0;
 
-        for (const key of recordsMap.keys()) {
-            const record = recordsMap.get(key);
+        for (const timestamp of recordsMap.keys()) {
+            const record = recordsMap.get(timestamp);
             if (record === undefined) {
                 continue;
             }
 
             Records.push({
-                Dimensions,
-                MeasureName,
-                MeasureValue: record,
-                MeasureValueType,
-                Time: key.toString(),
-                TimeUnit: 'SECONDS',
-                Version: Date.now(),
+                series: constantsConfig.MEX_TOKEN_ID,
+                key: MeasureName,
+                value: record,
+                timestamp,
             });
 
             if (Records.length === 100) {
-                totalWriteRecords += await this.pushAWSRecords(Records);
+                totalWriteRecords += await this.pushRecords(Records);
                 Records = [];
             }
         }
 
         if (Records.length > 0) {
-            totalWriteRecords += await this.pushAWSRecords(Records);
+            totalWriteRecords += await this.pushRecords(Records);
         }
 
         return totalWriteRecords;
     }
 
-    private async pushAWSRecords(
-        Records: TimestreamWrite.Records,
-    ): Promise<number> {
+    private async pushRecords(Records: IngestRecord[]): Promise<number> {
         if (!this.apiConfig.isAWSTimestreamWrite()) {
             return 0;
         }

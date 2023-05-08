@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { TimestreamWrite } from 'aws-sdk';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import * as moment from 'moment';
 import { MetricsCollector } from 'src/utils/metrics.collector';
@@ -10,6 +9,7 @@ import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface
 import { InjectRepository } from '@nestjs/typeorm';
 import { XExchangeAnalyticsEntity } from './entities/timescaledb.entities';
 import { Repository } from 'typeorm';
+import { IngestRecord } from '../entities/ingest.record';
 
 @Injectable()
 export class TimescaleDBWriteService implements AnalyticsWriteInterface {
@@ -38,10 +38,9 @@ export class TimescaleDBWriteService implements AnalyticsWriteInterface {
         }
     }
 
-    async multiRecordsIngest(Records: TimestreamWrite.Records) {
+    async multiRecordsIngest(Records: IngestRecord[]) {
         try {
-            const ingestRecords =
-                this.convertAWSRecordsToDataAPIRecords(Records);
+            const ingestRecords = this.convertRecordsToDataAPIRecords(Records);
             await this.writeRecords(ingestRecords);
         } catch (error) {
             const logMessage = generateLogMessage(
@@ -106,17 +105,16 @@ export class TimescaleDBWriteService implements AnalyticsWriteInterface {
         return records;
     }
 
-    private convertAWSRecordsToDataAPIRecords(
-        Records: TimestreamWrite.Records,
+    private convertRecordsToDataAPIRecords(
+        Records: IngestRecord[],
     ): XExchangeAnalyticsEntity[] {
-        const ingestRecords = Records.map((record) => {
+        return Records.map((record) => {
             return new XExchangeAnalyticsEntity({
-                timestamp: moment.unix(parseInt(record.Time)).toDate(),
-                series: record.Dimensions[0].Value,
-                key: record.MeasureName,
-                value: record.MeasureValue,
+                timestamp: moment.unix(record.timestamp).toDate(),
+                series: record.series,
+                key: record.key,
+                value: record.value,
             });
         });
-        return ingestRecords;
     }
 }
