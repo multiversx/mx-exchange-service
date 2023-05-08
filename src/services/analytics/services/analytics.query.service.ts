@@ -48,27 +48,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         return await service.getValues24hSum(args);
     }
 
-    async getLatestHistoricData(args: {
-        time: any;
-        series: any;
-        metric: any;
-        start: any;
-    }): Promise<HistoricDataModel[]> {
-        const service = await this.getService();
-        return await service.getLatestHistoricData(args);
-    }
-
-    async getLatestBinnedHistoricData(args: {
-        time: any;
-        series: any;
-        metric: any;
-        bin: any;
-        start: any;
-    }): Promise<HistoricDataModel[]> {
-        const service = await this.getService();
-        return await service.getLatestBinnedHistoricData(args);
-    }
-
     private async getService(): Promise<AnalyticsQueryInterface> {
         return this.timescaleDBQuery;
     }
