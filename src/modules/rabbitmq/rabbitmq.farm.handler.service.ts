@@ -17,7 +17,7 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { farmVersion } from 'src/utils/farm.utils';
 import { Logger } from 'winston';
 import { FarmVersion } from '../farm/models/farm.model';
-import { AbiFarmService } from '../farm/base-module/services/farm.abi.service';
+import { FarmAbiService } from '../farm/base-module/services/farm.abi.service';
 import { FarmAbiServiceV1_2 } from '../farm/v1.2/services/farm.v1.2.abi.service';
 import { FarmAbiServiceV1_3 } from '../farm/v1.3/services/farm.v1.3.abi.service';
 import { FarmSetterFactory } from '../farm/farm.setter.factory';
@@ -83,7 +83,7 @@ export class RabbitMQFarmHandlerService {
     async handleRewardsEvent(rawEvent: RawEventType): Promise<void> {
         const version = farmVersion(rawEvent.address);
         let event: BaseRewardsEvent;
-        let abiService: AbiFarmService;
+        let abiService: FarmAbiService;
         switch (version) {
             case FarmVersion.V1_2:
                 event = new RewardsEventV1_2(rawEvent);
@@ -97,9 +97,7 @@ export class RabbitMQFarmHandlerService {
                 return;
         }
 
-        const rewardPerShare = await abiService.getRewardPerShare(
-            event.address,
-        );
+        const rewardPerShare = await abiService.rewardPerShare(event.address);
         const cacheKey = await this.farmSetterFactory
             .useSetter(event.address)
             .setRewardPerShare(event.getAddress(), rewardPerShare);

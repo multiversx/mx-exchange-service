@@ -26,19 +26,19 @@ import {
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
-import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 
 @Injectable()
 export class SimpleLockService {
     constructor(
         private readonly simpleLockAbi: SimpleLockAbiService,
         private readonly farmFactory: FarmFactoryService,
-        private readonly farmGetterFactory: FarmGetterFactory,
+        private readonly farmAbi: FarmAbiFactory,
         private readonly tokenGetter: TokenGetterService,
         private readonly apiService: MXApiService,
         private readonly cacheService: CachingService,
@@ -208,10 +208,9 @@ export class SimpleLockService {
         farmTokenNonce: number,
         simpleLockAddress: string,
     ): Promise<typeof FarmTokenAttributesUnion> {
-        const farmAddress =
-            await this.farmGetterFactory.getFarmAddressByFarmTokenID(
-                farmTokenID,
-            );
+        const farmAddress = await this.farmAbi.getFarmAddressByFarmTokenID(
+            farmTokenID,
+        );
         const version = farmVersion(farmAddress);
         const farmTokenIdentifier = tokenIdentifier(
             farmTokenID,

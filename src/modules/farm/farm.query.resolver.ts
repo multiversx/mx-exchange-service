@@ -1,7 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
-import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { FarmFactoryService } from './farm.factory';
 import {
     BatchFarmRewardsComputeArgs,
@@ -12,10 +11,8 @@ import { FarmsUnion } from './models/farm.union';
 import { FarmTokenAttributesUnion } from './models/farmTokenAttributes.model';
 
 @Resolver()
-export class FarmQueryResolver extends GenericResolver {
-    constructor(private readonly farmFactory: FarmFactoryService) {
-        super();
-    }
+export class FarmQueryResolver {
+    constructor(private readonly farmFactory: FarmFactoryService) {}
 
     @Query(() => [FarmsUnion])
     async farms(): Promise<Array<typeof FarmsUnion>> {
@@ -42,11 +39,9 @@ export class FarmQueryResolver extends GenericResolver {
         if (args.farmsPositions.length === 0) {
             return [];
         }
-        return await this.genericQuery(() =>
-            this.farmFactory
-                .useService(args.farmsPositions[0].farmAddress)
-                .getBatchRewardsForPosition(args.farmsPositions),
-        );
+        return this.farmFactory
+            .useService(args.farmsPositions[0].farmAddress)
+            .getBatchRewardsForPosition(args.farmsPositions);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -54,10 +49,8 @@ export class FarmQueryResolver extends GenericResolver {
     async getExitFarmTokens(
         @Args('args') args: CalculateRewardsArgs,
     ): Promise<ExitFarmTokensModel> {
-        return await this.genericQuery(() =>
-            this.farmFactory
-                .useService(args.farmAddress)
-                .getTokensForExitFarm(args),
-        );
+        return this.farmFactory
+            .useService(args.farmAddress)
+            .getTokensForExitFarm(args);
     }
 }

@@ -7,7 +7,6 @@ import {
 } from 'src/modules/farm/models/farm.model';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
-import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
@@ -21,12 +20,13 @@ import { StakingComputeService } from 'src/modules/staking/services/staking.comp
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneMinute } from 'src/helpers/helpers';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
         private readonly routerAbi: RouterAbiService,
-        private readonly farmGetter: FarmGetterFactory,
+        private readonly farmAbi: FarmAbiFactory,
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
@@ -179,9 +179,9 @@ export class AnalyticsComputeService {
             ) {
                 return '0';
             }
-            return this.farmGetter
-                .useGetter(farmAddress)
-                .getRewardsPerBlock(farmAddress);
+            return this.farmAbi
+                .useAbi(farmAddress)
+                .rewardsPerBlock(farmAddress);
         });
         const farmsRewardsPerBlock = await Promise.all(promises);
         const blocksNumber = (days * 24 * 60 * 60) / 6;

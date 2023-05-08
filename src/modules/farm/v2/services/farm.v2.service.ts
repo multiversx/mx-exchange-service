@@ -1,11 +1,8 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { Logger } from 'winston';
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
-import { FarmGetterServiceV2 } from './farm.v2.getter.service';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { RewardsModel } from '../../models/farm.model';
 import { FarmTokenAttributesModelV2 } from '../../models/farmTokenAttributes.model';
@@ -19,28 +16,21 @@ import {
 import { constantsConfig } from '../../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class FarmServiceV2 extends FarmServiceBase {
     constructor(
-        protected readonly abiService: FarmAbiServiceV2,
-        @Inject(forwardRef(() => FarmGetterServiceV2))
-        protected readonly farmGetter: FarmGetterServiceV2,
+        protected readonly farmAbi: FarmAbiServiceV2,
+        @Inject(forwardRef(() => FarmComputeServiceV2))
         protected readonly farmCompute: FarmComputeServiceV2,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        protected readonly tokenGetter: TokenGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
-        super(
-            abiService,
-            farmGetter,
-            farmCompute,
-            contextGetter,
-            cachingService,
-            logger,
-        );
+        super(farmAbi, farmCompute, contextGetter, cachingService, tokenGetter);
     }
 
     async getBatchRewardsForPosition(
@@ -78,7 +68,7 @@ export class FarmServiceV2 extends FarmServiceBase {
         );
         let rewards: BigNumber;
         if (positon.vmQuery) {
-            rewards = await this.abiService.calculateRewardsForGivenPosition(
+            rewards = await this.farmAbi.calculateRewardsForGivenPosition(
                 positon,
             );
         } else {
@@ -129,10 +119,10 @@ export class FarmServiceV2 extends FarmServiceBase {
                 );
 
             userAccumulatedRewards =
-                await this.farmGetter.getUserAccumulatedRewardsForWeek(
+                await this.farmCompute.userAccumulatedRewards(
                     positon.farmAddress,
-                    currentWeek,
                     positon.user,
+                    currentWeek,
                     positon.liquidity,
                 );
         }

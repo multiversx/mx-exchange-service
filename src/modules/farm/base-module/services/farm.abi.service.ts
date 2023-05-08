@@ -8,16 +8,39 @@ import { CalculateRewardsArgs } from '../../models/farm.args';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { oneHour } from 'src/helpers/helpers';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { IFarmAbiService } from './interfaces';
 
-export class AbiFarmService extends GenericAbiService {
+export class FarmAbiService
+    extends GenericAbiService
+    implements IFarmAbiService
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,
+        protected readonly apiService: MXApiService,
     ) {
         super(mxProxy);
     }
 
-    async getFarmedTokenID(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async farmedTokenID(farmAddress: string): Promise<string> {
+        return await this.getFarmedTokenIDRaw(farmAddress);
+    }
+
+    async getFarmedTokenIDRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getRewardTokenId();
@@ -25,7 +48,20 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getFarmTokenID(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async farmTokenID(farmAddress: string): Promise<string> {
+        return await this.getFarmTokenIDRaw(farmAddress);
+    }
+
+    async getFarmTokenIDRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getFarmTokenId();
@@ -33,7 +69,20 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getFarmingTokenID(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async farmingTokenID(farmAddress: string): Promise<string> {
+        return await this.getFarmingTokenIDRaw(farmAddress);
+    }
+
+    async getFarmingTokenIDRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getFarmingTokenId();
@@ -41,7 +90,20 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getFarmTokenSupply(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmTokenSupply(farmAddress: string): Promise<string> {
+        return await this.getFarmTokenSupplyRaw(farmAddress);
+    }
+
+    async getFarmTokenSupplyRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getFarmTokenSupply();
@@ -50,7 +112,20 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getRewardsPerBlock(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async rewardsPerBlock(farmAddress: string): Promise<string> {
+        return await this.getRewardsPerBlockRaw(farmAddress);
+    }
+
+    async getRewardsPerBlockRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getPerBlockRewardAmount();
@@ -58,7 +133,20 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getPenaltyPercent(farmAddress: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async penaltyPercent(farmAddress: string): Promise<number> {
+        return await this.getPenaltyPercentRaw(farmAddress);
+    }
+
+    async getPenaltyPercentRaw(farmAddress: string): Promise<number> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getPenaltyPercent();
@@ -66,7 +154,20 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async minimumFarmingEpochs(farmAddress: string): Promise<number> {
+        return await this.getMinimumFarmingEpochsRaw(farmAddress);
+    }
+
+    async getMinimumFarmingEpochsRaw(farmAddress: string): Promise<number> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getMinimumFarmingEpoch();
@@ -74,7 +175,20 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getRewardPerShare(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async rewardPerShare(farmAddress: string): Promise<string> {
+        return await this.getRewardPerShareRaw(farmAddress);
+    }
+
+    async getRewardPerShareRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getRewardPerShare();
@@ -82,7 +196,20 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getRewardReserve(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async rewardReserve(farmAddress: string): Promise<string> {
+        return await this.getRewardReserveRaw(farmAddress);
+    }
+
+    async getRewardReserveRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getRewardReserve();
@@ -90,15 +217,40 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getLastRewardBlockNonce(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async lastRewardBlockNonce(farmAddress: string): Promise<number> {
+        return await this.getLastRewardBlockNonceRaw(farmAddress);
+    }
+
+    async getLastRewardBlockNonceRaw(farmAddress: string): Promise<number> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getLastRewardBlockNonce();
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().toNumber();
     }
 
-    async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: oneHour(),
+    })
+    async divisionSafetyConstant(farmAddress: string): Promise<string> {
+        return await this.getDivisionSafetyConstantRaw(farmAddress);
+    }
+
+    async getDivisionSafetyConstantRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getDivisionSafetyConstant();
@@ -123,14 +275,40 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf();
     }
 
-    async getState(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async state(farmAddress: string): Promise<string> {
+        return await this.getStateRaw(farmAddress);
+    }
+
+    async getStateRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction = contract.methodsExplicit.getState();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().name;
     }
 
-    async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async produceRewardsEnabled(farmAddress: string): Promise<boolean> {
+        return await this.getProduceRewardsEnabledRaw(farmAddress);
+    }
+
+    async getProduceRewardsEnabledRaw(farmAddress: string): Promise<boolean> {
         const response = await this.gatewayService.getSCStorageKey(
             farmAddress,
             'produce_rewards_enabled',
@@ -138,15 +316,37 @@ export class AbiFarmService extends GenericAbiService {
         return response === '01';
     }
 
-    async getBurnGasLimit(farmAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getBurnGasLimit();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async burnGasLimit(farmAddress: string): Promise<string | undefined> {
+        return await this.getBurnGasLimitRaw(farmAddress);
     }
 
-    async getTransferExecGasLimit(farmAddress: string): Promise<string> {
+    async getBurnGasLimitRaw(farmAddress: string): Promise<string | undefined> {
+        return undefined;
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async transferExecGasLimit(farmAddress: string): Promise<string> {
+        return await this.getTransferExecGasLimitRaw(farmAddress);
+    }
+
+    async getTransferExecGasLimitRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getTransferExecGasLimit();
@@ -154,7 +354,20 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getPairContractManagedAddress(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async pairContractAddress(farmAddress: string): Promise<string> {
+        return await this.getPairContractAddressRaw(farmAddress);
+    }
+
+    async getPairContractAddressRaw(farmAddress: string): Promise<string> {
         try {
             const contract = await this.mxProxy.getFarmSmartContract(
                 farmAddress,
@@ -171,27 +384,42 @@ export class AbiFarmService extends GenericAbiService {
         }
     }
 
-    async getLockedAssetFactoryManagedAddress(
-        farmAddress: string,
-    ): Promise<string> {
-        try {
-            const contract = await this.mxProxy.getFarmSmartContract(
-                farmAddress,
-            );
-            const interaction: Interaction =
-                contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
-            const response = await this.getGenericData(interaction);
-            return response.firstValue.valueOf().bech32();
-        } catch {
-            return undefined;
-        }
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async lastErrorMessage(farmAddress: string): Promise<string> {
+        return await this.getLastErrorMessageRaw(farmAddress);
     }
 
-    async getLastErrorMessage(farmAddress: string): Promise<string> {
+    async getLastErrorMessageRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getLastErrorMessage();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async ownerAddress(farmAddress: string): Promise<string> {
+        return await this.getOwnerAddressRaw(farmAddress);
+    }
+
+    async getOwnerAddressRaw(farmAddress: string): Promise<string> {
+        return (await this.apiService.getAccountStats(farmAddress))
+            .ownerAddress;
     }
 }
