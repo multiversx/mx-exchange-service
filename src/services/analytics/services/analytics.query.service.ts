@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { DataApiQueryService } from '../data-api/data-api.query.service';
+import { TimescaleDBQueryService } from '../timescaledb/timescaledb.query.service';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 
 @Injectable()
 export class AnalyticsQueryService implements AnalyticsQueryInterface {
-    constructor(private readonly dataApiQuery: DataApiQueryService) {}
+    constructor(private readonly timescaleDBQuery: TimescaleDBQueryService) {}
 
     async getAggregatedValue(args: {
         table: any;
@@ -77,6 +77,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     }
 
     private async getService(): Promise<AnalyticsQueryInterface> {
-        return this.dataApiQuery;
+        return this.timescaleDBQuery;
     }
 }

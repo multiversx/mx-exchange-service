@@ -1,10 +1,10 @@
-import { DataApiQueryService } from "src/services/analytics/data-api/data-api.query.service";
+import { TimescaleDBQueryService } from 'src/services/analytics/timescaledb/timescaledb.query.service';
 
 export class DataApiQueryServiceMock {
     //TODO: implement this mock
 }
 
 export const DataApiQueryServiceProvider = {
-    provide: DataApiQueryService,
+    provide: TimescaleDBQueryService,
     useClass: DataApiQueryServiceMock,
 };

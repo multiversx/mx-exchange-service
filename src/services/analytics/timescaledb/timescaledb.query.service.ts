@@ -17,12 +17,12 @@ import {
     SumHourly,
     TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
-} from './entities/data.api.entities';
+} from './entities/timescaledb.entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
-export class DataApiQueryService implements AnalyticsQueryInterface {
+export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @InjectRepository(XExchangeAnalyticsEntity)

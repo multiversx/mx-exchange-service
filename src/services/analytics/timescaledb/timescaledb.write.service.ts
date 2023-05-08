@@ -8,11 +8,11 @@ import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
 import { InjectRepository } from '@nestjs/typeorm';
-import { XExchangeAnalyticsEntity } from './entities/data.api.entities';
+import { XExchangeAnalyticsEntity } from './entities/timescaledb.entities';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class DataApiWriteService implements AnalyticsWriteInterface {
+export class TimescaleDBWriteService implements AnalyticsWriteInterface {
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @InjectRepository(XExchangeAnalyticsEntity)
@@ -25,7 +25,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
             await this.writeRecords(records);
         } catch (error) {
             const logMessage = generateLogMessage(
-                DataApiWriteService.name,
+                TimescaleDBWriteService.name,
                 this.ingest.name,
                 '',
                 {
@@ -48,7 +48,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
             await this.writeRecords(ingestRecords);
         } catch (error) {
             const logMessage = generateLogMessage(
-                DataApiWriteService.name,
+                TimescaleDBWriteService.name,
                 this.multiRecordsIngest.name,
                 '',
                 {
@@ -70,7 +70,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
             await this.dexAnalytics.save(records);
         } catch (errors) {
             const logMessage = generateLogMessage(
-                DataApiWriteService.name,
+                TimescaleDBWriteService.name,
                 this.writeRecords.name,
                 '',
                 {
@@ -84,7 +84,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
             profiler.stop();
 
             MetricsCollector.setExternalCall(
-                DataApiWriteService.name,
+                TimescaleDBWriteService.name,
                 'ingestData',
                 profiler.duration,
             );
