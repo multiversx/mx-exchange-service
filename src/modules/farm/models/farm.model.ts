@@ -132,7 +132,7 @@ export class BaseFarmModel {
     @Field()
     version: FarmVersion;
 
-    @Field()
+    @Field({ nullable: true })
     burnGasLimit: string;
 
     @Field({ nullable: true })

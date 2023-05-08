@@ -325,16 +325,12 @@ export class FarmAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async burnGasLimit(farmAddress: string): Promise<string> {
+    async burnGasLimit(farmAddress: string): Promise<string | undefined> {
         return await this.getBurnGasLimitRaw(farmAddress);
     }
 
-    async getBurnGasLimitRaw(farmAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getBurnGasLimit();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+    async getBurnGasLimitRaw(farmAddress: string): Promise<string | undefined> {
+        return undefined;
     }
 
     @ErrorLoggerAsync({
