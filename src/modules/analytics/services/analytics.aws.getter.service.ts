@@ -126,7 +126,7 @@ export class AnalyticsAWSGetterService {
         }
 
         return await this.analyticsQuery.getLatestHistoricData({
-            table: this.apiConfig.getAWSTableName(),
+            table: undefined,
             series,
             metric,
             time,
@@ -154,7 +154,7 @@ export class AnalyticsAWSGetterService {
         }
 
         return await this.analyticsQuery.getLatestBinnedHistoricData({
-            table: this.apiConfig.getAWSTableName(),
+            table: undefined,
             series,
             metric,
             time,

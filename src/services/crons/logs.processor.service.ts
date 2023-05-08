@@ -235,10 +235,7 @@ export class LogsProcessorService {
         }
 
         try {
-            await this.analyticsWrite.multiRecordsIngest(
-                this.apiConfig.getAWSTableName(),
-                Records,
-            );
+            await this.analyticsWrite.multiRecordsIngest(undefined, Records);
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(

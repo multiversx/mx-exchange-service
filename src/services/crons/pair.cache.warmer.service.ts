@@ -102,7 +102,7 @@ export class PairCacheWarmerService {
             for (const pairAddress of pairsAddresses) {
                 const firstTokenVolume24h =
                     await this.analyticsQuery.getAggregatedValue({
-                        table: this.apiConfig.getAWSTableName(),
+                        table: undefined,
                         series: pairAddress,
                         metric: 'firstTokenVolume',
                         time,
@@ -110,7 +110,7 @@ export class PairCacheWarmerService {
                 await delay(1000);
                 const secondTokenVolume24h =
                     await this.analyticsQuery.getAggregatedValue({
-                        table: this.apiConfig.getAWSTableName(),
+                        table: undefined,
                         series: pairAddress,
                         metric: 'secondTokenVolume',
                         time,
@@ -118,7 +118,7 @@ export class PairCacheWarmerService {
                 await delay(1000);
                 const volumeUSD24h =
                     await this.analyticsQuery.getAggregatedValue({
-                        table: this.apiConfig.getAWSTableName(),
+                        table: undefined,
                         series: pairAddress,
                         metric: 'volumeUSD',
                         time,
@@ -126,7 +126,7 @@ export class PairCacheWarmerService {
                 await delay(1000);
                 const feesUSD24h = await this.analyticsQuery.getAggregatedValue(
                     {
-                        table: this.apiConfig.getAWSTableName(),
+                        table: undefined,
                         series: pairAddress,
                         metric: 'feesUSD',
                         time,
