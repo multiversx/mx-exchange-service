@@ -7,7 +7,6 @@ import { RouterModule } from '../router/router.module';
 import { AnalyticsResolver } from './analytics.resolver';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
-import { AnalyticsGetterService } from './services/analytics.getter.service';
 import { ProxyModule } from '../proxy/proxy.module';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { AnalyticsPairService } from './services/analytics.pair.service';
@@ -21,6 +20,8 @@ import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-ti
 import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
+import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
+import { AnalyticsSetterService } from './services/analytics.setter.service';
 
 @Module({
     imports: [
@@ -39,21 +40,22 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         FeesCollectorModule,
         RemoteConfigModule,
         WeekTimekeepingModule,
+        WeeklyRewardsSplittingModule,
     ],
     providers: [
         AnalyticsResolver,
         AnalyticsAWSGetterService,
         AnalyticsAWSSetterService,
-        AnalyticsGetterService,
         AnalyticsComputeService,
+        AnalyticsSetterService,
         AnalyticsPairService,
         PairDayDataResolver,
     ],
     exports: [
         AnalyticsAWSGetterService,
         AnalyticsAWSSetterService,
-        AnalyticsGetterService,
         AnalyticsComputeService,
+        AnalyticsSetterService,
     ],
 })
 export class AnalyticsModule {}

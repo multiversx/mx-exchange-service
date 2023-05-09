@@ -1,49 +1,33 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { CachingService } from '../../../services/caching/cache.service';
 import { HistoricDataModel } from '../models/analytics.model';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
-import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { oneMinute } from 'src/helpers/helpers';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import moment from 'moment';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()
-export class AnalyticsAWSGetterService extends GenericGetterService {
+export class AnalyticsAWSGetterService {
     constructor(
         protected readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
-    ) {
-        super(cachingService, logger);
-    }
+    ) {}
 
-    private async getCachedData<T>(
-        cacheKey: string,
-        methodName: string,
-    ): Promise<T> {
-        try {
-            const data = await this.cachingService.getCache<T>(cacheKey);
-            if (!data || data === undefined) {
-                throw new Error(`Unavailable cached key ${cacheKey}`);
-            }
-            return data;
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                this.constructor.name,
-                methodName,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
+    private async getCachedData<T>(cacheKey: string): Promise<T> {
+        const data = await this.cachingService.getCache<T>(cacheKey);
+        if (!data || data === undefined) {
+            throw new Error(`Unavailable cached key ${cacheKey}`);
         }
+        return data;
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsAWSGetterService.name,
+    })
     async getLatestCompleteValues(
         series: string,
         metric: string,
@@ -55,10 +39,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        let data = await this.getCachedData<HistoricDataModel[]>(
-            cacheKey,
-            this.getLatestCompleteValues.name,
-        );
+        let data = await this.getCachedData<HistoricDataModel[]>(cacheKey);
         if (start) {
             const formattedStart = moment.unix(parseInt(start)).utc();
 
@@ -85,6 +66,9 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return data;
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsAWSGetterService.name,
+    })
     async getSumCompleteValues(
         series: string,
         metric: string,
@@ -94,12 +78,12 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        return await this.getCachedData(
-            cacheKey,
-            this.getSumCompleteValues.name,
-        );
+        return await this.getCachedData(cacheKey);
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsAWSGetterService.name,
+    })
     async getValues24hSum(
         series: string,
         metric: string,
@@ -109,18 +93,29 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        return await this.getCachedData(cacheKey, this.getValues24hSum.name);
+        return await this.getCachedData(cacheKey);
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsAWSGetterService.name,
+    })
     async getValues24h(
         series: string,
         metric: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey('values24h', series, metric);
-        return await this.getCachedData(cacheKey, this.getValues24h.name);
+        return await this.getCachedData(cacheKey);
     }
 
-    async getLatestHistoricData(
+    @ErrorLoggerAsync({
+        className: AnalyticsAWSGetterService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 2,
+    })
+    async latestHistoricData(
         time: string,
         series: string,
         metric: string,
@@ -130,28 +125,24 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             return [];
         }
 
-        const cacheKey = this.getAnalyticsCacheKey(
-            'latestHistoricData',
-            time,
+        return await this.analyticsQuery.getLatestHistoricData({
+            table: this.apiConfig.getAWSTableName(),
             series,
             metric,
+            time,
             start,
-        );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.analyticsQuery.getLatestHistoricData({
-                    table: this.apiConfig.getAWSTableName(),
-                    series,
-                    metric,
-                    time,
-                    start,
-                }),
-            oneMinute() * 2,
-        );
+        });
     }
 
-    async getLatestBinnedHistoricData(
+    @ErrorLoggerAsync({
+        className: AnalyticsAWSGetterService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 2,
+    })
+    async latestBinnedHistoricData(
         time: string,
         series: string,
         metric: string,
@@ -162,27 +153,14 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             return [];
         }
 
-        const cacheKey = this.getAnalyticsCacheKey(
-            'latestBinnedHistoricData',
-            time,
+        return await this.analyticsQuery.getLatestBinnedHistoricData({
+            table: this.apiConfig.getAWSTableName(),
             series,
             metric,
-            bin,
+            time,
             start,
-        );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.analyticsQuery.getLatestBinnedHistoricData({
-                    table: this.apiConfig.getAWSTableName(),
-                    series,
-                    metric,
-                    time,
-                    start,
-                    bin,
-                }),
-            oneMinute() * 2,
-        );
+            bin,
+        });
     }
 
     private getAnalyticsCacheKey(...args: any) {

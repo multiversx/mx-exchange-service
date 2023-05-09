@@ -1,14 +1,14 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { SimpleLockGetterService } from '../services/simple.lock.getter.service';
 import { SimpleLockService } from '../services/simple.lock.service';
+import { SimpleLockAbiService } from '../services/simple.lock.abi.service';
 
 @Injectable()
 export class EmterFarmProxyTokensValidationPipe implements PipeTransform {
     constructor(
         private readonly simpleLockService: SimpleLockService,
-        private readonly simpleLockGetter: SimpleLockGetterService,
+        private readonly simpleLockAbi: SimpleLockAbiService,
     ) {}
 
     async transform(value: InputTokenModel[], metadata: ArgumentMetadata) {
@@ -18,8 +18,8 @@ export class EmterFarmProxyTokensValidationPipe implements PipeTransform {
             );
 
         const [lockedLpTokenID, farmProxyTokenID] = await Promise.all([
-            this.simpleLockGetter.getLpProxyTokenID(simpleLockAddress),
-            this.simpleLockGetter.getFarmProxyTokenID(simpleLockAddress),
+            this.simpleLockAbi.lpProxyTokenID(simpleLockAddress),
+            this.simpleLockAbi.farmProxyTokenID(simpleLockAddress),
         ]);
 
         if (value[0].tokenID !== lockedLpTokenID || value[0].nonce < 1) {

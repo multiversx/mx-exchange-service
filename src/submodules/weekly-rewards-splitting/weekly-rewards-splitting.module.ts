@@ -14,6 +14,7 @@ import { EnergyModule } from 'src/modules/energy/energy.module';
 import { FarmModuleV2 } from '../../modules/farm/v2/farm.v2.module';
 import { ContextModule } from '../../services/context/context.module';
 import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.module';
+import { WeeklyRewardsSplittingSetterService } from './services/weekly.rewarrds.splitting.setter.service';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.m
         ProgressComputeService,
         WeeklyRewardsSplittingAbiService,
         WeeklyRewardsSplittingComputeService,
+        WeeklyRewardsSplittingSetterService,
         GlobalInfoByWeekResolver,
     ],
     exports: [
@@ -40,6 +42,7 @@ import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.m
         GlobalInfoByWeekResolver,
         WeeklyRewardsSplittingAbiService,
         WeeklyRewardsSplittingComputeService,
+        WeeklyRewardsSplittingSetterService,
     ],
 })
 export class WeeklyRewardsSplittingModule {}

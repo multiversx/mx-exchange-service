@@ -5,20 +5,20 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { delay } from 'src/helpers/helpers';
 import { AnalyticsAWSSetterService } from 'src/modules/analytics/services/analytics.aws.setter.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { Locker } from 'src/utils/locker';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { Logger } from 'winston';
 import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { PUB_SUB } from '../redis.pubSub.module';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class AWSQueryCacheWarmerService {
     constructor(
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly tokenService: TokenService,
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly analyticsAWSSetter: AnalyticsAWSSetterService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -124,7 +124,7 @@ export class AWSQueryCacheWarmerService {
             return;
         }
         Locker.lock('historicPairs', async () => {
-            const pairsAddresses = await this.routerGetter.getAllPairsAddress();
+            const pairsAddresses = await this.routerAbi.pairsAddress();
             this.logger.info('Start refresh pairs analytics');
             const profiler = new PerformanceProfiler();
             for (const pairAddress of pairsAddresses) {

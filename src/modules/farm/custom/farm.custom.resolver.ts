@@ -1,26 +1,25 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmCustomModel } from '../models/farm.custom.model';
-import { FarmCustomGetterService } from './services/farm.custom.getter.service';
+import { FarmCustomAbiService } from './services/farm.custom.abi.service';
+import { FarmCustomComputeService } from './services/farm.custom.compute.service';
+import { FarmCustomService } from './services/farm.custom.service';
 
 @Resolver(() => FarmCustomModel)
 export class FarmCustomResolver extends FarmResolver {
-    constructor(protected readonly farmGetter: FarmCustomGetterService) {
-        super(farmGetter);
+    constructor(
+        protected readonly farmAbi: FarmCustomAbiService,
+        protected readonly farmService: FarmCustomService,
+        protected readonly farmCompute: FarmCustomComputeService,
+    ) {
+        super(farmAbi, farmService, farmCompute);
     }
 
     @ResolveField()
     async requireWhitelist(
         @Parent() parent: FarmCustomModel,
     ): Promise<boolean> {
-        try {
-            const whitelists = await this.farmGetter.getWhitelist(
-                parent.address,
-            );
-            return whitelists ? whitelists.length > 0 : false;
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        const whitelists = await this.farmAbi.whitelist(parent.address);
+        return whitelists ? whitelists.length > 0 : false;
     }
 }

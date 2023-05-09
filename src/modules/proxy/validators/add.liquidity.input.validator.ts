@@ -2,15 +2,11 @@ import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { scAddress } from 'src/config';
 import { AddLiquidityProxyArgs } from '../models/proxy-pair.args';
-import { ProxyPairGetterService } from '../services/proxy-pair/proxy-pair.getter.service';
-import { ProxyService } from '../services/proxy.service';
+import { ProxyPairAbiService } from '../services/proxy-pair/proxy.pair.abi.service';
 
 @Injectable()
 export class LiquidityTokensValidationPipe implements PipeTransform {
-    constructor(
-        private readonly proxyService: ProxyService,
-        private readonly proxyPairGetter: ProxyPairGetterService,
-    ) {}
+    constructor(private readonly proxyPairAbi: ProxyPairAbiService) {}
 
     async transform(value: AddLiquidityProxyArgs, metadata: ArgumentMetadata) {
         if (value.tokens.length < 2) {
@@ -25,12 +21,8 @@ export class LiquidityTokensValidationPipe implements PipeTransform {
         }
 
         const [intermediatedPairs, wrappedLpTokenID] = await Promise.all([
-            this.proxyPairGetter.getIntermediatedPairs(
-                scAddress.proxyDexAddress.v2,
-            ),
-            this.proxyPairGetter.getwrappedLpTokenID(
-                scAddress.proxyDexAddress.v2,
-            ),
+            this.proxyPairAbi.intermediatedPairs(scAddress.proxyDexAddress.v2),
+            this.proxyPairAbi.wrappedLpTokenID(scAddress.proxyDexAddress.v2),
         ]);
 
         if (!intermediatedPairs.includes(value.pairAddress)) {

@@ -1,239 +1,137 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CachingModule } from '../../../services/caching/cache.module';
-import { MXCommunicationModule } from '../../../services/multiversx-communication/mx.communication.module';
-import { ApiConfigService } from '../../../helpers/api.config.service';
-import {
-    WeekTimekeepingComputeHandlers,
-    WeekTimekeepingComputeServiceMock,
-} from '../../week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { WeeklyRewardsSplittingComputeService } from '../services/weekly-rewards-splitting.compute.service';
-import { WeekTimekeepingComputeService } from '../../week-timekeeping/services/week-timekeeping.compute.service';
-import {
-    ProgressComputeHandlers,
-    ProgressComputeServiceMock,
-} from '../mocks/progress.compute.service.mock';
-import { ProgressComputeService } from '../services/progress.compute.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import BigNumber from 'bignumber.js';
-import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
-import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
-import { PairService } from '../../../modules/pair/services/pair.service';
-import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
-import { TokenGetterServiceProvider } from '../../../modules/tokens/mocks/token.getter.service.mock';
-import { RouterGetterServiceProvider } from '../../../modules/router/mocks/router.getter.service.stub';
-import { RouterGetterService } from '../../../modules/router/services/router.getter.service';
-import {
-    RouterGetterHandlers,
-    RouterGetterServiceMock,
-} from '../../../modules/router/mocks/router.getter.service.mock';
-import {
-    PairGetterHandlers,
-    PairGetterServiceMock,
-} from '../../../modules/pair/mocks/pair-getter-service-mock.service';
-import { scAddress } from '../../../config';
-import {
-    TokenComputeHandlers,
-    TokenComputeServiceMock,
-} from '../../../modules/tokens/mocks/token.compute.service.mock';
 import { EnergyModel } from 'src/modules/energy/models/energy.model';
-import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { WeeklyRewardsSplittingAbiServiceProvider } from '../mocks/weekly.rewards.splitting.abi.mock';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { WeeklyRewardsSplittingAbiService } from '../services/weekly-rewards-splitting.abi.service';
+import { Address } from '@multiversx/sdk-core/out';
+import { CachingModule } from 'src/services/caching/cache.module';
+import { CommonAppModule } from 'src/common.app.module';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
-    const dummyScAddress = 'erd';
+    let module: TestingModule;
+
+    beforeEach(async () => {
+        module = await Test.createTestingModule({
+            imports: [CommonAppModule, CachingModule],
+            providers: [
+                WeeklyRewardsSplittingComputeService,
+                WeeklyRewardsSplittingAbiServiceProvider,
+                EnergyAbiServiceProvider,
+                TokenComputeService,
+                TokenGetterServiceProvider,
+                PairService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
+                WrapAbiServiceProvider,
+                RouterAbiServiceProvider,
+                MXDataApiServiceProvider,
+                ContextGetterServiceProvider,
+            ],
+        }).compile();
+    });
 
     it('init service; should be defined', async () => {
-        const service = await createService({
-            compute: {},
-            pairGetter: {},
-            progressCompute: {},
-            routerGetter: {},
-            tokenCompute: {},
-        });
+        const service = module.get<WeeklyRewardsSplittingComputeService>(
+            WeeklyRewardsSplittingComputeService,
+        );
         expect(service).toBeDefined();
     });
 
-    it(
-        'computeUserRewardsForWeek' + 'totalRewardsForWeek returns empty array',
-        async () => {
-            const expectedEnergy = {
-                amount: '100',
-                lastUpdateEpoch: 50,
-                totalLockedTokens: '500',
-            };
-            const service = await createService({
-                compute: {},
-                progressCompute: {},
-                routerGetter: {},
-                pairGetter: {},
-                tokenCompute: {},
-            });
-
-            const totalRewardsForWeek = [];
-            const userEnergyForWeek = expectedEnergy;
-            const totalEnergyForWeek = '1000';
-            const rewards = await service.computeUserRewardsForWeek(
-                dummyScAddress,
-                totalRewardsForWeek,
-                userEnergyForWeek,
-                totalEnergyForWeek,
-            );
-            expect(rewards).toEqual([]);
-        },
-    );
-    it('computeUserRewardsForWeek' + 'user has no energy', async () => {
-        const expectedEnergy = {
-            amount: '0',
-            lastUpdateEpoch: 50,
-            totalLockedTokens: '500',
-        };
-        const service = await createService({
-            compute: {},
-            progressCompute: {},
-            routerGetter: {},
-            pairGetter: {},
-            tokenCompute: {},
-        });
-
-        const totalRewardsForWeek = [
-            new EsdtTokenPayment({
-                amount: '100',
-                nonce: 0,
-                tokenID: 'WEGLD',
-                tokenType: 0,
-            }),
-        ];
-        const userEnergyForWeek = expectedEnergy;
-        const totalEnergyForWeek = '1000';
-        const rewards = await service.computeUserRewardsForWeek(
-            dummyScAddress,
-            totalRewardsForWeek,
-            userEnergyForWeek,
-            totalEnergyForWeek,
+    it('computeTotalRewardsForWeekPriceUSD' + ' no rewards', async () => {
+        const service = module.get<WeeklyRewardsSplittingComputeService>(
+            WeeklyRewardsSplittingComputeService,
         );
-        expect(rewards).toEqual([]);
-    });
-    it(
-        'computeUserRewardsForWeek' +
-            'should return rewards accordingly to the user energy',
-        async () => {
-            const expectedEnergy = {
-                amount: '100',
-                lastUpdateEpoch: 50,
-                totalLockedTokens: '500',
-            };
-            const expectedTokenID = 'WEGLD';
-            const expectedTokenType = 0;
-            const expectedTokenNonce = 0;
-            const service = await createService({
-                compute: {},
-                progressCompute: {},
-                routerGetter: {},
-                pairGetter: {},
-                tokenCompute: {},
-            });
-
-            const totalRewardsForWeek = [
-                new EsdtTokenPayment({
-                    amount: '100',
-                    nonce: expectedTokenNonce,
-                    tokenID: expectedTokenID,
-                    tokenType: expectedTokenType,
-                }),
-            ];
-            const userEnergyForWeek = expectedEnergy;
-            const totalEnergyForWeek = '1000';
-            const rewards = await service.computeUserRewardsForWeek(
-                dummyScAddress,
-                totalRewardsForWeek,
-                userEnergyForWeek,
-                totalEnergyForWeek,
+        const weeklyRewardsSplittingAbi =
+            module.get<WeeklyRewardsSplittingAbiService>(
+                WeeklyRewardsSplittingAbiService,
             );
-            expect(rewards[0].amount).toEqual('10');
-            expect(rewards[0].nonce).toEqual(expectedTokenNonce);
-            expect(rewards[0].tokenID).toEqual(expectedTokenID);
-            expect(rewards[0].tokenType).toEqual(expectedTokenType);
-            expect(rewards.length).toEqual(1);
-        },
-    );
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'totalRewardsForWeek',
+        ).mockReturnValueOnce(Promise.resolve([]));
 
-    it('computeTotalRewardsForWeekPriceUSD' + 'no rewards', async () => {
-        const service = await createService({
-            compute: {},
-            progressCompute: {},
-            routerGetter: {},
-            pairGetter: {
-                getFirstTokenPrice: (pairAddress) => {
-                    expect(pairAddress).toEqual(scAddress.WEGLD_USDC);
-                    return Promise.resolve('55');
-                },
-            },
-            tokenCompute: {},
-        });
-        const usdValue = await service.computeTotalRewardsForWeekPriceUSD([]);
+        const usdValue = await service.computeTotalRewardsForWeekUSD(
+            Address.Zero().bech32(),
+            1,
+        );
         expect(usdValue).toEqual('0');
     });
-    it('computeTotalRewardsForWeekPriceUSD' + 'should work', async () => {
+
+    it('computeTotalRewardsForWeekPriceUSD' + ' should work', async () => {
         const priceMap = new Map<string, string>();
-        priceMap.set('firstToken', '10');
-        priceMap.set('secondToken', '20');
-        priceMap.set('thirdToken', '30');
-        const service = await createService({
-            compute: {},
-            progressCompute: {},
-            routerGetter: {},
-            pairGetter: {},
-            tokenCompute: {
-                computeTokenPriceDerivedUSD: (tokenID) => {
-                    return Promise.resolve(priceMap.get(tokenID));
-                },
-            },
+        priceMap.set('TOK1-1111', '10');
+        priceMap.set('TOK2-2222', '20');
+        priceMap.set('TOK4-4444', '30');
+
+        const service = module.get<WeeklyRewardsSplittingComputeService>(
+            WeeklyRewardsSplittingComputeService,
+        );
+        const tokenCompute =
+            module.get<TokenComputeService>(TokenComputeService);
+        const weeklyRewardsSplittingAbi =
+            module.get<WeeklyRewardsSplittingAbiService>(
+                WeeklyRewardsSplittingAbiService,
+            );
+
+        jest.spyOn(
+            tokenCompute,
+            'computeTokenPriceDerivedUSD',
+        ).mockImplementation((tokenID) => {
+            return Promise.resolve(priceMap.get(tokenID));
         });
-        let usdValue = await service.computeTotalRewardsForWeekPriceUSD([
-            new EsdtTokenPayment({
-                amount: '100',
-                tokenID: 'firstToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '200',
-                tokenID: 'thirdToken',
-            }),
-        ]);
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'totalRewardsForWeek',
+        ).mockReturnValueOnce(
+            Promise.resolve([
+                new EsdtTokenPayment({
+                    amount: '100000000000000000000',
+                    tokenID: 'TOK1-1111',
+                }),
+                new EsdtTokenPayment({
+                    amount: '200000000000000000000',
+                    tokenID: 'TOK4-4444',
+                }),
+            ]),
+        );
+        let usdValue = await service.computeTotalRewardsForWeekUSD(
+            Address.Zero().bech32(),
+            1,
+        );
         expect(usdValue).toEqual('7000'); // 100 * 10 + 200 * 30
 
-        usdValue = await service.computeTotalRewardsForWeekPriceUSD([
-            new EsdtTokenPayment({
-                amount: '100',
-                tokenID: 'firstToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '150',
-                tokenID: 'secondToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '200',
-                tokenID: 'thirdToken',
-            }),
-        ]);
+        usdValue = await service.computeTotalRewardsForWeekUSD(
+            Address.Zero().bech32(),
+            1,
+        );
         expect(usdValue).toEqual('10000');
     });
+
     it(
-        'computeTotalRewardsForWeekPriceUSD' + 'MEX-27f4cd has price 10',
+        'computeTotalRewardsForWeekPriceUSD' + ' MEX-27f4cd has price 10',
         async () => {
-            const mex = 'MEX-27f4cd';
-            const service = await createService({
-                compute: {},
-                progressCompute: {},
-                routerGetter: {},
-                pairGetter: {},
-                tokenCompute: {
-                    computeTokenPriceDerivedUSD: (tokenID: string) => {
-                        expect(tokenID).toEqual(mex);
-                        return Promise.resolve('10');
-                    },
-                },
-            });
+            const service = module.get<WeeklyRewardsSplittingComputeService>(
+                WeeklyRewardsSplittingComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockReturnValue(Promise.resolve('10'));
+
             let usdValue =
                 await service.computeTotalLockedTokensForWeekPriceUSD('0');
             expect(usdValue).toEqual('0');
@@ -247,249 +145,202 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             expect(usdValue).toEqual('250');
         },
     );
+
     it(
-        'computeAprGivenLockedTokensAndRewards' + 'MEX-27f4cd has price 10',
+        'computeAprGivenLockedTokensAndRewards' + ' MEX-27f4cd has price 10',
         async () => {
             const mex = 'MEX-27f4cd';
 
             const priceMap = new Map<string, string>();
-            priceMap.set('firstToken', '10');
-            priceMap.set('secondToken', '20');
-            priceMap.set('thirdToken', '30');
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
             priceMap.set(mex, '1');
-            const service = await createService({
-                compute: {},
-                progressCompute: {},
-                routerGetter: {},
-                pairGetter: {},
-                tokenCompute: {
-                    computeTokenPriceDerivedUSD: (tokenID: string) => {
-                        return Promise.resolve(priceMap.get(tokenID));
-                    },
-                },
-            });
-            let apr = await service.computeAprGivenLockedTokensAndRewards(
-                '1000',
-                [
-                    new EsdtTokenPayment({
-                        amount: '100',
-                        tokenID: 'firstToken',
-                    }),
-                    new EsdtTokenPayment({
-                        amount: '200',
-                        tokenID: 'thirdToken',
-                    }),
-                ],
+
+            const service = module.get<WeeklyRewardsSplittingComputeService>(
+                WeeklyRewardsSplittingComputeService,
             );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            });
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalRewardsForWeek',
+            ).mockReturnValueOnce(
+                Promise.resolve([
+                    new EsdtTokenPayment({
+                        amount: '100000000000000000000',
+                        tokenID: 'TOK1-1111',
+                    }),
+                    new EsdtTokenPayment({
+                        amount: '200000000000000000000',
+                        tokenID: 'TOK4-4444',
+                    }),
+                ]),
+            );
+            let apr = await service.computeWeekAPR(Address.Zero().bech32(), 1);
             expect(apr).toEqual('364'); // 100 * 10 + 200 * 30
 
-            apr = await service.computeAprGivenLockedTokensAndRewards('1000', [
-                new EsdtTokenPayment({
-                    amount: '100',
-                    tokenID: 'firstToken',
-                }),
-                new EsdtTokenPayment({
-                    amount: '150',
-                    tokenID: 'secondToken',
-                }),
-                new EsdtTokenPayment({
-                    amount: '200',
-                    tokenID: 'thirdToken',
-                }),
-            ]);
+            apr = await service.computeWeekAPR(Address.Zero().bech32(), 1);
             expect(apr).toEqual('520');
         },
     );
-    it('computeApr' + 'MEX-27f4cd has price 10', async () => {
+
+    it('computeApr' + ' MEX-27f4cd has price 10', async () => {
         const mex = 'MEX-27f4cd';
 
         const priceMap = new Map<string, string>();
-        priceMap.set('firstToken', '10');
-        priceMap.set('secondToken', '20');
-        priceMap.set('thirdToken', '30');
+        priceMap.set('TOK1-1111', '10');
+        priceMap.set('TOK2-2222', '20');
+        priceMap.set('TOK4-4444', '30');
         priceMap.set(mex, '1');
-        const service = await createService({
-            compute: {},
-            progressCompute: {},
-            routerGetter: {},
-            pairGetter: {},
-            tokenCompute: {
-                computeTokenPriceDerivedUSD: (tokenID: string) => {
-                    return Promise.resolve(priceMap.get(tokenID));
-                },
-            },
-        });
-        const totalLockedTokensForWeek = '1000';
-        const totalRewardsForWeek = [
-            new EsdtTokenPayment({
-                amount: '100',
-                tokenID: 'firstToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '150',
-                tokenID: 'secondToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '200',
-                tokenID: 'thirdToken',
-            }),
-        ];
-        const apr = await service.computeApr(
-            totalLockedTokensForWeek,
-            totalRewardsForWeek,
+
+        const service = module.get<WeeklyRewardsSplittingComputeService>(
+            WeeklyRewardsSplittingComputeService,
         );
+        const tokenCompute =
+            module.get<TokenComputeService>(TokenComputeService);
+
+        jest.spyOn(
+            tokenCompute,
+            'computeTokenPriceDerivedUSD',
+        ).mockImplementation((tokenID) => {
+            return Promise.resolve(priceMap.get(tokenID));
+        });
+
+        const apr = await service.computeWeekAPR(Address.Zero().bech32(), 1);
         expect(apr).toEqual('520'); // 100 * 10 + 200 * 30
     });
-    it('computeUserApr' + 'user has all the energy', async () => {
+
+    it('computeUserApr' + ' user has all the energy', async () => {
         const mex = 'MEX-27f4cd';
 
         const priceMap = new Map<string, string>();
-        priceMap.set('firstToken', '10');
-        priceMap.set('secondToken', '20');
-        priceMap.set('thirdToken', '30');
+        priceMap.set('TOK1-1111', '10');
+        priceMap.set('TOK2-2222', '20');
+        priceMap.set('TOK4-4444', '30');
         priceMap.set(mex, '1');
+
         const totalEnergyForWeek = '1000';
         const totalLockedTokensForWeek = '1000';
-        const service = await createService({
-            compute: {},
-            progressCompute: {},
-            routerGetter: {},
-            pairGetter: {},
-            tokenCompute: {
-                computeTokenPriceDerivedUSD: (tokenID: string) => {
-                    return Promise.resolve(priceMap.get(tokenID));
-                },
-            },
-        });
 
-        const totalRewardsForWeek = [
-            new EsdtTokenPayment({
-                amount: '100',
-                tokenID: 'firstToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '150',
-                tokenID: 'secondToken',
-            }),
-            new EsdtTokenPayment({
-                amount: '200',
-                tokenID: 'thirdToken',
-            }),
-        ];
-        const userEnergyForWeek = new EnergyModel({
-            amount: totalEnergyForWeek,
-            totalLockedTokens: totalLockedTokensForWeek,
+        const service = module.get<WeeklyRewardsSplittingComputeService>(
+            WeeklyRewardsSplittingComputeService,
+        );
+        const tokenCompute =
+            module.get<TokenComputeService>(TokenComputeService);
+        const weeklyRewardsSplittingAbi =
+            module.get<WeeklyRewardsSplittingAbiService>(
+                WeeklyRewardsSplittingAbiService,
+            );
+        jest.spyOn(
+            tokenCompute,
+            'computeTokenPriceDerivedUSD',
+        ).mockImplementation((tokenID) => {
+            return Promise.resolve(priceMap.get(tokenID));
         });
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'userEnergyForWeek',
+        ).mockReturnValue(
+            Promise.resolve(
+                new EnergyModel({
+                    amount: totalEnergyForWeek,
+                    totalLockedTokens: totalLockedTokensForWeek,
+                }),
+            ),
+        );
+
         const apr = await service.computeUserApr(
-            totalLockedTokensForWeek,
-            totalRewardsForWeek,
-            totalEnergyForWeek,
-            userEnergyForWeek,
+            Address.Zero().bech32(),
+            Address.Zero().bech32(),
+            1,
         );
         expect(apr).toEqual('520'); // 100 * 10 + 200 * 30
     });
+
     it(
         'computeUserApr' +
-            '2 user has equal part of lk tokens & energy should have both global APR',
+            ' 2 user has equal part of lk tokens & energy should have both global APR',
         async () => {
             const mex = 'MEX-27f4cd';
 
             const priceMap = new Map<string, string>();
-            priceMap.set('firstToken', '10');
-            priceMap.set('secondToken', '20');
-            priceMap.set('thirdToken', '30');
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
             priceMap.set(mex, '1');
             const totalEnergyForWeek = '1000';
             const totalLockedTokensForWeek = '1000';
-            const service = await createService({
-                compute: {},
-                progressCompute: {},
-                routerGetter: {},
-                pairGetter: {},
-                tokenCompute: {
-                    computeTokenPriceDerivedUSD: (tokenID: string) => {
-                        return Promise.resolve(priceMap.get(tokenID));
-                    },
-                },
+
+            const service = module.get<WeeklyRewardsSplittingComputeService>(
+                WeeklyRewardsSplittingComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
             });
 
-            const totalRewardsForWeek = [
-                new EsdtTokenPayment({
-                    amount: '100',
-                    tokenID: 'firstToken',
-                }),
-                new EsdtTokenPayment({
-                    amount: '150',
-                    tokenID: 'secondToken',
-                }),
-                new EsdtTokenPayment({
-                    amount: '200',
-                    tokenID: 'thirdToken',
-                }),
-            ];
-            const userEnergyForWeek = new EnergyModel({
-                amount: new BigNumber(totalEnergyForWeek).div(2).toFixed(),
-                totalLockedTokens: new BigNumber(totalLockedTokensForWeek)
-                    .div(2)
-                    .toFixed(),
-            });
-            let apr = await service.computeUserApr(
-                totalLockedTokensForWeek,
-                totalRewardsForWeek,
-                totalEnergyForWeek,
-                userEnergyForWeek,
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(
+                Promise.resolve(
+                    new EnergyModel({
+                        amount: new BigNumber(totalEnergyForWeek)
+                            .div(2)
+                            .toFixed(),
+                        totalLockedTokens: new BigNumber(
+                            totalLockedTokensForWeek,
+                        )
+                            .div(2)
+                            .toFixed(),
+                    }),
+                ),
             );
-            expect(apr).toEqual('520');
-            apr = await service.computeUserApr(
-                totalLockedTokensForWeek,
-                totalRewardsForWeek,
-                totalEnergyForWeek,
-                userEnergyForWeek,
+
+            const apr = await service.computeUserApr(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+                1,
             );
             expect(apr).toEqual('520');
         },
     );
+
     it(
         'computeUserApr' +
-            'first user has equal part of lk tokens but double energy' +
-            'first user should have double APR compared with 2nd one',
+            ' first user has equal part of lk tokens but double energy' +
+            ' first user should have double APR compared with 2nd one',
         async () => {
             const user1 = 'erd1';
             const user2 = 'erd2';
             const mex = 'MEX-27f4cd';
             const priceMap = new Map<string, string>();
-            priceMap.set('firstToken', '10');
-            priceMap.set('secondToken', '20');
-            priceMap.set('thirdToken', '30');
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
             priceMap.set(mex, '1');
+
             const totalEnergyForWeek = '3000';
             const totalLockedTokensForWeek = '1000';
-            const service = await createService({
-                compute: {},
-                progressCompute: {},
-                routerGetter: {},
-                pairGetter: {},
-                tokenCompute: {
-                    computeTokenPriceDerivedUSD: (tokenID: string) => {
-                        return Promise.resolve(priceMap.get(tokenID));
-                    },
-                },
-            });
-
-            const totalRewardsForWeek = [
-                new EsdtTokenPayment({
-                    amount: '100',
-                    tokenID: 'firstToken',
-                }),
-                new EsdtTokenPayment({
-                    amount: '150',
-                    tokenID: 'secondToken',
-                }),
-                new EsdtTokenPayment({
-                    amount: '200',
-                    tokenID: 'thirdToken',
-                }),
-            ];
             const user2EnergyAmount = new BigNumber(totalEnergyForWeek).div(3);
             const user1EnergyAmount = user2EnergyAmount.multipliedBy(2);
             const user2Energy = new EnergyModel({
@@ -505,63 +356,67 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                     .toFixed(),
             });
 
+            const service = module.get<WeeklyRewardsSplittingComputeService>(
+                WeeklyRewardsSplittingComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            });
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValueOnce(Promise.resolve(user1Energy));
             let apr = await service.computeUserApr(
-                totalLockedTokensForWeek,
-                totalRewardsForWeek,
-                totalEnergyForWeek,
-                user1Energy,
+                Address.Zero().bech32(),
+                user1,
+                1,
             );
             expect(apr).toEqual('693.33333333333333333333');
+
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValueOnce(Promise.resolve(user2Energy));
+
             apr = await service.computeUserApr(
-                totalLockedTokensForWeek,
-                totalRewardsForWeek,
-                totalEnergyForWeek,
-                user2Energy,
+                Address.Zero().bech32(),
+                user2,
+                1,
             );
             expect(apr).toEqual('346.66666666666666666666');
         },
     );
+
     it(
         'computeUserApr' +
-            'users has equal part of lk tokens but  one of them has 0 energy' +
-            'first user should have global APR x2',
+            ' users has equal part of lk tokens but  one of them has 0 energy' +
+            ' first user should have global APR x2',
         async () => {
             const user1 = 'erd1';
             const user2 = 'erd2';
             const mex = 'MEX-27f4cd';
             const priceMap = new Map<string, string>();
-            priceMap.set('firstToken', '10');
-            priceMap.set('secondToken', '20');
-            priceMap.set('thirdToken', '30');
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
             priceMap.set(mex, '1');
+
             const totalEnergyForWeek = '3000';
             const totalLockedTokensForWeek = '1000';
-            const service = await createService({
-                compute: {},
-                progressCompute: {},
-                routerGetter: {},
-                pairGetter: {},
-                tokenCompute: {
-                    computeTokenPriceDerivedUSD: (tokenID: string) => {
-                        return Promise.resolve(priceMap.get(tokenID));
-                    },
-                },
-            });
-
-            const totalRewardsForWeek = [
-                new EsdtTokenPayment({
-                    amount: '100',
-                    tokenID: 'firstToken',
-                }),
-                new EsdtTokenPayment({
-                    amount: '150',
-                    tokenID: 'secondToken',
-                }),
-                new EsdtTokenPayment({
-                    amount: '200',
-                    tokenID: 'thirdToken',
-                }),
-            ];
             const user2EnergyAmount = new BigNumber(0);
             const user1EnergyAmount =
                 user2EnergyAmount.plus(totalEnergyForWeek);
@@ -578,74 +433,47 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                     .toFixed(),
             });
 
+            const service = module.get<WeeklyRewardsSplittingComputeService>(
+                WeeklyRewardsSplittingComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            });
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValueOnce(Promise.resolve(user1Energy));
             let apr = await service.computeUserApr(
-                totalLockedTokensForWeek,
-                totalRewardsForWeek,
-                totalEnergyForWeek,
-                user1Energy,
+                Address.Zero().bech32(),
+                user1,
+                1,
             );
             expect(apr).toEqual('1040');
+
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValueOnce(Promise.resolve(user2Energy));
             apr = await service.computeUserApr(
-                totalLockedTokensForWeek,
-                totalRewardsForWeek,
-                totalEnergyForWeek,
-                user2Energy,
+                Address.Zero().bech32(),
+                user2,
+                1,
             );
             expect(apr).toEqual('0');
         },
     );
 });
-
-async function createService(handlers: {
-    compute: Partial<WeekTimekeepingComputeHandlers>;
-    progressCompute: Partial<ProgressComputeHandlers>;
-    routerGetter: Partial<RouterGetterHandlers>;
-    pairGetter: Partial<PairGetterHandlers>;
-    tokenCompute: Partial<TokenComputeHandlers>;
-}) {
-    const compute = new WeekTimekeepingComputeServiceMock(handlers.compute);
-    const progressCompute = new ProgressComputeServiceMock(
-        handlers.progressCompute,
-    );
-    const routerGetter = new RouterGetterServiceMock(handlers.routerGetter);
-    const pairGetter = new PairGetterServiceMock(handlers.pairGetter);
-    const tokenCompute = new TokenComputeServiceMock(handlers.tokenCompute);
-
-    const module: TestingModule = await Test.createTestingModule({
-        imports: [MXCommunicationModule, CachingModule],
-        providers: [
-            PairComputeService,
-            PairService,
-            {
-                provide: TokenComputeService,
-                useValue: tokenCompute,
-            },
-            {
-                provide: RouterGetterService,
-                useValue: routerGetter,
-            },
-            TokenGetterServiceProvider,
-            ApiConfigService,
-            {
-                provide: PairGetterService,
-                useValue: pairGetter,
-            },
-            RouterGetterServiceProvider,
-            EnergyAbiServiceProvider,
-            {
-                provide: WeekTimekeepingComputeService,
-                useValue: compute,
-            },
-            {
-                provide: ProgressComputeService,
-                useValue: progressCompute,
-            },
-            WeeklyRewardsSplittingComputeService,
-            MXDataApiServiceProvider,
-            WrapAbiServiceProvider,
-        ],
-    }).compile();
-    return module.get<WeeklyRewardsSplittingComputeService>(
-        WeeklyRewardsSplittingComputeService,
-    );
-}

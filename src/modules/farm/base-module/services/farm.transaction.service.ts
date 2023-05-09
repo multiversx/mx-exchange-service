@@ -1,5 +1,4 @@
 import { TransactionModel } from '../../../../models/transaction.model';
-import { Inject } from '@nestjs/common';
 import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
 import {
     Address,
@@ -17,20 +16,17 @@ import {
 } from '../../models/farm.args';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { FarmGetterService } from './farm.getter.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { FarmAbiService } from './farm.abi.service';
 
 export abstract class TransactionsFarmService {
     constructor(
         protected readonly mxProxy: MXProxyService,
-        protected readonly farmGetterService: FarmGetterService,
+        protected readonly farmAbi: FarmAbiService,
         protected readonly pairService: PairService,
-        protected readonly pairGetterService: PairGetterService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        protected readonly pairAbi: PairAbiService,
     ) {}
 
     abstract enterFarm(
@@ -58,8 +54,8 @@ export abstract class TransactionsFarmService {
         tokens: InputTokenModel[],
     ): Promise<void> {
         const [farmTokenID, farmingTokenID] = await Promise.all([
-            this.farmGetterService.getFarmTokenID(farmAddress),
-            this.farmGetterService.getFarmingTokenID(farmAddress),
+            this.farmAbi.farmTokenID(farmAddress),
+            this.farmAbi.farmingTokenID(farmAddress),
         ]);
 
         if (tokens[0].tokenID !== farmingTokenID || tokens[0].nonce > 0) {
@@ -83,8 +79,8 @@ export abstract class TransactionsFarmService {
                 ? gasConfig.lockedAssetCreate
                 : 0;
         const [farmedTokenID, farmingTokenID] = await Promise.all([
-            this.farmGetterService.getFarmedTokenID(args.farmAddress),
-            this.farmGetterService.getFarmingTokenID(args.farmAddress),
+            this.farmAbi.farmedTokenID(args.farmAddress),
+            this.farmAbi.farmingTokenID(args.farmAddress),
         ]);
 
         if (farmedTokenID === farmingTokenID) {
@@ -99,8 +95,9 @@ export abstract class TransactionsFarmService {
         );
 
         if (pairAddress) {
-            const trustedSwapPairs =
-                await this.pairGetterService.getTrustedSwapPairs(pairAddress);
+            const trustedSwapPairs = await this.pairAbi.trustedSwapPairs(
+                pairAddress,
+            );
             const gasLimit = args.withPenalty
                 ? trustedSwapPairs.length > 0
                     ? gasConfig.farms[version][type].exitFarm.withPenalty

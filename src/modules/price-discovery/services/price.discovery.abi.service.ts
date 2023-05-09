@@ -6,14 +6,36 @@ import { PhaseModel } from '../models/price.discovery.model';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { IPriceDiscoveryAbiService } from './interfaces';
 
 @Injectable()
-export class PriceDiscoveryAbiService extends GenericAbiService {
+export class PriceDiscoveryAbiService
+    extends GenericAbiService
+    implements IPriceDiscoveryAbiService
+{
     constructor(protected readonly mxProxy: MXProxyService) {
         super(mxProxy);
     }
 
-    async getLaunchedTokenID(priceDiscoveryAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async launchedTokenID(priceDiscoveryAddress: string): Promise<string> {
+        return await this.getLaunchedTokenIDRaw(priceDiscoveryAddress);
+    }
+
+    async getLaunchedTokenIDRaw(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -24,7 +46,22 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getAcceptedTokenID(priceDiscoveryAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async acceptedTokenID(priceDiscoveryAddress: string): Promise<string> {
+        return await this.getAcceptedTokenIDRaw(priceDiscoveryAddress);
+    }
+
+    async getAcceptedTokenIDRaw(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -35,7 +72,20 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getRedeemTokenID(priceDiscoveryAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async redeemTokenID(priceDiscoveryAddress: string): Promise<string> {
+        return await this.getRedeemTokenIDRaw(priceDiscoveryAddress);
+    }
+
+    async getRedeemTokenIDRaw(priceDiscoveryAddress: string): Promise<string> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -46,7 +96,20 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getLaunchedTokenBalance(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async launchedTokenAmount(priceDiscoveryAddress: string): Promise<string> {
+        return await this.getLaunchedTokenBalanceRaw(priceDiscoveryAddress);
+    }
+
+    async getLaunchedTokenBalanceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -59,7 +122,20 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getAcceptedTokenBalance(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async acceptedTokenAmount(priceDiscoveryAddress: string): Promise<string> {
+        return await this.getAcceptedTokenBalanceRaw(priceDiscoveryAddress);
+    }
+
+    async getAcceptedTokenBalanceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -72,7 +148,24 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getLaunchedTokenRedeemBalance(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async launchedTokenRedeemAmount(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return await this.getLaunchedTokenRedeemBalanceRaw(
+            priceDiscoveryAddress,
+        );
+    }
+
+    async getLaunchedTokenRedeemBalanceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -87,7 +180,24 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getAcceptedTokenRedeemBalance(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async acceptedTokenRedeemAmount(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return await this.getAcceptedTokenRedeemBalanceRaw(
+            priceDiscoveryAddress,
+        );
+    }
+
+    async getAcceptedTokenRedeemBalanceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -102,7 +212,20 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getStartBlock(priceDiscoveryAddress: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async startBlock(priceDiscoveryAddress: string): Promise<number> {
+        return await this.getStartBlockRaw(priceDiscoveryAddress);
+    }
+
+    async getStartBlockRaw(priceDiscoveryAddress: string): Promise<number> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -113,7 +236,20 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getEndBlock(priceDiscoveryAddress: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async endBlock(priceDiscoveryAddress: string): Promise<number> {
+        return await this.getEndBlockRaw(priceDiscoveryAddress);
+    }
+
+    async getEndBlockRaw(priceDiscoveryAddress: string): Promise<number> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -123,7 +259,22 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getCurrentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async currentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
+        return await this.getCurrentPhaseRaw(priceDiscoveryAddress);
+    }
+
+    async getCurrentPhaseRaw(
+        priceDiscoveryAddress: string,
+    ): Promise<PhaseModel> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -146,7 +297,22 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         });
     }
 
-    async getMinLaunchedTokenPrice(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async minLaunchedTokenPrice(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return await this.getMinLaunchedTokenPriceRaw(priceDiscoveryAddress);
+    }
+
+    async getMinLaunchedTokenPriceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -159,7 +325,24 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getNoLimitPhaseDurationBlocks(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async noLimitPhaseDurationBlocks(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        return await this.getNoLimitPhaseDurationBlocksRaw(
+            priceDiscoveryAddress,
+        );
+    }
+
+    async getNoLimitPhaseDurationBlocksRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -171,7 +354,24 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getLinearPenaltyPhaseDurationBlocks(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async linearPenaltyPhaseDurationBlocks(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        return await this.getLinearPenaltyPhaseDurationBlocksRaw(
+            priceDiscoveryAddress,
+        );
+    }
+
+    async getLinearPenaltyPhaseDurationBlocksRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -183,7 +383,24 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getFixedPenaltyPhaseDurationBlocks(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async fixedPenaltyPhaseDurationBlocks(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        return await this.getFixedPenaltyPhaseDurationBlocksRaw(
+            priceDiscoveryAddress,
+        );
+    }
+
+    async getFixedPenaltyPhaseDurationBlocksRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -195,7 +412,22 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getLockingScAddress(priceDiscoveryAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async lockingScAddress(priceDiscoveryAddress: string): Promise<string> {
+        return await this.getLockingScAddressRaw(priceDiscoveryAddress);
+    }
+
+    async getLockingScAddressRaw(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -205,7 +437,20 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async unlockEpoch(priceDiscoveryAddress: string): Promise<number> {
+        return await this.getUnlockEpochRaw(priceDiscoveryAddress);
+    }
+
+    async getUnlockEpochRaw(priceDiscoveryAddress: string): Promise<number> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -215,7 +460,20 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getPenaltyMinPercentage(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async penaltyMinPercentage(priceDiscoveryAddress: string): Promise<number> {
+        return await this.getPenaltyMinPercentageRaw(priceDiscoveryAddress);
+    }
+
+    async getPenaltyMinPercentageRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -230,7 +488,20 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
             .toNumber();
     }
 
-    async getPenaltyMaxPercentage(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async penaltyMaxPercentage(priceDiscoveryAddress: string): Promise<number> {
+        return await this.getPenaltyMaxPercentageRaw(priceDiscoveryAddress);
+    }
+
+    async getPenaltyMaxPercentageRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(
@@ -245,7 +516,22 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
             .toNumber();
     }
 
-    async getFixedPenaltyPercentage(
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async fixedPenaltyPercentage(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        return await this.getFixedPenaltyPercentageRaw(priceDiscoveryAddress);
+    }
+
+    async getFixedPenaltyPercentageRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
         const contract = await this.mxProxy.getPriceDiscoverySmartContract(

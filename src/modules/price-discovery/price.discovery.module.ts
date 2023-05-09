@@ -7,7 +7,6 @@ import { WrappingModule } from '../wrapping/wrap.module';
 import { PriceDiscoveryResolver } from './price.discovery.resolver';
 import { PriceDiscoveryAbiService } from './services/price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from './services/price.discovery.compute.service';
-import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
 import { PriceDiscoveryService } from './services/price.discovery.service';
 import { PriceDiscoverySetterService } from './services/price.discovery.setter.service';
 import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
@@ -24,7 +23,6 @@ import { PriceDiscoveryTransactionService } from './services/price.discovery.tra
         PriceDiscoveryService,
         PriceDiscoveryAbiService,
         PriceDiscoveryComputeService,
-        PriceDiscoveryGetterService,
         PriceDiscoverySetterService,
         PriceDiscoveryTransactionService,
         PriceDiscoveryResolver,
@@ -32,7 +30,6 @@ import { PriceDiscoveryTransactionService } from './services/price.discovery.tra
     exports: [
         PriceDiscoveryAbiService,
         PriceDiscoveryService,
-        PriceDiscoveryGetterService,
         PriceDiscoverySetterService,
         PriceDiscoveryComputeService,
     ],

@@ -1,7 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { FarmVersion } from './models/farm.model';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmModelV1_2 } from './models/farm.v1.2.model';
 import { FarmModelV1_3 } from './models/farm.v1.3.model';
@@ -19,7 +17,6 @@ export class FarmFactoryService {
         private readonly farmServiceV1_2: FarmServiceV1_2,
         private readonly farmServiceV1_3: FarmServiceV1_3,
         private readonly farmServiceV2: FarmServiceV2,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     getFarms(): Array<typeof FarmsUnion> {

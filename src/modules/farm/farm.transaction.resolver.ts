@@ -1,12 +1,10 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAdminGuard } from 'src/modules/auth/gql.admin.guard';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
-import { GenericResolver } from 'src/services/generics/generic.resolver';
 import {
     ClaimRewardsArgs,
     CompoundRewardsArgs,
@@ -22,14 +20,12 @@ import { FarmVersion } from './models/farm.model';
 import { FarmTransactionFactory } from './farm.transaction.factory';
 
 @Resolver()
-export class FarmTransactionResolver extends GenericResolver {
+export class FarmTransactionResolver {
     constructor(
         private readonly farmFactory: FarmFactoryService,
         private readonly transactionFactory: FarmTransactionFactory,
         private readonly farmTransactionV1_2: FarmTransactionServiceV1_2,
-    ) {
-        super();
-    }
+    ) {}
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
@@ -37,7 +33,7 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args() args: MergeFarmTokensArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.transactionFactory
+        return this.transactionFactory
             .useTransaction(args.farmAddress)
             .mergeFarmTokens(user.address, args.farmAddress, args.payments);
     }
@@ -48,16 +44,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('farmAddress') farmAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .endProduceRewards(farmAddress);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .endProduceRewards(farmAddress);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -67,16 +59,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('amount') amount: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .setPerBlockRewardAmount(farmAddress, amount);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .setPerBlockRewardAmount(farmAddress, amount);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -85,16 +73,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('farmAddress') farmAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .startProduceRewards(farmAddress);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .startProduceRewards(farmAddress);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -104,16 +88,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('percent') percent: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .setPenaltyPercent(farmAddress, percent);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .setPenaltyPercent(farmAddress, percent);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -123,16 +103,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('epochs') epochs: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .setMinimumFarmingEpochs(farmAddress, epochs);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .setMinimumFarmingEpochs(farmAddress, epochs);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -142,16 +118,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('gasLimit') gasLimit: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .setTransferExecGasLimit(farmAddress, gasLimit);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .setTransferExecGasLimit(farmAddress, gasLimit);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -161,16 +133,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('gasLimit') gasLimit: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .setBurnGasLimit(farmAddress, gasLimit);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .setBurnGasLimit(farmAddress, gasLimit);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -179,16 +147,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('farmAddress') farmAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .pause(farmAddress);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .pause(farmAddress);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -197,16 +161,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('farmAddress') farmAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .resume(farmAddress);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .resume(farmAddress);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -218,21 +178,17 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('decimals') decimals: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .registerFarmToken(
-                    farmAddress,
-                    tokenDisplayName,
-                    tokenTicker,
-                    decimals,
-                );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .registerFarmToken(
+                farmAddress,
+                tokenDisplayName,
+                tokenTicker,
+                decimals,
+            );
     }
 
     @UseGuards(GqlAdminGuard)
@@ -241,16 +197,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('farmAddress') farmAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return await this.transactionFactory
-                .useTransaction(farmAddress)
-                .setLocalRolesFarmToken(farmAddress);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.transactionFactory
+            .useTransaction(farmAddress)
+            .setLocalRolesFarmToken(farmAddress);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -259,11 +211,9 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args() args: EnterFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.transactionFactory
-                .useTransaction(args.farmAddress)
-                .enterFarm(user.address, args),
-        );
+        return this.transactionFactory
+            .useTransaction(args.farmAddress)
+            .enterFarm(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -272,11 +222,9 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args() args: ExitFarmArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.transactionFactory
-                .useTransaction(args.farmAddress)
-                .exitFarm(user.address, args),
-        );
+        return this.transactionFactory
+            .useTransaction(args.farmAddress)
+            .exitFarm(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -285,11 +233,9 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args() args: ClaimRewardsArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.transactionFactory
-                .useTransaction(args.farmAddress)
-                .claimRewards(user.address, args),
-        );
+        return this.transactionFactory
+            .useTransaction(args.farmAddress)
+            .claimRewards(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -298,11 +244,9 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args() args: CompoundRewardsArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.transactionFactory
-                .useTransaction(args.farmAddress)
-                .compoundRewards(user.address, args),
-        );
+        return this.transactionFactory
+            .useTransaction(args.farmAddress)
+            .compoundRewards(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -312,11 +256,9 @@ export class FarmTransactionResolver extends GenericResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         if (farmVersion(args.farmAddress) !== FarmVersion.V1_2) {
-            throw new ApolloError('invalid farm version');
+            throw new Error('invalid farm version');
         }
-        return await this.genericQuery(() =>
-            this.farmTransactionV1_2.migrateToNewFarm(user.address, args),
-        );
+        return this.farmTransactionV1_2.migrateToNewFarm(user.address, args);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -326,16 +268,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         if (farmVersion(args.oldFarmAddress) !== FarmVersion.V1_2) {
-            throw new ApolloError('invalid farm version');
+            throw new Error('invalid farm version');
         }
-        try {
-            await this.farmFactory
-                .useService(args.oldFarmAddress)
-                .requireOwner(args.oldFarmAddress, user.address);
-            return await this.farmTransactionV1_2.setFarmMigrationConfig(args);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(args.oldFarmAddress)
+            .requireOwner(args.oldFarmAddress, user.address);
+        return this.farmTransactionV1_2.setFarmMigrationConfig(args);
     }
 
     @UseGuards(GqlAdminGuard)
@@ -345,17 +283,11 @@ export class FarmTransactionResolver extends GenericResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         if (farmVersion(farmAddress) !== FarmVersion.V1_2) {
-            throw new ApolloError('invalid farm version');
+            throw new Error('invalid farm version');
         }
-        try {
-            await this.farmFactory
-                .useService(farmAddress)
-                .requireOwner(farmAddress, user.address);
-            return this.farmTransactionV1_2.stopRewardsAndMigrateRps(
-                farmAddress,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        await this.farmFactory
+            .useService(farmAddress)
+            .requireOwner(farmAddress, user.address);
+        return this.farmTransactionV1_2.stopRewardsAndMigrateRps(farmAddress);
     }
 }

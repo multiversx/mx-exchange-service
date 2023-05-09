@@ -1,66 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
-import { WeekTimekeepingComputeService } from '../../week-timekeeping/services/week-timekeeping.compute.service';
-import { ProgressComputeService } from './progress.compute.service';
 import { TokenDistributionModel } from '../models/weekly-rewards-splitting.model';
 import { IWeeklyRewardsSplittingComputeService } from '../interfaces';
 import { scAddress } from '../../../config';
-import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
 import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
-import { EnergyType } from '@multiversx/sdk-exchange';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { WeeklyRewardsSplittingAbiService } from './weekly-rewards-splitting.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { computeValueUSD } from 'src/utils/token.converters';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingComputeService
     implements IWeeklyRewardsSplittingComputeService
 {
     constructor(
-        protected readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
-        protected readonly progressCompute: ProgressComputeService,
-        protected readonly pairCompute: PairComputeService,
-        protected readonly energyAbi: EnergyAbiService,
-        protected readonly tokenCompute: TokenComputeService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly energyAbi: EnergyAbiService,
+        private readonly tokenCompute: TokenComputeService,
+        private readonly tokenGetter: TokenGetterService,
     ) {}
-
-    async computeUserRewardsForWeek(
-        scAddress: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
-        userEnergyForWeek: EnergyType,
-        totalEnergyForWeek: string,
-        energyAmount?: string,
-        liquidity?: string,
-    ): Promise<EsdtTokenPayment[]> {
-        const payments: EsdtTokenPayment[] = [];
-        if (totalRewardsForWeek.length === 0) {
-            return payments;
-        }
-        if (energyAmount === undefined) {
-            energyAmount = userEnergyForWeek.amount;
-        }
-
-        if (!new BigNumber(energyAmount).isGreaterThan(0)) {
-            return payments;
-        }
-
-        for (const weeklyRewards of totalRewardsForWeek) {
-            const paymentAmount = new BigNumber(weeklyRewards.amount)
-                .multipliedBy(new BigNumber(energyAmount))
-                .dividedBy(new BigNumber(totalEnergyForWeek));
-            if (paymentAmount.isGreaterThan(0)) {
-                payments.push(
-                    new EsdtTokenPayment({
-                        tokenID: weeklyRewards.tokenID,
-                        nonce: 0,
-                        amount: paymentAmount.integerValue().toFixed(),
-                        tokenType: weeklyRewards.tokenType,
-                    }),
-                );
-            }
-        }
-
-        return payments;
-    }
 
     async computeDistribution(
         payments: EsdtTokenPayment[],
@@ -104,21 +66,134 @@ export class WeeklyRewardsSplittingComputeService
         });
     }
 
-    async computeTotalRewardsForWeekPriceUSD(
-        totalRewardsForWeek: EsdtTokenPayment[],
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async weekAPR(scAddress: string, week: number): Promise<string> {
+        return await this.computeWeekAPR(scAddress, week);
+    }
+
+    async computeWeekAPR(scAddress: string, week: number): Promise<string> {
+        const totalLockedTokensForWeek =
+            await this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
+                scAddress,
+                week,
+            );
+
+        const totalLockedTokensForWeekPriceUSD =
+            await this.computeTotalLockedTokensForWeekPriceUSD(
+                totalLockedTokensForWeek,
+            );
+        const totalRewardsForWeekPriceUSD =
+            await this.computeTotalRewardsForWeekUSD(scAddress, week);
+
+        return new BigNumber(totalRewardsForWeekPriceUSD)
+            .times(52)
+            .div(totalLockedTokensForWeekPriceUSD)
+            .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async userApr(
+        scAddress: string,
+        userAddress: string,
+        week: number,
     ): Promise<string> {
-        let totalPriceUSD = new BigNumber('0');
+        return await this.computeUserApr(scAddress, userAddress, week);
+    }
+
+    async computeUserApr(
+        scAddress: string,
+        userAddress: string,
+        week: number,
+    ): Promise<string> {
+        const [
+            totalLockedTokensForWeek,
+            totalEnergyForWeek,
+            userEnergyForWeek,
+        ] = await Promise.all([
+            this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
+                scAddress,
+                week,
+            ),
+            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
+            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                scAddress,
+                userAddress,
+                week,
+            ),
+        ]);
+        const globalApr = await this.computeWeekAPR(scAddress, week);
+
+        const apr = new BigNumber(globalApr)
+            .multipliedBy(new BigNumber(userEnergyForWeek.amount))
+            .multipliedBy(new BigNumber(totalLockedTokensForWeek))
+            .div(new BigNumber(totalEnergyForWeek))
+            .div(new BigNumber(userEnergyForWeek.totalLockedTokens))
+            .toFixed();
+        return apr;
+    }
+
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async totalRewardsForWeekUSD(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
+        return await this.computeTotalRewardsForWeekUSD(scAddress, week);
+    }
+
+    async computeTotalRewardsForWeekUSD(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
+        const [baseAssetTokenID, lockedTokenID, totalRewardsForWeek] =
+            await Promise.all([
+                this.energyAbi.baseAssetTokenID(),
+                this.energyAbi.lockedTokenID(),
+                this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                    scAddress,
+                    week,
+                ),
+            ]);
+        let totalPriceUSD = new BigNumber(0);
 
         const totalRewardsArray = await Promise.all(
-            totalRewardsForWeek.map(async (token) => {
-                const tokenPriceUSD =
-                    await this.tokenCompute.computeTokenPriceDerivedUSD(
-                        token.tokenID,
-                    );
-                const rewardsPriceUSD = new BigNumber(
-                    tokenPriceUSD,
-                ).multipliedBy(new BigNumber(token.amount));
-                return rewardsPriceUSD;
+            totalRewardsForWeek.map(async (reward) => {
+                const tokenID =
+                    reward.tokenID === lockedTokenID
+                        ? baseAssetTokenID
+                        : reward.tokenID;
+                const [token, rewardsPriceUSD] = await Promise.all([
+                    this.tokenGetter.getTokenMetadata(tokenID),
+                    this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
+                ]);
+                return computeValueUSD(
+                    reward.amount,
+                    token.decimals,
+                    rewardsPriceUSD,
+                );
             }),
         );
 
@@ -141,52 +216,5 @@ export class WeeklyRewardsSplittingComputeService
         return new BigNumber(totalLockedTokensForWeek)
             .multipliedBy(new BigNumber(tokenPriceUSD))
             .toFixed();
-    }
-
-    async computeAprGivenLockedTokensAndRewards(
-        totalLockedTokensForWeek: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
-    ): Promise<string> {
-        const totalLockedTokensForWeekPriceUSD =
-            await this.computeTotalLockedTokensForWeekPriceUSD(
-                totalLockedTokensForWeek,
-            );
-        const totalRewardsForWeekPriceUSD =
-            await this.computeTotalRewardsForWeekPriceUSD(totalRewardsForWeek);
-
-        return new BigNumber(totalRewardsForWeekPriceUSD)
-            .times(52)
-            .div(totalLockedTokensForWeekPriceUSD)
-            .toFixed();
-    }
-
-    async computeApr(
-        totalLockedTokensForWeek: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
-    ): Promise<string> {
-        return this.computeAprGivenLockedTokensAndRewards(
-            totalLockedTokensForWeek,
-            totalRewardsForWeek,
-        );
-    }
-
-    async computeUserApr(
-        totalLockedTokensForWeek: string,
-        totalRewardsForWeek: EsdtTokenPayment[],
-        totalEnergyForWeek: string,
-        userEnergyForWeek: EnergyType,
-    ): Promise<string> {
-        const globalApr = await this.computeAprGivenLockedTokensAndRewards(
-            totalLockedTokensForWeek,
-            totalRewardsForWeek,
-        );
-
-        const apr = new BigNumber(globalApr)
-            .multipliedBy(new BigNumber(userEnergyForWeek.amount))
-            .multipliedBy(new BigNumber(totalLockedTokensForWeek))
-            .div(new BigNumber(totalEnergyForWeek))
-            .div(new BigNumber(userEnergyForWeek.totalLockedTokens))
-            .toFixed();
-        return apr;
     }
 }

@@ -1,13 +1,9 @@
-import { Inject } from '@nestjs/common';
 import { constantsConfig } from '../../../../config';
 import { ExitFarmTokensModel, RewardsModel } from '../../models/farm.model';
-import { AbiFarmService } from './farm.abi.service';
+import { FarmAbiService } from './farm.abi.service';
 import { CalculateRewardsArgs } from '../../models/farm.args';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import BigNumber from 'bignumber.js';
 import { ruleOfThree } from '../../../../helpers/helpers';
-import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import {
@@ -16,16 +12,35 @@ import {
     FarmTokenAttributesModelV2,
 } from '../../models/farmTokenAttributes.model';
 import { CachingService } from 'src/services/caching/cache.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { Inject, forwardRef } from '@nestjs/common';
 
 export abstract class FarmServiceBase {
     constructor(
-        protected readonly abiService: AbiFarmService,
-        protected readonly farmGetter: FarmGetterService,
+        protected readonly farmAbi: FarmAbiService,
+        @Inject(forwardRef(() => FarmComputeService))
         protected readonly farmCompute: FarmComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        protected readonly tokenGetter: TokenGetterService,
     ) {}
+
+    async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
+        const farmedTokenID = await this.farmAbi.farmedTokenID(farmAddress);
+        return this.tokenGetter.getTokenMetadata(farmedTokenID);
+    }
+
+    async getFarmToken(farmAddress: string): Promise<NftCollection> {
+        const farmTokenID = await this.farmAbi.farmTokenID(farmAddress);
+        return this.tokenGetter.getNftCollectionMetadata(farmTokenID);
+    }
+
+    async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
+        const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
+        return this.tokenGetter.getTokenMetadata(farmingTokenID);
+    }
 
     protected async getRemainingFarmingEpochs(
         farmAddress: string,
@@ -33,7 +48,7 @@ export abstract class FarmServiceBase {
     ): Promise<number> {
         const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
             this.contextGetter.getCurrentEpoch(),
-            this.farmGetter.getMinimumFarmingEpochs(farmAddress),
+            this.farmAbi.minimumFarmingEpochs(farmAddress),
         ]);
 
         return Math.max(
@@ -88,7 +103,7 @@ export abstract class FarmServiceBase {
         );
 
         if (rewardsForPosition.remainingFarmingEpochs > 0) {
-            const penaltyPercent = await this.farmGetter.getPenaltyPercent(
+            const penaltyPercent = await this.farmAbi.penaltyPercent(
                 args.farmAddress,
             );
             initialFarmingAmount = initialFarmingAmount.minus(
@@ -111,7 +126,7 @@ export abstract class FarmServiceBase {
     ): FarmTokenAttributesModel;
 
     async requireOwner(farmAddress: string, sender: string) {
-        const owner = await this.farmGetter.getOwnerAddress(farmAddress);
+        const owner = await this.farmAbi.ownerAddress(farmAddress);
         if (owner !== sender) throw new Error('You are not the owner.');
     }
 }

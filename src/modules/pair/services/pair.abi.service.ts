@@ -1,10 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { PairInfoModel } from '../models/pair-info.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import BigNumber from 'bignumber.js';
 import { FeeDestination } from '../models/pair.model';
 import {
@@ -24,19 +21,41 @@ import {
     U64Value,
 } from '@multiversx/sdk-core';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { mxConfig } from 'src/config';
+import { constantsConfig, mxConfig } from 'src/config';
 import { VmQueryError } from 'src/utils/errors.constants';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { oneHour } from 'src/helpers/helpers';
+import { CachingService } from 'src/services/caching/cache.service';
+import { IPairAbiService } from '../interfaces';
 
 @Injectable()
-export class PairAbiService extends GenericAbiService {
+export class PairAbiService
+    extends GenericAbiService
+    implements IPairAbiService
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly cachingService: CachingService,
     ) {
         super(mxProxy);
     }
 
-    async getFirstTokenID(pairAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async firstTokenID(pairAddress: string): Promise<string> {
+        return await this.getFirstTokenIDRaw(pairAddress);
+    }
+
+    async getFirstTokenIDRaw(pairAddress: string): Promise<string> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getFirstTokenId();
@@ -45,7 +64,20 @@ export class PairAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getSecondTokenID(pairAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async secondTokenID(pairAddress: string): Promise<string> {
+        return await this.getSecondTokenIDRaw(pairAddress);
+    }
+
+    async getSecondTokenIDRaw(pairAddress: string): Promise<string> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getSecondTokenId();
@@ -54,7 +86,20 @@ export class PairAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getLpTokenID(pairAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async lpTokenID(pairAddress: string): Promise<string> {
+        return await this.getLpTokenIDRaw(pairAddress);
+    }
+
+    async getLpTokenIDRaw(pairAddress: string): Promise<string> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getLpTokenIdentifier();
@@ -66,7 +111,30 @@ export class PairAbiService extends GenericAbiService {
             : lpTokenID;
     }
 
-    async getTokenReserve(
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async tokenReserve(pairAddress: string, tokenID: string): Promise<string> {
+        return await this.getTokenReserveRaw(pairAddress, tokenID);
+    }
+
+    async firstTokenReserve(pairAddress: string): Promise<string> {
+        const firstTokenID = await this.firstTokenID(pairAddress);
+        return await this.tokenReserve(pairAddress, firstTokenID);
+    }
+
+    async secondTokenReserve(pairAddress: string): Promise<string> {
+        const secondTokenID = await this.secondTokenID(pairAddress);
+        return await this.tokenReserve(pairAddress, secondTokenID);
+    }
+
+    async getTokenReserveRaw(
         pairAddress: string,
         tokenID: string,
     ): Promise<string> {
@@ -78,7 +146,20 @@ export class PairAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getTotalSupply(pairAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async totalSupply(pairAddress: string): Promise<string> {
+        return await this.getTotalSupplyRaw(pairAddress);
+    }
+
+    async getTotalSupplyRaw(pairAddress: string): Promise<string> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getTotalSupply();
@@ -87,7 +168,20 @@ export class PairAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async pairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
+        return await this.getPairInfoMetadataRaw(pairAddress);
+    }
+
+    async getPairInfoMetadataRaw(pairAddress: string): Promise<PairInfoModel> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getReservesAndTotalSupply();
@@ -100,25 +194,72 @@ export class PairAbiService extends GenericAbiService {
         });
     }
 
-    async getTotalFeePercent(pairAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async totalFeePercent(pairAddress: string): Promise<number> {
+        const totalFeePercent = await this.getTotalFeePercentRaw(pairAddress);
+        return new BigNumber(totalFeePercent)
+            .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+            .toNumber();
+    }
+
+    async getTotalFeePercentRaw(pairAddress: string): Promise<number> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getTotalFeePercent();
 
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().toNumber();
     }
 
-    async getSpecialFeePercent(pairAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async specialFeePercent(pairAddress: string): Promise<number> {
+        const specialFeePercent = await this.getSpecialFeePercentRaw(
+            pairAddress,
+        );
+        return new BigNumber(specialFeePercent)
+            .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+            .toNumber();
+    }
+
+    async getSpecialFeePercentRaw(pairAddress: string): Promise<number> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getSpecialFee();
 
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().toNumber();
     }
 
-    async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async trustedSwapPairs(pairAddress: string): Promise<string[]> {
+        return await this.getTrustedSwapPairsRaw(pairAddress);
+    }
+
+    async getTrustedSwapPairsRaw(pairAddress: string): Promise<string[]> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getTrustedSwapPairs();
@@ -129,7 +270,20 @@ export class PairAbiService extends GenericAbiService {
             .map((swapPair) => swapPair.field1.bech32());
     }
 
-    async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async initialLiquidityAdder(pairAddress: string): Promise<string> {
+        return await this.getInitialLiquidityAdderRaw(pairAddress);
+    }
+
+    async getInitialLiquidityAdderRaw(pairAddress: string): Promise<string> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         try {
             const interaction: Interaction =
@@ -158,18 +312,24 @@ export class PairAbiService extends GenericAbiService {
             if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return '';
             }
-            const logMessage = generateRunQueryLogMessage(
-                PairAbiService.name,
-                this.getLockingScAddress.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-
             throw error;
         }
     }
 
-    async getState(pairAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async state(pairAddress: string): Promise<string> {
+        return await this.getStateRaw(pairAddress);
+    }
+
+    async getStateRaw(pairAddress: string): Promise<string> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction = contract.methodsExplicit.getState([]);
 
@@ -177,7 +337,20 @@ export class PairAbiService extends GenericAbiService {
         return response.firstValue.valueOf().name;
     }
 
-    async getFeeState(pairAddress: string): Promise<boolean> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async feeState(pairAddress: string): Promise<boolean> {
+        return await this.getFeeStateRaw(pairAddress);
+    }
+
+    async getFeeStateRaw(pairAddress: string): Promise<boolean> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction = contract.methodsExplicit.getFeeState(
             [],
@@ -187,7 +360,36 @@ export class PairAbiService extends GenericAbiService {
         return response.firstValue.valueOf();
     }
 
-    async getLockingScAddress(
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    async lockingScAddress(pairAddress: string): Promise<string | undefined> {
+        const cacheKey = `pair.lockingScAddress.${pairAddress}`;
+        const cachedValue: string = await this.cachingService.getCache(
+            cacheKey,
+        );
+        if (cachedValue === '') {
+            return undefined;
+        }
+        if (cachedValue) {
+            return cachedValue;
+        }
+        const value = await this.getLockingScAddressRaw(pairAddress);
+        if (value) {
+            await this.cachingService.setCache(cacheKey, value, oneHour());
+            return value;
+        }
+        await this.cachingService.setCache(
+            cacheKey,
+            '',
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+        return undefined;
+    }
+
+    async getLockingScAddressRaw(
         pairAddress: string,
     ): Promise<string | undefined> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
@@ -216,18 +418,40 @@ export class PairAbiService extends GenericAbiService {
             if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return undefined;
             }
-            const logMessage = generateRunQueryLogMessage(
-                PairAbiService.name,
-                this.getLockingScAddress.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-
             throw error;
         }
     }
 
-    async getUnlockEpoch(pairAddress: string): Promise<number | undefined> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    async unlockEpoch(pairAddress: string): Promise<number | undefined> {
+        const cacheKey = `pair.unlockEpoch.${pairAddress}`;
+        const cachedValue: number = await this.cachingService.getCache(
+            cacheKey,
+        );
+        if (cachedValue === -1) {
+            return undefined;
+        }
+        if (cachedValue) {
+            return cachedValue;
+        }
+        const value = await this.getUnlockEpochRaw(pairAddress);
+        if (value) {
+            await this.cachingService.setCache(cacheKey, value, oneHour());
+            return value;
+        }
+        await this.cachingService.setCache(
+            cacheKey,
+            -1,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+        return undefined;
+    }
+
+    async getUnlockEpochRaw(pairAddress: string): Promise<number | undefined> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getUnlockEpoch();
@@ -246,24 +470,48 @@ export class PairAbiService extends GenericAbiService {
             );
             const unlockEpoch = response.firstValue.valueOf();
             return unlockEpoch !== undefined
-                ? unlockEpoch.toFixed()
+                ? unlockEpoch.toNumber()
                 : undefined;
         } catch (error) {
             if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return undefined;
             }
-            const logMessage = generateRunQueryLogMessage(
-                PairAbiService.name,
-                this.getUnlockEpoch.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-
             throw error;
         }
     }
 
-    async getLockingDeadlineEpoch(
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    async lockingDeadlineEpoch(
+        pairAddress: string,
+    ): Promise<number | undefined> {
+        const cacheKey = `pair.lockingDeadlineEpoch.${pairAddress}`;
+        const cachedValue: number = await this.cachingService.getCache(
+            cacheKey,
+        );
+        if (cachedValue === -1) {
+            return undefined;
+        }
+        if (cachedValue) {
+            return cachedValue;
+        }
+        const value = await this.getLockingDeadlineEpochRaw(pairAddress);
+        if (value) {
+            await this.cachingService.setCache(cacheKey, value, oneHour());
+            return value;
+        }
+        await this.cachingService.setCache(
+            cacheKey,
+            -1,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+        return undefined;
+    }
+
+    async getLockingDeadlineEpochRaw(
         pairAddress: string,
     ): Promise<number | undefined> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
@@ -284,24 +532,32 @@ export class PairAbiService extends GenericAbiService {
             );
             const lockingDeadlineEpoch = response.firstValue.valueOf();
             return lockingDeadlineEpoch !== undefined
-                ? lockingDeadlineEpoch.toFixed()
+                ? lockingDeadlineEpoch.toNumber()
                 : undefined;
         } catch (error) {
             if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return undefined;
             }
-            const logMessage = generateRunQueryLogMessage(
-                PairAbiService.name,
-                this.getLockingDeadlineEpoch.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-
             throw error;
         }
     }
 
-    async getFeeDestinations(pairAddress: string): Promise<FeeDestination[]> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async feeDestinations(pairAddress: string): Promise<FeeDestination[]> {
+        return await this.getFeeDestinationsRaw(pairAddress);
+    }
+
+    async getFeeDestinationsRaw(
+        pairAddress: string,
+    ): Promise<FeeDestination[]> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction = contract.methods.getFeeDestinations(
             [],
@@ -317,9 +573,20 @@ export class PairAbiService extends GenericAbiService {
         });
     }
 
-    async getWhitelistedManagedAddresses(
-        pairAddress: string,
-    ): Promise<string[]> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async whitelistedAddresses(pairAddress: string): Promise<string[]> {
+        return await this.getWhitelistedAddressesRaw(pairAddress);
+    }
+
+    async getWhitelistedAddressesRaw(pairAddress: string): Promise<string[]> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methods.getWhitelistedManagedAddresses([]);
@@ -329,7 +596,20 @@ export class PairAbiService extends GenericAbiService {
         });
     }
 
-    async getRouterManagedAddress(address: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async routerAddress(pairAddress: string): Promise<string> {
+        return await this.getRouterAddressRaw(pairAddress);
+    }
+
+    async getRouterAddressRaw(address: string): Promise<string> {
         const contract = await this.mxProxy.getPairSmartContract(address);
         const interaction: Interaction =
             contract.methods.getRouterManagedAddress([]);
@@ -337,7 +617,20 @@ export class PairAbiService extends GenericAbiService {
         return new Address(response.firstValue.valueOf().toString()).bech32();
     }
 
-    async getRouterOwnerManagedAddress(address: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async routerOwnerAddress(pairAddress: string): Promise<string> {
+        return await this.getRouterOwnerAddressRaw(pairAddress);
+    }
+
+    async getRouterOwnerAddressRaw(address: string): Promise<string> {
         const contract = await this.mxProxy.getPairSmartContract(address);
         const interaction: Interaction =
             contract.methods.getRouterOwnerManagedAddress([]);
@@ -345,7 +638,20 @@ export class PairAbiService extends GenericAbiService {
         return new Address(response.firstValue.valueOf().toString()).bech32();
     }
 
-    async getExternSwapGasLimit(pairAddress: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async externSwapGasLimit(pairAddress: string): Promise<number> {
+        return await this.getExternSwapGasLimitRaw(pairAddress);
+    }
+
+    async getExternSwapGasLimitRaw(pairAddress: string): Promise<number> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction = contract.methods.getExternSwapGasLimit(
             [],
@@ -355,13 +661,42 @@ export class PairAbiService extends GenericAbiService {
         return res !== undefined ? res.toFixed() : undefined;
     }
 
-    async getTransferExecGasLimit(pairAddress: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async transferExecGasLimit(pairAddress: string): Promise<number> {
+        return await this.getTransferExecGasLimitRaw(pairAddress);
+    }
+
+    async getTransferExecGasLimitRaw(pairAddress: string): Promise<number> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const interaction: Interaction =
             contract.methods.getTransferExecGasLimit([]);
         const response = await this.getGenericData(interaction);
-        const res = response.firstValue.valueOf();
+        const res = response.firstValue?.valueOf();
         return res !== undefined ? res.toFixed() : undefined;
+    }
+
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async safePrice(
+        pairAddress: string,
+        esdtTokenPayment: EsdtTokenPayment,
+    ): Promise<EsdtTokenPayment> {
+        return await this.updateAndGetSafePrice(pairAddress, esdtTokenPayment);
     }
 
     async updateAndGetSafePrice(
@@ -417,7 +752,23 @@ export class PairAbiService extends GenericAbiService {
         });
     }
 
-    async getNumSwapsByAddress(
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async numSwapsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<number> {
+        return await this.getNumSwapsByAddressRaw(pairAddress, address);
+    }
+
+    async getNumSwapsByAddressRaw(
         pairAddress: string,
         address: string,
     ): Promise<number> {
@@ -429,7 +780,23 @@ export class PairAbiService extends GenericAbiService {
         return response.firstValue.valueOf();
     }
 
-    async getNumAddsByAddress(
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async numAddsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<string> {
+        return await this.getNumAddsByAddressRaw(pairAddress, address);
+    }
+
+    async getNumAddsByAddressRaw(
         pairAddress: string,
         address: string,
     ): Promise<string> {

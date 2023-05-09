@@ -1,4 +1,4 @@
-import { Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import {
     FeesCollectorModel,
     FeesCollectorTransactionModel,
@@ -9,7 +9,6 @@ import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { UseGuards } from '@nestjs/common';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
-import { GenericResolver } from '../../services/generics/generic.resolver';
 import { scAddress } from '../../config';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
 import {
@@ -18,23 +17,25 @@ import {
     UserInfoByWeekModel,
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { TransactionModel } from '../../models/transaction.model';
-import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
+import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
+import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
 
 @Resolver(() => FeesCollectorModel)
-export class FeesCollectorResolver extends GenericResolver {
+export class FeesCollectorResolver {
     constructor(
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorService: FeesCollectorService,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
-    ) {
-        super();
-    }
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+    ) {}
 
     @ResolveField()
     async lastGlobalUpdateWeek(
         @Parent() parent: FeesCollectorModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.lastGlobalUpdateWeek(parent.address),
+        return this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(
+            parent.address,
         );
     }
 
@@ -53,47 +54,37 @@ export class FeesCollectorResolver extends GenericResolver {
     async accumulatedFees(
         @Parent() parent: FeesCollectorModel,
     ): Promise<EsdtTokenPayment[]> {
-        return await this.genericFieldResolver(() =>
-            this.feesCollectorService.getAccumulatedFees(
-                parent.address,
-                parent.time.currentWeek,
-                parent.allTokens,
-            ),
+        return this.feesCollectorService.getAccumulatedFees(
+            parent.address,
+            parent.time.currentWeek,
+            parent.allTokens,
         );
     }
 
     @ResolveField()
-    async lockedTokenId(@Parent() parent: FeesCollectorModel): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.getLockedTokenId(parent.address),
-        );
+    async lockedTokenId(): Promise<string> {
+        return this.feesCollectorAbi.lockedTokenID();
     }
 
     @ResolveField()
-    async lockedTokensPerBlock(
-        @Parent() parent: FeesCollectorModel,
-    ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.getLockedTokensPerBlock(parent.address),
-        );
+    async lockedTokensPerBlock(): Promise<string> {
+        return this.feesCollectorAbi.lockedTokensPerBlock();
     }
 
     @Query(() => FeesCollectorModel)
     async feesCollector(): Promise<FeesCollectorModel> {
-        return await this.genericQuery(() =>
-            this.feesCollectorService.feesCollector(scAddress.feesCollector),
-        );
+        return this.feesCollectorService.feesCollector(scAddress.feesCollector);
     }
 }
 
 @Resolver(() => UserEntryFeesCollectorModel)
-export class UserEntryFeesCollectorResolver extends GenericResolver {
+export class UserEntryFeesCollectorResolver {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
-    ) {
-        super();
-    }
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
+        private readonly feesCollectorTransaction: FeesCollectorTransactionService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+    ) {}
 
     @ResolveField(() => [UserInfoByWeekModel])
     async undistributedRewards(
@@ -122,11 +113,9 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
     async lastActiveWeekForUser(
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.lastActiveWeekForUser(
-                parent.address,
-                parent.userAddress,
-            ),
+        return this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
+            parent.address,
+            parent.userAddress,
         );
     }
 
@@ -134,11 +123,9 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
     async claimProgress(
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<ClaimProgress> {
-        return await this.genericFieldResolver(() =>
-            this.feesCollectorGetter.currentClaimProgress(
-                parent.address,
-                parent.userAddress,
-            ),
+        return this.weeklyRewardsSplittingAbi.currentClaimProgress(
+            parent.address,
+            parent.userAddress,
         );
     }
 
@@ -147,11 +134,9 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
     async userFeesCollector(
         @AuthUser() user: UserAuthResult,
     ): Promise<UserEntryFeesCollectorModel> {
-        return await this.genericQuery(() =>
-            this.feesCollectorService.userFeesCollector(
-                scAddress.feesCollector,
-                user.address,
-            ),
+        return this.feesCollectorService.userFeesCollector(
+            scAddress.feesCollector,
+            user.address,
         );
     }
 
@@ -160,11 +145,9 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
     async claimFeesRewards(
         @AuthUser() user: UserAuthResult,
     ): Promise<FeesCollectorTransactionModel> {
-        return await this.genericQuery(() =>
-            this.feesCollectorService.claimRewardsBatch(
-                scAddress.feesCollector,
-                user.address,
-            ),
+        return this.feesCollectorTransaction.claimRewardsBatch(
+            scAddress.feesCollector,
+            user.address,
         );
     }
 
@@ -173,8 +156,24 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
     async updateEnergyForUser(
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.feesCollectorService.updateEnergyForUser(user.address),
+        return this.feesCollectorTransaction.updateEnergyForUser(user.address);
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => String)
+    async userLastWeekRewards(
+        @AuthUser() user: UserAuthResult,
+        @Args('energyAmount', { nullable: true })
+        energyAmount: string,
+        @Args('lockedTokens', { nullable: true })
+        lockedTokens: string,
+    ): Promise<string> {
+        const apr = await this.feesCollectorCompute.computeUserRewardsAPR(
+            scAddress.feesCollector,
+            user.address,
+            energyAmount,
+            lockedTokens,
         );
+        return apr.toFixed(4);
     }
 }

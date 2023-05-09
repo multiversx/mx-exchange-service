@@ -1,0 +1,375 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { FeesCollectorComputeService } from '../services/fees-collector.compute.service';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
+import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import {
+    ContextGetterServiceMock,
+    ContextGetterServiceProvider,
+} from 'src/services/context/mocks/context.getter.service.mock';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { FeesCollectorAbiServiceProvider } from '../mocks/fees.collector.abi.service.mock';
+import { CommonAppModule } from 'src/common.app.module';
+import { CachingModule } from 'src/services/caching/cache.module';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { Address } from '@multiversx/sdk-core/out';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { EnergyModel } from 'src/modules/energy/models/energy.model';
+import BigNumber from 'bignumber.js';
+import { EnergyService } from 'src/modules/energy/services/energy.service';
+import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
+
+describe('FeesCollectorComputeService', () => {
+    let module: TestingModule;
+
+    beforeEach(async () => {
+        module = await Test.createTestingModule({
+            imports: [CommonAppModule, CachingModule],
+            providers: [
+                FeesCollectorComputeService,
+                FeesCollectorAbiServiceProvider,
+                WeekTimekeepingComputeService,
+                WeekTimekeepingAbiServiceProvider,
+                WeeklyRewardsSplittingAbiServiceProvider,
+                WeeklyRewardsSplittingComputeService,
+                EnergyService,
+                EnergyComputeService,
+                EnergyAbiServiceProvider,
+                TokenComputeService,
+                TokenGetterServiceProvider,
+                PairService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
+                WrapAbiServiceProvider,
+                RouterAbiServiceProvider,
+                MXDataApiServiceProvider,
+                ContextGetterServiceProvider,
+                {
+                    provide: ContextGetterService,
+                    useClass: ContextGetterServiceMock,
+                },
+            ],
+        }).compile();
+    });
+
+    it('should be defined', () => {
+        const service: FeesCollectorComputeService =
+            module.get<FeesCollectorComputeService>(
+                FeesCollectorComputeService,
+            );
+        expect(service).toBeDefined();
+    });
+
+    it(
+        'computeUserRewardsForWeek' +
+            ' totalRewardsForWeek returns empty array',
+        async () => {
+            const expectedEnergy = {
+                amount: '100',
+                lastUpdateEpoch: 50,
+                totalLockedTokens: '500',
+            };
+
+            const service = module.get<FeesCollectorComputeService>(
+                FeesCollectorComputeService,
+            );
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalRewardsForWeek',
+            ).mockReturnValue(Promise.resolve([]));
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(expectedEnergy));
+
+            const rewards = await service.computeUserRewardsForWeek(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+                1,
+            );
+            expect(rewards).toEqual([]);
+        },
+    );
+
+    it('computeUserRewardsForWeek' + ' user has no energy', async () => {
+        const expectedEnergy = {
+            amount: '0',
+            lastUpdateEpoch: 50,
+            totalLockedTokens: '500',
+        };
+
+        const service = module.get<FeesCollectorComputeService>(
+            FeesCollectorComputeService,
+        );
+        const weeklyRewardsSplittingAbi =
+            module.get<WeeklyRewardsSplittingAbiService>(
+                WeeklyRewardsSplittingAbiService,
+            );
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'totalRewardsForWeek',
+        ).mockReturnValue(
+            Promise.resolve([
+                new EsdtTokenPayment({
+                    amount: '100',
+                    nonce: 0,
+                    tokenID: 'WEGLD',
+                    tokenType: 0,
+                }),
+            ]),
+        );
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'userEnergyForWeek',
+        ).mockReturnValue(Promise.resolve(expectedEnergy));
+
+        const rewards = await service.computeUserRewardsForWeek(
+            Address.Zero().bech32(),
+            Address.Zero().bech32(),
+            1,
+        );
+        expect(rewards).toEqual([]);
+    });
+
+    it(
+        'computeUserRewardsForWeek' +
+            ' should return rewards accordingly to the user energy',
+        async () => {
+            const expectedEnergy = {
+                amount: '100',
+                lastUpdateEpoch: 50,
+                totalLockedTokens: '500',
+            };
+            const expectedTokenID = 'WEGLD';
+            const expectedTokenType = 0;
+            const expectedTokenNonce = 0;
+
+            const service = module.get<FeesCollectorComputeService>(
+                FeesCollectorComputeService,
+            );
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalRewardsForWeek',
+            ).mockReturnValue(
+                Promise.resolve([
+                    new EsdtTokenPayment({
+                        amount: '100',
+                        nonce: expectedTokenNonce,
+                        tokenID: expectedTokenID,
+                        tokenType: expectedTokenType,
+                    }),
+                ]),
+            );
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(expectedEnergy));
+
+            const rewards = await service.computeUserRewardsForWeek(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+                1,
+            );
+
+            expect(rewards[0].amount).toEqual('10');
+            expect(rewards[0].nonce).toEqual(expectedTokenNonce);
+            expect(rewards[0].tokenID).toEqual(expectedTokenID);
+            expect(rewards[0].tokenType).toEqual(expectedTokenType);
+            expect(rewards.length).toEqual(1);
+        },
+    );
+
+    it(
+        'computeUserApr' + ' last week' + ' with default user energy',
+        async () => {
+            const user1 = 'erd1';
+            const mex = 'MEX-27f4cd';
+            const priceMap = new Map<string, string>();
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
+            priceMap.set(mex, '1');
+
+            const totalEnergyForWeek = '3000000000000000000000000';
+            const totalLockedTokensForWeek = '1000000000000000000000000';
+            const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
+
+            const user1Energy = new EnergyModel({
+                amount: user1EnergyAmount.toFixed(),
+                totalLockedTokens: new BigNumber(
+                    totalLockedTokensForWeek,
+                ).toFixed(),
+            });
+
+            const service = module.get<FeesCollectorComputeService>(
+                FeesCollectorComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            const energyService = module.get<EnergyService>(EnergyService);
+
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            });
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
+                Promise.resolve(user1Energy),
+            );
+
+            const apr = await service.computeUserRewardsAPR(
+                Address.Zero().bech32(),
+                user1,
+            );
+
+            expect(apr.toFixed()).toEqual('52');
+        },
+    );
+
+    it(
+        'computeUserApr' + ' last week' + ' with custom user energy',
+        async () => {
+            const user1 = 'erd1';
+            const mex = 'MEX-27f4cd';
+            const priceMap = new Map<string, string>();
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
+            priceMap.set(mex, '1');
+
+            const totalEnergyForWeek = '3000000000000000000000000';
+            const totalLockedTokensForWeek = '1000000000000000000000000';
+            const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
+
+            const user1Energy = new EnergyModel({
+                amount: user1EnergyAmount.dividedBy(4).toFixed(),
+                totalLockedTokens: new BigNumber(
+                    totalLockedTokensForWeek,
+                ).toFixed(),
+            });
+
+            const service = module.get<FeesCollectorComputeService>(
+                FeesCollectorComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            const energyService = module.get<EnergyService>(EnergyService);
+
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            });
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
+                Promise.resolve(user1Energy),
+            );
+
+            const apr = await service.computeUserRewardsAPR(
+                Address.Zero().bech32(),
+                user1,
+                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+            );
+
+            expect(apr.toFixed()).toEqual('20.8');
+        },
+    );
+
+    it(
+        'computeUserApr' +
+            ' last week' +
+            ' with custom user energy and locked tokens',
+        async () => {
+            const user1 = 'erd1';
+            const mex = 'MEX-27f4cd';
+            const priceMap = new Map<string, string>();
+            priceMap.set('TOK1-1111', '10');
+            priceMap.set('TOK2-2222', '20');
+            priceMap.set('TOK4-4444', '30');
+            priceMap.set(mex, '1');
+
+            const totalEnergyForWeek = '3000000000000000000000000';
+            const totalLockedTokensForWeek = '1000000000000000000000000';
+            const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
+
+            const user1Energy = new EnergyModel({
+                amount: user1EnergyAmount.dividedBy(4).toFixed(),
+                totalLockedTokens: new BigNumber(totalLockedTokensForWeek)
+                    .dividedBy(4)
+                    .toFixed(),
+            });
+
+            const service = module.get<FeesCollectorComputeService>(
+                FeesCollectorComputeService,
+            );
+            const tokenCompute =
+                module.get<TokenComputeService>(TokenComputeService);
+            const weeklyRewardsSplittingAbi =
+                module.get<WeeklyRewardsSplittingAbiService>(
+                    WeeklyRewardsSplittingAbiService,
+                );
+            const energyService = module.get<EnergyService>(EnergyService);
+
+            jest.spyOn(
+                tokenCompute,
+                'computeTokenPriceDerivedUSD',
+            ).mockImplementation((tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            });
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'totalEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
+                Promise.resolve(user1Energy),
+            );
+
+            const apr = await service.computeUserRewardsAPR(
+                Address.Zero().bech32(),
+                user1,
+                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+                new BigNumber(totalLockedTokensForWeek).dividedBy(2).toFixed(),
+            );
+
+            expect(apr.toFixed()).toEqual('41.6');
+        },
+    );
+});

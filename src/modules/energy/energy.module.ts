@@ -27,6 +27,11 @@ import { EnergyTransactionService } from './services/energy.transaction.service'
         EnergyTransactionService,
         EnergyResolver,
     ],
-    exports: [EnergyAbiService, EnergySetterService, EnergyComputeService],
+    exports: [
+        EnergyAbiService,
+        EnergySetterService,
+        EnergyComputeService,
+        EnergyService,
+    ],
 })
 export class EnergyModule {}

@@ -1,106 +1,87 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import winston from 'winston';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as Transport from 'winston-transport';
+
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-transactions.service';
+import { ProxyPairTransactionsService } from '../services/proxy-pair/proxy.pair.transactions.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
 import { Address } from '@multiversx/sdk-core';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
-import { ProxyGetterServiceMock } from '../mocks/proxy.getter.service.mock';
-import { ProxyPairGetterService } from '../services/proxy-pair/proxy-pair.getter.service';
-import { ProxyPairGetterServiceMock } from '../mocks/proxy.pair.getter.service.mock';
-import { ProxyGetterService } from '../services/proxy.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
+import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
+import { CommonAppModule } from 'src/common.app.module';
+import {
+    ProxyAbiServiceMock,
+    ProxyPairAbiServiceProvider,
+} from '../mocks/proxy.abi.service.mock';
+import { ProxyAbiServiceV2 } from '../v2/services/proxy.v2.abi.service';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 
 describe('TransactionProxyPairService', () => {
-    let service: TransactionsProxyPairService;
-    let mxProxy: MXProxyService;
-    let pairGetterService: PairGetterService;
-
-    const ProxyGetterServiceProvider = {
-        provide: ProxyGetterService,
-        useClass: ProxyGetterServiceMock,
-    };
-
-    const ProxyPairGetterServiceProvider = {
-        provide: ProxyPairGetterService,
-        useClass: ProxyPairGetterServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
-    const logTransports: Transport[] = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                nestWinstonModuleUtilities.format.nestLike(),
-            ),
-        }),
-    ];
+    let module: TestingModule;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                CachingModule,
-                WinstonModule.forRoot({
-                    transports: logTransports,
-                }),
-            ],
+        module = await Test.createTestingModule({
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 ApiConfigService,
                 ConfigService,
-                MXProxyService,
-                ProxyGetterServiceProvider,
-                ProxyPairGetterServiceProvider,
+                MXProxyServiceProvider,
                 PairService,
-                PairGetterServiceProvider,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 WrapAbiServiceProvider,
                 WrapTransactionsService,
                 WrapService,
                 TokenGetterServiceProvider,
-                RouterGetterServiceProvider,
-                TransactionsProxyPairService,
+                ProxyPairTransactionsService,
+                ProxyPairAbiServiceProvider,
+                {
+                    provide: ProxyAbiServiceV2,
+                    useClass: ProxyAbiServiceMock,
+                },
+                RouterAbiServiceProvider,
+                ContextGetterServiceProvider,
             ],
         }).compile();
-
-        service = module.get<TransactionsProxyPairService>(
-            TransactionsProxyPairService,
-        );
-        mxProxy = module.get<MXProxyService>(MXProxyService);
-        pairGetterService = module.get<PairGetterService>(PairGetterService);
     });
 
     it('should be defined', () => {
+        const service: ProxyPairTransactionsService =
+            module.get<ProxyPairTransactionsService>(
+                ProxyPairTransactionsService,
+            );
         expect(service).toBeDefined();
     });
 
     it('should get add liquidity batch transaction EGLD first token', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
+
+        const service: ProxyPairTransactionsService =
+            module.get<ProxyPairTransactionsService>(
+                ProxyPairTransactionsService,
+            );
+        const mxProxy = module.get<MXProxyService>(MXProxyService);
+        const pairAbi = module.get<PairAbiService>(PairAbiService);
+
         jest.spyOn(mxProxy, 'getAddressShardID').mockImplementation(
             async () => 0,
         );
-        jest.spyOn(pairGetterService, 'getFirstTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
             async () => 'TOK1-1111',
         );
-        jest.spyOn(pairGetterService, 'getSecondTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
             async () => 'TOK2-2222',
         );
+
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
@@ -133,15 +114,23 @@ describe('TransactionProxyPairService', () => {
     it('should get add liquidity batch transaction EGLD second token', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
+        const service: ProxyPairTransactionsService =
+            module.get<ProxyPairTransactionsService>(
+                ProxyPairTransactionsService,
+            );
+        const mxProxy = module.get<MXProxyService>(MXProxyService);
+        const pairAbi = module.get<PairAbiService>(PairAbiService);
+
         jest.spyOn(mxProxy, 'getAddressShardID').mockImplementation(
             async () => 0,
         );
-        jest.spyOn(pairGetterService, 'getFirstTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
             async () => 'TOK1-1111',
         );
-        jest.spyOn(pairGetterService, 'getSecondTokenID').mockImplementation(
+        jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
             async () => 'TOK2-2222',
         );
+
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
