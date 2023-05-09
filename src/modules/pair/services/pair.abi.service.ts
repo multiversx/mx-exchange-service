@@ -365,7 +365,7 @@ export class PairAbiService
         logArgs: true,
     })
     async lockingScAddress(pairAddress: string): Promise<string | undefined> {
-        const cacheKey = `pair.${this.lockingScAddress.name}.${pairAddress}`;
+        const cacheKey = `pair.lockingScAddress.${pairAddress}`;
         const cachedValue: string = await this.cachingService.getCache(
             cacheKey,
         );
@@ -427,7 +427,7 @@ export class PairAbiService
         logArgs: true,
     })
     async unlockEpoch(pairAddress: string): Promise<number | undefined> {
-        const cacheKey = `pair.${this.unlockEpoch.name}.${pairAddress}`;
+        const cacheKey = `pair.unlockEpoch.${pairAddress}`;
         const cachedValue: number = await this.cachingService.getCache(
             cacheKey,
         );
@@ -470,7 +470,7 @@ export class PairAbiService
             );
             const unlockEpoch = response.firstValue.valueOf();
             return unlockEpoch !== undefined
-                ? unlockEpoch.toFixed()
+                ? unlockEpoch.toNumber()
                 : undefined;
         } catch (error) {
             if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
@@ -487,7 +487,7 @@ export class PairAbiService
     async lockingDeadlineEpoch(
         pairAddress: string,
     ): Promise<number | undefined> {
-        const cacheKey = `pair.${this.lockingDeadlineEpoch.name}.${pairAddress}`;
+        const cacheKey = `pair.lockingDeadlineEpoch.${pairAddress}`;
         const cachedValue: number = await this.cachingService.getCache(
             cacheKey,
         );
@@ -532,7 +532,7 @@ export class PairAbiService
             );
             const lockingDeadlineEpoch = response.firstValue.valueOf();
             return lockingDeadlineEpoch !== undefined
-                ? lockingDeadlineEpoch.toFixed()
+                ? lockingDeadlineEpoch.toNumber()
                 : undefined;
         } catch (error) {
             if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
