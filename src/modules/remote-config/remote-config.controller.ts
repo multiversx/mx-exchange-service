@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { FlagRepositoryService } from 'src/services/database/repositories/flag.repository';
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
-import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 import { FlagArgs } from './args/flag.args';
 import { FlagModel } from './models/flag.model';
 import { SCAddressModel, SCAddressType } from './models/sc-address.model';
@@ -26,6 +25,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
 import { AnalyticsModel } from './models/analytics.model';
 import { AnalyticsArgs } from './args/analytics.args';
+import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 
 @Controller('remote-config')
 export class RemoteConfigController {
@@ -36,9 +36,9 @@ export class RemoteConfigController {
         private readonly remoteConfigSetterService: RemoteConfigSetterService,
         private readonly cacheService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    ) { }
+    ) {}
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Post('/flags')
     async addRemoteConfigFlag(
         @Body() flag: FlagArgs,
@@ -64,7 +64,7 @@ export class RemoteConfigController {
         }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Put('/flags')
     async updateRemoteConfigFlag(
         @Body() flag: FlagArgs,
@@ -72,10 +72,11 @@ export class RemoteConfigController {
     ): Promise<FlagModel | Response> {
         try {
             if (flag.name && flag.value != null) {
-                const result = await this.flagRepositoryService.findOneAndUpdate(
-                    { name: flag.name },
-                    flag,
-                );
+                const result =
+                    await this.flagRepositoryService.findOneAndUpdate(
+                        { name: flag.name },
+                        flag,
+                    );
 
                 if (result) {
                     await this.remoteConfigSetterService.setFlag(
@@ -98,13 +99,13 @@ export class RemoteConfigController {
         }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Get('/flags')
     async getRemoteConfigFlags(): Promise<FlagModel[]> {
         return await this.flagRepositoryService.find({});
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Get('/flags/:nameOrID')
     async getRemoteConfigFlag(
         @Param('nameOrID') nameOrID: string,
@@ -116,13 +117,13 @@ export class RemoteConfigController {
                     ? { _id: nameOrID }
                     : { name: nameOrID },
             )
-            .then(result => {
+            .then((result) => {
                 if (result) return res.status(200).send(result);
                 return res.status(404).send();
             });
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Delete('/flags/:nameOrID')
     async deleteRemoteConfigFlag(
         @Param('nameOrID') nameOrID: string,
@@ -141,7 +142,7 @@ export class RemoteConfigController {
         return false;
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Post('/sc-address')
     async addRemoteConfigSCAddress(
         @Body() scAddress: SCAddressModel,
@@ -153,9 +154,8 @@ export class RemoteConfigController {
                 scAddress.category &&
                 scAddress.category in SCAddressType
             ) {
-                const newSCAddress = await this.scAddressRepositoryService.create(
-                    scAddress,
-                );
+                const newSCAddress =
+                    await this.scAddressRepositoryService.create(scAddress);
                 if (newSCAddress) {
                     await this.remoteConfigSetterService.setSCAddressesFromDB(
                         scAddress.category,
@@ -174,13 +174,13 @@ export class RemoteConfigController {
         }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Get('/sc-address')
     async getRemoteConfigSCAddresses(): Promise<SCAddressModel[]> {
         return await this.scAddressRepositoryService.find({});
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Get('/sc-address/:addressOrID')
     async getRemoteConfigSCAddress(
         @Param('addressOrID') addressOrID: string,
@@ -192,13 +192,13 @@ export class RemoteConfigController {
                     ? { _id: addressOrID }
                     : { address: addressOrID },
             )
-            .then(result => {
+            .then((result) => {
                 if (result) return res.status(200).send(result);
                 return res.status(404).send();
             });
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Delete('/sc-address/:addressOrID')
     async deleteRemoteConfigSCAddress(
         @Param('addressOrID') addressOrID: string,
@@ -219,13 +219,13 @@ export class RemoteConfigController {
         return false;
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Get('/analytics')
     async getAnalyticsRemoteConfigs(): Promise<AnalyticsModel[]> {
         return await this.analyticsRepositoryService.find({});
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Post('/analytics')
     async upsertAnalyticsRemoteConfig(
         @Body() analytics: AnalyticsArgs,
@@ -233,12 +233,13 @@ export class RemoteConfigController {
     ): Promise<AnalyticsModel | Response> {
         try {
             if (analytics.name && analytics.value != null) {
-                const result = await this.analyticsRepositoryService.findOneAndUpdate(
-                    { name: analytics.name },
-                    analytics,
-                    undefined,
-                    true
-                )
+                const result =
+                    await this.analyticsRepositoryService.findOneAndUpdate(
+                        { name: analytics.name },
+                        analytics,
+                        undefined,
+                        true,
+                    );
                 this.remoteConfigSetterService.setAnalytics(
                     result.name,
                     result.value,
@@ -256,7 +257,7 @@ export class RemoteConfigController {
         }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Post('/cache/delete-keys')
     async deleteCacheKeys(
         @Body() cacheKeys: CacheKeysArgs,

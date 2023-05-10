@@ -1,8 +1,8 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 import { CreateTokenDto } from './dto/create.token.dto';
 import { TokenRepositoryService } from './services/token.repository.service';
 import { TokenSetterService } from './services/token.setter.service';
+import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 
 @Controller()
 export class TokenController {
@@ -11,7 +11,7 @@ export class TokenController {
         private readonly tokenSetter: TokenSetterService,
     ) {}
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Post('/token/create')
     async createToken(@Body() createTokenDto: CreateTokenDto) {
         await this.tokenRepositoryService.create(createTokenDto);
@@ -21,7 +21,7 @@ export class TokenController {
         );
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Post('/token/update')
     async updateToken(@Body() updateTokenDto: CreateTokenDto) {
         await this.tokenRepositoryService.updateToken(updateTokenDto);
