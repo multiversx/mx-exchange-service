@@ -13,11 +13,7 @@
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqsn34ftz2g7822ta0dq3ddd57frup220q295qrwnw3g",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
         "simpleLockAddress": [
-            "erd1qqqqqqqqqqqqqpgqvcw9cxy5xlssc4em9l97pvhnvgtn5z6l0n4sc9glts",
-            "erd1qqqqqqqqqqqqqpgqxsyrdj38fclflak2mwtqdknqzqhuxy4s0n4sc3e0jy",
-            "erd1qqqqqqqqqqqqqpgqd7av8hy5ydnrlunr6pt40wc07pfj8qv90n4srdthut",
-            "erd1qqqqqqqqqqqqqpgqd92vaptf6kex2p74a8sgxpdtvnphdgkd0n4spt542g",
-            "erd1qqqqqqqqqqqqqpgqzpsgnl0pvgpths0vr926nql30maemcq00n4sqwpu74"
+            "erd160nkygu06jx5wgrwvus345ct65xzz7xx8tcanmxrpahc2y7f295qf6ddtt"
         ],
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
@@ -30,7 +26,7 @@
         "feesCollector": "erd1qqqqqqqqqqqqqpgqeatzcksgacmpf0wq0lmcmhsv9mqgpjtt295q85ygk4",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgq9smwjt59tdjdx8etcfr4m5pm4m2cqty0295qf9ytj8",
-        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
+        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqp628sk5y6c5w8twdddmf4n6kcpatnfuk295q0xuzle",
         "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a"
     },
     "farms": {
