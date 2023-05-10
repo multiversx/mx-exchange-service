@@ -3,7 +3,6 @@ import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
-import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { BatchFarmRewardsComputeArgs } from '../farm/models/farm.args';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
@@ -21,6 +20,7 @@ import { StakingService } from './services/staking.service';
 import { StakingTransactionService } from './services/staking.transactions.service';
 import { StakingAbiService } from './services/staking.abi.service';
 import { StakingComputeService } from './services/staking.compute.service';
+import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -190,7 +190,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setPenaltyPercent(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -204,7 +204,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setMinimumFarmingEpochs(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -218,7 +218,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setPerBlockRewardAmount(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -232,7 +232,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setMaxApr(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -246,7 +246,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setMinUnbondEpochs(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -260,7 +260,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async startProduceRewards(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -273,7 +273,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async endProduceRewards(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -286,7 +286,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setBurnGasLimit(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -300,7 +300,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setTransferExecGasLimit(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -314,7 +314,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async addAddressToWhitelist(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -329,7 +329,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async removeAddressFromWhitelist(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -344,7 +344,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async registerFarmToken(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -362,7 +362,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async pause(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -375,7 +375,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async resume(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -385,7 +385,7 @@ export class StakingResolver {
         return this.stakingTransactionService.setState(farmStakeAddress, true);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setLocalRolesFarmToken(
         @Args('farmStakeAddress') farmStakeAddress: string,
@@ -450,7 +450,7 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async topUpRewards(
         @Args() args: GenericStakeFarmArgs,

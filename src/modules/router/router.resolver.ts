@@ -18,11 +18,11 @@ import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { SetLocalRoleOwnerArgs } from './models/router.args';
 import { PairFilterArgs } from './models/filter.args';
 import { RouterAbiService } from './services/router.abi.service';
 import { RouterComputeService } from './services/router.compute.service';
+import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -166,7 +166,7 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async upgradePair(
         @Args('firstTokenID') firstTokenID: string,
@@ -204,7 +204,7 @@ export class RouterResolver {
         return this.routerTransaction.setLocalRoles(address);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setState(
         @Args('address') address: string,
@@ -215,7 +215,7 @@ export class RouterResolver {
         return this.routerTransaction.setState(address, enable);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setFee(
         @Args('pairAddress') pairAddress: string,
@@ -233,7 +233,7 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setPairCreationEnabled(
         @Args('enabled') enabled: boolean,
@@ -248,7 +248,7 @@ export class RouterResolver {
         return await this.routerabi.lastErrorMessage();
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async clearPairTemporaryOwnerStorage(
         @AuthUser() user: UserAuthResult,
@@ -257,7 +257,7 @@ export class RouterResolver {
         return this.routerTransaction.clearPairTemporaryOwnerStorage();
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setTemporaryOwnerPeriod(
         @Args('periodBlocks') periodBlocks: string,
@@ -267,7 +267,7 @@ export class RouterResolver {
         return this.routerTransaction.setTemporaryOwnerPeriod(periodBlocks);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setPairTemplateAddress(
         @Args('address') address: string,
@@ -277,7 +277,7 @@ export class RouterResolver {
         return this.routerTransaction.setPairTemplateAddress(address);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setLocalRolesOwner(
         @Args({ name: 'args', type: () => SetLocalRoleOwnerArgs })
@@ -288,7 +288,7 @@ export class RouterResolver {
         return this.routerTransaction.setLocalRolesOwner(args);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async removePair(
         @Args('firstTokenID') firstTokenID: string,
