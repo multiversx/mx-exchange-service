@@ -147,7 +147,7 @@ export class PairComputeService implements IPairComputeService {
             .div(firstTokenDenom)
             .times(firstTokenPriceUSD)
             .plus(
-                new BigNumber(lpPosition.firstTokenAmount)
+                new BigNumber(lpPosition.secondTokenAmount)
                     .div(secondTokenDenom)
                     .times(secondTokenPriceUSD),
             )
