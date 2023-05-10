@@ -57,35 +57,34 @@ export class PairComputeService {
     }
 
     async computeLpTokenPriceUSD(pairAddress: string): Promise<string> {
-        const [secondToken, lpToken, firstTokenPrice] = await Promise.all([
+        const [firstToken, secondToken, lpToken, firstTokenPriceUSD, secondTokenPriceUSD] = await Promise.all([
+            this.pairGetterService.getFirstToken(pairAddress),
             this.pairGetterService.getSecondToken(pairAddress),
             this.pairGetterService.getLpToken(pairAddress),
-            this.pairGetterService.getFirstTokenPrice(pairAddress),
+            this.pairGetterService.getFirstTokenPriceUSD(pairAddress),
+            this.pairGetterService.getSecondTokenPriceUSD(pairAddress)
         ]);
 
         if (lpToken === undefined) {
             return undefined;
         }
 
-        const [secondTokenPriceUSD, lpTokenPosition] = await Promise.all([
-            this.tokenCompute.computeTokenPriceDerivedUSD(
-                secondToken.identifier,
-            ),
-            this.pairService.getLiquidityPosition(
-                pairAddress,
-                new BigNumber(`1e${lpToken.decimals}`).toFixed(),
-            ),
-        ]);
+        const lpPosition = await this.pairService.getLiquidityPosition(
+            pairAddress,
+            new BigNumber(`1e${lpToken.decimals}`).toFixed(),
+        )
 
-        const lpTokenPrice = new BigNumber(firstTokenPrice)
-            .multipliedBy(new BigNumber(lpTokenPosition.firstTokenAmount))
-            .plus(new BigNumber(lpTokenPosition.secondTokenAmount));
-        const lpTokenPriceDenom = lpTokenPrice
-            .multipliedBy(`1e-${secondToken.decimals}`)
-            .toFixed();
+        const firstTokenDenom = new BigNumber(10).pow(firstToken.decimals);
+        const secondTokenDenom = new BigNumber(10).pow(secondToken.decimals);
 
-        return new BigNumber(lpTokenPriceDenom)
-            .multipliedBy(secondTokenPriceUSD)
+        return new BigNumber(lpPosition.firstTokenAmount)
+            .div(firstTokenDenom)
+            .times(firstTokenPriceUSD)
+            .plus(
+                new BigNumber(lpPosition.firstTokenAmount)
+                    .div(secondTokenDenom)
+                    .times(secondTokenPriceUSD)
+            )
             .toFixed();
     }
 
