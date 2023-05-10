@@ -13,9 +13,22 @@ import {
 } from '../../models/farm.args';
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
+import { FarmAbiServiceV2 } from './farm.v2.abi.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 @Injectable()
 export class FarmTransactionServiceV2 extends TransactionsFarmService {
+    constructor(
+        protected readonly mxProxy: MXProxyService,
+        protected readonly farmAbi: FarmAbiServiceV2,
+        protected readonly pairService: PairService,
+        protected readonly pairAbi: PairAbiService,
+    ) {
+        super(mxProxy, farmAbi, pairService, pairAbi);
+    }
+
     @ErrorLoggerAsync({
         className: FarmTransactionServiceV2.name,
         logArgs: true,
