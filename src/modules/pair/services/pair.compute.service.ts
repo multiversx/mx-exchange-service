@@ -81,7 +81,7 @@ export class PairComputeService {
             .div(firstTokenDenom)
             .times(firstTokenPriceUSD)
             .plus(
-                new BigNumber(lpPosition.firstTokenAmount)
+                new BigNumber(lpPosition.secondTokenAmount)
                     .div(secondTokenDenom)
                     .times(secondTokenPriceUSD)
             )
