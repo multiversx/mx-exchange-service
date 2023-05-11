@@ -27,7 +27,7 @@
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgq9smwjt59tdjdx8etcfr4m5pm4m2cqty0295qf9ytj8",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqp628sk5y6c5w8twdddmf4n6kcpatnfuk295q0xuzle",
-        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a"
+        "escrow": "erd1qqqqqqqqqqqqqpgqpd6ymzum53u0645a4v2hrmpmf2aqh2jw295q8dsv45"
     },
     "farms": {
         "v1.2": [],
@@ -43,7 +43,7 @@
                 ],
                 "lockedRewards": [
                     "erd1qqqqqqqqqqqqqpgqutt0e74phpgxz254ylw5q7a6yjwvx0pn295qjrfekp",
-                    "erd1qqqqqqqqqqqqqpgqa2fe202zrrp5sm7y86l0rgaqjlta990s295qllwmcf",
+                    "erd1qqqqqqqqqqqqqpgqkgwcmjk7f4xt9tjfcmfz3saflnl3zh3n295q2u6965",
                     "erd1qqqqqqqqqqqqqpgqjm07lvdzdz8j73wx4da998kw5nx68uyj295qfw8gtg",
                     "erd1qqqqqqqqqqqqqpgqaathw30vz468zxukyjzxc4aqnzrd2n5u295q4l9ycs",
                     "erd1qqqqqqqqqqqqqpgqklt6n96ljjtr6vr8vqjjqcn9an46ylfj295qzu44uk",
