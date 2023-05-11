@@ -3,7 +3,6 @@ import { Args, Query, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
-import { GqlAdminGuard } from 'src/modules/auth/gql.admin.guard';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import {
     ClaimRewardsArgs,
@@ -18,6 +17,7 @@ import { FarmTransactionServiceV1_2 } from './v1.2/services/farm.v1.2.transactio
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from './models/farm.model';
 import { FarmTransactionFactory } from './farm.transaction.factory';
+import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 
 @Resolver()
 export class FarmTransactionResolver {
@@ -38,7 +38,7 @@ export class FarmTransactionResolver {
             .mergeFarmTokens(user.address, args.farmAddress, args.payments);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async endProduceRewards(
         @Args('farmAddress') farmAddress: string,
@@ -52,7 +52,7 @@ export class FarmTransactionResolver {
             .endProduceRewards(farmAddress);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setPerBlockRewardAmount(
         @Args('farmAddress') farmAddress: string,
@@ -67,7 +67,7 @@ export class FarmTransactionResolver {
             .setPerBlockRewardAmount(farmAddress, amount);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async startProduceRewards(
         @Args('farmAddress') farmAddress: string,
@@ -81,7 +81,7 @@ export class FarmTransactionResolver {
             .startProduceRewards(farmAddress);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setPenaltyPercent(
         @Args('farmAddress') farmAddress: string,
@@ -96,7 +96,7 @@ export class FarmTransactionResolver {
             .setPenaltyPercent(farmAddress, percent);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setMinimumFarmingEpochs(
         @Args('farmAddress') farmAddress: string,
@@ -111,7 +111,7 @@ export class FarmTransactionResolver {
             .setMinimumFarmingEpochs(farmAddress, epochs);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setTransferExecGasLimit(
         @Args('farmAddress') farmAddress: string,
@@ -126,7 +126,7 @@ export class FarmTransactionResolver {
             .setTransferExecGasLimit(farmAddress, gasLimit);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setBurnGasLimit(
         @Args('farmAddress') farmAddress: string,
@@ -141,7 +141,7 @@ export class FarmTransactionResolver {
             .setBurnGasLimit(farmAddress, gasLimit);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async pause(
         @Args('farmAddress') farmAddress: string,
@@ -155,7 +155,7 @@ export class FarmTransactionResolver {
             .pause(farmAddress);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async resume(
         @Args('farmAddress') farmAddress: string,
@@ -169,7 +169,7 @@ export class FarmTransactionResolver {
             .resume(farmAddress);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async registerFarmToken(
         @Args('farmAddress') farmAddress: string,
@@ -191,7 +191,7 @@ export class FarmTransactionResolver {
             );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setLocalRolesFarmToken(
         @Args('farmAddress') farmAddress: string,
@@ -261,7 +261,7 @@ export class FarmTransactionResolver {
         return this.farmTransactionV1_2.migrateToNewFarm(user.address, args);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setFarmMigrationConfig(
         @Args() args: FarmMigrationConfigArgs,
@@ -276,7 +276,7 @@ export class FarmTransactionResolver {
         return this.farmTransactionV1_2.setFarmMigrationConfig(args);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async stopRewardsAndMigrateRps(
         @Args('farmAddress') farmAddress: string,

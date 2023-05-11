@@ -6,7 +6,6 @@ import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { NftCollection } from '../tokens/models/nftCollection.model';
@@ -19,6 +18,7 @@ import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
 import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.validator';
 import { EnergyAbiService } from './services/energy.abi.service';
+import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 
 @Resolver(() => SimpleLockEnergyModel)
 export class EnergyResolver {
@@ -142,7 +142,7 @@ export class EnergyResolver {
         return this.energyTransaction.migrateOldTokens(user.address, args);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async updateLockOptions(
         @Args('lockOptions', { type: () => [Int] }) lockOptions: number[],
@@ -157,7 +157,7 @@ export class EnergyResolver {
         return this.energyTransaction.updateLockOptions(lockOptions, remove);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setPenaltyPercentage(
         @Args('minPenaltyPercentage') minPenaltyPercentage: number,
@@ -175,7 +175,7 @@ export class EnergyResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setFeesBurnPercentage(
         @Args('percentage') percentage: number,
@@ -189,7 +189,7 @@ export class EnergyResolver {
         return this.energyTransaction.setFeesBurnPercentage(percentage);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setFeesCollectorAddress(
         @Args('collectorAddress') collectorAddress: string,
@@ -203,7 +203,7 @@ export class EnergyResolver {
         return this.energyTransaction.setFeesCollectorAddress(collectorAddress);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setOldLockedAssetFactoryAddress(
         @Args('oldLockedAssetFactoryAddress')

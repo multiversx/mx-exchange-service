@@ -21,11 +21,11 @@ import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { PairInfoModel } from './models/pair-info.model';
-import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairComputeService } from './services/pair.compute.service';
+import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -349,7 +349,7 @@ export class PairResolver {
         return this.pairAbi.numAddsByAddress(pairAddress, user.address);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async whitelist(
         @Args() args: WhitelistArgs,
@@ -359,7 +359,7 @@ export class PairResolver {
         return this.transactionService.whitelist(args);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async removeWhitelist(
         @Args() args: WhitelistArgs,
@@ -369,7 +369,7 @@ export class PairResolver {
         return this.transactionService.removeWhitelist(args);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async addTrustedSwapPair(
         @Args('pairAddress') pairAddress: string,
@@ -387,7 +387,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async removeTrustedSwapPair(
         @Args('pairAddress') pairAddress: string,
@@ -403,7 +403,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setTransferExecGasLimit(
         @Args('pairAddress') pairAddress: string,
@@ -417,7 +417,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setExternSwapGasLimit(
         @Args('pairAddress') pairAddress: string,
@@ -431,7 +431,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async pause(
         @Args('pairAddress') pairAddress: string,
@@ -441,7 +441,7 @@ export class PairResolver {
         return this.transactionService.pause(pairAddress);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async resume(
         @Args('pairAddress') pairAddress: string,
@@ -451,7 +451,7 @@ export class PairResolver {
         return this.transactionService.resume(pairAddress);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setStateActiveNoSwaps(
         @Args('pairAddress') pairAddress: string,
@@ -461,7 +461,7 @@ export class PairResolver {
         return this.transactionService.setStateActiveNoSwaps(pairAddress);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setFeePercents(
         @Args('pairAddress') pairAddress: string,
@@ -477,7 +477,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setMaxObservationsPerRecord(
         @Args('pairAddress') pairAddress: string,
@@ -491,7 +491,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setBPSwapConfig(
         @Args('pairAddress') pairAddress: string,
@@ -502,7 +502,7 @@ export class PairResolver {
         return this.transactionService.setBPSwapConfig(pairAddress, config);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setBPRemoveConfig(
         @Args('pairAddress') pairAddress: string,
@@ -513,7 +513,7 @@ export class PairResolver {
         return this.transactionService.setBPRemoveConfig(pairAddress, config);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setBPAddConfig(
         @Args('pairAddress') pairAddress: string,
@@ -524,7 +524,7 @@ export class PairResolver {
         return this.transactionService.setBPAddConfig(pairAddress, config);
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setLockingDeadlineEpoch(
         @Args('pairAddress') pairAddress: string,
@@ -538,7 +538,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setLockingScAddress(
         @Args('pairAddress') pairAddress: string,
@@ -552,7 +552,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setUnlockEpoch(
         @Args('pairAddress') pairAddress: string,

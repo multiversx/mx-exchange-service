@@ -1,0 +1,99 @@
+import { NativeAuthServer } from '@multiversx/sdk-native-auth-server';
+import {
+    Injectable,
+    CanActivate,
+    ExecutionContext,
+    UnauthorizedException,
+    Inject,
+    Logger,
+} from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import { CachingService } from 'src/services/caching/cache.service';
+import { UrlUtils } from 'src/utils/url.utils';
+
+@Injectable()
+export class NativeAdminGuard implements CanActivate {
+    private readonly authServer: NativeAuthServer;
+
+    constructor(
+        private readonly apiConfigService: ApiConfigService,
+        private readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    ) {
+        this.authServer = new NativeAuthServer({
+            apiUrl: this.apiConfigService.getApiUrl(),
+            maxExpirySeconds:
+                this.apiConfigService.getNativeAuthMaxExpirySeconds(),
+            acceptedOrigins:
+                this.apiConfigService.getNativeAuthAcceptedOrigins(),
+            cache: {
+                getValue: async <T>(key: string): Promise<T | undefined> => {
+                    if (key === 'block:timestamp:latest') {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        return new Date().getTime() / 1000;
+                    }
+                    return await this.cachingService.getCache<T>(key);
+                },
+                setValue: async <T>(
+                    key: string,
+                    value: T,
+                    ttl: number,
+                ): Promise<void> => {
+                    await this.cachingService.setCache(key, value, ttl);
+                },
+            },
+        });
+    }
+
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const ctx = GqlExecutionContext.create(context);
+        const { req } = ctx.getContext();
+
+        const authorization: string = req.headers['authorization'];
+        const origin = req.headers['origin'];
+
+        if (!authorization) {
+            throw new UnauthorizedException();
+        }
+        const jwt = authorization.replace('Bearer ', '');
+
+        try {
+            const userInfo = await this.authServer.validate(jwt);
+            if (
+                !UrlUtils.isLocalhost(origin) &&
+                origin !== userInfo.origin &&
+                origin !== 'https://' + userInfo.origin
+            ) {
+                throw new Error(
+                    `Invalid origin '${userInfo.origin}'. should be '${origin}'`,
+                );
+            }
+
+            req.res.set('X-Native-Auth-Issued', userInfo.issued);
+            req.res.set('X-Native-Auth-Expires', userInfo.expires);
+            req.res.set('X-Native-Auth-Address', userInfo.address);
+            req.res.set(
+                'X-Native-Auth-Timestamp',
+                Math.round(new Date().getTime() / 1000),
+            );
+            req.auth = userInfo;
+            req.jwt = userInfo;
+
+            const admins = process.env.SECURITY_ADMINS.split(',');
+            if (!admins.includes(userInfo.address)) {
+                return false;
+            }
+
+            return true;
+        } catch (error: any) {
+            const message = error?.message;
+            if (message) {
+                this.logger.warn(`${message}`, NativeAdminGuard.name);
+            }
+            return false;
+        }
+    }
+}
