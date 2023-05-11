@@ -5,7 +5,7 @@
     "scAddress": {
         "routerAddress": "erd1qqqqqqqqqqqqqpgqp84x6wcux4hyuwcvnzdyg7yqgy4szpks295qml8wpm",
         "MEX-4638e4": "erd1qqqqqqqqqqqqqpgqsa0hwt0m05308mxlagc6wm3qs6duuh5f295qs5du2a",
-        "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgq2enx3f29nkvghjs2na5jqy80h3v2eyfj295qcumqgr",
+        "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqqccjzsw3y8r0q52egfnnj9v26ehlkcw6295qnlq4nt",
         "proxyDexAddress": {
             "v1": "erd1qqqqqqqqqqqqqpgq7kl4lj75v4g33jc0e2snhzk6rzwfank3295qsuz7mk",
             "v2": "erd1qqqqqqqqqqqqqpgqat0auzsgk9x0g9gm8n6tq6qa9xtmwu4h295qaalzvq"
@@ -27,7 +27,7 @@
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgq9smwjt59tdjdx8etcfr4m5pm4m2cqty0295qf9ytj8",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqp628sk5y6c5w8twdddmf4n6kcpatnfuk295q0xuzle",
-        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a"
+        "escrow": "erd1qqqqqqqqqqqqqpgqpd6ymzum53u0645a4v2hrmpmf2aqh2jw295q8dsv45"
     },
     "farms": {
         "v1.2": [],
@@ -43,7 +43,7 @@
                 ],
                 "lockedRewards": [
                     "erd1qqqqqqqqqqqqqpgqutt0e74phpgxz254ylw5q7a6yjwvx0pn295qjrfekp",
-                    "erd1qqqqqqqqqqqqqpgqa2fe202zrrp5sm7y86l0rgaqjlta990s295qllwmcf",
+                    "erd1qqqqqqqqqqqqqpgqkgwcmjk7f4xt9tjfcmfz3saflnl3zh3n295q2u6965",
                     "erd1qqqqqqqqqqqqqpgqjm07lvdzdz8j73wx4da998kw5nx68uyj295qfw8gtg",
                     "erd1qqqqqqqqqqqqqpgqaathw30vz468zxukyjzxc4aqnzrd2n5u295q4l9ycs",
                     "erd1qqqqqqqqqqqqqpgqklt6n96ljjtr6vr8vqjjqcn9an46ylfj295qzu44uk",
@@ -58,7 +58,7 @@
     "constants": {
         "MAX_SWAP_SPREAD": 0.9,
         "MEX_TOKEN_ID": "MEX-4638e4",
-        "USDC_TOKEN_ID": "USDC-4d2343",
+        "USDC_TOKEN_ID": "USDC-f89dfe",
         "MAINTENANCE": false,
         "EPOCHS_IN_WEEK": 7
     }
