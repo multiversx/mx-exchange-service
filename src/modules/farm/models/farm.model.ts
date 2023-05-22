@@ -1,5 +1,4 @@
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
