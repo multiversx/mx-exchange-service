@@ -8,6 +8,7 @@ import { TimescaleDBWriteService } from './timescaledb.write.service';
 import {
     CloseDaily,
     CloseHourly,
+    PDCloseMinute,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -27,12 +28,12 @@ import {
                 database: apiConfig.getTimescaleDbDatabase(),
                 username: apiConfig.getTimescaleDbUsername(),
                 password: apiConfig.getTimescaleDbPassword(),
-                // ssl: true,
-                // extra: {
-                //     ssl: {
-                //         rejectUnauthorized: false,
-                //     },
-                // },
+                ssl: true,
+                extra: {
+                    ssl: {
+                        rejectUnauthorized: false,
+                    },
+                },
                 entities: ['dist/**/*.entities.{ts,js}'],
             }),
             inject: [ApiConfigService],
@@ -44,6 +45,7 @@ import {
             CloseDaily,
             CloseHourly,
             TokenBurnedWeekly,
+            PDCloseMinute,
         ]),
     ],
     providers: [TimescaleDBQueryService, TimescaleDBWriteService],
