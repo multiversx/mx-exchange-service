@@ -8,6 +8,8 @@ import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IPriceDiscoveryComputeService } from './interfaces';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 
 @Injectable()
 export class PriceDiscoveryComputeService
@@ -17,6 +19,7 @@ export class PriceDiscoveryComputeService
         private readonly pairCompute: PairComputeService,
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly priceDiscoveryService: PriceDiscoveryService,
+        private readonly analyticsQuery: AnalyticsQueryService,
     ) {}
 
     @ErrorLoggerAsync({
@@ -35,6 +38,18 @@ export class PriceDiscoveryComputeService
     async computeLaunchedTokenPrice(
         priceDiscoveryAddress: string,
     ): Promise<string> {
+        const phase = await this.priceDiscoveryAbi.currentPhase(
+            priceDiscoveryAddress,
+        );
+
+        if (phase.name === 'Redeem') {
+            const latestPrice = await this.analyticsQuery.getPDlatestValue({
+                series: priceDiscoveryAddress,
+                metric: 'launchedTokenPrice',
+            });
+            return latestPrice?.value ?? '0';
+        }
+
         const [
             launchedToken,
             acceptedToken,
@@ -74,6 +89,18 @@ export class PriceDiscoveryComputeService
     async computeAcceptedTokenPrice(
         priceDiscoveryAddress: string,
     ): Promise<string> {
+        const phase = await this.priceDiscoveryAbi.currentPhase(
+            priceDiscoveryAddress,
+        );
+
+        // if (phase.name === 'Redeem') {
+        //     const latestPrice = await this.analyticsQuery.latestValue({
+        //         series: priceDiscoveryAddress,
+        //         metric: 'acceptedTokenPrice',
+        //     });
+        //     return latestPrice?.value ?? '0';
+        // }
+
         const [
             launchedToken,
             acceptedToken,
@@ -115,6 +142,18 @@ export class PriceDiscoveryComputeService
     async computeLaunchedTokenPriceUSD(
         priceDiscoveryAddress: string,
     ): Promise<string> {
+        const phase = await this.priceDiscoveryAbi.currentPhase(
+            priceDiscoveryAddress,
+        );
+
+        if (phase.name === 'Redeem') {
+            const latestPrice = await this.analyticsQuery.getPDlatestValue({
+                series: priceDiscoveryAddress,
+                metric: 'launchedTokenPriceUSD',
+            });
+            return latestPrice?.value ?? '0';
+        }
+
         const acceptedToken = await this.priceDiscoveryService.getAcceptedToken(
             priceDiscoveryAddress,
         );
@@ -146,9 +185,55 @@ export class PriceDiscoveryComputeService
     async computeAcceptedTokenPriceUSD(
         priceDiscoveryAddress: string,
     ): Promise<string> {
+        const phase = await this.priceDiscoveryAbi.currentPhase(
+            priceDiscoveryAddress,
+        );
+
+        if (phase.name === 'Redeem') {
+            const latestPrice = await this.analyticsQuery.getPDlatestValue({
+                series: priceDiscoveryAddress,
+                metric: 'acceptedTokenPriceUSD',
+            });
+            return latestPrice?.value ?? '0';
+        }
+
         const acceptedTokenID = await this.priceDiscoveryAbi.acceptedTokenID(
             priceDiscoveryAddress,
         );
         return await this.pairCompute.tokenPriceUSD(acceptedTokenID);
+    }
+
+    @ErrorLoggerAsync({
+        className: PriceDiscoveryComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'priceDiscovery',
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
+    })
+    async closingValues(
+        priceDiscoveryAddress: string,
+        metric: string,
+        interval: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.computeClosingValues(
+            priceDiscoveryAddress,
+            metric,
+            interval,
+        );
+    }
+
+    async computeClosingValues(
+        priceDiscoveryAddress: string,
+        metric: string,
+        interval: string,
+    ): Promise<HistoricDataModel[]> {
+        console.log('Get from timescale');
+        return await this.analyticsQuery.getPDCloseValues({
+            series: priceDiscoveryAddress,
+            metric,
+            timeBucket: interval,
+        });
     }
 }
