@@ -42,7 +42,6 @@ export function IsValidPDMetric(validationOptions?: ValidationOptions) {
 @ValidatorConstraint()
 export class IsValidBucketConstraint implements ValidatorConstraintInterface {
     validate(bucket: PDMetricsBuckets): boolean {
-        console.log(Object.values(PDMetricsBuckets).includes(bucket));
         return Object.values(PDMetricsBuckets).includes(bucket);
     }
 
