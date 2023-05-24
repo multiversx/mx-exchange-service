@@ -93,13 +93,13 @@ export class PriceDiscoveryComputeService
             priceDiscoveryAddress,
         );
 
-        // if (phase.name === 'Redeem') {
-        //     const latestPrice = await this.analyticsQuery.latestValue({
-        //         series: priceDiscoveryAddress,
-        //         metric: 'acceptedTokenPrice',
-        //     });
-        //     return latestPrice?.value ?? '0';
-        // }
+        if (phase.name === 'Redeem') {
+            const latestPrice = await this.analyticsQuery.getPDlatestValue({
+                series: priceDiscoveryAddress,
+                metric: 'acceptedTokenPrice',
+            });
+            return latestPrice?.value ?? '0';
+        }
 
         const [
             launchedToken,
