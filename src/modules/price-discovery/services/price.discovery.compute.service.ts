@@ -229,7 +229,6 @@ export class PriceDiscoveryComputeService
         metric: string,
         interval: string,
     ): Promise<HistoricDataModel[]> {
-        console.log('Get from timescale');
         return await this.analyticsQuery.getPDCloseValues({
             series: priceDiscoveryAddress,
             metric,
