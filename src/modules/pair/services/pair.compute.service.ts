@@ -345,7 +345,6 @@ export class PairComputeService implements IPairComputeService {
             return '0';
         }
         return await this.analyticsQuery.getAggregatedValue({
-            table: this.apiConfig.getAWSTableName(),
             series: pairAddress,
             metric: 'firstTokenVolume',
             time,
@@ -376,7 +375,6 @@ export class PairComputeService implements IPairComputeService {
             return '0';
         }
         return await this.analyticsQuery.getAggregatedValue({
-            table: this.apiConfig.getAWSTableName(),
             series: pairAddress,
             metric: 'secondTokenVolume',
             time,
@@ -401,7 +399,6 @@ export class PairComputeService implements IPairComputeService {
             return '0';
         }
         return await this.analyticsQuery.getAggregatedValue({
-            table: this.apiConfig.getAWSTableName(),
             series: pairAddress,
             metric: 'volumeUSD',
             time,
@@ -427,7 +424,6 @@ export class PairComputeService implements IPairComputeService {
         }
 
         return await this.analyticsQuery.getAggregatedValue({
-            table: this.apiConfig.getAWSTableName(),
             series: pairAddress,
             metric: 'feesUSD',
             time,

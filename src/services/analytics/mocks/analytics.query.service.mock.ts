@@ -23,16 +23,6 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
     getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         throw new Error('Method not implemented.');
     }
-    getLatestHistoricData(
-        args: AnalyticsQueryArgs,
-    ): Promise<HistoricDataModel[]> {
-        throw new Error('Method not implemented.');
-    }
-    getLatestBinnedHistoricData(
-        args: AnalyticsQueryArgs,
-    ): Promise<HistoricDataModel[]> {
-        throw new Error('Method not implemented.');
-    }
 }
 
 export const AnalyticsQueryServiceProvider = {

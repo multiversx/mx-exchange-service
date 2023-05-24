@@ -16,9 +16,6 @@ import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
-import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
-import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
 import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
@@ -31,6 +28,7 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import {
     FarmAbiServiceMock,
     FarmAbiServiceProvider,
@@ -94,9 +92,7 @@ describe('AnalyticsService', () => {
                 StakingComputeService,
                 EnergyAbiServiceProvider,
                 RemoteConfigGetterServiceProvider,
-                AnalyticsQueryService,
-                AWSTimestreamQueryService,
-                DataApiQueryServiceProvider,
+                AnalyticsQueryServiceProvider,
                 TokenGetterServiceProvider,
             ],
         }).compile();
