@@ -96,28 +96,20 @@ export class EscrowAbiService extends GenericAbiService {
         return receivers.filter((v, i, a) => a.indexOf(v) === i);
     }
 
-    async getSenderLastTransferEpoch(
-        address: string,
-    ): Promise<number | undefined> {
+    async getSenderLastTransferEpoch(address: string): Promise<number> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
             ['senderLastTransferEpoch', Address.fromString(address)],
         );
-        return hexValue === ''
-            ? undefined
-            : new BigNumber(hexValue, 16).toNumber();
+        return hexValue === '' ? 0 : new BigNumber(hexValue, 16).toNumber();
     }
 
-    async getReceiverLastTransferEpoch(
-        address: string,
-    ): Promise<number | undefined> {
+    async getReceiverLastTransferEpoch(address: string): Promise<number> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
             ['receiverLastTransferEpoch', Address.fromString(address)],
         );
-        return hexValue === ''
-            ? undefined
-            : new BigNumber(hexValue, 16).toNumber();
+        return hexValue === '' ? 0 : new BigNumber(hexValue, 16).toNumber();
     }
 
     async getEnergyFactoryAddress(): Promise<string> {
