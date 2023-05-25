@@ -38,7 +38,7 @@ describe('EscrowAbiService', () => {
         });
 
         const address = Address.Zero();
-        const permissions = await service.getAddressPermission(
+        const permissions = await service.getAddressPermissionRaw(
             address.bech32(),
         );
         expect(permissions).toEqual([SCPermissions.NONE]);
@@ -53,7 +53,7 @@ describe('EscrowAbiService', () => {
         });
 
         const address = Address.Zero();
-        const permissions = await service.getAddressPermission(
+        const permissions = await service.getAddressPermissionRaw(
             address.bech32(),
         );
         expect(permissions).toEqual([SCPermissions.ADMIN]);
@@ -68,7 +68,7 @@ describe('EscrowAbiService', () => {
         });
 
         const address = Address.Zero();
-        const permissions = await service.getAddressPermission(
+        const permissions = await service.getAddressPermissionRaw(
             address.bech32(),
         );
         expect(permissions).toEqual([SCPermissions.OWNER, SCPermissions.ADMIN]);
@@ -78,7 +78,7 @@ describe('EscrowAbiService', () => {
         const sender = Address.Zero();
 
         jest.spyOn(mxGateway, 'getSCStorageKeys').mockResolvedValue({});
-        let receivers = await service.getAllReceivers(sender.bech32());
+        let receivers = await service.getAllReceiversRaw(sender.bech32());
         expect(receivers).toEqual([]);
 
         jest.spyOn(mxGateway, 'getSCStorageKeys').mockResolvedValue({
@@ -92,7 +92,7 @@ describe('EscrowAbiService', () => {
                 '1139',
         });
 
-        receivers = await service.getAllReceivers(sender.bech32());
+        receivers = await service.getAllReceiversRaw(sender.bech32());
         expect(receivers).toEqual([]);
 
         jest.spyOn(mxGateway, 'getSCStorageKeys').mockResolvedValue({
@@ -104,7 +104,7 @@ describe('EscrowAbiService', () => {
                 '01',
         });
 
-        receivers = await service.getAllReceivers(sender.bech32());
+        receivers = await service.getAllReceiversRaw(sender.bech32());
         expect(receivers).toEqual([]);
     });
 
@@ -119,7 +119,7 @@ describe('EscrowAbiService', () => {
         });
 
         const sender = Address.Zero();
-        const receivers = await service.getAllReceivers(sender.bech32());
+        const receivers = await service.getAllReceiversRaw(sender.bech32());
         expect(receivers).toEqual([
             'erd1devnet6uy8xjusvusfy3q83qadfhwrtty5fwa8ceh9cl60q2p6ysra7aaa',
         ]);
@@ -142,7 +142,7 @@ describe('EscrowAbiService', () => {
         });
 
         const sender = Address.Zero();
-        const receivers = await service.getAllReceivers(sender.bech32());
+        const receivers = await service.getAllReceiversRaw(sender.bech32());
         expect(receivers).toEqual([
             'erd1devnet6uy8xjusvusfy3q83qadfhwrtty5fwa8ceh9cl60q2p6ysra7aaa',
             'erd1932eft30w753xyvme8d49qejgkjc09n5e49w4mwdjtm0neld797su0dlxp',

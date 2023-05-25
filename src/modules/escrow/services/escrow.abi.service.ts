@@ -5,28 +5,43 @@ import {
     TypedValue,
 } from '@multiversx/sdk-core/out';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { Logger } from 'winston';
 import { SCPermissions, ScheduledTransferModel } from '../models/escrow.model';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { oneDay } from 'src/helpers/helpers';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class EscrowAbiService extends GenericAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly mxGateway: MXGatewayService,
     ) {
         super(mxProxy);
     }
 
-    async getScheduledTransfers(
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: oneDay(),
+    })
+    async scheduledTransfers(
+        receiverAddress: string,
+    ): Promise<ScheduledTransferModel[]> {
+        return await this.getScheduledTransfersRaw(receiverAddress);
+    }
+
+    async getScheduledTransfersRaw(
         receiverAddress: string,
     ): Promise<ScheduledTransferModel[]> {
         const contract = await this.mxProxy.getEscrowContract();
@@ -59,7 +74,19 @@ export class EscrowAbiService extends GenericAbiService {
         );
     }
 
-    async getAllSenders(receiverAddress: string): Promise<string[]> {
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: oneDay(),
+    })
+    async allSenders(receiverAddress: string): Promise<string[]> {
+        return await this.getAllSendersRaw(receiverAddress);
+    }
+
+    async getAllSendersRaw(receiverAddress: string): Promise<string[]> {
         const contract = await this.mxProxy.getEscrowContract();
         const interaction: Interaction = contract.methodsExplicit.getAllSenders(
             [new AddressValue(Address.fromString(receiverAddress))],
@@ -70,7 +97,19 @@ export class EscrowAbiService extends GenericAbiService {
             .map((rawAddress: AddressValue) => rawAddress.valueOf().bech32());
     }
 
-    async getAllReceivers(senderAddress: string): Promise<string[]> {
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: oneDay(),
+    })
+    async allReceivers(senderAddress: string): Promise<string[]> {
+        return await this.getAllReceiversRaw(senderAddress);
+    }
+
+    async getAllReceiversRaw(senderAddress: string): Promise<string[]> {
         const hexValues = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
             [],
@@ -96,7 +135,19 @@ export class EscrowAbiService extends GenericAbiService {
         return receivers.filter((v, i, a) => a.indexOf(v) === i);
     }
 
-    async getSenderLastTransferEpoch(address: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: oneDay(),
+    })
+    async senderLastTransferEpoch(senderAddress: string): Promise<number> {
+        return await this.getSenderLastTransferEpochRaw(senderAddress);
+    }
+
+    async getSenderLastTransferEpochRaw(address: string): Promise<number> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
             ['senderLastTransferEpoch', Address.fromString(address)],
@@ -104,7 +155,19 @@ export class EscrowAbiService extends GenericAbiService {
         return hexValue === '' ? 0 : new BigNumber(hexValue, 16).toNumber();
     }
 
-    async getReceiverLastTransferEpoch(address: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: oneDay(),
+    })
+    async receiverLastTransferEpoch(receiverAddress: string): Promise<number> {
+        return await this.getReceiverLastTransferEpochRaw(receiverAddress);
+    }
+
+    async getReceiverLastTransferEpochRaw(address: string): Promise<number> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
             ['receiverLastTransferEpoch', Address.fromString(address)],
@@ -112,7 +175,19 @@ export class EscrowAbiService extends GenericAbiService {
         return hexValue === '' ? 0 : new BigNumber(hexValue, 16).toNumber();
     }
 
-    async getEnergyFactoryAddress(): Promise<string> {
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async energyFactoryAddress(): Promise<string> {
+        return await this.getEnergyFactoryAddressRaw();
+    }
+
+    async getEnergyFactoryAddressRaw(): Promise<string> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
             ['energyFactoryAddress'],
@@ -120,7 +195,19 @@ export class EscrowAbiService extends GenericAbiService {
         return Address.fromHex(hexValue).bech32();
     }
 
-    async getLockedTokenID(): Promise<string> {
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async lockedTokenID(): Promise<string> {
+        return await this.getLockedTokenIDRaw();
+    }
+
+    async getLockedTokenIDRaw(): Promise<string> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
             ['lockedTokenId'],
@@ -128,7 +215,19 @@ export class EscrowAbiService extends GenericAbiService {
         return Buffer.from(hexValue, 'hex').toString();
     }
 
-    async getMinLockEpochs(): Promise<number> {
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async minLockEpochs(): Promise<number> {
+        return await this.getMinLockEpochsRaw();
+    }
+
+    async getMinLockEpochsRaw(): Promise<number> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
             ['minLockEpochs'],
@@ -137,7 +236,19 @@ export class EscrowAbiService extends GenericAbiService {
         return new BigNumber(hexValue, 16).toNumber();
     }
 
-    async getEpochCooldownDuration(): Promise<number> {
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async epochsCooldownDuration(): Promise<number> {
+        return await this.getEpochCooldownDurationRaw();
+    }
+
+    async getEpochCooldownDurationRaw(): Promise<number> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
             ['epochsCooldownDuration'],
@@ -146,7 +257,19 @@ export class EscrowAbiService extends GenericAbiService {
         return new BigNumber(hexValue, 16).toNumber();
     }
 
-    async getAddressPermission(address: string): Promise<SCPermissions[]> {
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: oneDay(),
+    })
+    async addressPermission(address: string): Promise<SCPermissions[]> {
+        return await this.getAddressPermissionRaw(address);
+    }
+
+    async getAddressPermissionRaw(address: string): Promise<SCPermissions[]> {
         const contract = await this.mxProxy.getEscrowContract();
         const interaction: Interaction =
             contract.methodsExplicit.getPermissions([

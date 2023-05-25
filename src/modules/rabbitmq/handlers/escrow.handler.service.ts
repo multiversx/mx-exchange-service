@@ -84,9 +84,9 @@ export class EscrowHandlerService {
     ): Promise<void> {
         const [allSenders, allReceivers, scheduledTransfers] =
             await Promise.all([
-                this.escrowAbi.getAllSenders(receiver),
-                this.escrowAbi.getAllReceivers(sender),
-                this.escrowAbi.getScheduledTransfers(receiver),
+                this.escrowAbi.getAllSendersRaw(receiver),
+                this.escrowAbi.getAllReceiversRaw(sender),
+                this.escrowAbi.getScheduledTransfersRaw(receiver),
             ]);
 
         const invalidatedKeys = await Promise.all([
