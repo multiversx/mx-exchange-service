@@ -10,7 +10,7 @@
         "build": "nest build",
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
         "start": "nest start",
-        "start:dev": "npm run copy-env && nest start --watch",
+        "start:dev": "npm run copy-env && TZ=UTC nest start --watch",
         "start:debug": "nest start --debug --watch",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "copy-env": "cp .env.example .env",
@@ -20,10 +20,10 @@
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
         "typeorm": "ts-node ./node_modules/typeorm/cli",
-        "typeorm:run-migrations": "npm run typeorm migration:run -- -d ./src/services/analytics/data-api/migration/typeOrm.config.ts",
-        "typeorm:generate-migration": "npm run typeorm -- -d ./src/services/analytics/data-api/migration/typeOrm.config.ts migration:generate ./src/services/analytics/data-api/migration/xExchange",
-        "typeorm:create-migration": "npm run typeorm -- migration:create ./src/services/analytics/data-api/migration/xExchange",
-        "typeorm:revert-migration": "npm run typeorm -- -d ./src/services/analytics/data-api/migration/typeOrm.config.ts migration:revert"
+        "typeorm:run-migrations": "npm run typeorm migration:run -- -d ./src/services/analytics/timescaledb/migration/typeOrm.config.ts",
+        "typeorm:generate-migration": "npm run typeorm -- -d ./src/services/analytics/timescaledb/migration/typeOrm.config.ts migration:generate ./src/services/analytics/timescaledb/migration/xExchange",
+        "typeorm:create-migration": "npm run typeorm -- migration:create ./src/services/analytics/timescaledb/migration/xExchange",
+        "typeorm:revert-migration": "npm run typeorm -- -d ./src/services/analytics/timescaledb/migration/typeOrm.config.ts migration:revert"
     },
     "dependencies": {
         "@apollo/gateway": "^2.0.5",

@@ -8,6 +8,7 @@ import { TimescaleDBWriteService } from './timescaledb.write.service';
 import {
     CloseDaily,
     CloseHourly,
+    PDCloseMinute,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -44,6 +45,7 @@ import {
             CloseDaily,
             CloseHourly,
             TokenBurnedWeekly,
+            PDCloseMinute,
         ]),
     ],
     providers: [TimescaleDBQueryService, TimescaleDBWriteService],

@@ -5,7 +5,7 @@ import { IsValidSeries } from 'src/helpers/validators/series.validator';
 import { IsValidUnixTime } from 'src/helpers/validators/unix.time.validator';
 
 @ArgsType()
-export class AWSQueryArgs {
+export class AnalyticsQueryArgs {
     @Field()
     @IsValidSeries()
     series: string;

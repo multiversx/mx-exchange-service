@@ -61,11 +61,18 @@ export class PriceDiscoveryEventHandler {
 
         await this.deleteCacheKeys(cacheKeys);
 
-        const [acceptedTokenPrice, launchedTokenPriceUSD] = await Promise.all([
+        const [
+            acceptedTokenPrice,
+            launchedTokenPriceUSD,
+            acceptedTokenPriceUSD,
+        ] = await Promise.all([
             this.priceDiscoveryCompute.computeAcceptedTokenPrice(
                 priceDiscoveryAddress,
             ),
             this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(
+                priceDiscoveryAddress,
+            ),
+            this.priceDiscoveryCompute.computeAcceptedTokenPriceUSD(
                 priceDiscoveryAddress,
             ),
         ]);
@@ -99,6 +106,7 @@ export class PriceDiscoveryEventHandler {
             launchedTokenPrice,
             acceptedTokenPrice,
             launchedTokenPriceUSD,
+            acceptedTokenPriceUSD,
         };
 
         return [data, timestamp];

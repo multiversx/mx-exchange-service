@@ -53,7 +53,6 @@ import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.se
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
 import { AnalyticsWriteService } from 'src/services/analytics/services/analytics.write.service';
-import { ApiConfigService } from 'src/helpers/api.config.service';
 import { RouterAbiService } from '../router/services/router.abi.service';
 
 @Injectable()
@@ -62,7 +61,6 @@ export class RabbitMqConsumer {
     private data: any[];
 
     constructor(
-        private readonly apiConfig: ApiConfigService,
         private readonly routerAbi: RouterAbiService,
         private readonly liquidityHandler: LiquidityHandler,
         private readonly swapHandler: SwapEventHandler,
