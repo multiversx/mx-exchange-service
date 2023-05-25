@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneSecond } from 'src/helpers/helpers';
+import { oneDay } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
 import { SCPermissions, ScheduledTransferModel } from '../models/escrow.model';
 import { EscrowAbiService } from './escrow.abi.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class EscrowGetterService extends GenericGetterService {
@@ -21,37 +22,37 @@ export class EscrowGetterService extends GenericGetterService {
 
     async getEnergyFactoryAddress(): Promise<string> {
         return await this.getData(
-            'energyFactoryAddress',
+            this.getCacheKey('energyFactoryAddress'),
             () => this.escrowAbi.getEnergyFactoryAddress(),
-            oneSecond(),
-            oneSecond(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getLockedTokenID(): Promise<string> {
         return await this.getData(
-            'lockedTokenID',
+            this.getCacheKey('lockedTokenID'),
             () => this.escrowAbi.getLockedTokenID(),
-            oneSecond(),
-            oneSecond(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getMinLockEpochs(): Promise<number> {
         return await this.getData(
-            'minLockEpochs',
+            this.getCacheKey('minLockEpochs'),
             () => this.escrowAbi.getMinLockEpochs(),
-            oneSecond(),
-            oneSecond(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getEpochCooldownDuration(): Promise<number> {
         return await this.getData(
-            'epochCooldownDuration',
+            this.getCacheKey('epochCooldownDuration'),
             () => this.escrowAbi.getEpochCooldownDuration(),
-            oneSecond(),
-            oneSecond(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -59,56 +60,56 @@ export class EscrowGetterService extends GenericGetterService {
         receiverAddress: string,
     ): Promise<ScheduledTransferModel[]> {
         return await this.getData(
-            `scheduledTransfer.${receiverAddress}`,
+            this.getCacheKey('scheduledTransfers', receiverAddress),
             () => this.escrowAbi.getScheduledTransfers(receiverAddress),
-            oneSecond(),
-            oneSecond(),
+            oneDay(),
         );
     }
 
     async getAllSenders(receiverAddress: string): Promise<string[]> {
         return await this.getData(
-            `allSenders.${receiverAddress}`,
+            this.getCacheKey('allSenders', receiverAddress),
             () => this.escrowAbi.getAllSenders(receiverAddress),
-            oneSecond(),
-            oneSecond(),
+            oneDay(),
         );
     }
 
     async getAllReceivers(senderAddress: string): Promise<string[]> {
         return await this.getData(
-            `allReceivers.${senderAddress}`,
+            this.getCacheKey('allReceivers', senderAddress),
             () => this.escrowAbi.getAllReceivers(senderAddress),
-            oneSecond(),
-            oneSecond(),
+            oneDay(),
         );
     }
 
-    async getSenderLastTransferEpoch(address: string): Promise<number> {
-        return await this.getData(
-            `senderLastTransferEpoch.${address}`,
+    async getSenderLastTransferEpoch(
+        address: string,
+    ): Promise<number | undefined> {
+        const value = await this.getData(
+            this.getCacheKey('senderLastTransferEpoch', address),
             () => this.escrowAbi.getSenderLastTransferEpoch(address),
-            oneSecond(),
-            oneSecond(),
+            oneDay(),
         );
+
+        return value > 0 ? value : undefined;
     }
 
     async getReceiverLastTransferEpoch(address: string): Promise<number> {
-        return await this.getData(
-            `receiverLastTransferEpoch.${address}`,
+        const value = await this.getData(
+            this.getCacheKey('receiverLastTransferEpoch', address),
             () => this.escrowAbi.getReceiverLastTransferEpoch(address),
-            oneSecond(),
-            oneSecond(),
+            oneDay(),
         );
+
+        return value > 0 ? value : undefined;
     }
 
     // Get permission for address as SCPermission from cache or from blockchain
     async getAddressPermission(address: string): Promise<SCPermissions[]> {
         return await this.getData(
-            `permission.${address}`,
+            this.getCacheKey('addressPermission', address),
             () => this.escrowAbi.getAddressPermission(address),
-            oneSecond(),
-            oneSecond(),
+            oneDay(),
         );
     }
 }
