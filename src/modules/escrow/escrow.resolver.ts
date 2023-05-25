@@ -17,7 +17,7 @@ import { EscrowTransactionService } from './services/escrow.transaction.service'
 import { SenderCooldownValidator } from './validators/sender.cooldown.validator';
 import { TransferTokensValidator } from './validators/transfer.tokens.validator';
 import { EscrowAdminValidator } from './validators/admin.validator';
-import { ApolloError, ForbiddenError } from 'apollo-server-express';
+import { ForbiddenError } from 'apollo-server-express';
 
 @Resolver(EscrowModel)
 export class EscrowResolver extends GenericResolver {
@@ -145,7 +145,7 @@ export class EscrowResolver extends GenericResolver {
     async cancelEscrowTransfer(
         @Args('sender') sender: string,
         @Args('receiver') receiver: string,
-        @AuthUser(EscrowAdminValidator) user: UserAuthResult,
+        @AuthUser(EscrowAdminValidator) _user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
             this.escrowTransaction.cancelTransfer(sender, receiver),
