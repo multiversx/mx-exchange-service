@@ -6,6 +6,7 @@ import { SCPermissions } from '../models/escrow.model';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { Address, ReturnCode, U32Value } from '@multiversx/sdk-core/out';
 import { CommonAppModule } from 'src/common.app.module';
+import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('EscrowAbiService', () => {
     let service: EscrowAbiService;
@@ -13,7 +14,7 @@ describe('EscrowAbiService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 EscrowAbiService,
                 MXProxyServiceProvider,
