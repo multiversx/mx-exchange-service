@@ -15,6 +15,8 @@ import { RouterComputeService } from 'src/modules/router/services/router.compute
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -29,6 +31,8 @@ export class SwapEventHandler {
         private readonly pairSetter: PairSetterService,
         private readonly pairCompute: PairComputeService,
         private readonly routerCompute: RouterComputeService,
+        private readonly tokenCompute: TokenComputeService,
+        private readonly tokenSetter: TokenSetterService,
         private readonly pairHandler: PairHandler,
         private readonly dataApi: MXDataApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -207,6 +211,8 @@ export class SwapEventHandler {
             firstTokenPriceUSD,
             secondTokenPriceUSD,
         );
+        await this.updateTokenPrices(firstToken.identifier);
+        await this.updateTokenPrices(secondToken.identifier);
 
         event.getIdentifier() === SWAP_IDENTIFIER.SWAP_FIXED_INPUT
             ? await this.pubSub.publish(SWAP_IDENTIFIER.SWAP_FIXED_INPUT, {
@@ -244,6 +250,23 @@ export class SwapEventHandler {
                 secondTokenPriceUSD,
             ),
         ]);
+        await this.deleteCacheKeys(cacheKeys);
+    }
+
+    private async updateTokenPrices(tokenID: string): Promise<void> {
+        const [tokenPriceDerivedEGLD, tokenPriceDerivedUSD] = await Promise.all(
+            [
+                this.tokenCompute.computeTokenPriceDerivedEGLD(tokenID),
+                this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
+            ],
+        );
+
+        const cacheKeys = await Promise.all([
+            this.tokenSetter.setDerivedEGLD(tokenID, tokenPriceDerivedEGLD),
+            this.tokenSetter.setDerivedUSD(tokenID, tokenPriceDerivedUSD),
+            this.pairSetter.setTokenPriceUSD(tokenID, tokenPriceDerivedUSD),
+        ]);
+
         await this.deleteCacheKeys(cacheKeys);
     }
 
