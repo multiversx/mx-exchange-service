@@ -44,6 +44,10 @@ import {
     WEEKLY_REWARDS_SPLITTING_EVENTS,
     TOKEN_UNSTAKE_EVENTS,
     UserUnlockedTokensEvent,
+    ESCROW_EVENTS,
+    EscrowLockFundsEvent,
+    EscrowWithdrawEvent,
+    EscrowCancelTransferEvent,
 } from '@multiversx/sdk-exchange';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
@@ -55,6 +59,7 @@ import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.ser
 import { AnalyticsWriteService } from 'src/services/analytics/services/analytics.write.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { RouterAbiService } from '../router/services/router.abi.service';
+import { EscrowHandlerService } from './handlers/escrow.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -76,6 +81,7 @@ export class RabbitMqConsumer {
         private readonly feesCollectorHandler: FeesCollectorHandlerService,
         private readonly weeklyRewardsSplittingHandler: WeeklyRewardsSplittingHandlerService,
         private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
+        private readonly escrowHandler: EscrowHandlerService,
         private readonly analyticsWrite: AnalyticsWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -267,6 +273,21 @@ export class RabbitMqConsumer {
                         new UserUnlockedTokensEvent(rawEvent),
                     );
                     break;
+                case ESCROW_EVENTS.LOCK_FUNDS:
+                    await this.escrowHandler.handleEscrowLockFundsEvent(
+                        new EscrowLockFundsEvent(rawEvent),
+                    );
+                    break;
+                case ESCROW_EVENTS.WITHDRAW:
+                    await this.escrowHandler.handleEscrowWithdrawEvent(
+                        new EscrowWithdrawEvent(rawEvent),
+                    );
+                    break;
+                case ESCROW_EVENTS.CANCEL_TRANSFER:
+                    await this.escrowHandler.handleEscrowCancelTransferEvent(
+                        new EscrowCancelTransferEvent(rawEvent),
+                    );
+                    break;
             }
         }
 
@@ -290,6 +311,7 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.simpleLockEnergy);
         this.filterAddresses.push(scAddress.feesCollector);
         this.filterAddresses.push(scAddress.tokenUnstake);
+        this.filterAddresses.push(scAddress.escrow);
     }
 
     private isFilteredAddress(address: string): boolean {

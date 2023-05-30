@@ -3,7 +3,6 @@ import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { scAddress } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { AuthUser } from '../auth/auth.user';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -12,48 +11,38 @@ import {
     SCPermissions,
     ScheduledTransferModel,
 } from './models/escrow.model';
-import { EscrowGetterService } from './services/escrow.getter.service';
 import { EscrowTransactionService } from './services/escrow.transaction.service';
 import { SenderCooldownValidator } from './validators/sender.cooldown.validator';
 import { TransferTokensValidator } from './validators/transfer.tokens.validator';
 import { EscrowAdminValidator } from './validators/admin.validator';
-import { ApolloError, ForbiddenError } from 'apollo-server-express';
+import { ForbiddenError } from 'apollo-server-express';
+import { EscrowAbiService } from './services/escrow.abi.service';
 
 @Resolver(EscrowModel)
-export class EscrowResolver extends GenericResolver {
+export class EscrowResolver {
     constructor(
-        private readonly escrowGetter: EscrowGetterService,
+        private readonly escrowAbi: EscrowAbiService,
         private readonly escrowTransaction: EscrowTransactionService,
-    ) {
-        super();
-    }
+    ) {}
 
     @ResolveField()
     async energyFactoryAddress(): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.escrowGetter.getEnergyFactoryAddress(),
-        );
+        return this.escrowAbi.energyFactoryAddress();
     }
 
     @ResolveField()
     async lockedTokenID(): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.escrowGetter.getLockedTokenID(),
-        );
+        return this.escrowAbi.lockedTokenID();
     }
 
     @ResolveField()
     async minLockEpochs(): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.escrowGetter.getMinLockEpochs(),
-        );
+        return this.escrowAbi.minLockEpochs();
     }
 
     @ResolveField()
     async epochsCooldownDuration(): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.escrowGetter.getEpochCooldownDuration(),
-        );
+        return this.escrowAbi.epochsCooldownDuration();
     }
 
     @Query(() => EscrowModel)
@@ -64,13 +53,13 @@ export class EscrowResolver extends GenericResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => [ScheduledTransferModel])
+    @Query(() => [ScheduledTransferModel], {
+        description: 'Get all scheduled transfers for a given user',
+    })
     async scheduledTransfers(
         @AuthUser() user: UserAuthResult,
     ): Promise<ScheduledTransferModel[]> {
-        return await this.genericQuery(() =>
-            this.escrowGetter.getScheduledTransfers(user.address),
-        );
+        return this.escrowAbi.scheduledTransfers(user.address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -78,9 +67,7 @@ export class EscrowResolver extends GenericResolver {
         description: 'Get all senders for a given receiver',
     })
     async escrowSenders(@AuthUser() user: UserAuthResult): Promise<string[]> {
-        return await this.genericQuery(() =>
-            this.escrowGetter.getAllSenders(user.address),
-        );
+        return this.escrowAbi.allSenders(user.address);
     }
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [String], {
@@ -93,7 +80,7 @@ export class EscrowResolver extends GenericResolver {
     ): Promise<string[]> {
         let address = user.address;
         if (sender) {
-            const permissions = await this.escrowGetter.getAddressPermission(
+            const permissions = await this.escrowAbi.addressPermission(
                 user.address,
             );
             if (permissions.includes(SCPermissions.ADMIN)) {
@@ -102,58 +89,67 @@ export class EscrowResolver extends GenericResolver {
                 throw new ForbiddenError('Only admins can query other senders');
             }
         }
-        return await this.genericQuery(() =>
-            this.escrowGetter.getAllReceivers(address),
-        );
+        return this.escrowAbi.allReceivers(address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => Number, { nullable: true })
+    @Query(() => Number, {
+        nullable: true,
+        description: 'Get sender last transfer epoch; used for cooldown period',
+    })
     async senderLastTransferEpoch(
         @AuthUser() user: UserAuthResult,
     ): Promise<number> {
-        return await this.genericQuery(() =>
-            this.escrowGetter.getSenderLastTransferEpoch(user.address),
+        const value = await this.escrowAbi.senderLastTransferEpoch(
+            user.address,
         );
+        return value > 0 ? value : undefined;
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => Number, { nullable: true })
     async receiverLastTransferEpoch(
         @AuthUser() user: UserAuthResult,
-        @Args('receiver', { nullable: true }) receiver: string,
+        @Args('receiver', {
+            nullable: true,
+            description:
+                'Get receiver last transfer epoch; used for cooldown period',
+        })
+        receiver: string,
     ): Promise<number> {
-        return await this.genericQuery(() =>
-            this.escrowGetter.getReceiverLastTransferEpoch(
-                receiver ?? user.address,
-            ),
+        const value = await this.escrowAbi.receiverLastTransferEpoch(
+            receiver ?? user.address,
         );
+        return value > 0 ? value : undefined;
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => TransactionModel)
+    @Query(() => TransactionModel, {
+        description: 'Generate transaction to receive escrowed tokens',
+    })
     async escrowReceive(
         @Args('senderAddress') senderAddress: string,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.escrowTransaction.withdraw(senderAddress),
-        );
+        return this.escrowTransaction.withdraw(senderAddress);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => TransactionModel)
+    @Query(() => TransactionModel, {
+        description:
+            'Generate transaction to cancel escrowed transfers; used only by admins',
+    })
     async cancelEscrowTransfer(
         @Args('sender') sender: string,
         @Args('receiver') receiver: string,
-        @AuthUser(EscrowAdminValidator) user: UserAuthResult,
+        @AuthUser(EscrowAdminValidator) _user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.escrowTransaction.cancelTransfer(sender, receiver),
-        );
+        return this.escrowTransaction.cancelTransfer(sender, receiver);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => TransactionModel)
+    @Query(() => TransactionModel, {
+        description: 'Generate transaction to lock tokens in escrow',
+    })
     async escrowTransfer(
         @Args('receiver') receiver: string,
         @Args(
@@ -164,12 +160,10 @@ export class EscrowResolver extends GenericResolver {
         inputTokens: InputTokenModel[],
         @AuthUser(SenderCooldownValidator) user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.genericQuery(() =>
-            this.escrowTransaction.lockFunds(
-                user.address,
-                receiver,
-                inputTokens,
-            ),
+        return this.escrowTransaction.lockFunds(
+            user.address,
+            receiver,
+            inputTokens,
         );
     }
 
@@ -178,8 +172,6 @@ export class EscrowResolver extends GenericResolver {
     async escrowPermissions(
         @AuthUser() user: UserAuthResult,
     ): Promise<SCPermissions[]> {
-        return await this.genericQuery(() =>
-            this.escrowGetter.getAddressPermission(user.address),
-        );
+        return this.escrowAbi.addressPermission(user.address);
     }
 }
