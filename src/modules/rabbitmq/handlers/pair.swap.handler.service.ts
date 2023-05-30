@@ -264,7 +264,6 @@ export class SwapEventHandler {
         const cacheKeys = await Promise.all([
             this.tokenSetter.setDerivedEGLD(tokenID, tokenPriceDerivedEGLD),
             this.tokenSetter.setDerivedUSD(tokenID, tokenPriceDerivedUSD),
-            this.pairSetter.setTokenPriceUSD(tokenID, tokenPriceDerivedUSD),
         ]);
 
         await this.deleteCacheKeys(cacheKeys);

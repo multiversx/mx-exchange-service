@@ -280,14 +280,6 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     lpTokenPriceUSD,
                 ),
-                this.pairSetterService.setTokenPriceUSD(
-                    pairMetadata.firstTokenID,
-                    firstTokenPriceUSD,
-                ),
-                this.pairSetterService.setTokenPriceUSD(
-                    pairMetadata.secondTokenID,
-                    secondTokenPriceUSD,
-                ),
             ]);
             invalidatedKeys.push(cachedKeys);
         }
