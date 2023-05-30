@@ -6,6 +6,7 @@ import { GenericSetterService } from 'src/services/generics/generic.setter.servi
 import { FeeDestination } from '../models/pair.model';
 import { Logger } from 'winston';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { PairInfoModel } from '../models/pair-info.model';
 
 @Injectable()
 export class PairSetterService extends GenericSetterService {
@@ -116,6 +117,18 @@ export class PairSetterService extends GenericSetterService {
     async setTotalSupply(pairAddress: string, value: string): Promise<string> {
         return await this.setData(
             this.getCacheKey('totalSupply', pairAddress),
+            value,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        );
+    }
+
+    async setPairInfoMetadata(
+        pairAddress: string,
+        value: PairInfoModel,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('pairInfoMetadata', pairAddress),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,

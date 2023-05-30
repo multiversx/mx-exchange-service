@@ -124,14 +124,32 @@ export class PairAbiService
         return await this.getTokenReserveRaw(pairAddress, tokenID);
     }
 
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
     async firstTokenReserve(pairAddress: string): Promise<string> {
         const firstTokenID = await this.firstTokenID(pairAddress);
-        return await this.tokenReserve(pairAddress, firstTokenID);
+        return await this.getTokenReserveRaw(pairAddress, firstTokenID);
     }
 
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
     async secondTokenReserve(pairAddress: string): Promise<string> {
         const secondTokenID = await this.secondTokenID(pairAddress);
-        return await this.tokenReserve(pairAddress, secondTokenID);
+        return await this.getTokenReserveRaw(pairAddress, secondTokenID);
     }
 
     async getTokenReserveRaw(

@@ -222,6 +222,10 @@ export class PairCacheWarmerService {
                     pairAddress.address,
                     pairInfo.totalSupply,
                 ),
+                this.pairSetterService.setPairInfoMetadata(
+                    pairAddress.address,
+                    pairInfo,
+                ),
             ]);
             invalidatedKeys.push(cachedKeys);
         }
