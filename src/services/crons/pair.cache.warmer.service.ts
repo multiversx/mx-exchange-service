@@ -226,6 +226,10 @@ export class PairCacheWarmerService {
                     pairAddress.address,
                     pairInfo.totalSupply,
                 ),
+                this.pairSetterService.setPairInfoMetadata(
+                    pairAddress.address,
+                    pairInfo,
+                ),
             ]);
             invalidatedKeys.push(cachedKeys);
         }
@@ -275,6 +279,14 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setLpTokenPriceUSD(
                     pairMetadata.address,
                     lpTokenPriceUSD,
+                ),
+                this.pairSetterService.setTokenPriceUSD(
+                    pairMetadata.firstTokenID,
+                    firstTokenPriceUSD,
+                ),
+                this.pairSetterService.setTokenPriceUSD(
+                    pairMetadata.secondTokenID,
+                    secondTokenPriceUSD,
                 ),
             ]);
             invalidatedKeys.push(cachedKeys);

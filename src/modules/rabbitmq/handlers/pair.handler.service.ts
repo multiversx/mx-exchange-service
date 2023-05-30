@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
@@ -36,6 +37,19 @@ export class PairHandler {
                 this.pairSetter.setTotalSupply(pairAddress, totalSupply),
             );
         }
+        totalSupply = totalSupply
+            ? totalSupply
+            : await this.pairAbi.totalSupply(pairAddress);
+        promises.push(
+            this.pairSetter.setPairInfoMetadata(
+                pairAddress,
+                new PairInfoModel({
+                    reserves0: firstTokenReserves,
+                    reserves1: secondTokenReserves,
+                    totalSupply,
+                }),
+            ),
+        );
         const cachedKeys = await Promise.all(promises);
         await this.deleteCacheKeys(cachedKeys);
     }
