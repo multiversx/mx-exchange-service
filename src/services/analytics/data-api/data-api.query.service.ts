@@ -252,26 +252,33 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const query = await this.sumHourly
-            .createQueryBuilder()
-            .select("time_bucket_gapfill('1 hour', time) as hour")
-            .addSelect('sum(sum) as sum')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .andWhere("time between now() - INTERVAL '1 day' and now()")
-            .groupBy('hour')
-            .getRawMany();
-        return (
-            query?.map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row.hour)
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.sum ?? '0',
-                    }),
-            ) ?? []
-        );
+        try {
+            const query = await this.sumHourly
+                .createQueryBuilder()
+                .select("time_bucket_gapfill('1 hour', time) as hour")
+                .addSelect('sum(sum) as sum')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere("time between now() - INTERVAL '1 day' and now()")
+                .groupBy('hour')
+                .getRawMany();
+            return (
+                query?.map(
+                    (row) =>
+                        new HistoricDataModel({
+                            timestamp: moment
+                                .utc(row.hour)
+                                .format('yyyy-MM-DD HH:mm:ss'),
+                            value: row.sum ?? '0',
+                        }),
+                ) ?? []
+            );
+        } catch (error) {
+            this.logger.error(
+                `getValues24hSum: Error getting query for ${series} ${metric}`,
+            );
+            return [];
+        }
     }
 
     @DataApiQuery()
