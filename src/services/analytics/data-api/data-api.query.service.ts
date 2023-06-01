@@ -23,7 +23,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class DataApiQueryService implements AnalyticsQueryInterface {
-    private readonly startTime = '2021-11-15 00:00:00';
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @InjectRepository(XExchangeAnalyticsEntity)
@@ -82,19 +81,18 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            // TODO: decoment when fix is done
-            // const firstRow = await this.closeDaily
-            //     .createQueryBuilder()
-            //     .select('time')
-            //     .where('series = :series', { series })
-            //     .andWhere('key = :metric', { metric })
-            //     .orderBy('time', 'ASC')
-            //     .limit(1)
-            //     .getRawOne();
+            const firstRow = await this.dexAnalytics
+                .createQueryBuilder()
+                .select('timestamp')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .orderBy('timestamp', 'ASC')
+                .limit(1)
+                .getRawOne();
 
-            // if (!firstRow) {
-            //     return [];
-            // }
+            if (!firstRow) {
+                return [];
+            }
 
             const query = await this.closeDaily
                 .createQueryBuilder()
@@ -103,12 +101,11 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :start and now()', {
-                    start: this.startTime,
+                    start: firstRow.timestamp,
                 })
                 .groupBy('day')
                 .getRawMany();
-
-            return (
+            const results =
                 query?.map(
                     (row) =>
                         new HistoricDataModel({
@@ -117,8 +114,13 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
                                 .format('yyyy-MM-DD HH:mm:ss'),
                             value: row.last ?? '0',
                         }),
-                ) ?? []
-            );
+                ) ?? [];
+            console.log({
+                series,
+                metric,
+                results,
+            });
+            return results;
         } catch (error) {
             console.log({
                 series,
@@ -133,19 +135,18 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        // TODO: decoment when fix is done
-        // const firstRow = await this.sumDaily
-        //     .createQueryBuilder()
-        //     .select('time')
-        //     .where('series = :series', { series })
-        //     .andWhere('key = :metric', { metric })
-        //     .orderBy('time', 'ASC')
-        //     .limit(1)
-        //     .getRawOne();
+        const firstRow = await this.dexAnalytics
+            .createQueryBuilder()
+            .select('timestamp')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .orderBy('timestamp', 'ASC')
+            .limit(1)
+            .getRawOne();
 
-        // if (!firstRow) {
-        //     return [];
-        // }
+        if (!firstRow) {
+            return [];
+        }
 
         const query = await this.sumDaily
             .createQueryBuilder()
@@ -154,7 +155,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
             .andWhere('time between :start and now()', {
-                start: this.startTime,
+                start: firstRow.timestamp,
             })
             .groupBy('day')
             .getRawMany();
@@ -176,26 +177,25 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        // TODO: decoment when fix is done
-        // const latestTimestamp = await this.closeDaily
-        //     .createQueryBuilder()
-        //     .select('time')
-        //     .addSelect('last')
-        //     .where('series = :series', { series })
-        //     .andWhere('key = :metric', { metric })
-        //     .orderBy('time', 'DESC')
-        //     .limit(1)
-        //     .getRawOne();
+        const latestTimestamp = await this.closeDaily
+            .createQueryBuilder()
+            .select('time')
+            .addSelect('last')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .orderBy('time', 'DESC')
+            .limit(1)
+            .getRawOne();
 
-        // if (!latestTimestamp) {
-        //     return [];
-        // }
+        if (!latestTimestamp) {
+            return [];
+        }
 
-        // const startDate = moment
-        //     .utc(latestTimestamp.time)
-        //     .isBefore(moment.utc().subtract(1, 'day'))
-        //     ? moment.utc(latestTimestamp.time)
-        //     : moment.utc().subtract(1, 'day');
+        const startDate = moment
+            .utc(latestTimestamp.times)
+            .isBefore(moment.utc().subtract(1, 'day'))
+            ? moment.utc(latestTimestamp.time)
+            : moment.utc().subtract(1, 'day');
 
         const query = await this.closeHourly
             .createQueryBuilder()
@@ -204,7 +204,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
             .andWhere('time between :start and now()', {
-                start: moment.utc().subtract(1, 'day').toDate(),
+                start: startDate.toDate(),
             })
             .groupBy('hour')
             .getRawMany();
@@ -214,12 +214,12 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
             moment.utc(row.hour).isSameOrAfter(dayBefore),
         );
 
-        // for (const result of results) {
-        //     if (result.last) {
-        //         break;
-        //     }
-        //     result.last = latestTimestamp.last;
-        // }
+        for (const result of results) {
+            if (result.last) {
+                break;
+            }
+            result.last = latestTimestamp.last;
+        }
 
         return (
             results.map(
