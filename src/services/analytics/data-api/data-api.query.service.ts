@@ -117,11 +117,12 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
                 ) ?? [];
             return results;
         } catch (error) {
-            console.log({
+            this.logger.error('getLatestCompleteValues', {
                 series,
                 metric,
+                error,
             });
-            throw error;
+            return [];
         }
     }
 
@@ -130,41 +131,50 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const firstRow = await this.dexAnalytics
-            .createQueryBuilder()
-            .select('timestamp')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .orderBy('timestamp', 'ASC')
-            .limit(1)
-            .getRawOne();
+        try {
+            const firstRow = await this.dexAnalytics
+                .createQueryBuilder()
+                .select('timestamp')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .orderBy('timestamp', 'ASC')
+                .limit(1)
+                .getRawOne();
 
-        if (!firstRow) {
+            if (!firstRow) {
+                return [];
+            }
+
+            const query = await this.sumDaily
+                .createQueryBuilder()
+                .select("time_bucket_gapfill('1 day', time) as day")
+                .addSelect('sum(sum) as sum')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere('time between :start and now()', {
+                    start: firstRow.timestamp,
+                })
+                .groupBy('day')
+                .getRawMany();
+            return (
+                query?.map(
+                    (row) =>
+                        new HistoricDataModel({
+                            timestamp: moment
+                                .utc(row.day)
+                                .format('yyyy-MM-DD HH:mm:ss'),
+                            value: row.sum ?? '0',
+                        }),
+                ) ?? []
+            );
+        } catch (error) {
+            this.logger.error('getSumCompleteValues', {
+                series,
+                metric,
+                error,
+            });
             return [];
         }
-
-        const query = await this.sumDaily
-            .createQueryBuilder()
-            .select("time_bucket_gapfill('1 day', time) as day")
-            .addSelect('sum(sum) as sum')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .andWhere('time between :start and now()', {
-                start: firstRow.timestamp,
-            })
-            .groupBy('day')
-            .getRawMany();
-        return (
-            query?.map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row.day)
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.sum ?? '0',
-                    }),
-            ) ?? []
-        );
     }
 
     @DataApiQuery()
