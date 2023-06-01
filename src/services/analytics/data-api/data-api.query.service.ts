@@ -172,22 +172,30 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const latestTimestamp = await this.closeDaily
-            .createQueryBuilder()
-            .select('time')
-            .addSelect('last')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .orderBy('time', 'DESC')
-            .limit(1)
-            .getRawOne();
+        let latestTimestamp;
+        try {
+            latestTimestamp = await this.closeDaily
+                .createQueryBuilder()
+                .select('time')
+                .addSelect('last')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .orderBy('time', 'DESC')
+                .limit(1)
+                .getRawOne();
 
-        if (!latestTimestamp) {
+            if (!latestTimestamp) {
+                return [];
+            }
+        } catch (error) {
+            this.logger.error(
+                `getValues24h: Error getting latest timestamp for ${series} ${metric}`,
+            );
             return [];
         }
 
         const startDate = moment
-            .utc(latestTimestamp.times)
+            .utc(latestTimestamp.time)
             .isBefore(moment.utc().subtract(1, 'day'))
             ? moment.utc(latestTimestamp.time)
             : moment.utc().subtract(1, 'day');
