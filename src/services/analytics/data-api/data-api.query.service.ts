@@ -115,11 +115,6 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
                             value: row.last ?? '0',
                         }),
                 ) ?? [];
-            console.log({
-                series,
-                metric,
-                results,
-            });
             return results;
         } catch (error) {
             console.log({
