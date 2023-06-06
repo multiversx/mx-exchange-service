@@ -7,7 +7,7 @@ import {
     SumDaily,
     SumHourly,
     XExchangeAnalyticsEntity,
-} from '../entities/data.api.entities';
+} from '../entities/timescaledb.entities';
 
 config();
 

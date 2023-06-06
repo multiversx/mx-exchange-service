@@ -1,55 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { TimestreamWrite } from 'aws-sdk';
-import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
-import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
-import { DataApiWriteService } from '../data-api/data-api.write.service';
+import { TimescaleDBWriteService } from '../timescaledb/timescaledb.write.service';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
+import { IngestRecord } from '../entities/ingest.record';
 
 @Injectable()
 export class AnalyticsWriteService implements AnalyticsWriteInterface {
-  constructor(
-    private readonly remoteConfigGetterService: RemoteConfigGetterService,
-    private readonly awsWrite: AWSTimestreamWriteService,
-    private readonly dataApiWrite: DataApiWriteService,
-  ) { }
+    constructor(private readonly timescaleDBWrite: TimescaleDBWriteService) {}
 
-  public async ingest({ TableName, data, Time }): Promise<void> {
-    const [isAwsTimestreamWriteActive, isDataApiWriteActive] = await this.getAnalyticsWriteFlags();
+    public async ingest({ data, Time }): Promise<void> {
+        const promises = [];
 
-    const promises = [];
+        promises.push(this.timescaleDBWrite.ingest({ data, Time }));
 
-    if (isAwsTimestreamWriteActive) {
-      promises.push(this.awsWrite.ingest({ TableName, data, Time }));
+        await Promise.all(promises);
     }
 
-    if (isDataApiWriteActive) {
-      promises.push(this.dataApiWrite.ingest({ data, Time }));
-    };
+    public async multiRecordsIngest(Records: IngestRecord[]): Promise<void> {
+        const promises = [];
 
-    await Promise.all(promises);
-  }
+        promises.push(this.timescaleDBWrite.multiRecordsIngest(Records));
 
-  public async multiRecordsIngest(TableName: string, Records: TimestreamWrite.Records): Promise<void> {
-    const [isAwsTimestreamWriteActive, isDataApiWriteActive] = await this.getAnalyticsWriteFlags();
-
-    const promises = [];
-
-    if (isAwsTimestreamWriteActive) {
-      promises.push(this.awsWrite.multiRecordsIngest(TableName, Records));
+        await Promise.all(promises);
     }
-
-    if (isDataApiWriteActive) {
-      promises.push(this.dataApiWrite.multiRecordsIngest(TableName, Records));
-    }
-
-    await Promise.all(promises);
-  }
-
-  private async getAnalyticsWriteFlags(): Promise<[boolean, boolean]> {
-    const flags = await Promise.all([
-      this.remoteConfigGetterService.getAnalyticsAWSTimestreamWriteFlagValue(),
-      this.remoteConfigGetterService.getAnalyticsDataApiWriteFlagValue(),
-    ]);
-    return flags;
-  }
 }

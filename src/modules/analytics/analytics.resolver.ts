@@ -135,7 +135,9 @@ export class AnalyticsResolver {
         );
     }
 
-    @Query(() => [HistoricDataModel])
+    @Query(() => [HistoricDataModel], {
+        deprecationReason: 'New optimized query will be available soon.',
+    })
     @UsePipes(
         new ValidationPipe({
             skipNullProperties: true,
@@ -146,15 +148,12 @@ export class AnalyticsResolver {
     async latestHistoricData(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return this.analyticsAWSGetter.latestHistoricData(
-            args.time,
-            args.series,
-            args.metric,
-            args.start,
-        );
+        return [];
     }
 
-    @Query(() => [HistoricDataModel])
+    @Query(() => [HistoricDataModel], {
+        deprecationReason: 'New optimized query will be available soon.',
+    })
     @UsePipes(
         new ValidationPipe({
             skipNullProperties: true,
@@ -165,12 +164,6 @@ export class AnalyticsResolver {
     async latestBinnedHistoricData(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return this.analyticsAWSGetter.latestBinnedHistoricData(
-            args.time,
-            args.series,
-            args.metric,
-            args.bin,
-            args.start,
-        );
+        return [];
     }
 }

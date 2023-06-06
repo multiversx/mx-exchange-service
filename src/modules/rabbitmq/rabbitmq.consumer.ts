@@ -293,7 +293,6 @@ export class RabbitMqConsumer {
 
         if (Object.keys(this.data).length > 0) {
             await this.analyticsWrite.ingest({
-                TableName: this.apiConfig.getAWSTableName(),
                 data: this.data,
                 Time: timestamp,
             });
