@@ -14,14 +14,14 @@ import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
 import { UserEsdtService } from './services/user.esdt.service';
 import { TransactionModel } from '../../models/transaction.model';
 import { UserEnergyTransactionService } from './services/userEnergy/user.energy.transaction.service';
-import { UserEnergyGetterService } from './services/userEnergy/user.energy.getter.service';
+import { UserEnergyComputeService } from './services/userEnergy/user.energy.compute.service';
 
 @Resolver()
 export class UserResolver {
     constructor(
         private readonly userEsdt: UserEsdtService,
         private readonly userMetaEsdt: UserMetaEsdtService,
-        private readonly userEnergyGetter: UserEnergyGetterService,
+        private readonly userEnergyCompute: UserEnergyComputeService,
         private readonly userEnergyTransaction: UserEnergyTransactionService,
     ) {}
 
@@ -54,7 +54,7 @@ export class UserResolver {
         skipFeesCollector: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<OutdatedContract[]> {
-        return await this.userEnergyGetter.getUserOutdatedContracts(
+        return await this.userEnergyCompute.getUserOutdatedContracts(
             user.address,
             skipFeesCollector,
         );
