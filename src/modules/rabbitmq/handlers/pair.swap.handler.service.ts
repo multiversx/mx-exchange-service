@@ -1,12 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { Logger } from 'winston';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
-import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairSetterService } from '../../pair/services/pair.setter.service';
 import {
     PAIR_EVENTS,
@@ -16,6 +13,10 @@ import {
 import { PairHandler } from './pair.handler.service';
 import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -25,20 +26,22 @@ export enum SWAP_IDENTIFIER {
 @Injectable()
 export class SwapEventHandler {
     constructor(
-        private readonly pairGetter: PairGetterService,
+        private readonly pairAbi: PairAbiService,
+        private readonly pairService: PairService,
         private readonly pairSetter: PairSetterService,
         private readonly pairCompute: PairComputeService,
         private readonly routerCompute: RouterComputeService,
+        private readonly tokenCompute: TokenComputeService,
+        private readonly tokenSetter: TokenSetterService,
         private readonly pairHandler: PairHandler,
         private readonly dataApi: MXDataApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async handleSwapEvents(event: SwapEvent): Promise<[any[], number]> {
         const [firstToken, secondToken] = await Promise.all([
-            this.pairGetter.getFirstToken(event.address),
-            this.pairGetter.getSecondToken(event.address),
+            this.pairService.getFirstToken(event.address),
+            this.pairService.getSecondToken(event.address),
         ]);
 
         const [
@@ -82,8 +85,8 @@ export class SwapEventHandler {
             this.pairCompute.computeSecondTokenPrice(event.address),
             this.pairCompute.computeFirstTokenPriceUSD(event.address),
             this.pairCompute.computeSecondTokenPriceUSD(event.address),
-            this.pairGetter.getTotalSupply(event.address),
-            this.pairGetter.getTotalFeePercent(event.address),
+            this.pairAbi.totalSupply(event.address),
+            this.pairAbi.totalFeePercent(event.address),
             this.routerCompute.computeTotalLockedValueUSD(),
         ]);
 
@@ -208,6 +211,8 @@ export class SwapEventHandler {
             firstTokenPriceUSD,
             secondTokenPriceUSD,
         );
+        await this.updateTokenPrices(firstToken.identifier);
+        await this.updateTokenPrices(secondToken.identifier);
 
         event.getIdentifier() === SWAP_IDENTIFIER.SWAP_FIXED_INPUT
             ? await this.pubSub.publish(SWAP_IDENTIFIER.SWAP_FIXED_INPUT, {
@@ -245,6 +250,22 @@ export class SwapEventHandler {
                 secondTokenPriceUSD,
             ),
         ]);
+        await this.deleteCacheKeys(cacheKeys);
+    }
+
+    private async updateTokenPrices(tokenID: string): Promise<void> {
+        const [tokenPriceDerivedEGLD, tokenPriceDerivedUSD] = await Promise.all(
+            [
+                this.tokenCompute.computeTokenPriceDerivedEGLD(tokenID),
+                this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
+            ],
+        );
+
+        const cacheKeys = await Promise.all([
+            this.tokenSetter.setDerivedEGLD(tokenID, tokenPriceDerivedEGLD),
+            this.tokenSetter.setDerivedUSD(tokenID, tokenPriceDerivedUSD),
+        ]);
+
         await this.deleteCacheKeys(cacheKeys);
     }
 

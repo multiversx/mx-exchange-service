@@ -32,6 +32,9 @@ import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSp
 import { UserModule } from '../user/user.module';
 import { TokenUnstakeModule } from '../token-unstake/token.unstake.module';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
+import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
+import { EscrowHandlerService } from './handlers/escrow.handler.service';
+import { EscrowModule } from '../escrow/escrow.module';
 
 @Module({
     imports: [
@@ -53,6 +56,8 @@ import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.ser
         EnergyModule,
         TokenUnstakeModule,
         UserModule,
+        WeeklyRewardsSplittingModule,
+        EscrowModule,
     ],
     providers: [
         RabbitMqConsumer,
@@ -69,6 +74,7 @@ import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.ser
         FeesCollectorHandlerService,
         TokenUnstakeHandlerService,
         WeeklyRewardsSplittingHandlerService,
+        EscrowHandlerService,
     ],
 })
 export class RabbitMqModule {

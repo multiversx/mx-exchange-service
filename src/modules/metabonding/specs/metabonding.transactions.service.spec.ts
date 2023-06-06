@@ -1,0 +1,119 @@
+import { PUB_SUB, RedisPubSubModule } from 'src/services/redis.pubSub.module';
+import { MetabondingTransactionService } from '../services/metabonding.transactions.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { MetabondingAbiServiceMockProvider } from '../mocks/metabonding.abi.service.mock';
+import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
+import { CommonAppModule } from 'src/common.app.module';
+import { Address } from '@multiversx/sdk-core/out';
+import { InputTokenModel } from 'src/models/inputToken.model';
+import { TransactionModel } from 'src/models/transaction.model';
+import { gasConfig, mxConfig, scAddress } from 'src/config';
+import { encodeTransactionData } from 'src/helpers/helpers';
+
+describe('MetabondingTransactionsService', () => {
+    let module: TestingModule;
+
+    beforeEach(async () => {
+        module = await Test.createTestingModule({
+            imports: [CommonAppModule, RedisPubSubModule],
+            providers: [
+                MetabondingTransactionService,
+                MetabondingAbiServiceMockProvider,
+                MXProxyServiceProvider,
+                {
+                    provide: PUB_SUB,
+                    useValue: {
+                        publish: jest.fn(),
+                    },
+                },
+            ],
+        }).compile();
+    });
+
+    it('should be defined', () => {
+        const service: MetabondingTransactionService =
+            module.get<MetabondingTransactionService>(
+                MetabondingTransactionService,
+            );
+        expect(service).toBeDefined();
+    });
+
+    it('should get stake locked assets transaction', async () => {
+        const service: MetabondingTransactionService =
+            module.get<MetabondingTransactionService>(
+                MetabondingTransactionService,
+            );
+        const sender = Address.Zero().bech32();
+        const transaction = await service.stakeLockedAsset(
+            sender,
+            new InputTokenModel({
+                tokenID: 'LKMEX-abcdef',
+                nonce: 1,
+                amount: '1000000000000000000',
+            }),
+        );
+        expect(transaction).toEqual(
+            new TransactionModel({
+                chainID: mxConfig.chainID,
+                data: encodeTransactionData(
+                    'ESDTNFTTransfer@LKMEX-abcdef@01@1000000000000000000@erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n@stakeLockedAsset',
+                ),
+                gasLimit: gasConfig.metabonding.stakeLockedAsset.default,
+                gasPrice: 1000000000,
+                nonce: 0,
+                options: undefined,
+                receiver: sender,
+                sender,
+                signature: undefined,
+                value: '0',
+                version: 1,
+            }),
+        );
+    });
+
+    it('should get unstake transaction', async () => {
+        const service: MetabondingTransactionService =
+            module.get<MetabondingTransactionService>(
+                MetabondingTransactionService,
+            );
+        const transaction = await service.unstake('1000000000000000000');
+        expect(transaction).toEqual(
+            new TransactionModel({
+                chainID: mxConfig.chainID,
+                data: encodeTransactionData('unstake@1000000000000000000'),
+                gasLimit: gasConfig.metabonding.unstake,
+                gasPrice: 1000000000,
+                nonce: 0,
+                options: undefined,
+                receiver: scAddress.metabondingStakingAddress,
+                sender: Address.Zero().bech32(),
+                signature: undefined,
+                value: '0',
+                version: 1,
+            }),
+        );
+    });
+
+    it('should get unbond transaction', async () => {
+        const service: MetabondingTransactionService =
+            module.get<MetabondingTransactionService>(
+                MetabondingTransactionService,
+            );
+        const transaction = await service.unbond(Address.Zero().bech32());
+        expect(transaction).toEqual(
+            new TransactionModel({
+                chainID: mxConfig.chainID,
+                data: encodeTransactionData('unbond'),
+                gasLimit: gasConfig.metabonding.unbond,
+                gasPrice: 1000000000,
+                nonce: 0,
+                options: undefined,
+                receiver: scAddress.metabondingStakingAddress,
+                sender: Address.Zero().bech32(),
+                signature: undefined,
+                value: '0',
+                version: 1,
+            }),
+        );
+    });
+});

@@ -184,9 +184,9 @@ export class MXProxyService {
         );
     }
 
-    async getLockedTokenWrapperContract(address: string) {
+    async getLockedTokenWrapperContract() {
         return this.getSmartContract(
-            address,
+            scAddress.lockedTokenWrapper,
             abiConfig.lockedTokenWrapper,
             'LockedTokenWrapper',
         );
@@ -205,6 +205,14 @@ export class MXProxyService {
             scAddress.tokenUnstake,
             abiConfig.tokenUnstake,
             'TokenUnstakeModule',
+        );
+    }
+
+    async getEscrowContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.escrow,
+            abiConfig.escrow,
+            'LkmexTransfer',
         );
     }
 

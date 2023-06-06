@@ -6,9 +6,9 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { OutdatedContract } from '../../models/user.model';
 import { oneMinute } from '../../../../helpers/helpers';
-import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { scAddress } from 'src/config';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 
 @Injectable()
 export class UserEnergyGetterService extends GenericGetterService {
@@ -16,7 +16,7 @@ export class UserEnergyGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly userEnergyCompute: UserEnergyComputeService,
-        private readonly energyGetter: EnergyGetterService,
+        private readonly energyAbi: EnergyAbiService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'userEnergy';
@@ -44,9 +44,7 @@ export class UserEnergyGetterService extends GenericGetterService {
         skipFeesCollector = false,
     ): Promise<OutdatedContract[]> {
         const activeFarms = await this.getUserActiveFarmsV2(userAddress);
-        const userEnergy = await this.energyGetter.getEnergyEntryForUser(
-            userAddress,
-        );
+        const userEnergy = await this.energyAbi.energyEntryForUser(userAddress);
 
         const promises = activeFarms.map((farm) =>
             this.getUserOutdatedContract(userAddress, userEnergy, farm),

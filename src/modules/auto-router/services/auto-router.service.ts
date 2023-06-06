@@ -4,15 +4,12 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import {
     AutoRouterComputeService,
     BestSwapRoute,
 } from './auto-router.compute.service';
 import { constantsConfig, mxConfig } from 'src/config';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { AutoRouterArgs } from '../models/auto-router.args';
-import { RouterGetterService } from '../../router/services/router.getter.service';
 import { AutoRouteModel, SWAP_TYPE } from '../models/auto-route.model';
 import { AutoRouterTransactionService } from './auto-router.transactions.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -24,17 +21,22 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneMinute } from 'src/helpers/helpers';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class AutoRouterService {
     constructor(
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly tokenGetter: TokenGetterService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly pairAbi: PairAbiService,
+        private readonly pairCompute: PairComputeService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
         private readonly autoRouterTransactionService: AutoRouterTransactionService,
         private readonly pairTransactionService: PairTransactionService,
-        private readonly wrapService: WrapService,
+        private readonly wrapAbi: WrapAbiService,
         private readonly pairService: PairService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cacheService: CachingService,
@@ -140,8 +142,8 @@ export class AutoRouterService {
                       tokenOutID,
                       args.amountOut,
                   ),
-            this.pairGetterService.getTokenPriceUSD(tokenInID),
-            this.pairGetterService.getTokenPriceUSD(tokenOutID),
+            this.pairCompute.tokenPriceUSD(tokenInID),
+            this.pairCompute.tokenPriceUSD(tokenOutID),
         ]);
 
         let [amountIn, amountOut] = this.isFixedInput(swapType)
@@ -221,8 +223,8 @@ export class AutoRouterService {
                           args.amountOut,
                           swapType,
                       ),
-                this.pairGetterService.getTokenPriceUSD(tokenInID),
-                this.pairGetterService.getTokenPriceUSD(tokenOutID),
+                this.pairCompute.tokenPriceUSD(tokenInID),
+                this.pairCompute.tokenPriceUSD(tokenOutID),
             ]);
         } catch (error) {
             this.logger.error(
@@ -233,8 +235,9 @@ export class AutoRouterService {
         }
 
         for (const address of swapRoute.addressRoute) {
-            const lockedTokensInfo =
-                await this.pairGetterService.getLockedTokensInfo(address);
+            const lockedTokensInfo = await this.pairService.getLockedTokensInfo(
+                address,
+            );
             if (
                 lockedTokensInfo !== undefined &&
                 swapRoute.addressRoute.length > 1
@@ -326,9 +329,9 @@ export class AutoRouterService {
     }
 
     private async getAllActivePairs() {
-        const pairAddresses = await this.routerGetter.getAllPairsAddress();
+        const pairAddresses = await this.routerAbi.pairsAddress();
         const statesPromises = pairAddresses.map((address) =>
-            this.pairGetterService.getState(address),
+            this.pairAbi.state(address),
         );
         const states = await Promise.all(statesPromises);
         const activePairs: string[] = [];
@@ -346,10 +349,10 @@ export class AutoRouterService {
     private async getPair(pairAddress: string): Promise<PairModel> {
         const [info, totalFeePercent, firstToken, secondToken] =
             await Promise.all([
-                this.pairGetterService.getPairInfoMetadata(pairAddress),
-                this.pairGetterService.getTotalFeePercent(pairAddress),
-                this.pairGetterService.getFirstToken(pairAddress),
-                this.pairGetterService.getSecondToken(pairAddress),
+                this.pairAbi.pairInfoMetadata(pairAddress),
+                this.pairAbi.totalFeePercent(pairAddress),
+                this.pairService.getFirstToken(pairAddress),
+                this.pairService.getSecondToken(pairAddress),
             ]);
 
         return new PairModel({
@@ -362,8 +365,7 @@ export class AutoRouterService {
     }
 
     private async toWrappedIfEGLD(tokensIDs: string[]) {
-        const wrappedEgldTokenID =
-            await this.wrapService.getWrappedEgldTokenID();
+        const wrappedEgldTokenID = await this.wrapAbi.wrappedEgldTokenID();
 
         return tokensIDs.map((t) => {
             return mxConfig.EGLDIdentifier === t ? wrappedEgldTokenID : t;
@@ -501,9 +503,9 @@ export class AutoRouterService {
                 intermediaryTokenOutPriceUSD,
             ] = await Promise.all([
                 this.tokenGetter.getTokenMetadata(tokenInID),
-                this.pairGetterService.getTokenPriceUSD(tokenInID),
+                this.pairCompute.tokenPriceUSD(tokenInID),
                 this.tokenGetter.getTokenMetadata(tokenOutID),
-                this.pairGetterService.getTokenPriceUSD(tokenOutID),
+                this.pairCompute.tokenPriceUSD(tokenOutID),
             ]);
 
             const amountInUSD = computeValueUSD(

@@ -1,46 +1,41 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import {
     Interaction,
-    SmartContract,
     TokenIdentifierValue,
     U32Value,
 } from '@multiversx/sdk-core';
-import { WeeklyRewardsSplittingAbiService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import { Mixin } from 'ts-mixer';
 import BigNumber from 'bignumber.js';
-import { WeekTimekeepingAbiService } from '../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { IFeesCollectorAbiService } from './interfaces';
 
 @Injectable()
-export class FeesCollectorAbiService extends Mixin(
-    GenericAbiService,
-    WeeklyRewardsSplittingAbiService,
-    WeekTimekeepingAbiService,
-) {
-    constructor(
-        protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly timekeepingGetter: WeekTimekeepingGetterService,
-    ) {
-        super(mxProxy, logger);
-        this.getContractHandler = this.getContract;
+export class FeesCollectorAbiService
+    extends GenericAbiService
+    implements IFeesCollectorAbiService
+{
+    constructor(protected readonly mxProxy: MXProxyService) {
+        super(mxProxy);
     }
 
-    async getContract(scAddress: string): Promise<SmartContract> {
-        const contract = await this.mxProxy.getFeesCollectorContract(scAddress);
-        return contract;
+    @ErrorLoggerAsync({
+        className: FeesCollectorAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async accumulatedFees(week: number, token: string): Promise<string> {
+        return await this.getAccumulatedFeesRaw(week, token);
     }
 
-    async accumulatedFees(
-        scAddress: string,
-        week: number,
-        token: string,
-    ): Promise<string> {
-        const contract = await this.getContractHandler(scAddress);
+    async getAccumulatedFeesRaw(week: number, token: string): Promise<string> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAccumulatedFees([
                 new U32Value(new BigNumber(week)),
@@ -50,24 +45,60 @@ export class FeesCollectorAbiService extends Mixin(
         return response.firstValue.valueOf().integerValue().toFixed();
     }
 
-    async lockedTokenId(scAddress: string): Promise<string> {
-        const contract = await this.getContractHandler(scAddress);
+    @ErrorLoggerAsync({
+        className: FeesCollectorAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async lockedTokenID(): Promise<string> {
+        return await this.getLockedTokenIDRaw();
+    }
+
+    async getLockedTokenIDRaw(): Promise<string> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLockedTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 
-    async lockedTokensPerBlock(scAddress: string): Promise<string> {
-        const contract = await this.getContractHandler(scAddress);
+    @ErrorLoggerAsync({
+        className: FeesCollectorAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async lockedTokensPerBlock(): Promise<string> {
+        return await this.getLockedTokensPerBlockRaw();
+    }
+
+    async getLockedTokensPerBlockRaw(): Promise<string> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLockedTokensPerBlock();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
-    async allTokens(scAddress: string): Promise<string[]> {
-        const contract = await this.getContractHandler(scAddress);
+    @ErrorLoggerAsync({
+        className: FeesCollectorAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async allTokens(): Promise<string[]> {
+        return await this.getAllTokensRaw();
+    }
+
+    async getAllTokensRaw(): Promise<string[]> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllTokens();
         const response = await this.getGenericData(interaction);

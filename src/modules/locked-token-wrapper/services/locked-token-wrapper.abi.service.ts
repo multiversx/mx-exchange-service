@@ -1,43 +1,51 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { Interaction } from '@multiversx/sdk-core';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class LockedTokenWrapperAbiService extends GenericAbiService {
-    constructor(
-        protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-    ) {
-        super(mxProxy, logger);
+    constructor(protected readonly mxProxy: MXProxyService) {
+        super(mxProxy);
     }
 
-    async lockedTokenId(address: string): Promise<string> {
-        const contract = await this.mxProxy.getLockedTokenWrapperContract(
-            address,
-        );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedTokenId();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
+    @ErrorLoggerAsync({
+        className: LockedTokenWrapperAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'lockedTokenWrapper',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async wrappedTokenId(): Promise<string> {
+        return await this.wrappedTokenIdRaw();
     }
 
-    async wrappedTokenId(address: string): Promise<string> {
-        const contract = await this.mxProxy.getLockedTokenWrapperContract(
-            address,
-        );
+    async wrappedTokenIdRaw(): Promise<string> {
+        const contract = await this.mxProxy.getLockedTokenWrapperContract();
         const interaction: Interaction =
             contract.methodsExplicit.getWrappedTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
-    async energyFactoryAddress(address: string): Promise<string> {
-        const contract = await this.mxProxy.getLockedTokenWrapperContract(
-            address,
-        );
+    @ErrorLoggerAsync({
+        className: LockedTokenWrapperAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'lockedTokenWrapper',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async energyFactoryAddress(): Promise<string> {
+        return await this.energyFactoryAddressRaw();
+    }
+
+    async energyFactoryAddressRaw(): Promise<string> {
+        const contract = await this.mxProxy.getLockedTokenWrapperContract();
         const interaction: Interaction =
             contract.methodsExplicit.getEnergyFactoryAddress();
         const response = await this.getGenericData(interaction);

@@ -11,13 +11,10 @@ export class LockedTokenWrapperTransactionService {
     constructor(private readonly mxProxy: MXProxyService) {}
 
     async unwrapLockedToken(
-        scAddress: string,
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getLockedTokenWrapperContract(
-            scAddress,
-        );
+        const contract = await this.mxProxy.getLockedTokenWrapperContract();
         return contract.methodsExplicit
             .unwrapLockedToken()
             .withSingleESDTNFTTransfer(
@@ -35,13 +32,10 @@ export class LockedTokenWrapperTransactionService {
     }
 
     async wrapLockedToken(
-        scAddress: string,
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getLockedTokenWrapperContract(
-            scAddress,
-        );
+        const contract = await this.mxProxy.getLockedTokenWrapperContract();
         return contract.methodsExplicit
             .wrapLockedToken()
             .withSingleESDTNFTTransfer(

@@ -8,29 +8,48 @@ import {
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import BigNumber from 'bignumber.js';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
-import {
-    ErrorGetContractHandlerNotSet,
-    VmQueryError,
-} from '../../../utils/errors.constants';
+import { VmQueryError } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@multiversx/sdk-exchange';
 import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { WeekTimekeepingGetterService } from '../../week-timekeeping/services/week-timekeeping.getter.service';
+import { scAddress } from 'src/config';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { IWeeklyRewardsSplittingAbiService } from '../interfaces';
 
 @Injectable()
-export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
+export class WeeklyRewardsSplittingAbiService
+    extends GenericAbiService
+    implements IWeeklyRewardsSplittingAbiService
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly timekeepingGetter: WeekTimekeepingGetterService,
+        private readonly weekTimekeepCompute: WeekTimekeepingComputeService,
     ) {
-        super(mxProxy, logger);
+        super(mxProxy);
     }
+
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
     async currentClaimProgress(
+        scAddress: string,
+        user: string,
+    ): Promise<ClaimProgress> {
+        return await this.currentClaimProgressRaw(scAddress, user);
+    }
+
+    async currentClaimProgressRaw(
         scAddress: string,
         user: string,
     ): Promise<ClaimProgress> {
@@ -62,12 +81,33 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         });
     }
 
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
     async userEnergyForWeek(
         scAddress: string,
         user: string,
         week: number,
     ): Promise<EnergyType> {
+        return await this.userEnergyForWeekRaw(scAddress, user, week);
+    }
+
+    async userEnergyForWeekRaw(
+        scAddress: string,
+        user: string,
+        week: number,
+    ): Promise<EnergyType> {
         const contract = await this.getContractHandler(scAddress);
+        const endEpochForWeek = await this.weekTimekeepCompute.endEpochForWeek(
+            scAddress,
+            week,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getUserEnergyForWeek([
                 new AddressValue(Address.fromString(user)),
@@ -91,11 +131,6 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
                     totalLockedTokens: '0',
                 };
             }
-            const endEpochForWeek =
-                await this.timekeepingGetter.getEndEpochForWeek(
-                    scAddress,
-                    week,
-                );
             if (endEpochForWeek > claimProgress.energy.lastUpdateEpoch) {
                 claimProgress.energy.amount = new BigNumber(
                     claimProgress.energy.amount,
@@ -119,7 +154,23 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         ).toJSON();
     }
 
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
     async lastActiveWeekForUser(
+        scAddress: string,
+        user: string,
+    ): Promise<number> {
+        return await this.lastActiveWeekForUserRaw(scAddress, user);
+    }
+
+    async lastActiveWeekForUserRaw(
         scAddress: string,
         user: string,
     ): Promise<number> {
@@ -132,7 +183,20 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
     async lastGlobalUpdateWeek(scAddress: string): Promise<number> {
+        return await this.lastGlobalUpdateWeekRaw(scAddress);
+    }
+
+    async lastGlobalUpdateWeekRaw(scAddress: string): Promise<number> {
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getLastGlobalUpdateWeek();
@@ -140,7 +204,23 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
     async totalRewardsForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<EsdtTokenPayment[]> {
+        return await this.totalRewardsForWeekRaw(scAddress, week);
+    }
+
+    async totalRewardsForWeekRaw(
         scAddress: string,
         week: number,
     ): Promise<EsdtTokenPayment[]> {
@@ -163,7 +243,23 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         return rewards;
     }
 
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
     async totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
+        return await this.totalEnergyForWeekRaw(scAddress, week);
+    }
+
+    async totalEnergyForWeekRaw(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getTotalEnergyForWeek([
@@ -173,7 +269,23 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: WeeklyRewardsSplittingAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weeklyRewards',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
     async totalLockedTokensForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
+        return await this.totalLockedTokensForWeekRaw(scAddress, week);
+    }
+
+    async totalLockedTokensForWeekRaw(
         scAddress: string,
         week: number,
     ): Promise<string> {
@@ -186,9 +298,13 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    protected getContractHandler: (
-        scAddress: string,
-    ) => Promise<SmartContract> = (scAddress) => {
-        throw ErrorGetContractHandlerNotSet();
-    };
+    private getContractHandler(
+        contractAddress: string,
+    ): Promise<SmartContract> {
+        if (scAddress.feesCollector === contractAddress) {
+            return this.mxProxy.getFeesCollectorContract();
+        }
+
+        return this.mxProxy.getFarmSmartContract(contractAddress);
+    }
 }

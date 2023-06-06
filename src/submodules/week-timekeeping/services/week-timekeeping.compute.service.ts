@@ -1,49 +1,105 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { ApiConfigService } from '../../../helpers/api.config.service';
-import { WeekTimekeepingGetterService } from './week-timekeeping.getter.service';
+import { Injectable } from '@nestjs/common';
 import { constantsConfig } from '../../../config';
-import { ErrInvalidEpochLowerThanFirstWeekStartEpoch, ErrInvalidWeek } from '../errors';
+import {
+    ErrInvalidEpochLowerThanFirstWeekStartEpoch,
+    ErrInvalidWeek,
+} from '../errors';
 import { IWeekTimekeepingComputeService } from '../interfaces';
+import { WeekTimekeepingAbiService } from './week-timekeeping.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
-export class WeekTimekeepingComputeService implements IWeekTimekeepingComputeService {
-    epochsInWeek: number;
+export class WeekTimekeepingComputeService
+    implements IWeekTimekeepingComputeService
+{
+    readonly epochsInWeek: number;
 
     constructor(
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly configService: ApiConfigService,
-        @Inject(forwardRef(() => WeekTimekeepingGetterService))
-        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
     ) {
         this.epochsInWeek = constantsConfig.EPOCHS_IN_WEEK;
     }
 
-    async computeWeekForEpoch(scAddress: string, epoch: number): Promise<number> {
-        const firstWeekStartEpoch = await this.weekTimekeepingGetter.getFirstWeekStartEpoch(scAddress);
+    @ErrorLoggerAsync({
+        className: WeekTimekeepingComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weekTimekeeping',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async weekForEpoch(scAddress: string, epoch: number): Promise<number> {
+        return await this.computeWeekForEpoch(scAddress, epoch);
+    }
+
+    async computeWeekForEpoch(
+        scAddress: string,
+        epoch: number,
+    ): Promise<number> {
+        const firstWeekStartEpoch =
+            await this.weekTimekeepingAbi.firstWeekStartEpoch(scAddress);
         if (epoch < firstWeekStartEpoch) {
-            throw ErrInvalidEpochLowerThanFirstWeekStartEpoch
+            throw ErrInvalidEpochLowerThanFirstWeekStartEpoch;
         }
 
-        return Math.floor((epoch - firstWeekStartEpoch) / this.epochsInWeek) + 1;
+        return (
+            Math.floor((epoch - firstWeekStartEpoch) / this.epochsInWeek) + 1
+        );
     }
 
-    async computeStartEpochForWeek(scAddress: string, week: number): Promise<number> {
-        const firstWeekStartEpoch = await this.weekTimekeepingGetter.getFirstWeekStartEpoch(scAddress);
-        if (week <= 0) {
-            throw ErrInvalidWeek
-        }
-
-        return firstWeekStartEpoch + (week - 1) * this.epochsInWeek
+    @ErrorLoggerAsync({
+        className: WeekTimekeepingComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weekTimekeeping',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async startEpochForWeek(scAddress: string, week: number): Promise<number> {
+        return await this.computeStartEpochForWeek(scAddress, week);
     }
 
-    async computeEndEpochForWeek(scAddress: string, week: number): Promise<number> {
+    async computeStartEpochForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<number> {
         if (week <= 0) {
-            throw ErrInvalidWeek
+            throw ErrInvalidWeek;
+        }
+        const firstWeekStartEpoch =
+            await this.weekTimekeepingAbi.firstWeekStartEpoch(scAddress);
+        return firstWeekStartEpoch + (week - 1) * this.epochsInWeek;
+    }
+
+    @ErrorLoggerAsync({
+        className: WeekTimekeepingComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'weekTimekeeping',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async endEpochForWeek(scAddress: string, week: number): Promise<number> {
+        return await this.computeEndEpochForWeek(scAddress, week);
+    }
+
+    async computeEndEpochForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<number> {
+        if (week <= 0) {
+            throw ErrInvalidWeek;
         }
 
-        const startEpochForWeek = await this.computeStartEpochForWeek(scAddress, week)
+        const startEpochForWeek = await this.computeStartEpochForWeek(
+            scAddress,
+            week,
+        );
         return startEpochForWeek + this.epochsInWeek - 1;
     }
 }

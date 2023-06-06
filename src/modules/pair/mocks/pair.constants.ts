@@ -109,6 +109,41 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 price: '1',
                 roles: new RolesModel(),
             });
+        case 'MEX-27f4cd':
+            return new EsdtToken({
+                identifier: 'MEX-27f4cd',
+                name: 'MEX',
+                ticker: 'MEX',
+                owner: 'owner_address',
+                supply: '2000000000000000000',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+                type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
+            });
         case 'TOK1USDCLP':
             return new EsdtToken({
                 identifier: 'TOK1USDCLP',

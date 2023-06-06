@@ -44,8 +44,11 @@ import {
     WEEKLY_REWARDS_SPLITTING_EVENTS,
     TOKEN_UNSTAKE_EVENTS,
     UserUnlockedTokensEvent,
+    ESCROW_EVENTS,
+    EscrowLockFundsEvent,
+    EscrowWithdrawEvent,
+    EscrowCancelTransferEvent,
 } from '@multiversx/sdk-exchange';
-import { RouterGetterService } from '../router/services/router.getter.service';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
@@ -55,6 +58,8 @@ import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSp
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
 import { AnalyticsWriteService } from 'src/services/analytics/services/analytics.write.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { RouterAbiService } from '../router/services/router.abi.service';
+import { EscrowHandlerService } from './handlers/escrow.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -63,7 +68,7 @@ export class RabbitMqConsumer {
 
     constructor(
         private readonly apiConfig: ApiConfigService,
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly liquidityHandler: LiquidityHandler,
         private readonly swapHandler: SwapEventHandler,
         private readonly wsFarmHandler: RabbitMQFarmHandlerService,
@@ -76,6 +81,7 @@ export class RabbitMqConsumer {
         private readonly feesCollectorHandler: FeesCollectorHandlerService,
         private readonly weeklyRewardsSplittingHandler: WeeklyRewardsSplittingHandlerService,
         private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
+        private readonly escrowHandler: EscrowHandlerService,
         private readonly analyticsWrite: AnalyticsWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -267,6 +273,21 @@ export class RabbitMqConsumer {
                         new UserUnlockedTokensEvent(rawEvent),
                     );
                     break;
+                case ESCROW_EVENTS.LOCK_FUNDS:
+                    await this.escrowHandler.handleEscrowLockFundsEvent(
+                        new EscrowLockFundsEvent(rawEvent),
+                    );
+                    break;
+                case ESCROW_EVENTS.WITHDRAW:
+                    await this.escrowHandler.handleEscrowWithdrawEvent(
+                        new EscrowWithdrawEvent(rawEvent),
+                    );
+                    break;
+                case ESCROW_EVENTS.CANCEL_TRANSFER:
+                    await this.escrowHandler.handleEscrowCancelTransferEvent(
+                        new EscrowCancelTransferEvent(rawEvent),
+                    );
+                    break;
             }
         }
 
@@ -282,7 +303,7 @@ export class RabbitMqConsumer {
 
     async getFilterAddresses(): Promise<void> {
         this.filterAddresses = [];
-        this.filterAddresses = await this.routerGetter.getAllPairsAddress();
+        this.filterAddresses = await this.routerAbi.pairsAddress();
         this.filterAddresses.push(...farmsAddresses());
         this.filterAddresses.push(scAddress.routerAddress);
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
@@ -290,6 +311,7 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.simpleLockEnergy);
         this.filterAddresses.push(scAddress.feesCollector);
         this.filterAddresses.push(scAddress.tokenUnstake);
+        this.filterAddresses.push(scAddress.escrow);
     }
 
     private isFilteredAddress(address: string): boolean {

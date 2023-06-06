@@ -4,7 +4,6 @@ import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 
 export abstract class FarmSetterService extends GenericSetterService {
@@ -13,11 +12,12 @@ export abstract class FarmSetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'farm';
     }
 
     async setFarmTokenID(farmAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'farmTokenID'),
+            this.getCacheKey('farmTokenID', farmAddress),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -29,7 +29,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'farmingTokenID'),
+            this.getCacheKey('farmingTokenID', farmAddress),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -41,7 +41,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'farmedTokenID'),
+            this.getCacheKey('farmedTokenID', farmAddress),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -53,7 +53,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'farmTokenSupply'),
+            this.getCacheKey('farmTokenSupply', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -65,7 +65,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'farmingTokenReserve'),
+            this.getCacheKey('farmingTokenReserve', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -77,7 +77,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'rewardsPerBlock'),
+            this.getCacheKey('rewardsPerBlock', farmAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -89,7 +89,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'penaltyPercent'),
+            this.getCacheKey('penaltyPercent', farmAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -101,7 +101,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'minimumFarmingEpochs'),
+            this.getCacheKey('minimumFarmingEpochs', farmAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -110,7 +110,7 @@ export abstract class FarmSetterService extends GenericSetterService {
 
     async setState(farmAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'state'),
+            this.getCacheKey('state', farmAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -122,7 +122,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: boolean,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'produceRewardsEnabled'),
+            this.getCacheKey('produceRewardsEnabled', farmAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -134,7 +134,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'rewardPerShare'),
+            this.getCacheKey('rewardPerShare', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -146,7 +146,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'rewardReserve'),
+            this.getCacheKey('rewardReserve', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -155,10 +155,10 @@ export abstract class FarmSetterService extends GenericSetterService {
 
     async setLastRewardBlockNonce(
         farmAddress: string,
-        value: string,
+        value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'lastRewardBlocknonce'),
+            this.getCacheKey('lastRewardBlocknonce', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -170,7 +170,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'undistributedFees'),
+            this.getCacheKey('undistributedFees', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -182,7 +182,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'currentBlockFee'),
+            this.getCacheKey('currentBlockFee', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -194,7 +194,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'divisionSafetyConstant'),
+            this.getCacheKey('divisionSafetyConstant', farmAddress),
             value,
             oneHour(),
         );
@@ -205,7 +205,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'aprMultiplier'),
+            this.getCacheKey('aprMultiplier', farmAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -217,7 +217,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'farmedTokenPriceUSD'),
+            this.getCacheKey('farmedTokenPriceUSD', farmAddress),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -229,7 +229,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'farmingTokenPriceUSD'),
+            this.getCacheKey('farmingTokenPriceUSD', farmAddress),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -241,7 +241,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'totalValueLockedUSD'),
+            this.getCacheKey('totalValueLockedUSD', farmAddress),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -253,7 +253,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'unlockedRewardsAPR'),
+            this.getCacheKey('unlockedRewardsAPR', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -265,7 +265,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'lockedRewardsAPR'),
+            this.getCacheKey('lockedRewardsAPR', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -274,14 +274,10 @@ export abstract class FarmSetterService extends GenericSetterService {
 
     async setFarmAPR(farmAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getFarmCacheKey(farmAddress, 'farmAPR'),
+            this.getCacheKey('farmAPR', farmAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );
-    }
-
-    protected getFarmCacheKey(farmAddress: string, ...args: any) {
-        return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }
 }

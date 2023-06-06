@@ -1,48 +1,51 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { Logger } from 'winston';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
-import { FarmGetterServiceV1_2 } from './farm.v1.2.getter.service';
+import { FarmAbiServiceV1_2 } from './farm.v1.2.abi.service';
+import { FarmServiceV1_2 } from './farm.v1.2.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { IFarmComputeServiceV1_2 } from './interfaces';
 
 @Injectable()
-export class FarmComputeServiceV1_2 extends FarmComputeService {
+export class FarmComputeServiceV1_2
+    extends FarmComputeService
+    implements IFarmComputeServiceV1_2
+{
     constructor(
-        @Inject(forwardRef(() => FarmGetterServiceV1_2))
-        protected readonly farmGetter: FarmGetterServiceV1_2,
+        protected readonly farmAbi: FarmAbiServiceV1_2,
+        @Inject(forwardRef(() => FarmServiceV1_2))
+        protected readonly farmService: FarmServiceV1_2,
         protected readonly pairService: PairService,
-        protected readonly pairGetter: PairGetterService,
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(
-            farmGetter,
+            farmAbi,
+            farmService,
             pairService,
-            pairGetter,
             pairCompute,
             contextGetter,
             tokenCompute,
-            logger,
         );
     }
 
     async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
         const [farmingToken, farmingTokenReserve] = await Promise.all([
-            this.farmGetter.getFarmingToken(farmAddress),
-            this.farmGetter.getFarmingTokenReserve(farmAddress),
+            this.farmService.getFarmingToken(farmAddress),
+            this.farmAbi.farmingTokenReserve(farmAddress),
         ]);
 
         if (scAddress.has(farmingToken.identifier)) {
-            const tokenPriceUSD = await this.pairGetter.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairCompute.tokenPriceUSD(
                 farmingToken.identifier,
             );
             return computeValueUSD(
@@ -62,17 +65,43 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
         return lockedValuesUSD;
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async lockedFarmingTokenReserve(farmAddress: string): Promise<string> {
+        return this.computeLockedFarmingTokenReserve(farmAddress);
+    }
+
     async computeLockedFarmingTokenReserve(
         farmAddress: string,
     ): Promise<string> {
         const [unlockedFarmingTokenReserve, farmingTokenReserve] =
             await Promise.all([
                 this.computeUnlockedFarmingTokenReserve(farmAddress),
-                this.farmGetter.getFarmingTokenReserve(farmAddress),
+                this.farmAbi.farmingTokenReserve(farmAddress),
             ]);
         return new BigNumber(farmingTokenReserve)
             .minus(unlockedFarmingTokenReserve)
             .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async unlockedFarmingTokenReserve(farmAddress: string): Promise<string> {
+        return this.computeUnlockedFarmingTokenReserve(farmAddress);
     }
 
     async computeUnlockedFarmingTokenReserve(
@@ -80,9 +109,9 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
     ): Promise<string> {
         const [farmingTokenReserve, farmTokenSupply, aprMultiplier] =
             await Promise.all([
-                this.farmGetter.getFarmingTokenReserve(farmAddress),
-                this.farmGetter.getFarmTokenSupply(farmAddress),
-                this.farmGetter.getLockedRewardAprMuliplier(farmAddress),
+                this.farmAbi.farmingTokenReserve(farmAddress),
+                this.farmAbi.farmTokenSupply(farmAddress),
+                this.farmAbi.lockedRewardAprMuliplier(farmAddress),
             ]);
 
         return new BigNumber(farmingTokenReserve)
@@ -92,16 +121,29 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
             .toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async lockedFarmingTokenReserveUSD(farmAddress: string): Promise<string> {
+        return this.computeLockedFarmingTokenReserveUSD(farmAddress);
+    }
+
     async computeLockedFarmingTokenReserveUSD(
         farmAddress: string,
     ): Promise<string> {
         const [farmingToken, lockedFarmingTokenReserve] = await Promise.all([
-            this.farmGetter.getFarmingToken(farmAddress),
+            this.farmService.getFarmingToken(farmAddress),
             this.computeLockedFarmingTokenReserve(farmAddress),
         ]);
 
         if (scAddress.has(farmingToken.identifier)) {
-            const tokenPriceUSD = await this.pairGetter.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairCompute.tokenPriceUSD(
                 farmingToken.identifier,
             );
             return computeValueUSD(
@@ -121,16 +163,29 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
         return lockedValuesUSD;
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async unlockedFarmingTokenReserveUSD(farmAddress: string): Promise<string> {
+        return this.computeUnlockedFarmingTokenReserveUSD(farmAddress);
+    }
+
     async computeUnlockedFarmingTokenReserveUSD(
         farmAddress: string,
     ): Promise<string> {
         const [farmingToken, unlockedFarmingTokenReserve] = await Promise.all([
-            this.farmGetter.getFarmingToken(farmAddress),
+            this.farmService.getFarmingToken(farmAddress),
             this.computeUnlockedFarmingTokenReserve(farmAddress),
         ]);
 
         if (scAddress.has(farmingToken.identifier)) {
-            const tokenPriceUSD = await this.pairGetter.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairCompute.tokenPriceUSD(
                 farmingToken.identifier,
             );
             return computeValueUSD(
@@ -158,13 +213,26 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
         ] = await Promise.all([
             this.computeLockedFarmingTokenReserveUSD(farmAddress),
             this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
-            this.farmGetter.getLockedRewardAprMuliplier(farmAddress),
+            this.farmAbi.lockedRewardAprMuliplier(farmAddress),
         ]);
 
         return new BigNumber(lockedFarmingTokenReserveUSD)
             .times(aprMultiplier)
             .plus(unlockedFarmingTokenReserveUSD)
             .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async unlockedRewardsAPR(farmAddress: string): Promise<string> {
+        return this.computeUnlockedRewardsAPR(farmAddress);
     }
 
     async computeUnlockedRewardsAPR(farmAddress: string): Promise<string> {
@@ -175,8 +243,8 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
             virtualValueLockedUSD,
             unlockedFarmingTokenReserveUSD,
         ] = await Promise.all([
-            this.farmGetter.getFarmedTokenID(farmAddress),
-            this.farmGetter.getFarmingTokenID(farmAddress),
+            this.farmAbi.farmedTokenID(farmAddress),
+            this.farmAbi.farmingTokenID(farmAddress),
             this.computeAnualRewardsUSD(farmAddress),
             this.computeVirtualValueLockedUSD(farmAddress),
             this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
@@ -200,12 +268,25 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
                     farmingTokenID,
                 );
             feesAPR = new BigNumber(
-                await this.pairGetter.getFeesAPR(pairAddress),
+                await this.pairCompute.feesAPR(pairAddress),
             );
         }
         return feesAPR.isNaN()
             ? unlockedRewardsAPR.toFixed()
             : unlockedRewardsAPR.plus(feesAPR).toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async lockedRewardsAPR(farmAddress: string): Promise<string> {
+        return this.computeLockedRewardsAPR(farmAddress);
     }
 
     async computeLockedRewardsAPR(farmAddress: string): Promise<string> {
@@ -217,12 +298,12 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
             lockedFarmingTokenReserveUSD,
             aprMultiplier,
         ] = await Promise.all([
-            this.farmGetter.getFarmedTokenID(farmAddress),
-            this.farmGetter.getFarmingTokenID(farmAddress),
+            this.farmAbi.farmedTokenID(farmAddress),
+            this.farmAbi.farmingTokenID(farmAddress),
             this.computeAnualRewardsUSD(farmAddress),
             this.computeVirtualValueLockedUSD(farmAddress),
             this.computeLockedFarmingTokenReserveUSD(farmAddress),
-            this.farmGetter.getLockedRewardAprMuliplier(farmAddress),
+            this.farmAbi.lockedRewardAprMuliplier(farmAddress),
         ]);
 
         const lockedFarmingTokenReservePercent = new BigNumber(
@@ -245,7 +326,7 @@ export class FarmComputeServiceV1_2 extends FarmComputeService {
                     farmingTokenID,
                 );
             feesAPR = new BigNumber(
-                await this.pairGetter.getFeesAPR(pairAddress),
+                await this.pairCompute.feesAPR(pairAddress),
             );
         }
         return feesAPR.isNaN()

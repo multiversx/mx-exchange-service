@@ -1,18 +1,12 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { Logger } from 'winston';
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
-import { FarmGetterServiceV2 } from './farm.v2.getter.service';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { RewardsModel } from '../../models/farm.model';
 import { FarmTokenAttributesModelV2 } from '../../models/farmTokenAttributes.model';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
-import { WeeklyRewardsSplittingService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
-import { WeekTimekeepingService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.service';
-import { Mixin } from 'ts-mixer';
 import { FarmTokenAttributesV2 } from '@multiversx/sdk-exchange';
 import BigNumber from 'bignumber.js';
 import {
@@ -20,30 +14,23 @@ import {
     UserInfoByWeekModel,
 } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { constantsConfig } from '../../../../config';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
-export class FarmServiceV2 extends Mixin(
-    FarmServiceBase,
-    WeekTimekeepingService,
-    WeeklyRewardsSplittingService,
-) {
+export class FarmServiceV2 extends FarmServiceBase {
     constructor(
-        protected readonly abiService: FarmAbiServiceV2,
-        @Inject(forwardRef(() => FarmGetterServiceV2))
-        protected readonly farmGetter: FarmGetterServiceV2,
+        protected readonly farmAbi: FarmAbiServiceV2,
+        @Inject(forwardRef(() => FarmComputeServiceV2))
         protected readonly farmCompute: FarmComputeServiceV2,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        protected readonly tokenGetter: TokenGetterService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
-        super(
-            abiService,
-            farmGetter,
-            farmCompute,
-            contextGetter,
-            cachingService,
-            logger,
-        );
+        super(farmAbi, farmCompute, contextGetter, cachingService, tokenGetter);
     }
 
     async getBatchRewardsForPosition(
@@ -81,7 +68,7 @@ export class FarmServiceV2 extends Mixin(
         );
         let rewards: BigNumber;
         if (positon.vmQuery) {
-            rewards = await this.abiService.calculateRewardsForGivenPosition(
+            rewards = await this.farmAbi.calculateRewardsForGivenPosition(
                 positon,
             );
         } else {
@@ -95,12 +82,12 @@ export class FarmServiceV2 extends Mixin(
         let currentClaimProgress: ClaimProgress = undefined;
         let userAccumulatedRewards: string = undefined;
         if (computeBoosted) {
-            const currentWeek = await this.farmGetter.getCurrentWeek(
+            const currentWeek = await this.weekTimekeepingAbi.currentWeek(
                 positon.farmAddress,
             );
             modelsList = [];
             let lastActiveWeekUser =
-                await this.farmGetter.lastActiveWeekForUser(
+                await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
                     positon.farmAddress,
                     positon.user,
                 );
@@ -116,25 +103,26 @@ export class FarmServiceV2 extends Mixin(
                 if (week < 1) {
                     continue;
                 }
-                const model = this.getUserInfoByWeek(
-                    positon.farmAddress,
-                    positon.user,
-                    week,
-                );
+                const model = new UserInfoByWeekModel({
+                    scAddress: positon.farmAddress,
+                    userAddress: positon.user,
+                    week: week,
+                });
                 model.positionAmount = positon.liquidity;
                 modelsList.push(model);
             }
 
-            currentClaimProgress = await this.farmGetter.currentClaimProgress(
-                positon.farmAddress,
-                positon.user,
-            );
+            currentClaimProgress =
+                await this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    positon.farmAddress,
+                    positon.user,
+                );
 
             userAccumulatedRewards =
-                await this.farmGetter.getUserAccumulatedRewardsForWeek(
+                await this.farmCompute.userAccumulatedRewards(
                     positon.farmAddress,
-                    currentWeek,
                     positon.user,
+                    currentWeek,
                     positon.liquidity,
                 );
         }

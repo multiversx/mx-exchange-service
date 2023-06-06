@@ -1,5 +1,6 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { BaseFarmModel, FarmMigrationConfig } from './farm.model';
+import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 
 @ObjectType()
 export class FarmModelV1_2 extends BaseFarmModel {
@@ -14,6 +15,9 @@ export class FarmModelV1_2 extends BaseFarmModel {
 
     @Field(() => Int)
     aprMultiplier: number;
+
+    @Field()
+    lockedAssetFactory: LockedAssetModel;
 
     @Field()
     lockedRewardsAPR: string;

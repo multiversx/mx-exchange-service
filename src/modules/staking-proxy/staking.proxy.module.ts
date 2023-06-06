@@ -8,8 +8,7 @@ import { PairModule } from '../pair/pair.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingModule } from '../staking/staking.module';
 import { TokenModule } from '../tokens/token.module';
-import { AbiStakingProxyService } from './services/staking.proxy.abi.service';
-import { StakingProxyGetterService } from './services/staking.proxy.getter.service';
+import { StakingProxyAbiService } from './services/staking.proxy.abi.service';
 import { StakingProxyService } from './services/staking.proxy.service';
 import { StakingProxySetterService } from './services/staking.proxy.setter.service';
 import { StakingProxyTransactionService } from './services/staking.proxy.transactions.service';
@@ -28,17 +27,15 @@ import { StakingProxyResolver } from './staking.proxy.resolver';
         RemoteConfigModule,
     ],
     providers: [
-        AbiStakingProxyService,
+        StakingProxyAbiService,
         StakingProxyService,
-        StakingProxyGetterService,
         StakingProxySetterService,
         StakingProxyTransactionService,
         StakingProxyResolver,
     ],
     exports: [
-        AbiStakingProxyService,
+        StakingProxyAbiService,
         StakingProxyService,
-        StakingProxyGetterService,
         StakingProxySetterService,
     ],
 })

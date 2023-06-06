@@ -1,23 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { TransactionRouterService } from '../services/transactions.router.service';
+import { RouterTransactionService } from '../services/router.transactions.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { ConfigModule } from '@nestjs/config';
-import { RouterGetterService } from '../services/router.getter.service';
-import { RouterGetterServiceStub } from '../mocks/router.getter.service.stub';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
-import winston from 'winston';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as Transport from 'winston-transport';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { Address } from '@multiversx/sdk-core';
@@ -25,72 +12,55 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
 import { mxConfig, gasConfig } from 'src/config';
 import { PairService } from 'src/modules/pair/services/pair.service';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
 
 describe('RouterService', () => {
-    let service: TransactionRouterService;
+    let module: TestingModule;
 
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
     };
 
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
-    const RouterGetterServiceProvider = {
-        provide: RouterGetterService,
-        useClass: RouterGetterServiceStub,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
-    };
-
-    const logTransports: Transport[] = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                nestWinstonModuleUtilities.format.nestLike(),
-            ),
-        }),
-    ];
-
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                WinstonModule.forRoot({
-                    transports: logTransports,
-                }),
-                ConfigModule,
-                CachingModule,
-            ],
+        module = await Test.createTestingModule({
+            imports: [CachingModule],
             providers: [
                 ContextGetterServiceProvider,
-                PairGetterServiceProvider,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 PairService,
-                RouterGetterServiceProvider,
-                WrapServiceProvider,
-                TransactionsWrapService,
+                RouterAbiServiceProvider,
+                WrapAbiServiceProvider,
+                WrapService,
+                WrapTransactionsService,
                 ApiConfigService,
                 MXProxyService,
-                TransactionRouterService,
+                RouterTransactionService,
+                TokenGetterServiceProvider,
                 RouterService,
             ],
         }).compile();
-
-        service = module.get<TransactionRouterService>(
-            TransactionRouterService,
-        );
     });
 
     it('should be defined', () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         expect(service).toBeDefined();
     });
 
     it('should get create pair transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.createPair(
             Address.Zero().bech32(),
             'TOK3-3333',
@@ -115,6 +85,10 @@ describe('RouterService', () => {
     });
 
     it('should get issue LP token transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.issueLpToken(
             'erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2',
             'LiquidityPoolToken3',
@@ -139,6 +113,10 @@ describe('RouterService', () => {
     });
 
     it('should get issue LP token duplication error', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         try {
             await service.issueLpToken(
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -151,6 +129,10 @@ describe('RouterService', () => {
     });
 
     it('should get set local roles transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setLocalRoles(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
@@ -173,6 +155,10 @@ describe('RouterService', () => {
     });
 
     it('should get set pause state transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setState(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             false,
@@ -196,6 +182,10 @@ describe('RouterService', () => {
     });
 
     it('should get set resume state transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setState(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             true,
@@ -219,6 +209,10 @@ describe('RouterService', () => {
     });
 
     it('should get set fee OFF transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setFee(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
@@ -244,6 +238,10 @@ describe('RouterService', () => {
     });
 
     it('should get set fee ON transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setFee(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
@@ -269,6 +267,10 @@ describe('RouterService', () => {
     });
 
     it('should get set local roles owner', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setLocalRolesOwner({
             tokenID: 'TOK1-1111',
             address: Address.Zero().bech32(),
@@ -293,6 +295,10 @@ describe('RouterService', () => {
     });
 
     it('should get remove pair transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.removePair('TOK1-1111', 'USDC-1111');
         expect(transaction).toEqual({
             nonce: 0,
@@ -311,6 +317,10 @@ describe('RouterService', () => {
     });
 
     it('should get set pair creation enabled ON transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setPairCreationEnabled(true);
         expect(transaction).toEqual({
             nonce: 0,
@@ -329,6 +339,10 @@ describe('RouterService', () => {
     });
 
     it('should get set pair creation enabled OFF transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setPairCreationEnabled(false);
         expect(transaction).toEqual({
             nonce: 0,
@@ -347,6 +361,10 @@ describe('RouterService', () => {
     });
 
     it('should get clear pair temporary owner storage transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.clearPairTemporaryOwnerStorage();
         expect(transaction).toEqual({
             nonce: 0,
@@ -365,6 +383,10 @@ describe('RouterService', () => {
     });
 
     it('should get set temporary owner period transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setTemporaryOwnerPeriod(
             '1000000000000000000000000000000000',
         );
@@ -387,6 +409,10 @@ describe('RouterService', () => {
     });
 
     it('should get set pair template address transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
         const transaction = await service.setPairTemplateAddress(
             Address.Zero().bech32(),
         );

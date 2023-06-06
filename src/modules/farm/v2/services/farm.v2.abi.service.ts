@@ -6,53 +6,66 @@ import {
     Field,
     FieldDefinition,
     Interaction,
-    SmartContract,
     Struct,
     StructType,
     U32Value,
     U64Type,
     U64Value,
 } from '@multiversx/sdk-core';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
-import { AbiFarmService } from '../../base-module/services/farm.abi.service';
+import { FarmAbiService } from '../../base-module/services/farm.abi.service';
 import { FarmTokenAttributesV1_3 } from '@multiversx/sdk-exchange';
 import { FarmRewardType } from '../../models/farm.model';
 import { farmType } from 'src/utils/farm.utils';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
-import { Mixin } from 'ts-mixer';
-import { WeeklyRewardsSplittingAbiService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import { WeekTimekeepingAbiService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { MXGatewayService } from '../../../../services/multiversx-communication/mx.gateway.service';
 import { tokenNonce } from '../../../../utils/token.converters';
-import { WeekTimekeepingGetterService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { IFarmAbiServiceV2 } from './interfaces';
 
 @Injectable()
-export class FarmAbiServiceV2 extends Mixin(
-    AbiFarmService,
-    WeeklyRewardsSplittingAbiService,
-    WeekTimekeepingAbiService,
-) {
+export class FarmAbiServiceV2
+    extends FarmAbiService
+    implements IFarmAbiServiceV2
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly gatewayService: MXGatewayService,
-        protected readonly timekeepingGetter: WeekTimekeepingGetterService,
+        protected readonly mxApi: MXApiService,
     ) {
-        super(mxProxy, logger, gatewayService);
-        this.getContractHandler = this.getContract;
+        super(mxProxy, gatewayService, mxApi);
     }
 
-    async getContract(farmAddress: string): Promise<SmartContract> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract;
+    async getLastErrorMessageRaw(farmAddress: string): Promise<string> {
+        return undefined;
     }
 
-    async getBoostedYieldsRewardsPercenatage(
+    async getTransferExecGasLimitRaw(farmAddress: string): Promise<string> {
+        return undefined;
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async boostedYieldsRewardsPercenatage(
+        farmAddress: string,
+    ): Promise<number> {
+        return await this.getBoostedYieldsRewardsPercenatageRaw(farmAddress);
+    }
+
+    async getBoostedYieldsRewardsPercenatageRaw(
         farmAddress: string,
     ): Promise<number> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
@@ -63,12 +76,25 @@ export class FarmAbiServiceV2 extends Mixin(
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getLockingScAddress(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async lockingScAddress(farmAddress: string): Promise<string> {
+        return await this.getLockingScAddressRaw(farmAddress);
+    }
+
+    async getLockingScAddressRaw(farmAddress: string): Promise<string> {
         if (farmType(farmAddress) === FarmRewardType.UNLOCKED_REWARDS) {
             return undefined;
         }
 
-        const contract = await this.getContract(farmAddress);
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getLockingScAddress();
@@ -76,7 +102,20 @@ export class FarmAbiServiceV2 extends Mixin(
         return response.firstValue.valueOf().bech32();
     }
 
-    async getLockEpochs(farmAddress: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async lockEpochs(farmAddress: string): Promise<number> {
+        return await this.getLockEpochsRaw(farmAddress);
+    }
+
+    async getLockEpochsRaw(farmAddress: string): Promise<number> {
         if (farmType(farmAddress) === FarmRewardType.UNLOCKED_REWARDS) {
             return undefined;
         }
@@ -89,11 +128,30 @@ export class FarmAbiServiceV2 extends Mixin(
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getRemainingBoostedRewardsToDistribute(
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async remainingBoostedRewardsToDistribute(
         farmAddress: string,
         week: number,
     ): Promise<string> {
-        const contract = await this.getContract(farmAddress);
+        return await this.getRemainingBoostedRewardsToDistributeRaw(
+            farmAddress,
+            week,
+        );
+    }
+
+    async getRemainingBoostedRewardsToDistributeRaw(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getRemainingBoostedRewardsToDistribute([
                 new U32Value(new BigNumber(week)),
@@ -102,7 +160,22 @@ export class FarmAbiServiceV2 extends Mixin(
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getUndistributedBoostedRewards(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async undistributedBoostedRewards(farmAddress: string): Promise<string> {
+        return await this.getUndistributedBoostedRewardsRaw(farmAddress);
+    }
+
+    async getUndistributedBoostedRewardsRaw(
+        farmAddress: string,
+    ): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
@@ -111,10 +184,25 @@ export class FarmAbiServiceV2 extends Mixin(
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getBoostedYieldsFactors(
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async boostedYieldsFactors(
         farmAddress: string,
     ): Promise<BoostedYieldsFactors> {
-        const contract = await this.getContract(farmAddress);
+        return await this.getBoostedYieldsFactorsRaw(farmAddress);
+    }
+
+    async getBoostedYieldsFactorsRaw(
+        farmAddress: string,
+    ): Promise<BoostedYieldsFactors> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getBoostedYieldsFactors();
         const response = await this.getGenericData(interaction);
@@ -132,7 +220,23 @@ export class FarmAbiServiceV2 extends Mixin(
         });
     }
 
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
     async accumulatedRewardsForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
+        return await this.getAccumulatedRewardsForWeekRaw(scAddress, week);
+    }
+
+    async getAccumulatedRewardsForWeekRaw(
         scAddress: string,
         week: number,
     ): Promise<string> {
@@ -142,7 +246,7 @@ export class FarmAbiServiceV2 extends Mixin(
         ]);
         return new BigNumber(hexValue, 16).integerValue().toFixed();
         // TODO: remove the code above after the contracts are upgraded with the required view
-        const contract = await this.getContractHandler(scAddress);
+        const contract = await this.mxProxy.getFarmSmartContract(scAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getAccumulatedFees([
                 new U32Value(new BigNumber(week)),
@@ -151,8 +255,21 @@ export class FarmAbiServiceV2 extends Mixin(
         return response.firstValue.valueOf().integerValue().toFixed();
     }
 
-    async getEnergyFactoryAddress(farmAddress: string): Promise<string> {
-        const contract = await this.getContract(farmAddress);
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async energyFactoryAddress(farmAddress: string): Promise<string> {
+        return await this.getEnergyFactoryAddressRaw(farmAddress);
+    }
+
+    async getEnergyFactoryAddressRaw(farmAddress: string): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getEnergyFactoryAddress();
@@ -167,7 +284,9 @@ export class FarmAbiServiceV2 extends Mixin(
             service: FarmAbiServiceV2.name,
             method: this.calculateRewardsForGivenPosition.name,
         });
-        const contract = await this.getContract(args.farmAddress);
+        const contract = await this.mxProxy.getFarmSmartContract(
+            args.farmAddress,
+        );
         const decodedAttributes = FarmTokenAttributesV1_3.fromAttributes(
             args.attributes,
         );
@@ -259,5 +378,13 @@ export class FarmAbiServiceV2 extends Mixin(
             ]);
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
+    }
+
+    async getBurnGasLimitRaw(farmAddress: string): Promise<string | undefined> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getBurnGasLimit();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 }

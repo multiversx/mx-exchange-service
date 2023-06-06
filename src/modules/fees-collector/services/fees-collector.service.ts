@@ -1,81 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import {
     FeesCollectorModel,
-    FeesCollectorTransactionModel,
     UserEntryFeesCollectorModel,
 } from '../models/fees-collector.model';
-import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
-import { WeekTimekeepingService } from '../../../submodules/week-timekeeping/services/week-timekeeping.service';
-import { WeeklyRewardsSplittingService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
 import {
-    ClaimProgress,
     GlobalInfoByWeekModel,
     UserInfoByWeekModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { TransactionModel } from '../../../models/transaction.model';
-import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
-import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import { constantsConfig, mxConfig, gasConfig } from '../../../config';
-import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { Address, AddressValue } from '@multiversx/sdk-core';
+import { constantsConfig } from '../../../config';
 import BigNumber from 'bignumber.js';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { FeesCollectorAbiService } from './fees-collector.abi.service';
+import { FeesCollectorComputeService } from './fees-collector.compute.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class FeesCollectorService {
     constructor(
-        private readonly feesCollectorGetterService: FeesCollectorGetterService,
-        private readonly mxProxy: MXProxyService,
-        private readonly weekTimekeepingService: WeekTimekeepingService,
-        private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
-        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
-        private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {}
-
-    async claimRewardsBatch(
-        scAddress: string,
-        userAddress: string,
-    ): Promise<FeesCollectorTransactionModel> {
-        const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(
-            scAddress,
-        );
-        const lastActiveWeekForUser =
-            await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(
-                scAddress,
-                userAddress,
-            );
-        const weekToClaim = Math.min(
-            constantsConfig.USER_MAX_CLAIM_WEEKS,
-            currentWeek - lastActiveWeekForUser,
-        );
-        const transaction = await this.claimRewards(
-            userAddress,
-            weekToClaim * gasConfig.feesCollector.claimRewardsPerWeek +
-                gasConfig.feesCollector.baseClaimRewards,
-        );
-        const claimTransaction = new FeesCollectorTransactionModel({
-            transaction: transaction,
-            count: 0,
-        });
-        if (lastActiveWeekForUser === 0) return claimTransaction;
-        if (lastActiveWeekForUser >= currentWeek) return claimTransaction;
-
-        claimTransaction.count = 1;
-        return claimTransaction;
-    }
-
-    async claimRewards(
-        sender: string,
-        gasLimit: number,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        return contract.methodsExplicit
-            .claimRewards()
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
 
     async getAccumulatedFees(
         scAddress: string,
@@ -85,11 +33,7 @@ export class FeesCollectorService {
         const accumulatedFees: EsdtTokenPayment[] = [];
 
         const promises = allTokens.map((token) =>
-            this.feesCollectorGetterService.getAccumulatedFees(
-                scAddress,
-                week,
-                token,
-            ),
+            this.feesCollectorAbi.accumulatedFees(week, token),
         );
 
         const accumulatedFeesByToken = await Promise.all(promises);
@@ -106,8 +50,8 @@ export class FeesCollectorService {
 
         const [lockedTokenId, accumulatedTokenForInflation] = await Promise.all(
             [
-                this.feesCollectorGetterService.getLockedTokenId(scAddress),
-                this.feesCollectorGetterService.getAccumulatedTokenForInflation(
+                this.feesCollectorAbi.lockedTokenID(),
+                this.feesCollectorCompute.accumulatedFeesUntilNow(
                     scAddress,
                     week,
                 ),
@@ -126,17 +70,18 @@ export class FeesCollectorService {
     }
 
     async feesCollector(scAddress: string): Promise<FeesCollectorModel> {
-        const [time, allToken, currentWeek] = await Promise.all([
-            this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
-            this.feesCollectorGetterService.getAllTokens(scAddress),
-            this.weekTimekeepingGetter.getCurrentWeek(scAddress),
+        const [allToken, currentWeek] = await Promise.all([
+            this.feesCollectorAbi.allTokens(),
+            this.weekTimekeepingAbi.currentWeek(scAddress),
         ]);
-        const lastWeek = currentWeek - 1;
         return new FeesCollectorModel({
             address: scAddress,
-            time: time,
+            time: new WeekTimekeepingModel({
+                scAddress: scAddress,
+                currentWeek: currentWeek,
+            }),
             startWeek: currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
-            endWeek: lastWeek,
+            endWeek: currentWeek,
             allTokens: allToken,
         });
     }
@@ -145,13 +90,12 @@ export class FeesCollectorService {
         scAddress: string,
         userAddress: string,
     ): Promise<UserEntryFeesCollectorModel> {
-        const [time, lastActiveWeekForUser, currentWeek] = await Promise.all([
-            this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
-            this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(
+        const [lastActiveWeekForUser, currentWeek] = await Promise.all([
+            this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
                 scAddress,
                 userAddress,
             ),
-            this.weekTimekeepingGetter.getCurrentWeek(scAddress),
+            this.weekTimekeepingAbi.currentWeek(scAddress),
         ]);
         const lastWeek = currentWeek - 1;
         return new UserEntryFeesCollectorModel({
@@ -165,22 +109,11 @@ export class FeesCollectorService {
                           lastActiveWeekForUser,
                       ),
             endWeek: lastWeek,
-            time: time,
+            time: new WeekTimekeepingModel({
+                scAddress: scAddress,
+                currentWeek: currentWeek,
+            }),
         });
-    }
-
-    async getUserCurrentClaimProgress(
-        scAddress: string,
-        userAddress: string,
-    ): Promise<ClaimProgress> {
-        return await this.weeklyRewardsSplittingGetter.currentClaimProgress(
-            scAddress,
-            userAddress,
-        );
-    }
-
-    async getCurrentWeek(scAddress: string): Promise<number> {
-        return await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
     }
 
     getWeeklyRewardsSplit(
@@ -194,10 +127,10 @@ export class FeesCollectorService {
                 continue;
             }
             modelsList.push(
-                this.weeklyRewardsSplittingService.getGlobalInfoByWeek(
+                new GlobalInfoByWeekModel({
                     scAddress,
                     week,
-                ),
+                }),
             );
         }
         return modelsList;
@@ -215,26 +148,14 @@ export class FeesCollectorService {
                 continue;
             }
             modelsList.push(
-                this.weeklyRewardsSplittingService.getUserInfoByWeek(
+                new UserInfoByWeekModel({
                     scAddress,
                     userAddress,
                     week,
-                ),
+                }),
             );
         }
         return modelsList;
-    }
-
-    async updateEnergyForUser(userAddress: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        return contract.methodsExplicit
-            .updateEnergyForUser([
-                new AddressValue(Address.fromString(userAddress)),
-            ])
-            .withGasLimit(gasConfig.feesCollector.updateEnergyForUser)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async getUserAccumulatedRewards(
@@ -242,17 +163,15 @@ export class FeesCollectorService {
         userAddress: string,
         currentWeek: number,
     ): Promise<EsdtTokenPayment[]> {
-        const allTokens = await this.feesCollectorGetterService.getAllTokens(
-            scAddress,
-        );
+        const allTokens = await this.feesCollectorAbi.allTokens();
         const [accumulatedFees, totalEnergyForWeek, currentClaimProgress] =
             await Promise.all([
                 this.getAccumulatedFees(scAddress, currentWeek, allTokens),
-                this.weeklyRewardsSplittingGetter.totalEnergyForWeek(
+                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
                     scAddress,
                     currentWeek,
                 ),
-                this.weeklyRewardsSplittingGetter.currentClaimProgress(
+                this.weeklyRewardsSplittingAbi.currentClaimProgress(
                     scAddress,
                     userAddress,
                 ),

@@ -1,14 +1,14 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { ExitFarmProxyArgs } from '../models/proxy-farm.args';
-import { ProxyFarmGetterService } from '../services/proxy-farm/proxy-farm.getter.service';
 import { ProxyService } from '../services/proxy.service';
+import { ProxyFarmAbiService } from '../services/proxy-farm/proxy.farm.abi.service';
 
 @Injectable()
 export class WrappedFarmValidationPipe implements PipeTransform {
     constructor(
         private readonly proxyService: ProxyService,
-        private readonly proxyFarmGetter: ProxyFarmGetterService,
+        private readonly proxyFarmAbi: ProxyFarmAbiService,
     ) {}
 
     async transform(value: ExitFarmProxyArgs, metadata: ArgumentMetadata) {
@@ -18,8 +18,9 @@ export class WrappedFarmValidationPipe implements PipeTransform {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             value.wrappedFarmTokenID,
         );
-        const intermediatedFarms =
-            await this.proxyFarmGetter.getIntermediatedFarms(proxyAddress);
+        const intermediatedFarms = await this.proxyFarmAbi.intermediatedFarms(
+            proxyAddress,
+        );
         if (!intermediatedFarms.includes(value.farmAddress)) {
             throw new UserInputError('not an intermediated farm');
         }

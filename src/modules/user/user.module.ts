@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { ContextModule } from '../../services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
-import { ProxyFarmModule } from '../proxy/services/proxy-farm/proxy-farm.module';
-import { ProxyPairModule } from '../proxy/services/proxy-pair/proxy-pair.module';
+import { ProxyFarmModule } from '../proxy/services/proxy-farm/proxy.farm.module';
+import { ProxyPairModule } from '../proxy/services/proxy-pair/proxy.pair.module';
 import { ProxyModule } from '../proxy/proxy.module';
 import { UserResolver } from './user.resolver';
 import { UserMetaEsdtService } from './services/user.metaEsdt.service';
@@ -31,6 +31,9 @@ import { LockedTokenWrapperModule } from '../locked-token-wrapper/locked-token-w
 import { UserEnergySetterService } from './services/userEnergy/user.energy.setter.service';
 import { UserInfoByWeekResolver } from './user.info-by-week.resolver';
 import { UserEnergyTransactionService } from './services/userEnergy/user.energy.transaction.service';
+import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
+import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
+import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 
 @Module({
     imports: [
@@ -43,6 +46,7 @@ import { UserEnergyTransactionService } from './services/userEnergy/user.energy.
         ProxyPairModule,
         ProxyFarmModule,
         FarmModule,
+        FarmModuleV2,
         LockedAssetModule,
         WrappingModule,
         StakingModule,
@@ -54,6 +58,8 @@ import { UserEnergyTransactionService } from './services/userEnergy/user.energy.
         RemoteConfigModule,
         FeesCollectorModule,
         LockedTokenWrapperModule,
+        WeekTimekeepingModule,
+        WeeklyRewardsSplittingModule,
     ],
     providers: [
         UserEsdtService,

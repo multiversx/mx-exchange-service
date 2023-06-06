@@ -1,95 +1,61 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { AbiFarmService } from '../base-module/services/farm.abi.service';
-import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../base-module/services/farm.getter.service';
-import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { Address } from '@multiversx/sdk-core';
 import { ApiConfigService } from '../../../helpers/api.config.service';
-import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { PairComputeService } from '../../pair/services/pair.compute.service';
-import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
-import { WrapService } from '../../wrapping/wrap.service';
-import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
-import { ContextGetterService } from '../../../services/context/context.getter.service';
-import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
-import { MXProxyServiceMock } from '../../../services/multiversx-communication/mx.proxy.service.mock';
+import { MXProxyServiceProvider } from '../../../services/multiversx-communication/mx.proxy.service.mock';
 import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { encodeTransactionData } from '../../../helpers/helpers';
 import { mxConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { FarmTransactionServiceV1_2 } from '../v1.2/services/farm.v1.2.transaction.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { FarmAbiServiceProviderV1_2 } from '../mocks/farm.v1.2.abi.service.mock';
 
 describe('FarmService', () => {
-    let transactionV1_2: FarmTransactionServiceV1_2;
-
-    const AbiFarmServiceProvider = {
-        provide: AbiFarmService,
-        useClass: AbiFarmServiceMock,
-    };
-
-    const FarmGetterServiceProvider = {
-        provide: FarmGetterService,
-        useClass: FarmGetterServiceMock,
-    };
-
-    const ContextGetterServiceProvider = {
-        provide: ContextGetterService,
-        useClass: ContextGetterServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
-    };
-
-    const MXProxyServiceProvider = {
-        provide: MXProxyService,
-        useClass: MXProxyServiceMock,
-    };
+    let module: TestingModule;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
+        module = await Test.createTestingModule({
             imports: [CachingModule],
             providers: [
-                AbiFarmServiceProvider,
                 ApiConfigService,
                 MXApiService,
-                FarmGetterServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
-                PairGetterServiceProvider,
-                PairComputeService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 TokenComputeService,
                 TokenGetterServiceProvider,
-                RouterGetterServiceProvider,
-                WrapServiceProvider,
+                RouterAbiServiceProvider,
+                WrapAbiServiceProvider,
                 MXProxyServiceProvider,
                 FarmTransactionServiceV1_2,
+                FarmAbiServiceProviderV1_2,
                 MXDataApiServiceProvider,
             ],
         }).compile();
-
-        transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
-            FarmTransactionServiceV1_2,
-        );
     });
 
     it('should be defined', () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         expect(transactionV1_2).toBeDefined();
     });
 
     it('should get enter farm transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         const transaction = await transactionV1_2.enterFarm(
             Address.Zero().bech32(),
             {
@@ -124,6 +90,10 @@ describe('FarmService', () => {
     });
 
     it('should get exit farm transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         const transaction = await transactionV1_2.exitFarm(
             Address.Zero().bech32(),
             {
@@ -157,6 +127,10 @@ describe('FarmService', () => {
     });
 
     it('should get claim rewards transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         const transaction = await transactionV1_2.claimRewards(
             Address.Zero().bech32(),
             {
@@ -189,6 +163,10 @@ describe('FarmService', () => {
     });
 
     it('should get compound rewards transaction error', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error: any;
         try {
             await transactionV1_2.compoundRewards(Address.Zero().bech32(), {
@@ -206,6 +184,10 @@ describe('FarmService', () => {
     });
 
     it('should get migrate to new farm transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         const transaction = await transactionV1_2.migrateToNewFarm(
             Address.Zero().bech32(),
             {
@@ -237,6 +219,10 @@ describe('FarmService', () => {
     });
 
     it('should get set farm migration config transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         const transaction = await transactionV1_2.setFarmMigrationConfig({
             oldFarmAddress:
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
@@ -263,6 +249,10 @@ describe('FarmService', () => {
     });
 
     it('should get stop rewards and migrate Rps transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         const transaction = await transactionV1_2.stopRewardsAndMigrateRps(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
@@ -283,6 +273,10 @@ describe('FarmService', () => {
     });
 
     it('should get end produce rewards transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.endProduceRewards(
@@ -313,6 +307,10 @@ describe('FarmService', () => {
     });
 
     it('should get start produce rewards transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.startProduceRewards(
@@ -343,6 +341,10 @@ describe('FarmService', () => {
     });
 
     it('should get set per block reward amount transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.setPerBlockRewardAmount(
@@ -377,6 +379,10 @@ describe('FarmService', () => {
     });
 
     it('should get set penalty percent transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.setPenaltyPercent(
@@ -409,6 +415,10 @@ describe('FarmService', () => {
     });
 
     it('should get set minimum farming epochs transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.setMinimumFarmingEpochs(
@@ -441,6 +451,10 @@ describe('FarmService', () => {
     });
 
     it('should get set transfer exec gas limit transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.setTransferExecGasLimit(
@@ -475,6 +489,10 @@ describe('FarmService', () => {
     });
 
     it('should get set burn gas limit transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.setBurnGasLimit(
@@ -507,6 +525,10 @@ describe('FarmService', () => {
     });
 
     it('should get pause transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.pause(
@@ -537,6 +559,10 @@ describe('FarmService', () => {
     });
 
     it('should get resume transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.resume(
@@ -567,6 +593,10 @@ describe('FarmService', () => {
     });
 
     it('should get register farm token transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.registerFarmToken(
@@ -605,6 +635,10 @@ describe('FarmService', () => {
     });
 
     it('should get set local roles farm token transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.setLocalRolesFarmToken(
@@ -635,6 +669,10 @@ describe('FarmService', () => {
     });
 
     it('should get merge farm tokens transaction', async () => {
+        const transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
+
         let error = null;
         try {
             await transactionV1_2.mergeFarmTokens(

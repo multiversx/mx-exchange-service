@@ -5,9 +5,9 @@ import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 @ObjectType()
 export class TokenDistributionModel {
     @Field()
-    tokenId: string
+    tokenId: string;
     @Field()
-    percentage: string
+    percentage: string;
 
     constructor(init?: Partial<TokenDistributionModel>) {
         Object.assign(this, init);
@@ -78,20 +78,10 @@ export class ClaimProgress {
     @Field(() => EnergyModel)
     energy: EnergyModel;
 
-    @Field( () => Int)
+    @Field(() => Int)
     week: number;
 
     constructor(init?: Partial<ClaimProgress>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
-export class GlobalInfoByWeekSubModel {
-    @Field()
-    lastGlobalUpdateWeek: number;
-
-    constructor(init?: Partial<GlobalInfoByWeekSubModel>) {
         Object.assign(this, init);
     }
 }
