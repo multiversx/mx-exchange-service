@@ -15,4 +15,15 @@ export interface AnalyticsQueryInterface {
     getValues24h(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 
     getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
+
+    getPDlatestValue({
+        series,
+        metric,
+    }: AnalyticsQueryArgs): Promise<HistoricDataModel>;
+
+    getPDCloseValues({
+        series,
+        metric,
+        timeBucket,
+    }): Promise<HistoricDataModel[]>;
 }

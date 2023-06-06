@@ -1,17 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import moment from 'moment';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import {
-    computeTimeInterval,
-    convertBinToTimeResolution,
-} from 'src/utils/analytics.utils';
-import { Logger } from 'winston';
+import { computeTimeInterval } from 'src/utils/analytics.utils';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 import {
     CloseDaily,
     CloseHourly,
+    PDCloseMinute,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -24,7 +20,6 @@ import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decor
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
@@ -37,6 +32,8 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         private readonly closeHourly: Repository<CloseHourly>,
         @InjectRepository(TokenBurnedWeekly)
         private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
+        @InjectRepository(PDCloseMinute)
+        private readonly pdCloseMinute: Repository<PDCloseMinute>,
     ) {}
 
     @TimescaleDBQuery()
@@ -279,5 +276,54 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             );
             return [];
         }
+    }
+
+    @TimescaleDBQuery()
+    async getPDlatestValue({
+        series,
+        metric,
+    }: AnalyticsQueryArgs): Promise<HistoricDataModel> {
+        const query = await this.pdCloseMinute
+            .createQueryBuilder()
+            .select('time')
+            .addSelect('last')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .orderBy('time', 'DESC')
+            .limit(1)
+            .getRawOne();
+
+        return query
+            ? new HistoricDataModel({
+                  value: query.last,
+                  timestamp: query.time,
+              })
+            : undefined;
+    }
+
+    @TimescaleDBQuery()
+    async getPDCloseValues({
+        series,
+        metric,
+        timeBucket,
+    }): Promise<HistoricDataModel[]> {
+        const query = await this.pdCloseMinute
+            .createQueryBuilder()
+            .select(`time_bucket_gapfill('${timeBucket}', time) as bucket`)
+            .addSelect('locf(last(last, time)) as last')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere("time between now() - INTERVAL '1 day' and now()")
+            .groupBy('bucket')
+            .getRawMany();
+
+        const rows = query?.filter((row) => row.last !== null);
+        return rows.map(
+            (row) =>
+                new HistoricDataModel({
+                    timestamp: row.bucket,
+                    value: row.last,
+                }),
+        );
     }
 }

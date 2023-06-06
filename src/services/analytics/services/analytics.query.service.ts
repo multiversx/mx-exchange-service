@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { TimescaleDBQueryService } from '../timescaledb/timescaledb.query.service';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
+import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 
 @Injectable()
 export class AnalyticsQueryService implements AnalyticsQueryInterface {
@@ -46,6 +47,27 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     }): Promise<HistoricDataModel[]> {
         const service = await this.getService();
         return await service.getValues24hSum(args);
+    }
+
+    async getPDlatestValue({
+        series,
+        metric,
+    }: AnalyticsQueryArgs): Promise<HistoricDataModel> {
+        const service = await this.getService();
+        return await service.getPDlatestValue({ series, metric });
+    }
+
+    async getPDCloseValues({
+        series,
+        metric,
+        timeBucket,
+    }): Promise<HistoricDataModel[]> {
+        const service = await this.getService();
+        return await service.getPDCloseValues({
+            series,
+            metric,
+            timeBucket,
+        });
     }
 
     private async getService(): Promise<AnalyticsQueryInterface> {
