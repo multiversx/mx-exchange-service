@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import moment from 'moment';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { computeTimeInterval } from 'src/utils/analytics.utils';
@@ -16,10 +16,12 @@ import {
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
+        @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
