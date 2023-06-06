@@ -440,7 +440,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async feesAPR(pairAddress: string): Promise<string> {
-        return await this.feesAPR(pairAddress);
+        return await this.computeFeesAPR(pairAddress);
     }
 
     async computeFeesAPR(pairAddress: string): Promise<string> {
