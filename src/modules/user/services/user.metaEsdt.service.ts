@@ -496,7 +496,7 @@ export class UserMetaEsdtService {
 
         for (const userNft of userNFTs) {
             const userNftTokenType = await this.nftTokenType(
-                userNft.identifier,
+                userNft.collection,
             );
 
             switch (userNftTokenType) {
