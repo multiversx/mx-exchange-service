@@ -67,40 +67,4 @@ export class AnalyticsAWSSetterService extends GenericSetterService {
             oneMinute() * 10,
         );
     }
-
-    async setLatestHistoricData(
-        time: string,
-        series: string,
-        metric: string,
-        start: string,
-        values: HistoricDataModel[],
-    ): Promise<string> {
-        return await this.setData(
-            this.getCacheKey('latestHistoricData', time, series, metric, start),
-            values,
-            oneMinute() * 2,
-        );
-    }
-
-    async setLatestBinnedHistoricData(
-        time: string,
-        series: string,
-        metric: string,
-        bin: string,
-        start: string,
-        values: HistoricDataModel[],
-    ): Promise<string> {
-        return await this.setData(
-            this.getCacheKey(
-                'latestBinnedHistoricData',
-                time,
-                series,
-                metric,
-                bin,
-                start,
-            ),
-            values,
-            oneMinute() * 2,
-        );
-    }
 }

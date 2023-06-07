@@ -1,30 +1,27 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import moment from 'moment';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import {
-    computeTimeInterval,
-    convertBinToTimeResolution,
-    DataApiQuery,
-} from 'src/utils/analytics.utils';
-import { Logger } from 'winston';
+import { computeTimeInterval } from 'src/utils/analytics.utils';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 import {
     CloseDaily,
     CloseHourly,
+    PDCloseMinute,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
-} from './entities/data.api.entities';
+} from './entities/timescaledb.entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
-export class DataApiQueryService implements AnalyticsQueryInterface {
+export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
@@ -37,9 +34,11 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         private readonly closeHourly: Repository<CloseHourly>,
         @InjectRepository(TokenBurnedWeekly)
         private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
+        @InjectRepository(PDCloseMinute)
+        private readonly pdCloseMinute: Repository<PDCloseMinute>,
     ) {}
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getAggregatedValue({
         series,
         metric,
@@ -75,7 +74,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         return query?.sum ?? '0';
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getLatestCompleteValues({
         series,
         metric,
@@ -126,7 +125,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         }
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getSumCompleteValues({
         series,
         metric,
@@ -177,7 +176,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         }
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getValues24h({
         series,
         metric,
@@ -247,7 +246,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    @DataApiQuery()
+    @TimescaleDBQuery()
     async getValues24hSum({
         series,
         metric,
@@ -281,74 +280,52 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
         }
     }
 
-    @DataApiQuery()
-    async getLatestHistoricData({
-        time,
+    @TimescaleDBQuery()
+    async getPDlatestValue({
         series,
         metric,
-        start,
-    }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const [startDate, endDate] = computeTimeInterval(time, start);
-        const query = await this.dexAnalytics
+    }: AnalyticsQueryArgs): Promise<HistoricDataModel> {
+        const query = await this.pdCloseMinute
             .createQueryBuilder()
             .select('time')
-            .addSelect('value')
-            .where('key = :metric', { metric })
-            .andWhere('series = :series', { series })
-            .andWhere(
-                endDate
-                    ? 'timestamp BETWEEN :startDate AND :endDate'
-                    : 'timestamp >= :startDate',
-                { startDate, endDate },
-            )
-            .orderBy('timestamp', 'ASC')
-            .getRawMany();
-        return (
-            query?.map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row.timestamp)
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.value,
-                    }),
-            ) ?? []
-        );
-    }
-
-    @DataApiQuery()
-    async getLatestBinnedHistoricData({
-        time,
-        series,
-        metric,
-        start,
-        bin,
-    }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        const [startDate, endDate] = computeTimeInterval(time, start);
-        const timeResolution = convertBinToTimeResolution(bin);
-
-        const query = await this.dexAnalytics
-            .createQueryBuilder()
-            .select(`time_bucket(${timeResolution}, timestamp) as time`)
-            .addSelect('avg(value) as avg')
+            .addSelect('last')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere('timestamp BETWEEN :startDate AND :endDate', {
-                startDate,
-                endDate,
-            })
+            .orderBy('time', 'DESC')
+            .limit(1)
+            .getRawOne();
+
+        return query
+            ? new HistoricDataModel({
+                  value: query.last,
+                  timestamp: query.time,
+              })
+            : undefined;
+    }
+
+    @TimescaleDBQuery()
+    async getPDCloseValues({
+        series,
+        metric,
+        timeBucket,
+    }): Promise<HistoricDataModel[]> {
+        const query = await this.pdCloseMinute
+            .createQueryBuilder()
+            .select(`time_bucket_gapfill('${timeBucket}', time) as bucket`)
+            .addSelect('locf(last(last, time)) as last')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere("time between now() - INTERVAL '1 day' and now()")
+            .groupBy('bucket')
             .getRawMany();
 
-        return (
-            query?.map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row.time)
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.avg,
-                    }),
-            ) ?? []
+        const rows = query?.filter((row) => row.last !== null);
+        return rows.map(
+            (row) =>
+                new HistoricDataModel({
+                    timestamp: row.bucket,
+                    value: row.last,
+                }),
         );
     }
 }

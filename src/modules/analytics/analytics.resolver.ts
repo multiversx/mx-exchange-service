@@ -2,7 +2,7 @@ import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { AWSQueryArgs } from './models/query.args';
+import { AnalyticsQueryArgs } from './models/query.args';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { TokenGetterService } from '../tokens/services/token.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
@@ -79,7 +79,7 @@ export class AnalyticsResolver {
         }),
     )
     async latestCompleteValues(
-        @Args() args: AWSQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return this.analyticsAWSGetter.getLatestCompleteValues(
             args.series,
@@ -98,7 +98,7 @@ export class AnalyticsResolver {
         }),
     )
     async sumCompleteValues(
-        @Args() args: AWSQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return this.analyticsAWSGetter.getSumCompleteValues(
             args.series,
@@ -114,7 +114,9 @@ export class AnalyticsResolver {
             skipUndefinedProperties: true,
         }),
     )
-    async values24h(@Args() args: AWSQueryArgs): Promise<HistoricDataModel[]> {
+    async values24h(
+        @Args() args: AnalyticsQueryArgs,
+    ): Promise<HistoricDataModel[]> {
         return this.analyticsAWSGetter.getValues24h(args.series, args.metric);
     }
 
@@ -127,7 +129,7 @@ export class AnalyticsResolver {
         }),
     )
     async values24hSum(
-        @Args() args: AWSQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return this.analyticsAWSGetter.getValues24hSum(
             args.series,
@@ -135,7 +137,9 @@ export class AnalyticsResolver {
         );
     }
 
-    @Query(() => [HistoricDataModel])
+    @Query(() => [HistoricDataModel], {
+        deprecationReason: 'New optimized query will be available soon.',
+    })
     @UsePipes(
         new ValidationPipe({
             skipNullProperties: true,
@@ -144,17 +148,14 @@ export class AnalyticsResolver {
         }),
     )
     async latestHistoricData(
-        @Args() args: AWSQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return this.analyticsAWSGetter.latestHistoricData(
-            args.time,
-            args.series,
-            args.metric,
-            args.start,
-        );
+        return [];
     }
 
-    @Query(() => [HistoricDataModel])
+    @Query(() => [HistoricDataModel], {
+        deprecationReason: 'New optimized query will be available soon.',
+    })
     @UsePipes(
         new ValidationPipe({
             skipNullProperties: true,
@@ -163,14 +164,8 @@ export class AnalyticsResolver {
         }),
     )
     async latestBinnedHistoricData(
-        @Args() args: AWSQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return this.analyticsAWSGetter.latestBinnedHistoricData(
-            args.time,
-            args.series,
-            args.metric,
-            args.bin,
-            args.start,
-        );
+        return [];
     }
 }

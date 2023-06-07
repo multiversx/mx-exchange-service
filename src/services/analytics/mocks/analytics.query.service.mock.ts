@@ -4,6 +4,23 @@ import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface
 import { AnalyticsQueryService } from '../services/analytics.query.service';
 
 export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
+    getPDlatestValue({
+        series,
+        metric,
+    }: AnalyticsQueryArgs): Promise<HistoricDataModel> {
+        throw new Error('Method not implemented.');
+    }
+    getPDCloseValues({
+        series,
+        metric,
+        timeBucket,
+    }: {
+        series: any;
+        metric: any;
+        timeBucket: any;
+    }): Promise<HistoricDataModel[]> {
+        throw new Error('Method not implemented.');
+    }
     getAggregatedValue(args: AnalyticsQueryArgs): Promise<string> {
         throw new Error('Method not implemented.');
     }
@@ -21,16 +38,6 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
         throw new Error('Method not implemented.');
     }
     getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        throw new Error('Method not implemented.');
-    }
-    getLatestHistoricData(
-        args: AnalyticsQueryArgs,
-    ): Promise<HistoricDataModel[]> {
-        throw new Error('Method not implemented.');
-    }
-    getLatestBinnedHistoricData(
-        args: AnalyticsQueryArgs,
-    ): Promise<HistoricDataModel[]> {
         throw new Error('Method not implemented.');
     }
 }

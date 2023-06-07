@@ -1,7 +1,7 @@
-import { TimestreamWrite } from "aws-sdk"
+import { IngestRecord } from '../entities/ingest.record';
 
 export interface AnalyticsWriteInterface {
-  ingest({ TableName, data, Time }): Promise<void>
+    ingest({ data, Time }): Promise<void>;
 
-  multiRecordsIngest(TableName: string, Records: TimestreamWrite.Records): Promise<void>
+    multiRecordsIngest(Records: IngestRecord[]): Promise<void>;
 }

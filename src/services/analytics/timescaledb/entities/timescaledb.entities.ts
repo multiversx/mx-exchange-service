@@ -185,6 +185,45 @@ export class CloseHourly {
 
 @ViewEntity({
     expression: `
+    SELECT 
+      time_bucket('1 minute', timestamp) as time,
+      series,
+      key,
+      last(value, timestamp) as last
+    FROM "hyper_dex_analytics"
+    WHERE key IN ('launchedTokenAmount',
+        'acceptedTokenAmount',
+        'launchedTokenPrice',
+        'acceptedTokenPrice',
+        'launchedTokenPriceUSD',
+        'acceptedTokenPriceUSD')
+    AND timestamp >= NOW() - INTERVAL '1 day'
+    GROUP BY time, series, key;
+  `,
+    materialized: true,
+    name: 'pd_close_minute',
+})
+export class PDCloseMinute {
+    @ViewColumn()
+    @PrimaryColumn()
+    time: Date = new Date();
+
+    @ViewColumn()
+    last = '0';
+
+    @ViewColumn()
+    series?: string;
+
+    @ViewColumn()
+    key?: string;
+
+    constructor(init?: Partial<SumDaily>) {
+        Object.assign(this, init);
+    }
+}
+
+@ViewEntity({
+    expression: `
         SELECT
             time_bucket('1 week', timestamp) AS time, series, key,
             sum(value) AS sum
