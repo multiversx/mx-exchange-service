@@ -2,7 +2,6 @@ import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
-import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { PaginationArgs } from '../dex.model';
 import {
@@ -26,20 +25,16 @@ import {
 import { UserMetaEsdtService } from './services/user.metaEsdt.service';
 
 @Resolver(() => UserNftsModel)
-export class UserNftsResolver extends GenericResolver {
-    constructor(private readonly userMetaEsdts: UserMetaEsdtService) {
-        super();
-    }
+export class UserNftsResolver {
+    constructor(private readonly userMetaEsdts: UserMetaEsdtService) {}
 
     @ResolveField()
     async userLockedAssetToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedAssetToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserLockedAssetTokens(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserLockedAssetTokens(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -47,11 +42,9 @@ export class UserNftsResolver extends GenericResolver {
     async userFarmToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserFarmToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserFarmTokens(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserFarmTokens(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -59,11 +52,9 @@ export class UserNftsResolver extends GenericResolver {
     async userLockedLPToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedLPToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserLockedLpTokens(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserLockedLpTokens(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -71,11 +62,9 @@ export class UserNftsResolver extends GenericResolver {
     async userLockedFarmToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedFarmToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserLockedFarmTokens(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserLockedFarmTokens(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -83,11 +72,9 @@ export class UserNftsResolver extends GenericResolver {
     async userLockedLpTokenV2(
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedLPTokenV2[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserLockedLpTokensV2(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserLockedLpTokensV2(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -95,11 +82,9 @@ export class UserNftsResolver extends GenericResolver {
     async userLockedFarmTokenV2(
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedFarmTokenV2[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserLockedFarmTokensV2(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserLockedFarmTokensV2(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -107,11 +92,9 @@ export class UserNftsResolver extends GenericResolver {
     async userStakeFarmToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserStakeFarmToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserStakeFarmTokens(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserStakeFarmTokens(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -119,11 +102,9 @@ export class UserNftsResolver extends GenericResolver {
     async userUnbondFarmToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserUnbondFarmToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserUnbondFarmTokens(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserUnbondFarmTokens(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -131,11 +112,9 @@ export class UserNftsResolver extends GenericResolver {
     async userDualYieldToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserDualYiledToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserDualYieldTokens(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserDualYieldTokens(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -143,11 +122,9 @@ export class UserNftsResolver extends GenericResolver {
     async userRedeemToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserRedeemToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserRedeemToken(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserRedeemToken(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -155,11 +132,9 @@ export class UserNftsResolver extends GenericResolver {
     async userLockedEsdtToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedEsdtToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserLockedEsdtToken(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserLockedEsdtToken(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -167,11 +142,9 @@ export class UserNftsResolver extends GenericResolver {
     async userLockedSimpleLpToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedSimpleLpToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserLockedSimpleLpToken(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserLockedSimpleLpToken(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -179,11 +152,9 @@ export class UserNftsResolver extends GenericResolver {
     async userLockedSimpleFarmToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedSimpleFarmToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserLockedSimpleFarmToken(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserLockedSimpleFarmToken(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -191,11 +162,9 @@ export class UserNftsResolver extends GenericResolver {
     async userLockedTokenEnergy(
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedTokenEnergy[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserLockedTokenEnergy(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserLockedTokenEnergy(
+            parent.address,
+            parent.pagination,
         );
     }
 
@@ -203,11 +172,9 @@ export class UserNftsResolver extends GenericResolver {
     async userWrappedLockedToken(
         @Parent() parent: UserNftsModel,
     ): Promise<UserWrappedLockedToken[]> {
-        return await this.genericFieldResolver(() =>
-            this.userMetaEsdts.getUserWrappedLockedTokenEnergy(
-                parent.address,
-                parent.pagination,
-            ),
+        return this.userMetaEsdts.getUserWrappedLockedTokenEnergy(
+            parent.address,
+            parent.pagination,
         );
     }
 

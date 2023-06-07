@@ -8,7 +8,6 @@ import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { EsdtTokenInput } from '../tokens/models/esdtTokenInput.model';
-import { ApolloError } from 'apollo-server-express';
 import { Address } from '@multiversx/sdk-core';
 import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
 import { UserEsdtService } from './services/user.esdt.service';
@@ -31,7 +30,7 @@ export class UserResolver {
         @AuthUser() user: UserAuthResult,
         @Args() pagination: PaginationArgs,
     ): Promise<UserToken[]> {
-        return await this.userEsdt.getAllEsdtTokens(user.address, pagination);
+        return this.userEsdt.getAllEsdtTokens(user.address, pagination);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -54,7 +53,7 @@ export class UserResolver {
         skipFeesCollector: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<OutdatedContract[]> {
-        return await this.userEnergyCompute.getUserOutdatedContracts(
+        return this.userEnergyCompute.getUserOutdatedContracts(
             user.address,
             skipFeesCollector,
         );
@@ -69,7 +68,7 @@ export class UserResolver {
         @Args('skipFeesCollector', { nullable: true })
         skipFeesCollector: boolean,
     ): Promise<TransactionModel | null> {
-        return await this.userEnergyTransaction.updateFarmsEnergyForUser(
+        return this.userEnergyTransaction.updateFarmsEnergyForUser(
             user.address,
             includeAllContracts,
             skipFeesCollector,
@@ -82,15 +81,11 @@ export class UserResolver {
         @Args('tokens', { type: () => [EsdtTokenInput] })
         tokens: EsdtTokenInput[],
     ): Promise<UserToken[]> {
-        try {
-            return await this.userEsdt.getAllEsdtTokens(
-                Address.Zero().bech32(),
-                pagination,
-                tokens,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.userEsdt.getAllEsdtTokens(
+            Address.Zero().bech32(),
+            pagination,
+            tokens,
+        );
     }
 
     @Query(() => [UserNftTokens])
@@ -98,14 +93,10 @@ export class UserResolver {
         @Args() pagination: PaginationArgs,
         @Args('nfts', { type: () => [NftTokenInput] }) nfts: NftTokenInput[],
     ): Promise<UserNftToken[]> {
-        try {
-            return await this.userMetaEsdt.getAllNftTokens(
-                Address.Zero().bech32(),
-                pagination,
-                nfts,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.userMetaEsdt.getAllNftTokens(
+            Address.Zero().bech32(),
+            pagination,
+            nfts,
+        );
     }
 }
