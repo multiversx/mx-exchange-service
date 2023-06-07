@@ -60,10 +60,10 @@ export class UserEnergyComputeService {
         );
     }
 
-    // @GetOrSetCache({
-    //     baseKey: 'userEnergy',
-    //     remoteTtl: oneMinute() * 10,
-    // })
+    @GetOrSetCache({
+        baseKey: 'userEnergy',
+        remoteTtl: oneMinute() * 10,
+    })
     async outdatedContract(
         userAddress: string,
         contractAddress: string,
@@ -143,10 +143,10 @@ export class UserEnergyComputeService {
         return new OutdatedContract();
     }
 
-    // @GetOrSetCache({
-    //     baseKey: 'userEnergy',
-    //     remoteTtl: oneMinute(),
-    // })
+    @GetOrSetCache({
+        baseKey: 'userEnergy',
+        remoteTtl: oneMinute(),
+    })
     async userActiveFarmsV2(userAddress: string): Promise<string[]> {
         return await this.computeActiveFarmsV2ForUser(userAddress);
     }
