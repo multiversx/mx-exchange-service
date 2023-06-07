@@ -2,33 +2,20 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
 import { UserMetaEsdtService } from '../services/user.metaEsdt.service';
-import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as winston from 'winston';
-import * as Transport from 'winston-transport';
-import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
+import { MXApiServiceProvider } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModelV1_2 } from '../../farm/models/farmTokenAttributes.model';
 import { UserMetaEsdtComputeService } from '../services/metaEsdt.compute.service';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { LockedAssetServiceMock } from '../../locked-asset-factory/mocks/locked.asset.service.mock';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
-import { AbiLockedAssetService } from '../../locked-asset-factory/services/abi-locked-asset.service';
-import { AbiLockedAssetServiceMock } from '../../locked-asset-factory/mocks/abi.locked.asset.service.mock';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { StakingService } from '../../staking/services/staking.service';
-import { StakingServiceMock } from '../../staking/mocks/staking.service.mock';
-import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
-import { StakingProxyServiceMock } from '../../staking-proxy/mocks/staking.proxy.service.mock';
+import { AbiLockedAssetServiceProvider } from '../../locked-asset-factory/mocks/abi.locked.asset.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { StakingServiceProvider } from '../../staking/mocks/staking.service.mock';
+import { StakingProxyServiceProvider } from '../../staking-proxy/mocks/staking.proxy.service.mock';
 import { PriceDiscoveryServiceProvider } from '../../price-discovery/mocks/price.discovery.service.mock';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
-import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
-import { RemoteConfigGetterServiceMock } from '../../remote-config/mocks/remote-config.getter.mock';
+import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
@@ -74,61 +61,14 @@ import { FarmAbiServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.abi
 import { FarmAbiServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.abi.service.mock';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
-import {
-    FarmServiceBaseMock,
-    FarmServiceProvider,
-} from 'src/modules/farm/mocks/farm.service.mock';
+import { FarmServiceBaseMock } from 'src/modules/farm/mocks/farm.service.mock';
+import { CommonAppModule } from 'src/common.app.module';
 
 describe('UserService', () => {
-    let userMetaEsdts: UserMetaEsdtService;
-    let userEsdts: UserEsdtService;
-
-    const MXApiServiceProvider = {
-        provide: MXApiService,
-        useClass: MXApiServiceMock,
-    };
-
-    const ContextGetterServiceProvider = {
-        provide: ContextGetterService,
-        useClass: ContextGetterServiceMock,
-    };
-
-    const LockedAssetProvider = {
-        provide: LockedAssetService,
-        useClass: LockedAssetServiceMock,
-    };
-
-    const AbiLockedAssetServiceProvider = {
-        provide: AbiLockedAssetService,
-        useClass: AbiLockedAssetServiceMock,
-    };
-
-    const StakingServiceProvider = {
-        provide: StakingService,
-        useClass: StakingServiceMock,
-    };
-
-    const StakingProxyServiceProvider = {
-        provide: StakingProxyService,
-        useClass: StakingProxyServiceMock,
-    };
-
-    const RemoteConfigGetterServiceProvider = {
-        provide: RemoteConfigGetterService,
-        useClass: RemoteConfigGetterServiceMock,
-    };
-
-    const logTransports: Transport[] = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                nestWinstonModuleUtilities.format.nestLike(),
-            ),
-        }),
-    ];
+    let module: TestingModule;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
+        module = await Test.createTestingModule({
             providers: [
                 MXApiServiceProvider,
                 ContextGetterServiceProvider,
@@ -169,7 +109,7 @@ describe('UserService', () => {
                 ProxyFarmAbiServiceProvider,
                 UserMetaEsdtComputeService,
                 LockedTokenWrapperService,
-                LockedAssetProvider,
+                LockedAssetService,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
                 WrapAbiServiceProvider,
@@ -194,24 +134,22 @@ describe('UserService', () => {
                 RemoteConfigGetterServiceProvider,
                 MXDataApiServiceProvider,
             ],
-            imports: [
-                WinstonModule.forRoot({
-                    transports: logTransports,
-                }),
-                CachingModule,
-            ],
+            imports: [CommonAppModule, CachingModule],
         }).compile();
-
-        userEsdts = module.get<UserEsdtService>(UserEsdtService);
-        userMetaEsdts = module.get<UserMetaEsdtService>(UserMetaEsdtService);
     });
 
     it('should be defined', () => {
+        const userEsdts = module.get<UserEsdtService>(UserEsdtService);
+        const userMetaEsdts =
+            module.get<UserMetaEsdtService>(UserMetaEsdtService);
+
         expect(userEsdts).toBeDefined();
         expect(userMetaEsdts).toBeDefined();
     });
 
     it('should get user esdt tokens', async () => {
+        const userEsdts = module.get<UserEsdtService>(UserEsdtService);
+
         expect(
             await userEsdts.getAllEsdtTokens('user_address_1', {
                 offset: 0,
@@ -259,6 +197,9 @@ describe('UserService', () => {
     });
 
     it('should get user nfts tokens', async () => {
+        const userMetaEsdts =
+            module.get<UserMetaEsdtService>(UserMetaEsdtService);
+
         expect(
             await userMetaEsdts.getAllNftTokens('user_address_1', {
                 offset: 0,
