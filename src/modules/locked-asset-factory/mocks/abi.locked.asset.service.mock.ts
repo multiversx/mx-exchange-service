@@ -1,4 +1,5 @@
 import { UnlockMileStoneModel } from '../models/locked-asset.model';
+import { AbiLockedAssetService } from '../services/abi-locked-asset.service';
 
 export class AbiLockedAssetServiceMock {
     async getLockedTokenID(): Promise<string> {
@@ -26,3 +27,8 @@ export class AbiLockedAssetServiceMock {
         return 2;
     }
 }
+
+export const AbiLockedAssetServiceProvider = {
+    provide: AbiLockedAssetService,
+    useClass: AbiLockedAssetServiceMock,
+};

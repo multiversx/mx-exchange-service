@@ -14,6 +14,7 @@ import { UserToken } from '../models/user.model';
 import { UserEsdtComputeService } from './esdt.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()
 export class UserEsdtService {
@@ -27,13 +28,12 @@ export class UserEsdtService {
         private readonly cachingService: CachingService,
     ) {}
 
-    private async getUniquePairTokens(): Promise<string[]> {
-        return await this.cachingService.getOrSet(
-            'uniquePairTokens',
-            async () => await this.getUniquePairTokensRaw(),
-            oneSecond() * 6,
-            oneSecond() * 3,
-        );
+    @GetOrSetCache({
+        baseKey: 'user',
+        remoteTtl: oneSecond() * 6,
+    })
+    private async uniquePairTokens(): Promise<string[]> {
+        return await this.getUniquePairTokensRaw();
     }
 
     private async getUniquePairTokensRaw(): Promise<string[]> {
@@ -66,7 +66,7 @@ export class UserEsdtService {
                       pagination.offset,
                       pagination.limit,
                   ),
-            this.getUniquePairTokens(),
+            this.uniquePairTokens(),
         ]);
 
         const userPairEsdtTokens = userTokens.filter((token) =>
