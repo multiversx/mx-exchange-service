@@ -175,6 +175,13 @@ export class FeesCollectorComputeService {
         customEnergyAmount?: string,
         customLockedTokens?: string,
     ): Promise<BigNumber> {
+        if (
+            new BigNumber(customEnergyAmount).isZero() ||
+            new BigNumber(customLockedTokens).isZero()
+        ) {
+            return new BigNumber(0);
+        }
+
         const [currentWeek, baseAssetTokenID] = await Promise.all([
             this.weekTimekeepingAbi.currentWeek(scAddress),
             this.energyAbi.baseAssetTokenID(),
