@@ -45,8 +45,15 @@ export class RouterResolver {
     }
 
     @ResolveField()
-    async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
-        return this.routerabi.enableSwapByUserConfig();
+    async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig[]> {
+        const commonTokens = await this.routerabi.commonTokensForUserPairs();
+        const configs = await Promise.all(
+            commonTokens.map((tokenID) =>
+                this.routerabi.enableSwapByUserConfig(tokenID),
+            ),
+        );
+
+        return configs.filter((config) => config !== undefined);
     }
 
     @ResolveField(() => Int)

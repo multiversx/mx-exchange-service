@@ -3,14 +3,11 @@ import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.mode
 
 @ObjectType()
 export class EnableSwapByUserConfig {
+    lockedTokenID: string;
     @Field(() => SimpleLockModel)
     lockingSC: SimpleLockModel;
-    @Field({
-        deprecationReason:
-            'field is deprecated and will be removed on next release;' +
-            'value can be obtained from lockingSC field',
-    })
-    lockedTokenID: string;
+    @Field()
+    commonTokenID: string;
     @Field() minLockedTokenValue: string;
     @Field(() => Int) minLockPeriodEpochs: number;
 
@@ -49,8 +46,8 @@ export class FactoryModel {
     multiSwapStatus: boolean;
     @Field(() => [String])
     commonTokensForUserPairs: string[];
-    @Field(() => EnableSwapByUserConfig)
-    enableSwapByUserConfig: EnableSwapByUserConfig;
+    @Field(() => [EnableSwapByUserConfig])
+    enableSwapByUserConfig: EnableSwapByUserConfig[];
     @Field()
     defaultSlippage: number;
     @Field(() => [Float])
