@@ -15,7 +15,10 @@ const getErrorText = (
         options.className ? options.className + '.' + methodName : methodName
     }`;
 
-    if (options.logArgs) return `${defaultText} with args ${args.join(',')}`;
+    if (options.logArgs)
+        return `${defaultText} with args ${args
+            .map((arg) => JSON.stringify(arg))
+            .join(', ')}`;
 
     return defaultText;
 };
