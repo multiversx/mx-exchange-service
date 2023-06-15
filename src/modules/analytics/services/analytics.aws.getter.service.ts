@@ -2,20 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { CachingService } from '../../../services/caching/cache.service';
 import { HistoricDataModel } from '../models/analytics.model';
-import { oneMinute } from 'src/helpers/helpers';
-import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
-import { ApiConfigService } from 'src/helpers/api.config.service';
 import moment from 'moment';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
-import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()
 export class AnalyticsAWSGetterService {
-    constructor(
-        protected readonly cachingService: CachingService,
-        private readonly analyticsQuery: AnalyticsQueryService,
-        private readonly apiConfig: ApiConfigService,
-    ) {}
+    constructor(private readonly cachingService: CachingService) {}
 
     private async getCachedData<T>(cacheKey: string): Promise<T> {
         const data = await this.cachingService.getCache<T>(cacheKey);
@@ -105,62 +97,6 @@ export class AnalyticsAWSGetterService {
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey('values24h', series, metric);
         return await this.getCachedData(cacheKey);
-    }
-
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'analytics',
-        remoteTtl: oneMinute() * 2,
-    })
-    async latestHistoricData(
-        time: string,
-        series: string,
-        metric: string,
-        start: string,
-    ): Promise<HistoricDataModel[]> {
-        if (!this.apiConfig.isAWSTimestreamRead()) {
-            return [];
-        }
-
-        return await this.analyticsQuery.getLatestHistoricData({
-            table: this.apiConfig.getAWSTableName(),
-            series,
-            metric,
-            time,
-            start,
-        });
-    }
-
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'analytics',
-        remoteTtl: oneMinute() * 2,
-    })
-    async latestBinnedHistoricData(
-        time: string,
-        series: string,
-        metric: string,
-        bin: string,
-        start: string,
-    ): Promise<HistoricDataModel[]> {
-        if (!this.apiConfig.isAWSTimestreamRead()) {
-            return [];
-        }
-
-        return await this.analyticsQuery.getLatestBinnedHistoricData({
-            table: this.apiConfig.getAWSTableName(),
-            series,
-            metric,
-            time,
-            start,
-            bin,
-        });
     }
 
     private getAnalyticsCacheKey(...args: any) {

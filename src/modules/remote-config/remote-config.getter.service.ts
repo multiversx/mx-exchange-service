@@ -7,7 +7,6 @@ import { FlagRepositoryService } from 'src/services/database/repositories/flag.r
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { SCAddressType } from './models/sc-address.model';
 import { oneHour } from 'src/helpers/helpers';
-import { AnalyticsQueryMode } from 'src/services/analytics/entities/analytics.query.mode';
 import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
 
 @Injectable()
@@ -103,77 +102,6 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     })
                     .then((res) => {
                         return res.map((scAddress) => scAddress.address);
-                    }),
-            oneHour(),
-        );
-    }
-
-    async getAnalyticsAWSTimestreamWriteFlagValue(): Promise<boolean> {
-        this.baseKey = 'analytics';
-        const cacheKey = this.getCacheKey('AWS_TIMESTREAM_WRITE');
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.analyticsRepositoryService
-                    .findOne({
-                        name: 'AWS_TIMESTREAM_WRITE',
-                    })
-                    .then((res) => {
-                        if (!res?.value) {
-                            return true; // default value
-                        }
-                        return res.value === 'true';
-                    }),
-            oneHour(),
-        );
-    }
-
-    async getAnalyticsDataApiWriteFlagValue(): Promise<boolean> {
-        this.baseKey = 'analytics';
-        const cacheKey = this.getCacheKey('DATA_API_WRITE');
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.analyticsRepositoryService
-                    .findOne({
-                        name: 'DATA_API_WRITE',
-                    })
-                    .then((res) => {
-                        if (!res?.value) {
-                            return false; // default false
-                        }
-                        return res.value === 'true';
-                    }),
-            oneHour(),
-        );
-    }
-
-    async getAnalyticsQueryMode(): Promise<AnalyticsQueryMode> {
-        this.baseKey = 'analytics';
-        const cacheKey = this.getCacheKey('QUERY_MODE');
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.analyticsRepositoryService
-                    .findOne({
-                        name: 'QUERY_MODE',
-                    })
-                    .then((res) => {
-                        if (!res?.value) {
-                            throw new Error('No analytics.QUERY_MODE present');
-                        }
-
-                        const value = res.value as AnalyticsQueryMode;
-                        if (
-                            value === AnalyticsQueryMode.AWS_TIMESTREAM ||
-                            value === AnalyticsQueryMode.DATA_API
-                        ) {
-                            return value;
-                        }
-
-                        throw new Error(
-                            'Invalid value for analytics.QUERY_MODE present',
-                        );
                     }),
             oneHour(),
         );

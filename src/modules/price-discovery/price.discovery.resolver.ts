@@ -1,4 +1,4 @@
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -16,6 +16,8 @@ import { PriceDiscoveryTransactionService } from './services/price.discovery.tra
 import { SimpleLockModel } from '../simple-lock/models/simple.lock.model';
 import { PriceDiscoveryAbiService } from './services/price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from './services/price.discovery.compute.service';
+import { HistoricDataModel } from '../analytics/models/analytics.model';
+import { PDAnalyticsArgs } from './models/price.discovery.args';
 
 @Resolver(() => PriceDiscoveryModel)
 export class PriceDiscoveryResolver {
@@ -282,6 +284,24 @@ export class PriceDiscoveryResolver {
             user.address,
             inputTokens,
             'redeem',
+        );
+    }
+
+    @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
+    async closingValues(
+        @Args() args: PDAnalyticsArgs,
+    ): Promise<HistoricDataModel[]> {
+        return this.priceDiscoveryCompute.closingValues(
+            args.priceDiscoveryAddress,
+            args.metric,
+            args.bucket,
         );
     }
 }

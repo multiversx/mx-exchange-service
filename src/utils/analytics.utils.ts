@@ -1,16 +1,17 @@
-import { TimeResolution } from "@multiversx/sdk-data-api-client";
-import { DataApiHistoricalResponse } from "@multiversx/sdk-data-api-client/lib/src/responses";
-import BigNumber from "bignumber.js";
-import moment from "moment";
-import { MetricsCollector } from "./metrics.collector";
-import { PerformanceProfiler } from "./performance.profiler";
+import { TimeResolution } from '@multiversx/sdk-data-api-client';
+import { DataApiHistoricalResponse } from '@multiversx/sdk-data-api-client/lib/src/responses';
+import BigNumber from 'bignumber.js';
+import moment from 'moment';
 
 export const decodeTime = (time: string): [string, moment.unitOfTime.Base] => {
     const [timeAmount, timeUnit] = time.match(/[a-zA-Z]+|[0-9]+/g);
     return [timeAmount, timeUnit as moment.unitOfTime.Base];
 };
 
-export const computeTimeInterval = (time: string, start?: string): [Date, Date] => {
+export const computeTimeInterval = (
+    time: string,
+    start?: string,
+): [Date, Date] => {
     const [timeAmount, timeUnit] = decodeTime(time);
 
     const startDate1 = moment().utc().subtract(timeAmount, timeUnit);
@@ -45,41 +46,25 @@ export const convertBinToTimeResolution = (bin: string): TimeResolution => {
     throw new Error('Invalid bin');
 };
 
-export function DataApiQuery() {
-    return (_target: object, _key: string | symbol, descriptor: PropertyDescriptor) => {
-        const childMethod = descriptor.value;
-
-        descriptor.value = async function (...args: any[]) {
-            const profiler = new PerformanceProfiler();
-
-            try {
-                return await childMethod.apply(this, args);
-            } catch (errors) {
-                if (Array.isArray(errors)) {
-                    const errorIds: string[] = errors?.map(error => error?.extensions?.id);
-                    throw new Error(`Data API Internal Error. Error IDs: ${errorIds.join()}`);
-                } else {
-                    throw new Error(`Data API Internal Error. Error: ${errors.message}`);
-                }
-            } finally {
-                profiler.stop();
-                MetricsCollector.setDataApiQueryDuration(childMethod.name, profiler.duration);
-            }
-        };
-        return descriptor;
-    };
-}
-
-export const generateCacheKeysForTimeInterval = (intervalStart: moment.Moment, intervalEnd: moment.Moment): string[] => {
+export const generateCacheKeysForTimeInterval = (
+    intervalStart: moment.Moment,
+    intervalEnd: moment.Moment,
+): string[] => {
     const keys = [];
-    for (let d = intervalStart.clone(); d.isSameOrBefore(intervalEnd); d.add(1, 'day')) {
+    for (
+        let d = intervalStart.clone();
+        d.isSameOrBefore(intervalEnd);
+        d.add(1, 'day')
+    ) {
         keys.push(d.format('YYYY-MM-DD'));
     }
 
     return keys;
-}
+};
 
-export const convertDataApiHistoricalResponseToHash = (rows: DataApiHistoricalResponse[]): { field: string, value: { last: string, sum: string } }[] => {
+export const convertDataApiHistoricalResponseToHash = (
+    rows: DataApiHistoricalResponse[],
+): { field: string; value: { last: string; sum: string } }[] => {
     const toBeInserted = rows.map((row) => {
         const field = moment.utc(row.timestamp * 1000).format('YYYY-MM-DD');
         const value = {
@@ -89,7 +74,7 @@ export const convertDataApiHistoricalResponseToHash = (rows: DataApiHistoricalRe
         return { field, value };
     });
     return toBeInserted;
-}
+};
 
 export const computeIntervalValues = (keys, values) => {
     const intervalValues = [];
@@ -100,4 +85,4 @@ export const computeIntervalValues = (keys, values) => {
         });
     }
     return intervalValues;
-}
+};

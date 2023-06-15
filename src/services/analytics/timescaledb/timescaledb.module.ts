@@ -3,16 +3,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommonAppModule } from 'src/common.app.module';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { DataApiQueryService } from './data-api.query.service';
-import { DataApiWriteService } from './data-api.write.service';
+import { TimescaleDBQueryService } from './timescaledb.query.service';
+import { TimescaleDBWriteService } from './timescaledb.write.service';
 import {
     CloseDaily,
     CloseHourly,
+    PDCloseMinute,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
-} from './entities/data.api.entities';
+} from './entities/timescaledb.entities';
 
 @Module({
     imports: [
@@ -44,9 +45,10 @@ import {
             CloseDaily,
             CloseHourly,
             TokenBurnedWeekly,
+            PDCloseMinute,
         ]),
     ],
-    providers: [DataApiQueryService, DataApiWriteService],
-    exports: [DataApiQueryService, DataApiWriteService],
+    providers: [TimescaleDBQueryService, TimescaleDBWriteService],
+    exports: [TimescaleDBQueryService, TimescaleDBWriteService],
 })
-export class DataApiModule {}
+export class TimescaleDBModule {}

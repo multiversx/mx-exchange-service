@@ -187,51 +187,6 @@ export class ApiConfigService {
         return secret;
     }
 
-    getAWSRegion(): string {
-        const region = this.configService.get<string>('AWS_REGION');
-        if (!region) {
-            throw new Error('No AWS region present');
-        }
-        return region;
-    }
-
-    getAWSDatabaseName(): string {
-        const databaseName =
-            this.configService.get<string>('AWS_DATABASE_NAME');
-        if (!databaseName) {
-            throw new Error('No AWS database name present');
-        }
-        return databaseName;
-    }
-
-    getAWSTableName(): string {
-        const tableName = this.configService.get<string>('AWS_TABLE_NAME');
-        if (!tableName) {
-            throw new Error('No AWS table name present');
-        }
-        return tableName;
-    }
-
-    getAWSMemoryStoreRetention(): number {
-        const retentionPeriod = this.configService.get<string>(
-            'AWS_MEMORY_STORE_RETENTION',
-        );
-        if (!retentionPeriod) {
-            throw new Error('No AWS memory store retention period present');
-        }
-        return parseInt(retentionPeriod);
-    }
-
-    getAWSMagneticStoreRetention(): number {
-        const retentionPeriod = this.configService.get<string>(
-            'AWS_MAGNETIC_STORE_RETENTION',
-        );
-        if (!retentionPeriod) {
-            throw new Error('No AWS magnetic store retention period present');
-        }
-        return parseInt(retentionPeriod);
-    }
-
     isAWSTimestreamRead(): boolean {
         const readFlag = this.configService.get<string>('AWS_TIMESTREAM_READ');
         if (!readFlag) {

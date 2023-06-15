@@ -7,7 +7,7 @@ import {
     SumDaily,
     SumHourly,
     XExchangeAnalyticsEntity,
-} from '../entities/data.api.entities';
+} from '../entities/timescaledb.entities';
 
 config();
 
@@ -27,5 +27,5 @@ export default new DataSource({
         CloseDaily,
         CloseHourly,
     ],
-    migrations: ['src/services/analytics/data-api/migration/*-xExchange.ts'],
+    migrations: ['src/services/analytics/timescaledb/migration/*-xExchange.ts'],
 });
