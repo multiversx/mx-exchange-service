@@ -25,9 +25,6 @@ export class RouterAbiServiceMock implements IRouterAbiService {
     pairCreationEnabled(): Promise<boolean> {
         throw new Error('Method not implemented.');
     }
-    lastErrorMessage(): Promise<string> {
-        throw new Error('Method not implemented.');
-    }
     state(): Promise<boolean> {
         throw new Error('Method not implemented.');
     }

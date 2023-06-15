@@ -141,11 +141,6 @@ export class RouterResolver {
         return constantsConfig.MIN_SWAP_AMOUNT;
     }
 
-    @ResolveField(() => String)
-    async lastErrorMessage(): Promise<string> {
-        return this.routerabi.lastErrorMessage();
-    }
-
     @Query(() => [String])
     async pairAddresses(): Promise<string[]> {
         return this.routerabi.pairsAddress();
@@ -248,11 +243,6 @@ export class RouterResolver {
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
         return this.routerTransaction.setPairCreationEnabled(enabled);
-    }
-
-    @Query(() => String)
-    async getLastErrorMessage(): Promise<string> {
-        return await this.routerabi.lastErrorMessage();
     }
 
     @UseGuards(JwtOrNativeAdminGuard)

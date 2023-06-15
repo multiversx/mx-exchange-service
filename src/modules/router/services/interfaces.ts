@@ -6,7 +6,6 @@ export interface IRouterAbiService {
     pairsAddress(): Promise<string[]>;
     pairsMetadata(): Promise<PairMetadata[]>;
     pairCreationEnabled(): Promise<boolean>;
-    lastErrorMessage(): Promise<string>;
     state(): Promise<boolean>;
     owner(): Promise<string>;
     allPairTokens(): Promise<PairTokens[]>;

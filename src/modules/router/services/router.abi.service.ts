@@ -97,25 +97,6 @@ export class RouterAbiService
     })
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneMinute(),
-    })
-    async lastErrorMessage(): Promise<string> {
-        return await this.getLastErrorMessageRaw();
-    }
-
-    async getLastErrorMessageRaw(): Promise<string> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastErrorMessage();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
-    }
-
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
-    @GetOrSetCache({
-        baseKey: 'router',
         remoteTtl: oneHour(),
     })
     async state(): Promise<boolean> {

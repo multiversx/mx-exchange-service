@@ -58,8 +58,6 @@ export class FactoryModel {
     maxSlippage: number;
     @Field()
     minSwapAmount: number;
-    @Field()
-    lastErrorMessage: string;
 
     constructor(init?: Partial<FactoryModel>) {
         Object.assign(this, init);
