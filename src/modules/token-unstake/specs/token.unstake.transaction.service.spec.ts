@@ -66,7 +66,7 @@ describe('TokenUnstakeTransactionService', () => {
             new TransactionModel({
                 chainID: mxConfig.chainID,
                 data: encodeTransactionData('cancelUnbond'),
-                gasLimit: 20000000,
+                gasLimit: 21000000,
                 gasPrice: 1000000000,
                 nonce: 0,
                 sender: Address.Zero().bech32(),
