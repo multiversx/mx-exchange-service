@@ -455,7 +455,7 @@
                 "default": 8500000,
                 "additionalTokens": 5000000
             },
-            "cancelUnbond": 20000000
+            "cancelUnbond": 21000000
         },
         "lockedTokenWrapper": {
             "wrapLockedToken": 15000000,
