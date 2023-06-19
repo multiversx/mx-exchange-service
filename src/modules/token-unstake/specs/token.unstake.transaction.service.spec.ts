@@ -60,13 +60,15 @@ describe('TokenUnstakeTransactionService', () => {
             module.get<TokenUnstakeTransactionService>(
                 TokenUnstakeTransactionService,
             );
-        const transaction = await service.cancelUnbond();
+        const transaction = await service.cancelUnbond(
+            Address.Zero().bech32(),
+        );
 
         expect(transaction).toEqual(
             new TransactionModel({
                 chainID: mxConfig.chainID,
                 data: encodeTransactionData('cancelUnbond'),
-                gasLimit: 20000000,
+                gasLimit: 9500000,
                 gasPrice: 1000000000,
                 nonce: 0,
                 sender: Address.Zero().bech32(),

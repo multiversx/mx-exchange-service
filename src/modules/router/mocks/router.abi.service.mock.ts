@@ -4,6 +4,8 @@ import { PairMetadata } from '../models/pair.metadata.model';
 import { IRouterAbiService } from '../services/interfaces';
 import { pairs } from 'src/modules/pair/mocks/pair.constants';
 import { RouterAbiService } from '../services/router.abi.service';
+import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
+import { Address } from '@multiversx/sdk-core/out';
 
 export class RouterAbiServiceMock implements IRouterAbiService {
     async pairsAddress(): Promise<string[]> {
@@ -23,9 +25,6 @@ export class RouterAbiServiceMock implements IRouterAbiService {
     pairCreationEnabled(): Promise<boolean> {
         throw new Error('Method not implemented.');
     }
-    lastErrorMessage(): Promise<string> {
-        throw new Error('Method not implemented.');
-    }
     state(): Promise<boolean> {
         throw new Error('Method not implemented.');
     }
@@ -41,11 +40,19 @@ export class RouterAbiServiceMock implements IRouterAbiService {
     temporaryOwnerPeriod(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
-        throw new Error('Method not implemented.');
+    async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
+        return new EnableSwapByUserConfig({
+            lockingSC: new SimpleLockModel({
+                address: Address.Zero().bech32(),
+            }),
+            commonTokenID: 'USDC-1111',
+            lockedTokenID: 'LKESDT-1234',
+            minLockedTokenValue: '8000000000000000000000',
+            minLockPeriodEpochs: 1,
+        });
     }
-    commonTokensForUserPairs(): Promise<string[]> {
-        throw new Error('Method not implemented.');
+    async commonTokensForUserPairs(): Promise<string[]> {
+        return ['USDC-1111'];
     }
 }
 

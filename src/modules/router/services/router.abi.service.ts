@@ -1,4 +1,8 @@
-import { Interaction } from '@multiversx/sdk-core';
+import {
+    Interaction,
+    ReturnCode,
+    TokenIdentifierValue,
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { PairTokens } from 'src/modules/pair/models/pair.model';
@@ -10,6 +14,7 @@ import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { IRouterAbiService } from './interfaces';
+import { constantsConfig } from 'src/config';
 
 @Injectable()
 export class RouterAbiService
@@ -85,25 +90,6 @@ export class RouterAbiService
             contract.methodsExplicit.getPairCreationEnabled();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
-    }
-
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
-    @GetOrSetCache({
-        baseKey: 'router',
-        remoteTtl: oneMinute(),
-    })
-    async lastErrorMessage(): Promise<string> {
-        return await this.getLastErrorMessageRaw();
-    }
-
-    async getLastErrorMessageRaw(): Promise<string> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastErrorMessage();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
     }
 
     @ErrorLoggerAsync({
@@ -211,23 +197,37 @@ export class RouterAbiService
         baseKey: 'router',
         remoteTtl: oneHour(),
     })
-    async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
-        return await this.getEnableSwapByUserConfigRaw();
+    async enableSwapByUserConfig(
+        tokenID: string,
+    ): Promise<EnableSwapByUserConfig> {
+        return await this.getEnableSwapByUserConfigRaw(tokenID);
     }
 
-    async getEnableSwapByUserConfigRaw(): Promise<EnableSwapByUserConfig> {
+    async getEnableSwapByUserConfigRaw(
+        tokenID: string,
+    ): Promise<EnableSwapByUserConfig> {
         const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
-            contract.methodsExplicit.getEnableSwapByUserConfig();
+            contract.methodsExplicit.getEnableSwapByUserConfig([
+                TokenIdentifierValue.esdtTokenIdentifier(tokenID),
+            ]);
 
         const response = await this.getGenericData(interaction);
+
+        if (
+            response.returnCode.equals(ReturnCode.UserError) &&
+            response.returnMessage === 'No config set'
+        ) {
+            return undefined;
+        }
 
         const rawConfig = response.firstValue.valueOf();
         const minLockedTokenValue = new BigNumber(
             rawConfig.min_locked_token_value,
-        ).plus('5e6');
+        ).plus(constantsConfig.roundedSwapEnable[tokenID]);
         return new EnableSwapByUserConfig({
             lockedTokenID: rawConfig.locked_token_id,
+            commonTokenID: tokenID,
             minLockedTokenValue: minLockedTokenValue.toFixed(),
             minLockPeriodEpochs: rawConfig.min_lock_period_epochs.toNumber(),
         });

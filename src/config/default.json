@@ -455,7 +455,10 @@
                 "default": 8500000,
                 "additionalTokens": 5000000
             },
-            "cancelUnbond": 20000000
+            "cancelUnbond": {
+                "default": 8500000,
+                "additionalTokens": 1000000
+            }
         },
         "lockedTokenWrapper": {
             "wrapLockedToken": 15000000,
@@ -552,7 +555,11 @@
             "SLIPPAGE_VALUES": [0.001, 0.005, 0.01],
             "MAX_SLIPPAGE": 0.05
         },
-        "MIN_SWAP_AMOUNT": 0.05
+        "MIN_SWAP_AMOUNT": 0.05,
+        "roundedSwapEnable": {
+            "USDC-8d4068": "5000000",
+            "WEGLD-d7c6bb": "100000000000000000"
+        }
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"
