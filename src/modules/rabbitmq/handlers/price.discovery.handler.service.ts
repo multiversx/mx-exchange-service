@@ -22,6 +22,10 @@ export class PriceDiscoveryEventHandler {
     async handleEvent(
         event: DepositEvent | WithdrawEvent,
     ): Promise<[any[], number]> {
+        const launchedToken = await this.priceDiscoveryService.getLaunchedToken(
+            event.getAddress(),
+        );
+
         const [
             priceDiscoveryAddress,
             launchedTokenAmount,
@@ -31,12 +35,10 @@ export class PriceDiscoveryEventHandler {
             event.getAddress(),
             event.launchedTokenAmount.toFixed(),
             event.acceptedTokenAmount.toFixed(),
-            event.launchedTokenPrice,
+            event.launchedTokenPrice
+                .multipliedBy(`1e-${launchedToken.decimals}`)
+                .toFixed(),
         ];
-
-        const launchedToken = await this.priceDiscoveryService.getLaunchedToken(
-            priceDiscoveryAddress,
-        );
 
         let cacheKeys: string[] = await Promise.all([
             this.priceDiscoverySetter.setLaunchedTokenAmount(
@@ -49,9 +51,7 @@ export class PriceDiscoveryEventHandler {
             ),
             this.priceDiscoverySetter.setLaunchedTokenPrice(
                 priceDiscoveryAddress,
-                launchedTokenPrice
-                    .multipliedBy(`1e-${launchedToken.decimals}`)
-                    .toFixed(),
+                launchedTokenPrice,
             ),
             this.priceDiscoverySetter.setCurrentPhase(
                 priceDiscoveryAddress,
