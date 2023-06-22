@@ -53,7 +53,7 @@ export class RabbitMQRouterHandlerService {
             if (firstTokenType === 'Unlisted') {
                 const createTokenDto: CreateTokenDto = {
                     tokenID: firstTokenID,
-                    type: 'Jungle',
+                    type: 'Experimental',
                 };
                 await this.tokenRepository.create(createTokenDto);
                 await this.tokenSetter.setEsdtTokenType(
@@ -65,7 +65,7 @@ export class RabbitMQRouterHandlerService {
             if (secondTokenType === 'Unlisted') {
                 const createTokenDto: CreateTokenDto = {
                     tokenID: secondTokenID,
-                    type: 'Jungle',
+                    type: 'Experimental',
                 };
                 await this.tokenRepository.create(createTokenDto);
                 await this.tokenSetter.setEsdtTokenType(
