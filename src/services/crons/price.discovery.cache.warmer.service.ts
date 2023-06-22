@@ -167,7 +167,7 @@ export class PriceDiscoveryCacheWarmerService {
                 this.priceDiscoveryAbi.getAcceptedTokenRedeemBalanceRaw(
                     address,
                 ),
-                this.priceDiscoveryAbi.currentPhase(address),
+                this.priceDiscoveryAbi.getCurrentPhaseRaw(address),
             ]);
 
             const invalidatedKeys: string[] = await Promise.all([

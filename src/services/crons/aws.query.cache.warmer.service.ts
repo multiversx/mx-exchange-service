@@ -36,42 +36,36 @@ export class AWSQueryCacheWarmerService {
             const profiler = new PerformanceProfiler();
             for (const tokenID of tokens) {
                 const priceUSD24h = await this.analyticsQuery.getValues24h({
-                    table: this.apiConfig.getAWSTableName(),
                     series: tokenID,
                     metric: 'priceUSD',
                 });
                 await delay(1000);
                 const priceUSDCompleteValues =
                     await this.analyticsQuery.getLatestCompleteValues({
-                        table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'priceUSD',
                     });
                 await delay(1000);
                 const lockedValueUSD24h =
                     await this.analyticsQuery.getValues24h({
-                        table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'lockedValueUSD',
                     });
                 await delay(1000);
                 const lockedValueUSDCompleteValues =
                     await this.analyticsQuery.getLatestCompleteValues({
-                        table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'lockedValueUSD',
                     });
                 await delay(1000);
                 const volumeUSD24hSum =
                     await this.analyticsQuery.getValues24hSum({
-                        table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'volumeUSD',
                     });
                 await delay(1000);
                 const volumeUSDCompleteValuesSum =
                     await this.analyticsQuery.getSumCompleteValues({
-                        table: this.apiConfig.getAWSTableName(),
                         series: tokenID,
                         metric: 'volumeUSD',
                     });
@@ -130,41 +124,35 @@ export class AWSQueryCacheWarmerService {
             for (const pairAddress of pairsAddresses) {
                 const lockedValueUSD24h =
                     await this.analyticsQuery.getValues24h({
-                        table: this.apiConfig.getAWSTableName(),
                         series: pairAddress,
                         metric: 'lockedValueUSD',
                     });
                 delay(1000);
                 const lockedValueUSDCompleteValues =
                     await this.analyticsQuery.getLatestCompleteValues({
-                        table: this.apiConfig.getAWSTableName(),
                         series: pairAddress,
                         metric: 'lockedValueUSD',
                     });
                 delay(1000);
                 const feesUSD = await this.analyticsQuery.getValues24hSum({
-                    table: this.apiConfig.getAWSTableName(),
                     series: pairAddress,
                     metric: 'feesUSD',
                 });
                 delay(1000);
                 const volumeUSD24hSum =
                     await this.analyticsQuery.getValues24hSum({
-                        table: this.apiConfig.getAWSTableName(),
                         series: pairAddress,
                         metric: 'volumeUSD',
                     });
                 delay(1000);
                 const volumeUSDCompleteValuesSum =
                     await this.analyticsQuery.getSumCompleteValues({
-                        table: this.apiConfig.getAWSTableName(),
                         series: pairAddress,
                         metric: 'volumeUSD',
                     });
                 delay(1000);
                 const feesUSDCompleteValuesSum =
                     await this.analyticsQuery.getSumCompleteValues({
-                        table: this.apiConfig.getAWSTableName(),
                         series: pairAddress,
                         metric: 'feesUSD',
                     });
