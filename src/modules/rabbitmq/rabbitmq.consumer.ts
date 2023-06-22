@@ -7,7 +7,7 @@ import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
-import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
+import { RouterHandlerService } from './handlers/router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.service';
 import {
@@ -71,7 +71,7 @@ export class RabbitMqConsumer {
         private readonly swapHandler: SwapEventHandler,
         private readonly wsFarmHandler: RabbitMQFarmHandlerService,
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
-        private readonly wsRouterHandler: RabbitMQRouterHandlerService,
+        private readonly routerHandler: RouterHandlerService,
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
@@ -207,7 +207,7 @@ export class RabbitMqConsumer {
                     );
                     break;
                 case ROUTER_EVENTS.CREATE_PAIR:
-                    await this.wsRouterHandler.handleCreatePairEvent(
+                    await this.routerHandler.handleCreatePairEvent(
                         new CreatePairEvent(rawEvent),
                     );
                     await this.getFilterAddresses();
