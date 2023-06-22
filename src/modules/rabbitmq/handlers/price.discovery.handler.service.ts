@@ -22,7 +22,7 @@ export class PriceDiscoveryEventHandler {
     async handleEvent(
         event: DepositEvent | WithdrawEvent,
     ): Promise<[any[], number]> {
-        const launchedToken = await this.priceDiscoveryService.getLaunchedToken(
+        const acceptedToken = await this.priceDiscoveryService.getAcceptedToken(
             event.getAddress(),
         );
 
@@ -36,7 +36,7 @@ export class PriceDiscoveryEventHandler {
             event.launchedTokenAmount.toFixed(),
             event.acceptedTokenAmount.toFixed(),
             event.launchedTokenPrice
-                .multipliedBy(`1e-${launchedToken.decimals}`)
+                .multipliedBy(`1e-${acceptedToken.decimals}`)
                 .toFixed(),
         ];
 
