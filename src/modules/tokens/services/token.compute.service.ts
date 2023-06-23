@@ -36,13 +36,24 @@ export class TokenComputeService implements ITokenComputeService {
         }
 
         const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const tokenPairs: PairMetadata[] = [];
+        let tokenPairs: PairMetadata[] = [];
         for (const pair of pairsMetadata) {
             if (
                 pair.firstTokenID === tokenID ||
                 pair.secondTokenID === tokenID
             ) {
                 tokenPairs.push(pair);
+            }
+        }
+
+        if (tokenPairs.length > 1) {
+            const states = await Promise.all(
+                tokenPairs.map((pair) => this.pairAbi.state(pair.address)),
+            );
+            if (states.find((state) => state === 'Active')) {
+                tokenPairs = tokenPairs.filter((pair, index) => {
+                    return states[index] === 'Active';
+                });
             }
         }
 
