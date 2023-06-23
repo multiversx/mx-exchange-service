@@ -15,12 +15,16 @@ import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { TokenRepositoryService } from '../../tokens/services/token.repository.service';
 import { TokenService } from '../../tokens/services/token.service';
 import { TokenSetterService } from '../../tokens/services/token.setter.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 
 @Injectable()
 export class RouterHandlerService {
     constructor(
         private readonly routerAbiService: RouterAbiService,
         private readonly routerSetterService: RouterSetterService,
+        private readonly pairAbi: PairAbiService,
+        private readonly pairSetter: PairSetterService,
         private readonly tokenGetter: TokenGetterService,
         private readonly tokenService: TokenService,
         private readonly tokenSetter: TokenSetterService,
@@ -119,6 +123,12 @@ export class RouterHandlerService {
     async handlePairSwapEnabledEvent(
         event: PairSwapEnabledEvent,
     ): Promise<void> {
+        const pairAddress = event.getPairAddress().bech32();
+        const state = await this.pairAbi.getStateRaw(pairAddress);
+        const cacheKey = await this.pairSetter.setState(pairAddress, state);
+
+        await this.deleteCacheKeys([cacheKey]);
+
         await this.pubSub.publish(ROUTER_EVENTS.PAIR_SWAP_ENABLED, {
             pairSwapEnabledEvent: event,
         });

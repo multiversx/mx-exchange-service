@@ -48,6 +48,7 @@ import {
     EscrowLockFundsEvent,
     EscrowWithdrawEvent,
     EscrowCancelTransferEvent,
+    PairSwapEnabledEvent,
 } from '@multiversx/sdk-exchange';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
@@ -211,6 +212,11 @@ export class RabbitMqConsumer {
                         new CreatePairEvent(rawEvent),
                     );
                     await this.getFilterAddresses();
+                    break;
+                case ROUTER_EVENTS.PAIR_SWAP_ENABLED:
+                    await this.routerHandler.handlePairSwapEnabledEvent(
+                        new PairSwapEnabledEvent(rawEvent),
+                    );
                     break;
                 case METABONDING_EVENTS.STAKE_LOCKED_ASSET:
                     await this.wsMetabondingHandler.handleMetabondingEvent(
