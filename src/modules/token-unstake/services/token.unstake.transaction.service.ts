@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { mxConfig, gasConfig } from 'src/config';
+import { gasConfig, mxConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { TokenUnstakeAbiService } from './token.unstake.abi.service';
@@ -34,12 +34,25 @@ export class TokenUnstakeTransactionService {
             .toPlainObject();
     }
 
-    async cancelUnbond(): Promise<TransactionModel> {
+    async cancelUnbond(sender: string): Promise<TransactionModel> {
         const contract = await this.mxProxy.getTokenUnstakeContract();
+
+        const unstakedTokens = await this.tokenUnstakeAbi.unlockedTokensForUser(
+            sender,
+        );
+
+        const gasLimit = new BigNumber(
+            gasConfig.tokenUnstake.cancelUnbond.default,
+        ).plus(
+            new BigNumber(
+                gasConfig.tokenUnstake.cancelUnbond.additionalTokens,
+            ).multipliedBy(unstakedTokens.length),
+        );
+
         return contract.methodsExplicit
             .cancelUnbond()
             .withChainID(mxConfig.chainID)
-            .withGasLimit(gasConfig.tokenUnstake.cancelUnbond)
+            .withGasLimit(gasLimit.integerValue().toNumber())
             .buildTransaction()
             .toPlainObject();
     }
