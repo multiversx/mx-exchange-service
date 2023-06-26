@@ -64,7 +64,7 @@ describe('RouterService', () => {
         const transaction = await service.createPair(
             Address.Zero().bech32(),
             'TOK3-3333',
-            'TOK4-4444',
+            'TOK4-123456',
         );
         expect(transaction).toEqual({
             nonce: 0,
@@ -75,7 +75,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.createPair,
             data: encodeTransactionData(
-                'createPair@TOK3-3333@TOK4-4444@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                'createPair@TOK3-3333@TOK4-123456@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -121,7 +121,7 @@ describe('RouterService', () => {
             await service.issueLpToken(
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 'LiquidityPoolTokenT1T4',
-                'TOK1TOK4LP',
+                'EGLDTOK4LP-abcdef',
             );
         } catch (error) {
             expect(error).toEqual(new Error('LP Token already issued'));
@@ -216,7 +216,7 @@ describe('RouterService', () => {
         const transaction = await service.setFee(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
-            'TOK1-1111',
+            'WEGLD-123456',
             false,
         );
         expect(transaction).toEqual({
@@ -228,7 +228,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
-                'setFeeOff@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
+                'setFeeOff@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -245,7 +245,7 @@ describe('RouterService', () => {
         const transaction = await service.setFee(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
-            'TOK1-1111',
+            'WEGLD-123456',
             true,
         );
         expect(transaction).toEqual({
@@ -257,7 +257,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
-                'setFeeOn@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
+                'setFeeOn@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -272,7 +272,7 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setLocalRolesOwner({
-            tokenID: 'TOK1-1111',
+            tokenID: 'WEGLD-123456',
             address: Address.Zero().bech32(),
             roles: [EsdtLocalRole.Mint],
         });
@@ -285,7 +285,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setLocalRolesOwner,
             data: encodeTransactionData(
-                'setLocalRolesOwner@TOK1-1111@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
+                'setLocalRolesOwner@WEGLD-123456@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -299,7 +299,10 @@ describe('RouterService', () => {
             RouterTransactionService,
         );
 
-        const transaction = await service.removePair('TOK1-1111', 'USDC-1111');
+        const transaction = await service.removePair(
+            'WEGLD-123456',
+            'USDC-123456',
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
@@ -308,7 +311,7 @@ describe('RouterService', () => {
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.removePair,
-            data: encodeTransactionData('removePair@TOK1-1111@USDC-1111'),
+            data: encodeTransactionData('removePair@WEGLD-123456@USDC-123456'),
             chainID: mxConfig.chainID,
             version: 1,
             options: undefined,

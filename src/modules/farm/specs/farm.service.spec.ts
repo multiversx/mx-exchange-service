@@ -157,7 +157,7 @@ describe('FarmService', () => {
         expect(isFarmToken_0).toEqual(false);
 
         const isFarmToken_1 = await farmAbiFactory.isFarmToken(
-            'TOK1TOK4LPStaked',
+            'EGLDTOK4FL-abcdef',
         );
         expect(isFarmToken_1).toEqual(true);
     });
@@ -165,7 +165,7 @@ describe('FarmService', () => {
     it('should get farm address by farm token ID', async () => {
         const farmAbiFactory = module.get<FarmAbiFactory>(FarmAbiFactory);
         const farmAddress = await farmAbiFactory.getFarmAddressByFarmTokenID(
-            'TOK1TOK4LPStaked',
+            'EGLDTOK4FL-abcdef',
         );
         expect(farmAddress).toEqual(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',

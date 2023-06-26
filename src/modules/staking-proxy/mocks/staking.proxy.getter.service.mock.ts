@@ -14,7 +14,7 @@ export class StakingProxyGetterServiceMock {
     }
 
     async getStakingTokenID(stakingProxyAddress: string): Promise<string> {
-        return 'TOK1-1111';
+        return 'WEGLD-123456';
     }
 
     async getFarmTokenID(stakingProxyAddress: string): Promise<string> {
@@ -26,6 +26,6 @@ export class StakingProxyGetterServiceMock {
     }
 
     async getLpFarmTokenID(stakingProxyAddress: string): Promise<string> {
-        return 'TOK1TOK4LPStaked';
+        return 'EGLDTOK4FL-abcdef';
     }
 }

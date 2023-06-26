@@ -63,7 +63,7 @@ describe('FarmService', () => {
                     'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 tokens: [
                     {
-                        tokenID: 'TOK1TOK4LP',
+                        tokenID: 'EGLDTOK4LP-abcdef',
                         nonce: 0,
                         amount: '1000000000000',
                     },
@@ -80,7 +80,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms['v1.2'].enterFarm.default,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@01@TOK1TOK4LP@@1000000000000@enterFarmAndLockRewards',
+                'MultiESDTNFTTransfer@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@01@EGLDTOK4LP-abcdef@@1000000000000@enterFarmAndLockRewards',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -99,7 +99,7 @@ describe('FarmService', () => {
             {
                 farmAddress:
                     'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-                farmTokenID: 'TOK1TOK4LPStaked',
+                farmTokenID: 'EGLDTOK4FL-abcdef',
                 farmTokenNonce: 1,
                 amount: '1000000000000',
                 withPenalty: false,
@@ -117,7 +117,7 @@ describe('FarmService', () => {
                 gasConfig.farms['v1.2']['lockedRewards'].exitFarm.default +
                 gasConfig.lockedAssetCreate,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@TOK1TOK4LPStaked@01@1000000000000@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@07311709943153914477',
+                'ESDTNFTTransfer@EGLDTOK4FL-abcdef@01@1000000000000@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@07311709943153914477',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -136,7 +136,7 @@ describe('FarmService', () => {
             {
                 farmAddress:
                     'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-                farmTokenID: 'TOK1TOK4LPStaked',
+                farmTokenID: 'EGLDTOK4FL-abcdef',
                 farmTokenNonce: 1,
                 amount: '1000000000000',
                 lockRewards: true,
@@ -153,7 +153,7 @@ describe('FarmService', () => {
                 gasConfig.farms['v1.2']['lockedRewards'].claimRewards +
                 gasConfig.lockedAssetCreate,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@TOK1TOK4LPStaked@01@1000000000000@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@claimRewards',
+                'ESDTNFTTransfer@EGLDTOK4FL-abcdef@01@1000000000000@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@claimRewards',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -193,7 +193,7 @@ describe('FarmService', () => {
             {
                 farmAddress:
                     'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-                farmTokenID: 'TOK1TOK4LPStaked',
+                farmTokenID: 'EGLDTOK4FL-abcdef',
                 farmTokenNonce: 1,
                 amount: '1000000000000',
                 withPenalty: false,
@@ -209,7 +209,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms['v1.2'].migrateToNewFarm,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@TOK1TOK4LPStaked@01@1000000000000@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@migrateToNewFarm@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                'ESDTNFTTransfer@EGLDTOK4FL-abcdef@01@1000000000000@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@migrateToNewFarm@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -226,7 +226,7 @@ describe('FarmService', () => {
         const transaction = await transactionV1_2.setFarmMigrationConfig({
             oldFarmAddress:
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-            oldFarmTokenID: 'TOK1TOK4LPStaked',
+            oldFarmTokenID: 'EGLDTOK4FL-abcdef',
             newFarmAddress: Address.Zero().bech32(),
             newLockedFarmAddress: Address.Zero().bech32(),
         });
@@ -239,7 +239,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.setFarmMigrationConfig,
             data: encodeTransactionData(
-                'setFarmMigrationConfig@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@TOK1TOK4LPStaked@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                'setFarmMigrationConfig@erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye@EGLDTOK4FL-abcdef@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -680,12 +680,12 @@ describe('FarmService', () => {
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 [
                     {
-                        tokenID: 'TOK1TOK4LPStaked',
+                        tokenID: 'EGLDTOK4FL-abcdef',
                         nonce: 0,
                         amount: '1000000000000',
                     },
                     {
-                        tokenID: 'TOK1TOK4LPStaked',
+                        tokenID: 'EGLDTOK4FL-abcdef',
                         nonce: 0,
                         amount: '1000000000000',
                     },
@@ -701,12 +701,12 @@ describe('FarmService', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             [
                 {
-                    tokenID: 'TOK1TOK4LPStaked',
+                    tokenID: 'EGLDTOK4FL-abcdef',
                     nonce: 0,
                     amount: '1000000000000',
                 },
                 {
-                    tokenID: 'TOK1TOK4LPStaked',
+                    tokenID: 'EGLDTOK4FL-abcdef',
                     nonce: 0,
                     amount: '1000000000000',
                 },
@@ -721,7 +721,7 @@ describe('FarmService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.mergeFarmTokensMultiplier * 2,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u@02@TOK1TOK4LPStaked@@01000000000000@TOK1TOK4LPStaked@@01000000000000@mergeFarmTokens',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u@02@EGLDTOK4FL-abcdef@@01000000000000@EGLDTOK4FL-abcdef@@01000000000000@mergeFarmTokens',
             ),
             chainID: mxConfig.chainID,
             version: 1,

@@ -38,7 +38,7 @@ describe('PairService', () => {
 
         const amountIn = await service.getAmountIn(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            'TOK1-1111',
+            'WEGLD-123456',
             '10000000000000000',
         );
         expect(amountIn).toEqual('20262808627903914');
@@ -49,7 +49,7 @@ describe('PairService', () => {
 
         const amountOut = await service.getAmountOut(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            'TOK1-1111',
+            'WEGLD-123456',
             '10000000000000000',
         );
         expect(amountOut).toEqual('19743160687941225');
@@ -60,7 +60,7 @@ describe('PairService', () => {
 
         const equivalent = await service.getEquivalentForLiquidity(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            'TOK1-1111',
+            'WEGLD-123456',
             '10000000000000000',
         );
         expect(equivalent.toFixed()).toEqual('20000000000000000');
@@ -92,7 +92,9 @@ describe('PairService', () => {
     it('should get pair address by LP token ID', async () => {
         const service = module.get<PairService>(PairService);
 
-        const address = await service.getPairAddressByLpTokenID('TOK1TOK2LP');
+        const address = await service.getPairAddressByLpTokenID(
+            'EGLDMEXLP-abcdef',
+        );
         expect(address).toEqual(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
@@ -101,7 +103,7 @@ describe('PairService', () => {
     it('should check if token is part of any pair', async () => {
         const service = module.get<PairService>(PairService);
 
-        const isPair0 = await service.isPairEsdtToken('TOK1TOK2LP');
+        const isPair0 = await service.isPairEsdtToken('EGLDMEXLP-abcdef');
         expect(isPair0).toEqual(true);
 
         const isPair1 = await service.isPairEsdtToken('LPT-4321');

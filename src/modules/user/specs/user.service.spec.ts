@@ -219,7 +219,7 @@ describe('UserService', () => {
             }),
         ).toEqual([
             new UserToken({
-                identifier: 'TOK2-2222',
+                identifier: 'MEX-123456',
                 ticker: 'TOK2',
                 name: 'SecondToken',
                 type: '',
@@ -266,13 +266,13 @@ describe('UserService', () => {
             }),
         ).toEqual([
             new UserFarmToken({
-                collection: 'TOK1TOK4LPStaked',
-                ticker: 'TOK1TOK4LPStaked',
+                collection: 'EGLDTOK4FL-abcdef',
+                ticker: 'EGLDTOK4FL-abcdef',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
                 decimals: 18,
                 balance: '1000000000000000000',
-                identifier: 'TOK1TOK4LPStaked-01',
+                identifier: 'EGLDTOK4FL-abcdef-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                 creator:
                     'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
@@ -284,7 +284,7 @@ describe('UserService', () => {
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                     originalEnteringEpoch: 1,
                     enteringEpoch: 1,
-                    identifier: 'TOK1TOK4LPStaked-01',
+                    identifier: 'EGLDTOK4FL-abcdef-01',
                     lockedRewards: false,
                     rewardPerShare: '3000',
                     initialFarmingAmount: '100',

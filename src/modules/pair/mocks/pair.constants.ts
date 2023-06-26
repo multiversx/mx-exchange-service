@@ -1,15 +1,19 @@
+import { Address } from '@multiversx/sdk-core/out';
+import { scAddress } from 'src/config';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
 
 export const Tokens = (tokenID: string): EsdtToken => {
     switch (tokenID) {
-        case 'TOK1-1111':
+        case 'WEGLD-123456':
             return new EsdtToken({
-                identifier: 'TOK1-1111',
-                ticker: 'TOK1',
-                name: 'FirstToken',
-                owner: 'owner_address',
+                identifier: 'WEGLD-123456',
+                ticker: 'WEGLD',
+                name: 'WrappedEgld',
+                owner: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000001',
+                ).bech32(),
                 supply: '1000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -26,95 +30,19 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 circulatingSupply: '1',
                 accounts: 1,
                 transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
+                assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
             });
-        case 'TOK2-2222':
+        case 'MEX-123456':
             return new EsdtToken({
-                identifier: 'TOK2-2222',
-                name: 'SecondToken',
-                ticker: 'TOK2',
-                owner: 'owner_address',
-                supply: '2000000000000000000',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-                type: '',
-                minted: '1',
-                burnt: '1',
-                circulatingSupply: '1',
-                accounts: 1,
-                transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
-                initialMinted: '1',
-                price: '1',
-                roles: new RolesModel(),
-            });
-        case 'USDC-1111':
-            return new EsdtToken({
-                identifier: 'USDC-1111',
-                name: 'ThirdToken',
-                ticker: 'USDC',
-                owner: 'owner_address',
-                supply: '2000000000000000000',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-                type: '',
-                minted: '1',
-                burnt: '1',
-                circulatingSupply: '1',
-                accounts: 1,
-                transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
-                initialMinted: '1',
-                price: '1',
-                roles: new RolesModel(),
-            });
-        case 'MEX-27f4cd':
-            return new EsdtToken({
-                identifier: 'MEX-27f4cd',
+                identifier: 'MEX-123456',
                 name: 'MEX',
                 ticker: 'MEX',
-                owner: 'owner_address',
+                owner: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000001',
+                ).bech32(),
                 supply: '2000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -131,27 +59,21 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 circulatingSupply: '1',
                 accounts: 1,
                 transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
+                assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
             });
-        case 'TOK1USDCLP':
+        case 'USDC-123456':
             return new EsdtToken({
-                identifier: 'TOK1USDCLP',
-                name: 'LiquidityPoolTokenT1USDC',
-                owner: 'router_address',
-                ticker: 'T1USDCLP',
-                supply: '1000000000000000000',
-                decimals: 18,
+                identifier: 'USDC-123456',
+                name: 'CircleUSD',
+                ticker: 'USDC',
+                owner: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000001',
+                ).bech32(),
+                supply: '1000000000000',
+                decimals: 6,
                 isPaused: false,
                 canUpgrade: true,
                 canMint: true,
@@ -166,24 +88,18 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 circulatingSupply: '1',
                 accounts: 1,
                 transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
+                assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
             });
-        case 'TOK4-4444':
+        case 'TOK4-123456':
             return new EsdtToken({
-                identifier: 'TOK4-4444',
+                identifier: 'TOK4-123456',
                 name: 'Token4',
-                owner: 'router_address',
+                owner: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000001',
+                ).bech32(),
                 ticker: 'TOK4',
                 supply: '1000000000000000000',
                 decimals: 18,
@@ -201,26 +117,95 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 circulatingSupply: '1',
                 accounts: 1,
                 transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
+                assets: new AssetsModel(),
+            });
+        case 'EGLDUSDCLP-abcdef':
+            return new EsdtToken({
+                identifier: 'EGLDUSDCLP-abcdef',
+                name: 'EGLDUSDCLPToken',
+                owner: scAddress.routerAddress,
+                ticker: 'EGLDUSDCLP',
+                supply: '1000000000000000000',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+                type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
             });
-        case 'TOK1TOK4LPStaked':
-            return {
-                identifier: 'TOK1TOK4LPStaked',
-                name: 'LPStakedT1T4',
-                ticker: 'T1T4S-1234',
+        case 'EGLDMEXLP-abcdef':
+            return new EsdtToken({
+                identifier: 'EGLDMEXLP-abcdef',
+                name: 'EGLDMEXLPToken',
+                ticker: 'EGLDMEXLP',
                 type: 'FungibleESDT',
-                owner: 'user_address_1',
+                owner: scAddress.routerAddress,
+                supply: '0',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel(),
+            });
+        case 'EGLDTOK4LP-abcdef':
+            return new EsdtToken({
+                identifier: 'EGLDTOK4LP-abcdef',
+                name: 'EGLDTOK4LP',
+                ticker: 'EGLDTOK4LP',
+                type: 'FungibleESDT',
+                owner: scAddress.routerAddress,
+                supply: '1000000000000000000000000',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+                minted: '900000000000000000000000',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel(),
+                initialMinted: '1',
+                price: '10',
+                roles: new RolesModel(),
+            });
+        case 'EGLDTOK4FL-abcdef':
+            return {
+                identifier: 'EGLDTOK4FL-abcdef',
+                name: 'EGLDTOK4LPStaked',
+                ticker: 'EGLDTOK4FL',
+                type: 'FungibleESDT',
+                owner: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
                 derivedEGLD: '0',
                 supply: '0',
                 decimals: 18,
@@ -237,61 +222,20 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 circulatingSupply: '1',
                 accounts: 1,
                 transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
+                assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
             };
-        case 'TOK1TOK4LP':
-            return new EsdtToken({
-                identifier: 'TOK1TOK4LP',
-                name: 'LiquidityPoolTokenT1T4',
-                ticker: 'T1T4-1234',
-                type: 'FungibleESDT',
-                owner: 'user_address_1',
-                supply: '1000000000000000000000000',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-                minted: '900000000000000000000000',
-                burnt: '1',
-                circulatingSupply: '1',
-                accounts: 1,
-                transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
-                initialMinted: '1',
-                price: '10',
-                roles: new RolesModel(),
-            });
-        case 'TOK1TOK2LPStaked':
+        case 'EGLDMEXFL-abcdef':
             return {
-                identifier: 'TOK1TOK2LPStaked',
-                name: 'LiquidityPoolTokenT1T2',
-                ticker: 'T1T2S-1234',
+                identifier: 'EGLDMEXFL-abcdef',
+                name: 'EGLDMEXLPStaked',
+                ticker: 'EGLDMEXFL',
                 type: 'FungibleESDT',
-                owner: 'user_address_1',
+                owner: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
                 derivedEGLD: '0',
                 supply: '10000000000000000000000000000',
                 decimals: 18,
@@ -308,54 +252,11 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 circulatingSupply: '1',
                 accounts: 1,
                 transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
+                assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
             };
-        case 'TOK1TOK2LP':
-            return new EsdtToken({
-                identifier: 'TOK1TOK2LP',
-                name: 'FarmingToken12',
-                ticker: 'T1T2-1234',
-                type: 'FungibleESDT',
-                owner: 'user_address_1',
-                supply: '0',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-                minted: '1',
-                burnt: '1',
-                circulatingSupply: '1',
-                accounts: 1,
-                transactions: 1,
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    pngUrl: '',
-                    status: '',
-                    svgUrl: '',
-                    website: '',
-                }),
-                initialMinted: '1',
-                price: '1',
-                roles: new RolesModel(),
-            });
         default:
             break;
     }
@@ -363,11 +264,12 @@ export const Tokens = (tokenID: string): EsdtToken => {
 
 export const pairs = [
     {
-        address:
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-        firstToken: Tokens('TOK1-1111'),
-        secondToken: Tokens('TOK2-2222'),
-        liquidityPoolToken: Tokens('TOK1TOK2LP'),
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000012',
+        ).bech32(),
+        firstToken: Tokens('WEGLD-123456'),
+        secondToken: Tokens('MEX-123456'),
+        liquidityPoolToken: Tokens('EGLDMEXLP-abcdef'),
         info: {
             reserves0: '1000000000000000000',
             reserves1: '2000000000000000000',
@@ -385,11 +287,12 @@ export const pairs = [
         state: 'Active',
     },
     {
-        address:
-            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-        firstToken: Tokens('TOK1-1111'),
-        secondToken: Tokens('USDC-1111'),
-        liquidityPoolToken: Tokens('TOK1USDCLP'),
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000013',
+        ).bech32(),
+        firstToken: Tokens('WEGLD-123456'),
+        secondToken: Tokens('USDC-123456'),
+        liquidityPoolToken: Tokens('EGLDUSDCLP-abcdef'),
         info: {
             reserves0: '1000000000000000000',
             reserves1: '800000000000000000000000',
@@ -407,11 +310,12 @@ export const pairs = [
         state: 'Active',
     },
     {
-        address:
-            'erd1a42xw92g8n78v6y4p3qj9ed2gjmr20kd9h2pkhuuuxf5tgn44q3sxy8unx',
-        firstToken: Tokens('TOK4-4444'),
-        secondToken: Tokens('TOK1-1111'),
-        liquidityPoolToken: Tokens('TOK1TOK4LP'),
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000014',
+        ).bech32(),
+        firstToken: Tokens('TOK4-123456'),
+        secondToken: Tokens('WEGLD-123456'),
+        liquidityPoolToken: Tokens('EGLDTOK4LP-abcdef'),
         info: {
             reserves0: '1000000000000000000',
             reserves1: '800000000000000000000000',
@@ -432,10 +336,10 @@ export const pairs = [
 
 export async function PairsMap(): Promise<Map<string, string[]>> {
     const pairsMap: Map<string, string[]> = new Map();
-    pairsMap.set('TOK1-1111', ['TOK2-2222', 'USDC-1111', 'TOK4-4444']);
-    pairsMap.set('TOK2-2222', ['TOK1-1111']);
-    pairsMap.set('USDC-1111', ['TOK1-1111']);
-    pairsMap.set('TOK4-4444', ['TOK1-1111']);
+    pairsMap.set('WEGLD-123456', ['MEX-123456', 'USDC-123456', 'TOK4-123456']);
+    pairsMap.set('MEX-123456', ['WEGLD-123456']);
+    pairsMap.set('USDC-123456', ['WEGLD-123456']);
+    pairsMap.set('TOK4-123456', ['WEGLD-123456']);
     return pairsMap;
 }
 

@@ -53,7 +53,7 @@ describe('RouterService', () => {
         const service = module.get<RouterService>(RouterService);
 
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
-            firstTokenID: 'TOK1-1111',
+            firstTokenID: 'WEGLD-123456',
             issuedLpToken: true,
             address: null,
             secondTokenID: null,

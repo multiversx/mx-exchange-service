@@ -203,9 +203,9 @@ describe('FeesCollectorComputeService', () => {
             const user1 = 'erd1';
             const mex = 'MEX-27f4cd';
             const priceMap = new Map<string, string>();
-            priceMap.set('TOK1-1111', '10');
-            priceMap.set('TOK2-2222', '20');
-            priceMap.set('TOK4-4444', '30');
+            priceMap.set('WEGLD-123456', '10');
+            priceMap.set('MEX-123456', '20');
+            priceMap.set('TOK4-123456', '30');
             priceMap.set(mex, '1');
 
             const totalEnergyForWeek = '3000000000000000000000000';
@@ -260,9 +260,9 @@ describe('FeesCollectorComputeService', () => {
             const user1 = 'erd1';
             const mex = 'MEX-27f4cd';
             const priceMap = new Map<string, string>();
-            priceMap.set('TOK1-1111', '10');
-            priceMap.set('TOK2-2222', '20');
-            priceMap.set('TOK4-4444', '30');
+            priceMap.set('WEGLD-123456', '10');
+            priceMap.set('MEX-123456', '20');
+            priceMap.set('TOK4-123456', '30');
             priceMap.set(mex, '1');
 
             const totalEnergyForWeek = '3000000000000000000000000';
@@ -320,9 +320,9 @@ describe('FeesCollectorComputeService', () => {
             const user1 = 'erd1';
             const mex = 'MEX-27f4cd';
             const priceMap = new Map<string, string>();
-            priceMap.set('TOK1-1111', '10');
-            priceMap.set('TOK2-2222', '20');
-            priceMap.set('TOK4-4444', '30');
+            priceMap.set('WEGLD-123456', '10');
+            priceMap.set('MEX-123456', '20');
+            priceMap.set('TOK4-123456', '30');
             priceMap.set(mex, '1');
 
             const totalEnergyForWeek = '3000000000000000000000000';
@@ -381,9 +381,9 @@ describe('FeesCollectorComputeService', () => {
             const user1 = 'erd1';
             const mex = 'MEX-27f4cd';
             const priceMap = new Map<string, string>();
-            priceMap.set('TOK1-1111', '10');
-            priceMap.set('TOK2-2222', '20');
-            priceMap.set('TOK4-4444', '30');
+            priceMap.set('WEGLD-123456', '10');
+            priceMap.set('MEX-123456', '20');
+            priceMap.set('TOK4-123456', '30');
             priceMap.set(mex, '1');
 
             const service = module.get<FeesCollectorComputeService>(

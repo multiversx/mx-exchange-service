@@ -65,7 +65,7 @@ describe('TransactionPairService', () => {
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 tokens: [
                     {
-                        tokenID: 'TOK2-2222',
+                        tokenID: 'MEX-123456',
                         nonce: 0,
                         amount: firstTokenAmount,
                     },
@@ -104,7 +104,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@2@TOK1-1111@@9@TOK2-2222@@10@addInitialLiquidity',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@2@WEGLD-123456@@9@MEX-123456@@10@addInitialLiquidity',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -128,12 +128,12 @@ describe('TransactionPairService', () => {
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 tokens: [
                     {
-                        tokenID: 'TOK1-1111',
+                        tokenID: 'WEGLD-123456',
                         nonce: 0,
                         amount: firstTokenAmount,
                     },
                     {
-                        tokenID: 'TOK2-2222',
+                        tokenID: 'MEX-123456',
                         nonce: 0,
                         amount: secondTokenAmount,
                     },
@@ -150,7 +150,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@TOK1-1111@@10@TOK2-2222@@09@addInitialLiquidity',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@WEGLD-123456@@10@MEX-123456@@09@addInitialLiquidity',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -174,7 +174,7 @@ describe('TransactionPairService', () => {
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 tokens: [
                     {
-                        tokenID: 'TOK2-2222',
+                        tokenID: 'MEX-123456',
                         nonce: 0,
                         amount: firstTokenAmount,
                     },
@@ -197,7 +197,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@2@TOK1-1111@@9@TOK2-2222@@10@addLiquidity@8@9',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@2@WEGLD-123456@@9@MEX-123456@@10@addLiquidity@8@9',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -226,7 +226,7 @@ describe('TransactionPairService', () => {
                         amount: firstTokenAmount,
                     },
                     {
-                        tokenID: 'TOK2-2222',
+                        tokenID: 'MEX-123456',
                         nonce: 0,
                         amount: secondTokenAmount,
                     },
@@ -259,7 +259,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@TOK1-1111@@10@TOK2-2222@@09@addLiquidity@09@08',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@WEGLD-123456@@10@MEX-123456@@09@addLiquidity@09@08',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -283,7 +283,7 @@ describe('TransactionPairService', () => {
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 tokens: [
                     {
-                        tokenID: 'TOK2-2222',
+                        tokenID: 'MEX-123456',
                         nonce: 0,
                         amount: firstTokenAmount,
                     },
@@ -322,7 +322,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@TOK1-1111@@09@TOK2-2222@@10@addLiquidity@08@09',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@WEGLD-123456@@09@MEX-123456@@10@addLiquidity@08@09',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -373,7 +373,7 @@ describe('TransactionPairService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData(
-                    'ESDTTransfer@TOK1-1111@08@unwrapEgld',
+                    'ESDTTransfer@WEGLD-123456@08@unwrapEgld',
                 ),
                 chainID: mxConfig.chainID,
                 version: 1,
@@ -394,7 +394,7 @@ describe('TransactionPairService', () => {
                 pairAddress:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 tokenInID: 'EGLD',
-                tokenOutID: 'TOK2-2222',
+                tokenOutID: 'MEX-123456',
                 amountIn: '5',
                 amountOut: '5',
                 tolerance: 0.01,
@@ -425,7 +425,7 @@ describe('TransactionPairService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
                 data: encodeTransactionData(
-                    'ESDTTransfer@TOK1-1111@5@swapTokensFixedInput@TOK2-2222@4',
+                    'ESDTTransfer@WEGLD-123456@5@swapTokensFixedInput@MEX-123456@4',
                 ),
                 chainID: mxConfig.chainID,
                 version: 1,
@@ -445,7 +445,7 @@ describe('TransactionPairService', () => {
             {
                 pairAddress:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                tokenInID: 'TOK2-2222',
+                tokenInID: 'MEX-123456',
                 tokenOutID: 'EGLD',
                 amountIn: '5',
                 amountOut: '5',
@@ -462,7 +462,7 @@ describe('TransactionPairService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedOutput.default,
                 data: encodeTransactionData(
-                    'ESDTTransfer@TOK2-2222@05@swapTokensFixedOutput@TOK1-1111@05',
+                    'ESDTTransfer@MEX-123456@05@swapTokensFixedOutput@WEGLD-123456@05',
                 ),
                 chainID: mxConfig.chainID,
                 version: 1,
@@ -478,7 +478,7 @@ describe('TransactionPairService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData(
-                    'ESDTTransfer@TOK1-1111@05@unwrapEgld',
+                    'ESDTTransfer@WEGLD-123456@05@unwrapEgld',
                 ),
                 chainID: mxConfig.chainID,
                 version: 1,
@@ -496,25 +496,25 @@ describe('TransactionPairService', () => {
         const transactions = await service.validateTokens(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             [
-                new InputTokenModel({ tokenID: 'TOK2-2222' }),
+                new InputTokenModel({ tokenID: 'MEX-123456' }),
                 new InputTokenModel({ tokenID: 'EGLD' }),
             ],
         );
 
         expect(transactions).toEqual([
             {
-                tokenID: 'TOK1-1111',
+                tokenID: 'WEGLD-123456',
                 amount: undefined,
                 nonce: undefined,
             },
-            { tokenID: 'TOK2-2222' },
+            { tokenID: 'MEX-123456' },
         ]);
 
         try {
             await service.validateTokens(
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 [
-                    new InputTokenModel({ tokenID: 'TOK2-2222', nonce: 1 }),
+                    new InputTokenModel({ tokenID: 'MEX-123456', nonce: 1 }),
                     new InputTokenModel({ tokenID: 'EGLD' }),
                 ],
             );
@@ -526,7 +526,7 @@ describe('TransactionPairService', () => {
             await service.validateTokens(
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 [
-                    new InputTokenModel({ tokenID: 'TOK1-1111' }),
+                    new InputTokenModel({ tokenID: 'WEGLD-123456' }),
                     new InputTokenModel({ tokenID: 'EGLD' }),
                 ],
             );
@@ -601,8 +601,8 @@ describe('TransactionPairService', () => {
         const transaction = await service.addTrustedSwapPair(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
-            'TOK1-1111',
-            'TOK2-2222',
+            'WEGLD-123456',
+            'MEX-123456',
         );
 
         expect(transaction).toEqual({
@@ -614,7 +614,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.addTrustedSwapPair,
             data: encodeTransactionData(
-                'addTrustedSwapPair@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111@TOK2-2222',
+                'addTrustedSwapPair@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456@MEX-123456',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -630,8 +630,8 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.removeTrustedSwapPair(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            'TOK1-1111',
-            'TOK2-2222',
+            'WEGLD-123456',
+            'MEX-123456',
         );
 
         expect(transaction).toEqual({
@@ -643,7 +643,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.removeTrustedSwapPair,
             data: encodeTransactionData(
-                'removeTrustedSwapPair@TOK1-1111@TOK2-2222',
+                'removeTrustedSwapPair@WEGLD-123456@MEX-123456',
             ),
             chainID: mxConfig.chainID,
             version: 1,

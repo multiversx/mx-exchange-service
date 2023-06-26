@@ -76,10 +76,10 @@ describe('TransactionProxyPairService', () => {
             async () => 0,
         );
         jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
-            async () => 'TOK1-1111',
+            async () => 'WEGLD-123456',
         );
         jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
-            async () => 'TOK2-2222',
+            async () => 'MEX-123456',
         );
 
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
@@ -125,10 +125,10 @@ describe('TransactionProxyPairService', () => {
             async () => 0,
         );
         jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
-            async () => 'TOK1-1111',
+            async () => 'WEGLD-123456',
         );
         jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
-            async () => 'TOK2-2222',
+            async () => 'MEX-123456',
         );
 
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(

@@ -38,15 +38,15 @@ export class WeeklyRewardsSplittingAbiServiceMock
         return [
             new EsdtTokenPayment({
                 amount: '100000000000000000000',
-                tokenID: 'TOK1-1111',
+                tokenID: 'WEGLD-123456',
             }),
             new EsdtTokenPayment({
                 amount: '150000000000000000000',
-                tokenID: 'TOK2-2222',
+                tokenID: 'MEX-123456',
             }),
             new EsdtTokenPayment({
                 amount: '200000000000000000000',
-                tokenID: 'TOK4-4444',
+                tokenID: 'TOK4-123456',
             }),
         ];
     }

@@ -46,7 +46,7 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             [
                 new InputTokenModel({
-                    tokenID: 'TOK1-1111',
+                    tokenID: 'WEGLD-123456',
                     nonce: 0,
                     amount: '1000',
                 }),
@@ -61,7 +61,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.stakeFarm.default,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01@TOK1-1111@@1000@stakeFarm',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01@WEGLD-123456@@1000@stakeFarm',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -79,7 +79,7 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'TOK1-1111',
+                tokenID: 'WEGLD-123456',
                 nonce: 0,
                 amount: '1000',
             }),
@@ -93,7 +93,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.unstakeFarm,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@TOK1-1111@@1000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unstakeFarm',
+                'ESDTNFTTransfer@WEGLD-123456@@1000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unstakeFarm',
             ),
             chainID: 'T',
             version: 1,
@@ -111,7 +111,7 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'TOK1-1111',
+                tokenID: 'WEGLD-123456',
                 nonce: 0,
                 amount: '1000000',
             }),
@@ -125,7 +125,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.unbondFarm,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@TOK1-1111@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unbondFarm',
+                'ESDTNFTTransfer@WEGLD-123456@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unbondFarm',
             ),
             chainID: 'T',
             version: 1,
@@ -143,7 +143,7 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'TOK1-1111',
+                tokenID: 'WEGLD-123456',
                 nonce: 0,
                 amount: '1000000',
             }),
@@ -157,7 +157,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.claimRewards,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@TOK1-1111@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
+                'ESDTNFTTransfer@WEGLD-123456@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
             ),
             chainID: 'T',
             version: 1,
@@ -175,7 +175,7 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'TOK1-1111',
+                tokenID: 'WEGLD-123456',
                 nonce: 0,
                 amount: '1000000',
             }),
@@ -189,7 +189,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.compoundRewards,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@TOK1-1111@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@compoundRewards',
+                'ESDTNFTTransfer@WEGLD-123456@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@compoundRewards',
             ),
             chainID: 'T',
             version: 1,
@@ -206,7 +206,7 @@ describe('StakingTransactionService', () => {
         const transaction = await service.topUpRewards(
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'TOK1-1111',
+                tokenID: 'WEGLD-123456',
                 nonce: 0,
                 amount: '1000000',
             }),
@@ -220,7 +220,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.topUpRewards,
             data: encodeTransactionData(
-                'ESDTTransfer@TOK1-1111@01000000@topUpRewards',
+                'ESDTTransfer@WEGLD-123456@01000000@topUpRewards',
             ),
             chainID: 'T',
             version: 1,
@@ -239,12 +239,12 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             [
                 new InputTokenModel({
-                    tokenID: 'TOK1TOK2LPStaked',
+                    tokenID: 'EGLDMEXFL-abcdef',
                     nonce: 0,
                     amount: '1000000',
                 }),
                 new InputTokenModel({
-                    tokenID: 'TOK1TOK2LPStaked',
+                    tokenID: 'EGLDMEXFL-abcdef',
                     nonce: 0,
                     amount: '1000000',
                 }),
@@ -259,7 +259,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.mergeTokens,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@02@TOK1TOK2LPStaked@@01000000@TOK1TOK2LPStaked@@01000000@mergeFarmTokens',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@02@EGLDMEXFL-abcdef@@01000000@EGLDMEXFL-abcdef@@01000000@mergeFarmTokens',
             ),
             chainID: 'T',
             version: 1,

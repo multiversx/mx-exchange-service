@@ -22,7 +22,7 @@ export class MXApiServiceMock {
     async getTokensForUser(address: string): Promise<EsdtToken[]> {
         return [
             new EsdtToken({
-                ...Tokens('TOK2-2222'),
+                ...Tokens('MEX-123456'),
                 balance: '1000000000000000000',
             }),
         ];
@@ -31,13 +31,13 @@ export class MXApiServiceMock {
     async getNftsForUser(address: string): Promise<NftToken[]> {
         return [
             {
-                collection: 'TOK1TOK4LPStaked',
-                ticker: 'TOK1TOK4LPStaked',
+                collection: 'EGLDTOK4FL-abcdef',
+                ticker: 'EGLDTOK4FL-abcdef',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
                 decimals: 18,
                 balance: '1000000000000000000',
-                identifier: 'TOK1TOK4LPStaked-01',
+                identifier: 'EGLDTOK4FL-abcdef-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                 creator:
                     'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
