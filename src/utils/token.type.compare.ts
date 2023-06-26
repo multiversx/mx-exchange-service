@@ -16,44 +16,12 @@ export function leastType(typeA: string, typeB: string): string {
                 return typeA;
             }
             return typeB;
-        case 'Jungle-Community':
-            if (
-                typeB === 'Core' ||
-                typeB === 'Ecosystem' ||
-                typeB === 'Community'
-            ) {
-                return typeA;
-            }
-            return typeB;
         case 'Experimental':
             if (
                 typeB === 'Core' ||
                 typeB === 'Ecosystem' ||
                 typeB === 'Community' ||
                 typeB === 'Jungle-Community'
-            ) {
-                return typeA;
-            }
-            return typeB;
-        case 'Jungle-Experimental':
-            if (
-                typeB === 'Core' ||
-                typeB === 'Ecosystem' ||
-                typeB === 'Community' ||
-                typeB === 'Jungle-Community' ||
-                typeB === 'Experimental'
-            ) {
-                return typeA;
-            }
-            return typeB;
-        case 'Jungle':
-            if (
-                typeB === 'Core' ||
-                typeB === 'Ecosystem' ||
-                typeB === 'Community' ||
-                typeB === 'Jungle-Community' ||
-                typeB === 'Experimental' ||
-                typeB === 'Jungle-Experimental'
             ) {
                 return typeA;
             }
