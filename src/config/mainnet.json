@@ -86,6 +86,10 @@
     "constants": {
         "MEX_TOKEN_ID": "MEX-455c57",
         "USDC_TOKEN_ID": "USDC-c76f1f",
-        "MAINTENANCE": false
+        "MAINTENANCE": false,
+        "roundedSwapEnable": {
+            "USDC-8d4068": "5000000",
+            "WEGLD-d7c6bb": "100000000000000000"
+        }
     }
 }
