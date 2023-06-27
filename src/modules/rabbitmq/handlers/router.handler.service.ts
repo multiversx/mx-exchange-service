@@ -43,17 +43,19 @@ export class RouterHandlerService {
             firstTokenType,
             secondTokenType,
             uniqueTokens,
+            commonTokens,
         ] = await Promise.all([
             this.routerAbiService.pairsMetadata(),
             this.routerAbiService.pairsAddress(),
             this.tokenGetter.getEsdtTokenType(firstTokenID),
             this.tokenGetter.getEsdtTokenType(secondTokenID),
             this.tokenService.getUniqueTokenIDs(true),
+            this.routerAbiService.commonTokensForUserPairs(),
         ]);
 
         if (
-            firstTokenID === constantsConfig.USDC_TOKEN_ID ||
-            secondTokenID === constantsConfig.USDC_TOKEN_ID
+            commonTokens.includes(firstTokenID) ||
+            commonTokens.includes(secondTokenID)
         ) {
             if (firstTokenType === 'Unlisted') {
                 const createTokenDto: CreateTokenDto = {
