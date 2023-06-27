@@ -18,7 +18,6 @@ export class xExchange1684167998347 implements MigrationInterface {
         'acceptedTokenPrice',
         'launchedTokenPriceUSD',
         'acceptedTokenPriceUSD')
-    AND timestamp >= NOW() - INTERVAL '1 day'
     GROUP BY time, series, key;
   `);
         await queryRunner.query(

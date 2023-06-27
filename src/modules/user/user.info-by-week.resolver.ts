@@ -3,7 +3,6 @@ import {
     TokenDistributionModel,
     UserInfoByWeekModel,
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { GenericResolver } from '../../services/generics/generic.resolver';
 import { EnergyModel } from '../energy/models/energy.model';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
 import { scAddress } from '../../config';
@@ -13,37 +12,31 @@ import { FeesCollectorComputeService } from '../fees-collector/services/fees-col
 import { FarmComputeServiceV2 } from '../farm/v2/services/farm.v2.compute.service';
 
 @Resolver(() => UserInfoByWeekModel)
-export class UserInfoByWeekResolver extends GenericResolver {
+export class UserInfoByWeekResolver {
     constructor(
         private readonly farmComputeV2: FarmComputeServiceV2,
         private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
-    ) {
-        super();
-    }
+    ) {}
 
     @ResolveField(() => EnergyModel)
     async energyForWeek(
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<EnergyModel> {
-        return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
-                parent.scAddress,
-                parent.userAddress,
-                parent.week,
-            ),
+        return this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+            parent.scAddress,
+            parent.userAddress,
+            parent.week,
         );
     }
 
     @ResolveField()
     async apr(@Parent() parent: UserInfoByWeekModel): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingCompute.userApr(
-                parent.scAddress,
-                parent.userAddress,
-                parent.week,
-            ),
+        return this.weeklyRewardsSplittingCompute.userApr(
+            parent.scAddress,
+            parent.userAddress,
+            parent.week,
         );
     }
 

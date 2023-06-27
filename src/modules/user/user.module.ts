@@ -25,7 +25,6 @@ import { FarmModule } from '../farm/farm.module';
 import { EnergyModule } from '../energy/energy.module';
 import { UserNftsResolver } from './user.nfts.resolver';
 import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
-import { UserEnergyGetterService } from './services/userEnergy/user.energy.getter.service';
 import { UserEnergyComputeService } from './services/userEnergy/user.energy.compute.service';
 import { LockedTokenWrapperModule } from '../locked-token-wrapper/locked-token-wrapper.module';
 import { UserEnergySetterService } from './services/userEnergy/user.energy.setter.service';
@@ -67,7 +66,6 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
         UserEsdtComputeService,
         UserMetaEsdtComputeService,
         UserEnergyComputeService,
-        UserEnergyGetterService,
         UserEnergySetterService,
         UserEnergyTransactionService,
         UserResolver,
@@ -79,7 +77,6 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
         UserMetaEsdtService,
         UserInfoByWeekResolver,
         UserEnergyComputeService,
-        UserEnergyGetterService,
         UserEnergySetterService,
         UserEnergyTransactionService,
     ],
