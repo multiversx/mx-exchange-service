@@ -308,6 +308,8 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         series,
         metric,
         timeBucket,
+        startDate,
+        endDate,
     }): Promise<HistoricDataModel[]> {
         const query = await this.pdCloseMinute
             .createQueryBuilder()
@@ -315,7 +317,10 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             .addSelect('locf(last(last, time)) as last')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere("time between now() - INTERVAL '1 day' and now()")
+            .andWhere('time between :start and :end', {
+                start: startDate,
+                end: endDate,
+            })
             .groupBy('bucket')
             .getRawMany();
 

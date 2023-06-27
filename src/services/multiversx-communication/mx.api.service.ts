@@ -304,6 +304,15 @@ export class MXApiService {
         return latestBlock[0].nonce;
     }
 
+    async getBlockByNonce(shardId: number, nonce: number): Promise<any> {
+        const blocks = await this.doGetGeneric(
+            this.getBlockByNonce.name,
+            `blocks?nonce=${nonce}&shard=${shardId}`,
+        );
+
+        return blocks[0] ?? undefined;
+    }
+
     async getShardTimestamp(shardId: number): Promise<number> {
         const latestShardBlock = await this.doGetGeneric(
             this.getShardTimestamp.name,

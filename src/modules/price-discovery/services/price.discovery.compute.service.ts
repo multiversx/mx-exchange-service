@@ -10,6 +10,8 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IPriceDiscoveryComputeService } from './interfaces';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import moment from 'moment';
 
 @Injectable()
 export class PriceDiscoveryComputeService
@@ -20,6 +22,7 @@ export class PriceDiscoveryComputeService
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly priceDiscoveryService: PriceDiscoveryService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly apiService: MXApiService,
     ) {}
 
     @ErrorLoggerAsync({
@@ -229,10 +232,27 @@ export class PriceDiscoveryComputeService
         metric: string,
         interval: string,
     ): Promise<HistoricDataModel[]> {
+        const [startBlockNonce, endBlockNonce] = await Promise.all([
+            this.priceDiscoveryAbi.startBlock(priceDiscoveryAddress),
+            this.priceDiscoveryAbi.endBlock(priceDiscoveryAddress),
+        ]);
+
+        const [startBlock, endBlock] = await Promise.all([
+            this.apiService.getBlockByNonce(1, startBlockNonce),
+            this.apiService.getBlockByNonce(1, endBlockNonce),
+        ]);
+
+        const [startDate, endDate] = [
+            startBlock.timestamp,
+            endBlock ? endBlock.timestamp : moment().unix(),
+        ];
+
         return await this.analyticsQuery.getPDCloseValues({
             series: priceDiscoveryAddress,
             metric,
             timeBucket: interval,
+            startDate: moment.unix(startDate).toDate(),
+            endDate: moment.unix(endDate).toDate(),
         });
     }
 }
