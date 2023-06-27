@@ -7,7 +7,7 @@ import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
-import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
+import { RouterHandlerService } from './handlers/router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.service';
 import {
@@ -48,6 +48,7 @@ import {
     EscrowLockFundsEvent,
     EscrowWithdrawEvent,
     EscrowCancelTransferEvent,
+    PairSwapEnabledEvent,
 } from '@multiversx/sdk-exchange';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
@@ -71,7 +72,7 @@ export class RabbitMqConsumer {
         private readonly swapHandler: SwapEventHandler,
         private readonly wsFarmHandler: RabbitMQFarmHandlerService,
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
-        private readonly wsRouterHandler: RabbitMQRouterHandlerService,
+        private readonly routerHandler: RouterHandlerService,
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
@@ -207,10 +208,15 @@ export class RabbitMqConsumer {
                     );
                     break;
                 case ROUTER_EVENTS.CREATE_PAIR:
-                    await this.wsRouterHandler.handleCreatePairEvent(
+                    await this.routerHandler.handleCreatePairEvent(
                         new CreatePairEvent(rawEvent),
                     );
                     await this.getFilterAddresses();
+                    break;
+                case ROUTER_EVENTS.PAIR_SWAP_ENABLED:
+                    await this.routerHandler.handlePairSwapEnabledEvent(
+                        new PairSwapEnabledEvent(rawEvent),
+                    );
                     break;
                 case METABONDING_EVENTS.STAKE_LOCKED_ASSET:
                     await this.wsMetabondingHandler.handleMetabondingEvent(

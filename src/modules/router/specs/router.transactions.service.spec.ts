@@ -18,6 +18,7 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -433,4 +434,145 @@ describe('RouterService', () => {
             signature: undefined,
         });
     });
+
+    it('should get user swap enable transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
+        const transaction = await service.setSwapEnabledByUser(
+            Address.Zero().bech32(),
+            new InputTokenModel({
+                tokenID: 'LKESDT-1234',
+                nonce: 1,
+                amount: '1000000000000000000',
+                attributes: 'AAAAClRPSzFVU0RDTFAAAAAAAAAAAAAAAAAAAAAC',
+            }),
+        );
+
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver: Address.Zero().bech32(),
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: 50000000,
+            data: encodeTransactionData(
+                'ESDTNFTTransfer@LKESDT-1234@01@1000000000000000000@erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp@setSwapEnabledByUser@erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+            ),
+            chainID: mxConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
+    });
+
+    it(
+        'should get error on user swap enable transaction ' + 'lock period',
+        async () => {
+            const service = module.get<RouterTransactionService>(
+                RouterTransactionService,
+            );
+
+            await expect(
+                service.setSwapEnabledByUser(
+                    Address.Zero().bech32(),
+                    new InputTokenModel({
+                        tokenID: 'LKESDT-1234',
+                        nonce: 1,
+                        amount: '1000000000000000000',
+                        attributes: 'AAAAClRPSzFVU0RDTFAAAAAAAAAAAAAAAAAAAAAA',
+                    }),
+                ),
+            ).rejects.toThrow('Token not locked for long enough');
+        },
+    );
+
+    it(
+        'should get error on user swap enable transaction ' +
+            'invalid locked token',
+        async () => {
+            const service = module.get<RouterTransactionService>(
+                RouterTransactionService,
+            );
+
+            await expect(
+                service.setSwapEnabledByUser(
+                    Address.Zero().bech32(),
+                    new InputTokenModel({
+                        tokenID: 'LKESDT-abcdef',
+                        nonce: 1,
+                        amount: '1000000000000000000',
+                        attributes: 'AAAAClRPSzFVU0RDTFAAAAAAAAAAAAAAAAAAAAAC',
+                    }),
+                ),
+            ).rejects.toThrow('Invalid input token');
+        },
+    );
+
+    it(
+        'should get error on user swap enable transaction ' +
+            'invalid LP token locked',
+        async () => {
+            const service = module.get<RouterTransactionService>(
+                RouterTransactionService,
+            );
+
+            await expect(
+                service.setSwapEnabledByUser(
+                    Address.Zero().bech32(),
+                    new InputTokenModel({
+                        tokenID: 'LKESDT-abcdef',
+                        nonce: 1,
+                        amount: '1000000000000000000',
+                        attributes: 'AAAAClRPSzJUT0szTFAAAAAAAAAAAAAAAAAAAAAA',
+                    }),
+                ),
+            ).rejects.toThrow('Invalid locked LP token');
+        },
+    );
+
+    it(
+        'should get error on user swap enable transaction ' +
+            'wrong common token',
+        async () => {
+            const service = module.get<RouterTransactionService>(
+                RouterTransactionService,
+            );
+
+            await expect(
+                service.setSwapEnabledByUser(
+                    Address.Zero().bech32(),
+                    new InputTokenModel({
+                        tokenID: 'LKESDT-1234',
+                        nonce: 1,
+                        amount: '1000000000000000000',
+                        attributes: 'AAAAClRPSzFUT0syTFAAAAAAAAAAAAAAAAAAAAAA',
+                    }),
+                ),
+            ).rejects.toThrow('Not a valid user defined pair');
+        },
+    );
+
+    it(
+        'should get error on user swap enable transaction ' +
+            'min value locked',
+        async () => {
+            const service = module.get<RouterTransactionService>(
+                RouterTransactionService,
+            );
+
+            await expect(
+                service.setSwapEnabledByUser(
+                    Address.Zero().bech32(),
+                    new InputTokenModel({
+                        tokenID: 'LKESDT-1234',
+                        nonce: 1,
+                        amount: '1000000000000000',
+                        attributes: 'AAAAClRPSzFVU0RDTFAAAAAAAAAAAAAAAAAAAAAC',
+                    }),
+                ),
+            ).rejects.toThrow('Not enough value locked');
+        },
+    );
 });

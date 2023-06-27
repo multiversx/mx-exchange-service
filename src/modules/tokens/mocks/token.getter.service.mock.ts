@@ -8,8 +8,8 @@ export class TokenGetterServiceMock {
         return Tokens(tokenID);
     }
 
-    async getEsdtTokenType(_tokenID: string): Promise<string> {
-        return 'Jungle';
+    async getEsdtTokenType(tokenID: string): Promise<string> {
+        return Tokens(tokenID).type;
     }
 }
 

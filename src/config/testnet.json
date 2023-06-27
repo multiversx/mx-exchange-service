@@ -60,6 +60,10 @@
         "MEX_TOKEN_ID": "MEX-4638e4",
         "USDC_TOKEN_ID": "USDC-f89dfe",
         "MAINTENANCE": false,
-        "EPOCHS_IN_WEEK": 7
+        "EPOCHS_IN_WEEK": 7,
+        "roundedSwapEnable": {
+            "USDC-8d4068": "5000000",
+            "WEGLD-d7c6bb": "100000000000000000"
+        }
     }
 }

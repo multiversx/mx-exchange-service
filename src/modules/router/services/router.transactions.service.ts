@@ -402,17 +402,6 @@ export class RouterTransactionService {
     private async validateSwapEnableInputTokens(
         inputTokens: InputTokenModel,
     ): Promise<string> {
-        const [swapEnableConfig, commonTokensUserPair, currentEpoch] =
-            await Promise.all([
-                this.routerAbi.enableSwapByUserConfig(),
-                this.routerAbi.commonTokensForUserPairs(),
-                this.contextGetter.getCurrentEpoch(),
-            ]);
-
-        if (inputTokens.tokenID !== swapEnableConfig.lockedTokenID) {
-            throw new Error('Invalid input token');
-        }
-
         const lockedTokensAttributes = LockedTokenAttributes.fromAttributes(
             inputTokens.attributes,
         );
@@ -423,6 +412,39 @@ export class RouterTransactionService {
             throw new Error('Invalid locked LP token');
         }
 
+        const [
+            firstTokenID,
+            secondTokenID,
+            liquidityTokens,
+            commonTokensUserPair,
+        ] = await Promise.all([
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
+            this.pairService.getLiquidityPosition(
+                pairAddress,
+                inputTokens.amount,
+            ),
+            this.routerAbi.commonTokensForUserPairs(),
+        ]);
+
+        let commonToken: string;
+        if (commonTokensUserPair.includes(firstTokenID)) {
+            commonToken = firstTokenID;
+        } else if (commonTokensUserPair.includes(secondTokenID)) {
+            commonToken = secondTokenID;
+        } else {
+            throw new Error('Not a valid user defined pair');
+        }
+
+        const [swapEnableConfig, currentEpoch] = await Promise.all([
+            this.routerAbi.enableSwapByUserConfig(commonToken),
+            this.contextGetter.getCurrentEpoch(),
+        ]);
+
+        if (inputTokens.tokenID !== swapEnableConfig.lockedTokenID) {
+            throw new Error('Invalid input token');
+        }
+
         const lpTokenLockedEpochs =
             currentEpoch < lockedTokensAttributes.unlockEpoch
                 ? lockedTokensAttributes.unlockEpoch - currentEpoch
@@ -430,16 +452,6 @@ export class RouterTransactionService {
         if (!(lpTokenLockedEpochs >= swapEnableConfig.minLockPeriodEpochs)) {
             throw new Error('Token not locked for long enough');
         }
-
-        const [firstTokenID, secondTokenID, liquidityTokens] =
-            await Promise.all([
-                this.pairAbi.firstTokenID(pairAddress),
-                this.pairAbi.secondTokenID(pairAddress),
-                this.pairService.getLiquidityPosition(
-                    pairAddress,
-                    inputTokens.amount,
-                ),
-            ]);
 
         let commonTokenValue: string;
         if (commonTokensUserPair.includes(firstTokenID)) {

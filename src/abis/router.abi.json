@@ -1,20 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.62.0-nightly",
-            "commitHash": "a5ad0d29a401007b51715852cc702e441ac2248c",
-            "commitDate": "2022-05-12",
+            "version": "1.66.0-nightly",
+            "commitHash": "b8c35ca26b191bb9a9ac669a4b3f4d3d52d97fb1",
+            "commitDate": "2022-10-15",
             "channel": "Nightly",
-            "short": "rustc 1.62.0-nightly (a5ad0d29a 2022-05-12)"
+            "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
         },
         "contractCrate": {
             "name": "router",
             "version": "0.0.0",
-            "git_version": "v1.6.0-101-g7d0cbf11"
+            "gitVersion": "v1.6.0-1269-g68748a06"
         },
         "framework": {
-            "name": "elrond-wasm",
-            "version": "0.33.1"
+            "name": "multiversx-sc",
+            "version": "0.39.4"
         }
     },
     "name": "Router",
@@ -73,6 +73,11 @@
                     "name": "opt_fee_percents",
                     "type": "optional<multi<u64,u64>>",
                     "multi_arg": true
+                },
+                {
+                    "name": "admins",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -93,6 +98,10 @@
                 {
                     "name": "second_token_id",
                     "type": "TokenIdentifier"
+                },
+                {
+                    "name": "initial_liquidity_adder",
+                    "type": "Address"
                 },
                 {
                     "name": "total_fee_percent_requested",
@@ -389,6 +398,10 @@
             "mutability": "mutable",
             "inputs": [
                 {
+                    "name": "common_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
                     "name": "locked_token_id",
                     "type": "TokenIdentifier"
                 },
@@ -399,11 +412,6 @@
                 {
                     "name": "min_lock_period_epochs",
                     "type": "u64"
-                },
-                {
-                    "name": "common_tokens_for_user_pairs",
-                    "type": "variadic<TokenIdentifier>",
-                    "multi_arg": true
                 }
             ],
             "outputs": []
@@ -451,7 +459,12 @@
         {
             "name": "getEnableSwapByUserConfig",
             "mutability": "readonly",
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
             "outputs": [
                 {
                     "type": "EnableSwapByUserConfig"
@@ -470,7 +483,66 @@
             ]
         }
     ],
-    "events": [],
+    "events": [
+        {
+            "identifier": "create_pair",
+            "inputs": [
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "swap_event",
+                    "type": "CreatePairEvent"
+                }
+            ]
+        },
+        {
+            "identifier": "pairSwapEnabled",
+            "inputs": [
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "swap_enabled_event",
+                    "type": "UserPairSwapEnabledEvent"
+                }
+            ]
+        }
+    ],
     "hasCallback": true,
     "types": {
         "CreatePairEvent": {
