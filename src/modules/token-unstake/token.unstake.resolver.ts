@@ -5,10 +5,7 @@ import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
-import {
-    TokenUnstakeModel,
-    UnstakePairModel,
-} from './models/token.unstake.model';
+import { TokenUnstakeModel, UnstakePairModel } from './models/token.unstake.model';
 import { TokenUnstakeTransactionService } from './services/token.unstake.transaction.service';
 import { TokenUnstakeAbiService } from './services/token.unstake.abi.service';
 
@@ -64,7 +61,9 @@ export class TokenUnstakeResolver {
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
-    async cancelUnbond(): Promise<TransactionModel> {
-        return this.tokenUnstakeTransactions.cancelUnbond();
+    async cancelUnbond(
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        return this.tokenUnstakeTransactions.cancelUnbond(user.address);
     }
 }

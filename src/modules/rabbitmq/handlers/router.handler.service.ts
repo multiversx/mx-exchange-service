@@ -1,30 +1,35 @@
-import { CreatePairEvent, ROUTER_EVENTS } from '@multiversx/sdk-exchange';
+import {
+    CreatePairEvent,
+    PairSwapEnabledEvent,
+    ROUTER_EVENTS,
+} from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig } from 'src/config';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { Logger } from 'winston';
-import { RouterAbiService } from '../router/services/router.abi.service';
-import { RouterSetterService } from '../router/services/router.setter.service';
-import { CreateTokenDto } from '../tokens/dto/create.token.dto';
-import { TokenGetterService } from '../tokens/services/token.getter.service';
-import { TokenRepositoryService } from '../tokens/services/token.repository.service';
-import { TokenService } from '../tokens/services/token.service';
-import { TokenSetterService } from '../tokens/services/token.setter.service';
+import { RouterAbiService } from '../../router/services/router.abi.service';
+import { RouterSetterService } from '../../router/services/router.setter.service';
+import { CreateTokenDto } from '../../tokens/dto/create.token.dto';
+import { TokenGetterService } from '../../tokens/services/token.getter.service';
+import { TokenRepositoryService } from '../../tokens/services/token.repository.service';
+import { TokenService } from '../../tokens/services/token.service';
+import { TokenSetterService } from '../../tokens/services/token.setter.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 
 @Injectable()
-export class RabbitMQRouterHandlerService {
+export class RouterHandlerService {
     constructor(
         private readonly routerAbiService: RouterAbiService,
         private readonly routerSetterService: RouterSetterService,
+        private readonly pairAbi: PairAbiService,
+        private readonly pairSetter: PairSetterService,
         private readonly tokenGetter: TokenGetterService,
         private readonly tokenService: TokenService,
         private readonly tokenSetter: TokenSetterService,
         private readonly tokenRepository: TokenRepositoryService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async handleCreatePairEvent(event: CreatePairEvent): Promise<void> {
@@ -38,22 +43,24 @@ export class RabbitMQRouterHandlerService {
             firstTokenType,
             secondTokenType,
             uniqueTokens,
+            commonTokens,
         ] = await Promise.all([
             this.routerAbiService.pairsMetadata(),
             this.routerAbiService.pairsAddress(),
             this.tokenGetter.getEsdtTokenType(firstTokenID),
             this.tokenGetter.getEsdtTokenType(secondTokenID),
             this.tokenService.getUniqueTokenIDs(true),
+            this.routerAbiService.commonTokensForUserPairs(),
         ]);
 
         if (
-            firstTokenID === constantsConfig.USDC_TOKEN_ID ||
-            secondTokenID === constantsConfig.USDC_TOKEN_ID
+            commonTokens.includes(firstTokenID) ||
+            commonTokens.includes(secondTokenID)
         ) {
             if (firstTokenType === 'Unlisted') {
                 const createTokenDto: CreateTokenDto = {
                     tokenID: firstTokenID,
-                    type: 'Jungle',
+                    type: 'Experimental',
                 };
                 await this.tokenRepository.create(createTokenDto);
                 await this.tokenSetter.setEsdtTokenType(
@@ -65,7 +72,7 @@ export class RabbitMQRouterHandlerService {
             if (secondTokenType === 'Unlisted') {
                 const createTokenDto: CreateTokenDto = {
                     tokenID: secondTokenID,
-                    type: 'Jungle',
+                    type: 'Experimental',
                 };
                 await this.tokenRepository.create(createTokenDto);
                 await this.tokenSetter.setEsdtTokenType(
@@ -112,6 +119,20 @@ export class RabbitMQRouterHandlerService {
 
         await this.pubSub.publish(ROUTER_EVENTS.CREATE_PAIR, {
             createPairEvent: event,
+        });
+    }
+
+    async handlePairSwapEnabledEvent(
+        event: PairSwapEnabledEvent,
+    ): Promise<void> {
+        const pairAddress = event.getPairAddress().bech32();
+        const state = await this.pairAbi.getStateRaw(pairAddress);
+        const cacheKey = await this.pairSetter.setState(pairAddress, state);
+
+        await this.deleteCacheKeys([cacheKey]);
+
+        await this.pubSub.publish(ROUTER_EVENTS.PAIR_SWAP_ENABLED, {
+            pairSwapEnabledEvent: event,
         });
     }
 

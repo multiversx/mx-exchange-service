@@ -222,7 +222,7 @@ describe('UserService', () => {
                 identifier: 'MEX-123456',
                 ticker: 'TOK2',
                 name: 'SecondToken',
-                type: '',
+                type: 'Ecosystem',
                 owner: 'owner_address',
                 supply: '2000000000000000000',
                 decimals: 18,

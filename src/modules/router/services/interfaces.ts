@@ -6,12 +6,11 @@ export interface IRouterAbiService {
     pairsAddress(): Promise<string[]>;
     pairsMetadata(): Promise<PairMetadata[]>;
     pairCreationEnabled(): Promise<boolean>;
-    lastErrorMessage(): Promise<string>;
     state(): Promise<boolean>;
     owner(): Promise<string>;
     allPairTokens(): Promise<PairTokens[]>;
     pairTemplateAddress(): Promise<string>;
     temporaryOwnerPeriod(): Promise<string>;
-    enableSwapByUserConfig(): Promise<EnableSwapByUserConfig>;
+    enableSwapByUserConfig(tokenID: string): Promise<EnableSwapByUserConfig>;
     commonTokensForUserPairs(): Promise<string[]>;
 }

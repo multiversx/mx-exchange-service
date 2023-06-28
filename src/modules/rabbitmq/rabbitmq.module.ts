@@ -11,7 +11,7 @@ import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { RouterModule } from '../router/router.module';
-import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
+import { RouterHandlerService } from './handlers/router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { MetabondingModule } from '../metabonding/metabonding.module';
 import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.service';
@@ -63,7 +63,7 @@ import { EscrowModule } from '../escrow/escrow.module';
         RabbitMqConsumer,
         RabbitMQFarmHandlerService,
         RabbitMQProxyHandlerService,
-        RabbitMQRouterHandlerService,
+        RouterHandlerService,
         RabbitMQEsdtTokenHandlerService,
         RabbitMQMetabondingHandlerService,
         PriceDiscoveryEventHandler,
