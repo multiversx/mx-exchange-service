@@ -5,7 +5,6 @@ import {
 } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { constantsConfig } from 'src/config';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { RouterAbiService } from '../../router/services/router.abi.service';
@@ -45,8 +44,8 @@ export class RouterHandlerService {
             uniqueTokens,
             commonTokens,
         ] = await Promise.all([
-            this.routerAbiService.pairsMetadata(),
-            this.routerAbiService.pairsAddress(),
+            this.routerAbiService.getPairsMetadataRaw(),
+            this.routerAbiService.getAllPairsAddressRaw(),
             this.tokenGetter.getEsdtTokenType(firstTokenID),
             this.tokenGetter.getEsdtTokenType(secondTokenID),
             this.tokenService.getUniqueTokenIDs(true),
