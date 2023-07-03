@@ -120,7 +120,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
     });
 
     it(
-        'computeTotalRewardsForWeekPriceUSD' + ' MEX-27f4cd has price 10',
+        'computeTotalRewardsForWeekPriceUSD' + ' MEX-123456 has price 10',
         async () => {
             const service = module.get<WeeklyRewardsSplittingComputeService>(
                 WeeklyRewardsSplittingComputeService,
@@ -147,9 +147,9 @@ describe('WeeklyRewardsSplittingComputeService', () => {
     );
 
     it(
-        'computeAprGivenLockedTokensAndRewards' + ' MEX-27f4cd has price 10',
+        'computeAprGivenLockedTokensAndRewards' + ' MEX-123456 has price 10',
         async () => {
-            const mex = 'MEX-27f4cd';
+            const mex = 'MEX-123456';
 
             const priceMap = new Map<string, string>();
             priceMap.set('WEGLD-123456', '10');
@@ -191,12 +191,12 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             expect(apr).toEqual('364'); // 100 * 10 + 200 * 30
 
             apr = await service.computeWeekAPR(Address.Zero().bech32(), 1);
-            expect(apr).toEqual('520');
+            expect(apr).toEqual('371.8');
         },
     );
 
-    it('computeApr' + ' MEX-27f4cd has price 10', async () => {
-        const mex = 'MEX-27f4cd';
+    it('computeApr' + ' MEX-123456 has price 10', async () => {
+        const mex = 'MEX-123456';
 
         const priceMap = new Map<string, string>();
         priceMap.set('WEGLD-123456', '10');
@@ -218,11 +218,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         });
 
         const apr = await service.computeWeekAPR(Address.Zero().bech32(), 1);
-        expect(apr).toEqual('520'); // 100 * 10 + 200 * 30
+        expect(apr).toEqual('371.8'); // 100 * 10 + 200 * 30
     });
 
     it('computeUserApr' + ' user has all the energy', async () => {
-        const mex = 'MEX-27f4cd';
+        const mex = 'MEX-123456';
 
         const priceMap = new Map<string, string>();
         priceMap.set('WEGLD-123456', '10');
@@ -265,14 +265,14 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             Address.Zero().bech32(),
             1,
         );
-        expect(apr).toEqual('520'); // 100 * 10 + 200 * 30
+        expect(apr).toEqual('371.8'); // 100 * 10 + 200 * 30
     });
 
     it(
         'computeUserApr' +
             ' 2 user has equal part of lk tokens & energy should have both global APR',
         async () => {
-            const mex = 'MEX-27f4cd';
+            const mex = 'MEX-123456';
 
             const priceMap = new Map<string, string>();
             priceMap.set('WEGLD-123456', '10');
@@ -321,7 +321,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 Address.Zero().bech32(),
                 1,
             );
-            expect(apr).toEqual('520');
+            expect(apr).toEqual('371.8');
         },
     );
 
@@ -332,7 +332,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         async () => {
             const user1 = 'erd1';
             const user2 = 'erd2';
-            const mex = 'MEX-27f4cd';
+            const mex = 'MEX-123456';
             const priceMap = new Map<string, string>();
             priceMap.set('WEGLD-123456', '10');
             priceMap.set('MEX-123456', '20');
@@ -385,7 +385,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 user1,
                 1,
             );
-            expect(apr).toEqual('693.33333333333333333333');
+            expect(apr).toEqual('495.73333333333333333333');
 
             jest.spyOn(
                 weeklyRewardsSplittingAbi,
@@ -397,7 +397,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 user2,
                 1,
             );
-            expect(apr).toEqual('346.66666666666666666666');
+            expect(apr).toEqual('247.86666666666666666666');
         },
     );
 
@@ -408,7 +408,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         async () => {
             const user1 = 'erd1';
             const user2 = 'erd2';
-            const mex = 'MEX-27f4cd';
+            const mex = 'MEX-123456';
             const priceMap = new Map<string, string>();
             priceMap.set('WEGLD-123456', '10');
             priceMap.set('MEX-123456', '20');
@@ -462,7 +462,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 user1,
                 1,
             );
-            expect(apr).toEqual('1040');
+            expect(apr).toEqual('743.6');
 
             jest.spyOn(
                 weeklyRewardsSplittingAbi,

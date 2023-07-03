@@ -11,6 +11,7 @@ import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { Address } from '@multiversx/sdk-core/out';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -48,7 +49,9 @@ describe('PairService', () => {
         );
 
         const lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
         );
         expect(lpTokenPriceUSD).toEqual('40');
     });
@@ -56,7 +59,9 @@ describe('PairService', () => {
     it('should get pair type: Core', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
         const type = await service.computeTypeFromTokens(
-            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000013',
+            ).bech32(),
         );
         expect(type).toEqual('Core');
     });
@@ -64,7 +69,9 @@ describe('PairService', () => {
     it('should get pair type: Ecosystem', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
         const type = await service.computeTypeFromTokens(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
         );
         expect(type).toEqual('Ecosystem');
     });

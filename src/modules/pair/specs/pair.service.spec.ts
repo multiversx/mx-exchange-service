@@ -8,6 +8,7 @@ import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from '../mocks/pair.compute.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { Address } from '@multiversx/sdk-core/out';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -37,7 +38,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const amountIn = await service.getAmountIn(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             'WEGLD-123456',
             '10000000000000000',
         );
@@ -48,7 +51,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const amountOut = await service.getAmountOut(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             'WEGLD-123456',
             '10000000000000000',
         );
@@ -59,7 +64,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const equivalent = await service.getEquivalentForLiquidity(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             'WEGLD-123456',
             '10000000000000000',
         );
@@ -70,7 +77,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const liquidityPosition = await service.getLiquidityPosition(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             '1',
         );
         expect(liquidityPosition).toEqual({
@@ -83,7 +92,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const liquidityPositionUSD = await service.getLiquidityPositionUSD(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             '10000',
         );
         expect(liquidityPositionUSD).toEqual('0.000000000004');
@@ -96,7 +107,9 @@ describe('PairService', () => {
             'EGLDMEXLP-abcdef',
         );
         expect(address).toEqual(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
         );
     });
 

@@ -45,14 +45,14 @@ export class RouterAbiServiceMock implements IRouterAbiService {
             lockingSC: new SimpleLockModel({
                 address: Address.Zero().bech32(),
             }),
-            commonTokenID: 'USDC-1111',
+            commonTokenID: 'USDC-123456',
             lockedTokenID: 'LKESDT-1234',
-            minLockedTokenValue: '8000000000000000000000',
+            minLockedTokenValue: '8000000000',
             minLockPeriodEpochs: 1,
         });
     }
     async commonTokensForUserPairs(): Promise<string[]> {
-        return ['USDC-1111'];
+        return ['USDC-123456'];
     }
 }
 

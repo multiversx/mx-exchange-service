@@ -78,6 +78,7 @@ import {
     FarmServiceBaseMock,
     FarmServiceProvider,
 } from 'src/modules/farm/mocks/farm.service.mock';
+import { Address } from '@multiversx/sdk-core/out';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -213,17 +214,24 @@ describe('UserService', () => {
 
     it('should get user esdt tokens', async () => {
         expect(
-            await userEsdts.getAllEsdtTokens('user_address_1', {
-                offset: 0,
-                limit: 10,
-            }),
+            await userEsdts.getAllEsdtTokens(
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000001',
+                ).bech32(),
+                {
+                    offset: 0,
+                    limit: 10,
+                },
+            ),
         ).toEqual([
             new UserToken({
                 identifier: 'MEX-123456',
-                ticker: 'TOK2',
-                name: 'SecondToken',
+                ticker: 'MEX',
+                name: 'MEX',
                 type: 'Ecosystem',
-                owner: 'owner_address',
+                owner: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000001',
+                ).bech32(),
                 supply: '2000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -245,46 +253,44 @@ describe('UserService', () => {
                 price: '1',
                 roles: new RolesModel(),
 
-                assets: new AssetsModel({
-                    description: '',
-                    extraTokens: [],
-                    lockedAccounts: [],
-                    svgUrl: '',
-                    pngUrl: '',
-                    status: '',
-                    website: '',
-                }),
+                assets: new AssetsModel(),
             }),
         ]);
     });
 
     it('should get user nfts tokens', async () => {
         expect(
-            await userMetaEsdts.getAllNftTokens('user_address_1', {
-                offset: 0,
-                limit: 10,
-            }),
+            await userMetaEsdts.getAllNftTokens(
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000001',
+                ).bech32(),
+                {
+                    offset: 0,
+                    limit: 10,
+                },
+            ),
         ).toEqual([
             new UserFarmToken({
-                collection: 'EGLDTOK4FL-abcdef',
-                ticker: 'EGLDTOK4FL-abcdef',
+                collection: 'EGLDMEXFL-abcdef',
+                ticker: 'EGLDMEXFL',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
                 decimals: 18,
                 balance: '1000000000000000000',
-                identifier: 'EGLDTOK4FL-abcdef-01',
+                identifier: 'EGLDMEXFL-abcdef-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
-                creator:
-                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                creator: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
                 nonce: 1,
                 royalties: 0,
-                valueUSD: '80000200',
+                valueUSD: '400',
                 decodedAttributes: new FarmTokenAttributesModelV1_2({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                     originalEnteringEpoch: 1,
                     enteringEpoch: 1,
-                    identifier: 'EGLDTOK4FL-abcdef-01',
+                    identifier: 'EGLDMEXFL-abcdef-01',
                     lockedRewards: false,
                     rewardPerShare: '3000',
                     initialFarmingAmount: '100',

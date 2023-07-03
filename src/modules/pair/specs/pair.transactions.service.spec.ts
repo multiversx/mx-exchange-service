@@ -61,8 +61,9 @@ describe('TransactionPairService', () => {
 
         const initialLiquidityBatchTransactions =
             await service.addInitialLiquidityBatch(Address.Zero().bech32(), {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 tokens: [
                     {
                         tokenID: 'MEX-123456',
@@ -104,7 +105,9 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@2@WEGLD-123456@@9@MEX-123456@@10@addInitialLiquidity',
+                `MultiESDTNFTTransfer@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32()}@2@WEGLD-123456@@9@MEX-123456@@10@addInitialLiquidity`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -124,8 +127,9 @@ describe('TransactionPairService', () => {
         const addLiquidityTransaction = await service.addInitialLiquidity(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 tokens: [
                     {
                         tokenID: 'WEGLD-123456',
@@ -150,7 +154,9 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@WEGLD-123456@@10@MEX-123456@@09@addInitialLiquidity',
+                `MultiESDTNFTTransfer@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32()}@02@WEGLD-123456@@10@MEX-123456@@09@addInitialLiquidity`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -170,8 +176,9 @@ describe('TransactionPairService', () => {
         const addLiquidityTransaction = await service.addLiquidity(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 tokens: [
                     {
                         tokenID: 'MEX-123456',
@@ -197,7 +204,9 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@2@WEGLD-123456@@9@MEX-123456@@10@addLiquidity@8@9',
+                `MultiESDTNFTTransfer@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32()}@2@WEGLD-123456@@9@MEX-123456@@10@addLiquidity@8@9`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -217,8 +226,9 @@ describe('TransactionPairService', () => {
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 tokens: [
                     {
                         tokenID: 'EGLD',
@@ -259,7 +269,9 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@WEGLD-123456@@10@MEX-123456@@09@addLiquidity@09@08',
+                `MultiESDTNFTTransfer@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32()}@02@WEGLD-123456@@10@MEX-123456@@09@addLiquidity@09@08`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -279,8 +291,9 @@ describe('TransactionPairService', () => {
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 tokens: [
                     {
                         tokenID: 'MEX-123456',
@@ -322,7 +335,9 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@WEGLD-123456@@09@MEX-123456@@10@addLiquidity@08@09',
+                `MultiESDTNFTTransfer@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32()}@02@WEGLD-123456@@09@MEX-123456@@10@addLiquidity@08@09`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -339,8 +354,9 @@ describe('TransactionPairService', () => {
         const transactions = await service.removeLiquidity(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 liquidity: '9',
                 liquidityTokenID: 'EGLD',
                 tolerance: 0.01,
@@ -351,8 +367,9 @@ describe('TransactionPairService', () => {
             {
                 nonce: 0,
                 value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                receiver: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.removeLiquidity,
@@ -391,8 +408,9 @@ describe('TransactionPairService', () => {
         const transactions = await service.swapTokensFixedInput(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 tokenInID: 'EGLD',
                 tokenOutID: 'MEX-123456',
                 amountIn: '5',
@@ -419,8 +437,9 @@ describe('TransactionPairService', () => {
             {
                 nonce: 0,
                 value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                receiver: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
@@ -443,8 +462,9 @@ describe('TransactionPairService', () => {
         const transactions = await service.swapTokensFixedOutput(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 tokenInID: 'MEX-123456',
                 tokenOutID: 'EGLD',
                 amountIn: '5',
@@ -456,8 +476,9 @@ describe('TransactionPairService', () => {
             {
                 nonce: 0,
                 value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                receiver: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedOutput.default,
@@ -494,7 +515,9 @@ describe('TransactionPairService', () => {
         );
 
         const transactions = await service.validateTokens(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             [
                 new InputTokenModel({ tokenID: 'MEX-123456' }),
                 new InputTokenModel({ tokenID: 'EGLD' }),
@@ -512,7 +535,9 @@ describe('TransactionPairService', () => {
 
         try {
             await service.validateTokens(
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 [
                     new InputTokenModel({ tokenID: 'MEX-123456', nonce: 1 }),
                     new InputTokenModel({ tokenID: 'EGLD' }),
@@ -524,7 +549,9 @@ describe('TransactionPairService', () => {
 
         try {
             await service.validateTokens(
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 [
                     new InputTokenModel({ tokenID: 'WEGLD-123456' }),
                     new InputTokenModel({ tokenID: 'EGLD' }),
@@ -541,16 +568,18 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.whitelist({
-            pairAddress:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            pairAddress: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             address: Address.Zero().bech32(),
         });
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.whitelist,
@@ -570,16 +599,18 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.removeWhitelist({
-            pairAddress:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            pairAddress: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             address: Address.Zero().bech32(),
         });
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.removeWhitelist,
@@ -599,7 +630,9 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.addTrustedSwapPair(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             Address.Zero().bech32(),
             'WEGLD-123456',
             'MEX-123456',
@@ -608,8 +641,9 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.addTrustedSwapPair,
@@ -629,7 +663,9 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.removeTrustedSwapPair(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             'WEGLD-123456',
             'MEX-123456',
         );
@@ -637,8 +673,9 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.removeTrustedSwapPair,
@@ -658,15 +695,18 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setTransferExecGasLimit(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             '50000000',
         );
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.set_transfer_exec_gas_limit,
@@ -684,15 +724,18 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setExternSwapGasLimit(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             '50000000',
         );
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.set_extern_swap_gas_limit,
@@ -710,14 +753,17 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.pause(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
         );
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.pause,
@@ -735,14 +781,17 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.resume(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
         );
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.resume,
@@ -760,14 +809,17 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setStateActiveNoSwaps(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
         );
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setStateActiveNoSwaps,
@@ -785,7 +837,9 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setFeePercents(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             3,
             5,
         );
@@ -793,8 +847,9 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setFeePercents,
@@ -812,15 +867,18 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setMaxObservationsPerRecord(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             1000,
         );
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setMaxObservationsPerRecord,
@@ -838,7 +896,9 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setBPSwapConfig(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             {
                 protectStopBlock: '1000',
                 volumePercent: '1000000000000000000',
@@ -849,8 +909,9 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setBPSwapConfig,
@@ -870,7 +931,9 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setBPRemoveConfig(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             {
                 protectStopBlock: '1000',
                 volumePercent: '1000000000000000000',
@@ -881,8 +944,9 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setBPRemoveConfig,
@@ -902,7 +966,9 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setBPAddConfig(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             {
                 protectStopBlock: '1000',
                 volumePercent: '1000000000000000000',
@@ -913,8 +979,9 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setBPAddConfig,
@@ -934,15 +1001,18 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setLockingDeadlineEpoch(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             1000,
         );
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setLockingDeadlineEpoch,
@@ -960,15 +1030,18 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setUnlockEpoch(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             1005,
         );
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setUnlockEpoch,
@@ -986,15 +1059,18 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.setLockingScAddress(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             Address.Zero().bech32(),
         );
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: 200000000,

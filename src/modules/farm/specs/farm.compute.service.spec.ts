@@ -15,6 +15,7 @@ import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { FarmAbiServiceProviderV1_2 } from '../mocks/farm.v1.2.abi.service.mock';
 import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
+import { Address } from '@multiversx/sdk-core/out';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -52,7 +53,9 @@ describe('FarmService', () => {
             FarmComputeServiceV1_2,
         );
         const farmedTokenPriceUSD = await service.computeFarmedTokenPriceUSD(
-            'farm_address_2',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000021',
+            ).bech32(),
         );
         expect(farmedTokenPriceUSD).toEqual('10');
     });
@@ -62,7 +65,9 @@ describe('FarmService', () => {
             FarmComputeServiceV1_2,
         );
         const farmingTokenPriceUSD = await service.computeFarmingTokenPriceUSD(
-            'farm_address_2',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000021',
+            ).bech32(),
         );
         expect(farmingTokenPriceUSD).toEqual('2');
     });
@@ -72,8 +77,9 @@ describe('FarmService', () => {
             FarmComputeServiceV1_2,
         );
         const calculateRewardsArgs = new CalculateRewardsArgs();
-        calculateRewardsArgs.farmAddress =
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye';
+        calculateRewardsArgs.farmAddress = Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000021',
+        ).bech32();
         calculateRewardsArgs.liquidity = '100000000000000000000000000000';
         const farmRewardsForPosition =
             await service.computeFarmRewardsForPosition(
@@ -90,8 +96,10 @@ describe('FarmService', () => {
             FarmComputeServiceV1_2,
         );
         const anualRewardsUSD = await service.computeAnualRewardsUSD(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000021',
+            ).bech32(),
         );
-        expect(anualRewardsUSD).toEqual('2102400000');
+        expect(anualRewardsUSD).toEqual('52560000');
     });
 });

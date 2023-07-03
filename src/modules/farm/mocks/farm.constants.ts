@@ -1,35 +1,43 @@
+import { Address } from '@multiversx/sdk-core/out';
+
 export const farms = [
     {
-        address:
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-        farmedTokenID: 'TOK4-123456',
-        farmTokenID: 'EGLDTOK4FL-abcdef',
-        farmingTokenID: 'EGLDTOK4LP-abcdef',
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000021',
+        ).bech32(),
+        farmedTokenID: 'MEX-123456',
+        farmTokenID: 'EGLDMEXFL-abcdef',
+        farmingTokenID: 'EGLDMEXLP-abcdef',
         farmTotalSupply: '600000000000000000000000',
         farmingTokenReserve: '400000000000000000000000',
         rewardsPerBlock: '1000000000000000000',
     },
     {
-        address: 'farm_address_2',
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000031',
+        ).bech32(),
         farmedTokenID: 'MEX-123456',
-        farmTokenID: 'EGLDMEXFL-abcdef',
+        farmTokenID: 'EGLDMEXF-abcdef',
         farmingTokenID: 'EGLDMEXLP-abcdef',
         farmTotalSupply: '25000000000000000000',
         farmingTokenReserve: '40000000000000000000',
         rewardsPerBlock: '10000000000000',
     },
     {
-        address: 'farm_address_3',
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000032',
+        ).bech32(),
         farmedTokenID: 'MEX-123456',
-        farmTokenID: 'EGLDMEXFL-abcdef',
+        farmTokenID: 'EGLDMEXFL-bcdefg',
         farmingTokenID: 'EGLDMEXLP-abcdef',
         farmTotalSupply: '500000',
         farmingTokenReserve: '300000',
         rewardsPerBlock: '1000000000000000000',
     },
     {
-        address:
-            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000033',
+        ).bech32(),
         farmedTokenID: 'TOK4-123456',
         farmTokenID: 'EGLDTOK4FL-abcdef',
         farmingTokenID: 'EGLDTOK4LP-abcdef',

@@ -13,8 +13,8 @@ import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { FarmAbiServiceProviderV1_2 } from '../mocks/farm.v1.2.abi.service.mock';
-import { FarmServiceProvider } from '../mocks/farm.service.mock';
 import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
+import { Address } from '@multiversx/sdk-core/out';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -54,9 +54,11 @@ describe('FarmService', () => {
         );
 
         const farmLockedValueUSD = await service.computeFarmLockedValueUSD(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000021',
+            ).bech32(),
         );
-        expect(farmLockedValueUSD).toEqual('32000080000000');
+        expect(farmLockedValueUSD).toEqual('160000000');
     });
 
     it('should get unlocked rewards APR', async () => {
@@ -65,9 +67,11 @@ describe('FarmService', () => {
         );
 
         const farmAPR = await service.computeUnlockedRewardsAPR(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000021',
+            ).bech32(),
         );
-        expect(farmAPR).toEqual('10.00004379989050027374');
+        expect(farmAPR).toEqual('10.21899999999999999999');
     });
 
     it('should compute locked farming token reserve', async () => {
@@ -77,7 +81,9 @@ describe('FarmService', () => {
 
         const lockedFarmingTokenReserve =
             await service.computeLockedFarmingTokenReserve(
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
             );
         expect(lockedFarmingTokenReserve).toEqual('200000000000000000000000');
     });
@@ -89,7 +95,9 @@ describe('FarmService', () => {
 
         const unlockedFarmingTokenReserve =
             await service.computeUnlockedFarmingTokenReserve(
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
             );
         expect(unlockedFarmingTokenReserve).toEqual('200000000000000000000000');
     });
@@ -101,9 +109,11 @@ describe('FarmService', () => {
 
         const lockedFarmingTokenReserveUSD =
             await service.computeLockedFarmingTokenReserveUSD(
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
             );
-        expect(lockedFarmingTokenReserveUSD).toEqual('16000040000000');
+        expect(lockedFarmingTokenReserveUSD).toEqual('80000000');
     });
 
     it('should compute unlocked farming token reserve USD', async () => {
@@ -113,9 +123,11 @@ describe('FarmService', () => {
 
         const unlockedFarmingTokenReserveUSD =
             await service.computeUnlockedFarmingTokenReserveUSD(
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
             );
-        expect(unlockedFarmingTokenReserveUSD).toEqual('16000040000000');
+        expect(unlockedFarmingTokenReserveUSD).toEqual('80000000');
     });
 
     it('should compute virtual value locked USD', async () => {
@@ -125,9 +137,11 @@ describe('FarmService', () => {
 
         const virtualValueLockedUSD =
             await service.computeVirtualValueLockedUSD(
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
             );
-        expect(virtualValueLockedUSD).toEqual('48000120000000');
+        expect(virtualValueLockedUSD).toEqual('240000000');
     });
 
     it('should compute unlocked rewards APR', async () => {
@@ -136,9 +150,11 @@ describe('FarmService', () => {
         );
 
         const unlockedRewardsAPR = await service.computeUnlockedRewardsAPR(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000021',
+            ).bech32(),
         );
-        expect(unlockedRewardsAPR).toEqual('10.00004379989050027374');
+        expect(unlockedRewardsAPR).toEqual('10.21899999999999999999');
     });
 
     it('should compute locked rewards APR', async () => {
@@ -147,8 +163,10 @@ describe('FarmService', () => {
         );
 
         const lockedRewardsAPR = await service.computeLockedRewardsAPR(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000021',
+            ).bech32(),
         );
-        expect(lockedRewardsAPR).toEqual('10.00008759978100054749');
+        expect(lockedRewardsAPR).toEqual('10.43799999999999999999');
     });
 });

@@ -103,7 +103,7 @@ describe('FarmService', () => {
 
         const rewards = await serviceV1_2.getRewardsForPosition({
             farmAddress:
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
             identifier: identifier,
             attributes: attributes,
             liquidity: liquidity,
@@ -126,23 +126,25 @@ describe('FarmService', () => {
         expect(farms).toEqual([
             {
                 address:
-                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 rewardType: undefined,
                 version: 'v1.2',
             },
             {
-                address: 'farm_address_2',
+                address:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcs2zduud',
                 rewardType: 'unlockedRewards',
                 version: 'v1.3',
             },
             {
-                address: 'farm_address_3',
+                address:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeqs727zc',
                 rewardType: 'lockedRewards',
                 version: 'v1.3',
             },
             {
                 address:
-                    'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
                 rewardType: 'customRewards',
                 version: 'v1.3',
             },
@@ -152,7 +154,7 @@ describe('FarmService', () => {
     it('should check if farm token', async () => {
         const farmAbiFactory = module.get<FarmAbiFactory>(FarmAbiFactory);
         const isFarmToken_0 = await farmAbiFactory.isFarmToken(
-            'TOK1TOK9LPStaked',
+            'TOK1TOK9F-abcdef',
         );
         expect(isFarmToken_0).toEqual(false);
 
@@ -168,7 +170,7 @@ describe('FarmService', () => {
             'EGLDTOK4FL-abcdef',
         );
         expect(farmAddress).toEqual(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
         );
     });
 
@@ -178,9 +180,9 @@ describe('FarmService', () => {
             await serviceV1_3.getBatchRewardsForPosition([
                 {
                     farmAddress:
-                        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+                        'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeqs727zc',
                     liquidity: '1000000000000000',
-                    identifier: 'EGLDMEXFL-a329b6-0b',
+                    identifier: 'EGLDMEXFL-bcdefg-0b',
                     attributes:
                         'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
                     vmQuery: false,
@@ -190,9 +192,9 @@ describe('FarmService', () => {
 
         expect(batchRewardsForPosition).toEqual([
             new RewardsModel({
-                identifier: 'EGLDMEXFL-a329b6-0b',
+                identifier: 'EGLDMEXFL-bcdefg-0b',
                 remainingFarmingEpochs: 1047,
-                rewards: '110000000000000000100000000000',
+                rewards: '220000000000000000100000000000',
             }),
         ]);
     });
@@ -201,7 +203,7 @@ describe('FarmService', () => {
         const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
         const tokensForExitFarm = await serviceV1_3.getTokensForExitFarm({
             farmAddress:
-                'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeqs727zc',
             liquidity: '1000000000000000',
             identifier: 'EGLDMEXFL-a329b6-0b',
             attributes:
@@ -211,7 +213,7 @@ describe('FarmService', () => {
         });
         expect(tokensForExitFarm).toEqual({
             farmingTokens: '999000000000000',
-            rewards: '110000000000000000100000000000',
+            rewards: '220000000000000000100000000000',
         });
     });
 
