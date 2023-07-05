@@ -74,10 +74,7 @@ import { FarmAbiServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.abi
 import { FarmAbiServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.abi.service.mock';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
-import {
-    FarmServiceBaseMock,
-    FarmServiceProvider,
-} from 'src/modules/farm/mocks/farm.service.mock';
+import { FarmServiceBaseMock } from 'src/modules/farm/mocks/farm.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 
 describe('UserService', () => {
@@ -243,16 +240,15 @@ describe('UserService', () => {
                 canFreeze: true,
                 canWipe: true,
                 balance: '1000000000000000000',
-                valueUSD: '100',
+                valueUSD: '0.01',
                 accounts: 1,
                 initialMinted: '1',
                 burnt: '1',
                 minted: '1',
                 circulatingSupply: '1',
                 transactions: 1,
-                price: '1',
+                price: '0.01',
                 roles: new RolesModel(),
-
                 assets: new AssetsModel(),
             }),
         ]);
@@ -284,7 +280,7 @@ describe('UserService', () => {
                 ).bech32(),
                 nonce: 1,
                 royalties: 0,
-                valueUSD: '400',
+                valueUSD: '20',
                 decodedAttributes: new FarmTokenAttributesModelV1_2({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',

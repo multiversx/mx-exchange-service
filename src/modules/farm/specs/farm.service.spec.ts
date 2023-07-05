@@ -35,6 +35,7 @@ import { FarmCustomAbiService } from '../custom/services/farm.custom.abi.service
 import { FarmCustomService } from '../custom/services/farm.custom.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FarmCustomComputeService } from '../custom/services/farm.custom.compute.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -176,12 +177,19 @@ describe('FarmService', () => {
 
     it('should get batch rewards for position', async () => {
         const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
+        const contextGetterService =
+            module.get<ContextGetterService>(ContextGetterService);
+        jest.spyOn(
+            contextGetterService,
+            'getShardCurrentBlockNonce',
+        ).mockResolvedValue(2);
+
         const batchRewardsForPosition =
             await serviceV1_3.getBatchRewardsForPosition([
                 {
                     farmAddress:
                         'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeqs727zc',
-                    liquidity: '1000000000000000',
+                    liquidity: '1000000000000000000',
                     identifier: 'EGLDMEXFL-bcdefg-0b',
                     attributes:
                         'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
@@ -194,17 +202,24 @@ describe('FarmService', () => {
             new RewardsModel({
                 identifier: 'EGLDMEXFL-bcdefg-0b',
                 remainingFarmingEpochs: 1047,
-                rewards: '220000000000000000100000000000',
+                rewards: '1000000000000000000',
             }),
         ]);
     });
 
     it('should get tokens for exit farm', async () => {
         const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
+        const contextGetterService =
+            module.get<ContextGetterService>(ContextGetterService);
+        jest.spyOn(
+            contextGetterService,
+            'getShardCurrentBlockNonce',
+        ).mockResolvedValue(2);
+
         const tokensForExitFarm = await serviceV1_3.getTokensForExitFarm({
             farmAddress:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeqs727zc',
-            liquidity: '1000000000000000',
+            liquidity: '1000000000000000000',
             identifier: 'EGLDMEXFL-a329b6-0b',
             attributes:
                 'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
@@ -212,12 +227,12 @@ describe('FarmService', () => {
             user: Address.Zero().bech32(),
         });
         expect(tokensForExitFarm).toEqual({
-            farmingTokens: '999000000000000',
-            rewards: '220000000000000000100000000000',
+            farmingTokens: '999000000000000000',
+            rewards: '1000000000000000000',
         });
     });
 
-    it('should get tokens for exit farm', async () => {
+    it('should decode farm token attributes', async () => {
         const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
         const tokensForExitFarm = serviceV1_3.decodeFarmTokenAttributes(
             'EGLDMEXFL-a329b6-0b',

@@ -12,6 +12,8 @@ import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/anal
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
+import { PairsData } from '../mocks/pair.constants';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -38,6 +40,91 @@ describe('PairService', () => {
         const service = module.get<PairComputeService>(PairComputeService);
 
         expect(service).toBeDefined();
+    });
+
+    it('compute first token price', async () => {
+        const service = module.get<PairComputeService>(PairComputeService);
+        const routerAbi = module.get<RouterAbiService>(RouterAbiService);
+        const pairsAddress = await routerAbi.pairsAddress();
+
+        for (const pairAddress of pairsAddress) {
+            const tokenPrice = await service.computeFirstTokenPrice(
+                pairAddress,
+            );
+            expect(tokenPrice).toEqual(PairsData(pairAddress).firstTokenPrice);
+        }
+    });
+
+    it('compute second token price', async () => {
+        const service = module.get<PairComputeService>(PairComputeService);
+        const pairAddress = Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000013',
+        ).bech32();
+        const tokenPrice = await service.computeSecondTokenPrice(pairAddress);
+        expect(tokenPrice).toEqual(PairsData(pairAddress).secondTokenPrice);
+    });
+
+    it('compute first token price USD', async () => {
+        const service = module.get<PairComputeService>(PairComputeService);
+        const pairAddress = Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000013',
+        ).bech32();
+        const tokenPriceUSD = await service.computeFirstTokenPriceUSD(
+            pairAddress,
+        );
+        expect(tokenPriceUSD).toEqual(
+            PairsData(pairAddress).firstTokenPriceUSD,
+        );
+    });
+
+    it('compute second token price USD', async () => {
+        const service = module.get<PairComputeService>(PairComputeService);
+        const pairAddress = Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000013',
+        ).bech32();
+        const tokenPriceUSD = await service.computeSecondTokenPriceUSD(
+            pairAddress,
+        );
+        expect(tokenPriceUSD).toEqual(
+            PairsData(pairAddress).secondTokenPriceUSD,
+        );
+    });
+
+    it('compute first token locked value USD', async () => {
+        const service = module.get<PairComputeService>(PairComputeService);
+        const pairAddress = Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000013',
+        ).bech32();
+        const tokenLockedValueUSD =
+            await service.computeFirstTokenLockedValueUSD(pairAddress);
+        expect(tokenLockedValueUSD.toFixed()).toEqual(
+            PairsData(pairAddress).firstTokenLockedValueUSD,
+        );
+    });
+
+    it('compute second token locked value USD', async () => {
+        const service = module.get<PairComputeService>(PairComputeService);
+        const pairAddress = Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000013',
+        ).bech32();
+        const tokenLockedValueUSD =
+            await service.computeSecondTokenLockedValueUSD(pairAddress);
+        expect(tokenLockedValueUSD.toFixed()).toEqual(
+            PairsData(pairAddress).secondTokenLockedValueUSD,
+        );
+    });
+
+    it('compute locked value USD', async () => {
+        const service = module.get<PairComputeService>(PairComputeService);
+        const pairAddress = Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000013',
+        ).bech32();
+        const tokenLockedValueUSD = await service.computeLockedValueUSD(
+            pairAddress,
+        );
+        expect(tokenLockedValueUSD.toFixed()).toEqual(
+            PairsData(pairAddress).lockedValueUSD,
+        );
     });
 
     it('should get lpToken Price in USD from pair', async () => {

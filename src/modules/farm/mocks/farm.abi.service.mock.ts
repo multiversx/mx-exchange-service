@@ -29,7 +29,7 @@ export class FarmAbiServiceMock implements IFarmAbiService {
         return 3;
     }
     async rewardPerShare(farmAddress: string): Promise<string> {
-        return '100';
+        return farms.find((f) => f.address === farmAddress).rewardPerShare;
     }
     rewardReserve(farmAddress: string): Promise<string> {
         throw new Error('Method not implemented.');

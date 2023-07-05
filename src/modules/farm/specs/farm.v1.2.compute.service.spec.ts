@@ -58,20 +58,7 @@ describe('FarmService', () => {
                 '0000000000000000000000000000000000000000000000000000000000000021',
             ).bech32(),
         );
-        expect(farmLockedValueUSD).toEqual('160000000');
-    });
-
-    it('should get unlocked rewards APR', async () => {
-        const service = module.get<FarmComputeServiceV1_2>(
-            FarmComputeServiceV1_2,
-        );
-
-        const farmAPR = await service.computeUnlockedRewardsAPR(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
-        );
-        expect(farmAPR).toEqual('10.21899999999999999999');
+        expect(farmLockedValueUSD).toEqual('30');
     });
 
     it('should compute locked farming token reserve', async () => {
@@ -85,7 +72,7 @@ describe('FarmService', () => {
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
-        expect(lockedFarmingTokenReserve).toEqual('200000000000000000000000');
+        expect(lockedFarmingTokenReserve).toEqual('500000000000000000');
     });
 
     it('should compute unlocked farming token reserve', async () => {
@@ -99,7 +86,7 @@ describe('FarmService', () => {
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
-        expect(unlockedFarmingTokenReserve).toEqual('200000000000000000000000');
+        expect(unlockedFarmingTokenReserve).toEqual('1000000000000000000');
     });
 
     it('should compute locked farming token reserve USD', async () => {
@@ -113,7 +100,7 @@ describe('FarmService', () => {
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
-        expect(lockedFarmingTokenReserveUSD).toEqual('80000000');
+        expect(lockedFarmingTokenReserveUSD).toEqual('10');
     });
 
     it('should compute unlocked farming token reserve USD', async () => {
@@ -127,7 +114,7 @@ describe('FarmService', () => {
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
-        expect(unlockedFarmingTokenReserveUSD).toEqual('80000000');
+        expect(unlockedFarmingTokenReserveUSD).toEqual('20');
     });
 
     it('should compute virtual value locked USD', async () => {
@@ -141,7 +128,7 @@ describe('FarmService', () => {
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
-        expect(virtualValueLockedUSD).toEqual('240000000');
+        expect(virtualValueLockedUSD).toEqual('40');
     });
 
     it('should compute unlocked rewards APR', async () => {
@@ -154,7 +141,7 @@ describe('FarmService', () => {
                 '0000000000000000000000000000000000000000000000000000000000000021',
             ).bech32(),
         );
-        expect(unlockedRewardsAPR).toEqual('10.21899999999999999999');
+        expect(unlockedRewardsAPR).toEqual('1324');
     });
 
     it('should compute locked rewards APR', async () => {
@@ -167,6 +154,6 @@ describe('FarmService', () => {
                 '0000000000000000000000000000000000000000000000000000000000000021',
             ).bech32(),
         );
-        expect(lockedRewardsAPR).toEqual('10.43799999999999999999');
+        expect(lockedRewardsAPR).toEqual('2638');
     });
 });

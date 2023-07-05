@@ -51,13 +51,13 @@ describe('TokenComputeService', () => {
         const service: TokenComputeService =
             module.get<TokenComputeService>(TokenComputeService);
         const price = await service.computeTokenPriceDerivedEGLD('MEX-123456');
-        expect(price).toEqual('0.5');
+        expect(price).toEqual('0.001');
     });
 
     it('should compute token price derived EGLD for TOK4-123456', async () => {
         const service: TokenComputeService =
             module.get<TokenComputeService>(TokenComputeService);
         const price = await service.computeTokenPriceDerivedEGLD('TOK4-123456');
-        expect(price).toEqual('20');
+        expect(price).toEqual('0.01');
     });
 });

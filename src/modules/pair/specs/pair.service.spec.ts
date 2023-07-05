@@ -42,9 +42,9 @@ describe('PairService', () => {
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             'WEGLD-123456',
-            '10000000000000000',
+            '1000000000000000000',
         );
-        expect(amountIn).toEqual('20262808627903914');
+        expect(amountIn).toEqual('1004013040121365096290');
     });
 
     it('should get amount out', async () => {
@@ -55,9 +55,9 @@ describe('PairService', () => {
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             'WEGLD-123456',
-            '10000000000000000',
+            '1000000000000000000',
         );
-        expect(amountOut).toEqual('19743160687941225');
+        expect(amountOut).toEqual('996006981039903216493');
     });
 
     it('should get equivalent for liquidity', async () => {
@@ -68,9 +68,9 @@ describe('PairService', () => {
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             'WEGLD-123456',
-            '10000000000000000',
+            '1000000000000000000',
         );
-        expect(equivalent.toFixed()).toEqual('20000000000000000');
+        expect(equivalent.toFixed()).toEqual('1000000000000000000000');
     });
 
     it('should get liquidity position from pair', async () => {
@@ -84,7 +84,7 @@ describe('PairService', () => {
         );
         expect(liquidityPosition).toEqual({
             firstTokenAmount: '1',
-            secondTokenAmount: '2',
+            secondTokenAmount: '1000',
         });
     });
 
@@ -95,9 +95,9 @@ describe('PairService', () => {
             Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            '10000',
+            '1000000000000000000',
         );
-        expect(liquidityPositionUSD).toEqual('0.000000000004');
+        expect(liquidityPositionUSD).toEqual('20');
     });
 
     it('should get pair address by LP token ID', async () => {

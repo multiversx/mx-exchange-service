@@ -357,7 +357,7 @@ describe('TransactionPairService', () => {
                 pairAddress: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
-                liquidity: '9',
+                liquidity: '10',
                 liquidityTokenID: 'EGLD',
                 tolerance: 0.01,
             },
@@ -374,7 +374,7 @@ describe('TransactionPairService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.removeLiquidity,
                 data: encodeTransactionData(
-                    'ESDTTransfer@1162300484@09@removeLiquidity@08@17',
+                    'ESDTTransfer@1162300484@10@removeLiquidity@09@9900',
                 ),
                 chainID: mxConfig.chainID,
                 version: 1,
@@ -390,7 +390,7 @@ describe('TransactionPairService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData(
-                    'ESDTTransfer@WEGLD-123456@08@unwrapEgld',
+                    'ESDTTransfer@WEGLD-123456@09@unwrapEgld',
                 ),
                 chainID: mxConfig.chainID,
                 version: 1,

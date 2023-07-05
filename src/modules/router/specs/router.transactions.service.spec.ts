@@ -480,7 +480,7 @@ describe('RouterService', () => {
             new InputTokenModel({
                 tokenID: 'LKESDT-1234',
                 nonce: 1,
-                amount: '1000000',
+                amount: '10000000000',
                 attributes:
                     'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
             }),
@@ -494,7 +494,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: 50000000,
             data: encodeTransactionData(
-                `ESDTNFTTransfer@LKESDT-1234@01@1000000@${Address.fromHex(
+                `ESDTNFTTransfer@LKESDT-1234@01@10000000000@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000011',
                 ).bech32()}@setSwapEnabledByUser@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',

@@ -58,6 +58,6 @@ describe('FarmService', () => {
                 '0000000000000000000000000000000000000000000000000000000000000031',
             ).bech32(),
         );
-        expect(farmAPR).toEqual('10.05256');
+        expect(farmAPR).toEqual('2638');
     });
 });

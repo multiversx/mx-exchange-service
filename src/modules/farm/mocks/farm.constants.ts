@@ -8,9 +8,10 @@ export const farms = [
         farmedTokenID: 'MEX-123456',
         farmTokenID: 'EGLDMEXFL-abcdef',
         farmingTokenID: 'EGLDMEXLP-abcdef',
-        farmTotalSupply: '600000000000000000000000',
-        farmingTokenReserve: '400000000000000000000000',
+        farmTotalSupply: '2000000000000000000',
+        farmingTokenReserve: '1500000000000000000',
         rewardsPerBlock: '1000000000000000000',
+        rewardPerShare: '0',
     },
     {
         address: Address.fromHex(
@@ -19,9 +20,10 @@ export const farms = [
         farmedTokenID: 'MEX-123456',
         farmTokenID: 'EGLDMEXF-abcdef',
         farmingTokenID: 'EGLDMEXLP-abcdef',
-        farmTotalSupply: '25000000000000000000',
-        farmingTokenReserve: '40000000000000000000',
-        rewardsPerBlock: '10000000000000',
+        farmTotalSupply: '1000000000000000000',
+        farmingTokenReserve: '1000000000000000000',
+        rewardsPerBlock: '1000000000000000000',
+        rewardPerShare: '0',
     },
     {
         address: Address.fromHex(
@@ -30,9 +32,10 @@ export const farms = [
         farmedTokenID: 'MEX-123456',
         farmTokenID: 'EGLDMEXFL-bcdefg',
         farmingTokenID: 'EGLDMEXLP-abcdef',
-        farmTotalSupply: '500000',
-        farmingTokenReserve: '300000',
+        farmTotalSupply: '1000000000000000000',
+        farmingTokenReserve: '1000000000000000000',
         rewardsPerBlock: '1000000000000000000',
+        rewardPerShare: '0',
     },
     {
         address: Address.fromHex(
@@ -41,8 +44,9 @@ export const farms = [
         farmedTokenID: 'TOK4-123456',
         farmTokenID: 'EGLDTOK4FL-abcdef',
         farmingTokenID: 'EGLDTOK4LP-abcdef',
-        farmTotalSupply: '2000000',
-        farmingTokenReserve: '1200000',
+        farmTotalSupply: '1000000000000000000',
+        farmingTokenReserve: '1000000000000000000',
         rewardsPerBlock: '2000000000000000000',
+        rewardPerShare: '0',
     },
 ];
