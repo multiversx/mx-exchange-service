@@ -26,9 +26,9 @@ export class PriceDiscoveryCacheWarmerService {
         for (const address of priceDiscoveryAddresses) {
             const [launchedTokenID, acceptedTokenID, redeemTokenID] =
                 await Promise.all([
-                    this.priceDiscoveryAbi.getLaunchedTokenID(address),
-                    this.priceDiscoveryAbi.getAcceptedTokenID(address),
-                    this.priceDiscoveryAbi.getRedeemTokenID(address),
+                    this.priceDiscoveryAbi.getLaunchedTokenIDRaw(address),
+                    this.priceDiscoveryAbi.getAcceptedTokenIDRaw(address),
+                    this.priceDiscoveryAbi.getRedeemTokenIDRaw(address),
                 ]);
             const [launchedToken, acceptedToken, redeemToken] =
                 await Promise.all([
@@ -73,8 +73,8 @@ export class PriceDiscoveryCacheWarmerService {
 
         for (const address of priceDiscoveryAddresses) {
             const [startBlock, endBlock] = await Promise.all([
-                this.priceDiscoveryAbi.getStartBlock(address),
-                this.priceDiscoveryAbi.getEndBlock(address),
+                this.priceDiscoveryAbi.getStartBlockRaw(address),
+                this.priceDiscoveryAbi.getEndBlockRaw(address),
             ]);
 
             const [
@@ -88,19 +88,21 @@ export class PriceDiscoveryCacheWarmerService {
                 penaltyMaxPercentage,
                 fixedPenaltyPercentage,
             ] = await Promise.all([
-                this.priceDiscoveryAbi.getMinLaunchedTokenPrice(address),
-                this.priceDiscoveryAbi.getNoLimitPhaseDurationBlocks(address),
-                this.priceDiscoveryAbi.getLinearPenaltyPhaseDurationBlocks(
+                this.priceDiscoveryAbi.getMinLaunchedTokenPriceRaw(address),
+                this.priceDiscoveryAbi.getNoLimitPhaseDurationBlocksRaw(
                     address,
                 ),
-                this.priceDiscoveryAbi.getFixedPenaltyPhaseDurationBlocks(
+                this.priceDiscoveryAbi.getLinearPenaltyPhaseDurationBlocksRaw(
                     address,
                 ),
-                this.priceDiscoveryAbi.getLockingScAddress(address),
-                this.priceDiscoveryAbi.getUnlockEpoch(address),
-                this.priceDiscoveryAbi.getPenaltyMinPercentage(address),
-                this.priceDiscoveryAbi.getPenaltyMaxPercentage(address),
-                this.priceDiscoveryAbi.getFixedPenaltyPercentage(address),
+                this.priceDiscoveryAbi.getFixedPenaltyPhaseDurationBlocksRaw(
+                    address,
+                ),
+                this.priceDiscoveryAbi.getLockingScAddressRaw(address),
+                this.priceDiscoveryAbi.getUnlockEpochRaw(address),
+                this.priceDiscoveryAbi.getPenaltyMinPercentageRaw(address),
+                this.priceDiscoveryAbi.getPenaltyMaxPercentageRaw(address),
+                this.priceDiscoveryAbi.getFixedPenaltyPercentageRaw(address),
             ]);
 
             const invalidatedKeys = await Promise.all([
@@ -157,11 +159,15 @@ export class PriceDiscoveryCacheWarmerService {
                 acceptedTokenRedeemBalance,
                 currentPhase,
             ] = await Promise.all([
-                this.priceDiscoveryAbi.getLaunchedTokenBalance(address),
-                this.priceDiscoveryAbi.getAcceptedTokenBalance(address),
-                this.priceDiscoveryAbi.getLaunchedTokenRedeemBalance(address),
-                this.priceDiscoveryAbi.getAcceptedTokenRedeemBalance(address),
-                this.priceDiscoveryAbi.getCurrentPhase(address),
+                this.priceDiscoveryAbi.getLaunchedTokenBalanceRaw(address),
+                this.priceDiscoveryAbi.getAcceptedTokenBalanceRaw(address),
+                this.priceDiscoveryAbi.getLaunchedTokenRedeemBalanceRaw(
+                    address,
+                ),
+                this.priceDiscoveryAbi.getAcceptedTokenRedeemBalanceRaw(
+                    address,
+                ),
+                this.priceDiscoveryAbi.getCurrentPhaseRaw(address),
             ]);
 
             const invalidatedKeys: string[] = await Promise.all([

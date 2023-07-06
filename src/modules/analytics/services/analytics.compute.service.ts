@@ -1,39 +1,55 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { constantsConfig, scAddress } from 'src/config';
 import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
-import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
-import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
-import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
-import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { oneMinute } from 'src/helpers/helpers';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
-        private readonly routerGetter: RouterGetterService,
-        private readonly farmGetter: FarmGetterFactory,
+        private readonly routerAbi: RouterAbiService,
+        private readonly farmAbi: FarmAbiFactory,
         private readonly farmCompute: FarmComputeFactory,
-        private readonly pairGetter: PairGetterService,
-        private readonly stakingGetter: StakingGetterService,
+        private readonly pairAbi: PairAbiService,
+        private readonly pairCompute: PairComputeService,
+        private readonly stakingCompute: StakingComputeService,
         private readonly tokenGetter: TokenGetterService,
-        @Inject(forwardRef(() => FeesCollectorGetterService))
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
-        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
     ) {}
+
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async lockedValueUSDFarms(): Promise<string> {
+        return await this.computeLockedValueUSDFarms();
+    }
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
@@ -57,15 +73,27 @@ export class AnalyticsComputeService {
         return totalLockedValue.toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async totalValueLockedUSD(): Promise<string> {
+        return await this.computeTotalValueLockedUSD();
+    }
+
     async computeTotalValueLockedUSD(): Promise<string> {
-        const pairsAddress = await this.routerGetter.getAllPairsAddress();
+        const pairsAddress = await this.routerAbi.pairsAddress();
         const filteredPairs = await this.fiterPairsByIssuedLpToken(
             pairsAddress,
         );
 
         let totalValueLockedUSD = new BigNumber(0);
         const promises = filteredPairs.map((pairAddress) =>
-            this.pairGetter.getLockedValueUSD(pairAddress),
+            this.pairCompute.lockedValueUSD(pairAddress),
         );
 
         const lockedValuesUSD = await Promise.all([...promises]);
@@ -80,13 +108,25 @@ export class AnalyticsComputeService {
         return totalValueLockedUSD.toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async totalValueStakedUSD(): Promise<string> {
+        return await this.computeTotalValueStakedUSD();
+    }
+
     async computeTotalValueStakedUSD(): Promise<string> {
         let totalValueLockedUSD = new BigNumber(0);
 
         const stakingAddresses =
             await this.remoteConfigGetterService.getStakingAddresses();
         const promises = stakingAddresses.map((stakingAddress) =>
-            this.stakingGetter.getStakedValueUSD(stakingAddress),
+            this.stakingCompute.stakedValueUSD(stakingAddress),
         );
 
         promises.push(this.computeTotalLockedMexStakedUSD());
@@ -118,6 +158,18 @@ export class AnalyticsComputeService {
         return totalValueLockedUSD.toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async totalAggregatedRewards(days: number): Promise<string> {
+        return await this.computeTotalAggregatedRewards(days);
+    }
+
     async computeTotalAggregatedRewards(days: number): Promise<string> {
         const addresses: string[] = farmsAddresses();
         const promises = addresses.map(async (farmAddress) => {
@@ -127,9 +179,9 @@ export class AnalyticsComputeService {
             ) {
                 return '0';
             }
-            return this.farmGetter
-                .useGetter(farmAddress)
-                .getRewardsPerBlock(farmAddress);
+            return this.farmAbi
+                .useAbi(farmAddress)
+                .rewardsPerBlock(farmAddress);
         });
         const farmsRewardsPerBlock = await Promise.all(promises);
         const blocksNumber = (days * 24 * 60 * 60) / 6;
@@ -145,15 +197,27 @@ export class AnalyticsComputeService {
         return totalAggregatedRewards.toFixed();
     }
 
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 10,
+        localTtl: oneMinute() * 5,
+    })
+    async totalLockedMexStakedUSD(): Promise<string> {
+        return await this.computeTotalLockedMexStakedUSD();
+    }
+
     async computeTotalLockedMexStakedUSD(): Promise<string> {
-        const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             scAddress.feesCollector,
         );
         const [mexTokenPrice, tokenMetadata, totalLockedTokens] =
             await Promise.all([
                 this.tokenGetter.getDerivedUSD(constantsConfig.MEX_TOKEN_ID),
                 this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
-                this.feesCollectorGetter.totalLockedTokensForWeek(
+                this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
                     scAddress.feesCollector,
                     currentWeek,
                 ),
@@ -164,13 +228,37 @@ export class AnalyticsComputeService {
             .multipliedBy(`1e-${tokenMetadata.decimals}`)
             .toFixed();
     }
+
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 30,
+        localTtl: oneMinute() * 10,
+    })
+    async feeTokenBurned(tokenID: string, time: string): Promise<string> {
+        return await this.computeTokenBurned(tokenID, time, 'feeBurned');
+    }
+
+    @ErrorLoggerAsync({
+        className: AnalyticsComputeService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: oneMinute() * 30,
+        localTtl: oneMinute() * 10,
+    })
+    async penaltyTokenBurned(tokenID: string, time: string): Promise<string> {
+        return await this.computeTokenBurned(tokenID, time, 'penaltyBurned');
+    }
+
     async computeTokenBurned(
         tokenID: string,
         time: string,
         metric: string,
     ): Promise<string> {
-        return await this.awsTimestreamQuery.getAggregatedValue({
-            table: this.apiConfig.getAWSTableName(),
+        return await this.analyticsQuery.getAggregatedValue({
             series: tokenID,
             metric,
             time,
@@ -183,7 +271,7 @@ export class AnalyticsComputeService {
         const unfilteredPairAddresses = await Promise.all(
             pairsAddress.map(async (pairAddress) => {
                 return {
-                    lpTokenId: await this.pairGetter.getLpTokenID(pairAddress),
+                    lpTokenId: await this.pairAbi.lpTokenID(pairAddress),
                     pairAddress,
                 };
             }),

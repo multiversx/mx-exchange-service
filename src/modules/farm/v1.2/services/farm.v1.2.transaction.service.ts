@@ -4,15 +4,12 @@ import {
     BytesValue,
     TokenPayment,
 } from '@multiversx/sdk-core';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { Logger } from 'winston';
 import {
     ClaimRewardsArgs,
     CompoundRewardsArgs,
@@ -21,45 +18,32 @@ import {
     FarmMigrationConfigArgs,
 } from '../../models/farm.args';
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
-import { FarmGetterService } from '../../base-module/services/farm.getter.service';
 import { TransactionsFarmService } from '../../base-module/services/farm.transaction.service';
-import { generateLogMessage } from 'src/utils/generate-log-message';
 import { farmVersion } from 'src/utils/farm.utils';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { FarmAbiServiceV1_2 } from './farm.v1.2.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 
 @Injectable()
 export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
     constructor(
         protected readonly mxProxy: MXProxyService,
-        protected readonly farmGetterService: FarmGetterService,
+        protected readonly farmAbi: FarmAbiServiceV1_2,
         protected readonly pairService: PairService,
-        protected readonly pairGetterService: PairGetterService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        protected readonly pairAbi: PairAbiService,
     ) {
-        super(
-            mxProxy,
-            farmGetterService,
-            pairService,
-            pairGetterService,
-            logger,
-        );
+        super(mxProxy, farmAbi, pairService, pairAbi);
     }
 
+    @ErrorLoggerAsync({
+        className: FarmTransactionServiceV1_2.name,
+        logArgs: true,
+    })
     async enterFarm(
         sender: string,
         args: EnterFarmArgs,
     ): Promise<TransactionModel> {
-        try {
-            await this.validateInputTokens(args.farmAddress, args.tokens);
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                TransactionsFarmService.name,
-                this.enterFarm.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        await this.validateInputTokens(args.farmAddress, args.tokens);
 
         const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
@@ -167,8 +151,8 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
     ): Promise<TransactionModel> {
         const gasLimit = gasConfig.farms[FarmVersion.V1_2].compoundRewards;
         const [farmedTokenID, farmingTokenID] = await Promise.all([
-            this.farmGetterService.getFarmedTokenID(args.farmAddress),
-            this.farmGetterService.getFarmingTokenID(args.farmAddress),
+            this.farmAbi.farmedTokenID(args.farmAddress),
+            this.farmAbi.farmingTokenID(args.farmAddress),
         ]);
 
         if (farmedTokenID !== farmingTokenID) {

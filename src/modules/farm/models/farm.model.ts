@@ -1,5 +1,4 @@
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -33,11 +32,11 @@ export class RewardsModel {
     @Field(() => Int, { nullable: true })
     remainingFarmingEpochs?: number;
     @Field(() => [UserInfoByWeekModel], { nullable: true })
-    boostedRewardsWeeklyInfo: UserInfoByWeekModel[]
+    boostedRewardsWeeklyInfo: UserInfoByWeekModel[];
     @Field(() => ClaimProgress, { nullable: true })
     claimProgress: ClaimProgress;
     @Field({ nullable: true })
-    accumulatedRewards: string
+    accumulatedRewards: string;
     constructor(init?: Partial<RewardsModel>) {
         Object.assign(this, init);
     }
@@ -132,19 +131,16 @@ export class BaseFarmModel {
     @Field()
     version: FarmVersion;
 
-    @Field()
+    @Field({ nullable: true })
     burnGasLimit: string;
 
-    @Field()
+    @Field({ nullable: true })
     transferExecGasLimit: string;
 
     @Field({ nullable: true })
     pair: PairModel;
 
     @Field({ nullable: true })
-    lockedAssetFactory: LockedAssetModel;
-
-    @Field()
     lastErrorMessage: string;
 
     constructor(init?: Partial<BaseFarmModel>) {

@@ -5,6 +5,7 @@ import { PairSetterService } from 'src/modules/pair/services/pair.setter.service
 import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
 import { RouterSetterService } from 'src/modules/router/services/router.setter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { PairHandler } from './pair.handler.service';
@@ -17,6 +18,7 @@ export class LiquidityHandler {
         private readonly routerSetter: RouterSetterService,
         private readonly tokenGetter: TokenGetterService,
         private readonly pairHandler: PairHandler,
+        private readonly dataApi: MXDataApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -29,6 +31,7 @@ export class LiquidityHandler {
             event.getSecondTokenReserves().toFixed(),
             event.getLiquidityPoolSupply().toFixed(),
         );
+        const usdcPrice = await this.dataApi.getTokenPrice('USDC');
         const [
             firstToken,
             secondToken,
@@ -45,7 +48,9 @@ export class LiquidityHandler {
 
         const data = [];
         data['factory'] = {
-            totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
+            totalLockedValueUSD: newTotalLockedValueUSD
+                .dividedBy(usdcPrice)
+                .toFixed(),
         };
         const firstTokenLockedValueUSD = computeValueUSD(
             event.getFirstTokenReserves().toFixed(),
@@ -63,10 +68,14 @@ export class LiquidityHandler {
 
         data[event.address] = {
             firstTokenLocked: event.getFirstTokenReserves().toFixed(),
-            firstTokenLockedValueUSD: firstTokenLockedValueUSD.toFixed(),
+            firstTokenLockedValueUSD: firstTokenLockedValueUSD
+                .dividedBy(usdcPrice)
+                .toFixed(),
             secondTokenLocked: event.getSecondTokenReserves().toFixed(),
-            secondTokenLockedValueUSD: secondTokenLockedValueUSD.toFixed(),
-            lockedValueUSD: lockedValueUSD.toFixed(),
+            secondTokenLockedValueUSD: secondTokenLockedValueUSD
+                .dividedBy(usdcPrice)
+                .toFixed(),
+            lockedValueUSD: lockedValueUSD.dividedBy(usdcPrice).toFixed(),
             liquidity: event.getLiquidityPoolSupply().toFixed(),
         };
 
@@ -86,7 +95,9 @@ export class LiquidityHandler {
                 firstTokenTotalLockedValue,
                 firstToken.decimals,
                 firstTokenPriceUSD,
-            ),
+            )
+                .dividedBy(usdcPrice)
+                .toFixed(),
         };
         data[secondToken.identifier] = {
             lockedValue: secondTokenTotalLockedValue,
@@ -94,7 +105,9 @@ export class LiquidityHandler {
                 secondTokenTotalLockedValue,
                 secondToken.decimals,
                 secondTokenPriceUSD,
-            ),
+            )
+                .dividedBy(usdcPrice)
+                .toFixed(),
         };
 
         const cacheKeys = await Promise.all([

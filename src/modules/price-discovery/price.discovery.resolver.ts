@@ -1,6 +1,5 @@
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -12,165 +11,130 @@ import {
     PhaseModel,
     PriceDiscoveryModel,
 } from './models/price.discovery.model';
-import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
 import { PriceDiscoveryService } from './services/price.discovery.service';
 import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
-import { GenericResolver } from '../../services/generics/generic.resolver';
 import { SimpleLockModel } from '../simple-lock/models/simple.lock.model';
+import { PriceDiscoveryAbiService } from './services/price.discovery.abi.service';
+import { PriceDiscoveryComputeService } from './services/price.discovery.compute.service';
+import { HistoricDataModel } from '../analytics/models/analytics.model';
+import { PDAnalyticsArgs } from './models/price.discovery.args';
 
 @Resolver(() => PriceDiscoveryModel)
-export class PriceDiscoveryResolver extends GenericResolver {
+export class PriceDiscoveryResolver {
     constructor(
         private readonly priceDiscoveryService: PriceDiscoveryService,
-        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
+        private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         private readonly priceDiscoveryTransactions: PriceDiscoveryTransactionService,
-    ) {
-        super();
-    }
+    ) {}
 
     @ResolveField()
     async launchedToken(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<EsdtToken> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedToken(parent.address),
-        );
+        return this.priceDiscoveryService.getLaunchedToken(parent.address);
     }
 
     @ResolveField()
     async acceptedToken(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<EsdtToken> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedToken(parent.address),
-        );
+        return this.priceDiscoveryService.getAcceptedToken(parent.address);
     }
 
     @ResolveField()
     async redeemToken(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<NftCollection> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getRedeemToken(parent.address),
-        );
+        return this.priceDiscoveryService.getRedeemToken(parent.address);
     }
 
     @ResolveField()
     async launchedTokenAmount(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedTokenAmount(parent.address),
-        );
+        return this.priceDiscoveryAbi.launchedTokenAmount(parent.address);
     }
 
     @ResolveField()
     async acceptedTokenAmount(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedTokenAmount(parent.address),
-        );
+        return this.priceDiscoveryAbi.acceptedTokenAmount(parent.address);
     }
 
     @ResolveField()
     async launchedTokenRedeemBalance(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedTokenRedeemBalance(
-                parent.address,
-            ),
-        );
+        return this.priceDiscoveryAbi.launchedTokenRedeemAmount(parent.address);
     }
 
     @ResolveField()
     async acceptedTokenRedeemBalance(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedTokenRedeemBalance(
-                parent.address,
-            ),
-        );
+        return this.priceDiscoveryAbi.acceptedTokenRedeemAmount(parent.address);
     }
 
     @ResolveField()
     async launchedTokenPrice(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedTokenPrice(parent.address),
-        );
+        return this.priceDiscoveryCompute.launchedTokenPrice(parent.address);
     }
 
     @ResolveField()
     async acceptedTokenPrice(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedTokenPrice(parent.address),
-        );
+        return this.priceDiscoveryCompute.acceptedTokenPrice(parent.address);
     }
 
     @ResolveField()
     async launchedTokenPriceUSD(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLaunchedTokenPriceUSD(parent.address),
-        );
+        return this.priceDiscoveryCompute.launchedTokenPriceUSD(parent.address);
     }
 
     @ResolveField()
     async acceptedTokenPriceUSD(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getAcceptedTokenPriceUSD(parent.address),
-        );
+        return this.priceDiscoveryCompute.acceptedTokenPriceUSD(parent.address);
     }
 
     @ResolveField()
     async startBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getStartBlock(parent.address),
-        );
+        return this.priceDiscoveryAbi.startBlock(parent.address);
     }
 
     @ResolveField()
     async endBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getEndBlock(parent.address),
-        );
+        return this.priceDiscoveryAbi.endBlock(parent.address);
     }
 
     @ResolveField()
     async currentPhase(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<PhaseModel> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getCurrentPhase(parent.address),
-        );
+        return this.priceDiscoveryAbi.currentPhase(parent.address);
     }
 
     @ResolveField()
     async minLaunchedTokenPrice(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getMinLaunchedTokenPrice(parent.address),
-        );
+        return this.priceDiscoveryAbi.minLaunchedTokenPrice(parent.address);
     }
 
     @ResolveField()
     async noLimitPhaseDurationBlocks(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getNoLimitPhaseDurationBlocks(
-                parent.address,
-            ),
+        return this.priceDiscoveryAbi.noLimitPhaseDurationBlocks(
+            parent.address,
         );
     }
 
@@ -178,10 +142,8 @@ export class PriceDiscoveryResolver extends GenericResolver {
     async linearPenaltyPhaseDurationBlocks(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLinearPenaltyPhaseDurationBlocks(
-                parent.address,
-            ),
+        return this.priceDiscoveryAbi.linearPenaltyPhaseDurationBlocks(
+            parent.address,
         );
     }
 
@@ -189,10 +151,8 @@ export class PriceDiscoveryResolver extends GenericResolver {
     async fixedPenaltyPhaseDurationBlocks(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getFixedPenaltyPhaseDurationBlocks(
-                parent.address,
-            ),
+        return this.priceDiscoveryAbi.fixedPenaltyPhaseDurationBlocks(
+            parent.address,
         );
     }
 
@@ -200,52 +160,40 @@ export class PriceDiscoveryResolver extends GenericResolver {
     async lockingSC(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<SimpleLockModel> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLockingSC(parent.address),
-        );
+        return this.priceDiscoveryService.getLockingSC(parent.address);
     }
 
     @ResolveField()
     async lockingScAddress(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getLockingScAddress(parent.address),
-        );
+        return this.priceDiscoveryAbi.lockingScAddress(parent.address);
     }
 
     @ResolveField()
     async unlockEpoch(@Parent() parent: PriceDiscoveryModel): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getUnlockEpoch(parent.address),
-        );
+        return this.priceDiscoveryAbi.unlockEpoch(parent.address);
     }
 
     @ResolveField()
     async penaltyMinPercentage(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getPenaltyMinPercentage(parent.address),
-        );
+        return this.priceDiscoveryAbi.penaltyMinPercentage(parent.address);
     }
 
     @ResolveField()
     async penaltyMaxPercentage(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getPenaltyMaxPercentage(parent.address),
-        );
+        return this.priceDiscoveryAbi.penaltyMaxPercentage(parent.address);
     }
 
     @ResolveField()
     async fixedPenaltyPercentage(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.priceDiscoveryGetter.getFixedPenaltyPercentage(parent.address),
-        );
+        return this.priceDiscoveryAbi.fixedPenaltyPercentage(parent.address);
     }
 
     @Query(() => [PriceDiscoveryModel])
@@ -260,15 +208,11 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Args('inputTokens') inputTokens: InputTokenModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
-        try {
-            return await this.priceDiscoveryTransactions.depositBatch(
-                priceDiscoveryAddress,
-                user.address,
-                inputTokens,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.priceDiscoveryTransactions.depositBatch(
+            priceDiscoveryAddress,
+            user.address,
+            inputTokens,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -277,14 +221,10 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
         @Args('inputTokens') inputTokens: InputTokenModel,
     ): Promise<TransactionModel> {
-        try {
-            return await this.priceDiscoveryTransactions.deposit(
-                priceDiscoveryAddress,
-                inputTokens,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.priceDiscoveryTransactions.deposit(
+            priceDiscoveryAddress,
+            inputTokens,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -294,16 +234,12 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Args('inputTokens') inputTokens: InputTokenModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
-        try {
-            return await this.priceDiscoveryTransactions.genericBatchRedeemInteraction(
-                priceDiscoveryAddress,
-                user.address,
-                inputTokens,
-                'withdraw',
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.priceDiscoveryTransactions.genericBatchRedeemInteraction(
+            priceDiscoveryAddress,
+            user.address,
+            inputTokens,
+            'withdraw',
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -313,16 +249,12 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Args('inputTokens') inputTokens: InputTokenModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.priceDiscoveryTransactions.genericRedeemInteraction(
-                priceDiscoveryAddress,
-                user.address,
-                inputTokens,
-                'withdraw',
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.priceDiscoveryTransactions.genericRedeemInteraction(
+            priceDiscoveryAddress,
+            user.address,
+            inputTokens,
+            'withdraw',
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -332,16 +264,12 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Args('inputTokens') inputTokens: InputTokenModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
-        try {
-            return await this.priceDiscoveryTransactions.genericBatchRedeemInteraction(
-                priceDiscoveryAddress,
-                user.address,
-                inputTokens,
-                'redeem',
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.priceDiscoveryTransactions.genericBatchRedeemInteraction(
+            priceDiscoveryAddress,
+            user.address,
+            inputTokens,
+            'redeem',
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -351,15 +279,29 @@ export class PriceDiscoveryResolver extends GenericResolver {
         @Args('inputTokens') inputTokens: InputTokenModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.priceDiscoveryTransactions.genericRedeemInteraction(
-                priceDiscoveryAddress,
-                user.address,
-                inputTokens,
-                'redeem',
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return this.priceDiscoveryTransactions.genericRedeemInteraction(
+            priceDiscoveryAddress,
+            user.address,
+            inputTokens,
+            'redeem',
+        );
+    }
+
+    @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
+    async closingValues(
+        @Args() args: PDAnalyticsArgs,
+    ): Promise<HistoricDataModel[]> {
+        return this.priceDiscoveryCompute.closingValues(
+            args.priceDiscoveryAddress,
+            args.metric,
+            args.bucket,
+        );
     }
 }

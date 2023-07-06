@@ -11,8 +11,14 @@ import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
-import { isEsdtToken, isNftCollection } from 'src/utils/token.type.compare';
+import {
+    isEsdtTokenValid,
+    isNftCollectionValid,
+    isEsdtToken,
+    isNftCollection,
+} from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
+import { MXProxyService } from './mx.proxy.service';
 
 type GenericGetArgs = {
     methodName: string;
@@ -28,6 +34,7 @@ export class MXApiService {
     constructor(
         private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        private readonly mxProxy: MXProxyService,
     ) {
         const keepAliveOptions = {
             maxSockets: mxConfig.keepAliveMaxSockets,
@@ -87,6 +94,7 @@ export class MXApiService {
             }
             this.logger.error(`${error.message} after ${retries} retries`, {
                 path: `${MXApiService.name}.${name}`,
+                resourceUrl,
             });
             throw new Error(error);
         } finally {
@@ -135,6 +143,15 @@ export class MXApiService {
             if (!isEsdtToken(esdtToken)) {
                 return undefined;
             }
+
+            if (!isEsdtTokenValid(esdtToken)) {
+                const gatewayToken = await this.mxProxy
+                    .getService()
+                    .getDefinitionOfFungibleToken(tokenID);
+                esdtToken.identifier = gatewayToken.identifier;
+                esdtToken.decimals = gatewayToken.decimals;
+            }
+
             return esdtToken;
         } catch (error) {
             return undefined;
@@ -150,6 +167,12 @@ export class MXApiService {
             const collection = new NftCollection(rawCollection);
             if (!isNftCollection(collection)) {
                 return undefined;
+            }
+            if (!isNftCollectionValid(collection)) {
+                const gatewayCollection = await this.mxProxy
+                    .getService()
+                    .getDefinitionOfTokenCollection(tokenID);
+                collection.decimals = gatewayCollection.decimals;
             }
             return collection;
         } catch (error) {
@@ -176,10 +199,21 @@ export class MXApiService {
         from = 0,
         size = 100,
     ): Promise<EsdtToken[]> {
-        return this.doGetGeneric<EsdtToken[]>(
+        const userTokens = await this.doGetGeneric<EsdtToken[]>(
             this.getTokensForUser.name,
             `accounts/${address}/tokens?from=${from}&size=${size}`,
         );
+
+        for (const token of userTokens) {
+            if (!isEsdtTokenValid(token)) {
+                const gatewayToken = await this.mxProxy
+                    .getService()
+                    .getDefinitionOfFungibleToken(token.identifier);
+                token.decimals = gatewayToken.decimals;
+            }
+        }
+
+        return userTokens;
     }
 
     async getTokenForUser(
@@ -216,11 +250,22 @@ export class MXApiService {
             resourceUrl: `accounts/${address}/nfts?type=${type}&size=${constantsConfig.MAX_USER_NFTS}&fields=identifier,collection,ticker,decimals,timestamp,attributes,nonce,type,name,creator,royalties,uris,url,tags,balance,assets`,
         });
 
-        return collections
+        const userNfts = collections
             ? nfts
                   .filter((nft) => collections.includes(nft.collection))
                   .slice(from, size)
             : nfts.slice(from, size);
+
+        for (const nft of userNfts) {
+            if (!isNftCollectionValid(nft)) {
+                const gatewayCollection = await this.mxProxy
+                    .getService()
+                    .getDefinitionOfTokenCollection(nft.collection);
+                nft.decimals = gatewayCollection.decimals;
+            }
+        }
+
+        return userNfts;
     }
 
     async getNftByTokenIdentifier(

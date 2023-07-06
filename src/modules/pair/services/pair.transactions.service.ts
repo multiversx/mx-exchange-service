@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
     AddressValue,
     BigUIntValue,
@@ -18,25 +18,22 @@ import {
 } from '../models/pair.args';
 import BigNumber from 'bignumber.js';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { PairGetterService } from './pair.getter.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairService } from './pair.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { generateLogMessage } from 'src/utils/generate-log-message';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { BPConfig } from '../models/pair.model';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PairAbiService } from './pair.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 
 @Injectable()
 export class PairTransactionService {
     constructor(
         private readonly mxProxy: MXProxyService,
         private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
-        private readonly wrapService: WrapService,
-        private readonly wrapTransaction: TransactionsWrapService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        private readonly pairAbi: PairAbiService,
+        private readonly wrapAbi: WrapAbiService,
+        private readonly wrapTransaction: WrapTransactionsService,
     ) {}
 
     async addInitialLiquidityBatch(
@@ -103,34 +100,25 @@ export class PairTransactionService {
         return transactions;
     }
 
+    @ErrorLoggerAsync({
+        className: PairTransactionService.name,
+        logArgs: true,
+    })
     async addInitialLiquidity(
         sender: string,
         args: AddLiquidityArgs,
     ): Promise<TransactionModel> {
-        const initialLiquidityAdder =
-            await this.pairGetterService.getInitialLiquidityAdder(
-                args.pairAddress,
-            );
+        const initialLiquidityAdder = await this.pairAbi.initialLiquidityAdder(
+            args.pairAddress,
+        );
         if (sender != initialLiquidityAdder) {
             throw new Error('Invalid sender address');
         }
 
-        let firstTokenInput: InputTokenModel, secondTokenInput: InputTokenModel;
-        try {
-            [firstTokenInput, secondTokenInput] = await this.validateTokens(
-                args.pairAddress,
-                args.tokens,
-            );
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                PairTransactionService.name,
-                this.addInitialLiquidity.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const [firstTokenInput, secondTokenInput] = await this.validateTokens(
+            args.pairAddress,
+            args.tokens,
+        );
 
         const contract = await this.mxProxy.getPairSmartContract(
             args.pairAddress,
@@ -157,26 +145,18 @@ export class PairTransactionService {
             .toPlainObject();
     }
 
+    @ErrorLoggerAsync({
+        className: PairTransactionService.name,
+        logArgs: true,
+    })
     async addLiquidity(
         sender: string,
         args: AddLiquidityArgs,
     ): Promise<TransactionModel> {
-        let firstTokenInput: InputTokenModel, secondTokenInput: InputTokenModel;
-        try {
-            [firstTokenInput, secondTokenInput] = await this.validateTokens(
-                args.pairAddress,
-                args.tokens,
-            );
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                PairTransactionService.name,
-                this.addLiquidity.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const [firstTokenInput, secondTokenInput] = await this.validateTokens(
+            args.pairAddress,
+            args.tokens,
+        );
 
         const amount0 = new BigNumber(firstTokenInput.amount);
         const amount1 = new BigNumber(secondTokenInput.amount);
@@ -230,9 +210,9 @@ export class PairTransactionService {
             liquidityPosition,
             contract,
         ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
-            this.pairGetterService.getFirstTokenID(args.pairAddress),
-            this.pairGetterService.getSecondTokenID(args.pairAddress),
+            this.wrapAbi.wrappedEgldTokenID(),
+            this.pairAbi.firstTokenID(args.pairAddress),
+            this.pairAbi.secondTokenID(args.pairAddress),
             this.pairService.getLiquidityPosition(
                 args.pairAddress,
                 args.liquidity,
@@ -287,6 +267,10 @@ export class PairTransactionService {
         return transactions;
     }
 
+    @ErrorLoggerAsync({
+        className: PairTransactionService.name,
+        logArgs: true,
+    })
     async swapTokensFixedInput(
         sender: string,
         args: SwapTokensFixedInputArgs,
@@ -304,9 +288,9 @@ export class PairTransactionService {
         const transactions = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
+            this.wrapAbi.wrappedEgldTokenID(),
             this.mxProxy.getPairSmartContract(args.pairAddress),
-            this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
+            this.pairAbi.trustedSwapPairs(args.pairAddress),
         ]);
 
         const amountIn = new BigNumber(args.amountIn);
@@ -397,6 +381,10 @@ export class PairTransactionService {
         return transactions;
     }
 
+    @ErrorLoggerAsync({
+        className: PairTransactionService.name,
+        logArgs: true,
+    })
     async swapTokensFixedOutput(
         sender: string,
         args: SwapTokensFixedOutputArgs,
@@ -411,12 +399,13 @@ export class PairTransactionService {
                 nonce: 0,
             }),
         ]);
+
         const transactions: TransactionModel[] = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
+            this.wrapAbi.wrappedEgldTokenID(),
             this.mxProxy.getPairSmartContract(args.pairAddress),
-            this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
+            this.pairAbi.trustedSwapPairs(args.pairAddress),
         ]);
 
         const amountIn = new BigNumber(args.amountIn);
@@ -512,8 +501,8 @@ export class PairTransactionService {
         tokens: InputTokenModel[],
     ): Promise<InputTokenModel[]> {
         const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
         ]);
 
         if (tokens[0].nonce > 0 || tokens[1].nonce > 0) {
@@ -579,7 +568,7 @@ export class PairTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<InputTokenModel[]> {
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
+        const wrappedTokenID = await this.wrapAbi.wrappedEgldTokenID();
         if (firstToken.tokenID === firstTokenID) {
             return [
                 firstToken,

@@ -1,14 +1,14 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { EnergyGetterService } from '../services/energy.getter.service';
+import { EnergyAbiService } from '../services/energy.abi.service';
 
 @Injectable()
 export class LockedEnergyTokensValidationPipe implements PipeTransform {
-    constructor(private readonly energyGetter: EnergyGetterService) {}
+    constructor(private readonly energyAbi: EnergyAbiService) {}
 
     async transform(value: InputTokenModel[], metadata: ArgumentMetadata) {
-        const lockedTokenID = await this.energyGetter.getLockedTokenID();
+        const lockedTokenID = await this.energyAbi.lockedTokenID();
         const lockedTokens = [];
 
         if (!Array.isArray(value)) {

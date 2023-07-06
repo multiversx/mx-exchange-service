@@ -37,13 +37,13 @@ export class FarmCacheWarmerService {
                 await Promise.all([
                     this.farmAbiFactory
                         .useAbi(farmAddress)
-                        .getFarmTokenID(farmAddress),
+                        .getFarmTokenIDRaw(farmAddress),
                     this.farmAbiFactory
                         .useAbi(farmAddress)
-                        .getFarmingTokenID(farmAddress),
+                        .getFarmingTokenIDRaw(farmAddress),
                     this.farmAbiFactory
                         .useAbi(farmAddress)
-                        .getFarmedTokenID(farmAddress),
+                        .getFarmedTokenIDRaw(farmAddress),
                 ]);
 
             const [farmToken, farmingToken, farmedToken] = await Promise.all([
@@ -88,8 +88,8 @@ export class FarmCacheWarmerService {
                 unlockedRewardsAPR,
                 lockedRewardsAPR,
             ] = await Promise.all([
-                this.farmAbiV1_2.getLockedRewardAprMuliplier(address),
-                this.farmAbiV1_2.getFarmingTokenReserve(address),
+                this.farmAbiV1_2.getLockedRewardAprMuliplierRaw(address),
+                this.farmAbiV1_2.getFarmingTokenReserveRaw(address),
                 this.farmComputeV1_2.computeUnlockedRewardsAPR(address),
                 this.farmComputeV1_2.computeLockedRewardsAPR(address),
             ]);
@@ -145,17 +145,19 @@ export class FarmCacheWarmerService {
             ] = await Promise.all([
                 this.farmAbiFactory
                     .useAbi(farmAddress)
-                    .getMinimumFarmingEpochs(farmAddress),
+                    .getMinimumFarmingEpochsRaw(farmAddress),
                 this.farmAbiFactory
                     .useAbi(farmAddress)
-                    .getPenaltyPercent(farmAddress),
+                    .getPenaltyPercentRaw(farmAddress),
                 this.farmAbiFactory
                     .useAbi(farmAddress)
-                    .getRewardsPerBlock(farmAddress),
-                this.farmAbiFactory.useAbi(farmAddress).getState(farmAddress),
+                    .getRewardsPerBlockRaw(farmAddress),
                 this.farmAbiFactory
                     .useAbi(farmAddress)
-                    .getProduceRewardsEnabled(farmAddress),
+                    .getStateRaw(farmAddress),
+                this.farmAbiFactory
+                    .useAbi(farmAddress)
+                    .getProduceRewardsEnabledRaw(farmAddress),
             ]);
 
             const cacheKeys = await Promise.all([
@@ -194,16 +196,16 @@ export class FarmCacheWarmerService {
             ] = await Promise.all([
                 this.farmAbiFactory
                     .useAbi(farmAddress)
-                    .getFarmTokenSupply(farmAddress),
+                    .getFarmTokenSupplyRaw(farmAddress),
                 this.farmAbiFactory
                     .useAbi(farmAddress)
-                    .getLastRewardBlockNonce(farmAddress),
+                    .getLastRewardBlockNonceRaw(farmAddress),
                 this.farmAbiFactory
                     .useAbi(farmAddress)
-                    .getRewardPerShare(farmAddress),
+                    .getRewardPerShareRaw(farmAddress),
                 this.farmAbiFactory
                     .useAbi(farmAddress)
-                    .getRewardReserve(farmAddress),
+                    .getRewardReserveRaw(farmAddress),
             ]);
             const cacheKeys = await Promise.all([
                 this.farmSetterFactory

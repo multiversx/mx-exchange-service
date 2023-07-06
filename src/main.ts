@@ -10,11 +10,17 @@ import { ApiConfigService } from './helpers/api.config.service';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { RabbitMqConsumer } from './modules/rabbitmq/rabbitmq.consumer';
 import cookieParser from 'cookie-parser';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { LoggerService } from '@nestjs/common';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
 
-    const app = await NestFactory.create(PublicAppModule);
+    const app = await NestFactory.create(PublicAppModule, {
+        bufferLogs: true,
+    });
+    app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
+
     const httpAdapterHostService = app.get<HttpAdapterHost>(HttpAdapterHost);
 
     app.useGlobalInterceptors(new LoggingInterceptor());
@@ -49,7 +55,7 @@ async function bootstrap() {
         pubSubApp.listen();
 
         app.enableCors({
-            origin: '*'
+            origin: '*',
         });
 
         await app.listen(
@@ -66,6 +72,7 @@ async function bootstrap() {
         );
     }
     if (apiConfigService.isCacheWarmerCronActive()) {
+        pubSubApp.listen();
         const processorApp = await NestFactory.create(CacheWarmerModule);
         await processorApp.listen(
             apiConfigService.getCacheWarmerPort(),

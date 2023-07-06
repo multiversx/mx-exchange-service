@@ -30,3 +30,8 @@ export class MXProxyServiceMock extends MXProxyService {
         });
     }
 }
+
+export const MXProxyServiceProvider = {
+    provide: MXProxyService,
+    useClass: MXProxyServiceMock,
+};

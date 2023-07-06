@@ -12,15 +12,17 @@ import { ApolloError } from 'apollo-server-express';
 import { Address } from '@multiversx/sdk-core';
 import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
 import { UserEsdtService } from './services/user.esdt.service';
-import { UserEnergyService } from './services/userEnergy/user.energy.service';
 import { TransactionModel } from '../../models/transaction.model';
+import { UserEnergyTransactionService } from './services/userEnergy/user.energy.transaction.service';
+import { UserEnergyGetterService } from './services/userEnergy/user.energy.getter.service';
 
 @Resolver()
 export class UserResolver {
     constructor(
         private readonly userEsdt: UserEsdtService,
         private readonly userMetaEsdt: UserMetaEsdtService,
-        private readonly userEnergy: UserEnergyService,
+        private readonly userEnergyGetter: UserEnergyGetterService,
+        private readonly userEnergyTransaction: UserEnergyTransactionService,
     ) {}
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -48,9 +50,14 @@ export class UserResolver {
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [OutdatedContract])
     async userOutdatedContracts(
+        @Args('skipFeesCollector', { nullable: true })
+        skipFeesCollector: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<OutdatedContract[]> {
-        return await this.userEnergy.getUserOutdatedContracts(user.address);
+        return await this.userEnergyGetter.getUserOutdatedContracts(
+            user.address,
+            skipFeesCollector,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -59,10 +66,13 @@ export class UserResolver {
         @AuthUser() user: UserAuthResult,
         @Args('includeAllContracts', { nullable: true })
         includeAllContracts: boolean,
+        @Args('skipFeesCollector', { nullable: true })
+        skipFeesCollector: boolean,
     ): Promise<TransactionModel | null> {
-        return await this.userEnergy.updateFarmsEnergyForUser(
+        return await this.userEnergyTransaction.updateFarmsEnergyForUser(
             user.address,
             includeAllContracts,
+            skipFeesCollector,
         );
     }
 

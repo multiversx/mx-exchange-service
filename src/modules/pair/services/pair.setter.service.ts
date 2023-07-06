@@ -3,10 +3,10 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { FeeDestination } from '../models/pair.model';
 import { Logger } from 'winston';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { PairInfoModel } from '../models/pair-info.model';
 
 @Injectable()
 export class PairSetterService extends GenericSetterService {
@@ -15,11 +15,12 @@ export class PairSetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'pair';
     }
 
     async setFirstTokenID(pairAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'firstTokenID'),
+            this.getCacheKey('firstTokenID', pairAddress),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -31,7 +32,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'secondTokenID'),
+            this.getCacheKey('secondTokenID', pairAddress),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -40,7 +41,7 @@ export class PairSetterService extends GenericSetterService {
 
     async setLpTokenID(pairAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'lpTokenID'),
+            this.getCacheKey('lpTokenID', pairAddress),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -49,10 +50,10 @@ export class PairSetterService extends GenericSetterService {
 
     async setTotalFeePercent(
         pairAddress: string,
-        value: string,
+        value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'totalFeePercent'),
+            this.getCacheKey('totalFeePercent', pairAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -61,10 +62,10 @@ export class PairSetterService extends GenericSetterService {
 
     async setSpecialFeePercent(
         pairAddress: string,
-        value: string,
+        value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'specialFeePercent'),
+            this.getCacheKey('specialFeePercent', pairAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -73,7 +74,7 @@ export class PairSetterService extends GenericSetterService {
 
     async setState(pairAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'state'),
+            this.getCacheKey('state', pairAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -82,7 +83,7 @@ export class PairSetterService extends GenericSetterService {
 
     async setFeeState(pairAddress: string, value: boolean): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'feeState'),
+            this.getCacheKey('feeState', pairAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -94,7 +95,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'firstTokenReserve'),
+            this.getCacheKey('firstTokenReserve', pairAddress),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -106,7 +107,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'secondTokenReserve'),
+            this.getCacheKey('secondTokenReserve', pairAddress),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -115,7 +116,19 @@ export class PairSetterService extends GenericSetterService {
 
     async setTotalSupply(pairAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'totalSupply'),
+            this.getCacheKey('totalSupply', pairAddress),
+            value,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        );
+    }
+
+    async setPairInfoMetadata(
+        pairAddress: string,
+        value: PairInfoModel,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('pairInfoMetadata', pairAddress),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -127,7 +140,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'firstTokenPrice'),
+            this.getCacheKey('firstTokenPrice', pairAddress),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -139,7 +152,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'secondTokenPrice'),
+            this.getCacheKey('secondTokenPrice', pairAddress),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -151,7 +164,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'firstTokenPriceUSD'),
+            this.getCacheKey('firstTokenPriceUSD', pairAddress),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -163,7 +176,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'secondTokenPriceUSD'),
+            this.getCacheKey('secondTokenPriceUSD', pairAddress),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -172,7 +185,7 @@ export class PairSetterService extends GenericSetterService {
 
     async setTokenPriceUSD(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey('priceUSD', tokenID),
+            this.getCacheKey('tokenPriceUSD', tokenID),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -184,7 +197,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'lpTokenPriceUSD'),
+            this.getCacheKey('lpTokenPriceUSD', pairAddress),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -196,7 +209,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'firstTokenLockedValueUSD'),
+            this.getCacheKey('firstTokenLockedValueUSD', pairAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -208,7 +221,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'secondTokenLockedValueUSD'),
+            this.getCacheKey('secondTokenLockedValueUSD', pairAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -220,7 +233,7 @@ export class PairSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'lockedValueUSD'),
+            this.getCacheKey('lockedValueUSD', pairAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -233,7 +246,7 @@ export class PairSetterService extends GenericSetterService {
         time: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, `firstTokenVolume.${time}`),
+            this.getCacheKey('firstTokenVolume', pairAddress, time),
             value,
             CacheTtlInfo.Analytics.remoteTtl,
             CacheTtlInfo.Analytics.localTtl,
@@ -246,7 +259,7 @@ export class PairSetterService extends GenericSetterService {
         time: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, `secondTokenVolume.${time}`),
+            this.getCacheKey('secondTokenVolume', pairAddress, time),
             value,
             CacheTtlInfo.Analytics.remoteTtl,
             CacheTtlInfo.Analytics.localTtl,
@@ -259,7 +272,7 @@ export class PairSetterService extends GenericSetterService {
         time: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, `volumeUSD.${time}`),
+            this.getCacheKey('volumeUSD', pairAddress, time),
             value,
             CacheTtlInfo.Analytics.remoteTtl,
             CacheTtlInfo.Analytics.localTtl,
@@ -272,7 +285,7 @@ export class PairSetterService extends GenericSetterService {
         time: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, `feesUSD.${time}`),
+            this.getCacheKey('feesUSD', pairAddress, time),
             value,
             CacheTtlInfo.Analytics.remoteTtl,
             CacheTtlInfo.Analytics.localTtl,
@@ -281,7 +294,7 @@ export class PairSetterService extends GenericSetterService {
 
     async setFeesAPR(pairAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'feesAPR'),
+            this.getCacheKey('feesAPR', pairAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -290,19 +303,19 @@ export class PairSetterService extends GenericSetterService {
 
     async setType(pairAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'type'),
+            this.getCacheKey('type', pairAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
     }
 
-    async setRouterManagedAddress(
+    async setRouterAddress(
         pairAddress: string,
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPairCacheKey(pairAddress, 'initialLiquidtyAdder'),
+            this.getCacheKey('routerAddress', pairAddress),
             value,
             oneHour(),
         );
@@ -312,42 +325,37 @@ export class PairSetterService extends GenericSetterService {
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'externSwapGasLimit',
+        return await this.setData(
+            this.getCacheKey('externSwapGasLimit', pairAddress),
+            value,
+            oneHour(),
         );
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
     }
 
-    async setWhitelistedManagedAddresses(
+    async setWhitelistedAddresses(
         pairAddress: string,
         value: string[],
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'whitelistedManagedAddresses',
+        return await this.setData(
+            this.getCacheKey('whitelistedAddresses', pairAddress),
+            value,
+            oneHour(),
         );
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
     }
 
     async setFeeDestinations(pairAddress: string, value: FeeDestination[]) {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'feeDestinations');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
+        return await this.setData(
+            this.getCacheKey('feeDestinations', pairAddress),
+            value,
+            oneHour(),
+        );
     }
 
     async setTransferExecGasLimit(pairAddress: string, value: string) {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'transferExecGasLimit',
+        return await this.setData(
+            this.getCacheKey('transferExecGasLimit', pairAddress),
+            value,
+            oneHour(),
         );
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
-    }
-
-    private getPairCacheKey(pairAddress: string, ...args: any) {
-        return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }
 }

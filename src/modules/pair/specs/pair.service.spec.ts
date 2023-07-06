@@ -1,55 +1,41 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PairAbiService } from '../services/pair.abi.service';
 import { PairService } from '../services/pair.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
-import { PairAbiServiceMock } from '../mocks/pair.abi.service.mock';
-import { PairGetterService } from '../services/pair.getter.service';
-import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from '../mocks/pair.compute.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('PairService', () => {
-    let service: PairService;
-
-    const PairAbiServiceProvider = {
-        provide: PairAbiService,
-        useClass: PairAbiServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
-    };
+    let module: TestingModule;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
+        module = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
             providers: [
                 PairAbiServiceProvider,
-                PairGetterServiceProvider,
+                PairComputeServiceProvider,
                 PairService,
-                WrapServiceProvider,
+                WrapAbiServiceProvider,
                 TokenGetterServiceProvider,
-                RouterGetterServiceProvider,
+                ContextGetterServiceProvider,
+                RouterAbiServiceProvider,
             ],
         }).compile();
-
-        service = module.get<PairService>(PairService);
     });
 
     it('should be defined', () => {
+        const service = module.get<PairService>(PairService);
+
         expect(service).toBeDefined();
     });
 
     it('should get amount in', async () => {
+        const service = module.get<PairService>(PairService);
+
         const amountIn = await service.getAmountIn(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             'TOK1-1111',
@@ -59,6 +45,8 @@ describe('PairService', () => {
     });
 
     it('should get amount out', async () => {
+        const service = module.get<PairService>(PairService);
+
         const amountOut = await service.getAmountOut(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             'TOK1-1111',
@@ -68,6 +56,8 @@ describe('PairService', () => {
     });
 
     it('should get equivalent for liquidity', async () => {
+        const service = module.get<PairService>(PairService);
+
         const equivalent = await service.getEquivalentForLiquidity(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             'TOK1-1111',
@@ -77,6 +67,8 @@ describe('PairService', () => {
     });
 
     it('should get liquidity position from pair', async () => {
+        const service = module.get<PairService>(PairService);
+
         const liquidityPosition = await service.getLiquidityPosition(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '1',
@@ -88,6 +80,8 @@ describe('PairService', () => {
     });
 
     it('should get liquidity position from pair in USD', async () => {
+        const service = module.get<PairService>(PairService);
+
         const liquidityPositionUSD = await service.getLiquidityPositionUSD(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '10000',
@@ -96,6 +90,8 @@ describe('PairService', () => {
     });
 
     it('should get pair address by LP token ID', async () => {
+        const service = module.get<PairService>(PairService);
+
         const address = await service.getPairAddressByLpTokenID('TOK1TOK2LP');
         expect(address).toEqual(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -103,6 +99,8 @@ describe('PairService', () => {
     });
 
     it('should check if token is part of any pair', async () => {
+        const service = module.get<PairService>(PairService);
+
         const isPair0 = await service.isPairEsdtToken('TOK1TOK2LP');
         expect(isPair0).toEqual(true);
 

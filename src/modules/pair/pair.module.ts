@@ -7,10 +7,9 @@ import { ContextModule } from '../../services/context/context.module';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { CachingModule } from '../../services/caching/cache.module';
-import { PairGetterService } from './services/pair.getter.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { PairSetterService } from './services/pair.setter.service';
-import { AWSModule } from 'src/services/aws/aws.module';
+import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
@@ -22,14 +21,13 @@ import { CommonAppModule } from 'src/common.app.module';
         ContextModule,
         WrappingModule,
         CachingModule,
-        AWSModule,
+        AnalyticsServicesModule,
         DatabaseModule,
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
     ],
     providers: [
         PairService,
-        PairGetterService,
         PairSetterService,
         PairComputeService,
         PairAbiService,
@@ -38,7 +36,6 @@ import { CommonAppModule } from 'src/common.app.module';
     ],
     exports: [
         PairService,
-        PairGetterService,
         PairSetterService,
         PairComputeService,
         PairAbiService,

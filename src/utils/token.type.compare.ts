@@ -22,7 +22,7 @@ export function leastType(typeA: string, typeB: string): string {
                 typeB === 'Ecosystem' ||
                 typeB === 'Community'
             ) {
-                return typeA;
+                return 'Community';
             }
             return typeB;
         case 'Experimental':
@@ -43,7 +43,7 @@ export function leastType(typeA: string, typeB: string): string {
                 typeB === 'Jungle-Community' ||
                 typeB === 'Experimental'
             ) {
-                return typeA;
+                return 'Experimental';
             }
             return typeB;
         case 'Jungle':
@@ -55,7 +55,7 @@ export function leastType(typeA: string, typeB: string): string {
                 typeB === 'Experimental' ||
                 typeB === 'Jungle-Experimental'
             ) {
-                return typeA;
+                return 'Experimental';
             }
             return typeB;
         case 'Unlisted':
@@ -88,4 +88,30 @@ export function isNftToken(
         (token as NftToken).identifier !== undefined &&
         (token as NftToken).collection !== undefined
     );
+}
+
+export function isEsdtTokenValid(token: EsdtToken): boolean {
+    if (
+        !token.identifier ||
+        !token.decimals ||
+        token.identifier === undefined ||
+        token.decimals === undefined ||
+        token.decimals === 0
+    ) {
+        return false;
+    }
+    return true;
+}
+
+export function isNftCollectionValid(
+    collection: NftCollection | NftToken,
+): boolean {
+    if (
+        !collection.decimals ||
+        collection.decimals === undefined ||
+        collection.decimals === 0
+    ) {
+        return false;
+    }
+    return true;
 }

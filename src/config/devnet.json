@@ -17,7 +17,8 @@
             "erd1qqqqqqqqqqqqqpgqvcw9cxy5xlssc4em9l97pvhnvgtn5z6l0n4sc9glts",
             "erd1qqqqqqqqqqqqqpgqxsyrdj38fclflak2mwtqdknqzqhuxy4s0n4sc3e0jy",
             "erd1qqqqqqqqqqqqqpgqd7av8hy5ydnrlunr6pt40wc07pfj8qv90n4srdthut",
-            "erd1qqqqqqqqqqqqqpgqd92vaptf6kex2p74a8sgxpdtvnphdgkd0n4spt542g"
+            "erd1qqqqqqqqqqqqqpgqd92vaptf6kex2p74a8sgxpdtvnphdgkd0n4spt542g",
+            "erd1qqqqqqqqqqqqqpgqzpsgnl0pvgpths0vr926nql30maemcq00n4sqwpu74"
         ],
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
@@ -28,7 +29,8 @@
             "erd1qqqqqqqqqqqqqpgqpzlhg54w5upaeweyc6kugqspunpywwvx0n4sa9spnk",
             "erd1qqqqqqqqqqqqqpgq5daxqzyl8hxug8zyplweugxsh62vyqaw0n4sc69ndf",
             "erd1qqqqqqqqqqqqqpgqzczn45apvnacfl6qhqnydz4gwxmtxj8k0n4synvktu",
-            "erd1qqqqqqqqqqqqqpgq7ycg0y45frcxupcpyvqlpvnuclkuscj30n4sgla0tf"
+            "erd1qqqqqqqqqqqqqpgq7ycg0y45frcxupcpyvqlpvnuclkuscj30n4sgla0tf",
+            "erd1qqqqqqqqqqqqqpgq6dszt34rl3zffwvfce8meq8e63zss5v70n4srreusz"
         ],
         "staking": [
             "erd1qqqqqqqqqqqqqpgq8w0s682m88xae2ne3qkq7w2h26u5a5c00n4stt02d7",
@@ -45,7 +47,8 @@
         "feesCollector": "erd1qqqqqqqqqqqqqpgq82pd37ra5vqnsaq5cc50ll073gzm4ahx0n4s793d9d",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqnysvq99c2t4a9pvvv22elnl6p73el8vw0n4spyfv7p",
-        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu"
+        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
+        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a"
     },
     "farms": {
         "v1.2": [],
@@ -93,6 +96,10 @@
         "MEX_TOKEN_ID": "MEX-dc289c",
         "USDC_TOKEN_ID": "USDC-8d4068",
         "MAINTENANCE": false,
-        "EPOCHS_IN_WEEK": 7
+        "EPOCHS_IN_WEEK": 7,
+        "roundedSwapEnable": {
+            "USDC-8d4068": "5000000",
+            "WEGLD-d7c6bb": "100000000000000000"
+        }
     }
 }

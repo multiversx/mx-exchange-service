@@ -187,51 +187,6 @@ export class ApiConfigService {
         return secret;
     }
 
-    getAWSRegion(): string {
-        const region = this.configService.get<string>('AWS_REGION');
-        if (!region) {
-            throw new Error('No AWS region present');
-        }
-        return region;
-    }
-
-    getAWSDatabaseName(): string {
-        const databaseName =
-            this.configService.get<string>('AWS_DATABASE_NAME');
-        if (!databaseName) {
-            throw new Error('No AWS database name present');
-        }
-        return databaseName;
-    }
-
-    getAWSTableName(): string {
-        const tableName = this.configService.get<string>('AWS_TABLE_NAME');
-        if (!tableName) {
-            throw new Error('No AWS table name present');
-        }
-        return tableName;
-    }
-
-    getAWSMemoryStoreRetention(): number {
-        const retentionPeriod = this.configService.get<string>(
-            'AWS_MEMORY_STORE_RETENTION',
-        );
-        if (!retentionPeriod) {
-            throw new Error('No AWS memory store retention period present');
-        }
-        return parseInt(retentionPeriod);
-    }
-
-    getAWSMagneticStoreRetention(): number {
-        const retentionPeriod = this.configService.get<string>(
-            'AWS_MAGNETIC_STORE_RETENTION',
-        );
-        if (!retentionPeriod) {
-            throw new Error('No AWS magnetic store retention period present');
-        }
-        return parseInt(retentionPeriod);
-    }
-
     isAWSTimestreamRead(): boolean {
         const readFlag = this.configService.get<string>('AWS_TIMESTREAM_READ');
         if (!readFlag) {
@@ -271,6 +226,14 @@ export class ApiConfigService {
         return origins.split(',');
     }
 
+    getMXDataApiURL(): string {
+        const url = this.configService.get<string>('MX_DATA_API_URL');
+        if (!url) {
+            throw new Error('No MX Data API url present');
+        }
+        return url;
+    }
+
     getSecurityAdmins(): string[] {
         const admins = this.configService.get<string>('SECURITY_ADMINS');
         if (!admins) {
@@ -278,5 +241,55 @@ export class ApiConfigService {
         }
 
         return admins.split(',');
+    }
+
+    getNativeAuthKeyPath(): string {
+        const nativeAuthPemPath = this.configService.get<string>(
+            'NATIVE_AUTH_PEM_PATH',
+        );
+        if (!nativeAuthPemPath) {
+            throw new Error('No NATIVE_AUTH_PEM_PATH present');
+        }
+        return nativeAuthPemPath;
+    }
+
+    getTimescaleDbHost(): string {
+        const host = this.configService.get<string>('TIMESCALEDB_URL');
+        if (!host) {
+            throw new Error('No TIMESCALEDB_URL present');
+        }
+        return host;
+    }
+
+    getTimescaleDbPort(): number {
+        const port = this.configService.get<string>('TIMESCALEDB_PORT');
+        if (!port) {
+            throw new Error('No TIMESCALEDB_PORT present');
+        }
+        return parseInt(port);
+    }
+
+    getTimescaleDbDatabase(): string {
+        const database = this.configService.get<string>('TIMESCALEDB_DATABASE');
+        if (!database) {
+            throw new Error('No TIMESCALEDB_DATABASE present');
+        }
+        return database;
+    }
+
+    getTimescaleDbUsername(): string {
+        const username = this.configService.get<string>('TIMESCALEDB_USERNAME');
+        if (!username) {
+            throw new Error('No TIMESCALEDB_USERNAME present');
+        }
+        return username;
+    }
+
+    getTimescaleDbPassword(): string {
+        const password = this.configService.get<string>('TIMESCALEDB_PASSWORD');
+        if (!password) {
+            throw new Error('No TIMESCALEDB_PASSWORD present');
+        }
+        return password;
     }
 }

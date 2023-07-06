@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { oneSecond } from 'src/helpers/helpers';
 import { PaginationArgs } from 'src/modules/dex.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { IEsdtToken } from 'src/modules/tokens/models/esdtToken.interface';
 import {
     EsdtToken,
@@ -14,6 +12,8 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { UserToken } from '../models/user.model';
 import { UserEsdtComputeService } from './esdt.compute.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class UserEsdtService {
@@ -21,8 +21,8 @@ export class UserEsdtService {
         private readonly apiService: MXApiService,
         private readonly pairService: PairService,
         private readonly tokenService: TokenService,
-        private readonly pairGetter: PairGetterService,
-        private readonly routerGetter: RouterGetterService,
+        private readonly pairAbi: PairAbiService,
+        private readonly routerAbi: RouterAbiService,
         private readonly userEsdtCompute: UserEsdtComputeService,
         private readonly cachingService: CachingService,
     ) {}
@@ -39,12 +39,12 @@ export class UserEsdtService {
     private async getUniquePairTokensRaw(): Promise<string[]> {
         const promises = [];
         const [pairsAddresses, uniquePairTokens] = await Promise.all([
-            this.routerGetter.getAllPairsAddress(),
+            this.routerAbi.pairsAddress(),
             this.tokenService.getUniqueTokenIDs(false),
         ]);
 
         for (const address of pairsAddresses) {
-            promises.push(this.pairGetter.getLpTokenID(address));
+            promises.push(this.pairAbi.lpTokenID(address));
         }
 
         const lpTokensIDs = await Promise.all(promises);

@@ -11,7 +11,7 @@ import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { RouterModule } from '../router/router.module';
-import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
+import { RouterHandlerService } from './handlers/router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { MetabondingModule } from '../metabonding/metabonding.module';
 import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.service';
@@ -19,7 +19,7 @@ import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module'
 import { TokenModule } from '../tokens/token.module';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
-import { AWSModule } from 'src/services/aws/aws.module';
+import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { PairHandler } from './handlers/pair.handler.service';
 import { EnergyHandler } from './handlers/energy.handler.service';
 import { SimpleLockModule } from '../simple-lock/simple.lock.module';
@@ -32,12 +32,15 @@ import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSp
 import { UserModule } from '../user/user.module';
 import { TokenUnstakeModule } from '../token-unstake/token.unstake.module';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
+import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
+import { EscrowHandlerService } from './handlers/escrow.handler.service';
+import { EscrowModule } from '../escrow/escrow.module';
 
 @Module({
     imports: [
         CommonAppModule,
+        AnalyticsServicesModule,
         MXCommunicationModule,
-        AWSModule,
         CachingModule,
         ContextModule,
         PairModule,
@@ -53,12 +56,14 @@ import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.ser
         EnergyModule,
         TokenUnstakeModule,
         UserModule,
+        WeeklyRewardsSplittingModule,
+        EscrowModule,
     ],
     providers: [
         RabbitMqConsumer,
         RabbitMQFarmHandlerService,
         RabbitMQProxyHandlerService,
-        RabbitMQRouterHandlerService,
+        RouterHandlerService,
         RabbitMQEsdtTokenHandlerService,
         RabbitMQMetabondingHandlerService,
         PriceDiscoveryEventHandler,
@@ -69,6 +74,7 @@ import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.ser
         FeesCollectorHandlerService,
         TokenUnstakeHandlerService,
         WeeklyRewardsSplittingHandlerService,
+        EscrowHandlerService,
     ],
 })
 export class RabbitMqModule {
@@ -83,6 +89,7 @@ export class RabbitMqModule {
                             type: 'fanout',
                             options: {},
                             uri: process.env.RABBITMQ_URL,
+                            prefetchCount: 1,
                         };
                     },
                 }),

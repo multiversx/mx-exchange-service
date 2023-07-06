@@ -12,27 +12,25 @@ import {
     WEEKLY_REWARDS_SPLITTING_EVENTS,
 } from '@multiversx/sdk-exchange';
 import { FarmSetterServiceV2 } from '../../farm/v2/services/farm.v2.setter.service';
-import { FarmGetterServiceV2 } from '../../farm/v2/services/farm.v2.getter.service';
 import { FeesCollectorSetterService } from '../../fees-collector/services/fees-collector.setter.service';
-import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import { scAddress } from '../../../config';
 import { FarmSetterFactory } from '../../farm/farm.setter.factory';
-import { FarmGetterFactory } from '../../farm/farm.getter.factory';
 import { UserEnergySetterService } from '../../user/services/userEnergy/user.energy.setter.service';
-import { UserEnergyGetterService } from '../../user/services/userEnergy/user.energy.getter.service';
-import { OutdatedContract } from '../../user/models/user.model';
+import { UserEnergyComputeService } from 'src/modules/user/services/userEnergy/user.energy.compute.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { WeeklyRewardsSplittingSetterService } from 'src/submodules/weekly-rewards-splitting/services/weekly.rewarrds.splitting.setter.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
-    private invalidatedKeys = [];
-
     constructor(
         private readonly farmSetter: FarmSetterFactory,
-        private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorSetter: FeesCollectorSetterService,
-        private readonly feesCollectorGetter: FeesCollectorGetterService,
-        private readonly userEnergyGetter: UserEnergyGetterService,
+        private readonly energyAbi: EnergyAbiService,
+        private readonly userEnergyCompute: UserEnergyComputeService,
         private readonly userEnergySetter: UserEnergySetterService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly weeklyRewardsSplittingSetter: WeeklyRewardsSplittingSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -43,20 +41,19 @@ export class WeeklyRewardsSplittingHandlerService {
         const topics = event.getTopics();
 
         const keys = await Promise.all([
-            this.getSetter(event.address).totalEnergyForWeek(
+            this.weeklyRewardsSplittingSetter.totalEnergyForWeek(
                 event.address,
                 topics.currentWeek,
                 topics.totalEnergy,
             ),
-            this.getSetter(event.address).totalLockedTokensForWeek(
+            this.weeklyRewardsSplittingSetter.totalLockedTokensForWeek(
                 event.address,
                 topics.currentWeek,
                 topics.totalLockedTokens,
             ),
         ]);
 
-        this.invalidatedKeys.push(keys);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(keys);
         await this.pubSub.publish(
             WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS,
             {
@@ -67,42 +64,48 @@ export class WeeklyRewardsSplittingHandlerService {
 
     async handleUpdateUserEnergy(event: UpdateUserEnergyEvent): Promise<void> {
         const topics = event.getTopics();
+        const userAddress = topics.caller.bech32();
+        const contractAddress = event.address;
 
-        let userOutdatedContracts =
-            await this.userEnergyGetter.getUserOutdatedContracts(
-                topics.caller.bech32(),
-            );
-        userOutdatedContracts = userOutdatedContracts.filter(
-            (item: OutdatedContract) => item.address != event.address,
-        );
         const keys = await Promise.all([
-            this.getSetter(event.address).currentClaimProgress(
-                event.address,
-                topics.caller.bech32(),
+            this.weeklyRewardsSplittingSetter.currentClaimProgress(
+                contractAddress,
+                userAddress,
                 new ClaimProgress({
                     energy: topics.energy,
                     week: topics.currentWeek,
                 }),
             ),
-            this.getSetter(event.address).userEnergyForWeek(
-                event.address,
-                topics.caller.bech32(),
+            this.weeklyRewardsSplittingSetter.userEnergyForWeek(
+                contractAddress,
+                userAddress,
                 topics.currentWeek,
                 topics.energy,
             ),
-            this.getSetter(event.address).lastActiveWeekForUser(
-                event.address,
-                topics.caller.bech32(),
+            this.weeklyRewardsSplittingSetter.lastActiveWeekForUser(
+                contractAddress,
+                userAddress,
                 topics.currentWeek,
-            ),
-            this.userEnergySetter.setUserOutdatedContracts(
-                topics.caller.bech32(),
-                userOutdatedContracts,
             ),
         ]);
 
-        this.invalidatedKeys.push(keys);
-        await this.deleteCacheKeys();
+        const userEnergy = await this.energyAbi.energyEntryForUser(userAddress);
+        const outdatedContract =
+            await this.userEnergyCompute.computeUserOutdatedContract(
+                userAddress,
+                userEnergy,
+                contractAddress,
+            );
+
+        keys.push(
+            await this.userEnergySetter.setUserOutdatedContract(
+                userAddress,
+                contractAddress,
+                outdatedContract,
+            ),
+        );
+
+        await this.deleteCacheKeys(keys);
         await this.pubSub.publish(
             WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY,
             {
@@ -114,9 +117,11 @@ export class WeeklyRewardsSplittingHandlerService {
     async handleClaimMulti(event: ClaimMultiEvent): Promise<void> {
         const topics = event.getTopics();
 
-        let totalRewardsForWeek = await this.getGetter(
-            event.address,
-        ).totalRewardsForWeek(event.address, topics.currentWeek);
+        let totalRewardsForWeek =
+            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                event.address,
+                topics.currentWeek,
+            );
 
         totalRewardsForWeek = totalRewardsForWeek.map((token) => {
             for (const payment of event.allPayments) {
@@ -138,15 +143,14 @@ export class WeeklyRewardsSplittingHandlerService {
                 topics.currentWeek,
                 [],
             ),
-            this.getSetter(event.address).totalRewardsForWeek(
+            this.weeklyRewardsSplittingSetter.totalRewardsForWeek(
                 event.address,
                 topics.currentWeek,
                 totalRewardsForWeek,
             ),
         ]);
 
-        this.invalidatedKeys.push(keys);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(keys);
         await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS.CLAIM_MULTI, {
             claimMultiEvent: event,
         });
@@ -159,15 +163,7 @@ export class WeeklyRewardsSplittingHandlerService {
         return this.farmSetter.useSetter(address) as FarmSetterServiceV2;
     }
 
-    private getGetter(address: string) {
-        if (address === scAddress.feesCollector) {
-            return this.feesCollectorGetter;
-        }
-        return this.farmGetter.useGetter(address) as FarmGetterServiceV2;
-    }
-
-    private async deleteCacheKeys() {
-        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
-        this.invalidatedKeys = [];
+    private async deleteCacheKeys(invalidatedKeys: string[]) {
+        await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }

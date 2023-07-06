@@ -4,7 +4,6 @@ import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.
 import { TokenModule } from '../tokens/token.module';
 import { MetabondingResolver } from './metabonding.resolver';
 import { MetabondingAbiService } from './services/metabonding.abi.service';
-import { MetabondingGetterService } from './services/metabonding.getter.service';
 import { MetabondingService } from './services/metabonding.service';
 import { MetabondingSetterService } from './services/metabonding.setter.service';
 import { MetabondingTransactionService } from './services/metabonding.transactions.service';
@@ -14,7 +13,6 @@ import { MetabondingTransactionService } from './services/metabonding.transactio
     providers: [
         MetabondingService,
         MetabondingAbiService,
-        MetabondingGetterService,
         MetabondingSetterService,
         MetabondingTransactionService,
         MetabondingResolver,

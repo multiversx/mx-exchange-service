@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
@@ -9,20 +9,27 @@ import { oneMinute, oneSecond } from 'src/helpers/helpers';
 import axios from 'axios';
 import moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { RouterService } from 'src/modules/router/services/router.service';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { Locker } from 'src/utils/locker';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { MXDataApiService } from '../multiversx-communication/mx.data.api.service';
 
 @Injectable()
 export class CacheWarmerService {
     constructor(
         private readonly apiService: MXApiService,
         private readonly cachingService: CachingService,
-        private readonly routerService: RouterService,
+        private readonly dataApi: MXDataApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
+
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async cacheUSDCPrice(): Promise<void> {
+        const usdcPrice = await this.dataApi.getTokenPriceRaw('USDC');
+        const key = await this.dataApi.setTokenPrice('USDC', usdcPrice);
+        await this.deleteCacheKeys([key]);
+    }
 
     @Cron('*/6 * * * * *')
     async cacheCurrentEpoch(): Promise<void> {

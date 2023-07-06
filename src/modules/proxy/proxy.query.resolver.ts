@@ -1,13 +1,20 @@
 import { Query, Resolver } from '@nestjs/graphql';
 import { ProxyModel } from './models/proxy.model';
-import { ProxyService } from './services/proxy.service';
+import { scAddress } from 'src/config';
 
 @Resolver()
 export class ProxyQueryResolver {
-    constructor(private readonly proxyService: ProxyService) {}
-
     @Query(() => [ProxyModel])
     async proxy(): Promise<ProxyModel[]> {
-        return this.proxyService.getProxyInfo();
+        return [
+            new ProxyModel({
+                address: scAddress.proxyDexAddress.v1,
+                version: 'v1',
+            }),
+            new ProxyModel({
+                address: scAddress.proxyDexAddress.v2,
+                version: 'v2',
+            }),
+        ];
     }
 }

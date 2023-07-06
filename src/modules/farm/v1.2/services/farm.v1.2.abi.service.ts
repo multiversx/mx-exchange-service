@@ -1,11 +1,66 @@
 import { Interaction } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { FarmMigrationConfig } from '../../models/farm.model';
-import { AbiFarmService } from '../../base-module/services/farm.abi.service';
+import { FarmAbiService } from '../../base-module/services/farm.abi.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
+import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { oneHour } from 'src/helpers/helpers';
+import { IFarmAbiServiceV1_2 } from './interfaces';
 
 @Injectable()
-export class FarmAbiServiceV1_2 extends AbiFarmService {
-    async getFarmingTokenReserve(farmAddress: string): Promise<string> {
+export class FarmAbiServiceV1_2
+    extends FarmAbiService
+    implements IFarmAbiServiceV1_2
+{
+    constructor(
+        protected readonly mxProxy: MXProxyService,
+        protected readonly gatewayService: MXGatewayService,
+        protected readonly mxApi: MXApiService,
+    ) {
+        super(mxProxy, gatewayService, mxApi);
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async lockedAssetFactoryAddress(farmAddress: string): Promise<string> {
+        return await this.getLockedAssetFactoryAddressRaw(farmAddress);
+    }
+
+    async getLockedAssetFactoryAddressRaw(
+        farmAddress: string,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().bech32();
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async farmingTokenReserve(farmAddress: string): Promise<string> {
+        return await this.getFarmingTokenReserveRaw(farmAddress);
+    }
+
+    async getFarmingTokenReserveRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
@@ -14,7 +69,20 @@ export class FarmAbiServiceV1_2 extends AbiFarmService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getUndistributedFees(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async undistributedFees(farmAddress: string): Promise<string> {
+        return await this.getUndistributedFeesRaw(farmAddress);
+    }
+
+    async getUndistributedFeesRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
@@ -23,7 +91,20 @@ export class FarmAbiServiceV1_2 extends AbiFarmService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getCurrentBlockFee(farmAddress: string): Promise<string> {
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async currentBlockFee(farmAddress: string): Promise<string> {
+        return await this.getCurrentBlockFeeRaw(farmAddress);
+    }
+
+    async getCurrentBlockFeeRaw(farmAddress: string): Promise<string> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
@@ -33,7 +114,20 @@ export class FarmAbiServiceV1_2 extends AbiFarmService {
         return currentBlockFee ? currentBlockFee[1].toFixed() : '0';
     }
 
-    async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async lockedRewardAprMuliplier(farmAddress: string): Promise<number> {
+        return await this.getLockedRewardAprMuliplierRaw(farmAddress);
+    }
+
+    async getLockedRewardAprMuliplierRaw(farmAddress: string): Promise<number> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
@@ -42,7 +136,21 @@ export class FarmAbiServiceV1_2 extends AbiFarmService {
         return response.firstValue.valueOf().integerValue();
     }
 
-    async getFarmMigrationConfiguration(
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV1_2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: oneHour(),
+    })
+    async farmMigrationConfiguration(
+        farmAddress: string,
+    ): Promise<FarmMigrationConfig | undefined> {
+        return await this.getFarmMigrationConfigurationRaw(farmAddress);
+    }
+
+    async getFarmMigrationConfigurationRaw(
         farmAddress: string,
     ): Promise<FarmMigrationConfig | undefined> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);

@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { AbiProxyService } from 'src/modules/proxy/services/proxy-abi.service';
-import { AbiProxyPairService } from 'src/modules/proxy/services/proxy-pair/proxy-pair-abi.service';
-import { AbiProxyFarmService } from 'src/modules/proxy/services/proxy-farm/proxy-farm-abi.service';
+import { ProxyAbiService } from 'src/modules/proxy/services/proxy.abi.service';
+import { ProxyPairAbiService } from 'src/modules/proxy/services/proxy-pair/proxy.pair.abi.service';
+import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
 import { cacheConfig, scAddress } from 'src/config';
@@ -18,9 +18,9 @@ export class ProxyCacheWarmerService {
     private invalidatedKeys = [];
 
     constructor(
-        private readonly abiProxyService: AbiProxyService,
-        private readonly abiProxyPairService: AbiProxyPairService,
-        private readonly abiProxyFarmService: AbiProxyFarmService,
+        private readonly proxyAbi: ProxyAbiService,
+        private readonly proxyPairAbi: ProxyPairAbiService,
+        private readonly proxyFarmAbi: ProxyFarmAbiService,
         private readonly apiService: MXApiService,
         private readonly cachingService: CachingService,
         private readonly tokenSetter: TokenSetterService,
@@ -37,19 +37,19 @@ export class ProxyCacheWarmerService {
                 wrappedFarmTokenID,
                 intermediatedFarms,
             ] = await Promise.all([
-                this.abiProxyService.getAssetTokenID(
+                this.proxyAbi.getAssetTokenIDRaw(
                     scAddress.proxyDexAddress[version],
                 ),
-                this.abiProxyPairService.getWrappedLpTokenID(
+                this.proxyPairAbi.getWrappedLpTokenIDRaw(
                     scAddress.proxyDexAddress[version],
                 ),
-                this.abiProxyPairService.getIntermediatedPairsAddress(
+                this.proxyPairAbi.getIntermediatedPairsRaw(
                     scAddress.proxyDexAddress[version],
                 ),
-                this.abiProxyFarmService.getWrappedFarmTokenID(
+                this.proxyFarmAbi.getWrappedFarmTokenIDRaw(
                     scAddress.proxyDexAddress[version],
                 ),
-                this.abiProxyFarmService.getIntermediatedFarmsAddress(
+                this.proxyFarmAbi.getIntermediatedFarmsRaw(
                     scAddress.proxyDexAddress[version],
                 ),
             ]);

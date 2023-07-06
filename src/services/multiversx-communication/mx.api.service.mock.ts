@@ -1,6 +1,7 @@
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
+import { MXApiService } from './mx.api.service';
 
 export class MXApiServiceMock {
     async getCurrentEpoch(): Promise<number> {
@@ -50,3 +51,8 @@ export class MXApiServiceMock {
         ];
     }
 }
+
+export const MXApiServiceProvider = {
+    provide: MXApiService,
+    useClass: MXApiServiceMock,
+};

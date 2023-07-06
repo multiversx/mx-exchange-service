@@ -1,13 +1,15 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import {
-    GlobalInfoByWeekModel, GlobalInfoByWeekSubModel, UserInfoByWeekModel, UserInfoByWeekSubModel,
+    ClaimProgress,
+    GlobalInfoByWeekModel,
+    UserInfoByWeekModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { TransactionModel } from '../../../models/transaction.model';
 
 @ObjectType()
-export class FeesCollectorModel extends GlobalInfoByWeekSubModel {
+export class FeesCollectorModel {
     @Field()
     address: string;
 
@@ -20,29 +22,31 @@ export class FeesCollectorModel extends GlobalInfoByWeekSubModel {
     @Field()
     endWeek: number;
 
+    @Field()
+    lastGlobalUpdateWeek: number;
+
     @Field(() => [GlobalInfoByWeekModel])
     undistributedRewards: [GlobalInfoByWeekModel];
 
     @Field(() => [String])
-    allTokens: string[]
+    allTokens: string[];
 
     @Field(() => [EsdtTokenPayment])
-    accumulatedFees: [EsdtTokenPayment]
+    accumulatedFees: [EsdtTokenPayment];
 
     @Field()
-    lockedTokenId: string
+    lockedTokenId: string;
 
     @Field()
-    lockedTokensPerBlock: string
+    lockedTokensPerBlock: string;
 
     constructor(init?: Partial<FeesCollectorModel>) {
-        super(init);
         Object.assign(this, init);
     }
 }
 
 @ObjectType()
-export class UserEntryFeesCollectorModel extends UserInfoByWeekSubModel {
+export class UserEntryFeesCollectorModel {
     @Field()
     address: string;
 
@@ -62,19 +66,23 @@ export class UserEntryFeesCollectorModel extends UserInfoByWeekSubModel {
     undistributedRewards: [UserInfoByWeekModel];
 
     @Field(() => [EsdtTokenPayment])
-    accumulatedRewards: [EsdtTokenPayment]
+    accumulatedRewards: [EsdtTokenPayment];
+
+    @Field(() => ClaimProgress)
+    claimProgress: ClaimProgress;
+
+    @Field()
+    lastActiveWeekForUser: number;
 
     constructor(init?: Partial<UserEntryFeesCollectorModel>) {
-        super(init);
         Object.assign(this, init);
     }
 }
 
-
 @ObjectType()
 export class FeesCollectorTransactionModel {
     @Field(() => TransactionModel, { nullable: true })
-    transaction: TransactionModel
+    transaction: TransactionModel;
     @Field(() => Int)
     count: number;
 

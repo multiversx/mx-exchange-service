@@ -1,161 +1,95 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
-import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
-import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
+import { FarmAbiServiceMock } from '../mocks/farm.abi.service.mock';
+import { MXApiServiceProvider } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { Address } from '@multiversx/sdk-core';
 import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
-import { FarmAbiServiceV1_2 } from '../v1.2/services/farm.v1.2.abi.service';
-import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service';
-import { FarmGetterServiceMockV1_2 } from '../mocks/farm.v1.2.getter.service.mock';
 import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.service';
 import { FarmServiceV1_3 } from '../v1.3/services/farm.v1.3.service';
 import { FarmComputeServiceV1_3 } from '../v1.3/services/farm.v1.3.compute.service';
-import { FarmGetterServiceV1_3 } from '../v1.3/services/farm.v1.3.getter.service';
-import { FarmGetterServiceMockV1_3 } from '../mocks/farm.v1.3.getter.service.mock';
-import { FarmAbiServiceV1_3 } from '../v1.3/services/farm.v1.3.abi.service';
 import { FarmFactoryService } from '../farm.factory';
-import { FarmGetterFactory } from '../farm.getter.factory';
 import { FarmServiceV2 } from '../v2/services/farm.v2.service';
-import { FarmGetterServiceV2 } from '../v2/services/farm.v2.getter.service';
-import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from '../v2/services/farm.v2.compute.service';
-import { FarmGetterService } from '../base-module/services/farm.getter.service';
 import { RewardsModel } from '../models/farm.model';
-import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import { WeeklyRewardsSplittingGetterServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
-import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
-import { WeekTimekeepingGetterServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
 import { WeekTimekeepingComputeService } from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { WeekTimekeepingComputeServiceMock } from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
 import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
-import { ProgressComputeServiceMock } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
-import { EnergyGetterServiceProvider } from '../../energy/mocks/energy.getter.service.mock';
+import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { FarmAbiFactory } from '../farm.abi.factory';
+import { FarmAbiServiceProviderV1_2 } from '../mocks/farm.v1.2.abi.service.mock';
+import { FarmAbiServiceProviderV1_3 } from '../mocks/farm.v1.3.abi.service.mock';
+import { FarmCustomAbiService } from '../custom/services/farm.custom.abi.service';
+import { FarmCustomService } from '../custom/services/farm.custom.service';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { FarmCustomComputeService } from '../custom/services/farm.custom.compute.service';
 
 describe('FarmService', () => {
-    let factory: FarmFactoryService;
-    let getter: FarmGetterFactory;
-    let serviceV1_2: FarmServiceV1_2;
-    let serviceV1_3: FarmServiceV1_3;
-
-    const AbiFarmServiceProviderV1_2 = {
-        provide: FarmAbiServiceV1_2,
-        useClass: AbiFarmServiceMock,
-    };
-
-    const FarmGetterServiceProviderV1_2 = {
-        provide: FarmGetterServiceV1_2,
-        useClass: FarmGetterServiceMockV1_2,
-    };
-
-    const AbiFarmServiceProviderV1_3 = {
-        provide: FarmAbiServiceV1_3,
-        useClass: AbiFarmServiceMock,
-    };
-
-    const FarmGetterServiceProviderV1_3 = {
-        provide: FarmGetterServiceV1_3,
-        useClass: FarmGetterServiceMockV1_3,
-    };
-
-    const MXApiServiceProvider = {
-        provide: MXApiService,
-        useClass: MXApiServiceMock,
-    };
-
-    const ContextGetterServiceProvider = {
-        provide: ContextGetterService,
-        useClass: ContextGetterServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
-    };
+    let module: TestingModule;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
+        module = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
             providers: [
                 FarmFactoryService,
-                FarmGetterFactory,
+                FarmAbiFactory,
                 {
-                    provide: FarmGetterService,
-                    useClass: FarmGetterServiceMock,
+                    provide: FarmCustomAbiService,
+                    useClass: FarmAbiServiceMock,
                 },
-                AbiFarmServiceProviderV1_2,
-                FarmGetterServiceProviderV1_2,
-                FarmComputeServiceV1_2,
-                AbiFarmServiceProviderV1_3,
-                FarmGetterServiceProviderV1_3,
-                FarmComputeServiceV1_3,
+                FarmAbiServiceProviderV1_2,
+                FarmAbiServiceProviderV1_3,
                 {
                     provide: FarmAbiServiceV2,
-                    useClass: AbiFarmServiceMock,
+                    useClass: FarmAbiServiceMock,
                 },
                 {
-                    provide: FarmGetterServiceV2,
-                    useClass: FarmGetterServiceMock,
+                    provide: FarmAbiServiceV2,
+                    useClass: FarmAbiServiceMock,
                 },
-                FarmComputeServiceV2,
-                MXApiServiceProvider,
-                ContextGetterServiceProvider,
-                RouterGetterServiceProvider,
-                TokenGetterServiceProvider,
-                PairService,
-                PairGetterServiceProvider,
-                PairComputeService,
-                WrapServiceProvider,
-                TokenGetterServiceProvider,
-                TokenComputeService,
+                FarmCustomService,
                 FarmServiceV1_2,
                 FarmServiceV1_3,
                 FarmServiceV2,
-                {
-                    provide: WeeklyRewardsSplittingGetterService,
-                    useValue: new WeeklyRewardsSplittingGetterServiceMock({}),
-                },
-                {
-                    provide: WeekTimekeepingGetterService,
-                    useValue: new WeekTimekeepingGetterServiceMock({}),
-                },
-                {
-                    provide: WeekTimekeepingComputeService,
-                    useValue: new WeekTimekeepingComputeServiceMock({}),
-                },
-                {
-                    provide: ProgressComputeService,
-                    useValue: new ProgressComputeServiceMock({}),
-                },
-                EnergyGetterServiceProvider,
+                FarmCustomComputeService,
+                FarmComputeServiceV1_2,
+                FarmComputeServiceV1_3,
+                FarmComputeServiceV2,
+                MXApiServiceProvider,
+                ContextGetterServiceProvider,
+                RouterAbiServiceProvider,
+                TokenComputeService,
+                TokenGetterServiceProvider,
+                PairService,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
+                WrapAbiServiceProvider,
+                WeekTimekeepingComputeService,
+                WeekTimekeepingAbiServiceProvider,
+                WeeklyRewardsSplittingAbiServiceProvider,
+                WeeklyRewardsSplittingComputeService,
+                ProgressComputeService,
+                EnergyAbiServiceProvider,
+                EnergyComputeService,
+                MXDataApiServiceProvider,
             ],
         }).compile();
-
-        factory = module.get<FarmFactoryService>(FarmFactoryService);
-        getter = module.get<FarmGetterFactory>(FarmGetterFactory);
-        serviceV1_2 = module.get<FarmServiceV1_2>(FarmServiceV1_2);
-        serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
     });
 
     it('should be defined', () => {
+        const serviceV1_2 = module.get<FarmServiceV1_2>(FarmServiceV1_2);
         expect(serviceV1_2).toBeDefined();
     });
 
@@ -164,6 +98,9 @@ describe('FarmService', () => {
             'AAAABwc+9Mqu1tkAAAAAAAAAAQAAAAAAAAABAgEAAAAIiscjBInoAAAAAAAAAAAACQEVjkYJE9AAAA==';
         const identifier = 'MEXFARM-abcd-01';
         const liquidity = '2000000000000000000';
+
+        const serviceV1_2 = module.get<FarmServiceV1_2>(FarmServiceV1_2);
+
         const rewards = await serviceV1_2.getRewardsForPosition({
             farmAddress:
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
@@ -184,6 +121,7 @@ describe('FarmService', () => {
     });
 
     it('should get farms', async () => {
+        const factory = module.get<FarmFactoryService>(FarmFactoryService);
         const farms = factory.getFarms();
         expect(farms).toEqual([
             {
@@ -212,15 +150,21 @@ describe('FarmService', () => {
     });
 
     it('should check if farm token', async () => {
-        const isFarmToken_0 = await getter.isFarmToken('TOK1TOK9LPStaked');
+        const farmAbiFactory = module.get<FarmAbiFactory>(FarmAbiFactory);
+        const isFarmToken_0 = await farmAbiFactory.isFarmToken(
+            'TOK1TOK9LPStaked',
+        );
         expect(isFarmToken_0).toEqual(false);
 
-        const isFarmToken_1 = await getter.isFarmToken('TOK1TOK4LPStaked');
+        const isFarmToken_1 = await farmAbiFactory.isFarmToken(
+            'TOK1TOK4LPStaked',
+        );
         expect(isFarmToken_1).toEqual(true);
     });
 
     it('should get farm address by farm token ID', async () => {
-        const farmAddress = await getter.getFarmAddressByFarmTokenID(
+        const farmAbiFactory = module.get<FarmAbiFactory>(FarmAbiFactory);
+        const farmAddress = await farmAbiFactory.getFarmAddressByFarmTokenID(
             'TOK1TOK4LPStaked',
         );
         expect(farmAddress).toEqual(
@@ -229,6 +173,7 @@ describe('FarmService', () => {
     });
 
     it('should get batch rewards for position', async () => {
+        const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
         const batchRewardsForPosition =
             await serviceV1_3.getBatchRewardsForPosition([
                 {
@@ -253,6 +198,7 @@ describe('FarmService', () => {
     });
 
     it('should get tokens for exit farm', async () => {
+        const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
         const tokensForExitFarm = await serviceV1_3.getTokensForExitFarm({
             farmAddress:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
@@ -270,6 +216,7 @@ describe('FarmService', () => {
     });
 
     it('should get tokens for exit farm', async () => {
+        const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
         const tokensForExitFarm = serviceV1_3.decodeFarmTokenAttributes(
             'EGLDMEXFL-a329b6-0b',
             'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',

@@ -1,11 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AutoRouterService } from '../services/auto-router.service';
-import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import winston from 'winston';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -15,15 +11,13 @@ import * as Transport from 'winston-transport';
 import { AutoRouterComputeService } from '../services/auto-router.compute.service';
 import { AutoRouterTransactionService } from '../services/auto-router.transactions.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { TransactionRouterService } from 'src/modules/router/services/transactions.router.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { RouterTransactionService } from 'src/modules/router/services/router.transactions.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { RouterService } from 'src/modules/router/services/router.service';
 import { AutoRouteModel } from '../models/auto-route.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
@@ -35,6 +29,11 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { gasConfig } from 'src/config';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { WrapService } from 'src/modules/wrapping/services/wrap.service';
+import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -42,21 +41,6 @@ describe('AutoRouterService', () => {
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
-    };
-
-    const PairGetterServiceProvider = {
-        provide: PairGetterService,
-        useClass: PairGetterServiceStub,
-    };
-
-    const RouterGetterServiceProvider = {
-        provide: RouterGetterService,
-        useClass: RouterGetterServiceStub,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
     };
 
     const MXProxyServiceProvider = {
@@ -89,16 +73,18 @@ describe('AutoRouterService', () => {
             ],
             providers: [
                 RouterService,
-                RouterGetterServiceProvider,
+                RouterAbiServiceProvider,
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
                 TokenGetterServiceProvider,
-                PairGetterServiceProvider,
+                PairAbiServiceProvider,
+                PairComputeServiceProvider,
                 PairService,
                 PairTransactionService,
-                WrapServiceProvider,
-                TransactionsWrapService,
-                TransactionRouterService,
+                WrapAbiServiceProvider,
+                WrapService,
+                WrapTransactionsService,
+                RouterTransactionService,
                 RemoteConfigGetterServiceProvider,
                 AutoRouterService,
                 AutoRouterComputeService,

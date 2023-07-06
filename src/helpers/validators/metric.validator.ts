@@ -28,6 +28,7 @@ const metrics = [
     'launchedTokenPrice',
     'acceptedTokenPrice',
     'launchedTokenPriceUSD',
+    'acceptedTokenPriceUSD',
     'feeBurned',
     'penaltyBurned',
 ];

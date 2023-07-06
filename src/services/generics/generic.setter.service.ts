@@ -19,18 +19,23 @@ export class GenericSetterService {
         remoteTtl: number,
         localTtl?: number,
     ): Promise<string> {
+        await this.cachingService.setCache(
+            cacheKey,
+            value,
+            remoteTtl,
+            localTtl,
+        );
+        return cacheKey;
+    }
+
+    protected async delData(cacheKey: string): Promise<string> {
         try {
-            await this.cachingService.setCache(
-                cacheKey,
-                value,
-                remoteTtl,
-                localTtl,
-            );
+            await this.cachingService.deleteInCache(cacheKey);
             return cacheKey;
         } catch (error) {
             const logMessage = generateSetLogMessage(
                 this.constructor.name,
-                this.setData.name,
+                this.delData.name,
                 cacheKey,
                 error.message,
             );

@@ -2,8 +2,9 @@ import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { FarmTokenAttributesModelV1_2 } from '../models/farmTokenAttributes.model';
 import { farms } from './farm.constants';
+import { FarmServiceBase } from '../base-module/services/farm.base.service';
 
-export class FarmServiceMock {
+export class FarmServiceBaseMock {
     async getFarmingTokenID(farmAddress: string): Promise<string> {
         return farms.find((f) => f.address === farmAddress).farmingTokenID;
     }
@@ -46,8 +47,9 @@ export class FarmServiceMock {
             currentFarmAmount: '100',
         });
     }
-
-    async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
-        return '200';
-    }
 }
+
+export const FarmServiceProvider = {
+    provide: FarmServiceBase,
+    useClass: FarmServiceBaseMock,
+};

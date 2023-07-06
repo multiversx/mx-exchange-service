@@ -191,29 +191,18 @@ export class CachingService {
             return cachedValue;
         }
 
-        try {
-            const value = await promise();
+        const value = await promise();
 
-            profiler.stop(`Cache miss for key ${key}`);
+        profiler.stop(`Cache miss for key ${key}`);
 
-            if (localTtl > 0) {
-                await this.setCacheLocal<T>(key, value, localTtl);
-            }
-
-            if (remoteTtl > 0) {
-                await this.setCacheRemote<T>(key, value, remoteTtl);
-            }
-            return value;
-        } catch (error) {
-            const logMessage = generateSetLogMessage(
-                CachingService.name,
-                this.getOrSet.name,
-                key,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
+        if (localTtl > 0) {
+            await this.setCacheLocal<T>(key, value, localTtl);
         }
+
+        if (remoteTtl > 0) {
+            await this.setCacheRemote<T>(key, value, remoteTtl);
+        }
+        return value;
     }
 
     async deleteInCacheLocal(key: string) {
@@ -237,6 +226,37 @@ export class CachingService {
         } else {
             await Promise.all([localCache.delete(key), this.client.del(key)]);
             return [key];
+        }
+    }
+
+    async getMultipleFromHash(
+        hashKey: string,
+        keys: string[],
+    ): Promise<(string | null)[]> {
+        const profiler = new PerformanceProfiler();
+
+        try {
+            const result = await this.client.hmget(hashKey, ...keys);
+            return result;
+        } catch {
+            return keys.map(() => null);
+        } finally {
+            profiler.stop();
+            MetricsCollector.setRedisDuration('HMGET', profiler.duration);
+        }
+    }
+
+    async setMultipleInHash(
+        hashKey: string,
+        values: [string, string][],
+    ): Promise<void> {
+        const profiler = new PerformanceProfiler();
+
+        try {
+            await this.client.hset(hashKey, ...values.flat());
+        } finally {
+            profiler.stop();
+            MetricsCollector.setRedisDuration('HMSET', profiler.duration);
         }
     }
 }

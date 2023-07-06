@@ -15,7 +15,8 @@
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgqt7tyyswqvplpcqnhwe20xqrj7q7ap27d2jps7zczse",
         "simpleLockAddress": [
             "erd1qqqqqqqqqqqqqpgqs0jjyjmx0cvek4p8yj923q5yreshtpa62jpsz6vt84",
-            "erd1qqqqqqqqqqqqqpgqawujux7w60sjhm8xdx3n0ed8v9h7kpqu2jpsecw6ek"
+            "erd1qqqqqqqqqqqqqpgqawujux7w60sjhm8xdx3n0ed8v9h7kpqu2jpsecw6ek",
+            "erd1qqqqqqqqqqqqqpgq6nu2t8lzakmcfmu4pu5trjdarca587hn2jpsyjapr5"
         ],
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy",
@@ -31,7 +32,8 @@
         "feesCollector": "erd1qqqqqqqqqqqqqpgqjsnxqprks7qxfwkcg2m2v9hxkrchgm9akp2segrswt",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqg48z8qfm028ze6y3d6tamdfaw6vn774tkp2shg5dt5",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqxv0y4p6vvszrknaztatycac77yvsxqrrkp2sghd86c",
-        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqu64gygjs5ted4rupaewaszyhaxl9lv7m2jpsw47nzr"
+        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqu64gygjs5ted4rupaewaszyhaxl9lv7m2jpsw47nzr",
+        "escrow": "erd1qqqqqqqqqqqqqpgqeh4yv09rmyg4xgn5ma03mvm4v5gndu8w2jpsglz3cn"
     },
     "farms": {
         "v1.2": [
@@ -72,7 +74,9 @@
                 "erd1qqqqqqqqqqqqqpgqrdq6zvepdxg36rey8pmluwur43q4hcx3kp2su4yltq",
                 "erd1qqqqqqqqqqqqqpgq4acurmluezvmhna8tztgcrnwh0l70a2wkp2sfh6jkp",
                 "erd1qqqqqqqqqqqqqpgquhqfknr9dg5t0xma0zcc55dm8gwv5rpkkp2sq8f40p",
-                "erd1qqqqqqqqqqqqqpgq6v5ta4memvrhjs4x3gqn90c3pujc77takp2sqhxm9j"
+                "erd1qqqqqqqqqqqqqpgq6v5ta4memvrhjs4x3gqn90c3pujc77takp2sqhxm9j",
+                "erd1qqqqqqqqqqqqqpgqqqckvlhd3n7ntt5w3vln4xh3tsfpj0hr2jpsxlzgcj",
+                "erd1qqqqqqqqqqqqqpgqcfkmz2j0e8pj0nzuk9j6mzcav0wpthq52jpsg546ch"
             ]
         }
     },
@@ -82,6 +86,10 @@
     "constants": {
         "MEX_TOKEN_ID": "MEX-455c57",
         "USDC_TOKEN_ID": "USDC-c76f1f",
-        "MAINTENANCE": false
+        "MAINTENANCE": false,
+        "roundedSwapEnable": {
+            "USDC-c76f1f": "5000000",
+            "WEGLD-bd4d79": "100000000000000000"
+        }
     }
 }

@@ -7,7 +7,7 @@ import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
-import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
+import { RouterHandlerService } from './handlers/router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.service';
 import {
@@ -44,9 +44,12 @@ import {
     WEEKLY_REWARDS_SPLITTING_EVENTS,
     TOKEN_UNSTAKE_EVENTS,
     UserUnlockedTokensEvent,
+    ESCROW_EVENTS,
+    EscrowLockFundsEvent,
+    EscrowWithdrawEvent,
+    EscrowCancelTransferEvent,
+    PairSwapEnabledEvent,
 } from '@multiversx/sdk-exchange';
-import { RouterGetterService } from '../router/services/router.getter.service';
-import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
@@ -54,20 +57,22 @@ import { EnergyHandler } from './handlers/energy.handler.service';
 import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
-import { ApiConfigService } from 'src/helpers/api.config.service';
+import { AnalyticsWriteService } from 'src/services/analytics/services/analytics.write.service';
+import { RouterAbiService } from '../router/services/router.abi.service';
+import { EscrowHandlerService } from './handlers/escrow.handler.service';
+
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
     private data: any[];
 
     constructor(
-        private readonly apiConfig: ApiConfigService,
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         private readonly liquidityHandler: LiquidityHandler,
         private readonly swapHandler: SwapEventHandler,
         private readonly wsFarmHandler: RabbitMQFarmHandlerService,
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
-        private readonly wsRouterHandler: RabbitMQRouterHandlerService,
+        private readonly routerHandler: RouterHandlerService,
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
@@ -75,7 +80,8 @@ export class RabbitMqConsumer {
         private readonly feesCollectorHandler: FeesCollectorHandlerService,
         private readonly weeklyRewardsSplittingHandler: WeeklyRewardsSplittingHandlerService,
         private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
-        private readonly awsTimestreamWrite: AWSTimestreamWriteService,
+        private readonly escrowHandler: EscrowHandlerService,
+        private readonly analyticsWrite: AnalyticsWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -84,6 +90,7 @@ export class RabbitMqConsumer {
         exchange: process.env.RABBITMQ_EXCHANGE,
     })
     async consumeEvents(rawEvents: any) {
+        this.logger.info('Start Processing events...');
         if (!rawEvents.events) {
             return;
         }
@@ -201,10 +208,15 @@ export class RabbitMqConsumer {
                     );
                     break;
                 case ROUTER_EVENTS.CREATE_PAIR:
-                    await this.wsRouterHandler.handleCreatePairEvent(
+                    await this.routerHandler.handleCreatePairEvent(
                         new CreatePairEvent(rawEvent),
                     );
                     await this.getFilterAddresses();
+                    break;
+                case ROUTER_EVENTS.PAIR_SWAP_ENABLED:
+                    await this.routerHandler.handlePairSwapEnabledEvent(
+                        new PairSwapEnabledEvent(rawEvent),
+                    );
                     break;
                 case METABONDING_EVENTS.STAKE_LOCKED_ASSET:
                     await this.wsMetabondingHandler.handleMetabondingEvent(
@@ -265,24 +277,36 @@ export class RabbitMqConsumer {
                         new UserUnlockedTokensEvent(rawEvent),
                     );
                     break;
+                case ESCROW_EVENTS.LOCK_FUNDS:
+                    await this.escrowHandler.handleEscrowLockFundsEvent(
+                        new EscrowLockFundsEvent(rawEvent),
+                    );
+                    break;
+                case ESCROW_EVENTS.WITHDRAW:
+                    await this.escrowHandler.handleEscrowWithdrawEvent(
+                        new EscrowWithdrawEvent(rawEvent),
+                    );
+                    break;
+                case ESCROW_EVENTS.CANCEL_TRANSFER:
+                    await this.escrowHandler.handleEscrowCancelTransferEvent(
+                        new EscrowCancelTransferEvent(rawEvent),
+                    );
+                    break;
             }
         }
 
-        if (
-            Object.keys(this.data).length > 0 &&
-            this.apiConfig.isAWSTimestreamWrite()
-        ) {
-            await this.awsTimestreamWrite.ingest({
-                TableName: this.apiConfig.getAWSTableName(),
+        if (Object.keys(this.data).length > 0) {
+            await this.analyticsWrite.ingest({
                 data: this.data,
                 Time: timestamp,
             });
         }
+        this.logger.info('Finish Processing events...');
     }
 
     async getFilterAddresses(): Promise<void> {
         this.filterAddresses = [];
-        this.filterAddresses = await this.routerGetter.getAllPairsAddress();
+        this.filterAddresses = await this.routerAbi.getAllPairsAddressRaw();
         this.filterAddresses.push(...farmsAddresses());
         this.filterAddresses.push(scAddress.routerAddress);
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
@@ -290,6 +314,7 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.simpleLockEnergy);
         this.filterAddresses.push(scAddress.feesCollector);
         this.filterAddresses.push(scAddress.tokenUnstake);
+        this.filterAddresses.push(scAddress.escrow);
     }
 
     private isFilteredAddress(address: string): boolean {

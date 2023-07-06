@@ -1,34 +1,55 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { mxConfig } from 'src/config';
 import { BigNumber } from 'bignumber.js';
-import { LiquidityPosition } from '../models/pair.model';
+import { LiquidityPosition, LockedTokensInfo } from '../models/pair.model';
 import {
     quote,
     getAmountOut,
     getAmountIn,
     getTokenForGivenPosition,
 } from '../pair.utils';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { PairGetterService } from './pair.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneHour } from 'src/helpers/helpers';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PairAbiService } from './pair.abi.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { PairComputeService } from './pair.compute.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class PairService {
     constructor(
-        @Inject(forwardRef(() => PairGetterService))
-        private readonly pairGetterService: PairGetterService,
-        @Inject(forwardRef(() => RouterGetterService))
-        private readonly routerGetter: RouterGetterService,
-        @Inject(forwardRef(() => WrapService))
-        private readonly wrapService: WrapService,
+        private readonly pairAbi: PairAbiService,
+        @Inject(forwardRef(() => PairComputeService))
+        private readonly pairCompute: PairComputeService,
+        private readonly routerAbi: RouterAbiService,
+        private readonly wrapAbi: WrapAbiService,
+        @Inject(forwardRef(() => TokenGetterService))
+        private readonly tokenGetter: TokenGetterService,
         private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        private readonly contextGetter: ContextGetterService,
     ) {}
+
+    async getFirstToken(pairAddress: string): Promise<EsdtToken> {
+        const firstTokenID = await this.pairAbi.firstTokenID(pairAddress);
+        return await this.tokenGetter.getTokenMetadata(firstTokenID);
+    }
+
+    async getSecondToken(pairAddress: string): Promise<EsdtToken> {
+        const secondTokenID = await this.pairAbi.secondTokenID(pairAddress);
+        return await this.tokenGetter.getTokenMetadata(secondTokenID);
+    }
+
+    async getLpToken(pairAddress: string): Promise<EsdtToken> {
+        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
+        return lpTokenID === undefined
+            ? undefined
+            : await this.tokenGetter.getTokenMetadata(lpTokenID);
+    }
 
     async getAmountOut(
         pairAddress: string,
@@ -42,11 +63,11 @@ export class PairService {
             pairInfo,
             totalFeePercent,
         ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
-            this.pairGetterService.getPairInfoMetadata(pairAddress),
-            this.pairGetterService.getTotalFeePercent(pairAddress),
+            this.wrapAbi.wrappedEgldTokenID(),
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
+            this.pairAbi.pairInfoMetadata(pairAddress),
+            this.pairAbi.totalFeePercent(pairAddress),
         ]);
 
         const tokenIn =
@@ -84,11 +105,11 @@ export class PairService {
             pairInfo,
             totalFeePercent,
         ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
-            this.pairGetterService.getPairInfoMetadata(pairAddress),
-            this.pairGetterService.getTotalFeePercent(pairAddress),
+            this.wrapAbi.wrappedEgldTokenID(),
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
+            this.pairAbi.pairInfoMetadata(pairAddress),
+            this.pairAbi.totalFeePercent(pairAddress),
         ]);
 
         const tokenOut =
@@ -123,10 +144,10 @@ export class PairService {
     ): Promise<BigNumber> {
         const [wrappedTokenID, firstTokenID, secondTokenID, pairInfo] =
             await Promise.all([
-                this.wrapService.getWrappedEgldTokenID(),
-                this.pairGetterService.getFirstTokenID(pairAddress),
-                this.pairGetterService.getSecondTokenID(pairAddress),
-                this.pairGetterService.getPairInfoMetadata(pairAddress),
+                this.wrapAbi.wrappedEgldTokenID(),
+                this.pairAbi.firstTokenID(pairAddress),
+                this.pairAbi.secondTokenID(pairAddress),
+                this.pairAbi.pairInfoMetadata(pairAddress),
             ]);
 
         const tokenIn =
@@ -146,9 +167,7 @@ export class PairService {
         pairAddress: string,
         amount: string,
     ): Promise<LiquidityPosition> {
-        const pairInfo = await this.pairGetterService.getPairInfoMetadata(
-            pairAddress,
-        );
+        const pairInfo = await this.pairAbi.pairInfoMetadata(pairAddress);
 
         const firstTokenAmount = getTokenForGivenPosition(
             amount,
@@ -178,10 +197,10 @@ export class PairService {
             secondTokenPriceUSD,
             liquidityPosition,
         ] = await Promise.all([
-            this.pairGetterService.getFirstToken(pairAddress),
-            this.pairGetterService.getSecondToken(pairAddress),
-            this.pairGetterService.getFirstTokenPriceUSD(pairAddress),
-            this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
+            this.getFirstToken(pairAddress),
+            this.getSecondToken(pairAddress),
+            this.pairCompute.firstTokenPriceUSD(pairAddress),
+            this.pairCompute.secondTokenPriceUSD(pairAddress),
             this.getLiquidityPosition(pairAddress, amount),
         ]);
         return computeValueUSD(
@@ -206,9 +225,9 @@ export class PairService {
         if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
-        const pairsAddress = await this.routerGetter.getAllPairsAddress();
+        const pairsAddress = await this.routerAbi.pairsAddress();
         const promises = pairsAddress.map(async (pairAddress) =>
-            this.pairGetterService.getLpTokenID(pairAddress),
+            this.pairAbi.lpTokenID(pairAddress),
         );
         const lpTokenIDs = await Promise.all(promises);
         let returnedData = null;
@@ -228,12 +247,12 @@ export class PairService {
     }
 
     async isPairEsdtToken(tokenID: string): Promise<boolean> {
-        const pairsAddress = await this.routerGetter.getAllPairsAddress();
+        const pairsAddress = await this.routerAbi.pairsAddress();
         for (const pairAddress of pairsAddress) {
             const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
-                this.pairGetterService.getFirstTokenID(pairAddress),
-                this.pairGetterService.getSecondTokenID(pairAddress),
-                this.pairGetterService.getLpTokenID(pairAddress),
+                this.pairAbi.firstTokenID(pairAddress),
+                this.pairAbi.secondTokenID(pairAddress),
+                this.pairAbi.lpTokenID(pairAddress),
             ]);
 
             if (
@@ -248,11 +267,40 @@ export class PairService {
     }
 
     async requireOwner(pairAddress: string, sender: string) {
-        if (
-            (await this.pairGetterService.getRouterOwnerManagedAddress(
-                pairAddress,
-            )) !== sender
-        )
+        if ((await this.pairAbi.routerOwnerAddress(pairAddress)) !== sender)
             throw new Error('You are not the owner.');
+    }
+
+    async getLockedTokensInfo(pairAddress: string): Promise<LockedTokensInfo> {
+        const [
+            lockingScAddress,
+            unlockEpoch,
+            lockingDeadlineEpoch,
+            currentEpoch,
+        ] = await Promise.all([
+            this.pairAbi.lockingScAddress(pairAddress),
+            this.pairAbi.unlockEpoch(pairAddress),
+            this.pairAbi.lockingDeadlineEpoch(pairAddress),
+            this.contextGetter.getCurrentEpoch(),
+        ]);
+
+        if (
+            lockingScAddress === undefined ||
+            unlockEpoch === undefined ||
+            lockingDeadlineEpoch === undefined
+        ) {
+            return undefined;
+        }
+
+        if (currentEpoch >= lockingDeadlineEpoch) {
+            return undefined;
+        }
+
+        return new LockedTokensInfo({
+            lockingScAddress: lockingScAddress,
+            lockingSC: new SimpleLockModel({ address: lockingScAddress }),
+            unlockEpoch,
+            lockingDeadlineEpoch,
+        });
     }
 }

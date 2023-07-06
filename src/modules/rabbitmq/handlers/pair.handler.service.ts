@@ -1,17 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 
 @Injectable()
 export class PairHandler {
     constructor(
-        private readonly pairGetter: PairGetterService,
+        private readonly pairAbi: PairAbiService,
         private readonly pairSetter: PairSetterService,
-        private readonly routerGetter: RouterGetterService,
+        private readonly routerAbi: RouterAbiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -36,23 +37,34 @@ export class PairHandler {
                 this.pairSetter.setTotalSupply(pairAddress, totalSupply),
             );
         }
+        totalSupply = totalSupply
+            ? totalSupply
+            : await this.pairAbi.totalSupply(pairAddress);
+        promises.push(
+            this.pairSetter.setPairInfoMetadata(
+                pairAddress,
+                new PairInfoModel({
+                    reserves0: firstTokenReserves,
+                    reserves1: secondTokenReserves,
+                    totalSupply,
+                }),
+            ),
+        );
         const cachedKeys = await Promise.all(promises);
         await this.deleteCacheKeys(cachedKeys);
     }
 
     async getTokenTotalLockedValue(tokenID: string): Promise<string> {
-        const pairs = await this.routerGetter.getPairsMetadata();
+        const pairs = await this.routerAbi.pairsMetadata();
         const promises = [];
         for (const pair of pairs) {
             switch (tokenID) {
                 case pair.firstTokenID:
-                    promises.push(
-                        this.pairGetter.getFirstTokenReserve(pair.address),
-                    );
+                    promises.push(this.pairAbi.firstTokenReserve(pair.address));
                     break;
                 case pair.secondTokenID:
                     promises.push(
-                        this.pairGetter.getSecondTokenReserve(pair.address),
+                        this.pairAbi.secondTokenReserve(pair.address),
                     );
                     break;
             }

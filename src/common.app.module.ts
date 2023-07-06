@@ -15,7 +15,10 @@ const logTransports: Transport[] = [
     new winston.transports.Console({
         format: winston.format.combine(
             winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike(),
+            nestWinstonModuleUtilities.format.nestLike('xExchangeService', {
+                colors: true,
+                prettyPrint: true,
+            }),
         ),
         level: loglevel,
     }),

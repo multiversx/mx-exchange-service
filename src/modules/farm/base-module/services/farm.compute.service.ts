@@ -1,37 +1,62 @@
-import { forwardRef, Inject } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig, scAddress } from 'src/config';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { Logger } from 'winston';
-import { FarmGetterService } from './farm.getter.service';
 import { CalculateRewardsArgs } from '../../models/farm.args';
+import { FarmAbiService } from './farm.abi.service';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { FarmServiceBase } from './farm.base.service';
+import { Inject, forwardRef } from '@nestjs/common';
+import { IFarmComputeService } from './interfaces';
 
-export abstract class FarmComputeService {
+export abstract class FarmComputeService implements IFarmComputeService {
     constructor(
-        @Inject(forwardRef(() => FarmGetterService))
-        protected readonly farmGetter: FarmGetterService,
+        protected readonly farmAbi: FarmAbiService,
+        @Inject(forwardRef(() => FarmServiceBase))
+        protected readonly farmService: FarmServiceBase,
         protected readonly pairService: PairService,
-        protected readonly pairGetter: PairGetterService,
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
+
+    @ErrorLoggerAsync({
+        className: FarmComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async farmLockedValueUSD(farmAddress: string): Promise<string> {
+        return await this.computeFarmLockedValueUSD(farmAddress);
+    }
 
     async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
         return '0';
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async farmedTokenPriceUSD(farmAddress: string): Promise<string> {
+        return await this.computeFarmedTokenPriceUSD(farmAddress);
+    }
+
     async computeFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
-        const farmedTokenID = await this.farmGetter.getFarmedTokenID(
-            farmAddress,
-        );
+        const farmedTokenID = await this.farmAbi.farmedTokenID(farmAddress);
         if (scAddress.has(farmedTokenID)) {
             const tokenPriceUSD =
                 await this.tokenCompute.computeTokenPriceDerivedUSD(
@@ -45,10 +70,34 @@ export abstract class FarmComputeService {
         );
     }
 
+    @ErrorLoggerAsync({
+        className: FarmComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async farmTokenPriceUSD(farmAddress: string): Promise<string> {
+        return this.farmingTokenPriceUSD(farmAddress);
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmComputeService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async farmingTokenPriceUSD(farmAddress: string): Promise<string> {
+        return await this.computeFarmingTokenPriceUSD(farmAddress);
+    }
+
     async computeFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
-        const farmingTokenID = await this.farmGetter.getFarmingTokenID(
-            farmAddress,
-        );
+        const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
         if (scAddress.has(farmingTokenID)) {
             return await this.tokenCompute.computeTokenPriceDerivedUSD(
                 farmingTokenID,
@@ -75,12 +124,12 @@ export abstract class FarmComputeService {
             produceRewardsEnabled,
         ] = await Promise.all([
             this.contextGetter.getShardCurrentBlockNonce(1),
-            this.farmGetter.getLastRewardBlockNonce(positon.farmAddress),
-            this.farmGetter.getRewardsPerBlock(positon.farmAddress),
-            this.farmGetter.getDivisionSafetyConstant(positon.farmAddress),
-            this.farmGetter.getFarmTokenSupply(positon.farmAddress),
-            this.farmGetter.getRewardPerShare(positon.farmAddress),
-            this.farmGetter.getProduceRewardsEnabled(positon.farmAddress),
+            this.farmAbi.lastRewardBlockNonce(positon.farmAddress),
+            this.farmAbi.rewardsPerBlock(positon.farmAddress),
+            this.farmAbi.divisionSafetyConstant(positon.farmAddress),
+            this.farmAbi.farmTokenSupply(positon.farmAddress),
+            this.farmAbi.rewardPerShare(positon.farmAddress),
+            this.farmAbi.produceRewardsEnabled(positon.farmAddress),
         ]);
 
         const amountBig = new BigNumber(positon.liquidity);
@@ -119,13 +168,13 @@ export abstract class FarmComputeService {
     }
 
     async computeAnualRewardsUSD(farmAddress: string): Promise<string> {
-        const farmedToken = await this.farmGetter.getFarmedToken(farmAddress);
+        const farmedToken = await this.farmService.getFarmedToken(farmAddress);
 
         const [farmedTokenPriceUSD, rewardsPerBlock] = await Promise.all([
             this.tokenCompute.computeTokenPriceDerivedUSD(
                 farmedToken.identifier,
             ),
-            this.farmGetter.getRewardsPerBlock(farmAddress),
+            this.farmAbi.rewardsPerBlock(farmAddress),
         ]);
 
         const totalRewardsPerYear = new BigNumber(rewardsPerBlock).multipliedBy(

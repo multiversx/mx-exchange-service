@@ -1,0 +1,234 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.70.0-nightly",
+            "commitHash": "3a8a131e9509c478ece1c58fe0ea2d49463d2300",
+            "commitDate": "2023-04-02",
+            "channel": "Nightly",
+            "short": "rustc 1.70.0-nightly (3a8a131e9 2023-04-02)"
+        },
+        "contractCrate": {
+            "name": "lkmex-transfer",
+            "version": "0.0.0",
+            "gitVersion": "v1.6.0-1262-gbd0806ab"
+        },
+        "framework": {
+            "name": "multiversx-sc",
+            "version": "0.39.4"
+        }
+    },
+    "name": "LkmexTransfer",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "energy_factory_address",
+                "type": "Address"
+            },
+            {
+                "name": "locked_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "min_lock_epochs",
+                "type": "u64"
+            },
+            {
+                "name": "epochs_cooldown_duration",
+                "type": "u64"
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "withdraw",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sender",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "cancelTransfer",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sender",
+                    "type": "Address"
+                },
+                {
+                    "name": "receiver",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "lockFunds",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "receiver",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getScheduledTransfers",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "receiver",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<ScheduledTransfer>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getAllSenders",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "receiver",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "setEnergyFactoryAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sc_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getEnergyFactoryAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "addAdmin",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeAdmin",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "updateOwnerOrAdmin",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "previous_owner",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getPermissions",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        }
+    ],
+    "events": [],
+    "hasCallback": false,
+    "types": {
+        "EsdtTokenPayment": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_identifier",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "LockedFunds": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "funds",
+                    "type": "List<EsdtTokenPayment>"
+                },
+                {
+                    "name": "locked_epoch",
+                    "type": "u64"
+                }
+            ]
+        },
+        "ScheduledTransfer": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "sender",
+                    "type": "Address"
+                },
+                {
+                    "name": "locked_funds",
+                    "type": "LockedFunds"
+                }
+            ]
+        }
+    }
+}

@@ -3,12 +3,12 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { LockOption } from '../models/simple.lock.energy.model';
-import { EnergyGetterService } from './energy.getter.service';
 import { IEnergyComputeService } from './interfaces';
+import { EnergyAbiService } from './energy.abi.service';
 
 @Injectable()
 export class EnergyComputeService implements IEnergyComputeService {
-    constructor(private readonly energyGetter: EnergyGetterService) {}
+    constructor(private readonly energyAbi: EnergyAbiService) {}
 
     depleteUserEnergy(
         energyEntry: EnergyType,
@@ -60,7 +60,7 @@ export class EnergyComputeService implements IEnergyComputeService {
     private async computePenaltyPercentageFullUnlock(
         lockEpochsRemaining: number,
     ): Promise<number> {
-        const lockOptions = await this.energyGetter.getLockOptions();
+        const lockOptions = await this.energyAbi.lockOptions();
         const lastLockOption = lockOptions[lockOptions.length - 1];
 
         if (lockEpochsRemaining > lastLockOption.lockEpochs) {

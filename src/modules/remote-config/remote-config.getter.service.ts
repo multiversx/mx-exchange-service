@@ -7,6 +7,7 @@ import { FlagRepositoryService } from 'src/services/database/repositories/flag.r
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { SCAddressType } from './models/sc-address.model';
 import { oneHour } from 'src/helpers/helpers';
+import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
 
 @Injectable()
 export class RemoteConfigGetterService extends GenericGetterService {
@@ -15,6 +16,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly scAddressRepositoryService: SCAddressRepositoryService,
         protected readonly flagRepositoryService: FlagRepositoryService,
+        protected readonly analyticsRepositoryService: AnalyticsRepositoryService,
     ) {
         super(cachingService, logger);
     }
