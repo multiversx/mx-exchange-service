@@ -306,7 +306,7 @@ export class RabbitMqConsumer {
 
     async getFilterAddresses(): Promise<void> {
         this.filterAddresses = [];
-        this.filterAddresses = await this.routerAbi.pairsAddress();
+        this.filterAddresses = await this.routerAbi.getAllPairsAddressRaw();
         this.filterAddresses.push(...farmsAddresses());
         this.filterAddresses.push(scAddress.routerAddress);
         this.filterAddresses.push(scAddress.metabondingStakingAddress);

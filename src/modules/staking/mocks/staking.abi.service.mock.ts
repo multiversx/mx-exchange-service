@@ -11,10 +11,10 @@ export class StakingAbiServiceMock implements IStakingAbiService {
         return 'STAKETOK-1111';
     }
     async farmingTokenID(stakeAddress: string): Promise<string> {
-        return 'TOK1-1111';
+        return 'WEGLD-123456';
     }
     async rewardTokenID(stakeAddress: string): Promise<string> {
-        return 'TOK1-1111';
+        return 'WEGLD-123456';
     }
     async farmTokenSupply(stakeAddress: string): Promise<string> {
         return '5256000000000000000';

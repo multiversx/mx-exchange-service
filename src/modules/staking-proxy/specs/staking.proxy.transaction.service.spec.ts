@@ -107,7 +107,7 @@ describe('StakingProxyTransactionService', () => {
                 proxyStakingAddress: Address.Zero().bech32(),
                 payments: [
                     {
-                        tokenID: 'TOK1TOK4LPStaked',
+                        tokenID: 'EGLDTOK4FL-abcdef',
                         nonce: 1,
                         amount: '1',
                     },
@@ -125,7 +125,7 @@ describe('StakingProxyTransactionService', () => {
                 sender: Address.Zero().bech32(),
                 receiver: Address.Zero().bech32(),
                 data: encodeTransactionData(
-                    `MultiESDTNFTTransfer@${Address.Zero().bech32()}@01@TOK1TOK4LPStaked@01@1@stakeFarmTokens`,
+                    `MultiESDTNFTTransfer@${Address.Zero().bech32()}@01@EGLDTOK4FL-abcdef@01@1@stakeFarmTokens`,
                 ),
                 options: undefined,
                 signature: undefined,
@@ -145,7 +145,7 @@ describe('StakingProxyTransactionService', () => {
                 proxyStakingAddress: Address.Zero().bech32(),
                 payments: [
                     {
-                        tokenID: 'TOK1TOK4LPStaked',
+                        tokenID: 'EGLDTOK4FL-abcdef',
                         nonce: 1,
                         amount: '1',
                     },
@@ -168,7 +168,7 @@ describe('StakingProxyTransactionService', () => {
                 sender: Address.Zero().bech32(),
                 receiver: Address.Zero().bech32(),
                 data: encodeTransactionData(
-                    `MultiESDTNFTTransfer@${Address.Zero().bech32()}@02@TOK1TOK4LPStaked@01@1@METASTAKE-1234@01@1@stakeFarmTokens`,
+                    `MultiESDTNFTTransfer@${Address.Zero().bech32()}@02@EGLDTOK4FL-abcdef@01@1@METASTAKE-1234@01@1@stakeFarmTokens`,
                 ),
                 options: undefined,
                 signature: undefined,
@@ -210,7 +210,7 @@ describe('StakingProxyTransactionService', () => {
                     proxyStakingAddress: Address.Zero().bech32(),
                     payments: [
                         {
-                            tokenID: 'TOK1TOK4LPStaked',
+                            tokenID: 'EGLDTOK4FL-abcdef',
                             nonce: 1,
                             amount: '1',
                         },

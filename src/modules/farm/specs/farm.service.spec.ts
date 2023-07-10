@@ -35,6 +35,7 @@ import { FarmCustomAbiService } from '../custom/services/farm.custom.abi.service
 import { FarmCustomService } from '../custom/services/farm.custom.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FarmCustomComputeService } from '../custom/services/farm.custom.compute.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -103,7 +104,7 @@ describe('FarmService', () => {
 
         const rewards = await serviceV1_2.getRewardsForPosition({
             farmAddress:
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
             identifier: identifier,
             attributes: attributes,
             liquidity: liquidity,
@@ -126,23 +127,25 @@ describe('FarmService', () => {
         expect(farms).toEqual([
             {
                 address:
-                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 rewardType: undefined,
                 version: 'v1.2',
             },
             {
-                address: 'farm_address_2',
+                address:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcs2zduud',
                 rewardType: 'unlockedRewards',
                 version: 'v1.3',
             },
             {
-                address: 'farm_address_3',
+                address:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeqs727zc',
                 rewardType: 'lockedRewards',
                 version: 'v1.3',
             },
             {
                 address:
-                    'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
                 rewardType: 'customRewards',
                 version: 'v1.3',
             },
@@ -152,12 +155,12 @@ describe('FarmService', () => {
     it('should check if farm token', async () => {
         const farmAbiFactory = module.get<FarmAbiFactory>(FarmAbiFactory);
         const isFarmToken_0 = await farmAbiFactory.isFarmToken(
-            'TOK1TOK9LPStaked',
+            'TOK1TOK9F-abcdef',
         );
         expect(isFarmToken_0).toEqual(false);
 
         const isFarmToken_1 = await farmAbiFactory.isFarmToken(
-            'TOK1TOK4LPStaked',
+            'EGLDTOK4FL-abcdef',
         );
         expect(isFarmToken_1).toEqual(true);
     });
@@ -165,22 +168,29 @@ describe('FarmService', () => {
     it('should get farm address by farm token ID', async () => {
         const farmAbiFactory = module.get<FarmAbiFactory>(FarmAbiFactory);
         const farmAddress = await farmAbiFactory.getFarmAddressByFarmTokenID(
-            'TOK1TOK4LPStaked',
+            'EGLDTOK4FL-abcdef',
         );
         expect(farmAddress).toEqual(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
         );
     });
 
     it('should get batch rewards for position', async () => {
         const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
+        const contextGetterService =
+            module.get<ContextGetterService>(ContextGetterService);
+        jest.spyOn(
+            contextGetterService,
+            'getShardCurrentBlockNonce',
+        ).mockResolvedValue(2);
+
         const batchRewardsForPosition =
             await serviceV1_3.getBatchRewardsForPosition([
                 {
                     farmAddress:
-                        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-                    liquidity: '1000000000000000',
-                    identifier: 'EGLDMEXFL-a329b6-0b',
+                        'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeqs727zc',
+                    liquidity: '1000000000000000000',
+                    identifier: 'EGLDMEXFL-bcdefg-0b',
                     attributes:
                         'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
                     vmQuery: false,
@@ -190,19 +200,26 @@ describe('FarmService', () => {
 
         expect(batchRewardsForPosition).toEqual([
             new RewardsModel({
-                identifier: 'EGLDMEXFL-a329b6-0b',
+                identifier: 'EGLDMEXFL-bcdefg-0b',
                 remainingFarmingEpochs: 1047,
-                rewards: '110000000000000000100000000000',
+                rewards: '1000000000000000000',
             }),
         ]);
     });
 
     it('should get tokens for exit farm', async () => {
         const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
+        const contextGetterService =
+            module.get<ContextGetterService>(ContextGetterService);
+        jest.spyOn(
+            contextGetterService,
+            'getShardCurrentBlockNonce',
+        ).mockResolvedValue(2);
+
         const tokensForExitFarm = await serviceV1_3.getTokensForExitFarm({
             farmAddress:
-                'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            liquidity: '1000000000000000',
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeqs727zc',
+            liquidity: '1000000000000000000',
             identifier: 'EGLDMEXFL-a329b6-0b',
             attributes:
                 'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
@@ -210,12 +227,12 @@ describe('FarmService', () => {
             user: Address.Zero().bech32(),
         });
         expect(tokensForExitFarm).toEqual({
-            farmingTokens: '999000000000000',
-            rewards: '110000000000000000100000000000',
+            farmingTokens: '999000000000000000',
+            rewards: '1000000000000000000',
         });
     });
 
-    it('should get tokens for exit farm', async () => {
+    it('should decode farm token attributes', async () => {
         const serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
         const tokensForExitFarm = serviceV1_3.decodeFarmTokenAttributes(
             'EGLDMEXFL-a329b6-0b',
