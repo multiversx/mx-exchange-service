@@ -118,7 +118,7 @@ export class FarmResolverV2 extends FarmResolver {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
-        return this.farmCompute.computeUndistributedBoostedRewards(parent.address, currentWeek);
+        return this.farmCompute.undistributedBoostedRewards(parent.address, currentWeek);
     }
 
     @ResolveField()

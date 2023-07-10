@@ -10,16 +10,16 @@ export class FarmAbiServiceMockV2
     async lastUndistributedBoostedRewardsCollectWeek(
         farmAddress: string,
     ): Promise<number> {
-        return Promise.resolve(1);
+        return 1;
     }
     async undistributedBoostedRewards(farmAddress: string): Promise<string> {
-        return Promise.resolve('5000');
+        return '5000';
     }
     async remainingBoostedRewardsToDistribute(
         farmAddress: string,
         week: number,
     ): Promise<string> {
-        return Promise.resolve('1000');
+        return '1000';
     }
 
     accumulatedRewardsForWeek(scAddress: string, week: number): Promise<string> {

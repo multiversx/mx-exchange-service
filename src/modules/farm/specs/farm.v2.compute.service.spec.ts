@@ -61,7 +61,7 @@ describe('FarmServiceV2', () => {
         const service = module.get<FarmComputeServiceV2>(
             FarmComputeServiceV2,
         );
-        const result = await service.computeUndistributedBoostedRewards('erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye', 10);
+        const result = await service.undistributedBoostedRewards('erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye', 10);
         const expectedTotal = new BigNumber('5000').plus('4000').integerValue().toFixed(); // 4 weeks * 1000
         expect(result).toEqual(expectedTotal);
         // expect(mockFarmAbi.undistributedBoostedRewards).toHaveBeenCalled();

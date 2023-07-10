@@ -472,10 +472,21 @@ export class FarmComputeServiceV2
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async computeUndistributedBoostedRewards(
+    async undistributedBoostedRewards(
         scAddress: string,
         currentWeek: number,
     ): Promise<string> {
+        const amount = await this.undistributedBoostedRewardsRaw(
+            scAddress,
+            currentWeek,
+        );
+        return amount.integerValue().toFixed();
+    }
+
+    async undistributedBoostedRewardsRaw(
+        scAddress: string,
+        currentWeek: number,
+    ): Promise<BigNumber> {
         const [
             undistributedBoostedRewards,
             lastUndistributedBoostedRewardsCollectWeek,
@@ -489,7 +500,7 @@ export class FarmComputeServiceV2
         const firstWeek = lastUndistributedBoostedRewardsCollectWeek + 1;
         const lastWeek = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS - 1;
         if (firstWeek > lastWeek) {
-            return undistributedBoostedRewards;
+            return new BigNumber(undistributedBoostedRewards);
         }
         const promises = []
         for (let week = firstWeek; week <= lastWeek; week++) {
@@ -502,12 +513,10 @@ export class FarmComputeServiceV2
         }
         const remainingRewards = await Promise.all(promises);
         const totalRemainingRewards = remainingRewards.reduce((acc, curr) => {
-            return new BigNumber(acc).plus(curr).integerValue().toFixed();
+            return new BigNumber(acc).plus(curr);
         });
         return new BigNumber(undistributedBoostedRewards)
-            .plus(totalRemainingRewards)
-            .integerValue()
-            .toFixed();
+            .plus(totalRemainingRewards);
 
     }
 
