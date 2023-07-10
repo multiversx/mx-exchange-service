@@ -102,36 +102,37 @@ describe('AutoRouterService', () => {
 
     it('should get swap data for simple swap with default inputs', async () => {
         const swap = await service.swap({
-            tokenInID: 'USDC-1111',
-            tokenOutID: 'TOK1-1111',
+            tokenInID: 'USDC-123456',
+            tokenOutID: 'WEGLD-123456',
             tolerance: 0.01,
         });
 
         expect(swap).toEqual(
             new AutoRouteModel({
                 swapType: 0,
-                tokenInID: 'USDC-1111',
-                tokenOutID: 'TOK1-1111',
-                tokenInExchangeRate: '1246248446862',
-                tokenOutExchangeRate: '802408221665557136369171',
-                tokenInExchangeRateDenom: '0.000001246248446862',
-                tokenOutExchangeRateDenom: '802408.221665557136369171',
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'WEGLD-123456',
+                tokenInExchangeRate: '99690060900928177',
+                tokenOutExchangeRate: '10031090',
+                tokenInExchangeRateDenom: '0.099690060900928177',
+                tokenOutExchangeRateDenom: '10.03109',
                 tokenInPriceUSD: '1',
-                tokenOutPriceUSD: '200',
-                amountIn: '1000000000000000000',
-                amountOut: '1246248446862',
-                intermediaryAmounts: ['1000000000000000000', '1246248446862'],
-                tokenRoute: ['USDC-1111', 'TOK1-1111'],
+                tokenOutPriceUSD: '10',
+                amountIn: '1000000',
+                amountOut: '99690060900928177',
+                intermediaryAmounts: ['1000000', '99690060900928177'],
+                tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
                     new PairModel({
-                        address:
-                            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                        firstToken: Tokens('TOK1-1111'),
-                        secondToken: Tokens('USDC-1111'),
+                        address: Address.fromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000013',
+                        ).bech32(),
+                        firstToken: Tokens('WEGLD-123456'),
+                        secondToken: Tokens('USDC-123456'),
                         info: new PairInfoModel({
-                            reserves0: '1000000000000000000',
-                            reserves1: '800000000000000000000000',
-                            totalSupply: '1000000000000000000',
+                            reserves0: '1000000000000000000000',
+                            reserves1: '10000000000',
+                            totalSupply: '10000000000',
                         }),
                         totalFeePercent: 0.003,
                     }),
@@ -145,36 +146,37 @@ describe('AutoRouterService', () => {
 
     it('should get swap data for simple swap with amountIn', async () => {
         const swap = await service.swap({
-            amountIn: '2000000000000000000',
-            tokenInID: 'USDC-1111',
-            tokenOutID: 'TOK1-1111',
+            amountIn: '2000000',
+            tokenInID: 'USDC-123456',
+            tokenOutID: 'WEGLD-123456',
             tolerance: 0.01,
         });
         expect(swap).toEqual(
             new AutoRouteModel({
                 swapType: 0,
-                tokenInID: 'USDC-1111',
-                tokenOutID: 'TOK1-1111',
-                tokenInExchangeRate: '1246246893729',
-                tokenOutExchangeRate: '802409221665070560617502',
-                tokenInExchangeRateDenom: '0.000001246246893729',
-                tokenOutExchangeRateDenom: '802409.221665070560617502',
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'WEGLD-123456',
+                tokenInExchangeRate: '99680123783317606',
+                tokenOutExchangeRate: '10032090',
+                tokenInExchangeRateDenom: '0.099680123783317606',
+                tokenOutExchangeRateDenom: '10.03209',
                 tokenInPriceUSD: '1',
-                tokenOutPriceUSD: '200',
-                amountIn: '2000000000000000000',
-                amountOut: '2492493787459',
-                intermediaryAmounts: ['2000000000000000000', '2492493787459'],
-                tokenRoute: ['USDC-1111', 'TOK1-1111'],
+                tokenOutPriceUSD: '10',
+                amountIn: '2000000',
+                amountOut: '199360247566635212',
+                intermediaryAmounts: ['2000000', '199360247566635212'],
+                tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
                     new PairModel({
-                        address:
-                            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                        firstToken: Tokens('TOK1-1111'),
-                        secondToken: Tokens('USDC-1111'),
+                        address: Address.fromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000013',
+                        ).bech32(),
+                        firstToken: Tokens('WEGLD-123456'),
+                        secondToken: Tokens('USDC-123456'),
                         info: new PairInfoModel({
-                            reserves0: '1000000000000000000',
-                            reserves1: '800000000000000000000000',
-                            totalSupply: '1000000000000000000',
+                            reserves0: '1000000000000000000000',
+                            reserves1: '10000000000',
+                            totalSupply: '10000000000',
                         }),
                         totalFeePercent: 0.003,
                     }),
@@ -188,53 +190,55 @@ describe('AutoRouterService', () => {
 
     it('should get swap data for multi swap with amountOut', async () => {
         const swap = await service.swap({
-            amountOut: '500000000000000000',
-            tokenInID: 'USDC-1111',
-            tokenOutID: 'TOK2-2222',
+            amountOut: '1000000000000000000000',
+            tokenInID: 'USDC-123456',
+            tokenOutID: 'MEX-123456',
             tolerance: 0.01,
         });
 
         expect(swap).toEqual(
             new AutoRouteModel({
                 swapType: 1,
-                tokenInID: 'USDC-1111',
-                tokenOutID: 'TOK2-2222',
-                tokenInExchangeRate: '1240641874999',
-                tokenOutExchangeRate: '806034376358608727601852',
-                tokenInExchangeRateDenom: '0.000001240641874999',
-                tokenOutExchangeRateDenom: '806034.376358608727601852',
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'MEX-123456',
+                tokenInExchangeRate: '99201792616073289490',
+                tokenOutExchangeRate: '10080',
+                tokenInExchangeRateDenom: '99.20179261607328949',
+                tokenOutExchangeRateDenom: '0.01008',
                 tokenInPriceUSD: '1',
-                tokenOutPriceUSD: '100',
-                amountIn: '407047360061097407438935',
-                amountOut: '500000000000000000',
+                tokenOutPriceUSD: '0.01',
+                amountIn: '10181267',
+                amountOut: '1000000000000000000000',
                 intermediaryAmounts: [
-                    '403017188179304363800926',
-                    '334336342360414578',
-                    '500000000000000000',
+                    '10080463',
+                    '1004013040121365097',
+                    '1000000000000000000000',
                 ],
-                tokenRoute: ['USDC-1111', 'TOK1-1111', 'TOK2-2222'],
+                tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
                 pairs: [
                     new PairModel({
-                        address:
-                            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                        firstToken: Tokens('TOK1-1111'),
-                        secondToken: Tokens('USDC-1111'),
+                        address: Address.fromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000013',
+                        ).bech32(),
+                        firstToken: Tokens('WEGLD-123456'),
+                        secondToken: Tokens('USDC-123456'),
                         info: new PairInfoModel({
-                            reserves0: '1000000000000000000',
-                            reserves1: '800000000000000000000000',
-                            totalSupply: '1000000000000000000',
+                            reserves0: '1000000000000000000000',
+                            reserves1: '10000000000',
+                            totalSupply: '10000000000',
                         }),
                         totalFeePercent: 0.003,
                     }),
                     new PairModel({
-                        address:
-                            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                        firstToken: Tokens('TOK1-1111'),
-                        secondToken: Tokens('TOK2-2222'),
+                        address: Address.fromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000012',
+                        ).bech32(),
+                        firstToken: Tokens('WEGLD-123456'),
+                        secondToken: Tokens('MEX-123456'),
                         info: new PairInfoModel({
-                            reserves0: '1000000000000000000',
-                            reserves1: '2000000000000000000',
-                            totalSupply: '1000000000000000000',
+                            reserves0: '1000000000000000000000',
+                            reserves1: '1000000000000000000000000',
+                            totalSupply: '1000000000000000000000',
                         }),
                         totalFeePercent: 0.003,
                     }),
@@ -252,7 +256,7 @@ describe('AutoRouterService', () => {
             new AutoRouteModel({
                 swapType: 0,
                 tokenInID: 'EGLD',
-                tokenOutID: 'TOK1-1111',
+                tokenOutID: 'USDC-123456',
                 tokenInExchangeRate: '4960273038901078',
                 tokenOutExchangeRate: '201601805416248751341',
                 tokenInPriceUSD: '1',
@@ -263,11 +267,12 @@ describe('AutoRouterService', () => {
                     '1000000000000000000',
                     '4960273038901078',
                 ],
-                tokenRoute: ['USDC-1111', 'TOK1-1111'],
+                tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
                     new PairModel({
-                        address:
-                            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                        address: Address.fromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000013',
+                        ).bech32(),
                     }),
                 ],
                 tolerance: 0.01,
@@ -291,13 +296,14 @@ describe('AutoRouterService', () => {
             {
                 nonce: 0,
                 value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                receiver: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000013',
+                ).bech32(),
                 sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
                 data: encodeTransactionData(
-                    'ESDTTransfer@TOK1-1111@01000000000000000000@swapTokensFixedInput@TOK1-1111@4911161424654532',
+                    'ESDTTransfer@WEGLD-123456@01000000000000000000@swapTokensFixedInput@USDC-123456@4911161424654532',
                 ),
                 chainID: 'T',
                 version: 1,
@@ -312,7 +318,7 @@ describe('AutoRouterService', () => {
             Address.Zero().bech32(),
             new AutoRouteModel({
                 swapType: 1,
-                tokenInID: 'USDC-1111',
+                tokenInID: 'USDC-123456',
                 tokenOutID: 'EGLD',
                 tokenInExchangeRate: '4962567499999999',
                 tokenOutExchangeRate: '201508594089652181902',
@@ -325,15 +331,17 @@ describe('AutoRouterService', () => {
                     '626881033727',
                     '500000000000000000',
                 ],
-                tokenRoute: ['USDC-1111', 'TOK1-1111', 'TOK2-2222'],
+                tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
                 pairs: [
                     new PairModel({
-                        address:
-                            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                        address: Address.fromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000013',
+                        ).bech32(),
                     }),
                     new PairModel({
-                        address:
-                            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                        address: Address.fromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000012',
+                        ).bech32(),
                     }),
                 ],
                 tolerance: 0.01,
@@ -343,13 +351,18 @@ describe('AutoRouterService', () => {
             {
                 nonce: 0,
                 value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+                receiver: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000011',
+                ).bech32(),
                 sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: 2 * gasConfig.router.multiPairSwapMultiplier,
                 data: encodeTransactionData(
-                    'ESDTTransfer@USDC-1111@508044325756587816@multiPairSwap@erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx@swapTokensFixedOutput@TOK1-1111@630015438895@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@swapTokensFixedOutput@TOK2-2222@500000000000000000',
+                    `ESDTTransfer@USDC-123456@508044325756587816@multiPairSwap@${Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000013',
+                    ).bech32()}@swapTokensFixedOutput@WEGLD-123456@630015438895@${Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32()}@swapTokensFixedOutput@MEX-123456@500000000000000000`,
                 ),
                 chainID: 'T',
                 version: 1,
@@ -365,7 +378,7 @@ describe('AutoRouterService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData(
-                    'ESDTTransfer@TOK1-1111@500000000000000000@unwrapEgld',
+                    'ESDTTransfer@WEGLD-123456@500000000000000000@unwrapEgld',
                 ),
                 chainID: 'T',
                 version: 1,

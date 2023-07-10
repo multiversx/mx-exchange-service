@@ -2,6 +2,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { MXApiService } from './mx.api.service';
+import { Address } from '@multiversx/sdk-core/out';
 
 export class MXApiServiceMock {
     async getCurrentEpoch(): Promise<number> {
@@ -22,7 +23,7 @@ export class MXApiServiceMock {
     async getTokensForUser(address: string): Promise<EsdtToken[]> {
         return [
             new EsdtToken({
-                ...Tokens('TOK2-2222'),
+                ...Tokens('MEX-123456'),
                 balance: '1000000000000000000',
             }),
         ];
@@ -31,16 +32,17 @@ export class MXApiServiceMock {
     async getNftsForUser(address: string): Promise<NftToken[]> {
         return [
             {
-                collection: 'TOK1TOK4LPStaked',
-                ticker: 'TOK1TOK4LPStaked',
+                collection: 'EGLDMEXFL-abcdef',
+                ticker: 'EGLDMEXFL',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
                 decimals: 18,
                 balance: '1000000000000000000',
-                identifier: 'TOK1TOK4LPStaked-01',
+                identifier: 'EGLDMEXFL-abcdef-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
-                creator:
-                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                creator: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
                 nonce: 1,
                 royalties: 0,
                 timestamp: 0,

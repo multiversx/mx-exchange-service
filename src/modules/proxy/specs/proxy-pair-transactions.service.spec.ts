@@ -23,6 +23,7 @@ import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { encodeTransactionData } from 'src/helpers/helpers';
 
 describe('TransactionProxyPairService', () => {
     let module: TestingModule;
@@ -76,10 +77,10 @@ describe('TransactionProxyPairService', () => {
             async () => 0,
         );
         jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
-            async () => 'TOK1-1111',
+            async () => 'WEGLD-123456',
         );
         jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
-            async () => 'TOK2-2222',
+            async () => 'MEX-123456',
         );
 
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
@@ -107,7 +108,9 @@ describe('TransactionProxyPairService', () => {
             liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(firstTokenAmount);
         expect(addLiquidityProxy.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAxZTJhMTQyOGRkMWUzYTUxNDZiMzk2MGQ5ZTBmNGE1MDM2OTkwNGVlNTQ4M0AwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDBhQDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDA5QDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOUAwOA==',
+            encodeTransactionData(
+                'MultiESDTNFTTransfer@000000000000000005001e2a1428dd1e3a5146b3960d9e0f4a50369904ee5483@02@WEGLD-123456@@10@LKMEX-1234@01@09@addLiquidityProxy@0000000000000000000000000000000000000000000000000000000000000000@09@08',
+            ),
         );
     });
 
@@ -125,10 +128,10 @@ describe('TransactionProxyPairService', () => {
             async () => 0,
         );
         jest.spyOn(pairAbi, 'firstTokenID').mockImplementation(
-            async () => 'TOK1-1111',
+            async () => 'WEGLD-123456',
         );
         jest.spyOn(pairAbi, 'secondTokenID').mockImplementation(
-            async () => 'TOK2-2222',
+            async () => 'MEX-123456',
         );
 
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
@@ -156,7 +159,9 @@ describe('TransactionProxyPairService', () => {
             liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
         expect(addLiquidityProxy.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAxZTJhMTQyOGRkMWUzYTUxNDZiMzk2MGQ5ZTBmNGE1MDM2OTkwNGVlNTQ4M0AwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDBhQDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOEAwOQ==',
+            encodeTransactionData(
+                'MultiESDTNFTTransfer@000000000000000005001e2a1428dd1e3a5146b3960d9e0f4a50369904ee5483@02@WEGLD-123456@@09@LKMEX-1234@01@10@addLiquidityProxy@0000000000000000000000000000000000000000000000000000000000000000@08@09',
+            ),
         );
     });
 });

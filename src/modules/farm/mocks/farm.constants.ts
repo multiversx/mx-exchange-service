@@ -1,40 +1,52 @@
+import { Address } from '@multiversx/sdk-core/out';
+
 export const farms = [
     {
-        address:
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-        farmedTokenID: 'TOK4-4444',
-        farmTokenID: 'TOK1TOK4LPStaked',
-        farmingTokenID: 'TOK1TOK4LP',
-        farmTotalSupply: '600000000000000000000000',
-        farmingTokenReserve: '400000000000000000000000',
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000021',
+        ).bech32(),
+        farmedTokenID: 'MEX-123456',
+        farmTokenID: 'EGLDMEXFL-abcdef',
+        farmingTokenID: 'EGLDMEXLP-abcdef',
+        farmTotalSupply: '2000000000000000000',
+        farmingTokenReserve: '1500000000000000000',
         rewardsPerBlock: '1000000000000000000',
+        rewardPerShare: '0',
     },
     {
-        address: 'farm_address_2',
-        farmedTokenID: 'TOK2-2222',
-        farmTokenID: 'TOK1TOK2LPStaked',
-        farmingTokenID: 'TOK1TOK2LP',
-        farmTotalSupply: '25000000000000000000',
-        farmingTokenReserve: '40000000000000000000',
-        rewardsPerBlock: '10000000000000',
-    },
-    {
-        address: 'farm_address_3',
-        farmedTokenID: 'TOK2-2222',
-        farmTokenID: 'TOK1TOK2LPStaked',
-        farmingTokenID: 'TOK1TOK2LP',
-        farmTotalSupply: '500000',
-        farmingTokenReserve: '300000',
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000031',
+        ).bech32(),
+        farmedTokenID: 'MEX-123456',
+        farmTokenID: 'EGLDMEXF-abcdef',
+        farmingTokenID: 'EGLDMEXLP-abcdef',
+        farmTotalSupply: '1000000000000000000',
+        farmingTokenReserve: '1000000000000000000',
         rewardsPerBlock: '1000000000000000000',
+        rewardPerShare: '0',
     },
     {
-        address:
-            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-        farmedTokenID: 'TOK4-4444',
-        farmTokenID: 'TOK1TOK4LPStaked',
-        farmingTokenID: 'TOK1TOK4LP',
-        farmTotalSupply: '2000000',
-        farmingTokenReserve: '1200000',
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000032',
+        ).bech32(),
+        farmedTokenID: 'MEX-123456',
+        farmTokenID: 'EGLDMEXFL-bcdefg',
+        farmingTokenID: 'EGLDMEXLP-abcdef',
+        farmTotalSupply: '1000000000000000000',
+        farmingTokenReserve: '1000000000000000000',
+        rewardsPerBlock: '1000000000000000000',
+        rewardPerShare: '0',
+    },
+    {
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000033',
+        ).bech32(),
+        farmedTokenID: 'TOK4-123456',
+        farmTokenID: 'EGLDTOK4FL-abcdef',
+        farmingTokenID: 'EGLDTOK4LP-abcdef',
+        farmTotalSupply: '1000000000000000000',
+        farmingTokenReserve: '1000000000000000000',
         rewardsPerBlock: '2000000000000000000',
+        rewardPerShare: '0',
     },
 ];

@@ -5,6 +5,7 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
 import { CachingModule } from 'src/services/caching/cache.module';
+import { Address } from '@multiversx/sdk-core/out';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -35,16 +36,19 @@ describe('RouterService', () => {
         );
         expect(allPairs).toEqual([
             new PairModel({
-                address:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
             }),
             new PairModel({
-                address:
-                    'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000013',
+                ).bech32(),
             }),
             new PairModel({
-                address:
-                    'erd1a42xw92g8n78v6y4p3qj9ed2gjmr20kd9h2pkhuuuxf5tgn44q3sxy8unx',
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000014',
+                ).bech32(),
             }),
         ]);
     });
@@ -53,7 +57,7 @@ describe('RouterService', () => {
         const service = module.get<RouterService>(RouterService);
 
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
-            firstTokenID: 'TOK1-1111',
+            firstTokenID: 'WEGLD-123456',
             issuedLpToken: true,
             address: null,
             secondTokenID: null,
@@ -61,12 +65,14 @@ describe('RouterService', () => {
         });
         expect(filteredPairs).toEqual([
             new PairModel({
-                address:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
             }),
             new PairModel({
-                address:
-                    'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000013',
+                ).bech32(),
             }),
         ]);
     });

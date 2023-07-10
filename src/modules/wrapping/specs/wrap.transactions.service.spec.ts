@@ -75,7 +75,7 @@ describe('WrapTransactionsService', () => {
                 gasLimit: gasConfig.wrapeGLD,
                 value: '0',
                 data: encodeTransactionData(
-                    `ESDTTransfer@TOK1-1111@${esdtValue}@unwrapEgld`,
+                    `ESDTTransfer@WEGLD-123456@${esdtValue}@unwrapEgld`,
                 ),
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',

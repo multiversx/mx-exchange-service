@@ -65,18 +65,19 @@ describe('RouterService', () => {
         const transaction = await service.createPair(
             Address.Zero().bech32(),
             'TOK3-3333',
-            'TOK4-4444',
+            'TOK4-123456',
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.createPair,
             data: encodeTransactionData(
-                'createPair@TOK3-3333@TOK4-4444@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                'createPair@TOK3-3333@TOK4-123456@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -98,8 +99,9 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '50000000000000000',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.issueToken,
@@ -120,9 +122,11 @@ describe('RouterService', () => {
 
         try {
             await service.issueLpToken(
-                'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 'LiquidityPoolTokenT1T4',
-                'TOK1TOK4LP',
+                'EGLDMEXLP-abcdef',
             );
         } catch (error) {
             expect(error).toEqual(new Error('LP Token already issued'));
@@ -135,18 +139,23 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setLocalRoles(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.setLocalRoles,
             data: encodeTransactionData(
-                'setLocalRoles@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                `setLocalRoles@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32()}`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -167,8 +176,9 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setState,
@@ -188,19 +198,24 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setState(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             true,
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setState,
             data: encodeTransactionData(
-                'resume@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                `resume@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32()}`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -215,21 +230,26 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setFee(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             Address.Zero().bech32(),
-            'TOK1-1111',
+            'WEGLD-123456',
             false,
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
-                'setFeeOff@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
+                `setFeeOff@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32()}@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -244,21 +264,26 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setFee(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             Address.Zero().bech32(),
-            'TOK1-1111',
+            'WEGLD-123456',
             true,
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
-                'setFeeOn@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
+                `setFeeOn@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32()}@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -273,20 +298,21 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setLocalRolesOwner({
-            tokenID: 'TOK1-1111',
+            tokenID: 'WEGLD-123456',
             address: Address.Zero().bech32(),
             roles: [EsdtLocalRole.Mint],
         });
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setLocalRolesOwner,
             data: encodeTransactionData(
-                'setLocalRolesOwner@TOK1-1111@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
+                'setLocalRolesOwner@WEGLD-123456@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -300,16 +326,20 @@ describe('RouterService', () => {
             RouterTransactionService,
         );
 
-        const transaction = await service.removePair('TOK1-1111', 'USDC-1111');
+        const transaction = await service.removePair(
+            'WEGLD-123456',
+            'USDC-123456',
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.removePair,
-            data: encodeTransactionData('removePair@TOK1-1111@USDC-1111'),
+            data: encodeTransactionData('removePair@WEGLD-123456@USDC-123456'),
             chainID: mxConfig.chainID,
             version: 1,
             options: undefined,
@@ -326,8 +356,9 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
@@ -348,8 +379,9 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
@@ -370,8 +402,9 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: 200000000,
@@ -394,8 +427,9 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: 200000000,
@@ -420,8 +454,9 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: 200000000,
@@ -445,8 +480,9 @@ describe('RouterService', () => {
             new InputTokenModel({
                 tokenID: 'LKESDT-1234',
                 nonce: 1,
-                amount: '1000000000000000000',
-                attributes: 'AAAAClRPSzFVU0RDTFAAAAAAAAAAAAAAAAAAAAAC',
+                amount: '10000000000',
+                attributes:
+                    'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
             }),
         );
 
@@ -458,7 +494,11 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: 50000000,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@LKESDT-1234@01@1000000000000000000@erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp@setSwapEnabledByUser@erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                `ESDTNFTTransfer@LKESDT-1234@01@10000000000@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000011',
+                ).bech32()}@setSwapEnabledByUser@${Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000013',
+                ).bech32()}`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -481,7 +521,8 @@ describe('RouterService', () => {
                         tokenID: 'LKESDT-1234',
                         nonce: 1,
                         amount: '1000000000000000000',
-                        attributes: 'AAAAClRPSzFVU0RDTFAAAAAAAAAAAAAAAAAAAAAA',
+                        attributes:
+                            'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAQ==',
                     }),
                 ),
             ).rejects.toThrow('Token not locked for long enough');
@@ -503,7 +544,8 @@ describe('RouterService', () => {
                         tokenID: 'LKESDT-abcdef',
                         nonce: 1,
                         amount: '1000000000000000000',
-                        attributes: 'AAAAClRPSzFVU0RDTFAAAAAAAAAAAAAAAAAAAAAC',
+                        attributes:
+                            'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAQ==',
                     }),
                 ),
             ).rejects.toThrow('Invalid input token');
@@ -547,7 +589,8 @@ describe('RouterService', () => {
                         tokenID: 'LKESDT-1234',
                         nonce: 1,
                         amount: '1000000000000000000',
-                        attributes: 'AAAAClRPSzFUT0syTFAAAAAAAAAAAAAAAAAAAAAA',
+                        attributes:
+                            'AAAAEEVHTERNRVhMUC1hYmNkZWYAAAAAAAAAAAAAAAAAAAAB',
                     }),
                 ),
             ).rejects.toThrow('Not a valid user defined pair');
@@ -568,8 +611,9 @@ describe('RouterService', () => {
                     new InputTokenModel({
                         tokenID: 'LKESDT-1234',
                         nonce: 1,
-                        amount: '1000000000000000',
-                        attributes: 'AAAAClRPSzFVU0RDTFAAAAAAAAAAAAAAAAAAAAAC',
+                        amount: '1000',
+                        attributes:
+                            'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
                     }),
                 ),
             ).rejects.toThrow('Not enough value locked');
