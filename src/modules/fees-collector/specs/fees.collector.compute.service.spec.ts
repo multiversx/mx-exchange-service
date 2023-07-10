@@ -201,11 +201,11 @@ describe('FeesCollectorComputeService', () => {
         'computeUserApr' + ' last week' + ' with default user energy',
         async () => {
             const user1 = 'erd1';
-            const mex = 'MEX-27f4cd';
+            const mex = 'MEX-123456';
             const priceMap = new Map<string, string>();
-            priceMap.set('TOK1-1111', '10');
-            priceMap.set('TOK2-2222', '20');
-            priceMap.set('TOK4-4444', '30');
+            priceMap.set('WEGLD-123456', '10');
+            priceMap.set('MEX-123456', '20');
+            priceMap.set('TOK4-123456', '30');
             priceMap.set(mex, '1');
 
             const totalEnergyForWeek = '3000000000000000000000000';
@@ -250,7 +250,7 @@ describe('FeesCollectorComputeService', () => {
                 user1,
             );
 
-            expect(apr.toFixed()).toEqual('52');
+            expect(apr.toFixed()).toEqual('37.18');
         },
     );
 
@@ -258,11 +258,11 @@ describe('FeesCollectorComputeService', () => {
         'computeUserApr' + ' last week' + ' with custom user energy',
         async () => {
             const user1 = 'erd1';
-            const mex = 'MEX-27f4cd';
+            const mex = 'MEX-123456';
             const priceMap = new Map<string, string>();
-            priceMap.set('TOK1-1111', '10');
-            priceMap.set('TOK2-2222', '20');
-            priceMap.set('TOK4-4444', '30');
+            priceMap.set('WEGLD-123456', '10');
+            priceMap.set('MEX-123456', '20');
+            priceMap.set('TOK4-123456', '30');
             priceMap.set(mex, '1');
 
             const totalEnergyForWeek = '3000000000000000000000000';
@@ -308,7 +308,7 @@ describe('FeesCollectorComputeService', () => {
                 new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
             );
 
-            expect(apr.toFixed()).toEqual('20.8');
+            expect(apr.toFixed()).toEqual('14.872');
         },
     );
 
@@ -318,11 +318,11 @@ describe('FeesCollectorComputeService', () => {
             ' with custom user energy and locked tokens',
         async () => {
             const user1 = 'erd1';
-            const mex = 'MEX-27f4cd';
+            const mex = 'MEX-123456';
             const priceMap = new Map<string, string>();
-            priceMap.set('TOK1-1111', '10');
-            priceMap.set('TOK2-2222', '20');
-            priceMap.set('TOK4-4444', '30');
+            priceMap.set('WEGLD-123456', '10');
+            priceMap.set('MEX-123456', '20');
+            priceMap.set('TOK4-123456', '30');
             priceMap.set(mex, '1');
 
             const totalEnergyForWeek = '3000000000000000000000000';
@@ -369,7 +369,7 @@ describe('FeesCollectorComputeService', () => {
                 new BigNumber(totalLockedTokensForWeek).dividedBy(2).toFixed(),
             );
 
-            expect(apr.toFixed()).toEqual('41.6');
+            expect(apr.toFixed()).toEqual('29.744');
         },
     );
 
@@ -379,11 +379,11 @@ describe('FeesCollectorComputeService', () => {
             ' with 0 user energy and locked tokens',
         async () => {
             const user1 = 'erd1';
-            const mex = 'MEX-27f4cd';
+            const mex = 'MEX-123456';
             const priceMap = new Map<string, string>();
-            priceMap.set('TOK1-1111', '10');
-            priceMap.set('TOK2-2222', '20');
-            priceMap.set('TOK4-4444', '30');
+            priceMap.set('WEGLD-123456', '10');
+            priceMap.set('MEX-123456', '20');
+            priceMap.set('TOK4-123456', '30');
             priceMap.set(mex, '1');
 
             const service = module.get<FeesCollectorComputeService>(

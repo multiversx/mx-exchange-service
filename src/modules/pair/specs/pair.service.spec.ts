@@ -8,6 +8,7 @@ import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from '../mocks/pair.compute.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { Address } from '@multiversx/sdk-core/out';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -37,45 +38,53 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const amountIn = await service.getAmountIn(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            'TOK1-1111',
-            '10000000000000000',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+            'WEGLD-123456',
+            '1000000000000000000',
         );
-        expect(amountIn).toEqual('20262808627903914');
+        expect(amountIn).toEqual('1004013040121365096290');
     });
 
     it('should get amount out', async () => {
         const service = module.get<PairService>(PairService);
 
         const amountOut = await service.getAmountOut(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            'TOK1-1111',
-            '10000000000000000',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+            'WEGLD-123456',
+            '1000000000000000000',
         );
-        expect(amountOut).toEqual('19743160687941225');
+        expect(amountOut).toEqual('996006981039903216493');
     });
 
     it('should get equivalent for liquidity', async () => {
         const service = module.get<PairService>(PairService);
 
         const equivalent = await service.getEquivalentForLiquidity(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            'TOK1-1111',
-            '10000000000000000',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+            'WEGLD-123456',
+            '1000000000000000000',
         );
-        expect(equivalent.toFixed()).toEqual('20000000000000000');
+        expect(equivalent.toFixed()).toEqual('1000000000000000000000');
     });
 
     it('should get liquidity position from pair', async () => {
         const service = module.get<PairService>(PairService);
 
         const liquidityPosition = await service.getLiquidityPosition(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
             '1',
         );
         expect(liquidityPosition).toEqual({
             firstTokenAmount: '1',
-            secondTokenAmount: '2',
+            secondTokenAmount: '1000',
         });
     });
 
@@ -83,25 +92,31 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const liquidityPositionUSD = await service.getLiquidityPositionUSD(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            '10000',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+            '1000000000000000000',
         );
-        expect(liquidityPositionUSD).toEqual('0.000000000004');
+        expect(liquidityPositionUSD).toEqual('20');
     });
 
     it('should get pair address by LP token ID', async () => {
         const service = module.get<PairService>(PairService);
 
-        const address = await service.getPairAddressByLpTokenID('TOK1TOK2LP');
+        const address = await service.getPairAddressByLpTokenID(
+            'EGLDMEXLP-abcdef',
+        );
         expect(address).toEqual(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
         );
     });
 
     it('should check if token is part of any pair', async () => {
         const service = module.get<PairService>(PairService);
 
-        const isPair0 = await service.isPairEsdtToken('TOK1TOK2LP');
+        const isPair0 = await service.isPairEsdtToken('EGLDMEXLP-abcdef');
         expect(isPair0).toEqual(true);
 
         const isPair1 = await service.isPairEsdtToken('LPT-4321');

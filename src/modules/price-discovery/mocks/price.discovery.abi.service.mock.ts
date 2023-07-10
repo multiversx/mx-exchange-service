@@ -24,12 +24,15 @@ export class PriceDiscoveryAbiServiceMock implements IPriceDiscoveryAbiService {
     acceptedTokenRedeemAmount(priceDiscoveryAddress: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    startBlock(priceDiscoveryAddress: string): Promise<number> {
-        throw new Error('Method not implemented.');
+
+    async startBlock(priceDiscoveryAddress: string): Promise<number> {
+        return 1;
     }
-    endBlock(priceDiscoveryAddress: string): Promise<number> {
-        throw new Error('Method not implemented.');
+
+    async endBlock(priceDiscoveryAddress: string): Promise<number> {
+        return 10;
     }
+
     currentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
         throw new Error('Method not implemented.');
     }

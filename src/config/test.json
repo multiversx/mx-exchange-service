@@ -1,25 +1,28 @@
 {
     "scAddress": {
+        "routerAddress": "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgsvhtzgk",
+        "MEX-123456": "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfqktvqkr",
+        "WEGLD_USDC": "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfsr2ycrs",
         "proxyDexAddress": {
             "v1": "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl"
         }
     },
     "farms": {
         "v1.2": [
-            "erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye"
+            "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5"
         ],
         "v1.3": {
-            "unlockedRewards": ["farm_address_2"],
-            "lockedRewards": ["farm_address_3"],
+            "unlockedRewards": ["erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcs2zduud"],
+            "lockedRewards": ["erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqeqs727zc"],
             "customRewards": [
-                "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u"
+                "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht"
             ]
         }
     },
-    "tokenProviderUSD": "TOK1-1111",
+    "tokenProviderUSD": "WEGLD-123456",
     "constants": {
         "MAX_SWAP_SPREAD": 1,
-        "MEX_TOKEN_ID": "TOK2-2222",
-        "USDC_TOKEN_ID": "USDC-1111"
+        "MEX_TOKEN_ID": "MEX-123456",
+        "USDC_TOKEN_ID": "USDC-123456"
     }
 }

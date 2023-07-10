@@ -30,21 +30,21 @@ export class PairComputeServiceMock implements IPairComputeService {
     }
     async tokenPriceUSD(tokenID: string): Promise<string> {
         switch (tokenID) {
-            case 'TOK1-1111':
-                return '200';
-            case 'TOK2-2222':
-                return '100';
-            case 'USDC-1111':
-                return '1';
-            case 'TOK4-4444':
+            case 'WEGLD-123456':
                 return '10';
-            case 'TOK1TOK4LPStaked':
+            case 'MEX-123456':
+                return '0.01';
+            case 'USDC-123456':
+                return '1';
+            case 'TOK4-123456':
+                return '0.1';
+            case 'EGLDTOK4FL-abcdef':
                 return '15';
-            case 'TOK1TOK4LP':
+            case 'EGLDTOK4LP-abcdef':
                 return '50';
-            case 'TOK1TOK2LPStaked':
+            case 'EGLDMEXFL-abcdef':
                 return '100;';
-            case 'TOK1TOK2LP':
+            case 'EGLDMEXLP-abcdef':
                 return '2';
         }
     }
