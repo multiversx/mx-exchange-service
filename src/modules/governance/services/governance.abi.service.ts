@@ -5,7 +5,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { ProposalVotes } from '../models/proposal.votes.model';
-import { Description, GovernanceProposal } from '../models/governance.proposal.model';
+import { Description, GovernanceProposal, GovernanceProposalStatus } from '../models/governance.proposal.model';
 import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
@@ -152,11 +152,11 @@ export class GovernanceAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async proposals(scAddress: string): Promise<GovernanceProposal[]> {
-        return await this.proposalsRaw(scAddress);
+    async proposals(scAddress: string, userAddress?: string): Promise<GovernanceProposal[]> {
+        return await this.proposalsRaw(scAddress, userAddress);
     }
 
-    async proposalsRaw(scAddress: string): Promise<GovernanceProposal[]> {
+    async proposalsRaw(scAddress: string, userAddress?: string): Promise<GovernanceProposal[]> {
         const contract = await this.mxProxy.getGovernanceSmartContract(scAddress);
         const interaction = contract.methodsExplicit.getProposals();
         const response = await this.getGenericData(interaction);
@@ -165,13 +165,14 @@ export class GovernanceAbiService
             const actions = proposal.actions?.map((action: any) => {
                 return new GovernanceAction({
                     arguments: action.arguments.toString().split(','),
-                    destAddress: action.dest_address.toString(),
+                    destAddress: action.dest_address.bech32(),
                     functionName: action.function_name.toString(),
                     gasLimit: action.gas_limit.toNumber(),
                 });
             });
             return new GovernanceProposal({
                 contractAddress: scAddress,
+                userAddress,
                 proposalId: proposal.proposal_id.toNumber(),
                 proposer: proposal.proposer.bech32(),
                 actions,
@@ -195,20 +196,16 @@ export class GovernanceAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async userVotedProposals(scAddress: string, userAddress: string): Promise<GovernanceProposal[]> {
+    async userVotedProposals(scAddress: string, userAddress: string): Promise<number[]> {
         return await this.userVotedProposalsRaw(scAddress, userAddress);
     }
 
-    async userVotedProposalsRaw(scAddress: string, userAddress: string): Promise<GovernanceProposal[]> {
+    async userVotedProposalsRaw(scAddress: string, userAddress: string): Promise<number[]> {
         const contract = await this.mxProxy.getGovernanceSmartContract(scAddress);
         const interaction = contract.methods.getUserVotedProposals([userAddress]);
         const response = await this.getGenericData(interaction);
 
-        return response.firstValue.valueOf().map((proposal: any) => {
-            return new GovernanceProposal({
-
-            });
-        });
+        return response.firstValue.valueOf();
     }
 
     @ErrorLoggerAsync({className: GovernanceAbiService.name})
@@ -231,10 +228,10 @@ export class GovernanceAbiService
         }
         const votes = response.firstValue.valueOf();
         return new ProposalVotes({
-            upVotes: votes.up_votes.toFixed(),
-            downVotes: votes.down_votes.toFixed(),
-            downVetoVotes: votes.down_veto_votes.toFixed(),
-            abstainVotes: votes.abstain_votes.toFixed(),
+            upVotes: votes.up_votes.toNumber(),
+            downVotes: votes.down_votes.toNumber(),
+            downVetoVotes: votes.down_veto_votes.toNumber(),
+            abstainVotes: votes.abstain_votes.toNumber(),
             quorum: votes.quorum.toFixed()
         });
     }
@@ -245,90 +242,18 @@ export class GovernanceAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async proposalStatus(scAddress: string, proposalId: number): Promise<string> {
+    async proposalStatus(scAddress: string, proposalId: number): Promise<GovernanceProposalStatus> {
         return await this.proposalStatusRaw(scAddress, proposalId);
     }
 
-    async proposalStatusRaw(scAddress: string, proposalId: number): Promise<string> {
+    async proposalStatusRaw(scAddress: string, proposalId: number): Promise<GovernanceProposalStatus> {
         const contract = await this.mxProxy.getGovernanceSmartContract(scAddress);
         const interaction = contract.methods.getProposalStatus([proposalId]);
         const response = await this.getGenericData(interaction);
 
-        return response.firstValue.valueOf().name;
+        const valueAsString = response.firstValue.valueOf().toString();
+        return GovernanceProposalStatus[valueAsString as keyof typeof GovernanceProposalStatus];;
     }
-
-    // TODO: decide if remove or not
-    // @ErrorLoggerAsync({className: GovernanceAbiService.name})
-    // @GetOrSetCache({
-    //     baseKey: 'governance',
-    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-    //     localTtl: CacheTtlInfo.ContractState.localTtl,
-    // })
-    // async currentQuorum(): Promise<string> {
-    //     return await this.currentQuorumRaw();
-    // }
-    //
-    // async currentQuorumRaw(): Promise<string> {
-    //     const contract = await this.mxProxy.getGovernanceSmartContract();
-    //     const interaction = contract.methods.getCurrentQuorum();
-    //     const response = await this.getGenericData(interaction);
-    //
-    //     return response.firstValue.valueOf().toFixed();
-    // }
-
-    // @ErrorLoggerAsync({className: GovernanceAbiService.name})
-    // @GetOrSetCache({
-    //     baseKey: 'governance',
-    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-    //     localTtl: CacheTtlInfo.ContractState.localTtl,
-    // })
-    // async proposer(proposalId: number): Promise<string> {
-    //     return await this.proposerRaw(proposalId);
-    // }
-    //
-    // async proposerRaw(proposalId: number): Promise<string> {
-    //     const contract = await this.mxProxy.getGovernanceSmartContract();
-    //     const interaction = contract.methods.getProposer([proposalId]);
-    //     const response = await this.getGenericData(interaction);
-    //
-    //     return response.firstValue.valueOf();
-    // }
-
-    // @ErrorLoggerAsync({className: GovernanceAbiService.name})
-    // @GetOrSetCache({
-    //     baseKey: 'governance',
-    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-    //     localTtl: CacheTtlInfo.ContractState.localTtl,
-    // })
-    // async proposalDescription(proposalId: number): Promise<string> {
-    //     return await this.proposalDescriptionRaw(proposalId);
-    // }
-    //
-    // async proposalDescriptionRaw(proposalId: number): Promise<string> {
-    //     const contract = await this.mxProxy.getGovernanceSmartContract();
-    //     const interaction = contract.methods.getProposalDescription([proposalId]);
-    //     const response = await this.getGenericData(interaction);
-    //
-    //     return response.firstValue.valueOf();
-    // }
-    //
-    // @ErrorLoggerAsync({className: GovernanceAbiService.name})
-    // @GetOrSetCache({
-    //     baseKey: 'governance',
-    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-    //     localTtl: CacheTtlInfo.ContractState.localTtl,
-    // })
-    // async proposalActions(proposalId: number): Promise<string[]> {
-    //     return await this.proposalActionsRaw(proposalId);
-    // }
-    //
-    // async proposalActionsRaw(proposalId: number): Promise<string[]> {
-    //     const contract = await this.mxProxy.getGovernanceSmartContract();
-    //     const interaction = contract.methods.getProposalActions([proposalId]);
-    //     const response = await this.getGenericData(interaction);
-    //
-    //     return response.values.map((value) => value.valueOf());
-    // }
 
     @ErrorLoggerAsync({className: GovernanceAbiService.name})
     @GetOrSetCache({
