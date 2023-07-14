@@ -10,14 +10,13 @@ export class GovernanceService {
         private readonly governanceAbi: GovernanceAbiService,
     ) {
     }
-    async getGovernanceContracts(filters: GovernanceContractsFiltersArgs, userAddress?: string): Promise<GovernanceContract[]> {
+    async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<GovernanceContract[]> {
         const governanceAddresses = governanceContractsAddresses();
 
         const governance: GovernanceContract[] = [];
         for (const address of governanceAddresses) {
             governance.push(
                 new GovernanceContract({
-                    userAddress,
                     address,
                 }),
             );

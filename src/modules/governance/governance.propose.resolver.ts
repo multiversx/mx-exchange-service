@@ -1,8 +1,12 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { GovernanceAbiService } from './services/governance.abi.service';
-import { GovernanceProposal } from './models/governance.proposal.model';
+import { GovernanceProposal, GovernanceProposalStatus } from './models/governance.proposal.model';
 import { ProposalVotes } from './models/proposal.votes.model';
 import { GovernanceService } from './services/governance.service';
+import { UseGuards } from '@nestjs/common';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
+import { UserAuthResult } from '../auth/user.auth.result';
+import { AuthUser } from '../auth/auth.user';
 
 @Resolver(() => GovernanceProposal)
 export class GovernanceProposalResolver {
@@ -13,7 +17,7 @@ export class GovernanceProposalResolver {
     }
 
     @ResolveField()
-    async status(@Parent() governanceProposal: GovernanceProposal): Promise<string> {
+    async status(@Parent() governanceProposal: GovernanceProposal): Promise<GovernanceProposalStatus> {
         return this.governanceAbi.proposalStatus(governanceProposal.contractAddress, governanceProposal.proposalId);
     }
 
@@ -22,8 +26,12 @@ export class GovernanceProposalResolver {
         return this.governanceAbi.proposalVotes(governanceProposal.contractAddress, governanceProposal.proposalId);
     }
 
+    @UseGuards(JwtOrNativeAuthGuard)
     @ResolveField()
-    async hasVoted(@Parent() governanceProposal: GovernanceProposal): Promise<boolean> {
-        return this.governanceService.hasUserVoted(governanceProposal.contractAddress, governanceProposal.proposalId, governanceProposal.userAddress);
+    async hasVoted(
+        @AuthUser() user: UserAuthResult,
+        @Parent() governanceProposal: GovernanceProposal
+    ): Promise<boolean> {
+        return this.governanceService.hasUserVoted(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
     }
 }

@@ -11,8 +11,6 @@ export class GovernanceContract {
     @Field()
     address: string;
     @Field()
-    userAddress?: string;
-    @Field()
     minEnergyForPropose: string;
     @Field()
     minFeeForPropose: string;

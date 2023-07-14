@@ -156,7 +156,7 @@ export class GovernanceAbiService
         return await this.proposalsRaw(scAddress, userAddress);
     }
 
-    async proposalsRaw(scAddress: string, userAddress?: string): Promise<GovernanceProposal[]> {
+    async proposalsRaw(scAddress: string): Promise<GovernanceProposal[]> {
         const contract = await this.mxProxy.getGovernanceSmartContract(scAddress);
         const interaction = contract.methodsExplicit.getProposals();
         const response = await this.getGenericData(interaction);
@@ -172,7 +172,6 @@ export class GovernanceAbiService
             });
             return new GovernanceProposal({
                 contractAddress: scAddress,
-                userAddress,
                 proposalId: proposal.proposal_id.toNumber(),
                 proposer: proposal.proposer.bech32(),
                 actions,
@@ -205,7 +204,7 @@ export class GovernanceAbiService
         const interaction = contract.methods.getUserVotedProposals([userAddress]);
         const response = await this.getGenericData(interaction);
 
-        return response.firstValue.valueOf();
+        return response.firstValue.valueOf().map((proposalId: any) => proposalId.toNumber());
     }
 
     @ErrorLoggerAsync({className: GovernanceAbiService.name})
@@ -228,10 +227,10 @@ export class GovernanceAbiService
         }
         const votes = response.firstValue.valueOf();
         return new ProposalVotes({
-            upVotes: votes.up_votes.toNumber(),
-            downVotes: votes.down_votes.toNumber(),
-            downVetoVotes: votes.down_veto_votes.toNumber(),
-            abstainVotes: votes.abstain_votes.toNumber(),
+            upVotes: votes.up_votes.toFixed(),
+            downVotes: votes.down_votes.toFixed(),
+            downVetoVotes: votes.down_veto_votes.toFixed(),
+            abstainVotes: votes.abstain_votes.toFixed(),
             quorum: votes.quorum.toFixed()
         });
     }
@@ -251,8 +250,7 @@ export class GovernanceAbiService
         const interaction = contract.methods.getProposalStatus([proposalId]);
         const response = await this.getGenericData(interaction);
 
-        const valueAsString = response.firstValue.valueOf().toString();
-        return GovernanceProposalStatus[valueAsString as keyof typeof GovernanceProposalStatus];;
+        return toGovernanceProposalStatus(response.firstValue.valueOf().name);
     }
 
     @ErrorLoggerAsync({className: GovernanceAbiService.name})

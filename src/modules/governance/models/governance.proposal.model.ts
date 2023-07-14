@@ -52,14 +52,10 @@ export class GovernanceProposal {
     totalEnergy: string;
     @Field(() => Int)
     proposalStartBlock: number;
-    @Field( () => GovernanceProposalStatus)
+    @Field()
     status: GovernanceProposalStatus;
     @Field( () => ProposalVotes )
     votes: ProposalVotes;
-
-    // user
-    @Field()
-    userAddress?: string;
     @Field()
     hasVoted?: boolean;
 

@@ -3,13 +3,13 @@ import { Field, ObjectType } from '@nestjs/graphql';
 @ObjectType()
 export class ProposalVotes {
     @Field()
-    upVotes: number;
+    upVotes: string;
     @Field()
-    downVotes: number;
+    downVotes: string;
     @Field()
-    downVetoVotes: number;
+    downVetoVotes: string;
     @Field()
-    abstainVotes: number;
+    abstainVotes: string;
     @Field()
     quorum: string;
 
@@ -19,10 +19,10 @@ export class ProposalVotes {
 
     static default(): ProposalVotes {
         return new ProposalVotes({
-            upVotes: 0,
-            downVotes: 0,
-            downVetoVotes: 0,
-            abstainVotes: 0,
+            upVotes: '0',
+            downVotes: '0',
+            downVetoVotes: '0',
+            abstainVotes: '0',
             quorum: '0',
         });
     }

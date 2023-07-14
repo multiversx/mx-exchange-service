@@ -1,5 +1,6 @@
 import { GovernanceType } from '../modules/governance/models/governance.contract.model';
 import { scAddress } from '../config';
+import { GovernanceProposalStatus } from '../modules/governance/models/governance.proposal.model';
 
 const toTypeEnum = (type: string): GovernanceType => {
     switch (type) {
@@ -38,4 +39,24 @@ export const governanceContractsAddresses = (types?: string[]): string[] => {
         addresses.push(...govConfig[type]);
     }
     return addresses;
+};
+
+
+export const toGovernanceProposalStatus = (status: string): GovernanceProposalStatus => {
+    switch (status) {
+        case 'None':
+            return GovernanceProposalStatus.None;
+        case 'Pending':
+            return GovernanceProposalStatus.Pending;
+        case 'Active':
+            return GovernanceProposalStatus.Active;
+        case 'Defeated':
+            return GovernanceProposalStatus.Defeated;
+        case 'DefeatedWithVeto':
+            return GovernanceProposalStatus.DefeatedWithVeto;
+        case 'Succeeded':
+            return GovernanceProposalStatus.Succeeded;
+        default:
+            return undefined;
+    }
 };
