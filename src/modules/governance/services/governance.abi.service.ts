@@ -153,8 +153,8 @@ export class GovernanceAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async proposals(scAddress: string, userAddress?: string): Promise<GovernanceProposal[]> {
-        return await this.proposalsRaw(scAddress, userAddress);
+    async proposals(scAddress: string): Promise<GovernanceProposal[]> {
+        return await this.proposalsRaw(scAddress);
     }
 
     async proposalsRaw(scAddress: string): Promise<GovernanceProposal[]> {
