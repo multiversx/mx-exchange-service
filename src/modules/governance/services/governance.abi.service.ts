@@ -8,6 +8,8 @@ import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { toGovernanceProposalStatus } from '../../../utils/governance';
+import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 
 @Injectable()
 export class GovernanceAbiService
