@@ -1,8 +1,5 @@
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import {
-    IFarmAbiService,
-    IFarmComputeService,
-} from '../../base-module/services/interfaces';
+import { IFarmAbiService, IFarmComputeService } from '../../base-module/services/interfaces';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
 
@@ -14,6 +11,9 @@ export interface IFarmAbiServiceV2 extends IFarmAbiService {
         farmAddress: string,
         week: number,
     ): Promise<string>;
+    lastUndistributedBoostedRewardsCollectWeek(
+        farmAddress: string,
+    ): Promise<number>;
     undistributedBoostedRewards(farmAddress: string): Promise<string>;
     boostedYieldsFactors(farmAddress: string): Promise<BoostedYieldsFactors>;
     accumulatedRewardsForWeek(scAddress: string, week: number): Promise<string>;

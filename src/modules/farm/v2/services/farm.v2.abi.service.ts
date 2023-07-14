@@ -193,6 +193,23 @@ export class FarmAbiServiceV2
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
+    async lastUndistributedBoostedRewardsCollectWeek(
+        farmAddress: string,
+    ): Promise<number> {
+        return this.gatewayService.getSCStorageKey(farmAddress,
+            'lastUndistributedBoostedRewardsCollectWeek'
+        );
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmAbiServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
     async boostedYieldsFactors(
         farmAddress: string,
     ): Promise<BoostedYieldsFactors> {
