@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { ProposalVotes } from '../models/proposal.votes.model';
 import { Description, GovernanceProposal, GovernanceProposalStatus } from '../models/governance.proposal.model';
 import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
+import { toGovernanceProposalStatus } from '../../../utils/governance';
 
 @Injectable()
 export class GovernanceAbiService
