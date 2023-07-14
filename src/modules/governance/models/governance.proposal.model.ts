@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { GovernanceAction } from './governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { ProposalVotes } from './proposal.votes.model'; //Assuming you will create GovernanceAction model separately
@@ -11,6 +11,8 @@ export enum GovernanceProposalStatus {
     DefeatedWithVeto ='DefeatedWithVeto',
     Succeeded ='Succeeded',
 }
+
+registerEnumType(GovernanceProposalStatus, { name: 'GovernanceProposalStatus' });
 
 @ObjectType()
 export class Description {
