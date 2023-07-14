@@ -1,9 +1,4 @@
-import {
-    AbiRegistry,
-    Address,
-    SmartContract,
-    SmartContractAbi,
-} from '@multiversx/sdk-core';
+import { AbiRegistry, Address, SmartContract, SmartContractAbi } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { abiConfig, mxConfig, scAddress } from '../../config';
 import Agent, { HttpsAgent } from 'agentkeepalive';
@@ -213,6 +208,16 @@ export class MXProxyService {
             scAddress.escrow,
             abiConfig.escrow,
             'LkmexTransfer',
+        );
+    }
+
+    async getGovernanceSmartContract(
+        governanceAddress: string,
+    ): Promise<SmartContract> {
+        return this.getSmartContract(
+            governanceAddress,
+            abiConfig.governance,
+            'GovernanceV2',
         );
     }
 
