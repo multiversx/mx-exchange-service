@@ -8,7 +8,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { EnergySetterService } from 'src/modules/energy/services/energy.setter.service';
 import { UserEnergyComputeService } from 'src/modules/user/services/userEnergy/user.energy.compute.service';
-import { UserEnergyGetterService } from 'src/modules/user/services/userEnergy/user.energy.getter.service';
 import { UserEnergySetterService } from 'src/modules/user/services/userEnergy/user.energy.setter.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
@@ -17,7 +16,6 @@ import { Logger } from 'winston';
 export class EnergyHandler {
     constructor(
         private readonly energySetter: EnergySetterService,
-        private readonly userEnergyGetter: UserEnergyGetterService,
         private readonly userEnergySetter: UserEnergySetterService,
         private readonly userEnergyCompute: UserEnergyComputeService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -34,20 +32,18 @@ export class EnergyHandler {
             ),
         );
 
-        const activeFarms = await this.userEnergyGetter.getUserActiveFarmsV2(
+        const activeFarms = await this.userEnergyCompute.userActiveFarmsV2(
             caller.bech32(),
         );
         const promises = activeFarms.map((farm) =>
             this.userEnergyCompute.computeUserOutdatedContract(
                 caller.bech32(),
-                event.newEnergyEntry.toJSON(),
                 farm,
             ),
         );
         promises.push(
             this.userEnergyCompute.computeUserOutdatedContract(
                 caller.bech32(),
-                event.newEnergyEntry.toJSON(),
                 scAddress.feesCollector,
             ),
         );

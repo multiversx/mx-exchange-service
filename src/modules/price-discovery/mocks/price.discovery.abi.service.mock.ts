@@ -3,14 +3,14 @@ import { IPriceDiscoveryAbiService } from '../services/interfaces';
 import { PriceDiscoveryAbiService } from '../services/price.discovery.abi.service';
 
 export class PriceDiscoveryAbiServiceMock implements IPriceDiscoveryAbiService {
-    launchedTokenID(priceDiscoveryAddress: string): Promise<string> {
-        throw new Error('Method not implemented.');
+    async launchedTokenID(priceDiscoveryAddress: string): Promise<string> {
+        return 'LTOK-123456';
     }
-    acceptedTokenID(priceDiscoveryAddress: string): Promise<string> {
-        throw new Error('Method not implemented.');
+    async acceptedTokenID(priceDiscoveryAddress: string): Promise<string> {
+        return 'ATOK-123456';
     }
     async redeemTokenID(priceDiscoveryAddress: string): Promise<string> {
-        return 'RTOK-1234';
+        return 'RTOK-123456';
     }
     launchedTokenAmount(priceDiscoveryAddress: string): Promise<string> {
         throw new Error('Method not implemented.');

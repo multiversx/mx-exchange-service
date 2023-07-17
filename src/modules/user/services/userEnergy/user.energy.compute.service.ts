@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../../../config';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
@@ -15,14 +15,15 @@ import { StakingProxyService } from '../../../staking-proxy/services/staking.pro
 import { FarmVersion } from '../../../farm/models/farm.model';
 import { farmVersion } from '../../../../utils/farm.utils';
 import { BigNumber } from 'bignumber.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { oneMinute } from 'src/helpers/helpers';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -34,50 +35,103 @@ export class UserEnergyComputeService {
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyAbi: StakingProxyAbiService,
+        private readonly energyAbi: EnergyAbiService,
         private readonly proxyService: ProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
+
+    async getUserOutdatedContracts(
+        userAddress: string,
+        skipFeesCollector = false,
+    ): Promise<OutdatedContract[]> {
+        const activeFarms = await this.userActiveFarmsV2(userAddress);
+
+        const promises = activeFarms.map((farm) =>
+            this.outdatedContract(userAddress, farm),
+        );
+        if (!skipFeesCollector) {
+            promises.push(
+                this.outdatedContract(userAddress, scAddress.feesCollector),
+            );
+        }
+
+        const outdatedContracts = await Promise.all(promises);
+        return outdatedContracts.filter(
+            (contract) => contract && contract.address,
+        );
+    }
+
+    @GetOrSetCache({
+        baseKey: 'userEnergy',
+        remoteTtl: oneMinute() * 10,
+    })
+    async outdatedContract(
+        userAddress: string,
+        contractAddress: string,
+    ): Promise<OutdatedContract> {
+        return await this.computeUserOutdatedContract(
+            userAddress,
+            contractAddress,
+        );
+    }
 
     async computeUserOutdatedContract(
         userAddress: string,
-        userEnergy: EnergyType,
         contractAddress: string,
     ): Promise<OutdatedContract> {
         const isFarmAddress = contractAddress !== scAddress.feesCollector;
 
         if (isFarmAddress) {
-            const farmService = this.farmService.useService(
+            return await this.computeFarmOutdatedContract(
+                userAddress,
                 contractAddress,
-            ) as FarmServiceV2;
-            const [currentClaimProgress, currentWeek, farmToken] =
-                await Promise.all([
-                    this.weeklyRewardsSplittingAbi.currentClaimProgress(
-                        contractAddress,
-                        userAddress,
-                    ),
-                    this.weekTimekeepingAbi.currentWeek(contractAddress),
-                    farmService.getFarmToken(contractAddress),
-                ]);
-
-            if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
-                return new OutdatedContract({
-                    address: contractAddress,
-                    type: ContractType.Farm,
-                    claimProgressOutdated:
-                        currentClaimProgress.week !== currentWeek,
-                    farmToken: farmToken.collection,
-                });
-            }
-            return new OutdatedContract();
+            );
         }
 
-        const [currentClaimProgress, currentWeek] = await Promise.all([
-            this.weeklyRewardsSplittingAbi.currentClaimProgress(
-                contractAddress,
-                userAddress,
-            ),
-            this.weekTimekeepingAbi.currentWeek(contractAddress),
-        ]);
+        return await this.computeFeesCollectorOutdatedContract(userAddress);
+    }
+
+    async computeFarmOutdatedContract(
+        userAddress: string,
+        contractAddress: string,
+    ): Promise<OutdatedContract> {
+        const farmService = this.farmService.useService(
+            contractAddress,
+        ) as FarmServiceV2;
+        const [currentClaimProgress, currentWeek, farmToken, userEnergy] =
+            await Promise.all([
+                this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    contractAddress,
+                    userAddress,
+                ),
+                this.weekTimekeepingAbi.currentWeek(contractAddress),
+                farmService.getFarmToken(contractAddress),
+                this.energyAbi.energyEntryForUser(userAddress),
+            ]);
+
+        if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
+            return new OutdatedContract({
+                address: contractAddress,
+                type: ContractType.Farm,
+                claimProgressOutdated:
+                    currentClaimProgress.week !== currentWeek,
+                farmToken: farmToken.collection,
+            });
+        }
+        return new OutdatedContract();
+    }
+
+    async computeFeesCollectorOutdatedContract(
+        userAddress: string,
+    ): Promise<OutdatedContract> {
+        const [currentClaimProgress, currentWeek, userEnergy] =
+            await Promise.all([
+                this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    scAddress.feesCollector,
+                    userAddress,
+                ),
+                this.weekTimekeepingAbi.currentWeek(scAddress.feesCollector),
+                this.energyAbi.energyEntryForUser(userAddress),
+            ]);
 
         if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
             return new OutdatedContract({
@@ -87,6 +141,14 @@ export class UserEnergyComputeService {
             });
         }
         return new OutdatedContract();
+    }
+
+    @GetOrSetCache({
+        baseKey: 'userEnergy',
+        remoteTtl: oneMinute(),
+    })
+    async userActiveFarmsV2(userAddress: string): Promise<string[]> {
+        return await this.computeActiveFarmsV2ForUser(userAddress);
     }
 
     async computeActiveFarmsV2ForUser(userAddress: string): Promise<string[]> {

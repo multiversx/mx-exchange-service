@@ -197,7 +197,6 @@ export class CloseHourly {
         'acceptedTokenPrice',
         'launchedTokenPriceUSD',
         'acceptedTokenPriceUSD')
-    AND timestamp >= NOW() - INTERVAL '1 day'
     GROUP BY time, series, key;
   `,
     materialized: true,

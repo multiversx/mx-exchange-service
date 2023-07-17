@@ -61,12 +61,16 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         series,
         metric,
         timeBucket,
+        startDate,
+        endDate,
     }): Promise<HistoricDataModel[]> {
         const service = await this.getService();
         return await service.getPDCloseValues({
             series,
             metric,
             timeBucket,
+            startDate,
+            endDate,
         });
     }
 

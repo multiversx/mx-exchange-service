@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { scAddress } from '../../../config';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
@@ -52,18 +52,16 @@ import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { FarmTokenAttributesModelV1_2 } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
-import { LockedTokenWrapperAbiService } from 'src/modules/locked-token-wrapper/services/locked-token-wrapper.abi.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class UserMetaEsdtComputeService {
@@ -83,12 +81,11 @@ export class UserMetaEsdtComputeService {
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         private readonly simpleLockService: SimpleLockService,
         private readonly lockedTokenWrapperService: LockedTokenWrapperService,
-        private readonly lockedTokenWrapperAbi: LockedTokenWrapperAbiService,
         private readonly energyAbi: EnergyAbiService,
         private readonly userEsdtCompute: UserEsdtComputeService,
         private readonly tokenGetter: TokenGetterService,
         private readonly cacheService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
@@ -211,9 +208,9 @@ export class UserMetaEsdtComputeService {
             );
         } catch (e) {
             this.logger.error(
-                `Cannot compute farm token for nft ${JSON.stringify(
-                    nftToken,
-                )}, error = ${e}`,
+                `Cannot compute farm token for nft ${JSON.stringify(nftToken)}`,
+                e.stack,
+                UserMetaEsdtComputeService.name,
             );
             return undefined;
         }
@@ -382,8 +379,11 @@ export class UserMetaEsdtComputeService {
             this.logger.error(
                 `Cannot compute locked farm token for nft ${JSON.stringify(
                     nftToken,
-                )}, error = ${e}`,
+                )}`,
+                e.stack,
+                UserMetaEsdtComputeService.name,
             );
+            return undefined;
         }
     }
 

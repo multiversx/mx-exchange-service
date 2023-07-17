@@ -1,6 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
-import { PairService } from 'src/modules/pair/services/pair.service';
 import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { UserNftTokens } from '../models/nfttokens.union';
 import { UserMetaEsdtComputeService } from './metaEsdt.compute.service';
@@ -13,12 +12,8 @@ import {
     LockedFarmToken,
     LockedFarmTokenV2,
 } from 'src/modules/tokens/models/lockedFarmToken.model';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
-import { CachingService } from '../../../services/caching/cache.service';
 import { oneHour } from '../../../helpers/helpers';
-import { generateGetLogMessage } from '../../../utils/generate-log-message';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
@@ -55,6 +50,8 @@ import { StakingAbiService } from 'src/modules/staking/services/staking.abi.serv
 import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lock.abi.service';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -75,22 +72,21 @@ enum NftTokenType {
 @Injectable()
 export class UserMetaEsdtService {
     constructor(
-        private userComputeService: UserMetaEsdtComputeService,
-        private apiService: MXApiService,
-        private cachingService: CachingService,
-        private proxyPairAbi: ProxyPairAbiService,
-        private proxyFarmAbi: ProxyFarmAbiService,
-        private farmAbi: FarmAbiFactory,
-        private lockedAssetGetter: LockedAssetGetterService,
-        private stakingAbi: StakingAbiService,
-        private proxyStakeAbi: StakingProxyAbiService,
-        private priceDiscoveryService: PriceDiscoveryService,
-        private priceDiscoveryAbi: PriceDiscoveryAbiService,
-        private simpleLockAbi: SimpleLockAbiService,
+        private readonly userComputeService: UserMetaEsdtComputeService,
+        private readonly apiService: MXApiService,
+        private readonly proxyPairAbi: ProxyPairAbiService,
+        private readonly proxyFarmAbi: ProxyFarmAbiService,
+        private readonly farmAbi: FarmAbiFactory,
+        private readonly lockedAssetGetter: LockedAssetGetterService,
+        private readonly stakingAbi: StakingAbiService,
+        private readonly proxyStakeAbi: StakingProxyAbiService,
+        private readonly priceDiscoveryService: PriceDiscoveryService,
+        private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
+        private readonly simpleLockAbi: SimpleLockAbiService,
         private readonly energyAbi: EnergyAbiService,
-        private lockedTokenWrapperAbi: LockedTokenWrapperAbiService,
+        private readonly lockedTokenWrapperAbi: LockedTokenWrapperAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getUserLockedAssetTokens(
@@ -499,23 +495,9 @@ export class UserMetaEsdtService {
         const promises: Promise<typeof UserNftTokens>[] = [];
 
         for (const userNft of userNFTs) {
-            let userNftTokenType: NftTokenType;
-            try {
-                userNftTokenType = await this.cachingService.getOrSet(
-                    `${userNft.collection}.metaEsdtType`,
-                    () => this.getNftTokenType(userNft.collection),
-                    oneHour(),
-                );
-            } catch (error) {
-                const logMessage = generateGetLogMessage(
-                    PairService.name,
-                    this.getAllNftTokens.name,
-                    `${userNft.collection}.metaEsdtType`,
-                    error,
-                );
-                this.logger.error(logMessage);
-                throw error;
-            }
+            const userNftTokenType = await this.nftTokenType(
+                userNft.collection,
+            );
 
             switch (userNftTokenType) {
                 case NftTokenType.FarmToken:
@@ -623,7 +605,19 @@ export class UserMetaEsdtService {
         return await Promise.all(promises);
     }
 
-    private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
+    @ErrorLoggerAsync({
+        className: UserMetaEsdtService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'user',
+        remoteTtl: oneHour(),
+    })
+    private async nftTokenType(tokenID: string): Promise<NftTokenType> {
+        return await this.getNftTokenTypeRaw(tokenID);
+    }
+
+    private async getNftTokenTypeRaw(tokenID: string): Promise<NftTokenType> {
         const lockedMEXTokenID =
             await this.lockedAssetGetter.getLockedTokenID();
         if (tokenID === lockedMEXTokenID) {
@@ -731,9 +725,5 @@ export class UserMetaEsdtService {
         }
 
         return undefined;
-    }
-
-    private getUserCacheKey(address: string, nonce: string, ...args: any) {
-        return generateCacheKeyFromParams('user', address, nonce, ...args);
     }
 }
