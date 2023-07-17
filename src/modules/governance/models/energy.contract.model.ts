@@ -9,7 +9,7 @@ export enum GovernanceType {
 registerEnumType(GovernanceType, { name: 'GovernanceType' });
 
 @ObjectType()
-export class EnergyContract {
+export class GovernanceEnergyContract {
     @Field()
     address: string;
     @Field()
@@ -33,7 +33,7 @@ export class EnergyContract {
     @Field()
     energyFactoryAddress: string;
 
-    constructor(init: Partial<EnergyContract>) {
+    constructor(init: Partial<GovernanceEnergyContract>) {
         Object.assign(this, init);
     }
 }
