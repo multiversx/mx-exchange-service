@@ -89,11 +89,9 @@ export class WeeklyRewardsSplittingHandlerService {
             ),
         ]);
 
-        const userEnergy = await this.energyAbi.energyEntryForUser(userAddress);
         const outdatedContract =
             await this.userEnergyCompute.computeUserOutdatedContract(
                 userAddress,
-                userEnergy,
                 contractAddress,
             );
 

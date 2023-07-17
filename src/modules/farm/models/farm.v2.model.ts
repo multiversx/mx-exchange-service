@@ -34,6 +34,8 @@ export class FarmModelV2 extends BaseFarmModel {
     @Field()
     undistributedBoostedRewards: string;
     @Field()
+    undistributedBoostedRewardsClaimed: string;
+    @Field()
     energyFactoryAddress: string;
     @Field()
     rewardType: FarmRewardType;

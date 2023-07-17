@@ -1,10 +1,4 @@
-import {
-    CacheModule,
-    LoggerService,
-    MiddlewareConsumer,
-    Module,
-    RequestMethod,
-} from '@nestjs/common';
+import { CacheModule, LoggerService, MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';

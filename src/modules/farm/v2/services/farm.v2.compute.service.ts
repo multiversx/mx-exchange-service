@@ -1,4 +1,4 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
 import BigNumber from 'bignumber.js';
 import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
@@ -8,8 +8,12 @@ import { constantsConfig } from '../../../../config';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { PairService } from '../../../pair/services/pair.service';
 import { ContextGetterService } from '../../../../services/context/context.getter.service';
-import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import {
+    WeekTimekeepingComputeService,
+} from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import {
+    WeeklyRewardsSplittingAbiService,
+} from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { FarmServiceV2 } from './farm.v2.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
@@ -17,7 +21,9 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { CachingService } from 'src/services/caching/cache.service';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import {
+    WeeklyRewardsSplittingComputeService,
+} from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { IFarmComputeServiceV2 } from './interfaces';
 
 @Injectable()
@@ -455,6 +461,63 @@ export class FarmComputeServiceV2
             .dividedBy(farmSupply)
             .integerValue()
             .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        className: FarmComputeServiceV2.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async undistributedBoostedRewards(
+        scAddress: string,
+        currentWeek: number,
+    ): Promise<string> {
+        const amount = await this.undistributedBoostedRewardsRaw(
+            scAddress,
+            currentWeek,
+        );
+        return amount.integerValue().toFixed();
+    }
+
+    async undistributedBoostedRewardsRaw(
+        scAddress: string,
+        currentWeek: number,
+    ): Promise<BigNumber> {
+        const [
+            undistributedBoostedRewards,
+            lastUndistributedBoostedRewardsCollectWeek,
+        ] = await Promise.all([
+            this.farmAbi.undistributedBoostedRewards(scAddress),
+            this.farmAbi.lastUndistributedBoostedRewardsCollectWeek(
+                scAddress,
+            ),
+        ]);
+
+        const firstWeek = lastUndistributedBoostedRewardsCollectWeek + 1;
+        const lastWeek = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS - 1;
+        if (firstWeek > lastWeek) {
+            return new BigNumber(undistributedBoostedRewards);
+        }
+        const promises = []
+        for (let week = firstWeek; week <= lastWeek; week++) {
+            promises.push(
+                this.farmAbi.remainingBoostedRewardsToDistribute(
+                    scAddress,
+                    week,
+                )
+            )
+        }
+        const remainingRewards = await Promise.all(promises);
+        const totalRemainingRewards = remainingRewards.reduce((acc, curr) => {
+            return new BigNumber(acc).plus(curr);
+        });
+        return new BigNumber(undistributedBoostedRewards)
+            .plus(totalRemainingRewards);
+
     }
 
     async computeBlocksInWeek(

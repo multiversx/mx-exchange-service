@@ -3,13 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { gasConfig, mxConfig, scAddress } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { UserEnergyGetterService } from './user.energy.getter.service';
+import { UserEnergyComputeService } from './user.energy.compute.service';
 
 @Injectable()
 export class UserEnergyTransactionService {
     constructor(
         private readonly mxProxy: MXProxyService,
-        private readonly userEnergyGetter: UserEnergyGetterService,
+        private readonly userEnergyCompute: UserEnergyComputeService,
     ) {}
 
     async updateFarmsEnergyForUser(
@@ -22,7 +22,7 @@ export class UserEnergyTransactionService {
         ];
 
         if (includeAllContracts) {
-            const farms = await this.userEnergyGetter.getUserActiveFarmsV2(
+            const farms = await this.userEnergyCompute.userActiveFarmsV2(
                 userAddress,
             );
             farms.forEach((farm) => {
@@ -37,7 +37,7 @@ export class UserEnergyTransactionService {
             }
         } else {
             const contracts =
-                await this.userEnergyGetter.getUserOutdatedContracts(
+                await this.userEnergyCompute.getUserOutdatedContracts(
                     userAddress,
                     skipFeesCollector,
                 );

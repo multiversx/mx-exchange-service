@@ -25,5 +25,7 @@ export interface AnalyticsQueryInterface {
         series,
         metric,
         timeBucket,
+        startDate,
+        endDate,
     }): Promise<HistoricDataModel[]>;
 }

@@ -2,12 +2,16 @@ import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { BoostedYieldsFactors, FarmModelV2 } from '../models/farm.v2.model';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmServiceV2 } from './services/farm.v2.service';
-import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import {
+    GlobalInfoByWeekModel,
+} from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import { FarmComputeServiceV2 } from './services/farm.v2.compute.service';
 import { constantsConfig } from '../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import {
+    WeeklyRewardsSplittingAbiService,
+} from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FarmAbiServiceV2 } from './services/farm.v2.abi.service';
 
 @Resolver(() => FarmModelV2)
@@ -109,6 +113,16 @@ export class FarmResolverV2 extends FarmResolver {
 
     @ResolveField()
     async undistributedBoostedRewards(
+        @Parent() parent: FarmModelV2,
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return this.farmCompute.undistributedBoostedRewards(parent.address, currentWeek);
+    }
+
+    @ResolveField()
+    async undistributedBoostedRewardsClaimed(
         @Parent() parent: FarmModelV2,
     ): Promise<string> {
         return this.farmAbi.undistributedBoostedRewards(parent.address);
