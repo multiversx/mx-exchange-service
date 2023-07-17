@@ -106,7 +106,6 @@ import { EscrowModule } from './modules/escrow/escrow.module';
         TokenUnstakeModule,
         LockedTokenWrapperModule,
         EscrowModule,
-        // GovernanceModule, # temporary remove until feat will be merged into development
     ],
     providers: [CachingService],
 })
