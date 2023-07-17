@@ -30,7 +30,6 @@ import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module
 import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-token-wrapper.module';
 import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
 import { EscrowModule } from './modules/escrow/escrow.module';
-import { GovernanceModule } from './modules/governance/governance.module';
 
 @Module({
     imports: [
@@ -107,7 +106,7 @@ import { GovernanceModule } from './modules/governance/governance.module';
         TokenUnstakeModule,
         LockedTokenWrapperModule,
         EscrowModule,
-        GovernanceModule,
+        // GovernanceModule, # temporary remove until feat will be merged into development
     ],
     providers: [CachingService],
 })
