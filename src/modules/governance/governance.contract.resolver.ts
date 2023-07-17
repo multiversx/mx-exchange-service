@@ -2,11 +2,14 @@ import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { GovernanceAbiService } from './services/governance.abi.service';
 import { EnergyContract } from './models/energy.contract.model';
 import { GovernanceProposal } from './models/governance.proposal.model';
+import { GovernanceService } from './services/governance.service';
+import { EsdtToken } from '../tokens/models/esdtToken.model';
 
 @Resolver(() => EnergyContract)
 export class EnergyContractResolver {
     constructor(
         private readonly governanceAbi: GovernanceAbiService,
+        private readonly governanceService: GovernanceService,
     ) {
     }
 
@@ -36,8 +39,8 @@ export class EnergyContractResolver {
     }
 
     @ResolveField()
-    async feeTokenId(@Parent() energyContract: EnergyContract): Promise<string> {
-        return this.governanceAbi.feeTokenId(energyContract.address);
+    async feeToken(@Parent() energyContract: EnergyContract): Promise<EsdtToken> {
+        return this.governanceService.feeToken(energyContract.address);
     }
 
     @ResolveField()

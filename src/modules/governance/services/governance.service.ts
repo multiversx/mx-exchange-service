@@ -4,11 +4,14 @@ import { governanceContractsAddresses, governanceType } from '../../../utils/gov
 import { GovernanceContractsFiltersArgs } from '../models/contracts.filter.args';
 import { GovernanceAbiService } from './governance.abi.service';
 import { GovernanceUnion } from '../models/governance.union';
+import { TokenGetterService } from '../../tokens/services/token.getter.service';
+import { EsdtToken } from '../../tokens/models/esdtToken.model';
 
 @Injectable()
 export class GovernanceService {
     constructor(
         private readonly governanceAbi: GovernanceAbiService,
+        private readonly tokenGetter: TokenGetterService,
     ) {
     }
     async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<Array<typeof GovernanceUnion>> {
@@ -46,5 +49,10 @@ export class GovernanceService {
 
         const userVotedProposals = await this.governanceAbi.userVotedProposals(contractAddress, userAddress);
         return userVotedProposals.includes(proposalId);
+    }
+
+    async feeToken(contractAddress: string): Promise<EsdtToken> {
+        const feeTokenId = await this.governanceAbi.feeTokenId(contractAddress);
+        return await this.tokenGetter.getTokenMetadata(feeTokenId);
     }
 }
