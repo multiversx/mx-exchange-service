@@ -11,6 +11,16 @@ export class ProposalVotes {
     @Field()
     abstainVotes: string;
     @Field()
+    totalVotes: string;
+    @Field()
+    upPercentage: string;
+    @Field()
+    downPercentage: string;
+    @Field()
+    downVetoPercentage: string;
+    @Field()
+    abstainPercentage: string;
+    @Field()
     quorum: string;
 
     constructor(init?: Partial<ProposalVotes>) {

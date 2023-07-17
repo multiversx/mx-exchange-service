@@ -227,11 +227,21 @@ export class GovernanceAbiService
             return ProposalVotes.default();
         }
         const votes = response.firstValue.valueOf();
+        const totalVotesBigNumber = votes.up_votes
+            .plus(votes.down_votes)
+            .plus(votes.abstain_votes)
+            .plus(votes.down_veto_votes)
+
         return new ProposalVotes({
             upVotes: votes.up_votes.toFixed(),
             downVotes: votes.down_votes.toFixed(),
             downVetoVotes: votes.down_veto_votes.toFixed(),
             abstainVotes: votes.abstain_votes.toFixed(),
+            totalVotes: totalVotesBigNumber.toFixed(),
+            upPercentage: votes.up_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
+            downPercentage: votes.down_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
+            abstainPercentage: votes.abstain_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
+            downVetoPercentage: votes.down_veto_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
             quorum: votes.quorum.toFixed()
         });
     }
