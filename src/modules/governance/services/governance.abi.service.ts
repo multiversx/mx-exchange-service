@@ -3,13 +3,22 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { ProposalVotes } from '../models/proposal.votes.model';
-import { Description, GovernanceProposal, GovernanceProposalStatus } from '../models/governance.proposal.model';
+import {
+    Description,
+    GovernanceProposal,
+    GovernanceProposalStatus,
+    VoteArgs,
+} from '../models/governance.proposal.model';
 import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { toGovernanceProposalStatus } from '../../../utils/governance';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
+import { TransactionModel } from '../../../models/transaction.model';
+import { gasConfig, mxConfig } from '../../../config';
+import BigNumber from 'bignumber.js';
+import { U64Value } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 
 @Injectable()
 export class GovernanceAbiService
@@ -298,5 +307,28 @@ export class GovernanceAbiService
         const response = await this.getGenericData(interaction);
 
         return response.firstValue.valueOf().bech32();
+    }
+
+    @ErrorLoggerAsync({
+        className: GovernanceAbiService.name,
+        logArgs: true,
+    })
+    async vote(
+        sender: string,
+        args: VoteArgs,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getGovernanceSmartContract(
+            args.contractAddress,
+        );
+
+        return contract.methodsExplicit
+            .vote([
+                new U64Value(new BigNumber(args.proposalId)),
+                new U64Value(new BigNumber(args.vote)),
+            ])
+            .withGasLimit(gasConfig.governance.vote)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 }

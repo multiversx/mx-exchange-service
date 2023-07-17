@@ -10,6 +10,7 @@ import { GovernanceQueryResolver } from './governance.query.resolver';
 import { EnergyContractResolver } from './governance.contract.resolver';
 import { GovernanceProposalResolver } from './governance.propose.resolver';
 import { GovernanceService } from './services/governance.service';
+import { GovernanceTransactionResolver } from './governance.transaction.resolver';
 
 
 @Module({
@@ -26,7 +27,7 @@ import { GovernanceService } from './services/governance.service';
         GovernanceAbiService,
         // GovernanceSetterService,
         // GovernanceComputeService,
-        // GovernanceTransactionService,
+        GovernanceTransactionResolver,
         GovernanceQueryResolver,
         EnergyContractResolver,
         GovernanceProposalResolver,
