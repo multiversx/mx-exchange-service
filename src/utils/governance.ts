@@ -1,4 +1,4 @@
-import { GovernanceType } from '../modules/governance/models/governance.contract.model';
+import { GovernanceType } from '../modules/governance/models/energy.contract.model';
 import { scAddress } from '../config';
 import { GovernanceProposalStatus } from '../modules/governance/models/governance.proposal.model';
 

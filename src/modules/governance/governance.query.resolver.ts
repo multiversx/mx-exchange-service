@@ -1,7 +1,7 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { GovernanceContractsFiltersArgs } from './models/contracts.filter.args';
 import { GovernanceService } from './services/governance.service';
-import { GovernanceContract } from './models/governance.contract.model';
+import { GovernanceUnion } from './models/governance.union';
 
 @Resolver()
 export class GovernanceQueryResolver {
@@ -10,10 +10,10 @@ export class GovernanceQueryResolver {
     ) {
     }
 
-    @Query(() => [GovernanceContract])
+    @Query(() => [GovernanceUnion])
     async governanceContracts(
         @Args() filters: GovernanceContractsFiltersArgs
-    ): Promise<GovernanceContract[]> {
+    ): Promise<Array<typeof GovernanceUnion>> {
         return this.governanceService.getGovernanceContracts(filters);
     }
 }

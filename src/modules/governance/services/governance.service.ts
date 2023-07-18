@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { GovernanceContract } from '../models/governance.contract.model';
-import { governanceContractsAddresses } from '../../../utils/governance';
+import { GovernanceEnergyContract, GovernanceType } from '../models/energy.contract.model';
+import { governanceContractsAddresses, governanceType } from '../../../utils/governance';
 import { GovernanceContractsFiltersArgs } from '../models/contracts.filter.args';
 import { GovernanceAbiService } from './governance.abi.service';
+import { GovernanceUnion } from '../models/governance.union';
 
 @Injectable()
 export class GovernanceService {
@@ -10,16 +11,29 @@ export class GovernanceService {
         private readonly governanceAbi: GovernanceAbiService,
     ) {
     }
-    async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<GovernanceContract[]> {
-        const governanceAddresses = governanceContractsAddresses();
+    async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<Array<typeof GovernanceUnion>> {
+        let governanceAddresses = governanceContractsAddresses();
 
-        const governance: GovernanceContract[] = [];
+        if (filters.contracts) {
+            governanceAddresses = governanceAddresses.filter((address) => !filters.contracts.includes(address));
+        }
+
+        const governance: GovernanceEnergyContract[] = [];
         for (const address of governanceAddresses) {
-            governance.push(
-                new GovernanceContract({
-                    address,
-                }),
-            );
+            const type = governanceType(address);
+            if (filters.type && filters.type !== type) {
+                continue;
+            }
+            switch (type) {
+                case GovernanceType.ENERGY:
+                    governance.push(
+                        new GovernanceEnergyContract({
+                            address,
+                        }),
+                    );
+                    break;
+            }
+
         }
 
         return governance;

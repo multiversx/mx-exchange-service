@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { GovernanceProposal } from './governance.proposal.model';
 
 export enum GovernanceType {
@@ -6,8 +6,10 @@ export enum GovernanceType {
     TOKEN = 'token',
 }
 
+registerEnumType(GovernanceType, { name: 'GovernanceType' });
+
 @ObjectType()
-export class GovernanceContract {
+export class GovernanceEnergyContract {
     @Field()
     address: string;
     @Field()
@@ -31,7 +33,7 @@ export class GovernanceContract {
     @Field()
     energyFactoryAddress: string;
 
-    constructor(init: Partial<GovernanceContract>) {
+    constructor(init: Partial<GovernanceEnergyContract>) {
         Object.assign(this, init);
     }
 }
