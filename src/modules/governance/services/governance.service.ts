@@ -12,10 +12,10 @@ export class GovernanceService {
     ) {
     }
     async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<Array<typeof GovernanceUnion>> {
-        const governanceAddresses = governanceContractsAddresses();
+        let governanceAddresses = governanceContractsAddresses();
 
         if (filters.contracts) {
-            governanceAddresses.filter((address) => !filters.contracts.includes(address));
+            governanceAddresses = governanceAddresses.filter((address) => !filters.contracts.includes(address));
         }
 
         const governance: GovernanceEnergyContract[] = [];
