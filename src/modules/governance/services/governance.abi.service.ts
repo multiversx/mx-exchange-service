@@ -232,8 +232,9 @@ export class GovernanceAbiService
         const interaction = contract.methods.getProposalVotes([proposalId]);
         const response = await this.getGenericData(interaction);
 
+        let proposalVotes = ProposalVotes.defaultValues();
         if (!response.firstValue) {
-            return ProposalVotes.default();
+            return new ProposalVotes(proposalVotes);
         }
         const votes = response.firstValue.valueOf();
         const totalVotesBigNumber = votes.up_votes
@@ -241,7 +242,8 @@ export class GovernanceAbiService
             .plus(votes.abstain_votes)
             .plus(votes.down_veto_votes)
 
-        const proposalVotes = {
+        proposalVotes = {
+            ...proposalVotes,
             upVotes: votes.up_votes.toFixed(),
             downVotes: votes.down_votes.toFixed(),
             downVetoVotes: votes.down_veto_votes.toFixed(),
@@ -251,13 +253,13 @@ export class GovernanceAbiService
         };
 
         if (!totalVotesBigNumber.isZero()) {
-            return new ProposalVotes({
+            proposalVotes = {
                 ...proposalVotes,
                 upPercentage: votes.up_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
                 downPercentage: votes.down_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
                 downVetoPercentage: votes.down_veto_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
                 abstainPercentage: votes.abstain_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
-            });
+            };
         }
 
         return new ProposalVotes(proposalVotes);

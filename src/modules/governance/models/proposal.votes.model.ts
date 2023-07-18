@@ -24,10 +24,10 @@ export class ProposalVotes {
     quorum: string;
 
     constructor(init?: Partial<ProposalVotes>) {
-        Object.assign(this, ProposalVotes.default(), init);
+        Object.assign(this, init);
     }
 
-    static default(): ProposalVotes {
+    static defaultValues() {
         return {
             upVotes: '0',
             downVotes: '0',
