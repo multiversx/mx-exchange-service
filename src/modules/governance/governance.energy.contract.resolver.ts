@@ -1,12 +1,12 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { GovernanceAbiService } from './services/governance.abi.service';
-import { EnergyContract } from './models/energy.contract.model';
+import { GovernanceEnergyContract } from './models/energy.contract.model';
 import { GovernanceProposal } from './models/governance.proposal.model';
 import { GovernanceService } from './services/governance.service';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 
-@Resolver(() => EnergyContract)
-export class EnergyContractResolver {
+@Resolver(() => GovernanceEnergyContract)
+export class GovernanceEnergyContractResolver {
     constructor(
         private readonly governanceAbi: GovernanceAbiService,
         private readonly governanceService: GovernanceService,
@@ -14,52 +14,52 @@ export class EnergyContractResolver {
     }
 
     @ResolveField()
-    async minEnergyForPropose(@Parent() energyContract: EnergyContract): Promise<string> {
+    async minEnergyForPropose(@Parent() energyContract: GovernanceEnergyContract): Promise<string> {
         return this.governanceAbi.minEnergyForPropose(energyContract.address);
     }
 
     @ResolveField()
-    async minFeeForPropose(@Parent() energyContract: EnergyContract): Promise<string> {
+    async minFeeForPropose(@Parent() energyContract: GovernanceEnergyContract): Promise<string> {
         return this.governanceAbi.minFeeForPropose(energyContract.address);
     }
 
     @ResolveField()
-    async quorum(@Parent() energyContract: EnergyContract): Promise<string> {
+    async quorum(@Parent() energyContract: GovernanceEnergyContract): Promise<string> {
         return this.governanceAbi.quorum(energyContract.address);
     }
 
     @ResolveField()
-    async votingDelayInBlocks(@Parent() energyContract: EnergyContract): Promise<number> {
+    async votingDelayInBlocks(@Parent() energyContract: GovernanceEnergyContract): Promise<number> {
         return this.governanceAbi.votingDelayInBlocks(energyContract.address);
     }
 
     @ResolveField()
-    async votingPeriodInBlocks(@Parent() energyContract: EnergyContract): Promise<number> {
+    async votingPeriodInBlocks(@Parent() energyContract: GovernanceEnergyContract): Promise<number> {
         return this.governanceAbi.votingPeriodInBlocks(energyContract.address);
     }
 
     @ResolveField()
-    async feeToken(@Parent() energyContract: EnergyContract): Promise<EsdtToken> {
+    async feeToken(@Parent() energyContract: GovernanceEnergyContract): Promise<EsdtToken> {
         return this.governanceService.feeToken(energyContract.address);
     }
 
     @ResolveField()
-    async withdrawPercentageDefeated(@Parent() energyContract: EnergyContract): Promise<number> {
+    async withdrawPercentageDefeated(@Parent() energyContract: GovernanceEnergyContract): Promise<number> {
         return this.governanceAbi.withdrawPercentageDefeated(energyContract.address);
     }
 
     @ResolveField(() => [GovernanceProposal])
-    async proposals(@Parent() energyContract: EnergyContract): Promise<GovernanceProposal[]> {
+    async proposals(@Parent() energyContract: GovernanceEnergyContract): Promise<GovernanceProposal[]> {
         return this.governanceAbi.proposals(energyContract.address);
     }
 
     @ResolveField()
-    async feesCollectorAddress(@Parent() energyContract: EnergyContract): Promise<string> {
+    async feesCollectorAddress(@Parent() energyContract: GovernanceEnergyContract): Promise<string> {
         return this.governanceAbi.feesCollectorAddress(energyContract.address);
     }
 
     @ResolveField()
-    async energyFactoryAddress(@Parent() energyContract: EnergyContract): Promise<string> {
+    async energyFactoryAddress(@Parent() energyContract: GovernanceEnergyContract): Promise<string> {
         return this.governanceAbi.energyFactoryAddress(energyContract.address);
     }
 }

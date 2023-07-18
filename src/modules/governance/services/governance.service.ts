@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EnergyContract, GovernanceType } from '../models/energy.contract.model';
+import { GovernanceEnergyContract, GovernanceType } from '../models/energy.contract.model';
 import { governanceContractsAddresses, governanceType } from '../../../utils/governance';
 import { GovernanceContractsFiltersArgs } from '../models/contracts.filter.args';
 import { GovernanceAbiService } from './governance.abi.service';
@@ -15,13 +15,13 @@ export class GovernanceService {
     ) {
     }
     async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<Array<typeof GovernanceUnion>> {
-        const governanceAddresses = governanceContractsAddresses();
+        let governanceAddresses = governanceContractsAddresses();
 
         if (filters.contracts) {
-            governanceAddresses.filter((address) => !filters.contracts.includes(address));
+            governanceAddresses = governanceAddresses.filter((address) => !filters.contracts.includes(address));
         }
 
-        const governance: EnergyContract[] = [];
+        const governance: GovernanceEnergyContract[] = [];
         for (const address of governanceAddresses) {
             const type = governanceType(address);
             if (filters.type && filters.type !== type) {
@@ -30,7 +30,7 @@ export class GovernanceService {
             switch (type) {
                 case GovernanceType.ENERGY:
                     governance.push(
-                        new EnergyContract({
+                        new GovernanceEnergyContract({
                             address,
                         }),
                     );

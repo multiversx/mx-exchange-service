@@ -7,7 +7,7 @@ import { TokenModule } from '../tokens/token.module';
 import { EnergyModule } from '../energy/energy.module';
 import { GovernanceAbiService } from './services/governance.abi.service';
 import { GovernanceQueryResolver } from './governance.query.resolver';
-import { EnergyContractResolver } from './governance.contract.resolver';
+import { GovernanceEnergyContractResolver } from './governance.energy.contract.resolver';
 import { GovernanceProposalResolver } from './governance.propose.resolver';
 import { GovernanceService } from './services/governance.service';
 
@@ -28,7 +28,7 @@ import { GovernanceService } from './services/governance.service';
         // GovernanceComputeService,
         // GovernanceTransactionService,
         GovernanceQueryResolver,
-        EnergyContractResolver,
+        GovernanceEnergyContractResolver,
         GovernanceProposalResolver,
     ],
     exports: [
