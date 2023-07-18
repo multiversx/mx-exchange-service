@@ -241,18 +241,26 @@ export class GovernanceAbiService
             .plus(votes.abstain_votes)
             .plus(votes.down_veto_votes)
 
-        return new ProposalVotes({
+        const proposalVotes = {
             upVotes: votes.up_votes.toFixed(),
             downVotes: votes.down_votes.toFixed(),
             downVetoVotes: votes.down_veto_votes.toFixed(),
             abstainVotes: votes.abstain_votes.toFixed(),
             totalVotes: totalVotesBigNumber.toFixed(),
-            upPercentage: votes.up_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
-            downPercentage: votes.down_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
-            abstainPercentage: votes.abstain_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
-            downVetoPercentage: votes.down_veto_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
             quorum: votes.quorum.toFixed()
-        });
+        };
+
+        if (!totalVotesBigNumber.isZero()) {
+            return new ProposalVotes({
+                ...proposalVotes,
+                upPercentage: votes.up_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
+                downPercentage: votes.down_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
+                downVetoPercentage: votes.down_veto_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
+                abstainPercentage: votes.abstain_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
+            });
+        }
+
+        return new ProposalVotes(proposalVotes);
     }
 
     @ErrorLoggerAsync({className: GovernanceAbiService.name})

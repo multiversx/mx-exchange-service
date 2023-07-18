@@ -24,16 +24,21 @@ export class ProposalVotes {
     quorum: string;
 
     constructor(init?: Partial<ProposalVotes>) {
-        Object.assign(this, init);
+        Object.assign(this, ProposalVotes.default(), init);
     }
 
     static default(): ProposalVotes {
-        return new ProposalVotes({
+        return {
             upVotes: '0',
             downVotes: '0',
             downVetoVotes: '0',
             abstainVotes: '0',
+            totalVotes: '0',
+            upPercentage: '0',
+            downPercentage: '0',
+            downVetoPercentage: '0',
+            abstainPercentage: '0',
             quorum: '0',
-        });
+        };
     }
 }
