@@ -18,7 +18,7 @@ export class GovernanceService {
         let governanceAddresses = governanceContractsAddresses();
 
         if (filters.contracts) {
-            governanceAddresses = governanceAddresses.filter((address) => !filters.contracts.includes(address));
+            governanceAddresses = governanceAddresses.filter((address) => filters.contracts.includes(address));
         }
 
         const governance: GovernanceEnergyContract[] = [];

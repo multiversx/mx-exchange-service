@@ -1,4 +1,4 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Int, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { GovernanceAbiService } from './services/governance.abi.service';
 import { GovernanceEnergyContract } from './models/energy.contract.model';
 import { GovernanceProposal } from './models/governance.proposal.model';
@@ -49,8 +49,17 @@ export class GovernanceEnergyContractResolver {
     }
 
     @ResolveField(() => [GovernanceProposal])
-    async proposals(@Parent() energyContract: GovernanceEnergyContract): Promise<GovernanceProposal[]> {
-        return this.governanceAbi.proposals(energyContract.address);
+    async proposals(
+        @Parent() energyContract: GovernanceEnergyContract,
+        @Args('proposalId', {type: ()=> Int, nullable: true}) proposalId?: number
+    ): Promise<GovernanceProposal[]> {
+        const proposals = await this.governanceAbi.proposals(energyContract.address);
+
+        if(proposalId) {
+            return proposals.filter(proposal => proposal.proposalId === proposalId);
+        } else {
+            return proposals;
+        }
     }
 
     @ResolveField()
