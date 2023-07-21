@@ -25,6 +25,7 @@ import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -180,6 +181,21 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<FeeDestination[]> {
         return this.pairAbi.feeDestinations(parent.address);
+    }
+
+    @ResolveField()
+    async feesCollector(
+        @Parent() parent: PairModel,
+    ): Promise<FeesCollectorModel> {
+        const feesCollectorAddress = await this.pairAbi.feesCollectorAddress(
+            parent.address,
+        );
+
+        return feesCollectorAddress
+            ? new FeesCollectorModel({
+                  address: feesCollectorAddress,
+              })
+            : undefined;
     }
 
     @Query(() => String)
