@@ -103,6 +103,11 @@ export class PairModel {
     @Field()
     specialFeePercent: number;
 
+    @Field({
+        description: 'Percentage of special fees that go to the fees collector',
+    })
+    feesCollectorCutPercentage: number;
+
     @Field(() => [String])
     trustedSwapPairs: string[];
 

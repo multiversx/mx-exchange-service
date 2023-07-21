@@ -729,4 +729,30 @@ export class PairAbiService
 
         return new Address(response.firstValue.valueOf().toString()).bech32();
     }
+
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async feesCollectorCutPercentage(pairAddress: string): Promise<number> {
+        return await this.getFeesCollectorCutPercentageRaw(pairAddress);
+    }
+
+    async getFeesCollectorCutPercentageRaw(address: string): Promise<number> {
+        const contract = await this.mxProxy.getPairSmartContract(address);
+        const interaction: Interaction =
+            contract.methods.getFeesCollectorCutPercentage([]);
+        const response = await this.getGenericData(interaction);
+
+        if (response.returnCode.equals(ReturnCode.UserError)) {
+            return undefined;
+        }
+
+        return response.firstValue.valueOf().toNumber();
+    }
 }
