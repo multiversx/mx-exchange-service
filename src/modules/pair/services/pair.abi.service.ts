@@ -11,7 +11,6 @@ import {
 } from 'src/models/esdtTokenPayment.model';
 import {
     Address,
-    AddressValue,
     BigUIntValue,
     EnumValue,
     Field,
@@ -644,72 +643,6 @@ export class PairAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async routerOwnerAddress(pairAddress: string): Promise<string> {
-        return await this.getRouterOwnerAddressRaw(pairAddress);
-    }
-
-    async getRouterOwnerAddressRaw(address: string): Promise<string> {
-        const contract = await this.mxProxy.getPairSmartContract(address);
-        const interaction: Interaction =
-            contract.methods.getRouterOwnerManagedAddress([]);
-        const response = await this.getGenericData(interaction);
-        return new Address(response.firstValue.valueOf().toString()).bech32();
-    }
-
-    @ErrorLoggerAsync({
-        className: PairAbiService.name,
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async externSwapGasLimit(pairAddress: string): Promise<number> {
-        return await this.getExternSwapGasLimitRaw(pairAddress);
-    }
-
-    async getExternSwapGasLimitRaw(pairAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const interaction: Interaction = contract.methods.getExternSwapGasLimit(
-            [],
-        );
-        const response = await this.getGenericData(interaction);
-        const res = response.firstValue.valueOf();
-        return res !== undefined ? res.toFixed() : undefined;
-    }
-
-    @ErrorLoggerAsync({
-        className: PairAbiService.name,
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async transferExecGasLimit(pairAddress: string): Promise<number> {
-        return await this.getTransferExecGasLimitRaw(pairAddress);
-    }
-
-    async getTransferExecGasLimitRaw(pairAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const interaction: Interaction =
-            contract.methods.getTransferExecGasLimit([]);
-        const response = await this.getGenericData(interaction);
-        const res = response.firstValue?.valueOf();
-        return res !== undefined ? res.toFixed() : undefined;
-    }
-
-    @ErrorLoggerAsync({
-        className: PairAbiService.name,
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
     async safePrice(
         pairAddress: string,
         esdtTokenPayment: EsdtTokenPayment,
@@ -768,61 +701,5 @@ export class PairAbiService
                 response.firstValue.valueOf().amount,
             ).toFixed(),
         });
-    }
-
-    @ErrorLoggerAsync({
-        className: PairAbiService.name,
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async numSwapsByAddress(
-        pairAddress: string,
-        address: string,
-    ): Promise<number> {
-        return await this.getNumSwapsByAddressRaw(pairAddress, address);
-    }
-
-    async getNumSwapsByAddressRaw(
-        pairAddress: string,
-        address: string,
-    ): Promise<number> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const interaction: Interaction = contract.methods.getNumSwapsByAddress([
-            new AddressValue(Address.fromString(address)),
-        ]);
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
-    }
-
-    @ErrorLoggerAsync({
-        className: PairAbiService.name,
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async numAddsByAddress(
-        pairAddress: string,
-        address: string,
-    ): Promise<string> {
-        return await this.getNumAddsByAddressRaw(pairAddress, address);
-    }
-
-    async getNumAddsByAddressRaw(
-        pairAddress: string,
-        address: string,
-    ): Promise<string> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const interaction: Interaction = contract.methods.getNumAddsByAddress([
-            new AddressValue(Address.fromString(address)),
-        ]);
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
     }
 }

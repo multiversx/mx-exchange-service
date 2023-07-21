@@ -3,7 +3,6 @@ import {
     AddressValue,
     BigUIntValue,
     TypedValue,
-    U64Value,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
 import { Address, TokenPayment } from '@multiversx/sdk-core';
@@ -21,7 +20,6 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { PairService } from './pair.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { BPConfig } from '../models/pair.model';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
@@ -659,38 +657,6 @@ export class PairTransactionService {
             .toPlainObject();
     }
 
-    async setTransferExecGasLimit(
-        pairAddress: string,
-        gasLimit: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const transactionArgs: TypedValue[] = [
-            new U64Value(new BigNumber(gasLimit)),
-        ];
-        return contract.methodsExplicit
-            .set_transfer_exec_gas_limit(transactionArgs)
-            .withGasLimit(gasConfig.pairs.admin.set_transfer_exec_gas_limit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    async setExternSwapGasLimit(
-        pairAddress: string,
-        gasLimit: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const transactionArgs: TypedValue[] = [
-            new U64Value(new BigNumber(gasLimit)),
-        ];
-        return contract.methodsExplicit
-            .set_extern_swap_gas_limit(transactionArgs)
-            .withGasLimit(gasConfig.pairs.admin.set_extern_swap_gas_limit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
     async pause(pairAddress: string): Promise<TransactionModel> {
         const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         return contract.methodsExplicit
@@ -736,76 +702,6 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setFeePercents(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setFeePercents)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    async setMaxObservationsPerRecord(
-        pairAddress: string,
-        maxObservationsPerRecord: number,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const transactionArgs: TypedValue[] = [
-            new BigUIntValue(new BigNumber(maxObservationsPerRecord)),
-        ];
-        return contract.methodsExplicit
-            .setMaxObservationsPerRecord(transactionArgs)
-            .withGasLimit(gasConfig.pairs.admin.setMaxObservationsPerRecord)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    async setBPSwapConfig(
-        pairAddress: string,
-        config: BPConfig,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const transactionArgs: TypedValue[] = [
-            new BigUIntValue(new BigNumber(config.protectStopBlock)),
-            new BigUIntValue(new BigNumber(config.volumePercent)),
-            new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
-        ];
-        return contract.methodsExplicit
-            .setBPSwapConfig(transactionArgs)
-            .withGasLimit(gasConfig.pairs.admin.setBPSwapConfig)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    async setBPRemoveConfig(
-        pairAddress: string,
-        config: BPConfig,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const transactionArgs: TypedValue[] = [
-            new BigUIntValue(new BigNumber(config.protectStopBlock)),
-            new BigUIntValue(new BigNumber(config.volumePercent)),
-            new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
-        ];
-        return contract.methodsExplicit
-            .setBPRemoveConfig(transactionArgs)
-            .withGasLimit(gasConfig.pairs.admin.setBPRemoveConfig)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    async setBPAddConfig(
-        pairAddress: string,
-        config: BPConfig,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const transactionArgs: TypedValue[] = [
-            new BigUIntValue(new BigNumber(config.protectStopBlock)),
-            new BigUIntValue(new BigNumber(config.volumePercent)),
-            new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
-        ];
-        return contract.methodsExplicit
-            .setBPAddConfig(transactionArgs)
-            .withGasLimit(gasConfig.pairs.admin.setBPAddConfig)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
