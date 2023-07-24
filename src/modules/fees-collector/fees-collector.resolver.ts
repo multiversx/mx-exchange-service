@@ -21,12 +21,14 @@ import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
 import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
+import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorService: FeesCollectorService,
+        private readonly feesCollectorTransaction: FeesCollectorTransactionService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {}
 
@@ -84,6 +86,27 @@ export class FeesCollectorResolver {
     @Query(() => FeesCollectorModel)
     async feesCollector(): Promise<FeesCollectorModel> {
         return this.feesCollectorService.feesCollector(scAddress.feesCollector);
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Query(() => TransactionModel)
+    async addKnownContracts(
+        @Args('contractAddresses') contractAddresses: string[],
+        @Args('remove', { nullable: true }) remove: boolean,
+    ): Promise<TransactionModel> {
+        return this.feesCollectorTransaction.addKnownContracts(
+            contractAddresses,
+            remove,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Query(() => TransactionModel)
+    async addKnownTokens(
+        @Args('tokenIDs') tokenIDs: string[],
+        @Args('remove', { nullable: true }) remove: boolean,
+    ): Promise<TransactionModel> {
+        return this.feesCollectorTransaction.addKnownTokens(tokenIDs, remove);
     }
 }
 

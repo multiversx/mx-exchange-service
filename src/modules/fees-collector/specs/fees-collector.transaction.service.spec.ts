@@ -121,4 +121,71 @@ describe('FeesCollectorTransactionService', () => {
             }),
         );
     });
+
+    it('should get remove known contract transaction', async () => {
+        const service = module.get<FeesCollectorTransactionService>(
+            FeesCollectorTransactionService,
+        );
+        const transaction = await service.addKnownContracts(
+            [
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000001',
+                ).bech32(),
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000002',
+                ).bech32(),
+            ],
+            true,
+        );
+
+        expect(transaction).toEqual(
+            new TransactionModel({
+                chainID: mxConfig.chainID,
+                gasLimit: 10000000,
+                gasPrice: 1000000000,
+                nonce: 0,
+                receiver: scAddress.feesCollector,
+                sender: Address.Zero().bech32(),
+                value: '0',
+                data: encodeTransactionData(
+                    `removeKnownContracts@${Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000001',
+                    ).bech32()}@${Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000002',
+                    ).bech32()}`,
+                ),
+                options: undefined,
+                signature: undefined,
+                version: 1,
+            }),
+        );
+    });
+
+    it('should get add known token transaction', async () => {
+        const service = module.get<FeesCollectorTransactionService>(
+            FeesCollectorTransactionService,
+        );
+        const transaction = await service.addKnownTokens([
+            'WEGLD-123456',
+            'MEX-123456',
+        ]);
+
+        expect(transaction).toEqual(
+            new TransactionModel({
+                chainID: mxConfig.chainID,
+                gasLimit: 10000000,
+                gasPrice: 1000000000,
+                nonce: 0,
+                receiver: scAddress.feesCollector,
+                sender: Address.Zero().bech32(),
+                value: '0',
+                data: encodeTransactionData(
+                    `addKnownTokens@${'WEGLD-123456'}@${'MEX-123456'}`,
+                ),
+                options: undefined,
+                signature: undefined,
+                version: 1,
+            }),
+        );
+    });
 });
