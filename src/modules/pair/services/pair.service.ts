@@ -266,8 +266,8 @@ export class PairService {
         return false;
     }
 
-    async requireOwner(pairAddress: string, sender: string) {
-        if ((await this.pairAbi.routerOwnerAddress(pairAddress)) !== sender)
+    async requireOwner(sender: string) {
+        if ((await this.routerAbi.owner()) !== sender)
             throw new Error('You are not the owner.');
     }
 
