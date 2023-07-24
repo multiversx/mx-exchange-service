@@ -4,8 +4,8 @@ import { VoteArgs } from './models/governance.proposal.model';
 import { UseGuards } from '@nestjs/common';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { AuthUser } from '../auth/auth.user';
-import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { TransactionModel } from '../../models/transaction.model';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 
 @Resolver()
 export class GovernanceTransactionResolver {
@@ -14,7 +14,7 @@ export class GovernanceTransactionResolver {
     ) {
     }
 
-    @UseGuards(JwtOrNativeAdminGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async vote(
         @Args() args: VoteArgs,

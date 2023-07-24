@@ -22,15 +22,14 @@ import { U64Value } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 
 @Injectable()
 export class GovernanceAbiService
-    extends GenericAbiService
-{
+    extends GenericAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
     ) {
         super(mxProxy);
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -47,8 +46,8 @@ export class GovernanceAbiService
 
         return response.firstValue.valueOf().toFixed();
     }
-    
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -66,7 +65,7 @@ export class GovernanceAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -84,7 +83,7 @@ export class GovernanceAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -102,7 +101,7 @@ export class GovernanceAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -120,7 +119,7 @@ export class GovernanceAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -138,7 +137,7 @@ export class GovernanceAbiService
         return response.firstValue.valueOf();
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -156,7 +155,7 @@ export class GovernanceAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -186,7 +185,7 @@ export class GovernanceAbiService
                 proposer: proposal.proposer.bech32(),
                 actions,
                 description: new Description(JSON.parse(proposal.description.toString())),
-                feePayment:  new EsdtTokenPaymentModel(
+                feePayment: new EsdtTokenPaymentModel(
                     EsdtTokenPayment.fromDecodedAttributes(proposal.fee_payment)
                 ),
                 proposalStartBlock: proposal.proposal_start_block.toNumber(),
@@ -199,7 +198,7 @@ export class GovernanceAbiService
         });
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -217,7 +216,7 @@ export class GovernanceAbiService
         return response.firstValue.valueOf().map((proposalId: any) => proposalId.toNumber());
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -247,15 +246,15 @@ export class GovernanceAbiService
             downVetoVotes: votes.down_veto_votes.toFixed(),
             abstainVotes: votes.abstain_votes.toFixed(),
             totalVotes: totalVotesBigNumber.toFixed(),
-            upPercentage: votes.up_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
-            downPercentage: votes.down_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
-            abstainPercentage: votes.abstain_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
-            downVetoPercentage: votes.down_veto_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2),
+            upPercentage: totalVotesBigNumber > 0 ? votes.up_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2) : "0",
+            downPercentage: totalVotesBigNumber > 0 ? votes.down_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2) : "0",
+            abstainPercentage: totalVotesBigNumber > 0 ? votes.abstain_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2) : "0",
+            downVetoPercentage: totalVotesBigNumber > 0 ? votes.down_veto_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2) : "0",
             quorum: votes.quorum.toFixed()
         });
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -273,7 +272,7 @@ export class GovernanceAbiService
         return toGovernanceProposalStatus(response.firstValue.valueOf().name);
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -291,7 +290,7 @@ export class GovernanceAbiService
         return response.firstValue.valueOf().bech32();
     }
 
-    @ErrorLoggerAsync({className: GovernanceAbiService.name})
+    @ErrorLoggerAsync({ className: GovernanceAbiService.name })
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
