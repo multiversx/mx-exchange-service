@@ -24,15 +24,10 @@ export interface IPairAbiService {
     feeDestinations(pairAddress: string): Promise<FeeDestination[]>;
     whitelistedAddresses(pairAddress: string): Promise<string[]>;
     routerAddress(pairAddress: string): Promise<string>;
-    routerOwnerAddress(pairAddress: string): Promise<string>;
-    externSwapGasLimit(pairAddress: string): Promise<number>;
-    transferExecGasLimit(pairAddress: string): Promise<number>;
     safePrice(
         pairAddress: string,
         esdtTokenPayment: EsdtTokenPayment,
     ): Promise<EsdtTokenPayment>;
-    numSwapsByAddress(pairAddress: string, address: string): Promise<number>;
-    numAddsByAddress(pairAddress: string, address: string): Promise<string>;
 }
 
 export interface IPairComputeService {

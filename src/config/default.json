@@ -78,7 +78,7 @@
             "createPair": 30000000,
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
-            "multiPairSwapMultiplier": 35000000,
+            "multiPairSwapMultiplier": 40000000,
             "swapEnableByUser": 50000000,
             "admin": {
                 "setState": 200000000,
@@ -445,7 +445,9 @@
         },
         "feesCollector": {
             "baseClaimRewards": 20000000,
-            "claimRewardsPerWeek": 20000000
+            "claimRewardsPerWeek": 20000000,
+            "addKnownContracts": 10000000,
+            "addKnownTokens": 10000000
         },
         "energyUpdate": {
             "updateFarmsEnergyForUser": 15000000
