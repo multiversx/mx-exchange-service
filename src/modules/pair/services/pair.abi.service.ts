@@ -15,6 +15,7 @@ import {
     EnumValue,
     Field,
     ResultsParser,
+    ReturnCode,
     Struct,
     TokenIdentifierValue,
     U64Value,
@@ -701,5 +702,57 @@ export class PairAbiService
                 response.firstValue.valueOf().amount,
             ).toFixed(),
         });
+    }
+
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async feesCollectorAddress(pairAddress: string): Promise<string> {
+        return await this.getFeesCollectorAddressRaw(pairAddress);
+    }
+
+    async getFeesCollectorAddressRaw(address: string): Promise<string> {
+        const contract = await this.mxProxy.getPairSmartContract(address);
+        const interaction: Interaction =
+            contract.methods.getFeesCollectorAddress([]);
+        const response = await this.getGenericData(interaction);
+
+        if (response.returnCode.equals(ReturnCode.UserError)) {
+            return undefined;
+        }
+
+        return new Address(response.firstValue.valueOf().toString()).bech32();
+    }
+
+    @ErrorLoggerAsync({
+        className: PairAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async feesCollectorCutPercentage(pairAddress: string): Promise<number> {
+        return await this.getFeesCollectorCutPercentageRaw(pairAddress);
+    }
+
+    async getFeesCollectorCutPercentageRaw(address: string): Promise<number> {
+        const contract = await this.mxProxy.getPairSmartContract(address);
+        const interaction: Interaction =
+            contract.methods.getFeesCollectorCutPercentage([]);
+        const response = await this.getGenericData(interaction);
+
+        if (response.returnCode.equals(ReturnCode.UserError)) {
+            return undefined;
+        }
+
+        return response.firstValue.valueOf().toNumber();
     }
 }

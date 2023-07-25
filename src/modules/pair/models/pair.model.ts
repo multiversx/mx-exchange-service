@@ -3,6 +3,7 @@ import { PaginationArgs } from '../../dex.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
+import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -102,6 +103,11 @@ export class PairModel {
     @Field()
     specialFeePercent: number;
 
+    @Field({
+        description: 'Percentage of special fees that go to the fees collector',
+    })
+    feesCollectorCutPercentage: number;
+
     @Field(() => [String])
     trustedSwapPairs: string[];
 
@@ -125,6 +131,12 @@ export class PairModel {
 
     @Field(() => [FeeDestination])
     feeDestinations: FeeDestination[];
+
+    @Field(() => FeesCollectorModel, {
+        nullable: true,
+        description: 'Fees collector set for this pair',
+    })
+    feesCollector: FeesCollectorModel;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);

@@ -25,6 +25,8 @@ import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
+import { constantsConfig } from 'src/config';
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -137,6 +139,16 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async feesCollectorCutPercentage(
+        @Parent() parent: PairModel,
+    ): Promise<number> {
+        const fees = await this.pairAbi.feesCollectorCutPercentage(
+            parent.address,
+        );
+        return fees / constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
+    }
+
+    @ResolveField()
     async type(@Parent() parent: PairModel): Promise<string> {
         return this.pairCompute.type(parent.address);
     }
@@ -180,6 +192,21 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<FeeDestination[]> {
         return this.pairAbi.feeDestinations(parent.address);
+    }
+
+    @ResolveField()
+    async feesCollector(
+        @Parent() parent: PairModel,
+    ): Promise<FeesCollectorModel> {
+        const feesCollectorAddress = await this.pairAbi.feesCollectorAddress(
+            parent.address,
+        );
+
+        return feesCollectorAddress
+            ? new FeesCollectorModel({
+                  address: feesCollectorAddress,
+              })
+            : undefined;
     }
 
     @Query(() => String)
