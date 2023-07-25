@@ -7,46 +7,40 @@ export class FarmAbiServiceMockV2
     extends FarmAbiServiceMock
     implements IFarmAbiServiceV2
 {
-    async lastUndistributedBoostedRewardsCollectWeek(
-        farmAddress: string,
-    ): Promise<number> {
+    async lastUndistributedBoostedRewardsCollectWeek(): Promise<number> {
         return 1;
     }
-    async undistributedBoostedRewards(farmAddress: string): Promise<string> {
+    async undistributedBoostedRewards(): Promise<string> {
         return '5000';
     }
-    async remainingBoostedRewardsToDistribute(
-        farmAddress: string,
-        week: number,
-    ): Promise<string> {
+    async remainingBoostedRewardsToDistribute(): Promise<string> {
         return '1000';
     }
 
-    accumulatedRewardsForWeek(scAddress: string, week: number): Promise<string> {
+    accumulatedRewardsForWeek(): Promise<string> {
         throw new Error('Method not implemented.');
     }
 
-    boostedYieldsFactors(farmAddress: string): Promise<BoostedYieldsFactors> {
+    boostedYieldsFactors(): Promise<BoostedYieldsFactors> {
         throw new Error('Method not implemented.');
     }
 
-    boostedYieldsRewardsPercenatage(farmAddress: string): Promise<number> {
+    boostedYieldsRewardsPercenatage(): Promise<number> {
         throw new Error('Method not implemented.');
     }
 
-    energyFactoryAddress(farmAddress: string): Promise<string> {
+    energyFactoryAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
 
-    lockEpochs(farmAddress: string): Promise<number> {
+    lockEpochs(): Promise<number> {
         throw new Error('Method not implemented.');
     }
 
-    lockingScAddress(farmAddress: string): Promise<string> {
+    lockingScAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
 }
-
 
 export const FarmAbiServiceProviderV2 = {
     provide: FarmAbiServiceV2,

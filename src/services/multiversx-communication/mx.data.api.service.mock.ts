@@ -1,7 +1,7 @@
 import { MXDataApiService } from './mx.data.api.service';
 
 export class MXDataApiServiceMock {
-    async getTokenPrice(tokenTicker: string): Promise<number> {
+    async getTokenPrice(): Promise<number> {
         return 1;
     }
 }

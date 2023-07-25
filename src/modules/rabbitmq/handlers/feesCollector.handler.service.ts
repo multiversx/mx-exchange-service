@@ -4,7 +4,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import { FeesCollectorSetterService } from '../../fees-collector/services/fees-collector.setter.service';
-import { scAddress } from '../../../config';
 import BigNumber from 'bignumber.js';
 import {
     DepositSwapFeesEvent,

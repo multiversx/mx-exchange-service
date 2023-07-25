@@ -4,20 +4,16 @@ import { PriceDiscoveryComputeService } from '../services/price.discovery.comput
 export class PriceDiscoveryComputeServiceMock
     implements IPriceDiscoveryComputeService
 {
-    launchedTokenPrice(priceDiscoveryAddress: string): Promise<string> {
+    launchedTokenPrice(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    acceptedTokenPrice(priceDiscoveryAddress: string): Promise<string> {
+    acceptedTokenPrice(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    async launchedTokenPriceUSD(
-        priceDiscoveryAddress: string,
-    ): Promise<string> {
+    async launchedTokenPriceUSD(): Promise<string> {
         return '1';
     }
-    async acceptedTokenPriceUSD(
-        priceDiscoveryAddress: string,
-    ): Promise<string> {
+    async acceptedTokenPriceUSD(): Promise<string> {
         return '100';
     }
 }

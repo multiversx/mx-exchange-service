@@ -1,31 +1,31 @@
 import { Address } from '@multiversx/sdk-core';
 
 export class StakingProxyGetterServiceMock {
-    async getLpFarmAddress(stakingProxyAddress: string): Promise<string> {
+    async getLpFarmAddress(): Promise<string> {
         return Address.Zero().bech32();
     }
 
-    async getStakingFarmAddress(stakingProxyAddress: string): Promise<string> {
+    async getStakingFarmAddress(): Promise<string> {
         return Address.Zero().bech32();
     }
 
-    async getPairAddress(stakingProxyAddress: string): Promise<string> {
+    async getPairAddress(): Promise<string> {
         return Address.Zero().bech32();
     }
 
-    async getStakingTokenID(stakingProxyAddress: string): Promise<string> {
+    async getStakingTokenID(): Promise<string> {
         return 'WEGLD-123456';
     }
 
-    async getFarmTokenID(stakingProxyAddress: string): Promise<string> {
+    async getFarmTokenID(): Promise<string> {
         return 'STAKETOK-1111';
     }
 
-    async getDualYieldTokenID(stakingProxyAddress: string): Promise<string> {
+    async getDualYieldTokenID(): Promise<string> {
         return 'METASTAKE-1234';
     }
 
-    async getLpFarmTokenID(stakingProxyAddress: string): Promise<string> {
+    async getLpFarmTokenID(): Promise<string> {
         return 'EGLDTOK4FL-abcdef';
     }
 }

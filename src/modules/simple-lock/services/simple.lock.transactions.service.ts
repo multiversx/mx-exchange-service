@@ -127,6 +127,7 @@ export class SimpleLockTransactionService {
                         secondTokenInput.amount,
                     ),
                 );
+                break;
             default:
                 break;
         }

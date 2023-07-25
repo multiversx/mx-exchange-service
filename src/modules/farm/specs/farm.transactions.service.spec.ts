@@ -167,7 +167,7 @@ describe('FarmService', () => {
             FarmTransactionServiceV1_2,
         );
 
-        let error: any;
+        let error: Error;
         try {
             await transactionV1_2.compoundRewards(Address.Zero().bech32(), {
                 farmAddress:

@@ -295,7 +295,7 @@ export class LogsProcessorService {
 
         for (const event of events) {
             switch (event.identifier) {
-                case 'exitFarm':
+                case 'exitFarm': {
                     if (event.data === '') {
                         break;
                     }
@@ -309,6 +309,7 @@ export class LogsProcessorService {
                             break;
                     }
                     break;
+                }
                 case 'ESDTLocalBurn':
                     esdtLocalBurnEvents.push(new EsdtLocalBurnEvent(event));
                     break;

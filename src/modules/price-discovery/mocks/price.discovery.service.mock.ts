@@ -1,9 +1,7 @@
 import { PriceDiscoveryService } from '../services/price.discovery.service';
 
 class PriceDiscoveryServiceMock {
-    async getPriceDiscoveryAddresByRedeemToken(
-        tokenID: string,
-    ): Promise<string | undefined> {
+    async getPriceDiscoveryAddresByRedeemToken(): Promise<string | undefined> {
         return 'price_discovery_sc';
     }
 }

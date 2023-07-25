@@ -1,6 +1,5 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { constantsConfig } from 'src/config';
 import { AssetsModel } from './models/assets.model';
 import { EsdtToken } from './models/esdtToken.model';
 import { RolesModel } from './models/roles.model';

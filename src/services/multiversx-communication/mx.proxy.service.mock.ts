@@ -8,7 +8,7 @@ import { promises } from 'fs';
 import { MXProxyService } from './mx.proxy.service';
 
 export class MXProxyServiceMock extends MXProxyService {
-    async getAddressShardID(address: string): Promise<number> {
+    async getAddressShardID(): Promise<number> {
         return 0;
     }
 

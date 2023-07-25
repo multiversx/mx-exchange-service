@@ -5,11 +5,11 @@ import { LockedTokenWrapperAbiService } from '../services/locked-token-wrapper.a
 export class LockedTokenWrapperAbiServiceMock
     implements ILockedTokenWrapperAbiService
 {
-    async wrappedTokenId(address: string): Promise<string> {
+    async wrappedTokenId(): Promise<string> {
         return 'WXMEX-123456';
     }
 
-    energyFactoryAddress(address: string): Promise<string> {
+    energyFactoryAddress(): Promise<string> {
         return scAddress.simpleLockEnergy;
     }
 }

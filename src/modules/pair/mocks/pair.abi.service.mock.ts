@@ -17,7 +17,7 @@ export class PairAbiServiceMock implements IPairAbiService {
     async lpTokenID(pairAddress: string): Promise<string> {
         return PairsData(pairAddress)?.liquidityPoolToken.identifier;
     }
-    tokenReserve(pairAddress: string, tokenID: string): Promise<string> {
+    tokenReserve(): Promise<string> {
         throw new Error('Method not implemented.');
     }
     async firstTokenReserve(pairAddress: string): Promise<string> {
@@ -35,65 +35,58 @@ export class PairAbiServiceMock implements IPairAbiService {
     async totalFeePercent(pairAddress: string): Promise<number> {
         return PairsData(pairAddress).totalFeePercent;
     }
-    specialFeePercent(pairAddress: string): Promise<number> {
+    specialFeePercent(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    async trustedSwapPairs(pairAddress: string): Promise<string[]> {
+    async trustedSwapPairs(): Promise<string[]> {
         return [];
     }
-    async initialLiquidityAdder(pairAddress: string): Promise<string> {
+    async initialLiquidityAdder(): Promise<string> {
         return Address.Zero().bech32();
     }
     async state(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).state;
     }
-    feeState(pairAddress: string): Promise<boolean> {
+    feeState(): Promise<boolean> {
         throw new Error('Method not implemented.');
     }
-    async lockingScAddress(pairAddress: string): Promise<string> {
+    async lockingScAddress(): Promise<string> {
         return Address.Zero().bech32();
     }
-    async unlockEpoch(pairAddress: string): Promise<number> {
+    async unlockEpoch(): Promise<number> {
         return 1;
     }
-    async lockingDeadlineEpoch(pairAddress: string): Promise<number> {
+    async lockingDeadlineEpoch(): Promise<number> {
         return 1;
     }
-    feeDestinations(pairAddress: string): Promise<FeeDestination[]> {
+    feeDestinations(): Promise<FeeDestination[]> {
         throw new Error('Method not implemented.');
     }
-    whitelistedAddresses(pairAddress: string): Promise<string[]> {
+    whitelistedAddresses(): Promise<string[]> {
         throw new Error('Method not implemented.');
     }
-    routerAddress(pairAddress: string): Promise<string> {
+    routerAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    routerOwnerAddress(pairAddress: string): Promise<string> {
+    routerOwnerAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    externSwapGasLimit(pairAddress: string): Promise<number> {
+    externSwapGasLimit(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    transferExecGasLimit(pairAddress: string): Promise<number> {
+    transferExecGasLimit(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    safePrice(
-        pairAddress: string,
-        esdtTokenPayment: EsdtTokenPayment,
-    ): Promise<EsdtTokenPayment> {
+    safePrice(): Promise<EsdtTokenPayment> {
         throw new Error('Method not implemented.');
     }
-    numSwapsByAddress(pairAddress: string, address: string): Promise<number> {
+    numSwapsByAddress(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    numAddsByAddress(pairAddress: string, address: string): Promise<string> {
+    numAddsByAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    async getTemporaryFunds(
-        pairAddress: string,
-        callerAddress: string,
-        tokenID: string,
-    ): Promise<BigNumber> {
+    async getTemporaryFunds(): Promise<BigNumber> {
         return new BigNumber(100);
     }
 }

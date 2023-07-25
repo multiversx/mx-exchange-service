@@ -2,7 +2,6 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 import { FarmTokenAttributesUnion } from '../../farm/models/farmTokenAttributes.model';
-import { LockedAssetAttributesUnion } from './locked.assets.attributes.union';
 import {
     WrappedLpTokenAttributesModel,
     WrappedLpTokenAttributesModelV2,

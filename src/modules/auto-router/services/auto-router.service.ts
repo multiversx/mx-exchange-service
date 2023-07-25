@@ -63,7 +63,9 @@ export class AutoRouterService {
                     ),
                 oneMinute() * 10,
             );
-        } catch (error) {}
+        } catch (error) {
+            this.logger.error('Error when getting all paths', error);
+        }
     }
 
     async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
@@ -146,9 +148,19 @@ export class AutoRouterService {
             this.pairCompute.tokenPriceUSD(tokenOutID),
         ]);
 
-        let [amountIn, amountOut] = this.isFixedInput(swapType)
-            ? [args.amountIn, result]
-            : [result, args.amountOut];
+        // let [amountIn, amountOut] = this.isFixedInput(swapType)
+        //     ? [args.amountIn, result]
+        //     : [result, args.amountOut];
+
+        let amountIn: string;
+        let amountOut: string;
+        if (this.isFixedInput(swapType)) {
+            amountIn = args.amountIn;
+            amountOut = result;
+        } else {
+            amountIn = result;
+            amountOut = args.amountOut;
+        }
 
         const [tokenInExchangeRate, tokenOutExchangeRate] =
             this.calculateExchangeRate(

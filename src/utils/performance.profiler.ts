@@ -16,5 +16,6 @@ export class PerformanceProfiler {
     stop(description: string | null = null) {
         this.stopped = Date.now();
         this.duration = this.stopped - this.started;
+        this.description = description || this.description;
     }
 }

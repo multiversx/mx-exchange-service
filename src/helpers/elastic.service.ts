@@ -52,7 +52,7 @@ export class ElasticService {
         let response = await this.elasticClient.search(params);
         const hits = [];
         let scroll = 1;
-        while (true) {
+        for (;;) {
             const sourceHits = response.body.hits.hits;
 
             if (sourceHits.length === 0) {

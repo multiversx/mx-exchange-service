@@ -147,9 +147,7 @@ export class AnalyticsResolver {
             skipUndefinedProperties: true,
         }),
     )
-    async latestHistoricData(
-        @Args() args: AnalyticsQueryArgs,
-    ): Promise<HistoricDataModel[]> {
+    async latestHistoricData(): Promise<HistoricDataModel[]> {
         return [];
     }
 
@@ -163,9 +161,7 @@ export class AnalyticsResolver {
             skipUndefinedProperties: true,
         }),
     )
-    async latestBinnedHistoricData(
-        @Args() args: AnalyticsQueryArgs,
-    ): Promise<HistoricDataModel[]> {
+    async latestBinnedHistoricData(): Promise<HistoricDataModel[]> {
         return [];
     }
 }

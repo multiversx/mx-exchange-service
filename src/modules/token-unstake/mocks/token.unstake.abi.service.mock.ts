@@ -17,9 +17,7 @@ export class TokenUnstakeAbiServiceMock implements ITokenUnstakeAbiService {
         throw new Error('Method not implemented.');
     }
 
-    async unlockedTokensForUser(
-        userAddress: string,
-    ): Promise<UnstakePairModel[]> {
+    async unlockedTokensForUser(): Promise<UnstakePairModel[]> {
         return [
             new UnstakePairModel({
                 lockedTokens: new EsdtTokenPaymentModel({

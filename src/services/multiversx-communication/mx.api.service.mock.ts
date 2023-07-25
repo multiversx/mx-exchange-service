@@ -9,7 +9,7 @@ export class MXApiServiceMock {
         return 1;
     }
 
-    async getAccountStats(address: string): Promise<any | undefined> {
+    async getAccountStats(): Promise<any | undefined> {
         return {
             address: 'user_address_1',
             nonce: 1,
@@ -20,7 +20,7 @@ export class MXApiServiceMock {
         };
     }
 
-    async getTokensForUser(address: string): Promise<EsdtToken[]> {
+    async getTokensForUser(): Promise<EsdtToken[]> {
         return [
             new EsdtToken({
                 ...Tokens('MEX-123456'),
@@ -29,7 +29,7 @@ export class MXApiServiceMock {
         ];
     }
 
-    async getNftsForUser(address: string): Promise<NftToken[]> {
+    async getNftsForUser(): Promise<NftToken[]> {
         return [
             {
                 collection: 'EGLDMEXFL-abcdef',

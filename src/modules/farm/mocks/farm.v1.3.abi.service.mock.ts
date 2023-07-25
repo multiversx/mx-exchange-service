@@ -7,12 +7,10 @@ export class FarmAbiServiceMockV1_3
     extends FarmAbiServiceMock
     implements IFarmAbiServiceV1_3
 {
-    lockedAssetFactoryAddress(farmAddress: string): Promise<string> {
+    lockedAssetFactoryAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    farmMigrationConfiguration(
-        farmAddress: string,
-    ): Promise<FarmMigrationConfig> {
+    farmMigrationConfiguration(): Promise<FarmMigrationConfig> {
         throw new Error('Method not implemented.');
     }
 }

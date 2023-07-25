@@ -42,11 +42,11 @@ export class FarmAbiServiceV2
         super(mxProxy, gatewayService, mxApi);
     }
 
-    async getLastErrorMessageRaw(farmAddress: string): Promise<string> {
+    async getLastErrorMessageRaw(): Promise<string> {
         return undefined;
     }
 
-    async getTransferExecGasLimitRaw(farmAddress: string): Promise<string> {
+    async getTransferExecGasLimitRaw(): Promise<string> {
         return undefined;
     }
 
@@ -196,8 +196,9 @@ export class FarmAbiServiceV2
     async lastUndistributedBoostedRewardsCollectWeek(
         farmAddress: string,
     ): Promise<number> {
-        return this.gatewayService.getSCStorageKey(farmAddress,
-            'lastUndistributedBoostedRewardsCollectWeek'
+        return this.gatewayService.getSCStorageKey(
+            farmAddress,
+            'lastUndistributedBoostedRewardsCollectWeek',
         );
     }
 
