@@ -364,7 +364,7 @@ export class StakingResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async pause(
+    async pauseStaking(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
@@ -377,7 +377,7 @@ export class StakingResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async resume(
+    async resumeStaking(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {

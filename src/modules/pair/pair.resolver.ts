@@ -369,7 +369,7 @@ export class PairResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async pause(
+    async pausePair(
         @Args('pairAddress') pairAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
@@ -379,7 +379,7 @@ export class PairResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async resume(
+    async resumePair(
         @Args('pairAddress') pairAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
