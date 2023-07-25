@@ -1,19 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.60.0-nightly",
-            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
-            "commitDate": "2022-01-29",
+            "version": "1.66.0-nightly",
+            "commitHash": "b8c35ca26b191bb9a9ac669a4b3f4d3d52d97fb1",
+            "commitDate": "2022-10-15",
             "channel": "Nightly",
-            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
+            "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
         },
         "contractCrate": {
             "name": "pair",
-            "version": "0.0.0"
+            "version": "0.0.0",
+            "gitVersion": "v1.6.0-1350-gd0274140"
         },
         "framework": {
-            "name": "elrond-wasm",
-            "version": "0.29.3"
+            "name": "multiversx-sc",
+            "version": "0.39.4"
         }
     },
     "name": "Pair",
@@ -45,7 +46,11 @@
             },
             {
                 "name": "initial_liquidity_adder",
-                "type": "optional<Address>",
+                "type": "Address"
+            },
+            {
+                "name": "admins",
+                "type": "variadic<Address>",
                 "multi_arg": true
             }
         ],
@@ -58,13 +63,7 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
+            "inputs": [],
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
@@ -91,11 +90,6 @@
                 {
                     "name": "second_token_amount_min",
                     "type": "BigUint"
-                },
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -124,11 +118,6 @@
                 {
                     "name": "second_token_amount_min",
                     "type": "BigUint"
-                },
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -186,11 +175,6 @@
                 {
                     "name": "amount_out_min",
                     "type": "BigUint"
-                },
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -213,11 +197,6 @@
                 {
                     "name": "amount_out",
                     "type": "BigUint"
-                },
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -398,6 +377,27 @@
             "outputs": []
         },
         {
+            "docs": [
+                "`fees_collector_cut_percentage` of the special fees are sent to the fees_collector_address SC",
+                "",
+                "For example, if special fees is 5%, and fees_collector_cut_percentage is 10%,",
+                "then of the 5%, 10% are reserved, and only the rest are split between other pair contracts."
+            ],
+            "name": "setupFeesCollector",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "fees_collector_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "fees_collector_cut_percentage",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "setFeeOn",
             "mutability": "mutable",
             "inputs": [
@@ -450,64 +450,30 @@
             ]
         },
         {
-            "name": "getTotalSupply",
+            "name": "getFeesCollectorAddress",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "BigUint"
+                    "type": "Address"
                 }
             ]
         },
         {
-            "name": "set_transfer_exec_gas_limit",
-            "mutability": "mutable",
-            "inputs": [
+            "name": "getFeesCollectorCutPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
                 {
-                    "name": "gas_limit",
                     "type": "u64"
                 }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "set_extern_swap_gas_limit",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "gas_limit",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "pause",
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "resume",
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
+            ]
         },
         {
             "name": "setStateActiveNoSwaps",
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
-        },
-        {
-            "name": "getLpTokenIdentifier",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
         },
         {
             "name": "setFeePercents",
@@ -523,6 +489,16 @@
                 }
             ],
             "outputs": []
+        },
+        {
+            "name": "getLpTokenIdentifier",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
         },
         {
             "name": "getTotalFeePercent",
@@ -555,36 +531,6 @@
             ]
         },
         {
-            "name": "getRouterOwnerManagedAddress",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
-            "name": "getState",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "State"
-                }
-            ]
-        },
-        {
-            "name": "getExternSwapGasLimit",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
             "name": "getFirstTokenId",
             "mutability": "readonly",
             "inputs": [],
@@ -601,6 +547,16 @@
             "outputs": [
                 {
                     "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getTotalSupply",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },
@@ -630,12 +586,12 @@
             ]
         },
         {
-            "name": "getTransferExecGasLimit",
+            "name": "getSafePriceCurrentIndex",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "u64"
+                    "type": "u32"
                 }
             ]
         },
@@ -669,149 +625,6 @@
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "setMaxObservationsPerRecord",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "max_observations_per_record",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setBPSwapConfig",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "protect_stop_block",
-                    "type": "u64"
-                },
-                {
-                    "name": "volume_percent",
-                    "type": "u64"
-                },
-                {
-                    "name": "max_num_actions_per_address",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setBPRemoveConfig",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "protect_stop_block",
-                    "type": "u64"
-                },
-                {
-                    "name": "volume_percent",
-                    "type": "u64"
-                },
-                {
-                    "name": "max_num_actions_per_address",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setBPAddConfig",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "protect_stop_block",
-                    "type": "u64"
-                },
-                {
-                    "name": "volume_percent",
-                    "type": "u64"
-                },
-                {
-                    "name": "max_num_actions_per_address",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "getBPSwapConfig",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BPConfig"
-                }
-            ]
-        },
-        {
-            "name": "getNumSwapsByAddress",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getBPRemoveConfig",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BPConfig"
-                }
-            ]
-        },
-        {
-            "name": "getNumRemovesByAddress",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getBPAddConfig",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BPConfig"
-                }
-            ]
-        },
-        {
-            "name": "getNumAddsByAddress",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "u64"
                 }
             ]
         },
@@ -877,23 +690,271 @@
                     "type": "u64"
                 }
             ]
+        },
+        {
+            "name": "addAdmin",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeAdmin",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "updateOwnerOrAdmin",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "previous_owner",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getPermissions",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "addToPauseWhitelist",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address_list",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeFromPauseWhitelist",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address_list",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "pause",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "resume",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getState",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "State"
+                }
+            ]
+        }
+    ],
+    "events": [
+        {
+            "identifier": "swap",
+            "inputs": [
+                {
+                    "name": "token_in",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "token_out",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "swap_event",
+                    "type": "SwapEvent"
+                }
+            ]
+        },
+        {
+            "identifier": "swap_no_fee_and_forward",
+            "inputs": [
+                {
+                    "name": "token_id_out",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "swap_no_fee_and_forward_event",
+                    "type": "SwapNoFeeAndForwardEvent"
+                }
+            ]
+        },
+        {
+            "identifier": "add_liquidity",
+            "inputs": [
+                {
+                    "name": "first_token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "second_token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "add_liquidity_event",
+                    "type": "AddLiquidityEvent"
+                }
+            ]
+        },
+        {
+            "identifier": "remove_liquidity",
+            "inputs": [
+                {
+                    "name": "first_token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "second_token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "remove_liquidity_event",
+                    "type": "RemoveLiquidityEvent"
+                }
+            ]
         }
     ],
     "hasCallback": false,
     "types": {
-        "BPConfig": {
+        "AddLiquidityEvent": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "protect_stop_block",
+                    "name": "caller",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "first_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "lp_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "lp_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "lp_supply",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "first_token_reserves",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_reserves",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "block",
                     "type": "u64"
                 },
                 {
-                    "name": "volume_percent",
+                    "name": "epoch",
                     "type": "u64"
                 },
                 {
-                    "name": "max_num_actions_per_address",
+                    "name": "timestamp",
                     "type": "u64"
                 }
             ]
@@ -901,10 +962,6 @@
         "EsdtTokenPayment": {
             "type": "struct",
             "fields": [
-                {
-                    "name": "token_type",
-                    "type": "EsdtTokenType"
-                },
                 {
                     "name": "token_identifier",
                     "type": "TokenIdentifier"
@@ -919,28 +976,81 @@
                 }
             ]
         },
-        "EsdtTokenType": {
-            "type": "enum",
-            "variants": [
+        "PriceObservation": {
+            "type": "struct",
+            "fields": [
                 {
-                    "name": "Fungible",
-                    "discriminant": 0
+                    "name": "first_token_reserve_accumulated",
+                    "type": "BigUint"
                 },
                 {
-                    "name": "NonFungible",
-                    "discriminant": 1
+                    "name": "second_token_reserve_accumulated",
+                    "type": "BigUint"
                 },
                 {
-                    "name": "SemiFungible",
-                    "discriminant": 2
+                    "name": "weight_accumulated",
+                    "type": "u64"
                 },
                 {
-                    "name": "Meta",
-                    "discriminant": 3
+                    "name": "recording_round",
+                    "type": "u64"
+                }
+            ]
+        },
+        "RemoveLiquidityEvent": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "caller",
+                    "type": "Address"
                 },
                 {
-                    "name": "Invalid",
-                    "discriminant": 4
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "first_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "lp_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "lp_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "lp_supply",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "first_token_reserves",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_reserves",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "block",
+                    "type": "u64"
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64"
                 }
             ]
         },
@@ -956,8 +1066,98 @@
                     "discriminant": 1
                 },
                 {
-                    "name": "ActiveNoSwaps",
+                    "name": "PartialActive",
                     "discriminant": 2
+                }
+            ]
+        },
+        "SwapEvent": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "caller",
+                    "type": "Address"
+                },
+                {
+                    "name": "token_id_in",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_amount_in",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "token_id_out",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "fee_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "token_in_reserve",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "token_out_reserve",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "block",
+                    "type": "u64"
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64"
+                }
+            ]
+        },
+        "SwapNoFeeAndForwardEvent": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "caller",
+                    "type": "Address"
+                },
+                {
+                    "name": "token_id_in",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_amount_in",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "token_id_out",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "destination",
+                    "type": "Address"
+                },
+                {
+                    "name": "block",
+                    "type": "u64"
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64"
                 }
             ]
         },
