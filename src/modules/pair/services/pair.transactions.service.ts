@@ -3,10 +3,11 @@ import {
     AddressValue,
     BigUIntValue,
     TypedValue,
+    U64Value,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
 import { Address, TokenPayment } from '@multiversx/sdk-core';
-import { mxConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig, scAddress, constantsConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -750,6 +751,19 @@ export class PairTransactionService {
         return contract.methodsExplicit
             .setLockingScAddress(transactionArgs)
             .withGasLimit(gasConfig.pairs.admin.setLockingScAddress)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setupFeesCollector(pairAddress: string): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
+        return contract.methodsExplicit
+            .setupFeesCollector([
+                new AddressValue(Address.fromString(scAddress.feesCollector)),
+                new U64Value(new BigNumber(constantsConfig.FEES_COLLECTOR_CUT)),
+            ])
+            .withGasLimit(gasConfig.pairs.admin.setupFeesCollector)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();

@@ -891,4 +891,34 @@ describe('TransactionPairService', () => {
             signature: undefined,
         });
     });
+
+    it('should get setup fees collector transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
+        const transaction = await service.setupFeesCollector(
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+        );
+
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: 10000000,
+            data: encodeTransactionData(
+                `setupFeesCollector@erd1qqqqqqqqqqqqqpgqagq2v9exkrn3wnauq3lw4xcetwsmgmwjd8ssjt4k7s@50000`,
+            ),
+            chainID: mxConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
+    });
 });

@@ -478,4 +478,12 @@ export class PairResolver {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.setUnlockEpoch(pairAddress, newEpoch);
     }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Query(() => TransactionModel)
+    async setupFeesCollector(
+        @Args('pairAddress') pairAddress: string,
+    ): Promise<TransactionModel> {
+        return this.transactionService.setupFeesCollector(pairAddress);
+    }
 }
