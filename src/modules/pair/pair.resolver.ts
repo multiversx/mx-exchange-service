@@ -480,7 +480,10 @@ export class PairResolver {
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
+    @Query(() => TransactionModel, {
+        description:
+            'Generate transaction to set the fees collector address and fees cut percentage for a pair',
+    })
     async setupFeesCollector(
         @Args('pairAddress') pairAddress: string,
     ): Promise<TransactionModel> {
