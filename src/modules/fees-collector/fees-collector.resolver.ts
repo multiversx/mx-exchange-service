@@ -71,6 +71,16 @@ export class FeesCollectorResolver {
         return this.feesCollectorAbi.lockedTokensPerBlock();
     }
 
+    @ResolveField(() => [String])
+    async allTokens(): Promise<string[]> {
+        return this.feesCollectorAbi.allTokens();
+    }
+
+    @ResolveField(() => [String])
+    async knownContracts(): Promise<string[]> {
+        return this.feesCollectorAbi.knownContracts();
+    }
+
     @Query(() => FeesCollectorModel)
     async feesCollector(): Promise<FeesCollectorModel> {
         return this.feesCollectorService.feesCollector(scAddress.feesCollector);

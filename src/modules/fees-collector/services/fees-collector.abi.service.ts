@@ -4,6 +4,7 @@ import { MXProxyService } from '../../../services/multiversx-communication/mx.pr
 import {
     Interaction,
     TokenIdentifierValue,
+    TypedValue,
     U32Value,
 } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
@@ -103,5 +104,27 @@ export class FeesCollectorAbiService
             contract.methodsExplicit.getAllTokens();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
+    }
+
+    @ErrorLoggerAsync({
+        className: FeesCollectorAbiService.name,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async knownContracts(): Promise<string[]> {
+        return await this.getKnownContractsRaw();
+    }
+
+    async getKnownContractsRaw(): Promise<string[]> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getAllKnownContracts();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue
+            .valueOf()
+            .map((value: TypedValue) => value.valueOf().bech32());
     }
 }
