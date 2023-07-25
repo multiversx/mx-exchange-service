@@ -21,12 +21,14 @@ import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
 import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
+import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorService: FeesCollectorService,
+        private readonly feesCollectorTransaction: FeesCollectorTransactionService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {}
 
@@ -84,6 +86,35 @@ export class FeesCollectorResolver {
     @Query(() => FeesCollectorModel)
     async feesCollector(): Promise<FeesCollectorModel> {
         return this.feesCollectorService.feesCollector(scAddress.feesCollector);
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Query(() => TransactionModel, {
+        description: 'Add or remove known contracts',
+    })
+    async handleKnownContracts(
+        @Args('contractAddresses', { type: () => [String] })
+        contractAddresses: string[],
+        @Args('remove', { nullable: true }) remove: boolean,
+    ): Promise<TransactionModel> {
+        return this.feesCollectorTransaction.handleKnownContracts(
+            contractAddresses,
+            remove,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Query(() => TransactionModel, {
+        description: 'Add or remove known tokens',
+    })
+    async handleKnownTokens(
+        @Args('tokenIDs', { type: () => [String] }) tokenIDs: string[],
+        @Args('remove', { nullable: true }) remove: boolean,
+    ): Promise<TransactionModel> {
+        return this.feesCollectorTransaction.handleKnownTokens(
+            tokenIDs,
+            remove,
+        );
     }
 }
 

@@ -5,7 +5,14 @@ import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/servi
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { constantsConfig, gasConfig, mxConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
-import { Address, AddressValue } from '@multiversx/sdk-core/out';
+import {
+    Address,
+    AddressType,
+    AddressValue,
+    TokenIdentifierType,
+    TokenIdentifierValue,
+    VariadicValue,
+} from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class FeesCollectorTransactionService {
@@ -68,6 +75,52 @@ export class FeesCollectorTransactionService {
                 new AddressValue(Address.fromString(userAddress)),
             ])
             .withGasLimit(gasConfig.feesCollector.updateEnergyForUser)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async handleKnownContracts(
+        pairAddresses: string[],
+        remove = false,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const endpointArgs = [
+            new VariadicValue(
+                new AddressType(),
+                pairAddresses.map(
+                    (address) => new AddressValue(Address.fromString(address)),
+                ),
+            ),
+        ];
+        const interaction = remove
+            ? contract.methodsExplicit.removeKnownContracts(endpointArgs)
+            : contract.methodsExplicit.addKnownContracts(endpointArgs);
+
+        return interaction
+            .withGasLimit(gasConfig.feesCollector.addKnownContracts)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async handleKnownTokens(
+        tokenIDs: string[],
+        remove = false,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const endpointArgs = [
+            new VariadicValue(
+                new TokenIdentifierType(),
+                tokenIDs.map((id) => new TokenIdentifierValue(id)),
+            ),
+        ];
+        const interaction = remove
+            ? contract.methodsExplicit.removeKnownTokens(endpointArgs)
+            : contract.methodsExplicit.addKnownTokens(endpointArgs);
+
+        return interaction
+            .withGasLimit(gasConfig.feesCollector.addKnownTokens)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
