@@ -93,7 +93,8 @@ export class FeesCollectorResolver {
         description: 'Add or remove known contracts',
     })
     async handleKnownContracts(
-        @Args('contractAddresses') contractAddresses: string[],
+        @Args('contractAddresses', { type: () => [String] })
+        contractAddresses: string[],
         @Args('remove', { nullable: true }) remove: boolean,
     ): Promise<TransactionModel> {
         return this.feesCollectorTransaction.handleKnownContracts(
@@ -107,7 +108,7 @@ export class FeesCollectorResolver {
         description: 'Add or remove known tokens',
     })
     async handleKnownTokens(
-        @Args('tokenIDs') tokenIDs: string[],
+        @Args('tokenIDs', { type: () => [String] }) tokenIDs: string[],
         @Args('remove', { nullable: true }) remove: boolean,
     ): Promise<TransactionModel> {
         return this.feesCollectorTransaction.handleKnownTokens(
