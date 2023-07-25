@@ -80,7 +80,7 @@ export class FeesCollectorTransactionService {
             .toPlainObject();
     }
 
-    async addKnownContracts(
+    async handleKnownContracts(
         pairAddresses: string[],
         remove = false,
     ): Promise<TransactionModel> {
@@ -104,7 +104,7 @@ export class FeesCollectorTransactionService {
             .toPlainObject();
     }
 
-    async addKnownTokens(
+    async handleKnownTokens(
         tokenIDs: string[],
         remove = false,
     ): Promise<TransactionModel> {

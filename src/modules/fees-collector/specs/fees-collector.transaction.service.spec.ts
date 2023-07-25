@@ -126,7 +126,7 @@ describe('FeesCollectorTransactionService', () => {
         const service = module.get<FeesCollectorTransactionService>(
             FeesCollectorTransactionService,
         );
-        const transaction = await service.addKnownContracts(
+        const transaction = await service.handleKnownContracts(
             [
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
@@ -165,7 +165,7 @@ describe('FeesCollectorTransactionService', () => {
         const service = module.get<FeesCollectorTransactionService>(
             FeesCollectorTransactionService,
         );
-        const transaction = await service.addKnownTokens([
+        const transaction = await service.handleKnownTokens([
             'WEGLD-123456',
             'MEX-123456',
         ]);

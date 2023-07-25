@@ -89,24 +89,31 @@ export class FeesCollectorResolver {
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async addKnownContracts(
+    @Query(() => TransactionModel, {
+        description: 'Add or remove known contracts',
+    })
+    async handleKnownContracts(
         @Args('contractAddresses') contractAddresses: string[],
         @Args('remove', { nullable: true }) remove: boolean,
     ): Promise<TransactionModel> {
-        return this.feesCollectorTransaction.addKnownContracts(
+        return this.feesCollectorTransaction.handleKnownContracts(
             contractAddresses,
             remove,
         );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async addKnownTokens(
+    @Query(() => TransactionModel, {
+        description: 'Add or remove known tokens',
+    })
+    async handleKnownTokens(
         @Args('tokenIDs') tokenIDs: string[],
         @Args('remove', { nullable: true }) remove: boolean,
     ): Promise<TransactionModel> {
-        return this.feesCollectorTransaction.addKnownTokens(tokenIDs, remove);
+        return this.feesCollectorTransaction.handleKnownTokens(
+            tokenIDs,
+            remove,
+        );
     }
 }
 
