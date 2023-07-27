@@ -1,5 +1,12 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import {
+    Args,
+    Int,
+    Parent,
+    Query,
+    ResolveField,
+    Resolver,
+} from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -11,7 +18,11 @@ import {
     GenericStakeFarmArgs,
     ClaimRewardsWithNewValueArgs,
 } from './models/staking.args';
-import { StakingModel, StakingRewardsModel } from './models/staking.model';
+import {
+    OptimalCompoundModel,
+    StakingModel,
+    StakingRewardsModel,
+} from './models/staking.model';
 import {
     StakingTokenAttributesModel,
     UnbondTokenAttributesModel,
@@ -156,6 +167,20 @@ export class StakingResolver {
     ): Promise<StakingRewardsModel[]> {
         return this.stakingService.getBatchRewardsForPosition(
             args.farmsPositions,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => OptimalCompoundModel)
+    async getOptimalCompoundFrequency(
+        @Args('stakeAddress') stakeAddress: string,
+        @Args('amount') amount: string,
+        @Args('timeInterval') timeInterval: number,
+    ): Promise<OptimalCompoundModel> {
+        return this.stakingCompute.computeOptimalCompoundFrequency(
+            stakeAddress,
+            amount,
+            timeInterval,
         );
     }
 

@@ -567,7 +567,9 @@
         "roundedSwapEnable": {
             "USDC-8d4068": "5000000",
             "WEGLD-d7c6bb": "100000000000000000"
-        }
+        },
+        "COMPOUND_INTERVAL_DAYS": 365,
+        "COMPOUND_TRANSACTION_FEE": 0.000365144
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"
