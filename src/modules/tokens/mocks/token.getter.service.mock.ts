@@ -11,6 +11,10 @@ export class TokenGetterServiceMock {
     async getEsdtTokenType(tokenID: string): Promise<string> {
         return Tokens(tokenID).type;
     }
+
+    async getDerivedEGLD(tokenID: string): Promise<string> {
+        return Tokens(tokenID).derivedEGLD;
+    }
 }
 
 export const TokenGetterServiceProvider = {
