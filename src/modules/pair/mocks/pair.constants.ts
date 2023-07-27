@@ -33,6 +33,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '10',
+                derivedEGLD: '1',
                 roles: new RolesModel(),
             });
         case 'MEX-123456':
