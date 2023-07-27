@@ -147,15 +147,17 @@ describe('StakingComputeService', () => {
         const optimalCompoundFrequency =
             await service.computeOptimalCompoundFrequency(
                 Address.Zero().bech32(),
-                '1000000000000000000',
+                '1000000000000000000000',
                 365,
             );
 
         expect(optimalCompoundFrequency).toEqual(
             new OptimalCompoundModel({
-                interval: 1,
-                hours: 8760,
-                minutes: 0,
+                optimalProfit: 103.68922538240217,
+                interval: 7,
+                days: 52,
+                hours: 3,
+                minutes: 25,
             }),
         );
     });

@@ -269,15 +269,19 @@ export class StakingComputeService {
 
         /*
             Compute optimal compound frequency expressed in hours and minutes:
+                freqDays = (timeInterval/OptimalCompound)
                 freqHours = (timeInterval*24h/OptimalCompound)
                 freqMinutes = [(timeInterval*24h/OptimalCompound) - INT((timeInterval*24h/OptimalCompound))] * 60
         */
-        const frequencyHours = (timeHorizon * 24) / optimalCompoundIterations;
+        const freqDays = timeHorizon / optimalCompoundIterations;
+        const frequencyHours = (freqDays - Math.floor(freqDays)) * 24;
         const frequencyMinutes =
             (frequencyHours - Math.floor(frequencyHours)) * 60;
 
         return new OptimalCompoundModel({
+            optimalProfit: optimalProfit,
             interval: optimalCompoundIterations,
+            days: Math.floor(freqDays),
             hours: Math.floor(frequencyHours),
             minutes: Math.floor(frequencyMinutes),
         });
