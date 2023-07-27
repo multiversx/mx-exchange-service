@@ -241,18 +241,15 @@ export class StakingComputeService {
             .multipliedBy(egldPriceFarmingToken)
             .toNumber();
 
-        // Express compound iterations in minutes
-        const compoundIterations =
-            constantsConfig.COMPOUND_INTERVAL_DAYS * 24 * 60;
+        // Express compound iterations in hours
+        const compoundIterations = 365 * 24;
 
         let optimalCompoundIterations = 0;
         let optimalProfit = 0;
 
         for (let iterator = 1; iterator < compoundIterations; iterator += 1) {
             const rewards =
-                (1 +
-                    (parseFloat(apr) * timeHorizon) /
-                        (constantsConfig.COMPOUND_INTERVAL_DAYS * iterator)) **
+                (1 + (parseFloat(apr) * timeHorizon) / (365 * iterator)) **
                 iterator;
 
             const finalAmount = denominatedAmount * rewards;
