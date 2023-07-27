@@ -69,6 +69,10 @@ export class OptimalCompoundModel {
         description: 'The optimal number of compounds in the given interval',
     })
     interval: number;
+    @Field()
+    optimalProfit: number;
+    @Field(() => Int)
+    days: number;
     @Field(() => Int)
     hours: number;
     @Field(() => Int)
