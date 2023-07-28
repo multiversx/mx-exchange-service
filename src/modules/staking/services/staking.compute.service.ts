@@ -9,6 +9,8 @@ import { StakingService } from './staking.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { denominateAmount } from 'src/utils/token.converters';
+import { OptimalCompoundModel } from '../models/staking.model';
 
 @Injectable()
 export class StakingComputeService {
@@ -210,5 +212,78 @@ export class StakingComputeService {
             : new BigNumber(annualPercentageRewards)
                   .dividedBy(constantsConfig.MAX_PERCENT)
                   .toFixed();
+    }
+
+    async computeOptimalCompoundFrequency(
+        stakeAddress: string,
+        positionAmount: string,
+        timeHorizon: number,
+    ): Promise<OptimalCompoundModel> {
+        const [apr, farmingToken] = await Promise.all([
+            this.stakeFarmAPR(stakeAddress),
+            this.stakingService.getFarmingToken(stakeAddress),
+        ]);
+
+        const denominatedAmount = denominateAmount(
+            positionAmount,
+            farmingToken.decimals,
+        ).toNumber();
+
+        const farmingTokenPrice = await this.tokenGetter.getDerivedEGLD(
+            farmingToken.identifier,
+        );
+        const egldPriceFarmingToken = new BigNumber(1).dividedBy(
+            farmingTokenPrice,
+        );
+        const transactionFeesInFarmingToken = new BigNumber(
+            constantsConfig.COMPOUND_TRANSACTION_FEE,
+        )
+            .multipliedBy(egldPriceFarmingToken)
+            .toNumber();
+
+        // Express compound iterations in hours
+        const compoundIterations = 365 * 24;
+
+        let optimalCompoundIterations = 0;
+        let optimalProfit = 0;
+
+        for (let iterator = 1; iterator < compoundIterations; iterator += 1) {
+            const rewards =
+                (1 + (parseFloat(apr) * timeHorizon) / (365 * iterator)) **
+                iterator;
+
+            const finalAmount = denominatedAmount * rewards;
+
+            const profit =
+                finalAmount -
+                denominatedAmount -
+                transactionFeesInFarmingToken * iterator;
+
+            if (profit > optimalProfit) {
+                optimalProfit = profit;
+                optimalCompoundIterations = iterator;
+            } else {
+                break;
+            }
+        }
+
+        /*
+            Compute optimal compound frequency expressed in hours and minutes:
+                freqDays = (timeInterval/OptimalCompound)
+                freqHours = (timeInterval*24h/OptimalCompound)
+                freqMinutes = [(timeInterval*24h/OptimalCompound) - INT((timeInterval*24h/OptimalCompound))] * 60
+        */
+        const freqDays = timeHorizon / optimalCompoundIterations;
+        const frequencyHours = (freqDays - Math.floor(freqDays)) * 24;
+        const frequencyMinutes =
+            (frequencyHours - Math.floor(frequencyHours)) * 60;
+
+        return new OptimalCompoundModel({
+            optimalProfit: optimalProfit,
+            interval: optimalCompoundIterations,
+            days: Math.floor(freqDays),
+            hours: Math.floor(frequencyHours),
+            minutes: Math.floor(frequencyMinutes),
+        });
     }
 }

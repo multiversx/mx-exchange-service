@@ -12,6 +12,7 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
+import { OptimalCompoundModel } from '../models/staking.model';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -136,5 +137,28 @@ describe('StakingComputeService', () => {
 
         const apr = await service.computeStakeFarmAPR(Address.Zero().bech32());
         expect(apr).toEqual('0.21749328');
+    });
+
+    it('should compute optimal compound frequency', async () => {
+        const service = module.get<StakingComputeService>(
+            StakingComputeService,
+        );
+        jest.spyOn(service, 'stakeFarmAPR').mockResolvedValue('0.10');
+        const optimalCompoundFrequency =
+            await service.computeOptimalCompoundFrequency(
+                Address.Zero().bech32(),
+                '1000000000000000000000',
+                365,
+            );
+
+        expect(optimalCompoundFrequency).toEqual(
+            new OptimalCompoundModel({
+                optimalProfit: 103.68922538240217,
+                interval: 7,
+                days: 52,
+                hours: 3,
+                minutes: 25,
+            }),
+        );
     });
 });

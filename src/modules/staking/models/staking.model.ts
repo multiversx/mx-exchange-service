@@ -62,3 +62,23 @@ export class StakingRewardsModel {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class OptimalCompoundModel {
+    @Field(() => Int, {
+        description: 'The optimal number of compounds in the given interval',
+    })
+    interval: number;
+    @Field()
+    optimalProfit: number;
+    @Field(() => Int)
+    days: number;
+    @Field(() => Int)
+    hours: number;
+    @Field(() => Int)
+    minutes: number;
+
+    constructor(init?: Partial<OptimalCompoundModel>) {
+        Object.assign(this, init);
+    }
+}
