@@ -32,6 +32,8 @@ export class Description_v0 {
     hash: string;
     @Field(() => Int)
     strapiId: number;
+    @Field()
+    version: number;
 
     constructor(init: Partial<Description_v0>) {
         Object.assign(this, init);

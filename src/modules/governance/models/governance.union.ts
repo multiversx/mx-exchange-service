@@ -27,10 +27,10 @@ export const GovernanceDescriptionUnion = createUnionType({
             Description_v1,
         ] as const,
     resolveType(description) {
-        switch (description.constructor.name) {
-            case Description_v0.name:
+        switch (description.version) {
+            case 0:
                 return Description_v0;
-            case Description_v1.name:
+            case 1:
                 return Description_v1;
         }
     },
