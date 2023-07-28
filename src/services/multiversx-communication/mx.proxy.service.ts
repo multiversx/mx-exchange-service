@@ -9,6 +9,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { promises } from 'fs';
 import { proxyVersion } from 'src/utils/proxy.utils';
+import { GovernanceType } from '../../utils/governance';
 
 @Injectable()
 export class MXProxyService {
@@ -213,10 +214,11 @@ export class MXProxyService {
 
     async getGovernanceSmartContract(
         governanceAddress: string,
+        type: GovernanceType,
     ): Promise<SmartContract> {
         return this.getSmartContract(
             governanceAddress,
-            abiConfig.governance,
+            abiConfig.governance[type],
             'GovernanceV2',
         );
     }

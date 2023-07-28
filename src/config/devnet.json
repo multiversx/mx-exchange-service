@@ -53,7 +53,9 @@
             "energy": [
                 "erd1qqqqqqqqqqqqqpgqcru4ctzyzdr547qvt76leehj2plk65tld8sscxq5lh"
             ],
-            "token": []
+            "tokenSnapshot": [
+                "erd1qqqqqqqqqqqqqpgqs7xjzhfczumxr4g8tk8rjl6spu7wkj4eczfsugp4vc"
+            ]
         }
     },
     "farms": {

@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { GovernanceEnergyContract, GovernanceType } from '../models/energy.contract.model';
-import { governanceContractsAddresses, governanceType } from '../../../utils/governance';
-import { GovernanceContractsFiltersArgs } from '../models/contracts.filter.args';
-import { GovernanceAbiService } from './governance.abi.service';
+import { governanceContractsAddresses, GovernanceType, governanceType } from '../../../utils/governance';
+import { GovernanceContractsFiltersArgs } from '../models/governance.contracts.filter.args';
 import { GovernanceUnion } from '../models/governance.union';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
+import { GovernanceEnergyContract, GovernanceTokenSnapshotContract } from '../models/governance.contract.model';
+import { GovernanceTokenSnapshotAbiService } from './governance.abi.service';
 
 @Injectable()
 export class GovernanceService {
     constructor(
-        private readonly governanceAbi: GovernanceAbiService,
+        private readonly governanceAbi: GovernanceTokenSnapshotAbiService,
         private readonly tokenGetter: TokenGetterService,
     ) {
     }
@@ -21,7 +21,7 @@ export class GovernanceService {
             governanceAddresses = governanceAddresses.filter((address) => filters.contracts.includes(address));
         }
 
-        const governance: GovernanceEnergyContract[] = [];
+        const governance: Array<typeof GovernanceUnion> = [];
         for (const address of governanceAddresses) {
             const type = governanceType(address);
             if (filters.type && filters.type !== type) {
@@ -35,6 +35,13 @@ export class GovernanceService {
                         }),
                     );
                     break;
+                case GovernanceType.TOKEN_SNAPSHOT:
+                    governance.push(
+                        new GovernanceTokenSnapshotContract({
+                            address,
+                        }),
+                    );
+                   break;
             }
 
         }
