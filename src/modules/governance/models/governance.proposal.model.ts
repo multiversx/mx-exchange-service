@@ -2,6 +2,7 @@ import { ArgsType, Field, Int, ObjectType, registerEnumType } from '@nestjs/grap
 import { GovernanceAction } from './governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { ProposalVotes } from './governance.proposal.votes.model';
+import { GovernanceDescriptionUnion } from './governance.union';
 
 export enum GovernanceProposalStatus {
     None ='None',
@@ -24,19 +25,26 @@ export enum VoteType {
 registerEnumType(GovernanceProposalStatus, { name: 'VoteType' });
 
 @ObjectType()
-export class Description {
+export class Description_v0 {
     @Field()
     title: string;
-    @Field()
-    shortDescription: string = '';
     @Field()
     hash: string;
     @Field(() => Int)
     strapiId: number;
-    @Field(() => Int)
-    version: number;
 
-    constructor(init: Partial<Description>) {
+    constructor(init: Partial<Description_v0>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class Description_v1 extends Description_v0 {
+    @Field()
+    shortDescription: string;
+
+    constructor(init: Partial<Description_v1>) {
+        super(init);
         Object.assign(this, init);
     }
 }
@@ -61,8 +69,8 @@ export class GovernanceProposalModel {
     proposer: string;
     @Field(() => [GovernanceAction])
     actions: GovernanceAction[];
-    @Field( () => Description)
-    description: Description;
+    @Field( () => GovernanceDescriptionUnion)
+    description: typeof GovernanceDescriptionUnion;
     @Field(() => EsdtTokenPaymentModel)
     feePayment: EsdtTokenPaymentModel;
     @Field()

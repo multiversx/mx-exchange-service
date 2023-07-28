@@ -3,12 +3,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { ProposalVotes } from '../models/governance.proposal.votes.model';
-import {
-    Description,
-    GovernanceProposalModel,
-    GovernanceProposalStatus,
-    VoteArgs,
-} from '../models/governance.proposal.model';
+import { GovernanceProposalModel, GovernanceProposalStatus, VoteArgs } from '../models/governance.proposal.model';
 import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
@@ -20,6 +15,7 @@ import { gasConfig, mxConfig } from '../../../config';
 import BigNumber from 'bignumber.js';
 import { BytesValue, U64Value } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { GovernanceTokenSnapshotMerkleService } from './governance.token.snapshot.merkle.service';
+import { GovernanceDescriptionService } from './governance.description.service';
 
 @Injectable()
 export class GovernanceTokenSnapshotAbiService
@@ -28,6 +24,7 @@ export class GovernanceTokenSnapshotAbiService
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
+        protected readonly governanceDescription: GovernanceDescriptionService,
     ) {
         super(mxProxy);
     }
@@ -190,7 +187,7 @@ export class GovernanceTokenSnapshotAbiService
                 proposalId: proposal.proposal_id.toNumber(),
                 proposer: proposal.proposer.bech32(),
                 actions,
-                description: new Description(JSON.parse(proposal.description.toString())),
+                description: this.governanceDescription.getGovernanceDescription(proposal.description.toString()),
                 feePayment: new EsdtTokenPaymentModel(
                     EsdtTokenPayment.fromDecodedAttributes(proposal.fee_payment)
                 ),
@@ -326,8 +323,9 @@ export class GovernanceEnergyAbiService
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
+        protected readonly governanceDescription: GovernanceDescriptionService,
     ) {
-        super(mxProxy, governanceMerkle);
+        super(mxProxy, governanceMerkle, governanceDescription);
         this.type = GovernanceType.ENERGY;
     }
 

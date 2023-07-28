@@ -16,6 +16,7 @@ import {
 } from './resolvers/governance.contract.resolver';
 import { GovernanceQuorumService } from './services/governance.quorum.service';
 import { GovernanceTokenSnapshotMerkleService } from './services/governance.token.snapshot.merkle.service';
+import { GovernanceDescriptionService } from './services/governance.description.service';
 
 
 @Module({
@@ -36,6 +37,7 @@ import { GovernanceTokenSnapshotMerkleService } from './services/governance.toke
         // GovernanceSetterService,
         // GovernanceComputeService,
         GovernanceTransactionService,
+        GovernanceDescriptionService,
 
         GovernanceQueryResolver,
         GovernanceEnergyContractResolver,
