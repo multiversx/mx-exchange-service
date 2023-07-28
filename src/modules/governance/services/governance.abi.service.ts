@@ -8,8 +8,6 @@ import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { GovernanceType, toGovernanceProposalStatus } from '../../../utils/governance';
-import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
-import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { TransactionModel } from '../../../models/transaction.model';
 import { gasConfig, mxConfig } from '../../../config';
 import BigNumber from 'bignumber.js';
@@ -30,11 +28,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async minFeeForPropose(scAddress: string): Promise<string> {
         return await this.minFeeForProposeRaw(scAddress);
     }
@@ -51,11 +49,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async quorum(scAddress: string): Promise<string> {
         return await this.quorumRaw(scAddress);
     }
@@ -72,11 +70,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async votingDelayInBlocks(scAddress: string): Promise<number> {
         return await this.votingDelayInBlocksRaw(scAddress);
     }
@@ -93,11 +91,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async votingPeriodInBlocks(scAddress: string): Promise<number> {
         return await this.votingPeriodInBlocksRaw(scAddress);
     }
@@ -114,11 +112,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async feeTokenId(scAddress: string): Promise<string> {
         return await this.feeTokenIdRaw(scAddress);
     }
@@ -135,11 +133,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async withdrawPercentageDefeated(scAddress: string): Promise<number> {
         return await this.withdrawPercentageDefeatedRaw(scAddress);
     }
@@ -156,11 +154,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async proposals(scAddress: string): Promise<GovernanceProposalModel[]> {
         return await this.proposalsRaw(scAddress);
     }
@@ -202,11 +200,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async userVotedProposals(scAddress: string, userAddress: string): Promise<number[]> {
         return await this.userVotedProposalsRaw(scAddress, userAddress);
     }
@@ -223,11 +221,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async proposalVotes(scAddress: string, proposalId: number): Promise<ProposalVotes> {
         return await this.proposalVotesRaw(scAddress, proposalId);
     }
@@ -264,11 +262,11 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async proposalStatus(scAddress: string, proposalId: number): Promise<GovernanceProposalStatus> {
         return await this.proposalStatusRaw(scAddress, proposalId);
     }
@@ -330,11 +328,11 @@ export class GovernanceEnergyAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceEnergyAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async minEnergyForPropose(scAddress: string): Promise<string> {
         return await this.minEnergyForProposeRaw(scAddress);
     }
@@ -352,11 +350,11 @@ export class GovernanceEnergyAbiService
 
 
     @ErrorLoggerAsync({ className: GovernanceEnergyAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async feesCollectorAddress(scAddress: string): Promise<string> {
         return await this.feesCollectorAddressRaw(scAddress);
     }
@@ -373,11 +371,11 @@ export class GovernanceEnergyAbiService
     }
 
     @ErrorLoggerAsync({ className: GovernanceEnergyAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async energyFactoryAddress(scAddress: string): Promise<string> {
         return await this.energyFactoryAddressRaw(scAddress);
     }
