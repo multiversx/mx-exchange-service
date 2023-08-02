@@ -17,6 +17,7 @@ import {
 import { GovernanceQuorumService } from './services/governance.quorum.service';
 import { GovernanceTokenSnapshotMerkleService } from './services/governance.token.snapshot.merkle.service';
 import { GovernanceDescriptionService } from './services/governance.description.service';
+import { GovernanceComputeService } from './services/governance.compute.service';
 
 
 @Module({
@@ -35,7 +36,7 @@ import { GovernanceDescriptionService } from './services/governance.description.
         GovernanceQuorumService,
         GovernanceTokenSnapshotMerkleService,
         // GovernanceSetterService,
-        // GovernanceComputeService,
+        GovernanceComputeService,
         GovernanceTransactionService,
         GovernanceDescriptionService,
 

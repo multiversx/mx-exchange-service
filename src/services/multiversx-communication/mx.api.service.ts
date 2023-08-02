@@ -11,12 +11,7 @@ import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
-import {
-    isEsdtTokenValid,
-    isNftCollectionValid,
-    isEsdtToken,
-    isNftCollection,
-} from 'src/utils/token.type.compare';
+import { isEsdtToken, isEsdtTokenValid, isNftCollection, isNftCollectionValid } from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { MXProxyService } from './mx.proxy.service';
 
@@ -329,6 +324,20 @@ export class MXApiService {
         return await this.doGetGeneric(
             this.getTransactions.name,
             `transactions?receiverShard=${receiverShard}&after=${after}&before=${before}`,
+        );
+    }
+
+    async getTransactionsWithOptions(
+        {
+            sender,
+            receiver,
+            functionName,
+            status
+        },
+    ): Promise<any> {
+        return await this.doGetGeneric(
+            this.getTransactions.name,
+            `transactions?sender=${sender}&receiver=${receiver}&function=${functionName}&status=${status}`,
         );
     }
 }

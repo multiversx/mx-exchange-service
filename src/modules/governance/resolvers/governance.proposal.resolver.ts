@@ -1,5 +1,5 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { GovernanceProposalModel, GovernanceProposalStatus } from '../models/governance.proposal.model';
+import { GovernanceProposalModel, GovernanceProposalStatus, VoteType } from '../models/governance.proposal.model';
 import { ProposalVotes } from '../models/governance.proposal.votes.model';
 import { GovernanceService } from '../services/governance.service';
 import { UseGuards } from '@nestjs/common';
@@ -36,6 +36,15 @@ export class GovernanceProposalResolver {
         @Parent() governanceProposal: GovernanceProposalModel
     ): Promise<boolean> {
         return this.governanceService.hasUserVoted(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @ResolveField()
+    async userVoteType(
+        @AuthUser() user: UserAuthResult,
+        @Parent() governanceProposal: GovernanceProposalModel
+    ): Promise<VoteType> {
+        return this.governanceService.userVote(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

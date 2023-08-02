@@ -20,6 +20,7 @@ export enum VoteType {
     DownVote,
     DownVetoVote,
     AbstainVote,
+    NotVoted,
 }
 
 registerEnumType(GovernanceProposalStatus, { name: 'VoteType' });
@@ -93,6 +94,8 @@ export class GovernanceProposalModel {
     votes: ProposalVotes;
     @Field()
     hasVoted?: boolean;
+    @Field()
+    userVoteType?: VoteType;
     @Field()
     userVotingPower?: string;
 
