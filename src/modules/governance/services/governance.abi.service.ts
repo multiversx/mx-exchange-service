@@ -190,7 +190,7 @@ export class GovernanceTokenSnapshotAbiService
                     EsdtTokenPayment.fromDecodedAttributes(proposal.fee_payment)
                 ),
                 proposalStartBlock: proposal.proposal_start_block.toNumber(),
-                minimumQuorum: proposal.minimum_quorum.toNumber(),
+                minimumQuorumPercentage: proposal.minimum_quorum.div(100).toFixed(2),
                 totalQuorum: proposal.total_quorum.toFixed(),
                 votingDelayInBlocks: proposal.voting_delay_in_blocks.toNumber(),
                 votingPeriodInBlocks: proposal.voting_period_in_blocks.toNumber(),

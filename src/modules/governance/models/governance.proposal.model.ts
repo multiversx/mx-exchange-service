@@ -77,7 +77,7 @@ export class GovernanceProposalModel {
     @Field(() => EsdtTokenPaymentModel)
     feePayment: EsdtTokenPaymentModel;
     @Field()
-    minimumQuorum: string;
+    minimumQuorumPercentage: string;
     @Field(() => Int)
     votingDelayInBlocks: number;
     @Field(() => Int)
