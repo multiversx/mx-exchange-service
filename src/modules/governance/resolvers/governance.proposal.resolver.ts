@@ -29,6 +29,11 @@ export class GovernanceProposalResolver {
         return this.governanceAbi.proposalVotes(governanceProposal.contractAddress, governanceProposal.proposalId);
     }
 
+    @ResolveField()
+    async totalVotingPower(@Parent() governanceProposal: GovernanceProposalModel): Promise<string> {
+        return this.governanceAbi.totalVotingPower(governanceProposal.contractAddress, governanceProposal.proposalId);
+    }
+
     @UseGuards(JwtOrNativeAuthGuard)
     @ResolveField()
     async hasVoted(

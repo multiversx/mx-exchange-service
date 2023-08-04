@@ -342,6 +342,21 @@
                     "multi_result": true
                 }
             ]
+        },
+        {
+            "name": "getTotalVotingPower",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "proposal_id",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
         }
     ],
     "events": [

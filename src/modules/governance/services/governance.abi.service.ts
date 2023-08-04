@@ -205,6 +205,27 @@ export class GovernanceTokenSnapshotAbiService
     //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
     //     localTtl: CacheTtlInfo.ContractState.localTtl,
     // })
+    async totalVotingPower(scAddress: string, proposalId: number): Promise<string> {
+        return await this.totalVotingPowerRaw(scAddress, proposalId);
+    }
+
+    async totalVotingPowerRaw(scAddress: string, proposalId: number): Promise<string> {
+        const contract = await this.mxProxy.getGovernanceSmartContract(
+            scAddress,
+            this.type
+        );
+        const interaction = contract.methods.getTotalVotingPower([proposalId]);
+        const response = await this.getGenericData(interaction);
+
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    // @GetOrSetCache({
+    //     baseKey: 'governance',
+    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+    //     localTtl: CacheTtlInfo.ContractState.localTtl,
+    // })
     async userVotedProposals(scAddress: string, userAddress: string): Promise<number[]> {
         return await this.userVotedProposalsRaw(scAddress, userAddress);
     }

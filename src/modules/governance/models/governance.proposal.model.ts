@@ -86,6 +86,8 @@ export class GovernanceProposalModel {
     withdrawPercentageDefeated: number;
     @Field()
     totalQuorum: string;
+    @Field()
+    totalVotingPower: string;
     @Field(() => Int)
     proposalStartBlock: number;
     @Field()
