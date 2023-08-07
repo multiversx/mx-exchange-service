@@ -213,6 +213,14 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     async totalVotingPowerRaw(scAddress: string, proposalId: number): Promise<string> {
+        //TODO: remove this after totalVotingPower will be implemented
+        const proposal = await this.proposals(scAddress);
+        const proposalIndex = proposal.findIndex((p) => p.proposalId === proposalId);
+        if (proposalIndex === -1) {
+            throw new Error(`Proposal with id ${proposalId} not found`);
+        }
+        return proposal[proposalIndex].totalQuorum;
+
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
             this.type
