@@ -80,21 +80,21 @@ export class GovernanceHandlerService {
         switch (voteType) {
             case GOVERNANCE_EVENTS.UP:
                 proposalVotes.upVotes = new BigNumber(proposalVotes.upVotes).plus(topics.nrVotes).toFixed();
-                proposalVotes.upPercentage = new BigNumber(proposalVotes.upVotes).dividedBy(proposalVotes.totalVotes).multipliedBy(100).toFixed(2);
                 break;
             case GOVERNANCE_EVENTS.DOWN:
                 proposalVotes.downVotes = new BigNumber(proposalVotes.downVotes).plus(topics.nrVotes).toFixed();
-                proposalVotes.downPercentage = new BigNumber(proposalVotes.downVotes).dividedBy(proposalVotes.totalVotes).multipliedBy(100).toFixed(2);
                 break;
             case GOVERNANCE_EVENTS.ABSTAIN:
                 proposalVotes.abstainVotes = new BigNumber(proposalVotes.abstainVotes).plus(topics.nrVotes).toFixed();
-                proposalVotes.abstainPercentage = new BigNumber(proposalVotes.abstainVotes).dividedBy(proposalVotes.totalVotes).multipliedBy(100).toFixed(2);
                 break;
             case GOVERNANCE_EVENTS.DOWN_VETO:
                 proposalVotes.downVotes = new BigNumber(proposalVotes.downVotes).plus(topics.nrVotes).toFixed();
-                proposalVotes.downPercentage = new BigNumber(proposalVotes.downVotes).dividedBy(proposalVotes.totalVotes).multipliedBy(100).toFixed(2);
                 break;
         }
+        proposalVotes.upPercentage = new BigNumber(proposalVotes.upVotes).dividedBy(proposalVotes.totalVotes).multipliedBy(100).toFixed(2);
+        proposalVotes.downPercentage = new BigNumber(proposalVotes.downVotes).dividedBy(proposalVotes.totalVotes).multipliedBy(100).toFixed(2);
+        proposalVotes.abstainPercentage = new BigNumber(proposalVotes.abstainVotes).dividedBy(proposalVotes.totalVotes).multipliedBy(100).toFixed(2);
+        proposalVotes.downPercentage = new BigNumber(proposalVotes.downVotes).dividedBy(proposalVotes.totalVotes).multipliedBy(100).toFixed(2);
 
         return proposalVotes;
     }
