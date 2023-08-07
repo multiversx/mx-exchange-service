@@ -689,64 +689,6 @@ describe('TransactionPairService', () => {
         });
     });
 
-    it('should get set transfer execution gas limit transaction', async () => {
-        const service = module.get<PairTransactionService>(
-            PairTransactionService,
-        );
-
-        const transaction = await service.setTransferExecGasLimit(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            '50000000',
-        );
-
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver: Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.pairs.admin.set_transfer_exec_gas_limit,
-            data: encodeTransactionData('set_transfer_exec_gas_limit@50000000'),
-            chainID: mxConfig.chainID,
-            version: 1,
-            options: undefined,
-            signature: undefined,
-        });
-    });
-
-    it('should get set extern swap gas limit transaction', async () => {
-        const service = module.get<PairTransactionService>(
-            PairTransactionService,
-        );
-
-        const transaction = await service.setExternSwapGasLimit(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            '50000000',
-        );
-
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver: Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.pairs.admin.set_extern_swap_gas_limit,
-            data: encodeTransactionData('set_extern_swap_gas_limit@50000000'),
-            chainID: mxConfig.chainID,
-            version: 1,
-            options: undefined,
-            signature: undefined,
-        });
-    });
-
     it('should get pause transaction', async () => {
         const service = module.get<PairTransactionService>(
             PairTransactionService,
@@ -861,140 +803,6 @@ describe('TransactionPairService', () => {
         });
     });
 
-    it('should get set max observations per period transaction', async () => {
-        const service = module.get<PairTransactionService>(
-            PairTransactionService,
-        );
-
-        const transaction = await service.setMaxObservationsPerRecord(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            1000,
-        );
-
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver: Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.pairs.admin.setMaxObservationsPerRecord,
-            data: encodeTransactionData('setMaxObservationsPerRecord@1000'),
-            chainID: mxConfig.chainID,
-            version: 1,
-            options: undefined,
-            signature: undefined,
-        });
-    });
-
-    it('should get set BP swap config transaction', async () => {
-        const service = module.get<PairTransactionService>(
-            PairTransactionService,
-        );
-
-        const transaction = await service.setBPSwapConfig(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            {
-                protectStopBlock: '1000',
-                volumePercent: '1000000000000000000',
-                maxNumActionsPerAddress: '100',
-            },
-        );
-
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver: Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.pairs.admin.setBPSwapConfig,
-            data: encodeTransactionData(
-                'setBPSwapConfig@1000@01000000000000000000@0100',
-            ),
-            chainID: mxConfig.chainID,
-            version: 1,
-            options: undefined,
-            signature: undefined,
-        });
-    });
-
-    it('should get set BP remove config transaction', async () => {
-        const service = module.get<PairTransactionService>(
-            PairTransactionService,
-        );
-
-        const transaction = await service.setBPRemoveConfig(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            {
-                protectStopBlock: '1000',
-                volumePercent: '1000000000000000000',
-                maxNumActionsPerAddress: '100',
-            },
-        );
-
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver: Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.pairs.admin.setBPRemoveConfig,
-            data: encodeTransactionData(
-                'setBPRemoveConfig@1000@01000000000000000000@0100',
-            ),
-            chainID: mxConfig.chainID,
-            version: 1,
-            options: undefined,
-            signature: undefined,
-        });
-    });
-
-    it('should get set BP add config transaction', async () => {
-        const service = module.get<PairTransactionService>(
-            PairTransactionService,
-        );
-
-        const transaction = await service.setBPAddConfig(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            {
-                protectStopBlock: '1000',
-                volumePercent: '1000000000000000000',
-                maxNumActionsPerAddress: '100',
-            },
-        );
-
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver: Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.pairs.admin.setBPAddConfig,
-            data: encodeTransactionData(
-                'setBPAddConfig@1000@01000000000000000000@0100',
-            ),
-            chainID: mxConfig.chainID,
-            version: 1,
-            options: undefined,
-            signature: undefined,
-        });
-    });
-
     it('should get set locking deadline epoch transaction', async () => {
         const service = module.get<PairTransactionService>(
             PairTransactionService,
@@ -1076,6 +884,36 @@ describe('TransactionPairService', () => {
             gasLimit: 200000000,
             data: encodeTransactionData(
                 'setLockingScAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            ),
+            chainID: mxConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
+    });
+
+    it('should get setup fees collector transaction', async () => {
+        const service = module.get<PairTransactionService>(
+            PairTransactionService,
+        );
+
+        const transaction = await service.setupFeesCollector(
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+        );
+
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: 10000000,
+            data: encodeTransactionData(
+                `setupFeesCollector@erd1qqqqqqqqqqqqqpgqagq2v9exkrn3wnauq3lw4xcetwsmgmwjd8ssjt4k7s@50000`,
             ),
             chainID: mxConfig.chainID,
             version: 1,

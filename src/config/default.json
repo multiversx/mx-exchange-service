@@ -118,10 +118,8 @@
                 "pause": 200000000,
                 "resume": 200000000,
                 "setFeePercents": 200000000,
+                "setupFeesCollector": 10000000,
                 "setMaxObservationsPerRecord": 200000000,
-                "setBPSwapConfig": 200000000,
-                "setBPRemoveConfig": 200000000,
-                "setBPAddConfig": 200000000,
                 "setStateActiveNoSwaps": 200000000,
                 "setLockingDeadlineEpoch": 200000000,
                 "setLockingScAddress": 200000000,
@@ -445,7 +443,9 @@
         },
         "feesCollector": {
             "baseClaimRewards": 20000000,
-            "claimRewardsPerWeek": 20000000
+            "claimRewardsPerWeek": 20000000,
+            "addKnownContracts": 10000000,
+            "addKnownTokens": 10000000
         },
         "energyUpdate": {
             "updateFarmsEnergyForUser": 15000000
@@ -520,6 +520,7 @@
         "BLOCKS_IN_YEAR": 5256000,
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
+        "FEES_COLLECTOR_CUT": 50000,
         "MAX_GAS_LIMIT": 750000000,
         "ISSUE_LP_TOKEN_COST": 50000000000000000,
         "MEX_TOKEN_ID": "MEX-27f4cd",

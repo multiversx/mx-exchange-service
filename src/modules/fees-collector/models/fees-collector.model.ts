@@ -31,6 +31,9 @@ export class FeesCollectorModel {
     @Field(() => [String])
     allTokens: string[];
 
+    @Field(() => [String])
+    knownContracts: string[];
+
     @Field(() => [EsdtTokenPayment])
     accumulatedFees: [EsdtTokenPayment];
 
