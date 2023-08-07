@@ -76,7 +76,7 @@ export class GovernanceHandlerService {
         const proposalVotes = await this.governanceAbi.proposalVotes(event.address, topics.proposalId)
 
         proposalVotes.totalVotes = new BigNumber(proposalVotes.totalVotes).plus(topics.nrVotes).toFixed();
-        proposalVotes.quorum = new BigNumber(proposalVotes.totalVotes).dividedBy(topics.quorumUsed).multipliedBy(100).toFixed();
+        proposalVotes.quorum = new BigNumber(proposalVotes.quorum).plus(topics.quorumUsed).toFixed();
         switch (voteType) {
             case GOVERNANCE_EVENTS.UP:
                 proposalVotes.upVotes = new BigNumber(proposalVotes.upVotes).plus(topics.nrVotes).toFixed();
