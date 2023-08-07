@@ -1,7 +1,7 @@
 import { ArgsType, Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { GovernanceAction } from './governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
-import { ProposalVotes } from './proposal.votes.model';
+import { ProposalVotes } from './governance.proposal.votes.model';
 
 export enum GovernanceProposalStatus {
     None ='None',
@@ -28,6 +28,8 @@ export class Description {
     @Field()
     title: string;
     @Field()
+    shortDescription: string = '';
+    @Field()
     hash: string;
     @Field(() => Int)
     strapiId: number;
@@ -50,7 +52,7 @@ export class VoteArgs {
 }
 
 @ObjectType()
-export class GovernanceProposal {
+export class GovernanceProposalModel {
     @Field()
     contractAddress: string;
     @Field()
@@ -72,7 +74,7 @@ export class GovernanceProposal {
     @Field(() => Int)
     withdrawPercentageDefeated: number;
     @Field()
-    totalEnergy: string;
+    totalQuorum: string;
     @Field(() => Int)
     proposalStartBlock: number;
     @Field()
@@ -81,8 +83,10 @@ export class GovernanceProposal {
     votes: ProposalVotes;
     @Field()
     hasVoted?: boolean;
+    @Field()
+    userVotingPower?: string;
 
-    constructor(init: Partial<GovernanceProposal>) {
+    constructor(init: Partial<GovernanceProposalModel>) {
         Object.assign(this, init);
     }
 }
