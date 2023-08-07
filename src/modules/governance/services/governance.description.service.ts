@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GovernanceDescriptionUnion } from '../models/governance.union';
-import { Description_v0, Description_v1 } from '../models/governance.proposal.model';
+import { DescriptionV0, DescriptionV1 } from '../models/governance.proposal.model';
 
 
 @Injectable()
@@ -9,9 +9,9 @@ export class GovernanceDescriptionService {
         const description = JSON.parse(descriptionJson);
         switch (description.version) {
             case 0:
-                return new Description_v0(description);
+                return new DescriptionV0(description);
             case 1:
-                return new Description_v1(description);
+                return new DescriptionV1(description);
             default:
                 throw new Error(`Unknown description version: ${description.version}`);
         }

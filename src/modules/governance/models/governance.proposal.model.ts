@@ -26,27 +26,25 @@ export enum VoteType {
 registerEnumType(GovernanceProposalStatus, { name: 'VoteType' });
 
 @ObjectType()
-export class Description_v0 {
+export class DescriptionV0 {
     @Field()
     title: string;
-    @Field()
-    hash: string;
     @Field(() => Int)
     strapiId: number;
     @Field()
     version: number;
 
-    constructor(init: Partial<Description_v0>) {
+    constructor(init: Partial<DescriptionV0>) {
         Object.assign(this, init);
     }
 }
 
 @ObjectType()
-export class Description_v1 extends Description_v0 {
+export class DescriptionV1 extends DescriptionV0 {
     @Field()
     shortDescription: string;
 
-    constructor(init: Partial<Description_v1>) {
+    constructor(init: Partial<DescriptionV1>) {
         super(init);
         Object.assign(this, init);
     }
