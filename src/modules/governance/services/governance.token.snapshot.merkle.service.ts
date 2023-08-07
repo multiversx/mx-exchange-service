@@ -4,7 +4,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { MerkleTreeUtils } from '../../../utils/merkle-tree/markle-tree.utils';
 import { promises } from 'fs';
-import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class GovernanceTokenSnapshotMerkleService {
@@ -40,7 +39,7 @@ export class GovernanceTokenSnapshotMerkleService {
             contractAddress,
             proposalId
         );
-        return new BigNumber(merkleTree.getLeaves().find(leaf => leaf.address === address).balance).multipliedBy('1e18').toFixed();
+        return merkleTree.getLeaves().find(leaf => leaf.address === address)?.balance ?? '0';
     }
 
     private async createMerkleTree(

@@ -3,23 +3,19 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { ProposalVotes } from '../models/governance.proposal.votes.model';
-import {
-    Description,
-    GovernanceProposalModel,
-    GovernanceProposalStatus,
-    VoteArgs,
-} from '../models/governance.proposal.model';
+import { GovernanceProposalModel, GovernanceProposalStatus, VoteArgs } from '../models/governance.proposal.model';
 import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { GovernanceType, toGovernanceProposalStatus } from '../../../utils/governance';
-import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
-import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { TransactionModel } from '../../../models/transaction.model';
 import { gasConfig, mxConfig } from '../../../config';
 import BigNumber from 'bignumber.js';
 import { BytesValue, U64Value } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { GovernanceTokenSnapshotMerkleService } from './governance.token.snapshot.merkle.service';
+import { GovernanceDescriptionService } from './governance.description.service';
+import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
+import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 
 @Injectable()
 export class GovernanceTokenSnapshotAbiService
@@ -28,6 +24,7 @@ export class GovernanceTokenSnapshotAbiService
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
+        protected readonly governanceDescription: GovernanceDescriptionService,
     ) {
         super(mxProxy);
     }
@@ -190,18 +187,48 @@ export class GovernanceTokenSnapshotAbiService
                 proposalId: proposal.proposal_id.toNumber(),
                 proposer: proposal.proposer.bech32(),
                 actions,
-                description: new Description(JSON.parse(proposal.description.toString())),
+                description: this.governanceDescription.getGovernanceDescription(proposal.description.toString()),
                 feePayment: new EsdtTokenPaymentModel(
                     EsdtTokenPayment.fromDecodedAttributes(proposal.fee_payment)
                 ),
                 proposalStartBlock: proposal.proposal_start_block.toNumber(),
-                minimumQuorum: proposal.minimum_quorum.toNumber(),
+                minimumQuorumPercentage: proposal.minimum_quorum.div(100).toFixed(2),
                 totalQuorum: proposal.total_quorum.toFixed(),
+                totalVotingPower: proposal.total_quorum.toFixed(), //TODO: remove this when totalVotingPower will be added
                 votingDelayInBlocks: proposal.voting_delay_in_blocks.toNumber(),
                 votingPeriodInBlocks: proposal.voting_period_in_blocks.toNumber(),
                 withdrawPercentageDefeated: proposal.withdraw_percentage_defeated.toNumber(),
             });
         });
+    }
+
+    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'governance',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async totalVotingPower(scAddress: string, proposalId: number): Promise<string> {
+        return await this.totalVotingPowerRaw(scAddress, proposalId);
+    }
+
+    async totalVotingPowerRaw(scAddress: string, proposalId: number): Promise<string> {
+        //TODO: remove this after totalVotingPower will be implemented
+        const proposal = await this.proposals(scAddress);
+        const proposalIndex = proposal.findIndex((p) => p.proposalId === proposalId);
+        if (proposalIndex === -1) {
+            throw new Error(`Proposal with id ${proposalId} not found`);
+        }
+        return proposal[proposalIndex].totalQuorum;
+
+        const contract = await this.mxProxy.getGovernanceSmartContract(
+            scAddress,
+            this.type
+        );
+        const interaction = contract.methods.getTotalVotingPower([proposalId]);
+        const response = await this.getGenericData(interaction);
+
+        return response.firstValue.valueOf().toFixed();
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
@@ -326,8 +353,9 @@ export class GovernanceEnergyAbiService
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
+        protected readonly governanceDescription: GovernanceDescriptionService,
     ) {
-        super(mxProxy, governanceMerkle);
+        super(mxProxy, governanceMerkle, governanceDescription);
         this.type = GovernanceType.ENERGY;
     }
 

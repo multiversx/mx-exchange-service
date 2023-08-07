@@ -6,11 +6,14 @@ import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
 import { GovernanceEnergyContract, GovernanceTokenSnapshotContract } from '../models/governance.contract.model';
 import { GovernanceTokenSnapshotAbiService } from './governance.abi.service';
+import { VoteType } from '../models/governance.proposal.model';
+import { GovernanceComputeService } from './governance.compute.service';
 
 @Injectable()
 export class GovernanceService {
     constructor(
         private readonly governanceAbi: GovernanceTokenSnapshotAbiService,
+        private readonly governanceCompute: GovernanceComputeService,
         private readonly tokenGetter: TokenGetterService,
     ) {
     }
@@ -56,6 +59,22 @@ export class GovernanceService {
 
         const userVotedProposals = await this.governanceAbi.userVotedProposals(contractAddress, userAddress);
         return userVotedProposals.includes(proposalId);
+    }
+
+    async userVote(contractAddress: string, proposalId: number, userAddress?: string): Promise<VoteType> {
+        const userVotesWithType = await this.governanceCompute.userVotedProposalsWithVoteType(
+            contractAddress, userAddress
+        );
+
+        const voteForProposalId = userVotesWithType.find(
+            value => {
+                return value.proposalId === proposalId
+            }
+        )
+        if (!voteForProposalId) {
+            return VoteType.NotVoted
+        }
+        return voteForProposalId.vote;
     }
 
     async feeToken(contractAddress: string): Promise<EsdtToken> {

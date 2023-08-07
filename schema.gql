@@ -145,7 +145,7 @@ type SimpleLockModel {
 
 type EnableSwapByUserConfig {
   lockingSC: SimpleLockModel!
-  lockedTokenID: String! @deprecated(reason: "field is deprecated and will be removed on next release;value can be obtained from lockingSC field")
+  commonTokenID: String!
   minLockedTokenValue: String!
   minLockPeriodEpochs: Int!
 }
@@ -165,13 +165,12 @@ type FactoryModel {
   maintenance: Boolean!
   multiSwapStatus: Boolean!
   commonTokensForUserPairs: [String!]!
-  enableSwapByUserConfig: EnableSwapByUserConfig!
+  enableSwapByUserConfig: [EnableSwapByUserConfig!]!
   defaultSlippage: Float!
   slippageValues: [Float!]!
   minSlippage: Float!
   maxSlippage: Float!
   minSwapAmount: Float!
-  lastErrorMessage: String!
 }
 
 type AssetsModel implements IAssets {
@@ -254,74 +253,18 @@ type PairInfoModel {
   totalSupply: String!
 }
 
-type LiquidityPosition {
-  firstTokenAmount: String!
-  secondTokenAmount: String!
+type WeekTimekeepingModel {
+  scAddress: String!
+  firstWeekStartEpoch: Float!
+  currentWeek: Float!
+  startEpochForWeek: Float!
+  endEpochForWeek: Float!
 }
 
-type LockedTokensInfo {
-  lockingScAddress: String! @deprecated(reason: "field is deprecated and will be removed on next release;value can be obtained from lockingSC field")
-  lockingSC: SimpleLockModel!
-  unlockEpoch: Int!
-  lockingDeadlineEpoch: Int!
-}
-
-type PairModel {
-  address: String!
-  firstToken: EsdtToken!
-  secondToken: EsdtToken!
-  firstTokenPrice: String!
-  firstTokenPriceUSD: String!
-  secondTokenPrice: String!
-  secondTokenPriceUSD: String!
-  liquidityPoolToken: EsdtToken!
-  liquidityPoolTokenPriceUSD: String!
-  firstTokenLockedValueUSD: String!
-  secondTokenLockedValueUSD: String!
-  lockedValueUSD: String!
-  firstTokenVolume24h: String!
-  secondTokenVolume24h: String!
-  volumeUSD24h: String!
-  feesUSD24h: String!
-  feesAPR: String!
-  info: PairInfoModel!
-  totalFeePercent: Float!
-  specialFeePercent: Float!
-  trustedSwapPairs: [String!]!
-  type: String!
-  state: String!
-  feeState: Boolean!
-  lockedTokensInfo: LockedTokensInfo
-  whitelistedManagedAddresses: [String!]!
-  externSwapGasLimit: String!
-  transferExecGasLimit: String!
-  initialLiquidityAdder: String!
-  feeDestinations: [FeeDestination!]!
-}
-
-type FeeDestination {
-  address: String!
-  tokenID: String!
-}
-
-type UnlockMileStoneModel {
-  epochs: Int!
-  percent: Float!
-}
-
-type LockedAssetAttributesModel {
-  attributes: String!
-  identifier: String!
-  unlockSchedule: [UnlockMileStoneModel!]!
-  isMerged: Boolean!
-}
-
-type LockedAssetModel {
-  address: String!
-  assetToken: EsdtToken!
-  lockedToken: NftCollection!
-  unlockMilestones: [UnlockMileStoneModel!]!
-  activationNonce: Int!
+type WeekForEpochModel {
+  scAddress: String!
+  epoch: Float!
+  week: Float!
 }
 
 type EnergyModel {
@@ -368,6 +311,106 @@ type ClaimProgress {
   week: Int!
 }
 
+type TransactionModel {
+  nonce: Float!
+  value: String!
+  sender: String!
+  receiver: String!
+  gasPrice: Float!
+  gasLimit: Float!
+  data: String
+  chainID: String!
+  version: Float!
+  options: Float
+  status: String
+  signature: String
+}
+
+type FeesCollectorModel {
+  address: String!
+  time: WeekTimekeepingModel!
+  startWeek: Float!
+  endWeek: Float!
+  lastGlobalUpdateWeek: Float!
+  undistributedRewards: [GlobalInfoByWeekModel!]!
+  allTokens: [String!]!
+  knownContracts: [String!]!
+  accumulatedFees: [EsdtTokenPayment!]!
+  lockedTokenId: String!
+  lockedTokensPerBlock: String!
+}
+
+type UserEntryFeesCollectorModel {
+  address: String!
+  userAddress: String!
+  time: WeekTimekeepingModel!
+  startWeek: Float!
+  endWeek: Float!
+  undistributedRewards: [UserInfoByWeekModel!]!
+  accumulatedRewards: [EsdtTokenPayment!]!
+  claimProgress: ClaimProgress!
+  lastActiveWeekForUser: Float!
+}
+
+type FeesCollectorTransactionModel {
+  transaction: TransactionModel
+  count: Int!
+}
+
+type LiquidityPosition {
+  firstTokenAmount: String!
+  secondTokenAmount: String!
+}
+
+type LockedTokensInfo {
+  lockingScAddress: String! @deprecated(reason: "field is deprecated and will be removed on next release;value can be obtained from lockingSC field")
+  lockingSC: SimpleLockModel!
+  unlockEpoch: Int!
+  lockingDeadlineEpoch: Int!
+}
+
+type PairModel {
+  address: String!
+  firstToken: EsdtToken!
+  secondToken: EsdtToken!
+  firstTokenPrice: String!
+  firstTokenPriceUSD: String!
+  secondTokenPrice: String!
+  secondTokenPriceUSD: String!
+  liquidityPoolToken: EsdtToken!
+  liquidityPoolTokenPriceUSD: String!
+  firstTokenLockedValueUSD: String!
+  secondTokenLockedValueUSD: String!
+  lockedValueUSD: String!
+  firstTokenVolume24h: String!
+  secondTokenVolume24h: String!
+  volumeUSD24h: String!
+  feesUSD24h: String!
+  feesAPR: String!
+  info: PairInfoModel!
+  totalFeePercent: Float!
+  specialFeePercent: Float!
+
+  """Percentage of special fees that go to the fees collector"""
+  feesCollectorCutPercentage: Float!
+  trustedSwapPairs: [String!]!
+  type: String!
+  state: String!
+  feeState: Boolean!
+  lockedTokensInfo: LockedTokensInfo
+  whitelistedManagedAddresses: [String!]!
+  initialLiquidityAdder: String!
+  feeDestinations: [FeeDestination!]!
+
+  """Fees collector set for this pair"""
+  feesCollector: FeesCollectorModel
+}
+
+type FeeDestination {
+  address: String!
+  tokenID: String!
+}
+
 type RewardsModel {
   identifier: String!
   rewards: String!
@@ -390,12 +433,6 @@ type FarmMigrationConfig {
   newLockedFarmAddress: String
 }
 
-type WrapModel {
-  address: String!
-  shard: Int!
-  wrappedToken: EsdtToken!
-}
-
 type HistoricDataModel {
   timestamp: String!
   value: String!
@@ -413,19 +450,10 @@ type PairDayDataModel {
   feesUSD24h: String!
 }
 
-type TransactionModel {
-  nonce: Float!
-  value: String!
-  sender: String!
-  receiver: String!
-  gasPrice: Float!
-  gasLimit: Float!
-  data: String
-  chainID: String!
-  version: Float!
-  options: Float
-  status: String
-  signature: String
+type WrapModel {
+  address: String!
+  shard: Int!
+  wrappedToken: EsdtToken!
 }
 
 type NftToken implements INFTToken {
@@ -466,19 +494,24 @@ interface INFTToken {
   assets: IAssets
 }
 
-type WeekTimekeepingModel {
-  scAddress: String!
-  firstWeekStartEpoch: Float!
-  currentWeek: Float!
-  startEpochForWeek: Float!
-  endEpochForWeek: Float!
-  week: WeekForEpochModel!
+type UnlockMileStoneModel {
+  epochs: Int!
+  percent: Float!
 }
 
-type WeekForEpochModel {
-  scAddress: String!
-  epoch: Float!
-  week: Float!
+type LockedAssetAttributesModel {
+  attributes: String!
+  identifier: String!
+  unlockSchedule: [UnlockMileStoneModel!]!
+  isMerged: Boolean!
+}
+
+type LockedAssetModel {
+  address: String!
+  assetToken: EsdtToken!
+  lockedToken: NftCollection!
+  unlockMilestones: [UnlockMileStoneModel!]!
+  activationNonce: Int!
 }
 
 type BoostedYieldsFactors {
@@ -504,36 +537,6 @@ type SimpleLockEnergyModel {
   pauseState: Boolean!
 }
 
-type FeesCollectorModel {
-  lastGlobalUpdateWeek: Float!
-  address: String!
-  time: WeekTimekeepingModel!
-  startWeek: Float!
-  endWeek: Float!
-  undistributedRewards: [GlobalInfoByWeekModel!]!
-  allTokens: [String!]!
-  accumulatedFees: [EsdtTokenPayment!]!
-  lockedTokenId: String!
-  lockedTokensPerBlock: String!
-}
-
-type UserEntryFeesCollectorModel {
-  claimProgress: ClaimProgress!
-  lastActiveWeekForUser: Float!
-  address: String!
-  userAddress: String!
-  time: WeekTimekeepingModel!
-  startWeek: Float!
-  endWeek: Float!
-  undistributedRewards: [UserInfoByWeekModel!]!
-  accumulatedRewards: [EsdtTokenPayment!]!
-}
-
-type FeesCollectorTransactionModel {
-  transaction: TransactionModel
-  count: Int!
-}
-
 type CommunityDistributionModel {
   epoch: Float!
   amount: String!
@@ -542,17 +545,6 @@ type CommunityDistributionModel {
 type DistributionModel {
   address: String!
   communityDistribution: CommunityDistributionModel!
-}
-
-type ProxyModel {
-  address: String!
-  lockedAssetTokens: [NftCollection!]!
-  wrappedLpToken: NftCollection!
-  wrappedFarmToken: NftCollection!
-  assetToken: EsdtToken!
-  intermediatedPairs: [String!]!
-  intermediatedFarms: [String!]!
-  version: String!
 }
 
 type EsdtTokenPaymentModel {
@@ -604,6 +596,17 @@ type WrappedFarmTokenAttributesModelV2 {
   proxyFarmingToken: EsdtTokenPaymentModel!
   farmTokenAttributes: FarmTokenAttributes!
   lockedLpProxyTokenAttributes: WrappedLpTokenAttributesModelV2
+}
+
+type ProxyModel {
+  address: String!
+  lockedAssetTokens: [NftCollection!]!
+  wrappedLpToken: NftCollection!
+  wrappedFarmToken: NftCollection!
+  assetToken: EsdtToken!
+  intermediatedPairs: [String!]!
+  intermediatedFarms: [String!]!
+  version: String!
 }
 
 type StakingTokenAttributesModel {
@@ -1018,6 +1021,7 @@ type StakingModel {
   accumulatedRewards: String!
   rewardCapacity: String!
   annualPercentageRewards: String!
+  apr: String!
   minUnboundEpochs: Int!
   perBlockRewards: String!
   lastRewardBlockNonce: Int!
@@ -1032,6 +1036,15 @@ type StakingModel {
 type StakingRewardsModel {
   decodedAttributes: StakingTokenAttributesModel!
   rewards: String!
+}
+
+type OptimalCompoundModel {
+  """The optimal number of compounds in the given interval"""
+  interval: Int!
+  optimalProfit: Float!
+  days: Int!
+  hours: Int!
+  minutes: Int!
 }
 
 type StakingProxyModel {
@@ -1329,7 +1342,6 @@ type TokenUnstakeModel {
   unbondEpochs: Int!
   feesBurnPercentage: Int!
   feesCollectorAddress: String!
-  lastEpochFeeSentToCollector: Int!
   energyFactoryAddress: String!
 }
 
@@ -1337,6 +1349,80 @@ type UnstakePairModel {
   unlockEpoch: Float!
   lockedTokens: EsdtTokenPaymentModel!
   unlockedTokens: EsdtTokenPaymentModel!
+}
+
+type EscrowModel {
+  address: String!
+  energyFactoryAddress: String!
+  lockedTokenID: String!
+  minLockEpochs: Float!
+  epochsCooldownDuration: Float!
+}
+
+type LockedFundsModel {
+  funds: [EsdtTokenPaymentModel!]!
+  lockedEpoch: Float!
+}
+
+type ScheduledTransferModel {
+  sender: String!
+  lockedFunds: LockedFundsModel!
+}
+
+type ProposalVotes {
+  upVotes: String!
+  downVotes: String!
+  downVetoVotes: String!
+  abstainVotes: String!
+  totalVotes: String!
+  upPercentage: String!
+  downPercentage: String!
+  downVetoPercentage: String!
+  abstainPercentage: String!
+  quorum: String!
+}
+
+type GovernanceAction {
+  gasLimit: Int!
+  destAddress: String!
+  functionName: String!
+  arguments: [String!]!
+}
+
+type GovernanceProposalModel {
+  contractAddress: String!
+  proposalId: Float!
+  proposer: String!
+  actions: [GovernanceAction!]!
+  description: GovernanceDescriptionVersions!
+  feePayment: EsdtTokenPaymentModel!
+  minimumQuorum: String!
+  votingDelayInBlocks: Int!
+  votingPeriodInBlocks: Int!
+  withdrawPercentageDefeated: Int!
+  totalQuorum: String!
+  proposalStartBlock: Int!
+  status: String!
+  votes: ProposalVotes!
+  hasVoted: Boolean!
+  userVotingPower: String!
+}
+
+union GovernanceDescriptionVersions = Description_v0 | Description_v1
+
+type Description_v0 {
+  title: String!
+  hash: String!
+  strapiId: Int!
+  version: Float!
+}
+
+type Description_v1 {
+  title: String!
+  hash: String!
+  strapiId: Int!
+  version: Float!
+  shortDescription: String!
 }
 
 input EsdtTokenPaymentInput {
@@ -1357,7 +1443,6 @@ type Query {
   setState(address: String!, enable: Boolean!): TransactionModel!
   setFee(pairAddress: String!, feeToAddress: String!, feeTokenID: String!, enable: Boolean!): TransactionModel!
   setPairCreationEnabled(enabled: Boolean!): TransactionModel!
-  getLastErrorMessage(stakeAddress: String!): String!
   clearPairTemporaryOwnerStorage: TransactionModel!
   setTemporaryOwnerPeriod(periodBlocks: String!): TransactionModel!
   setPairTemplateAddress(address: String!): TransactionModel!
@@ -1370,7 +1455,6 @@ type Query {
   getLiquidityPosition(pairAddress: String!, liquidityAmount: String!): LiquidityPosition!
   getFeeState(pairAddress: String!): Boolean!
   getRouterManagedAddress(address: String!): String!
-  getRouterOwnerManagedAddress(address: String!): String!
   addInitialLiquidityBatch(pairAddress: String!, tokens: [InputTokenModel!]!, tolerance: Float!): [TransactionModel!]!
   addLiquidityBatch(pairAddress: String!, tokens: [InputTokenModel!]!, tolerance: Float!): [TransactionModel!]!
   updateAndGetSafePrice(pairAddress: String!, esdtTokenPayment: EsdtTokenPaymentInput!): EsdtTokenPayment!
@@ -1378,25 +1462,22 @@ type Query {
   removeLiquidity(pairAddress: String!, liquidity: String!, liquidityTokenID: String!, tolerance: Float!): [TransactionModel!]!
   swapTokensFixedInput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): [TransactionModel!]!
   swapTokensFixedOutput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!): [TransactionModel!]!
-  getNumSwapsByAddress(pairAddress: String!): String!
-  getNumAddsByAddress(pairAddress: String!): String!
   whitelist(pairAddress: String!, address: String!): TransactionModel!
   removeWhitelist(pairAddress: String!, address: String!): TransactionModel!
   addTrustedSwapPair(pairAddress: String!, swapPairAddress: String!, firstTokenID: String!, secondTokenID: String!): TransactionModel!
   removeTrustedSwapPair(pairAddress: String!, firstTokenID: String!, secondTokenID: String!): TransactionModel!
-  setTransferExecGasLimit(farmStakeAddress: String!, gasLimit: Float!): TransactionModel!
-  setExternSwapGasLimit(pairAddress: String!, gasLimit: String!): TransactionModel!
-  pause(farmStakeAddress: String!): TransactionModel!
-  resume(farmStakeAddress: String!): TransactionModel!
+  pausePair(pairAddress: String!): TransactionModel!
+  resumePair(pairAddress: String!): TransactionModel!
   setStateActiveNoSwaps(pairAddress: String!): TransactionModel!
   setFeePercents(pairAddress: String!, totalFeePercent: Float!, specialFeePercent: Float!): TransactionModel!
-  setMaxObservationsPerRecord(pairAddress: String!, maxObservationsPerRecord: Float!): TransactionModel!
-  setBPSwapConfig(pairAddress: String!, config: BPConfigInput!): TransactionModel!
-  setBPRemoveConfig(pairAddress: String!, config: BPConfigInput!): TransactionModel!
-  setBPAddConfig(pairAddress: String!, config: BPConfigInput!): TransactionModel!
   setLockingDeadlineEpoch(pairAddress: String!, newDeadline: Float!): TransactionModel!
   setLockingScAddress(pairAddress: String!, newAddress: String!): TransactionModel!
   setUnlockEpoch(pairAddress: String!, newEpoch: Float!): TransactionModel!
+
+  """
+  Generate transaction to set the fees collector address and fees cut percentage for a pair
+  """
+  setupFeesCollector(pairAddress: String!): TransactionModel!
   wrappingInfo: [WrapModel!]!
   wrapEgld(amount: String!): TransactionModel!
   unwrapEgld(amount: String!): TransactionModel!
@@ -1423,7 +1504,10 @@ type Query {
   startProduceRewards(farmStakeAddress: String!): TransactionModel!
   setPenaltyPercent(farmStakeAddress: String!, percent: Float!): TransactionModel!
   setMinimumFarmingEpochs(farmStakeAddress: String!, epochs: Float!): TransactionModel!
+  setTransferExecGasLimit(farmStakeAddress: String!, gasLimit: Float!): TransactionModel!
   setBurnGasLimit(farmStakeAddress: String!, gasLimit: Float!): TransactionModel!
+  pauseFarm(farmAddress: String!): TransactionModel!
+  resumeFarm(farmAddress: String!): TransactionModel!
   registerFarmToken(farmStakeAddress: String!, tokenDisplayName: String!, tokenTicker: String!, decimals: Float!): TransactionModel!
   setLocalRolesFarmToken(farmStakeAddress: String!): TransactionModel!
   enterFarm(farmAddress: String!, tokens: [InputTokenModel!]!, lockRewards: Boolean): TransactionModel!
@@ -1445,12 +1529,26 @@ type Query {
   setFeesBurnPercentage(percentage: Float!): TransactionModel!
   setFeesCollectorAddress(collectorAddress: String!): TransactionModel!
   setOldLockedAssetFactoryAddress(oldLockedAssetFactoryAddress: String!): TransactionModel!
+  userEnergyAmount: String!
   weeklyTimekeeping(scAddress: String!): WeekTimekeepingModel!
   weekForEpoch(scAddress: String!, epoch: Float!): WeekForEpochModel!
+  feesCollector: FeesCollectorModel!
+
+  """Add or remove known contracts"""
+  handleKnownContracts(contractAddresses: [String!]!, remove: Boolean): TransactionModel!
+
+  """Add or remove known tokens"""
+  handleKnownTokens(tokenIDs: [String!]!, remove: Boolean): TransactionModel!
+  userFeesCollector: UserEntryFeesCollectorModel!
+  claimFeesRewards: FeesCollectorTransactionModel!
+  updateEnergyForUser: TransactionModel!
+  userLastWeekRewards(energyAmount: String, lockedTokens: String): String!
   swap(tokenInID: String!, tokenOutID: String!, amountIn: String, amountOut: String, tolerance: Float!): AutoRouteModel!
+  getLastErrorMessage(stakeAddress: String!): String!
   stakingTokenAttributes(args: DecodeAttributesArgs!): [StakingTokenAttributesModel!]!
   unboundTokenAttributes(args: DecodeAttributesArgs!): [UnbondTokenAttributesModel!]!
   getStakingRewardsForPosition(stakingPositions: BatchFarmRewardsComputeArgs!): [StakingRewardsModel!]!
+  getOptimalCompoundFrequency(stakeAddress: String!, amount: String!, timeInterval: Float!): OptimalCompoundModel!
   stakingFarms: [StakingModel!]!
   stakeFarm(farmStakeAddress: String!, payments: [InputTokenModel!]!): TransactionModel!
   unstakeFarm(farmStakeAddress: String!, payment: InputTokenModel!): TransactionModel!
@@ -1458,6 +1556,8 @@ type Query {
   setMinUnbondEpochs(farmStakeAddress: String!, minUnboundEpoch: Float!): TransactionModel!
   addAddressToWhitelist(farmStakeAddress: String!, address: String!): TransactionModel!
   removeAddressFromWhitelist(farmStakeAddress: String!, address: String!): TransactionModel!
+  pauseStaking(farmStakeAddress: String!): TransactionModel!
+  resumeStaking(farmStakeAddress: String!): TransactionModel!
   unbondFarm(farmStakeAddress: String!, payment: InputTokenModel!): TransactionModel!
   claimStakingRewards(farmStakeAddress: String!, payment: InputTokenModel!): TransactionModel!
   claimStakingRewardsWithNewValue(farmStakeAddress: String!, payment: InputTokenModel!, newValue: String!): TransactionModel!
@@ -1506,18 +1606,15 @@ type Query {
   withdrawFromPriceDiscovery(priceDiscoveryAddress: String!, inputTokens: InputTokenModel!): TransactionModel!
   redeemTokensBatchFromPriceDiscovery(priceDiscoveryAddress: String!, inputTokens: InputTokenModel!): [TransactionModel!]!
   redeemTokensFromPriceDiscovery(priceDiscoveryAddress: String!, inputTokens: InputTokenModel!): TransactionModel!
+  closingValues(priceDiscoveryAddress: String!, metric: String!, bucket: PDMetricsBuckets!): [HistoricDataModel!]!
   userTokens(offset: Int! = 0, limit: Int! = 10): [UserToken!]!
   nfts(offset: Int! = 0, limit: Int! = 10): [UserNftTokens!]!
-  userOutdatedContracts: [OutdatedContract!]!
-  updateEnergy(includeAllContracts: Boolean): TransactionModel
+  userOutdatedContracts(skipFeesCollector: Boolean): [OutdatedContract!]!
+  updateEnergy(includeAllContracts: Boolean, skipFeesCollector: Boolean): TransactionModel
   userCustomTokens(offset: Int! = 0, limit: Int! = 10, tokens: [EsdtTokenInput!]!): [UserToken!]!
   userCustomNftTokens(offset: Int! = 0, limit: Int! = 10, nfts: [NftTokenInput!]!): [UserNftTokens!]!
   userNfts(offset: Int! = 0, limit: Int! = 10): UserNftsModel!
-  feesCollector: FeesCollectorModel!
-  userFeesCollector: UserEntryFeesCollectorModel!
-  claimFeesRewards: FeesCollectorTransactionModel!
-  updateEnergyForUser: TransactionModel!
-  lockedTokenWrapper(address: String): LockedTokenWrapperModel!
+  lockedTokenWrapper: LockedTokenWrapperModel!
   unwrapLockedToken(inputTokens: InputTokenModel!): TransactionModel!
   wrapLockedToken(inputTokens: InputTokenModel!): TransactionModel!
   getTokenPriceUSD(tokenID: String!): String!
@@ -1533,13 +1630,46 @@ type Query {
   sumCompleteValues(series: String!, metric: String!, time: String, start: String, bin: String): [HistoricDataModel!]!
   values24h(series: String!, metric: String!, time: String, start: String, bin: String): [HistoricDataModel!]!
   values24hSum(series: String!, metric: String!, time: String, start: String, bin: String): [HistoricDataModel!]!
-  latestHistoricData(series: String!, metric: String!, time: String, start: String, bin: String): [HistoricDataModel!]!
-  latestBinnedHistoricData(series: String!, metric: String!, time: String, start: String, bin: String): [HistoricDataModel!]!
+  latestHistoricData(series: String!, metric: String!, time: String, start: String, bin: String): [HistoricDataModel!]! @deprecated(reason: "New optimized query will be available soon.")
+  latestBinnedHistoricData(series: String!, metric: String!, time: String, start: String, bin: String): [HistoricDataModel!]! @deprecated(reason: "New optimized query will be available soon.")
   pairsDayDatas(pairAddress: String): [PairDayDataModel!]!
   tokenUnstake: TokenUnstakeModel!
   getUnlockedTokensForUser: [UnstakePairModel!]!
   claimUnlockedTokens: TransactionModel!
   cancelUnbond: TransactionModel!
+  escrowContract: EscrowModel!
+
+  """Get all scheduled transfers for a given user"""
+  scheduledTransfers: [ScheduledTransferModel!]!
+
+  """Get all senders for a given receiver"""
+  escrowSenders: [String!]!
+
+  """Get all receivers for a given sender"""
+  escrowReceivers(sender: String): [String!]!
+
+  """Get sender last transfer epoch; used for cooldown period"""
+  senderLastTransferEpoch: Float
+  receiverLastTransferEpoch(
+    """Get receiver last transfer epoch; used for cooldown period"""
+    receiver: String
+  ): Float
+
+  """Generate transaction to receive escrowed tokens"""
+  escrowReceive(senderAddress: String!): TransactionModel!
+
+  """Generate transaction to cancel escrowed transfers; used only by admins"""
+  cancelEscrowTransfer(sender: String!, receiver: String!): TransactionModel!
+
+  """Generate transaction to lock tokens in escrow"""
+  escrowTransfer(receiver: String!, inputTokens: [InputTokenModel!]!): TransactionModel!
+
+  """Get address permissions"""
+  escrowPermissions: [SCPermissions!]!
+  vote(contractAddress: String!, proposalId: Float!, vote: Float!): TransactionModel!
+  governanceContracts(identifiers: [String!], contracts: [String!], type: String): [GovernanceTypes!]!
+  rootHash(contractAddress: String!, proposalId: Float!, vote: Float!): String!
+  totalBalance(contractAddress: String!, proposalId: Float!, vote: Float!): String!
 }
 
 input SetLocalRoleOwnerArgs {
@@ -1562,12 +1692,6 @@ input InputTokenModel {
   nonce: Int!
   amount: String!
   attributes: String
-}
-
-input BPConfigInput {
-  protectStopBlock: String!
-  volumePercent: String!
-  maxNumActionsPerAddress: String!
 }
 
 input DecodeAttributesArgs {
@@ -1601,15 +1725,15 @@ type FarmModelV1_2 {
   totalValueLockedUSD: String!
   state: String!
   version: String!
-  burnGasLimit: String!
-  transferExecGasLimit: String!
+  burnGasLimit: String
+  transferExecGasLimit: String
   pair: PairModel
-  lockedAssetFactory: LockedAssetModel
-  lastErrorMessage: String!
+  lastErrorMessage: String
   farmingTokenReserve: String!
   undistributedFees: String!
   currentBlockFee: String!
   aprMultiplier: Int!
+  lockedAssetFactory: LockedAssetModel!
   lockedRewardsAPR: String!
   unlockedRewardsAPR: String!
   lockedFarmingTokenReserveUSD: String!
@@ -1639,12 +1763,12 @@ type FarmModelV1_3 {
   totalValueLockedUSD: String!
   state: String!
   version: String!
-  burnGasLimit: String!
-  transferExecGasLimit: String!
+  burnGasLimit: String
+  transferExecGasLimit: String
   pair: PairModel
-  lockedAssetFactory: LockedAssetModel
-  lastErrorMessage: String!
+  lastErrorMessage: String
   apr: String!
+  lockedAssetFactory: LockedAssetModel
   rewardType: String!
   migrationConfig: FarmMigrationConfig
 }
@@ -1669,11 +1793,10 @@ type FarmCustomModel {
   totalValueLockedUSD: String!
   state: String!
   version: String!
-  burnGasLimit: String!
-  transferExecGasLimit: String!
+  burnGasLimit: String
+  transferExecGasLimit: String
   pair: PairModel
-  lockedAssetFactory: LockedAssetModel
-  lastErrorMessage: String!
+  lastErrorMessage: String
   requireWhitelist: Boolean!
 }
 
@@ -1697,16 +1820,16 @@ type FarmModelV2 {
   totalValueLockedUSD: String!
   state: String!
   version: String!
-  burnGasLimit: String!
-  transferExecGasLimit: String!
+  burnGasLimit: String
+  transferExecGasLimit: String
   pair: PairModel
-  lockedAssetFactory: LockedAssetModel
-  lastErrorMessage: String!
+  lastErrorMessage: String
   boostedYieldsRewardsPercenatage: Int!
   boostedYieldsFactors: BoostedYieldsFactors!
   lockingScAddress: String
   lockEpochs: String
   undistributedBoostedRewards: String!
+  undistributedBoostedRewardsClaimed: String!
   energyFactoryAddress: String!
   rewardType: String!
   time: WeekTimekeepingModel!
@@ -1714,7 +1837,7 @@ type FarmModelV2 {
   boosterRewards: [GlobalInfoByWeekModel!]!
   lastGlobalUpdateWeek: Float!
   baseApr: String!
-  boostedOptimalRatio: String!
+  optimalEnergyPerLp: String!
 }
 
 type BaseFarmModel {
@@ -1737,11 +1860,10 @@ type BaseFarmModel {
   totalValueLockedUSD: String!
   state: String!
   version: String!
-  burnGasLimit: String!
-  transferExecGasLimit: String!
+  burnGasLimit: String
+  transferExecGasLimit: String
   pair: PairModel
-  lockedAssetFactory: LockedAssetModel
-  lastErrorMessage: String!
+  lastErrorMessage: String
 }
 
 input BatchFarmRewardsComputeArgs {
@@ -1761,6 +1883,13 @@ enum UnlockType {
   TERM_UNLOCK
   EARLY_UNLOCK
   REDUCE_PERIOD
+}
+
+enum PDMetricsBuckets {
+  MINUTE_1
+  MINUTES_5
+  MINUTES_30
+  HOUR_1
 }
 
 union UserNftTokens = UserLockedAssetToken | UserFarmToken | UserLockedLPToken | UserLockedFarmToken | UserLockedLPTokenV2 | UserLockedFarmTokenV2 | UserStakeFarmToken | UserUnbondFarmToken | UserDualYiledToken | UserRedeemToken | UserLockedEsdtToken | UserLockedSimpleLpToken | UserLockedSimpleFarmToken | UserLockedTokenEnergy | UserWrappedLockedToken | UserNftToken
@@ -1827,6 +1956,42 @@ input NftTokenInput {
   url: String
   tags: [String!]
   balance: String!
+}
+
+enum SCPermissions {
+  NONE
+  OWNER
+  ADMIN
+  PAUSE
+}
+
+union GovernanceTypes = GovernanceTokenSnapshotContract | GovernanceEnergyContract
+
+type GovernanceTokenSnapshotContract {
+  address: String!
+  minFeeForPropose: String!
+  quorum: String!
+  votingDelayInBlocks: Int!
+  votingPeriodInBlocks: Int!
+  feeToken: EsdtToken!
+  withdrawPercentageDefeated: Int!
+  proposals(proposalId: Int): [GovernanceProposalModel!]!
+  vetoPercentageLimit: Int!
+}
+
+type GovernanceEnergyContract {
+  address: String!
+  minFeeForPropose: String!
+  quorum: String!
+  votingDelayInBlocks: Int!
+  votingPeriodInBlocks: Int!
+  feeToken: EsdtToken!
+  withdrawPercentageDefeated: Int!
+  proposals(proposalId: Int): [GovernanceProposalModel!]!
+  vetoPercentageLimit: Int!
+  minEnergyForPropose: String!
+  feesCollectorAddress: String!
+  energyFactoryAddress: String!
 }
 
 type Subscription {
