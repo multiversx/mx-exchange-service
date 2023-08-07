@@ -10,7 +10,7 @@
         "contractCrate": {
             "name": "governance-v2",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-1385-g949b1189"
+            "gitVersion": "v1.6.0-1387-g68a6f461"
         },
         "framework": {
             "name": "multiversx-sc",
@@ -76,6 +76,7 @@
                 "Returns the ID of the newly created proposal."
             ],
             "name": "propose",
+            "onlyOwner": true,
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -340,21 +341,6 @@
                 {
                     "type": "optional<array32<u8>>",
                     "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getTotalVotingPower",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "proposal_id",
-                    "type": "u32"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
                 }
             ]
         }
