@@ -35,6 +35,8 @@ import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.ser
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { EscrowHandlerService } from './handlers/escrow.handler.service';
 import { EscrowModule } from '../escrow/escrow.module';
+import { GovernanceHandlerService } from './handlers/governance.handler.service';
+import { GovernanceModule } from '../governance/governance.module';
 
 @Module({
     imports: [
@@ -57,6 +59,7 @@ import { EscrowModule } from '../escrow/escrow.module';
         TokenUnstakeModule,
         UserModule,
         WeeklyRewardsSplittingModule,
+        GovernanceModule,
         EscrowModule,
     ],
     providers: [
@@ -74,6 +77,7 @@ import { EscrowModule } from '../escrow/escrow.module';
         FeesCollectorHandlerService,
         TokenUnstakeHandlerService,
         WeeklyRewardsSplittingHandlerService,
+        GovernanceHandlerService,
         EscrowHandlerService,
     ],
 })

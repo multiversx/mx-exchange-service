@@ -5,11 +5,20 @@ import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { TokenModule } from '../tokens/token.module';
 import { EnergyModule } from '../energy/energy.module';
-import { GovernanceAbiService } from './services/governance.abi.service';
-import { GovernanceQueryResolver } from './governance.query.resolver';
-import { GovernanceContractResolver } from './governance.contract.resolver';
-import { GovernanceProposalResolver } from './governance.propose.resolver';
+import { GovernanceEnergyAbiService, GovernanceTokenSnapshotAbiService } from './services/governance.abi.service';
 import { GovernanceService } from './services/governance.service';
+import { GovernanceQuorumService } from './services/governance.quorum.service';
+import { GovernanceTokenSnapshotMerkleService } from './services/governance.token.snapshot.merkle.service';
+import { GovernanceComputeService } from './services/governance.compute.service';
+import { GovernanceTransactionService } from './resolvers/governance.transaction.resolver';
+import { GovernanceDescriptionService } from './services/governance.description.service';
+import {
+    GovernanceEnergyContractResolver,
+    GovernanceTokenSnapshotContractResolver,
+} from './resolvers/governance.contract.resolver';
+import { GovernanceSetterService } from './services/governance.setter.service';
+import { GovernanceQueryResolver } from './resolvers/governance.query.resolver';
+import { GovernanceProposalResolver } from './resolvers/governance.proposal.resolver';
 
 
 @Module({
@@ -23,18 +32,25 @@ import { GovernanceService } from './services/governance.service';
     ],
     providers: [
         GovernanceService,
-        GovernanceAbiService,
-        // GovernanceSetterService,
-        // GovernanceComputeService,
-        // GovernanceTransactionService,
+        GovernanceTokenSnapshotAbiService,
+        GovernanceEnergyAbiService,
+        GovernanceQuorumService,
+        GovernanceTokenSnapshotMerkleService,
+        GovernanceSetterService,
+        GovernanceComputeService,
+        GovernanceTransactionService,
+        GovernanceDescriptionService,
+
         GovernanceQueryResolver,
-        GovernanceContractResolver,
+        GovernanceEnergyContractResolver,
+        GovernanceTokenSnapshotContractResolver,
         GovernanceProposalResolver,
     ],
     exports: [
-        GovernanceAbiService,
-        // GovernanceSetterService,
-        // GovernanceComputeService,
+        GovernanceTokenSnapshotAbiService,
+        GovernanceEnergyAbiService,
+        GovernanceSetterService,
+        GovernanceComputeService,
         GovernanceService,
     ],
 })

@@ -469,6 +469,9 @@
             "cancelTransfer": 50000000,
             "lockFunds": 50000000
         },
+        "governance": {
+            "vote": 50000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
@@ -506,7 +509,10 @@
         "tokenUnstake": "./src/abis/token-unstake.abi.json",
         "lockedTokenWrapper": "./src/abis/locked-token-wrapper.abi.json",
         "escrow": "./src/abis/lkmex-transfer.abi.json",
-        "governance": "./src/abis/governance-v2.abi.json"
+        "governance": {
+            "energy": "./src/abis/governance-v2.abi.json",
+            "tokenSnapshot": "./src/abis/governance-v2-merkle-proof.abi.json"
+        }
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,

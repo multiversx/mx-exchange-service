@@ -10,7 +10,7 @@
         "contractCrate": {
             "name": "governance-v2",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-1358-g9b7510d6"
+            "gitVersion": "v1.6.0-1377-gd49b05d0"
         },
         "framework": {
             "name": "multiversx-sc",
@@ -161,6 +161,7 @@
         },
         {
             "name": "changeMinEnergyForProposal",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -172,6 +173,7 @@
         },
         {
             "name": "changeMinFeeForProposal",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -183,6 +185,7 @@
         },
         {
             "name": "changeQuorum",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -194,6 +197,7 @@
         },
         {
             "name": "changeVotingDelayInBlocks",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -205,6 +209,7 @@
         },
         {
             "name": "changeVotingPeriodInBlocks",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -342,68 +347,6 @@
             ]
         },
         {
-            "name": "getCurrentQuorum",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "proposal_id",
-                    "type": "u32"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getProposer",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "proposal_id",
-                    "type": "u32"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "optional<Address>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getProposalDescription",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "proposal_id",
-                    "type": "u32"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "optional<bytes>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getProposalActions",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "proposal_id",
-                    "type": "u32"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "List<GovernanceAction>"
-                }
-            ]
-        },
-        {
             "name": "getFeesCollectorAddress",
             "mutability": "readonly",
             "inputs": [],
@@ -506,7 +449,8 @@
                 },
                 {
                     "name": "proposal",
-                    "type": "GovernanceProposal"
+                    "type": "GovernanceProposal",
+                    "indexed": true
                 }
             ]
         },
@@ -524,8 +468,14 @@
                     "indexed": true
                 },
                 {
-                    "name": "nr_votes",
-                    "type": "BigUint"
+                    "name": "voting_power",
+                    "type": "BigUint",
+                    "indexed": true
+                },
+                {
+                    "name": "user_quorum",
+                    "type": "BigUint",
+                    "indexed": true
                 }
             ]
         },
@@ -543,8 +493,14 @@
                     "indexed": true
                 },
                 {
-                    "name": "nr_downvotes",
-                    "type": "BigUint"
+                    "name": "voting_power",
+                    "type": "BigUint",
+                    "indexed": true
+                },
+                {
+                    "name": "user_quorum",
+                    "type": "BigUint",
+                    "indexed": true
                 }
             ]
         },
@@ -562,8 +518,14 @@
                     "indexed": true
                 },
                 {
-                    "name": "nr_downvotes",
-                    "type": "BigUint"
+                    "name": "voting_power",
+                    "type": "BigUint",
+                    "indexed": true
+                },
+                {
+                    "name": "user_quorum",
+                    "type": "BigUint",
+                    "indexed": true
                 }
             ]
         },
@@ -581,8 +543,14 @@
                     "indexed": true
                 },
                 {
-                    "name": "nr_downvotes",
-                    "type": "BigUint"
+                    "name": "voting_power",
+                    "type": "BigUint",
+                    "indexed": true
+                },
+                {
+                    "name": "user_quorum",
+                    "type": "BigUint",
+                    "indexed": true
                 }
             ]
         },
@@ -687,7 +655,7 @@
                     "type": "u64"
                 },
                 {
-                    "name": "total_energy",
+                    "name": "total_quorum",
                     "type": "BigUint"
                 },
                 {

@@ -1,25 +1,52 @@
 import { Injectable } from '@nestjs/common';
-import { GovernanceContract } from '../models/governance.contract.model';
-import { governanceContractsAddresses } from '../../../utils/governance';
-import { GovernanceContractsFiltersArgs } from '../models/contracts.filter.args';
-import { GovernanceAbiService } from './governance.abi.service';
+import { governanceContractsAddresses, GovernanceType, governanceType } from '../../../utils/governance';
+import { GovernanceContractsFiltersArgs } from '../models/governance.contracts.filter.args';
+import { GovernanceUnion } from '../models/governance.union';
+import { TokenGetterService } from '../../tokens/services/token.getter.service';
+import { EsdtToken } from '../../tokens/models/esdtToken.model';
+import { GovernanceEnergyContract, GovernanceTokenSnapshotContract } from '../models/governance.contract.model';
+import { GovernanceTokenSnapshotAbiService } from './governance.abi.service';
+import { VoteType } from '../models/governance.proposal.model';
+import { GovernanceComputeService } from './governance.compute.service';
 
 @Injectable()
 export class GovernanceService {
     constructor(
-        private readonly governanceAbi: GovernanceAbiService,
+        private readonly governanceAbi: GovernanceTokenSnapshotAbiService,
+        private readonly governanceCompute: GovernanceComputeService,
+        private readonly tokenGetter: TokenGetterService,
     ) {
     }
-    async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<GovernanceContract[]> {
-        const governanceAddresses = governanceContractsAddresses();
+    async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<Array<typeof GovernanceUnion>> {
+        let governanceAddresses = governanceContractsAddresses();
 
-        const governance: GovernanceContract[] = [];
+        if (filters.contracts) {
+            governanceAddresses = governanceAddresses.filter((address) => filters.contracts.includes(address));
+        }
+
+        const governance: Array<typeof GovernanceUnion> = [];
         for (const address of governanceAddresses) {
-            governance.push(
-                new GovernanceContract({
-                    address,
-                }),
-            );
+            const type = governanceType(address);
+            if (filters.type && filters.type !== type) {
+                continue;
+            }
+            switch (type) {
+                case GovernanceType.ENERGY:
+                    governance.push(
+                        new GovernanceEnergyContract({
+                            address,
+                        }),
+                    );
+                    break;
+                case GovernanceType.TOKEN_SNAPSHOT:
+                    governance.push(
+                        new GovernanceTokenSnapshotContract({
+                            address,
+                        }),
+                    );
+                   break;
+            }
+
         }
 
         return governance;
@@ -32,5 +59,26 @@ export class GovernanceService {
 
         const userVotedProposals = await this.governanceAbi.userVotedProposals(contractAddress, userAddress);
         return userVotedProposals.includes(proposalId);
+    }
+
+    async userVote(contractAddress: string, proposalId: number, userAddress?: string): Promise<VoteType> {
+        const userVotesWithType = await this.governanceCompute.userVotedProposalsWithVoteType(
+            contractAddress, userAddress
+        );
+
+        const voteForProposalId = userVotesWithType.find(
+            value => {
+                return value.proposalId === proposalId
+            }
+        )
+        if (!voteForProposalId) {
+            return VoteType.NotVoted
+        }
+        return voteForProposalId.vote;
+    }
+
+    async feeToken(contractAddress: string): Promise<EsdtToken> {
+        const feeTokenId = await this.governanceAbi.feeTokenId(contractAddress);
+        return await this.tokenGetter.getTokenMetadata(feeTokenId);
     }
 }
