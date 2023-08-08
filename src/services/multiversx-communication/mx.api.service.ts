@@ -332,12 +332,11 @@ export class MXApiService {
             sender,
             receiver,
             functionName,
-            status
         },
     ): Promise<any> {
         return await this.doGetGeneric(
             this.getTransactions.name,
-            `transactions?sender=${sender}&receiver=${receiver}&function=${functionName}&status=${status}`,
+            `transactions?sender=${sender}&receiver=${receiver}&function=${functionName}`,
         );
     }
 }

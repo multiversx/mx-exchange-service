@@ -59,6 +59,6 @@ export class GovernanceProposalResolver {
         @Parent() governanceProposal: GovernanceProposalModel
     ): Promise<string> {
         const userQuorum = await this.governanceQuorum.userQuorum(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
-        return new BigNumber(userQuorum).sqrt().integerValue().toFixed();
+        return new BigNumber(userQuorum).integerValue().toFixed();
     }
 }

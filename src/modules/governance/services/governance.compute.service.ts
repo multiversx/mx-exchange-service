@@ -27,14 +27,15 @@ export class GovernanceComputeService {
             sender: userAddress,
             receiver: scAddress,
             functionName: 'vote',
-            status: 'success',
         })
         const proposalWithVoteType = []
         for (const tx of txs) {
-            //decode base64 to string
+            if (tx.status !== 'success') {
+                continue;
+            }
             const data = Buffer.from(tx.data, 'base64').toString('utf-8').split('@');
             proposalWithVoteType.push({
-                proposalId: parseInt(data[1]),
+                proposalId: parseInt(data[1], 16),
                 vote: data[2] === "" ? VoteType.UpVote : parseInt(data[2]),
             });
         }
