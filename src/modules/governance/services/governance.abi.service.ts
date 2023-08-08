@@ -35,6 +35,16 @@ export class GovernanceTokenSnapshotAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
+    async getAddressShardID(scAddress: string): Promise<number> {
+        return await this.mxProxy.getAddressShardID(scAddress);
+    }
+
+    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'governance',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
     async minFeeForPropose(scAddress: string): Promise<string> {
         return await this.minFeeForProposeRaw(scAddress);
     }

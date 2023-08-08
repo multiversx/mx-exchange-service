@@ -14,6 +14,11 @@ export class GovernanceTokenSnapshotContractResolver {
     }
 
     @ResolveField()
+    async shard(@Parent() contract: GovernanceTokenSnapshotContract): Promise<number> {
+        return this.governanceAbi.getAddressShardID(contract.address);
+    }
+
+    @ResolveField()
     async minFeeForPropose(@Parent() contract: GovernanceTokenSnapshotContract): Promise<string> {
         return this.governanceAbi.minFeeForPropose(contract.address);
     }
