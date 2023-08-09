@@ -314,6 +314,34 @@ export class GovernanceTokenSnapshotAbiService
         return toGovernanceProposalStatus(response.firstValue.valueOf().name);
     }
 
+    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'governance',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async proposalRootHash(scAddress: string, proposalId: number): Promise<string> {
+        return await this.proposalRootHashRaw(scAddress, proposalId);
+    }
+
+    async proposalRootHashRaw(scAddress: string, proposalId: number): Promise<string> {
+        const contract = await this.mxProxy.getGovernanceSmartContract(
+            scAddress,
+            this.type
+        );
+        const interaction = contract.methods.getProposalRootHash([proposalId]);
+        const response = await this.getGenericData(interaction);
+
+        const stringsArray = response.firstValue.valueOf().map(bn => {
+            let hex = bn.toString(16);
+            if (hex.length === 1) {
+                hex = '0' + hex; // Pad with a leading zero if needed
+            }
+            return hex;
+        });
+        return stringsArray.join('');
+    }
+
     @ErrorLoggerAsync({
         className: GovernanceTokenSnapshotAbiService.name,
         logArgs: true,
@@ -327,9 +355,9 @@ export class GovernanceTokenSnapshotAbiService
             this.type
         );
 
+        const rootHash = await this.proposalRootHash(args.contractAddress, args.proposalId);
         const governanceMerkle = await this.governanceMerkle.getMerkleTree(
-            args.contractAddress,
-            args.proposalId
+            rootHash,
         );
 
         const addressLeaf = governanceMerkle.getUserLeaf(sender)

@@ -9,19 +9,33 @@ import { AuthUser } from '../../auth/auth.user';
 import { GovernanceTokenSnapshotAbiService } from '../services/governance.abi.service';
 import { GovernanceQuorumService } from '../services/governance.quorum.service';
 import BigNumber from 'bignumber.js';
+import { GovernanceTokenSnapshotMerkleService } from '../services/governance.token.snapshot.merkle.service';
 
 @Resolver(() => GovernanceProposalModel)
 export class GovernanceProposalResolver {
     constructor(
-        protected readonly governanceAbi: GovernanceTokenSnapshotAbiService,
-        protected readonly governanceService: GovernanceService,
-        protected readonly governanceQuorum: GovernanceQuorumService,
+        private readonly governanceAbi: GovernanceTokenSnapshotAbiService,
+        private readonly governanceService: GovernanceService,
+        private readonly governanceQuorum: GovernanceQuorumService,
+        private readonly governaneMerkle: GovernanceTokenSnapshotMerkleService,
     ) {
     }
 
     @ResolveField()
     async status(@Parent() governanceProposal: GovernanceProposalModel): Promise<GovernanceProposalStatus> {
         return this.governanceAbi.proposalStatus(governanceProposal.contractAddress, governanceProposal.proposalId);
+    }
+
+    @ResolveField()
+    async rootHash(@Parent() governanceProposal: GovernanceProposalModel): Promise<string> {
+        return this.governanceAbi.proposalRootHash(governanceProposal.contractAddress, governanceProposal.proposalId);
+    }
+
+    @ResolveField()
+    async totalBalance(@Parent() governanceProposal: GovernanceProposalModel): Promise<string> {
+        const rootHash = await this.governanceAbi.proposalRootHash(governanceProposal.contractAddress, governanceProposal.proposalId);
+        const mt = await this.governaneMerkle.getMerkleTree(rootHash);
+        return mt.getTotalBalance();
     }
 
     @ResolveField()
@@ -58,7 +72,7 @@ export class GovernanceProposalResolver {
         @AuthUser() user: UserAuthResult,
         @Parent() governanceProposal: GovernanceProposalModel
     ): Promise<string> {
-        const userQuorum = await this.governanceQuorum.userQuorum(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
+        const userQuorum = await this.governanceQuorum.userQuorum(governanceProposal.contractAddress, user.address, governanceProposal.rootHash);
         return new BigNumber(userQuorum).integerValue().toFixed();
     }
 }

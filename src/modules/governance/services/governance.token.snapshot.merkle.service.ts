@@ -17,42 +17,37 @@ export class GovernanceTokenSnapshotMerkleService {
     }
 
     async getMerkleTree(
-        contractAddress: string,
-        proposalId: number,
+        rootHash: string,
     ): Promise<MerkleTreeUtils> {
-        const key = `${contractAddress}.${proposalId}`;
         return (
-            GovernanceTokenSnapshotMerkleService.merkleTrees[key] ||
-            this.createMerkleTree(
-                contractAddress,
-                proposalId
-            )
+            GovernanceTokenSnapshotMerkleService.merkleTrees[rootHash] ||
+            this.createMerkleTree(rootHash)
         );
     }
 
     async getAddressBalance(
-        contractAddress: string,
-        proposalId: number,
+        roothash: string,
         address: string,
     ): Promise<string> {
         const merkleTree = await this.getMerkleTree(
-            contractAddress,
-            proposalId
+            roothash,
         );
         return merkleTree.getLeaves().find(leaf => leaf.address === address)?.balance ?? '0';
     }
 
     private async createMerkleTree(
-        contractAddress: string,
-        proposalId: number,
+        rootHash: string,
     ): Promise<MerkleTreeUtils> {
-        const jsonContent: string = await promises.readFile(`./src/snapshots/${contractAddress}_${proposalId}.json`, {
+        const jsonContent: string = await promises.readFile(`./src/snapshots/${rootHash}.json`, {
             encoding: 'utf8',
         });
         const leaves = JSON.parse(jsonContent);
         const newMT = new MerkleTreeUtils(leaves);
-        const key = `${contractAddress}.${proposalId}`;
-        GovernanceTokenSnapshotMerkleService.merkleTrees[key] = newMT;
+        if (newMT.getRootHash() !== rootHash) {
+            throw new Error("Computed root hash doesn't match the provided root hash.");
+        }
+
+        GovernanceTokenSnapshotMerkleService.merkleTrees[rootHash] = newMT;
         return newMT;
     }
 }
