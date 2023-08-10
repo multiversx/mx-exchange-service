@@ -43,7 +43,7 @@ export class GovernanceTokenSnapshotMerkleService {
         });
         const leaves = JSON.parse(jsonContent);
         const newMT = new MerkleTreeUtils(leaves);
-        if (newMT.getRootHash() !== rootHash) {
+        if (newMT.getRootHash() !== `0x${rootHash}`) {
             throw new Error("Computed root hash doesn't match the provided root hash.");
         }
 
