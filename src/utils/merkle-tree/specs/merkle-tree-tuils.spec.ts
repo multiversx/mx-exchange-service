@@ -1,4 +1,5 @@
 import { MerkleTreeUtils } from '../markle-tree.utils';
+import { promises } from 'fs';
 
 describe('Merkle Tree', () => {
     it('Valid Leaves', () => {
@@ -137,5 +138,14 @@ describe('Merkle Tree', () => {
 
         const mp = new MerkleTreeUtils(leaves);
         expect(mp.getDepth()).toStrictEqual(4);
+    });
+    it('read from file', async () => {
+        const snapshot = `e018d697ad08b3547c49d64e926eed47b0cc5fb56025e8a2941e7f60a4c53fc8`;
+        const jsonContent = await promises.readFile(`./src/snapshots/${snapshot}.json`, {
+            encoding: 'utf8',
+        });
+        const leaves = JSON.parse(jsonContent);
+        const newMT = new MerkleTreeUtils(leaves);
+        expect(newMT.getRootHash()).toEqual(`0x${snapshot}`);
     });
 });

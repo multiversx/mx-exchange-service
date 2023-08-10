@@ -90,6 +90,10 @@ export class GovernanceProposalModel {
     proposalStartBlock: number;
     @Field()
     status: GovernanceProposalStatus;
+    @Field()
+    rootHash: string;
+    @Field()
+    totalBalance: string;
     @Field( () => ProposalVotes )
     votes: ProposalVotes;
     @Field()

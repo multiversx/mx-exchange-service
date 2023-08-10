@@ -11,12 +11,12 @@ export class GovernanceQuorumService {
     ) {
     }
 
-    async userQuorum(contractAddress: string, proposalId: number, userAddress: string): Promise<string> {
+    async userQuorum(contractAddress: string, userAddress: string, roothash: string): Promise<string> {
         switch (governanceType(contractAddress)) {
             case GovernanceType.ENERGY:
                 return this.energyAbi.energyAmountForUser(userAddress);
             case GovernanceType.TOKEN_SNAPSHOT:
-                return this.merkleService.getAddressBalance(contractAddress, proposalId, userAddress);
+                return this.merkleService.getAddressBalance(roothash, userAddress);
         }
     }
 }
