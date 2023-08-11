@@ -72,7 +72,8 @@ export class GovernanceProposalResolver {
         @AuthUser() user: UserAuthResult,
         @Parent() governanceProposal: GovernanceProposalModel
     ): Promise<string> {
-        const userQuorum = await this.governanceQuorum.userQuorum(governanceProposal.contractAddress, user.address, governanceProposal.rootHash);
+        const rootHash = await this.governanceAbi.proposalRootHash(governanceProposal.contractAddress, governanceProposal.proposalId);
+        const userQuorum = await this.governanceQuorum.userQuorum(governanceProposal.contractAddress, user.address, rootHash);
         return new BigNumber(userQuorum).integerValue().toFixed();
     }
 }
