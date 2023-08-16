@@ -568,7 +568,8 @@
             "USDC-8d4068": "5000000",
             "WEGLD-d7c6bb": "100000000000000000"
         },
-        "COMPOUND_TRANSACTION_FEE": 0.000365144
+        "COMPOUND_TRANSACTION_FEE": 0.000365144,
+        "OUTDATED_ENERGY_THRESHOLD_PERCENTAGE": 1
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"

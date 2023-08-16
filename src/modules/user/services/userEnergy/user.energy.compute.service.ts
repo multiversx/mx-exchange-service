@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { scAddress } from '../../../../config';
+import { constantsConfig, scAddress } from '../../../../config';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { ContractType, OutdatedContract, UserDualYiledToken, UserLockedFarmTokenV2 } from '../../models/user.model';
@@ -260,6 +260,10 @@ export class UserEnergyComputeService {
                 )
                 .toFixed();
         }
-        return currentUserEnergy.amount !== currentClaimProgress.energy.amount;
+        const energyDifference = new BigNumber(currentUserEnergy.amount).minus(currentClaimProgress.energy.amount).abs();
+        const averageAmount = new BigNumber(currentUserEnergy.amount).plus(currentClaimProgress.energy.amount).dividedBy(2);
+        const relativeDifferencePercentage = energyDifference.dividedBy(averageAmount).multipliedBy(100);
+
+        return relativeDifferencePercentage.isGreaterThan(constantsConfig.OUTDATED_ENERGY_THRESHOLD_PERCENTAGE);
     }
 }

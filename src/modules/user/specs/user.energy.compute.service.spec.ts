@@ -194,6 +194,38 @@ describe('UserEnergyComputeService', () => {
             }
         })).toBe(false);
     });
+    it('difference under 1%', () => {
+        const UserEnergyCompute = module.get<UserEnergyComputeService>(UserEnergyComputeService);
+        expect(UserEnergyCompute).toBeDefined();
+        expect(UserEnergyCompute.isEnergyOutdated({
+            amount: '99.1',
+            lastUpdateEpoch: 10,
+            totalLockedTokens: '5',
+        }, {
+            week: 10,
+            energy: {
+                amount: '105',
+                lastUpdateEpoch: 9,
+                totalLockedTokens: '5',
+            }
+        })).toBe(false);
+    });
+    it('difference equals 1%', () => {
+        const UserEnergyCompute = module.get<UserEnergyComputeService>(UserEnergyComputeService);
+        expect(UserEnergyCompute).toBeDefined();
+        expect(UserEnergyCompute.isEnergyOutdated({
+            amount: '101.0050251256281395',
+            lastUpdateEpoch: 10,
+            totalLockedTokens: '5',
+        }, {
+            week: 10,
+            energy: {
+                amount: '105',
+                lastUpdateEpoch: 9,
+                totalLockedTokens: '5',
+            }
+        })).toBe(false);
+    });
 
 
 });
