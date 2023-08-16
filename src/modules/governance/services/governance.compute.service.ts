@@ -1,15 +1,43 @@
 import { Injectable } from '@nestjs/common';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { VoteType } from '../models/governance.proposal.model';
-import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
+import { ElasticQuery } from '../../../helpers/entities/elastic/elastic.query';
+import { QueryType } from '../../../helpers/entities/elastic/query.type';
+import { ElasticSortOrder } from '../../../helpers/entities/elastic/elastic.sort.order';
+import { ElasticService } from '../../../helpers/elastic.service';
+import { GovernanceSetterService } from './governance.setter.service';
+import { convertToVoteType } from '../event-decoder/governance.event';
 
 @Injectable()
 export class GovernanceComputeService {
     constructor(
-        private readonly mxAPI: MXApiService,
+        private readonly elasticService: ElasticService,
+        private readonly governanceSetter: GovernanceSetterService,
     ) {
+    }
+
+    async userVotedProposalsWithVoteType(scAddress: string, userAddress: string, proposalId: number): Promise<VoteType> {
+        const currentCachedProposalVoteTypes = await this.userVoteTypesForContract(scAddress, userAddress);
+        const cachedVoteType = currentCachedProposalVoteTypes.find((proposal) => proposal.proposalId === proposalId);
+        if (cachedVoteType) {
+            return cachedVoteType.vote;
+        }
+
+        const log = await this.getVoteLog('vote', scAddress, userAddress, proposalId);
+        if (log.length === 0) {
+            return VoteType.NotVoted;
+        }
+        const voteEvent = log[0]._source.events.find((event) => event.identifier === 'vote');
+        const voteType =atob(voteEvent.topics[0]);
+        const proposalVoteType = {
+            proposalId,
+            vote: convertToVoteType(voteType),
+        }
+        currentCachedProposalVoteTypes.push(proposalVoteType);
+        await this.governanceSetter.userVoteTypesForContract(scAddress, userAddress, currentCachedProposalVoteTypes);
+        return proposalVoteType.vote;
     }
 
     @ErrorLoggerAsync({ className: GovernanceComputeService.name })
@@ -18,27 +46,38 @@ export class GovernanceComputeService {
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async userVotedProposalsWithVoteType(scAddress: string, userAddress: string): Promise<{ proposalId: number, vote: VoteType }[]> {
-        return await this.userVotedProposalsWithVoteTypeRaw(scAddress, userAddress);
+    async userVoteTypesForContract(scAddress: string, userAddress: string): Promise<{ proposalId: number, vote: VoteType }[]> {
+        return [];
     }
 
-    async userVotedProposalsWithVoteTypeRaw(scAddress: string, userAddress: string): Promise<{ proposalId: number, vote: VoteType }[]> {
-        const txs = await this.mxAPI.getTransactionsWithOptions({
-            sender: userAddress,
-            receiver: scAddress,
-            functionName: 'vote',
-        })
-        const proposalWithVoteType = []
-        for (const tx of txs) {
-            if (tx.status !== 'success') {
-                continue;
-            }
-            const data = Buffer.from(tx.data, 'base64').toString('utf-8').split('@');
-            proposalWithVoteType.push({
-                proposalId: parseInt(data[1], 16),
-                vote: data[2] === "" ? VoteType.UpVote : parseInt(data[2]),
-            });
-        }
-        return proposalWithVoteType;
+    private async getVoteLog(
+        eventName: string,
+        scAddress: string,
+        callerAddress: string,
+        proposalId: number,
+    ): Promise<any[]> {
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapter.condition.must = [
+            QueryType.Term('address', scAddress),
+            QueryType.Nested('events', [
+                QueryType.Term('events.address', scAddress),
+                QueryType.Term('events.identifier', eventName),
+                //TODO: fix to add also following filters
+                // QueryType.Term('events.topics[0]', callerAddress),
+                // QueryType.Term('events.topics.2', 1), // 'Ag=='
+            ]),
+        ];
+
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.ascending },
+        ];
+
+
+        const list = await this.elasticService.getList(
+            'logs',
+            '',
+            elasticQueryAdapter,
+        );
+        return list;
     }
 }
