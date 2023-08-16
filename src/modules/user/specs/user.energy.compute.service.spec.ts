@@ -179,8 +179,6 @@ describe('UserEnergyComputeService', () => {
     });
     it('current user energy values are older', () => {
         const UserEnergyCompute = module.get<UserEnergyComputeService>(UserEnergyComputeService);
-
-        expect(UserEnergyCompute).toBeDefined();
         expect(UserEnergyCompute.isEnergyOutdated({
             amount: '100',
             lastUpdateEpoch: 10,
