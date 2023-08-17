@@ -2,12 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../../../config';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import {
-    ContractType,
-    OutdatedContract,
-    UserDualYiledToken,
-    UserLockedFarmTokenV2,
-} from '../../models/user.model';
+import { ContractType, OutdatedContract, UserDualYiledToken, UserLockedFarmTokenV2 } from '../../models/user.model';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
 import { PaginationArgs } from '../../../dex.model';
 import { ProxyService } from '../../../proxy/services/proxy.service';
@@ -16,7 +11,9 @@ import { FarmVersion } from '../../../farm/models/farm.model';
 import { farmVersion } from '../../../../utils/farm.utils';
 import { BigNumber } from 'bignumber.js';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import {
+    WeeklyRewardsSplittingAbiService,
+} from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
@@ -237,10 +234,12 @@ export class UserEnergyComputeService {
             const epochsDiff =
                 currentUserEnergy.lastUpdateEpoch -
                 currentClaimProgress.energy.lastUpdateEpoch;
-            currentUserEnergy.amount = new BigNumber(currentUserEnergy.amount)
+            currentClaimProgress.energy.amount = new BigNumber(
+                currentClaimProgress.energy.amount,
+            )
                 .minus(
                     new BigNumber(epochsDiff).multipliedBy(
-                        currentUserEnergy.totalLockedTokens,
+                        currentClaimProgress.energy.totalLockedTokens,
                     ),
                 )
                 .toFixed();
@@ -253,12 +252,10 @@ export class UserEnergyComputeService {
             const epochsDiff =
                 currentClaimProgress.energy.lastUpdateEpoch -
                 currentUserEnergy.lastUpdateEpoch;
-            currentClaimProgress.energy.amount = new BigNumber(
-                currentClaimProgress.energy.amount,
-            )
+            currentUserEnergy.amount = new BigNumber(currentUserEnergy.amount)
                 .minus(
                     new BigNumber(epochsDiff).multipliedBy(
-                        currentClaimProgress.energy.totalLockedTokens,
+                        currentUserEnergy.totalLockedTokens,
                     ),
                 )
                 .toFixed();
