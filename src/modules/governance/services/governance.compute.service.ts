@@ -9,6 +9,8 @@ import { ElasticSortOrder } from '../../../helpers/entities/elastic/elastic.sort
 import { ElasticService } from '../../../helpers/elastic.service';
 import { GovernanceSetterService } from './governance.setter.service';
 import { convertToVoteType } from '../event-decoder/governance.event';
+import { Address } from '@multiversx/sdk-core/out';
+import { decimalToHex } from '../../../utils/token.converters';
 
 @Injectable()
 export class GovernanceComputeService {
@@ -26,14 +28,14 @@ export class GovernanceComputeService {
         }
 
         const log = await this.getVoteLog('vote', scAddress, userAddress, proposalId);
-        if (log.length === 0) {
-            return VoteType.NotVoted;
+        let voteType = VoteType.NotVoted;
+        if (log.length > 0) {
+            const voteEvent = log[0]._source.events.find((event) => event.identifier === 'vote');
+            voteType = convertToVoteType(atob(voteEvent.topics[0]));
         }
-        const voteEvent = log[0]._source.events.find((event) => event.identifier === 'vote');
-        const voteType =atob(voteEvent.topics[0]);
         const proposalVoteType = {
             proposalId,
-            vote: convertToVoteType(voteType),
+            vote: voteType,
         }
         currentCachedProposalVoteTypes.push(proposalVoteType);
         await this.governanceSetter.userVoteTypesForContract(scAddress, userAddress, currentCachedProposalVoteTypes);
@@ -57,14 +59,19 @@ export class GovernanceComputeService {
         proposalId: number,
     ): Promise<any[]> {
         const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+        const encodedProposalId = Buffer.from(decimalToHex(proposalId), 'hex').toString('base64');
+        const encodedCallerAddress = Buffer.from(Address.fromString(callerAddress).hex(), 'hex').toString('base64');
         elasticQueryAdapter.condition.must = [
-            QueryType.Term('address', scAddress),
+            QueryType.Match('address', scAddress),
             QueryType.Nested('events', [
-                QueryType.Term('events.address', scAddress),
-                QueryType.Term('events.identifier', eventName),
-                //TODO: fix to add also following filters
-                // QueryType.Term('events.topics[0]', callerAddress),
-                // QueryType.Term('events.topics.2', 1), // 'Ag=='
+                QueryType.Match('events.address', scAddress),
+                QueryType.Match('events.identifier', eventName),
+            ]),
+            QueryType.Nested('events', [
+                QueryType.Match('events.topics', encodedProposalId),
+            ]),
+            QueryType.Nested('events', [
+                QueryType.Match('events.topics', encodedCallerAddress),
             ]),
         ];
 

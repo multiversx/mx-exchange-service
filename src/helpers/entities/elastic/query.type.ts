@@ -4,7 +4,6 @@ import { NestedQuery } from './nested.query';
 import { QueryOperator } from './query.operator';
 import { RangeQuery } from './range.query';
 import { WildcardQuery } from './wildcard.query';
-import { TermQuery } from './term.query';
 
 export class QueryType {
     static Match = (
@@ -46,12 +45,4 @@ export class QueryType {
     ): NestedQuery => {
         return new NestedQuery(key, value, operator).getQuery();
     };
-
-    static Term = (
-        key: string,
-        value: any | undefined,
-        operator: QueryOperator | undefined = undefined,
-    ): TermQuery => {
-        return new TermQuery(key, value, operator).getQuery();
-    }
 }
