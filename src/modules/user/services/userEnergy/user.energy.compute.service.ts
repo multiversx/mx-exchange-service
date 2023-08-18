@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../../../config';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { ContractType, OutdatedContract, UserDualYiledToken, UserLockedFarmTokenV2 } from '../../models/user.model';
+import {
+    ContractType,
+    OutdatedContract,
+    UserDualYiledToken,
+    UserLockedFarmTokenV2,
+} from '../../models/user.model';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
 import { PaginationArgs } from '../../../dex.model';
 import { ProxyService } from '../../../proxy/services/proxy.service';
@@ -11,9 +16,7 @@ import { FarmVersion } from '../../../farm/models/farm.model';
 import { farmVersion } from '../../../../utils/farm.utils';
 import { BigNumber } from 'bignumber.js';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import {
-    WeeklyRewardsSplittingAbiService,
-} from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
@@ -105,12 +108,16 @@ export class UserEnergyComputeService {
                 this.energyAbi.energyEntryForUser(userAddress),
             ]);
 
-        if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
+        const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
+
+        if (
+            this.isEnergyOutdated(userEnergy, currentClaimProgress) ||
+            outdatedClaimProgress
+        ) {
             return new OutdatedContract({
                 address: contractAddress,
                 type: ContractType.Farm,
-                claimProgressOutdated:
-                    currentClaimProgress.week !== currentWeek,
+                claimProgressOutdated: outdatedClaimProgress,
                 farmToken: farmToken.collection,
             });
         }
@@ -130,11 +137,16 @@ export class UserEnergyComputeService {
                 this.energyAbi.energyEntryForUser(userAddress),
             ]);
 
-        if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
+        const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
+
+        if (
+            this.isEnergyOutdated(userEnergy, currentClaimProgress) ||
+            outdatedClaimProgress
+        ) {
             return new OutdatedContract({
                 address: scAddress.feesCollector,
                 type: ContractType.FeesCollector,
-                claimProgressOutdated: currentClaimProgress.week != currentWeek,
+                claimProgressOutdated: outdatedClaimProgress,
             });
         }
         return new OutdatedContract();
