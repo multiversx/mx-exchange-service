@@ -68,6 +68,12 @@ import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.
 import { StakingProxyAbiService } from '../../staking-proxy/services/staking.proxy.abi.service';
 import { UserEnergyComputeService } from '../services/userEnergy/user.energy.compute.service';
 import { MXProxyServiceProvider } from '../../../services/multiversx-communication/mx.proxy.service.mock';
+import { Address } from '@multiversx/sdk-core/out';
+import { scAddress } from 'src/config';
+import { ContractType } from '../models/user.model';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -195,5 +201,46 @@ describe('UserEnergyComputeService', () => {
         })).toBe(false);
     });
 
+    it('should get outdated contracts on old claim progress', async () => {
+        const service = module.get<UserEnergyComputeService>(
+            UserEnergyComputeService,
+        );
+        const weeklyRewardsSplittingAbi =
+            module.get<WeeklyRewardsSplittingAbiService>(
+                WeeklyRewardsSplittingAbiService,
+            );
+        const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
+            WeekTimekeepingAbiService,
+        );
+        const energyAbi = module.get<EnergyAbiService>(EnergyAbiService);
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'currentClaimProgress',
+        ).mockResolvedValue({
+            week: 9,
+            energy: {
+                amount: '105',
+                lastUpdateEpoch: 9,
+                totalLockedTokens: '5',
+            },
+        });
+        jest.spyOn(weekTimekeepingAbi, 'currentWeek').mockResolvedValue(10);
+        jest.spyOn(energyAbi, 'energyEntryForUser').mockResolvedValue({
+            amount: '100',
+            lastUpdateEpoch: 10,
+            totalLockedTokens: '5',
+        });
+
+        const outdatedContracts =
+            await service.computeFeesCollectorOutdatedContract(
+                Address.Zero().bech32(),
+            );
+
+        expect(outdatedContracts).toEqual({
+            address: scAddress.feesCollector,
+            type: ContractType.FeesCollector,
+            claimProgressOutdated: true,
+        });
+    });
 
 });
