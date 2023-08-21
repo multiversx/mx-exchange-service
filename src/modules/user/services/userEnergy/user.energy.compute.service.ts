@@ -108,12 +108,16 @@ export class UserEnergyComputeService {
                 this.energyAbi.energyEntryForUser(userAddress),
             ]);
 
-        if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
+        const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
+
+        if (
+            this.isEnergyOutdated(userEnergy, currentClaimProgress) ||
+            outdatedClaimProgress
+        ) {
             return new OutdatedContract({
                 address: contractAddress,
                 type: ContractType.Farm,
-                claimProgressOutdated:
-                    currentClaimProgress.week !== currentWeek,
+                claimProgressOutdated: outdatedClaimProgress,
                 farmToken: farmToken.collection,
             });
         }
@@ -133,11 +137,16 @@ export class UserEnergyComputeService {
                 this.energyAbi.energyEntryForUser(userAddress),
             ]);
 
-        if (this.isEnergyOutdated(userEnergy, currentClaimProgress)) {
+        const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
+
+        if (
+            this.isEnergyOutdated(userEnergy, currentClaimProgress) ||
+            outdatedClaimProgress
+        ) {
             return new OutdatedContract({
                 address: scAddress.feesCollector,
                 type: ContractType.FeesCollector,
-                claimProgressOutdated: currentClaimProgress.week != currentWeek,
+                claimProgressOutdated: outdatedClaimProgress,
             });
         }
         return new OutdatedContract();
@@ -237,10 +246,12 @@ export class UserEnergyComputeService {
             const epochsDiff =
                 currentUserEnergy.lastUpdateEpoch -
                 currentClaimProgress.energy.lastUpdateEpoch;
-            currentUserEnergy.amount = new BigNumber(currentUserEnergy.amount)
+            currentClaimProgress.energy.amount = new BigNumber(
+                currentClaimProgress.energy.amount,
+            )
                 .minus(
                     new BigNumber(epochsDiff).multipliedBy(
-                        currentUserEnergy.totalLockedTokens,
+                        currentClaimProgress.energy.totalLockedTokens,
                     ),
                 )
                 .toFixed();
@@ -253,12 +264,10 @@ export class UserEnergyComputeService {
             const epochsDiff =
                 currentClaimProgress.energy.lastUpdateEpoch -
                 currentUserEnergy.lastUpdateEpoch;
-            currentClaimProgress.energy.amount = new BigNumber(
-                currentClaimProgress.energy.amount,
-            )
+            currentUserEnergy.amount = new BigNumber(currentUserEnergy.amount)
                 .minus(
                     new BigNumber(epochsDiff).multipliedBy(
-                        currentClaimProgress.energy.totalLockedTokens,
+                        currentUserEnergy.totalLockedTokens,
                     ),
                 )
                 .toFixed();

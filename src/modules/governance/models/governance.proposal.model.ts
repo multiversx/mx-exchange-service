@@ -1,7 +1,8 @@
-import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { ArgsType, Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { GovernanceAction } from './governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
-import { ProposalVotes } from './proposal.votes.model'; //Assuming you will create GovernanceAction model separately
+import { ProposalVotes } from './governance.proposal.votes.model';
+import { GovernanceDescriptionUnion } from './governance.union';
 
 export enum GovernanceProposalStatus {
     None ='None',
@@ -14,22 +15,53 @@ export enum GovernanceProposalStatus {
 
 registerEnumType(GovernanceProposalStatus, { name: 'GovernanceProposalStatus' });
 
+export enum VoteType {
+    UpVote,
+    DownVote,
+    DownVetoVote,
+    AbstainVote,
+    NotVoted,
+}
+
+registerEnumType(GovernanceProposalStatus, { name: 'VoteType' });
+
 @ObjectType()
-export class Description {
+export class DescriptionV0 {
     @Field()
     title: string;
-    @Field()
-    hash: string;
     @Field(() => Int)
     strapiId: number;
+    @Field()
+    version: number;
 
-    constructor(init: Partial<Description>) {
+    constructor(init: Partial<DescriptionV0>) {
         Object.assign(this, init);
     }
 }
 
 @ObjectType()
-export class GovernanceProposal {
+export class DescriptionV1 extends DescriptionV0 {
+    @Field()
+    shortDescription: string;
+
+    constructor(init: Partial<DescriptionV1>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ArgsType()
+export class VoteArgs {
+    @Field()
+    contractAddress: string;
+    @Field()
+    proposalId: number;
+    @Field()
+    vote: VoteType;
+}
+
+@ObjectType()
+export class GovernanceProposalModel {
     @Field()
     contractAddress: string;
     @Field()
@@ -38,12 +70,12 @@ export class GovernanceProposal {
     proposer: string;
     @Field(() => [GovernanceAction])
     actions: GovernanceAction[];
-    @Field( () => Description)
-    description: Description;
+    @Field( () => GovernanceDescriptionUnion)
+    description: typeof GovernanceDescriptionUnion;
     @Field(() => EsdtTokenPaymentModel)
     feePayment: EsdtTokenPaymentModel;
     @Field()
-    minimumQuorum: string;
+    minimumQuorumPercentage: string;
     @Field(() => Int)
     votingDelayInBlocks: number;
     @Field(() => Int)
@@ -51,17 +83,27 @@ export class GovernanceProposal {
     @Field(() => Int)
     withdrawPercentageDefeated: number;
     @Field()
-    totalEnergy: string;
+    totalQuorum: string;
+    @Field()
+    totalVotingPower: string;
     @Field(() => Int)
     proposalStartBlock: number;
     @Field()
     status: GovernanceProposalStatus;
+    @Field()
+    rootHash: string;
+    @Field()
+    totalBalance: string;
     @Field( () => ProposalVotes )
     votes: ProposalVotes;
     @Field()
     hasVoted?: boolean;
+    @Field()
+    userVoteType?: VoteType;
+    @Field()
+    userVotingPower?: string;
 
-    constructor(init: Partial<GovernanceProposal>) {
+    constructor(init: Partial<GovernanceProposalModel>) {
         Object.assign(this, init);
     }
 }

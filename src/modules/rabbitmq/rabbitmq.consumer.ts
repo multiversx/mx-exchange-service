@@ -13,42 +13,42 @@ import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.s
 import {
     AddLiquidityEvent,
     AddLiquidityProxyEvent,
+    ClaimMultiEvent,
     ClaimRewardsProxyEvent,
     CompoundRewardsProxyEvent,
     CreatePairEvent,
     DepositEvent,
-    EnterFarmProxyEvent,
-    EsdtLocalBurnEvent,
-    EsdtLocalMintEvent,
-    TRANSACTION_EVENTS,
-    ExitFarmProxyEvent,
-    FARM_EVENTS,
-    MetabondingEvent,
-    METABONDING_EVENTS,
-    PairProxyEvent,
-    PAIR_EVENTS,
-    PRICE_DISCOVERY_EVENTS,
-    PROXY_EVENTS,
-    RemoveLiquidityEvent,
-    ROUTER_EVENTS,
-    SwapEvent,
-    WithdrawEvent,
-    SIMPLE_LOCK_ENERGY_EVENTS,
-    EnergyEvent,
-    RawEvent,
-    FEES_COLLECTOR_EVENTS,
     DepositSwapFeesEvent,
-    UpdateGlobalAmountsEvent,
-    UpdateUserEnergyEvent,
-    ClaimMultiEvent,
-    WEEKLY_REWARDS_SPLITTING_EVENTS,
-    TOKEN_UNSTAKE_EVENTS,
-    UserUnlockedTokensEvent,
+    EnergyEvent,
+    EnterFarmProxyEvent,
     ESCROW_EVENTS,
+    EscrowCancelTransferEvent,
     EscrowLockFundsEvent,
     EscrowWithdrawEvent,
-    EscrowCancelTransferEvent,
+    EsdtLocalBurnEvent,
+    EsdtLocalMintEvent,
+    ExitFarmProxyEvent,
+    FARM_EVENTS,
+    FEES_COLLECTOR_EVENTS,
+    METABONDING_EVENTS,
+    MetabondingEvent,
+    PAIR_EVENTS,
+    PairProxyEvent,
     PairSwapEnabledEvent,
+    PRICE_DISCOVERY_EVENTS,
+    PROXY_EVENTS,
+    RawEvent,
+    RemoveLiquidityEvent,
+    ROUTER_EVENTS,
+    SIMPLE_LOCK_ENERGY_EVENTS,
+    SwapEvent,
+    TOKEN_UNSTAKE_EVENTS,
+    TRANSACTION_EVENTS,
+    UpdateGlobalAmountsEvent,
+    UpdateUserEnergyEvent,
+    UserUnlockedTokensEvent,
+    WEEKLY_REWARDS_SPLITTING_EVENTS,
+    WithdrawEvent,
 } from '@multiversx/sdk-exchange';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
@@ -60,6 +60,9 @@ import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.ser
 import { AnalyticsWriteService } from 'src/services/analytics/services/analytics.write.service';
 import { RouterAbiService } from '../router/services/router.abi.service';
 import { EscrowHandlerService } from './handlers/escrow.handler.service';
+import { governanceContractsAddresses } from '../../utils/governance';
+import { GOVERNANCE_EVENTS, VoteEvent } from '../governance/event-decoder/governance.event';
+import { GovernanceHandlerService } from './handlers/governance.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -82,6 +85,7 @@ export class RabbitMqConsumer {
         private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
         private readonly escrowHandler: EscrowHandlerService,
         private readonly analyticsWrite: AnalyticsWriteService,
+        private readonly governanceHandler: GovernanceHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -116,7 +120,11 @@ export class RabbitMqConsumer {
                     WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS &&
                 rawEvent.name !==
                     WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY &&
-                rawEvent.name !== TOKEN_UNSTAKE_EVENTS.USER_UNLOCKED_TOKENS
+                rawEvent.name !== TOKEN_UNSTAKE_EVENTS.USER_UNLOCKED_TOKENS &&
+                rawEvent.name !== GOVERNANCE_EVENTS.UP &&
+                rawEvent.name !== GOVERNANCE_EVENTS.DOWN &&
+                rawEvent.name !== GOVERNANCE_EVENTS.ABSTAIN &&
+                rawEvent.name !== GOVERNANCE_EVENTS.DOWN_VETO
             ) {
                 this.logger.info('Event skipped', {
                     address: rawEvent.address,
@@ -292,6 +300,15 @@ export class RabbitMqConsumer {
                         new EscrowCancelTransferEvent(rawEvent),
                     );
                     break;
+                case GOVERNANCE_EVENTS.UP:
+                case GOVERNANCE_EVENTS.DOWN:
+                case GOVERNANCE_EVENTS.DOWN_VETO:
+                case GOVERNANCE_EVENTS.ABSTAIN:
+                    await this.governanceHandler.handleGovernanceVoteEvent(
+                        new VoteEvent(rawEvent),
+                        rawEvent.name,
+                    );
+                    break;
             }
         }
 
@@ -315,6 +332,7 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.feesCollector);
         this.filterAddresses.push(scAddress.tokenUnstake);
         this.filterAddresses.push(scAddress.escrow);
+        this.filterAddresses.push(...governanceContractsAddresses());
     }
 
     private isFilteredAddress(address: string): boolean {

@@ -50,10 +50,10 @@
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
         "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a",
         "governance": {
-            "energy": [
-                "erd1qqqqqqqqqqqqqpgqu5u5kgmjm067dhwdfe4l3flwmadm2nqlczfskufug3"
-            ],
-            "token": []
+            "energy": [],
+            "tokenSnapshot": [
+                "erd1qqqqqqqqqqqqqpgq2rkrhef99hhk3ynfcxevcj86axr3sgmcczfstkmdwr"
+            ]
         }
     },
     "farms": {

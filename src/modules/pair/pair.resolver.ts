@@ -2,7 +2,6 @@ import { PairService } from './services/pair.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import {
-    BPConfig,
     FeeDestination,
     LiquidityPosition,
     LockedTokensInfo,
@@ -26,6 +25,8 @@ import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
+import { constantsConfig } from 'src/config';
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -138,6 +139,16 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async feesCollectorCutPercentage(
+        @Parent() parent: PairModel,
+    ): Promise<number> {
+        const fees = await this.pairAbi.feesCollectorCutPercentage(
+            parent.address,
+        );
+        return fees / constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
+    }
+
+    @ResolveField()
     async type(@Parent() parent: PairModel): Promise<string> {
         return this.pairCompute.type(parent.address);
     }
@@ -172,18 +183,8 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async externSwapGasLimit(@Parent() parent: PairModel): Promise<number> {
-        return this.pairAbi.externSwapGasLimit(parent.address);
-    }
-
-    @ResolveField()
     async initialLiquidityAdder(@Parent() parent: PairModel): Promise<string> {
         return this.pairAbi.initialLiquidityAdder(parent.address);
-    }
-
-    @ResolveField()
-    async transferExecGasLimit(@Parent() parent: PairModel): Promise<number> {
-        return this.pairAbi.transferExecGasLimit(parent.address);
     }
 
     @ResolveField()
@@ -191,6 +192,21 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<FeeDestination[]> {
         return this.pairAbi.feeDestinations(parent.address);
+    }
+
+    @ResolveField()
+    async feesCollector(
+        @Parent() parent: PairModel,
+    ): Promise<FeesCollectorModel> {
+        const feesCollectorAddress = await this.pairAbi.feesCollectorAddress(
+            parent.address,
+        );
+
+        return feesCollectorAddress
+            ? new FeesCollectorModel({
+                  address: feesCollectorAddress,
+              })
+            : undefined;
     }
 
     @Query(() => String)
@@ -251,13 +267,6 @@ export class PairResolver {
         @Args('address') address: string,
     ): Promise<string> {
         return this.pairAbi.routerAddress(address);
-    }
-
-    @Query(() => String)
-    async getRouterOwnerManagedAddress(
-        @Args('address') address: string,
-    ): Promise<string> {
-        return this.pairAbi.routerOwnerAddress(address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -331,31 +340,13 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => String)
-    async getNumSwapsByAddress(
-        @Args('pairAddress') pairAddress: string,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<number> {
-        return this.pairAbi.numSwapsByAddress(pairAddress, user.address);
-    }
-
-    @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => String)
-    async getNumAddsByAddress(
-        @Args('pairAddress') pairAddress: string,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<string> {
-        return this.pairAbi.numAddsByAddress(pairAddress, user.address);
-    }
-
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async whitelist(
         @Args() args: WhitelistArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(args.pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.whitelist(args);
     }
 
@@ -365,7 +356,7 @@ export class PairResolver {
         @Args() args: WhitelistArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(args.pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.removeWhitelist(args);
     }
 
@@ -378,7 +369,7 @@ export class PairResolver {
         @Args('secondTokenID') secondTokenID: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.addTrustedSwapPair(
             pairAddress,
             swapPairAddress,
@@ -395,7 +386,7 @@ export class PairResolver {
         @Args('secondTokenID') secondTokenID: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.removeTrustedSwapPair(
             pairAddress,
             firstTokenID,
@@ -405,49 +396,21 @@ export class PairResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async setTransferExecGasLimit(
-        @Args('pairAddress') pairAddress: string,
-        @Args('gasLimit') gasLimit: string,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
-        return this.transactionService.setTransferExecGasLimit(
-            pairAddress,
-            gasLimit,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setExternSwapGasLimit(
-        @Args('pairAddress') pairAddress: string,
-        @Args('gasLimit') gasLimit: string,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
-        return this.transactionService.setExternSwapGasLimit(
-            pairAddress,
-            gasLimit,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async pause(
+    async pausePair(
         @Args('pairAddress') pairAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.pause(pairAddress);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async resume(
+    async resumePair(
         @Args('pairAddress') pairAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.resume(pairAddress);
     }
 
@@ -457,7 +420,7 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.setStateActiveNoSwaps(pairAddress);
     }
 
@@ -469,7 +432,7 @@ export class PairResolver {
         @Args('specialFeePercent') specialFeePercent: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.setFeePercents(
             pairAddress,
             totalFeePercent,
@@ -479,59 +442,12 @@ export class PairResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async setMaxObservationsPerRecord(
-        @Args('pairAddress') pairAddress: string,
-        @Args('maxObservationsPerRecord') maxObservationsPerRecord: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
-        return this.transactionService.setMaxObservationsPerRecord(
-            pairAddress,
-            maxObservationsPerRecord,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setBPSwapConfig(
-        @Args('pairAddress') pairAddress: string,
-        @Args('config') config: BPConfig,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
-        return this.transactionService.setBPSwapConfig(pairAddress, config);
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setBPRemoveConfig(
-        @Args('pairAddress') pairAddress: string,
-        @Args('config') config: BPConfig,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
-        return this.transactionService.setBPRemoveConfig(pairAddress, config);
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setBPAddConfig(
-        @Args('pairAddress') pairAddress: string,
-        @Args('config') config: BPConfig,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
-        return this.transactionService.setBPAddConfig(pairAddress, config);
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
     async setLockingDeadlineEpoch(
         @Args('pairAddress') pairAddress: string,
         @Args('newDeadline') newDeadline: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.setLockingDeadlineEpoch(
             pairAddress,
             newDeadline,
@@ -545,7 +461,7 @@ export class PairResolver {
         @Args('newAddress') newAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.setLockingScAddress(
             pairAddress,
             newAddress,
@@ -559,7 +475,18 @@ export class PairResolver {
         @Args('newEpoch') newEpoch: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.pairService.requireOwner(pairAddress, user.address);
+        await this.pairService.requireOwner(user.address);
         return this.transactionService.setUnlockEpoch(pairAddress, newEpoch);
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Query(() => TransactionModel, {
+        description:
+            'Generate transaction to set the fees collector address and fees cut percentage for a pair',
+    })
+    async setupFeesCollector(
+        @Args('pairAddress') pairAddress: string,
+    ): Promise<TransactionModel> {
+        return this.transactionService.setupFeesCollector(pairAddress);
     }
 }

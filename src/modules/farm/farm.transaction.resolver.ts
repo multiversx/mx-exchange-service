@@ -143,7 +143,7 @@ export class FarmTransactionResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async pause(
+    async pauseFarm(
         @Args('farmAddress') farmAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
@@ -157,7 +157,7 @@ export class FarmTransactionResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async resume(
+    async resumeFarm(
         @Args('farmAddress') farmAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {

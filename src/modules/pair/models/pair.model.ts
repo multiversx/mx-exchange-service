@@ -1,8 +1,9 @@
-import { ObjectType, Field, ArgsType, Int, InputType } from '@nestjs/graphql';
+import { ObjectType, Field, ArgsType, Int } from '@nestjs/graphql';
 import { PaginationArgs } from '../../dex.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
+import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -40,20 +41,6 @@ export class LockedTokensInfo {
     }
 }
 
-@ObjectType('BPConfig')
-@InputType('BPConfigInput')
-export class BPConfig {
-    @Field()
-    protectStopBlock: string;
-    @Field()
-    volumePercent: string;
-    @Field()
-    maxNumActionsPerAddress: string;
-
-    constructor(init?: Partial<BPConfig>) {
-        Object.assign(this, init);
-    }
-}
 @ObjectType()
 export class PairModel {
     @Field()
@@ -116,6 +103,11 @@ export class PairModel {
     @Field()
     specialFeePercent: number;
 
+    @Field({
+        description: 'Percentage of special fees that go to the fees collector',
+    })
+    feesCollectorCutPercentage: number;
+
     @Field(() => [String])
     trustedSwapPairs: string[];
 
@@ -135,16 +127,16 @@ export class PairModel {
     whitelistedManagedAddresses: string[];
 
     @Field()
-    externSwapGasLimit: string;
-
-    @Field({ nullable: true })
-    transferExecGasLimit: string;
-
-    @Field()
     initialLiquidityAdder: string;
 
     @Field(() => [FeeDestination])
     feeDestinations: FeeDestination[];
+
+    @Field(() => FeesCollectorModel, {
+        nullable: true,
+        description: 'Fees collector set for this pair',
+    })
+    feesCollector: FeesCollectorModel;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);
