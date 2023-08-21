@@ -581,12 +581,11 @@ export class PairAbiService
             [],
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().map((v) => {
+
+        return response.firstValue.valueOf().map((value) => {
             return new FeeDestination({
-                address: new Address(
-                    response.firstValue.valueOf()[0].field0,
-                ).bech32(),
-                tokenID: response.firstValue.valueOf()[0].field1.toString(),
+                address: new Address(value.field0).bech32(),
+                tokenID: value.field1.toString(),
             });
         });
     }
