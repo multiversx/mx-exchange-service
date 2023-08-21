@@ -267,6 +267,16 @@ export class StakingComputeService {
             }
         }
 
+        if (optimalCompoundIterations === 0) {
+            return new OptimalCompoundModel({
+                optimalProfit: 0,
+                interval: 0,
+                days: 0,
+                hours: 0,
+                minutes: 0,
+            });
+        }
+
         /*
             Compute optimal compound frequency expressed in hours and minutes:
                 freqDays = (timeInterval/OptimalCompound)
