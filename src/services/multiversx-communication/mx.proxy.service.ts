@@ -1,4 +1,4 @@
-import { AbiRegistry, Address, SmartContract, SmartContractAbi } from '@multiversx/sdk-core';
+import { AbiRegistry, Address, SmartContract } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { abiConfig, mxConfig, scAddress } from '../../config';
 import Agent, { HttpsAgent } from 'agentkeepalive';
@@ -251,7 +251,7 @@ export class MXProxyService {
         const abiRegistry = AbiRegistry.create(json);
         const newSC = new SmartContract({
             address: Address.fromString(contractAddress),
-            abi: new SmartContractAbi(abiRegistry, [contractInterface]),
+            abi: abiRegistry,
         });
         const key = `${contractInterface}.${contractAddress}`;
         MXProxyService.smartContracts[key] = newSC;
