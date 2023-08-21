@@ -1,4 +1,4 @@
-FROM node:12.22.0-alpine3.12 as build
+FROM node:18.17.1-alpine3.18 as build
 WORKDIR /app
 
 ENV PATH /app/node_modules/.bin:$PATH
@@ -16,7 +16,7 @@ RUN npm ci
 COPY . ./
 RUN npm run build
 
-FROM node:12.22.0-alpine3.12
+FROM node:18.17.1-alpine3.18
 WORKDIR /app
 COPY --from=build /app /app
 
