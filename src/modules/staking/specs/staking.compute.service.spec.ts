@@ -161,4 +161,27 @@ describe('StakingComputeService', () => {
             }),
         );
     });
+
+    it('should NOT compute optimal compound frequency', async () => {
+        const service = module.get<StakingComputeService>(
+            StakingComputeService,
+        );
+        jest.spyOn(service, 'stakeFarmAPR').mockResolvedValue('0.10');
+        const optimalCompoundFrequency =
+            await service.computeOptimalCompoundFrequency(
+                Address.Zero().bech32(),
+                '100000000000000000',
+                365,
+            );
+
+        expect(optimalCompoundFrequency).toEqual(
+            new OptimalCompoundModel({
+                optimalProfit: 0,
+                interval: 0,
+                days: 0,
+                hours: 0,
+                minutes: 0,
+            }),
+        );
+    });
 });
