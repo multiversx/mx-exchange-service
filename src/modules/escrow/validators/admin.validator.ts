@@ -1,4 +1,4 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import { ForbiddenError } from 'apollo-server-express';
 import { UserAuthResult } from 'src/modules/auth/user.auth.result';
 import { SCPermissions } from '../models/escrow.model';
@@ -8,7 +8,7 @@ import { EscrowAbiService } from '../services/escrow.abi.service';
 export class EscrowAdminValidator implements PipeTransform {
     constructor(private readonly escrowAbi: EscrowAbiService) {}
 
-    async transform(value: UserAuthResult, metadata: ArgumentMetadata) {
+    async transform(value: UserAuthResult) {
         const permissions = await this.escrowAbi.addressPermission(
             value.address,
         );

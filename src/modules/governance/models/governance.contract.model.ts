@@ -23,7 +23,7 @@ export class GovernanceTokenSnapshotContract {
     @Field(() => [GovernanceProposalModel])
     proposals: GovernanceProposalModel[];
     @Field(() => Int)
-    vetoPercentageLimit: number = 30;
+    vetoPercentageLimit = 30;
 
     constructor(init: Partial<GovernanceTokenSnapshotContract>) {
         Object.assign(this, init);

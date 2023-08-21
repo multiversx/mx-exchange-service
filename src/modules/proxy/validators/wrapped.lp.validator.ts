@@ -1,4 +1,4 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { RemoveLiquidityProxyArgs } from '../models/proxy-pair.args';
 import { ProxyService } from '../services/proxy.service';
@@ -11,10 +11,7 @@ export class WrappedLpValidationPipe implements PipeTransform {
         private readonly proxyPairAbi: ProxyPairAbiService,
     ) {}
 
-    async transform(
-        value: RemoveLiquidityProxyArgs,
-        metadata: ArgumentMetadata,
-    ) {
+    async transform(value: RemoveLiquidityProxyArgs) {
         if (value.wrappedLpTokenNonce < 1) {
             throw new UserInputError('invalid meta esdt token');
         }

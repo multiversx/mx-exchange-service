@@ -22,7 +22,7 @@ export class FarmServiceBaseMock {
         return Tokens(farmingToken.identifier);
     }
 
-    async isFarmToken(tokenID: string): Promise<boolean> {
+    async isFarmToken(): Promise<boolean> {
         return true;
     }
 

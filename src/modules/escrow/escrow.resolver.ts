@@ -141,7 +141,7 @@ export class EscrowResolver {
     async cancelEscrowTransfer(
         @Args('sender') sender: string,
         @Args('receiver') receiver: string,
-        @AuthUser(EscrowAdminValidator) _user: UserAuthResult,
+        @AuthUser(EscrowAdminValidator) user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.escrowTransaction.cancelTransfer(sender, receiver);
     }

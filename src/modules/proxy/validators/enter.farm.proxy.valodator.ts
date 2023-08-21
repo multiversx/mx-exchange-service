@@ -1,4 +1,4 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { EnterFarmProxyArgs } from '../models/proxy-farm.args';
 import { ProxyService } from '../services/proxy.service';
@@ -11,7 +11,7 @@ export class EnterFarmProxyValidationPipe implements PipeTransform {
         private readonly proxyFarmAbi: ProxyFarmAbiService,
     ) {}
 
-    async transform(value: EnterFarmProxyArgs, metadata: ArgumentMetadata) {
+    async transform(value: EnterFarmProxyArgs) {
         if (value.tokens[0].nonce < 1) {
             throw new UserInputError('invalid meta esdt token');
         }
