@@ -397,12 +397,4 @@ export class FarmAbiServiceV2
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
-
-    async getBurnGasLimitRaw(farmAddress: string): Promise<string | undefined> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getBurnGasLimit();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
-    }
 }

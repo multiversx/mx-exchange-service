@@ -14,6 +14,8 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { oneHour } from 'src/helpers/helpers';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { IFarmAbiService } from './interfaces';
+import { farmVersion } from 'src/utils/farm.utils';
+import { FarmVersion } from '../../models/farm.model';
 
 export class FarmAbiService
     extends GenericAbiService
@@ -330,7 +332,15 @@ export class FarmAbiService
     }
 
     async getBurnGasLimitRaw(farmAddress: string): Promise<string | undefined> {
-        return undefined;
+        if (farmVersion(farmAddress) === FarmVersion.V1_2) {
+            return undefined;
+        }
+
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getBurnGasLimit();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     @ErrorLoggerAsync({
