@@ -38,7 +38,7 @@ export abstract class FarmComputeService implements IFarmComputeService {
         return await this.computeFarmLockedValueUSD(farmAddress);
     }
 
-    async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
+    async computeFarmLockedValueUSD(_farmAddress: string): Promise<string> {
         return '0';
     }
 
