@@ -14,7 +14,6 @@ import {
 import { EscrowTransactionService } from './services/escrow.transaction.service';
 import { SenderCooldownValidator } from './validators/sender.cooldown.validator';
 import { TransferTokensValidator } from './validators/transfer.tokens.validator';
-import { EscrowAdminValidator } from './validators/admin.validator';
 import { ForbiddenError } from 'apollo-server-express';
 import { EscrowAbiService } from './services/escrow.abi.service';
 
@@ -141,8 +140,14 @@ export class EscrowResolver {
     async cancelEscrowTransfer(
         @Args('sender') sender: string,
         @Args('receiver') receiver: string,
-        @AuthUser(EscrowAdminValidator) user: UserAuthResult,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
+        const permissions = await this.escrowAbi.addressPermission(
+            user.address,
+        );
+        if (!permissions.includes(SCPermissions.ADMIN)) {
+            throw new ForbiddenError('User is not an admin');
+        }
         return this.escrowTransaction.cancelTransfer(sender, receiver);
     }
 
