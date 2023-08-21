@@ -2,7 +2,7 @@ GraphQl service to provide backend environment for xExchange
 
 ## Dependencies
 
-1. Node.js > @16.x.x is required to be installed [docs](https://nodejs.org/en/)
+1. Node.js > @18.x.x is required to be installed [docs](https://nodejs.org/en/)
 2. Redis Server is required to be installed [docs](https://redis.io/).
 3. RabbitMQ Server is required to be installed [docs](https://www.rabbitmq.com/download.html).
 4. MongoDB Server is required to be installed [docs](https://www.mongodb.com/docs/manual/installation).
