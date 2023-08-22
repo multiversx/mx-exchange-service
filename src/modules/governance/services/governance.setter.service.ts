@@ -25,9 +25,9 @@ export class GovernanceSetterService extends GenericSetterService {
         );
     }
 
-    async userVotedProposalsWithVoteType(scAddress: string, userAddress: string, value: { proposalId: number, vote: VoteType }[]): Promise<string> {
+    async userVoteTypesForContract(scAddress: string, userAddress: string, value: { proposalId: number, vote: VoteType }[]): Promise<string> {
         return await this.setData(
-            this.getCacheKey('userVotedProposalsWithVoteType', scAddress, userAddress),
+            this.getCacheKey('userVoteTypesForContract', scAddress, userAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
