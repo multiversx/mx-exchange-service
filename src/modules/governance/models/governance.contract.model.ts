@@ -1,17 +1,13 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { GovernanceProposal } from './governance.proposal.model';
-
-export enum GovernanceType {
-    ENERGY = 'energy',
-    TOKEN = 'token',
-}
+import { GovernanceProposalModel } from './governance.proposal.model';
+import { EsdtToken } from '../../tokens/models/esdtToken.model';
 
 @ObjectType()
-export class GovernanceContract {
+export class GovernanceTokenSnapshotContract {
     @Field()
     address: string;
-    @Field()
-    minEnergyForPropose: string;
+    @Field(() => Int)
+    shard: number;
     @Field()
     minFeeForPropose: string;
     @Field()
@@ -21,17 +17,30 @@ export class GovernanceContract {
     @Field(() => Int)
     votingPeriodInBlocks: number;
     @Field()
-    feeTokenId: string;
+    feeToken: EsdtToken;
     @Field(() => Int)
     withdrawPercentageDefeated: number;
-    @Field(() => [GovernanceProposal])
-    proposals: GovernanceProposal[];
+    @Field(() => [GovernanceProposalModel])
+    proposals: GovernanceProposalModel[];
+    @Field(() => Int)
+    vetoPercentageLimit: number = 30;
+
+    constructor(init: Partial<GovernanceTokenSnapshotContract>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class GovernanceEnergyContract extends GovernanceTokenSnapshotContract {
+    @Field()
+    minEnergyForPropose: string;
     @Field()
     feesCollectorAddress: string;
     @Field()
     energyFactoryAddress: string;
 
-    constructor(init: Partial<GovernanceContract>) {
+    constructor(init: Partial<GovernanceEnergyContract>) {
+        super(init);
         Object.assign(this, init);
     }
 }

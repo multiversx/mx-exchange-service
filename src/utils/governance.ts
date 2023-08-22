@@ -1,13 +1,20 @@
-import { GovernanceType } from '../modules/governance/models/governance.contract.model';
 import { scAddress } from '../config';
 import { GovernanceProposalStatus } from '../modules/governance/models/governance.proposal.model';
+import { registerEnumType } from '@nestjs/graphql';
+
+export enum GovernanceType {
+    ENERGY = 'energy',
+    TOKEN_SNAPSHOT = 'tokenSnapshot',
+}
+
+registerEnumType(GovernanceType, { name: 'GovernanceType' });
 
 const toTypeEnum = (type: string): GovernanceType => {
     switch (type) {
-        case 'energy':
+        case GovernanceType.ENERGY.toString():
             return GovernanceType.ENERGY;
-        case 'token':
-            return GovernanceType.TOKEN;
+        case GovernanceType.TOKEN_SNAPSHOT.toString():
+            return GovernanceType.TOKEN_SNAPSHOT;
         default:
             return undefined;
     }

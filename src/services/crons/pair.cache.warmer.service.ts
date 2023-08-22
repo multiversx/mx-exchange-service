@@ -159,45 +159,63 @@ export class PairCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cachePairsInfo(): Promise<void> {
-        const pairsAddresses = await this.routerAbi.pairsAddress();
+        Locker.lock('pairsInfo', async () => {
+            const pairsAddresses = await this.routerAbi.pairsAddress();
 
-        for (const pairAddress of pairsAddresses) {
-            const [
-                feesAPR,
-                state,
-                type,
-                feeState,
-                totalFeePercent,
-                specialFeePercent,
-            ] = await Promise.all([
-                this.pairComputeService.computeFeesAPR(pairAddress),
-                this.pairAbi.getStateRaw(pairAddress),
-                this.pairComputeService.computeTypeFromTokens(pairAddress),
-                this.pairAbi.getFeeStateRaw(pairAddress),
-                this.pairAbi.getTotalFeePercentRaw(pairAddress),
-                this.pairAbi.getSpecialFeePercentRaw(pairAddress),
-            ]);
+            for (const pairAddress of pairsAddresses) {
+                const [
+                    feesAPR,
+                    state,
+                    type,
+                    feeState,
+                    totalFeePercent,
+                    specialFeePercent,
+                    feesCollectorAddress,
+                    feesCollectorCutPercentage,
+                ] = await Promise.all([
+                    this.pairComputeService.computeFeesAPR(pairAddress),
+                    this.pairAbi.getStateRaw(pairAddress),
+                    this.pairComputeService.computeTypeFromTokens(pairAddress),
+                    this.pairAbi.getFeeStateRaw(pairAddress),
+                    this.pairAbi.getTotalFeePercentRaw(pairAddress),
+                    this.pairAbi.getSpecialFeePercentRaw(pairAddress),
+                    this.pairAbi.getFeesCollectorAddressRaw(pairAddress),
+                    this.pairAbi.getFeesCollectorCutPercentageRaw(pairAddress),
+                ]);
 
-            const cachedKeys = await Promise.all([
-                this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
-                this.pairSetterService.setState(pairAddress, state),
-                this.pairSetterService.setType(pairAddress, type),
-                this.pairSetterService.setFeeState(pairAddress, feeState),
-                this.pairSetterService.setTotalFeePercent(
-                    pairAddress,
-                    new BigNumber(totalFeePercent)
-                        .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
-                        .toNumber(),
-                ),
-                this.pairSetterService.setSpecialFeePercent(
-                    pairAddress,
-                    new BigNumber(specialFeePercent)
-                        .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
-                        .toNumber(),
-                ),
-            ]);
-            await this.deleteCacheKeys(cachedKeys);
-        }
+                const cachedKeys = await Promise.all([
+                    this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
+                    this.pairSetterService.setState(pairAddress, state),
+                    this.pairSetterService.setType(pairAddress, type),
+                    this.pairSetterService.setFeeState(pairAddress, feeState),
+                    this.pairSetterService.setTotalFeePercent(
+                        pairAddress,
+                        new BigNumber(totalFeePercent)
+                            .dividedBy(
+                                constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS,
+                            )
+                            .toNumber(),
+                    ),
+                    this.pairSetterService.setSpecialFeePercent(
+                        pairAddress,
+                        new BigNumber(specialFeePercent)
+                            .dividedBy(
+                                constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS,
+                            )
+                            .toNumber(),
+                    ),
+                    this.pairSetterService.setFeesCollectorAddress(
+                        pairAddress,
+                        feesCollectorAddress,
+                    ),
+                    this.pairSetterService.setFeesCollectorCutPercentage(
+                        pairAddress,
+                        feesCollectorCutPercentage,
+                    ),
+                ]);
+                await this.deleteCacheKeys(cachedKeys);
+            }
+        });
     }
 
     @Cron('*/12 * * * * *') // Update prices and reserves every 12 seconds

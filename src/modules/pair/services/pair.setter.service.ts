@@ -321,17 +321,6 @@ export class PairSetterService extends GenericSetterService {
         );
     }
 
-    async setExternSwapGasLimit(
-        pairAddress: string,
-        value: string,
-    ): Promise<string> {
-        return await this.setData(
-            this.getCacheKey('externSwapGasLimit', pairAddress),
-            value,
-            oneHour(),
-        );
-    }
-
     async setWhitelistedAddresses(
         pairAddress: string,
         value: string[],
@@ -351,11 +340,27 @@ export class PairSetterService extends GenericSetterService {
         );
     }
 
-    async setTransferExecGasLimit(pairAddress: string, value: string) {
+    async setFeesCollectorAddress(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
         return await this.setData(
-            this.getCacheKey('transferExecGasLimit', pairAddress),
+            this.getCacheKey('feesCollectorAddress', pairAddress),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async setFeesCollectorCutPercentage(
+        pairAddress: string,
+        value: number,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('feesCollectorCutPercentage', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 }
