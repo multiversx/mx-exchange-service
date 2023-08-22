@@ -211,7 +211,6 @@ export class GovernanceTokenSnapshotAbiService
                 proposalStartBlock: proposal.proposal_start_block.toNumber(),
                 minimumQuorumPercentage: proposal.minimum_quorum.div(100).toFixed(2),
                 totalQuorum: proposal.total_quorum.toFixed(),
-                totalVotingPower: proposal.total_quorum.toFixed(), //TODO: remove this when totalVotingPower will be added
                 votingDelayInBlocks: proposal.voting_delay_in_blocks.toNumber(),
                 votingPeriodInBlocks: proposal.voting_period_in_blocks.toNumber(),
                 withdrawPercentageDefeated: proposal.withdraw_percentage_defeated.toNumber(),
