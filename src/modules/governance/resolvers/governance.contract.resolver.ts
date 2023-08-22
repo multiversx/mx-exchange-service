@@ -48,6 +48,11 @@ export class GovernanceTokenSnapshotContractResolver {
         return this.governanceAbi.withdrawPercentageDefeated(contract.address);
     }
 
+    @ResolveField()
+    async votingPowerDecimals(@Parent() contract: GovernanceTokenSnapshotContract): Promise<number> {
+        return this.governanceAbi.votingPowerDecimals(contract.address);
+    }
+
     @ResolveField(() => [GovernanceProposalModel])
     async proposals(
         @Parent() contract: GovernanceTokenSnapshotContract,

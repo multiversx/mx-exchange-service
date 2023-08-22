@@ -16,6 +16,10 @@ import { GovernanceTokenSnapshotMerkleService } from './governance.token.snapsho
 import { GovernanceDescriptionService } from './governance.description.service';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
+import { GovernanceQuorumService } from './governance.quorum.service';
+import { EnergyService } from '../../energy/services/energy.service';
+import { TokenGetterService } from '../../tokens/services/token.getter.service';
+import { EsdtToken } from '../../tokens/models/esdtToken.model';
 
 @Injectable()
 export class GovernanceTokenSnapshotAbiService
@@ -25,6 +29,8 @@ export class GovernanceTokenSnapshotAbiService
         protected readonly mxProxy: MXProxyService,
         protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
         protected readonly governanceDescription: GovernanceDescriptionService,
+        protected readonly governanceQuorum: GovernanceQuorumService,
+        protected readonly tokenGetter: TokenGetterService,
     ) {
         super(mxProxy);
     }
@@ -129,8 +135,9 @@ export class GovernanceTokenSnapshotAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async feeTokenId(scAddress: string): Promise<string> {
-        return await this.feeTokenIdRaw(scAddress);
+    async feeTokenId(scAddress: string): Promise<EsdtToken> {
+        const feeTokenId = await this.feeTokenIdRaw(scAddress)
+        return await this.tokenGetter.getTokenMetadata(feeTokenId);
     }
 
     async feeTokenIdRaw(scAddress: string): Promise<string> {
@@ -223,22 +230,12 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     async totalVotingPowerRaw(scAddress: string, proposalId: number): Promise<string> {
-        //TODO: remove this after totalVotingPower will be implemented
         const proposal = await this.proposals(scAddress);
         const proposalIndex = proposal.findIndex((p) => p.proposalId === proposalId);
         if (proposalIndex === -1) {
             throw new Error(`Proposal with id ${proposalId} not found`);
         }
-        return proposal[proposalIndex].totalQuorum;
-
-        const contract = await this.mxProxy.getGovernanceSmartContract(
-            scAddress,
-            this.type
-        );
-        const interaction = contract.methods.getTotalVotingPower([proposalId]);
-        const response = await this.getGenericData(interaction);
-
-        return response.firstValue.valueOf().toFixed();
+        return this.smoothing_function(proposal[proposalIndex].totalQuorum);
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
@@ -352,6 +349,18 @@ export class GovernanceTokenSnapshotAbiService
         return stringsArray.join('');
     }
 
+    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'governance',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async userVotingPower(contractAddress: string, proposalId: number, userAddress: string) {
+        const rootHash = await this.proposalRootHash(contractAddress, proposalId);
+        const userQuorum = await this.governanceQuorum.userQuorum(contractAddress, userAddress, rootHash);
+        return this.smoothing_function(userQuorum);
+    }
+
     @ErrorLoggerAsync({
         className: GovernanceTokenSnapshotAbiService.name,
         logArgs: true,
@@ -383,6 +392,24 @@ export class GovernanceTokenSnapshotAbiService
             .buildTransaction()
             .toPlainObject();
     }
+
+    protected smoothing_function(quorum: string): string {
+        return new BigNumber(quorum).toFixed();
+    }
+
+    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'governance',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async votingPowerDecimals(scAddress: string): Promise<number> {
+        const feeToken = await this.feeTokenId(scAddress);
+        const oneUnit = new BigNumber(10).pow(feeToken.decimals);
+        const smoothedOneUnit = this.smoothing_function(oneUnit.toFixed());
+        const stringRepresentation = new BigNumber(smoothedOneUnit).toString();
+        return stringRepresentation.length - 1;
+    }
 }
 
 @Injectable()
@@ -392,8 +419,11 @@ export class GovernanceEnergyAbiService
         protected readonly mxProxy: MXProxyService,
         protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
         protected readonly governanceDescription: GovernanceDescriptionService,
+        protected readonly governanceQuorum: GovernanceQuorumService,
+        protected readonly tokenGetter: TokenGetterService,
+        private readonly energyService: EnergyService,
     ) {
-        super(mxProxy, governanceMerkle, governanceDescription);
+        super(mxProxy, governanceMerkle, governanceDescription, governanceQuorum, tokenGetter);
         this.type = GovernanceType.ENERGY;
     }
 
@@ -461,6 +491,18 @@ export class GovernanceEnergyAbiService
         return response.firstValue.valueOf().bech32();
     }
 
+    @ErrorLoggerAsync({ className: GovernanceEnergyAbiService.name })
+    @GetOrSetCache({
+        baseKey: 'governance',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async userVotingPower(contractAddress: string, proposalId: number, userAddress: string) {
+        //TODO: retrieve energy from event in case the user already voted
+        const userEnergy = await this.energyService.getUserEnergy(userAddress);
+        return this.smoothing_function(userEnergy.amount);
+    }
+
     @ErrorLoggerAsync({
         className: GovernanceEnergyAbiService.name,
         logArgs: true,
@@ -483,5 +525,9 @@ export class GovernanceEnergyAbiService
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+    }
+
+    protected smoothing_function(quorum: string): string {
+        return new BigNumber(quorum).sqrt().toFixed();
     }
 }

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { governanceContractsAddresses, GovernanceType, governanceType } from '../../../utils/governance';
 import { GovernanceContractsFiltersArgs } from '../models/governance.contracts.filter.args';
 import { GovernanceUnion } from '../models/governance.union';
-import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
 import { GovernanceEnergyContract, GovernanceTokenSnapshotContract } from '../models/governance.contract.model';
 import { GovernanceTokenSnapshotAbiService } from './governance.abi.service';
@@ -14,7 +13,6 @@ export class GovernanceService {
     constructor(
         private readonly governanceAbi: GovernanceTokenSnapshotAbiService,
         private readonly governanceCompute: GovernanceComputeService,
-        private readonly tokenGetter: TokenGetterService,
     ) {
     }
     async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<Array<typeof GovernanceUnion>> {
@@ -71,7 +69,6 @@ export class GovernanceService {
     }
 
     async feeToken(contractAddress: string): Promise<EsdtToken> {
-        const feeTokenId = await this.governanceAbi.feeTokenId(contractAddress);
-        return await this.tokenGetter.getTokenMetadata(feeTokenId);
+        return this.governanceAbi.feeTokenId(contractAddress);
     }
 }

@@ -7,8 +7,6 @@ import { JwtOrNativeAuthGuard } from '../../auth/jwt.or.native.auth.guard';
 import { UserAuthResult } from '../../auth/user.auth.result';
 import { AuthUser } from '../../auth/auth.user';
 import { GovernanceTokenSnapshotAbiService } from '../services/governance.abi.service';
-import { GovernanceQuorumService } from '../services/governance.quorum.service';
-import BigNumber from 'bignumber.js';
 import { GovernanceTokenSnapshotMerkleService } from '../services/governance.token.snapshot.merkle.service';
 
 @Resolver(() => GovernanceProposalModel)
@@ -16,7 +14,6 @@ export class GovernanceProposalResolver {
     constructor(
         private readonly governanceAbi: GovernanceTokenSnapshotAbiService,
         private readonly governanceService: GovernanceService,
-        private readonly governanceQuorum: GovernanceQuorumService,
         private readonly governaneMerkle: GovernanceTokenSnapshotMerkleService,
     ) {
     }
@@ -72,8 +69,6 @@ export class GovernanceProposalResolver {
         @AuthUser() user: UserAuthResult,
         @Parent() governanceProposal: GovernanceProposalModel
     ): Promise<string> {
-        const rootHash = await this.governanceAbi.proposalRootHash(governanceProposal.contractAddress, governanceProposal.proposalId);
-        const userQuorum = await this.governanceQuorum.userQuorum(governanceProposal.contractAddress, user.address, rootHash);
-        return new BigNumber(userQuorum).integerValue().toFixed();
+        return this.governanceAbi.userVotingPower(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
     }
 }
