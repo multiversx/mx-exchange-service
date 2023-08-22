@@ -406,8 +406,7 @@ export class GovernanceTokenSnapshotAbiService
         const feeToken = await this.feeTokenId(scAddress);
         const oneUnit = new BigNumber(10).pow(feeToken.decimals);
         const smoothedOneUnit = this.smoothing_function(oneUnit.toFixed());
-        const stringRepresentation = new BigNumber(smoothedOneUnit).toString();
-        return stringRepresentation.length - 1;
+        return smoothedOneUnit.length - 1;
     }
 }
 
