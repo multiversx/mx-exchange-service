@@ -108,6 +108,10 @@ export class UserEnergyComputeService {
                 this.energyAbi.energyEntryForUser(userAddress),
             ]);
 
+        if (currentClaimProgress.week === 0) {
+            return new OutdatedContract();
+        }
+
         const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
 
         if (
