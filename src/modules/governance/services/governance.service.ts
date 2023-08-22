@@ -62,19 +62,12 @@ export class GovernanceService {
     }
 
     async userVote(contractAddress: string, proposalId: number, userAddress?: string): Promise<VoteType> {
-        const userVotesWithType = await this.governanceCompute.userVotedProposalsWithVoteType(
-            contractAddress, userAddress
-        );
-
-        const voteForProposalId = userVotesWithType.find(
-            value => {
-                return value.proposalId === proposalId
-            }
-        )
-        if (!voteForProposalId) {
+        if (!userAddress) {
             return VoteType.NotVoted
         }
-        return voteForProposalId.vote;
+        return this.governanceCompute.userVotedProposalsWithVoteType(
+            contractAddress, userAddress, proposalId
+        );
     }
 
     async feeToken(contractAddress: string): Promise<EsdtToken> {

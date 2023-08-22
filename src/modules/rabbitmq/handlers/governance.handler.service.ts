@@ -37,7 +37,7 @@ export class GovernanceHandlerService {
         );
         this.invalidatedKeys.push(cacheKey);
 
-        const userVotedProposalsWithVoteType = await this.governanceCompute.userVotedProposalsWithVoteType(event.address, topics.voter);
+        const userVotedProposalsWithVoteType = await this.governanceCompute.userVoteTypesForContract(event.address, topics.voter);
         userVotedProposalsWithVoteType.push({
             proposalId: topics.proposalId,
             vote: convertToVoteType(voteType),
@@ -45,7 +45,7 @@ export class GovernanceHandlerService {
         const uniqueUserVotedProposalsWithVoteType = userVotedProposalsWithVoteType.filter((v, i, a) =>
             a.findIndex(t => (t.proposalId === v.proposalId)) === i
         );
-        cacheKey = await this.governanceSetter.userVotedProposalsWithVoteType(
+        cacheKey = await this.governanceSetter.userVoteTypesForContract(
             event.address,
             topics.voter,
             uniqueUserVotedProposalsWithVoteType,
