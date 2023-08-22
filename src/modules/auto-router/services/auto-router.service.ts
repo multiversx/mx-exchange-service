@@ -148,10 +148,6 @@ export class AutoRouterService {
             this.pairCompute.tokenPriceUSD(tokenOutID),
         ]);
 
-        // let [amountIn, amountOut] = this.isFixedInput(swapType)
-        //     ? [args.amountIn, result]
-        //     : [result, args.amountOut];
-
         let amountIn: string;
         let amountOut: string;
         if (this.isFixedInput(swapType)) {
