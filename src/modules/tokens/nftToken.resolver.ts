@@ -1,4 +1,4 @@
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { AssetsModel } from './models/assets.model';
@@ -12,7 +12,7 @@ export class NftTokenResolver extends GenericResolver {
     }
 
     @Query(() => NftToken)
-    async nftToken(@Args('identifier') identifier: string): Promise<NftToken> {
+    async nftToken(): Promise<NftToken> {
         throw new ApolloError('Query not implemented');
     }
 }

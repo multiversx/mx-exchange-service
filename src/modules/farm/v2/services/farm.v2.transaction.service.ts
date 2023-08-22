@@ -9,7 +9,6 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
     ClaimRewardsArgs,
-    CompoundRewardsArgs,
 } from '../../models/farm.args';
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
@@ -133,10 +132,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             .toPlainObject();
     }
 
-    compoundRewards(
-        sender: string,
-        args: CompoundRewardsArgs,
-    ): Promise<TransactionModel> {
+    compoundRewards(): Promise<TransactionModel> {
         throw new Error('Method not implemented.');
     }
 }

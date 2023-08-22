@@ -8,25 +8,25 @@ import { ProxyAbiService } from '../services/proxy.abi.service';
 import { ProxyFarmAbiService } from '../services/proxy-farm/proxy.farm.abi.service';
 
 export class ProxyAbiServiceMock implements IProxyAbiService {
-    async lockedAssetTokenID(proxyAddress: string): Promise<string[]> {
+    async lockedAssetTokenID(): Promise<string[]> {
         return ['LKMEX-1234'];
     }
 }
 
 export class ProxyPairAbiServiceMock implements IProxyPairAbiService {
-    async wrappedLpTokenID(proxyAddress: string): Promise<string> {
+    async wrappedLpTokenID(): Promise<string> {
         return 'LKLP-abcd';
     }
-    intermediatedPairs(proxyAddress: string): Promise<string[]> {
+    intermediatedPairs(): Promise<string[]> {
         throw new Error('Method not implemented.');
     }
 }
 
 export class ProxyFarmAbiServiceMock implements IProxyFarmAbiService {
-    async wrappedFarmTokenID(proxyAddress: string): Promise<string> {
+    async wrappedFarmTokenID(): Promise<string> {
         return 'LKFARM-1234';
     }
-    intermediatedFarms(proxyAddress: string): Promise<string[]> {
+    intermediatedFarms(): Promise<string[]> {
         throw new Error('Method not implemented.');
     }
 }

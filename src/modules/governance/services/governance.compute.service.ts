@@ -48,7 +48,7 @@ export class GovernanceComputeService {
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async userVoteTypesForContract(scAddress: string, userAddress: string): Promise<{ proposalId: number, vote: VoteType }[]> {
+    async userVoteTypesForContract(_scAddress: string, _userAddress: string): Promise<{ proposalId: number, vote: VoteType }[]> {
         return [];
     }
 

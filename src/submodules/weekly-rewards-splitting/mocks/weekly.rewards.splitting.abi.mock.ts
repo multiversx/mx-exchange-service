@@ -7,34 +7,21 @@ import { WeeklyRewardsSplittingAbiService } from '../services/weekly-rewards-spl
 export class WeeklyRewardsSplittingAbiServiceMock
     implements IWeeklyRewardsSplittingAbiService
 {
-    currentClaimProgress(
-        scAddress: string,
-        user: string,
-    ): Promise<ClaimProgress> {
+    currentClaimProgress(): Promise<ClaimProgress> {
         throw new Error('Method not implemented.');
     }
-    userEnergyForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<EnergyModel> {
+    userEnergyForWeek(): Promise<EnergyModel> {
         throw new Error('Method not implemented.');
     }
 
-    async lastActiveWeekForUser(
-        scAddress: string,
-        userAddress: string,
-    ): Promise<number> {
+    async lastActiveWeekForUser(): Promise<number> {
         return 0;
     }
 
-    lastGlobalUpdateWeek(scAddress: string): Promise<number> {
+    lastGlobalUpdateWeek(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    async totalRewardsForWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<EsdtTokenPayment[]> {
+    async totalRewardsForWeek(): Promise<EsdtTokenPayment[]> {
         return [
             new EsdtTokenPayment({
                 amount: '100000000000000000000',
@@ -50,13 +37,10 @@ export class WeeklyRewardsSplittingAbiServiceMock
             }),
         ];
     }
-    async totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
+    async totalEnergyForWeek(): Promise<string> {
         return '1000';
     }
-    async totalLockedTokensForWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<string> {
+    async totalLockedTokensForWeek(): Promise<string> {
         return '1000';
     }
 }

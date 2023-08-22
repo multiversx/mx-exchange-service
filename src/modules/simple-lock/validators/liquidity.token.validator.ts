@@ -1,4 +1,4 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { SimpleLockService } from '../services/simple.lock.service';
@@ -11,7 +11,7 @@ export class LiquidityTokensValidationPipe implements PipeTransform {
         private readonly simpleLockAbi: SimpleLockAbiService,
     ) {}
 
-    async transform(value: InputTokenModel[], metadata: ArgumentMetadata) {
+    async transform(value: InputTokenModel[]) {
         const simpleLockAddress =
             await this.simpleLockService.getSimpleLockAddressFromInputTokens(
                 value,

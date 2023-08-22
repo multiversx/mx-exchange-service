@@ -1,43 +1,27 @@
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 import { AnalyticsQueryService } from '../services/analytics.query.service';
 
 export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
-    getPDlatestValue({
-        series,
-        metric,
-    }: AnalyticsQueryArgs): Promise<HistoricDataModel> {
+    getPDlatestValue(): Promise<HistoricDataModel> {
         throw new Error('Method not implemented.');
     }
-    getPDCloseValues({
-        series,
-        metric,
-        timeBucket,
-    }: {
-        series: any;
-        metric: any;
-        timeBucket: any;
-    }): Promise<HistoricDataModel[]> {
+    getPDCloseValues(): Promise<HistoricDataModel[]> {
         throw new Error('Method not implemented.');
     }
-    getAggregatedValue(args: AnalyticsQueryArgs): Promise<string> {
+    getAggregatedValue(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    getLatestCompleteValues(
-        args: AnalyticsQueryArgs,
-    ): Promise<HistoricDataModel[]> {
+    getLatestCompleteValues(): Promise<HistoricDataModel[]> {
         throw new Error('Method not implemented.');
     }
-    getSumCompleteValues(
-        args: AnalyticsQueryArgs,
-    ): Promise<HistoricDataModel[]> {
+    getSumCompleteValues(): Promise<HistoricDataModel[]> {
         throw new Error('Method not implemented.');
     }
-    getValues24h(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    getValues24h(): Promise<HistoricDataModel[]> {
         throw new Error('Method not implemented.');
     }
-    getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    getValues24hSum(): Promise<HistoricDataModel[]> {
         throw new Error('Method not implemented.');
     }
 }

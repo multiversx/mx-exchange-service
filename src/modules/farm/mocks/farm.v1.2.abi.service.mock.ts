@@ -8,7 +8,7 @@ export class FarmAbiServiceMockV1_2
     extends FarmAbiServiceMock
     implements IFarmAbiServiceV1_2
 {
-    lockedAssetFactoryAddress(farmAddress: string): Promise<string> {
+    lockedAssetFactoryAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
     async farmingTokenReserve(farmAddress: string): Promise<string> {
@@ -18,18 +18,16 @@ export class FarmAbiServiceMockV1_2
         }
         return farm.farmingTokenReserve;
     }
-    async undistributedFees(farmAddress: string): Promise<string> {
+    async undistributedFees(): Promise<string> {
         return '100';
     }
-    async currentBlockFee(farmAddress: string): Promise<string> {
+    async currentBlockFee(): Promise<string> {
         return '0';
     }
-    async lockedRewardAprMuliplier(farmAddress: string): Promise<number> {
+    async lockedRewardAprMuliplier(): Promise<number> {
         return 2;
     }
-    farmMigrationConfiguration(
-        farmAddress: string,
-    ): Promise<FarmMigrationConfig> {
+    farmMigrationConfiguration(): Promise<FarmMigrationConfig> {
         throw new Error('Method not implemented.');
     }
 }

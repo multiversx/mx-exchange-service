@@ -1,4 +1,4 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { scAddress } from 'src/config';
 import { AddLiquidityProxyArgs } from '../models/proxy-pair.args';
@@ -8,7 +8,7 @@ import { ProxyPairAbiService } from '../services/proxy-pair/proxy.pair.abi.servi
 export class LiquidityTokensValidationPipe implements PipeTransform {
     constructor(private readonly proxyPairAbi: ProxyPairAbiService) {}
 
-    async transform(value: AddLiquidityProxyArgs, metadata: ArgumentMetadata) {
+    async transform(value: AddLiquidityProxyArgs) {
         if (value.tokens.length < 2) {
             throw new UserInputError('invalid number of tokens');
         }

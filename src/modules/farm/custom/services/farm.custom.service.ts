@@ -1,6 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
-import { CalculateRewardsArgs } from '../../models/farm.args';
 import { RewardsModel } from '../../models/farm.model';
 import { FarmTokenAttributesModel } from '../../models/farmTokenAttributes.model';
 import { FarmCustomAbiService } from './farm.custom.abi.service';
@@ -22,15 +21,10 @@ export class FarmCustomService extends FarmServiceBase {
         super(farmAbi, farmCompute, contextGetter, cachingService, tokenGetter);
     }
 
-    getRewardsForPosition(
-        positon: CalculateRewardsArgs,
-    ): Promise<RewardsModel> {
+    getRewardsForPosition(): Promise<RewardsModel> {
         throw new Error('Method not implemented.');
     }
-    decodeFarmTokenAttributes(
-        identifier: string,
-        attributes: string,
-    ): FarmTokenAttributesModel {
+    decodeFarmTokenAttributes(): FarmTokenAttributesModel {
         throw new Error('Method not implemented.');
     }
 }

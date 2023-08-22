@@ -11,16 +11,16 @@ export class AnalyticsComputeServiceMock implements IAnalyticsComputeService {
     totalValueStakedUSD(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    totalAggregatedRewards(days: number): Promise<string> {
+    totalAggregatedRewards(): Promise<string> {
         throw new Error('Method not implemented.');
     }
     totalLockedMexStakedUSD(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    feeTokenBurned(tokenID: string, time: string): Promise<string> {
+    feeTokenBurned(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    penaltyTokenBurned(tokenID: string, time: string): Promise<string> {
+    penaltyTokenBurned(): Promise<string> {
         throw new Error('Method not implemented.');
     }
 }

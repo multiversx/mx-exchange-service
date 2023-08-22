@@ -63,22 +63,22 @@ export class PairComputeServiceMock implements IPairComputeService {
     async lockedValueUSD(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).lockedValueUSD;
     }
-    firstTokenVolume(pairAddress: string, time: string): Promise<string> {
+    firstTokenVolume(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    secondTokenVolume(pairAddress: string, time: string): Promise<string> {
+    secondTokenVolume(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    volumeUSD(pairAddress: string, time: string): Promise<string> {
+    volumeUSD(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    feesUSD(pairAddress: string, time: string): Promise<string> {
+    feesUSD(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    async feesAPR(pairAddress: string): Promise<string> {
+    async feesAPR(): Promise<string> {
         return '10';
     }
-    type(pairAddress: string): Promise<string> {
+    type(): Promise<string> {
         throw new Error('Method not implemented.');
     }
 

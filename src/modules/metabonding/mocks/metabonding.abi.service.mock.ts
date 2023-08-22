@@ -9,10 +9,10 @@ export class MetabondingAbiServiceMock implements IMetabondingAbiService {
     totalLockedAssetSupply(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    stakedAmountForUser(userAddress: string): Promise<string> {
+    stakedAmountForUser(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    async userEntry(userAddress: string): Promise<UserEntryModel> {
+    async userEntry(): Promise<UserEntryModel> {
         return new UserEntryModel({
             stakedAmount: '0',
             tokenNonce: 0,

@@ -3,68 +3,64 @@ import { IPriceDiscoveryAbiService } from '../services/interfaces';
 import { PriceDiscoveryAbiService } from '../services/price.discovery.abi.service';
 
 export class PriceDiscoveryAbiServiceMock implements IPriceDiscoveryAbiService {
-    async launchedTokenID(priceDiscoveryAddress: string): Promise<string> {
+    async launchedTokenID(): Promise<string> {
         return 'LTOK-123456';
     }
-    async acceptedTokenID(priceDiscoveryAddress: string): Promise<string> {
+    async acceptedTokenID(): Promise<string> {
         return 'ATOK-123456';
     }
-    async redeemTokenID(priceDiscoveryAddress: string): Promise<string> {
+    async redeemTokenID(): Promise<string> {
         return 'RTOK-123456';
     }
-    launchedTokenAmount(priceDiscoveryAddress: string): Promise<string> {
+    launchedTokenAmount(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    acceptedTokenAmount(priceDiscoveryAddress: string): Promise<string> {
+    acceptedTokenAmount(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    launchedTokenRedeemAmount(priceDiscoveryAddress: string): Promise<string> {
+    launchedTokenRedeemAmount(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    acceptedTokenRedeemAmount(priceDiscoveryAddress: string): Promise<string> {
+    acceptedTokenRedeemAmount(): Promise<string> {
         throw new Error('Method not implemented.');
     }
 
-    async startBlock(priceDiscoveryAddress: string): Promise<number> {
+    async startBlock(): Promise<number> {
         return 1;
     }
 
-    async endBlock(priceDiscoveryAddress: string): Promise<number> {
+    async endBlock(): Promise<number> {
         return 10;
     }
 
-    currentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
+    currentPhase(): Promise<PhaseModel> {
         throw new Error('Method not implemented.');
     }
-    minLaunchedTokenPrice(priceDiscoveryAddress: string): Promise<string> {
+    minLaunchedTokenPrice(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    noLimitPhaseDurationBlocks(priceDiscoveryAddress: string): Promise<number> {
+    noLimitPhaseDurationBlocks(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    linearPenaltyPhaseDurationBlocks(
-        priceDiscoveryAddress: string,
-    ): Promise<number> {
+    linearPenaltyPhaseDurationBlocks(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    fixedPenaltyPhaseDurationBlocks(
-        priceDiscoveryAddress: string,
-    ): Promise<number> {
+    fixedPenaltyPhaseDurationBlocks(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    lockingScAddress(priceDiscoveryAddress: string): Promise<string> {
+    lockingScAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    unlockEpoch(priceDiscoveryAddress: string): Promise<number> {
+    unlockEpoch(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    penaltyMinPercentage(priceDiscoveryAddress: string): Promise<number> {
+    penaltyMinPercentage(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    penaltyMaxPercentage(priceDiscoveryAddress: string): Promise<number> {
+    penaltyMaxPercentage(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    fixedPenaltyPercentage(priceDiscoveryAddress: string): Promise<number> {
+    fixedPenaltyPercentage(): Promise<number> {
         throw new Error('Method not implemented.');
     }
 }

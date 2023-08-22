@@ -1,4 +1,4 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { ProxyService } from '../services/proxy.service';
@@ -7,7 +7,7 @@ import { ProxyService } from '../services/proxy.service';
 export class MergeWrappedTokenValidationPipe implements PipeTransform {
     constructor(private readonly proxyService: ProxyService) {}
 
-    async transform(value: InputTokenModel[], metadata: ArgumentMetadata) {
+    async transform(value: InputTokenModel[]) {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             value[0].tokenID,
         );

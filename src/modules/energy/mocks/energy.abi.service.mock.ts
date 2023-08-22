@@ -1,5 +1,4 @@
 import { EnergyType } from '@multiversx/sdk-exchange';
-import BigNumber from 'bignumber.js';
 import { LockOption } from '../models/simple.lock.energy.model';
 import { IEnergyAbiService } from '../services/interfaces';
 import { EnergyAbiService } from '../services/energy.abi.service';
@@ -23,17 +22,13 @@ export class EnergyAbiServiceMock implements IEnergyAbiService {
     async ownerAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    async energyEntryForUser(userAddress: string): Promise<EnergyType> {
+    async energyEntryForUser(): Promise<EnergyType> {
         throw new Error('Method not implemented.');
     }
-    async energyAmountForUser(userAddress: string): Promise<string> {
+    async energyAmountForUser(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    async getPenaltyAmount(
-        tokenAmount: BigNumber,
-        prevLockEpochs: number,
-        epochsToReduce: number,
-    ): Promise<string> {
+    async getPenaltyAmount(): Promise<string> {
         throw new Error('Method not implemented.');
     }
     async isPaused(): Promise<boolean> {

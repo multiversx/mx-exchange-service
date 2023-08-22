@@ -29,7 +29,6 @@ export const convertBinToTimeResolution = (bin: string): TimeResolution => {
     switch (bin) {
         case '30s':
             return TimeResolution.INTERVAL_30_SECONDS;
-        case '30s':
         case '1m':
             return TimeResolution.INTERVAL_1_MINUTE;
         case '10m':

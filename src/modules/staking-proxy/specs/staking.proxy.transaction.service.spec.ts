@@ -17,8 +17,6 @@ import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmAbiServiceMock } from 'src/modules/farm/mocks/farm.abi.service.mock';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
-import { FarmAbiServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.abi.service';
-import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';

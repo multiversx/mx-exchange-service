@@ -4,10 +4,10 @@ import { WeekTimekeepingAbiService } from '../services/week-timekeeping.abi.serv
 export class WeekTimekeepingAbiServiceMock
     implements IWeekTimekeepingAbiService
 {
-    async currentWeek(scAddress: string): Promise<number> {
+    async currentWeek(): Promise<number> {
         return 250;
     }
-    async firstWeekStartEpoch(scAddress: string): Promise<number> {
+    async firstWeekStartEpoch(): Promise<number> {
         return 250;
     }
 }

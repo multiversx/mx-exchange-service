@@ -42,11 +42,11 @@ export class FarmAbiServiceV2
         super(mxProxy, gatewayService, mxApi);
     }
 
-    async getLastErrorMessageRaw(farmAddress: string): Promise<string> {
+    async getLastErrorMessageRaw(): Promise<string> {
         return undefined;
     }
 
-    async getTransferExecGasLimitRaw(farmAddress: string): Promise<string> {
+    async getTransferExecGasLimitRaw(): Promise<string> {
         return undefined;
     }
 
@@ -196,8 +196,9 @@ export class FarmAbiServiceV2
     async lastUndistributedBoostedRewardsCollectWeek(
         farmAddress: string,
     ): Promise<number> {
-        return this.gatewayService.getSCStorageKey(farmAddress,
-            'lastUndistributedBoostedRewardsCollectWeek'
+        return this.gatewayService.getSCStorageKey(
+            farmAddress,
+            'lastUndistributedBoostedRewardsCollectWeek',
         );
     }
 
@@ -395,13 +396,5 @@ export class FarmAbiServiceV2
             ]);
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
-    }
-
-    async getBurnGasLimitRaw(farmAddress: string): Promise<string | undefined> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getBurnGasLimit();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
     }
 }

@@ -43,10 +43,8 @@ export function buildElasticQuery(query: ElasticQuery) {
     };
 
     if (Object.keys(elasticQuery.query.bool).length === 0) {
-        //@ts-ignore
         delete elasticQuery.query.bool;
 
-        //@ts-ignore
         elasticQuery.query['match_all'] = {};
     }
 

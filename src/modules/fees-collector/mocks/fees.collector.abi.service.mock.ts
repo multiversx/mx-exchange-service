@@ -2,7 +2,7 @@ import { FeesCollectorAbiService } from '../services/fees-collector.abi.service'
 import { IFeesCollectorAbiService } from '../services/interfaces';
 
 export class FeesCollectorAbiServiceMock implements IFeesCollectorAbiService {
-    async accumulatedFees(week: number, token: string): Promise<string> {
+    async accumulatedFees(): Promise<string> {
         return '0';
     }
     async lockedTokenID(): Promise<string> {

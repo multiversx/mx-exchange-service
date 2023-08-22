@@ -1,4 +1,4 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from 'apollo-server-express';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { MetabondingAbiService } from '../services/metabonding.abi.service';
@@ -7,7 +7,7 @@ import { MetabondingAbiService } from '../services/metabonding.abi.service';
 export class LockedTokenValidator implements PipeTransform {
     constructor(private readonly metabondingAbi: MetabondingAbiService) {}
 
-    async transform(value: InputTokenModel, metadata: ArgumentMetadata) {
+    async transform(value: InputTokenModel) {
         const lockedAssetTokenID =
             await this.metabondingAbi.lockedAssetTokenID();
 

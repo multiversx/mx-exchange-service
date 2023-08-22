@@ -4,71 +4,67 @@ import { StakingAbiService } from '../services/staking.abi.service';
 import { Address } from '@multiversx/sdk-core/out';
 
 export class StakingAbiServiceMock implements IStakingAbiService {
-    async pairContractAddress(stakeAddress: string): Promise<string> {
+    async pairContractAddress(): Promise<string> {
         return Address.Zero().bech32();
     }
-    async farmTokenID(stakeAddress: string): Promise<string> {
+    async farmTokenID(): Promise<string> {
         return 'STAKETOK-1111';
     }
-    async farmingTokenID(stakeAddress: string): Promise<string> {
+    async farmingTokenID(): Promise<string> {
         return 'WEGLD-123456';
     }
-    async rewardTokenID(stakeAddress: string): Promise<string> {
+    async rewardTokenID(): Promise<string> {
         return 'WEGLD-123456';
     }
-    async farmTokenSupply(stakeAddress: string): Promise<string> {
+    async farmTokenSupply(): Promise<string> {
         return '5256000000000000000';
     }
-    async rewardPerShare(stakeAddress: string): Promise<string> {
+    async rewardPerShare(): Promise<string> {
         return '150000000000000000000';
     }
-    async accumulatedRewards(stakeAddress: string): Promise<string> {
+    async accumulatedRewards(): Promise<string> {
         return '10000000000000000000';
     }
-    async rewardCapacity(stakeAddress: string): Promise<string> {
+    async rewardCapacity(): Promise<string> {
         return '10000000000000000000000';
     }
-    async annualPercentageRewards(stakeAddress: string): Promise<string> {
+    async annualPercentageRewards(): Promise<string> {
         return new BigNumber(1000).toFixed();
     }
-    minUnbondEpochs(stakeAddress: string): Promise<number> {
+    minUnbondEpochs(): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    async perBlockRewardsAmount(stakeAddress: string): Promise<string> {
+    async perBlockRewardsAmount(): Promise<string> {
         return new BigNumber(500000000).toFixed();
     }
-    async lastRewardBlockNonce(stakeAddress: string): Promise<number> {
+    async lastRewardBlockNonce(): Promise<number> {
         return new BigNumber(100).toNumber();
     }
-    async divisionSafetyConstant(stakeAddress: string): Promise<number> {
+    async divisionSafetyConstant(): Promise<number> {
         return new BigNumber(1000000000000).toNumber();
     }
-    async produceRewardsEnabled(stakeAddress: string): Promise<boolean> {
+    async produceRewardsEnabled(): Promise<boolean> {
         return true;
     }
-    burnGasLimit(stakeAddress: string): Promise<string> {
+    burnGasLimit(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    transferExecGasLimit(stakeAddress: string): Promise<string> {
+    transferExecGasLimit(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    state(stakeAddress: string): Promise<string> {
+    state(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    calculateRewardsForGivenPosition(
-        stakeAddress: string,
-        amount: string,
-        attributes: string,
-    ): Promise<BigNumber> {
+    calculateRewardsForGivenPosition(): Promise<BigNumber> {
         throw new Error('Method not implemented.');
     }
-    lockedAssetFactoryAddress(stakeAddress: string): Promise<string> {
+    lockedAssetFactoryAddress(): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    isWhitelisted(stakeAddress: string, scAddress: string): Promise<boolean> {
+    isWhitelisted(): Promise<boolean> {
         throw new Error('Method not implemented.');
     }
-    lastErrorMessage(stakeAddress: string): Promise<string> {
+    lastErrorMessage(): Promise<string> {
         throw new Error('Method not implemented.');
     }
 }
