@@ -1,6 +1,6 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import {
-    GovernanceMexV2ProposalModel,
+    GovernanceLKMEXProposalModel,
     GovernanceProposalModel,
     GovernanceProposalStatus,
     VoteType,
@@ -83,8 +83,8 @@ export class GovernanceProposalResolver {
     }
 }
 
-@Resolver(() => GovernanceMexV2ProposalModel)
-export class GovernanceMexV2ProposalResolver {
+@Resolver(() => GovernanceLKMEXProposalModel)
+export class GovernanceLKMEXProposalResolver {
     constructor(
         private readonly governanceService: GovernanceService,
     ) {
@@ -94,7 +94,7 @@ export class GovernanceMexV2ProposalResolver {
     @ResolveField()
     async hasVoted(
         @AuthUser() user: UserAuthResult,
-        @Parent() governanceProposal: GovernanceMexV2ProposalModel
+        @Parent() governanceProposal: GovernanceLKMEXProposalModel
     ): Promise<boolean> {
         return this.governanceService.hasUserVoted(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
     }
@@ -103,7 +103,7 @@ export class GovernanceMexV2ProposalResolver {
     @ResolveField()
     async userVoteType(
         @AuthUser() user: UserAuthResult,
-        @Parent() governanceProposal: GovernanceMexV2ProposalModel
+        @Parent() governanceProposal: GovernanceLKMEXProposalModel
     ): Promise<VoteType> {
         return this.governanceService.userVote(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
     }

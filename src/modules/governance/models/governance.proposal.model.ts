@@ -109,7 +109,7 @@ export class GovernanceProposalModel {
 }
 
 @ObjectType()
-export class GovernanceMexV2ProposalModel {
+export class GovernanceLKMEXProposalModel {
     @Field()
     contractAddress: string;
     @Field()
@@ -127,7 +127,7 @@ export class GovernanceMexV2ProposalModel {
     @Field()
     turnoutPercentage: string;
 
-    constructor(init: Partial<GovernanceMexV2ProposalModel>) {
+    constructor(init: Partial<GovernanceLKMEXProposalModel>) {
         Object.assign(this, init);
     }
 }
