@@ -9,7 +9,7 @@ export enum GOVERNANCE_EVENTS {
     ABSTAIN = "abstainVoteCast",
 }
 
-export function convertToVoteType(event: GOVERNANCE_EVENTS): VoteType {
+export function convertToVoteType(event: GOVERNANCE_EVENTS | string): VoteType {
     switch(event) {
         case GOVERNANCE_EVENTS.UP:
             return VoteType.UpVote;
