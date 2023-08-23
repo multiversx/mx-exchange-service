@@ -16,10 +16,7 @@ import { GovernanceTokenSnapshotMerkleService } from './governance.token.snapsho
 import { GovernanceDescriptionService } from './governance.description.service';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
-import { GovernanceQuorumService } from './governance.quorum.service';
-import { EnergyService } from '../../energy/services/energy.service';
-import { TokenGetterService } from '../../tokens/services/token.getter.service';
-import { EsdtToken } from '../../tokens/models/esdtToken.model';
+import { decimalToHex } from '../../../utils/token.converters';
 
 @Injectable()
 export class GovernanceTokenSnapshotAbiService
@@ -29,8 +26,6 @@ export class GovernanceTokenSnapshotAbiService
         protected readonly mxProxy: MXProxyService,
         protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
         protected readonly governanceDescription: GovernanceDescriptionService,
-        protected readonly governanceQuorum: GovernanceQuorumService,
-        protected readonly tokenGetter: TokenGetterService,
     ) {
         super(mxProxy);
     }
@@ -135,9 +130,8 @@ export class GovernanceTokenSnapshotAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async feeTokenId(scAddress: string): Promise<EsdtToken> {
-        const feeTokenId = await this.feeTokenIdRaw(scAddress)
-        return await this.tokenGetter.getTokenMetadata(feeTokenId);
+    async feeTokenId(scAddress: string): Promise<string> {
+        return await this.feeTokenIdRaw(scAddress);
     }
 
     async feeTokenIdRaw(scAddress: string): Promise<string> {
@@ -216,25 +210,6 @@ export class GovernanceTokenSnapshotAbiService
                 withdrawPercentageDefeated: proposal.withdraw_percentage_defeated.toNumber(),
             });
         });
-    }
-
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async totalVotingPower(scAddress: string, proposalId: number): Promise<string> {
-        return await this.totalVotingPowerRaw(scAddress, proposalId);
-    }
-
-    async totalVotingPowerRaw(scAddress: string, proposalId: number): Promise<string> {
-        const proposal = await this.proposals(scAddress);
-        const proposalIndex = proposal.findIndex((p) => p.proposalId === proposalId);
-        if (proposalIndex === -1) {
-            throw new Error(`Proposal with id ${proposalId} not found`);
-        }
-        return this.smoothing_function(proposal[proposalIndex].totalQuorum);
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
@@ -339,25 +314,9 @@ export class GovernanceTokenSnapshotAbiService
         const response = await this.getGenericData(interaction);
 
         const stringsArray = response.firstValue.valueOf().map(bn => {
-            let hex = bn.toString(16);
-            if (hex.length === 1) {
-                hex = '0' + hex; // Pad with a leading zero if needed
-            }
-            return hex;
+            return decimalToHex(bn);
         });
         return stringsArray.join('');
-    }
-
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async userVotingPower(contractAddress: string, proposalId: number, userAddress: string) {
-        const rootHash = await this.proposalRootHash(contractAddress, proposalId);
-        const userQuorum = await this.governanceQuorum.userQuorum(contractAddress, userAddress, rootHash);
-        return this.smoothing_function(userQuorum);
     }
 
     @ErrorLoggerAsync({
@@ -391,23 +350,6 @@ export class GovernanceTokenSnapshotAbiService
             .buildTransaction()
             .toPlainObject();
     }
-
-    protected smoothing_function(quorum: string): string {
-        return new BigNumber(quorum).toFixed();
-    }
-
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async votingPowerDecimals(scAddress: string): Promise<number> {
-        const feeToken = await this.feeTokenId(scAddress);
-        const oneUnit = new BigNumber(10).pow(feeToken.decimals);
-        const smoothedOneUnit = this.smoothing_function(oneUnit.toFixed());
-        return smoothedOneUnit.length - 1;
-    }
 }
 
 @Injectable()
@@ -417,11 +359,8 @@ export class GovernanceEnergyAbiService
         protected readonly mxProxy: MXProxyService,
         protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
         protected readonly governanceDescription: GovernanceDescriptionService,
-        protected readonly governanceQuorum: GovernanceQuorumService,
-        protected readonly tokenGetter: TokenGetterService,
-        private readonly energyService: EnergyService,
     ) {
-        super(mxProxy, governanceMerkle, governanceDescription, governanceQuorum, tokenGetter);
+        super(mxProxy, governanceMerkle, governanceDescription);
         this.type = GovernanceType.ENERGY;
     }
 
@@ -489,18 +428,6 @@ export class GovernanceEnergyAbiService
         return response.firstValue.valueOf().bech32();
     }
 
-    @ErrorLoggerAsync({ className: GovernanceEnergyAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async userVotingPower(contractAddress: string, proposalId: number, userAddress: string) {
-        //TODO: retrieve energy from event in case the user already voted
-        const userEnergy = await this.energyService.getUserEnergy(userAddress);
-        return this.smoothing_function(userEnergy.amount);
-    }
-
     @ErrorLoggerAsync({
         className: GovernanceEnergyAbiService.name,
         logArgs: true,
@@ -523,9 +450,5 @@ export class GovernanceEnergyAbiService
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
-    }
-
-    protected smoothing_function(quorum: string): string {
-        return new BigNumber(quorum).sqrt().toFixed();
     }
 }

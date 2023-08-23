@@ -1,15 +1,15 @@
 import { Args, Int, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { GovernanceProposalModel } from '../models/governance.proposal.model';
-import { GovernanceService } from '../services/governance.service';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
 import { GovernanceEnergyContract, GovernanceTokenSnapshotContract } from '../models/governance.contract.model';
 import { GovernanceEnergyAbiService, GovernanceTokenSnapshotAbiService } from '../services/governance.abi.service';
+import { GovernanceEnergyService, GovernanceTokenSnapshotService } from '../services/governance.service';
 
 @Resolver(() => GovernanceTokenSnapshotContract)
 export class GovernanceTokenSnapshotContractResolver {
     constructor(
         protected readonly governanceAbi: GovernanceTokenSnapshotAbiService,
-        protected readonly governanceService: GovernanceService,
+        protected readonly governanceService: GovernanceTokenSnapshotService,
     ) {
     }
 
@@ -50,7 +50,7 @@ export class GovernanceTokenSnapshotContractResolver {
 
     @ResolveField()
     async votingPowerDecimals(@Parent() contract: GovernanceTokenSnapshotContract): Promise<number> {
-        return this.governanceAbi.votingPowerDecimals(contract.address);
+        return this.governanceService.votingPowerDecimals(contract.address);
     }
 
     @ResolveField(() => [GovernanceProposalModel])
@@ -72,7 +72,7 @@ export class GovernanceTokenSnapshotContractResolver {
 export class GovernanceEnergyContractResolver extends GovernanceTokenSnapshotContractResolver {
     constructor(
         protected readonly governanceAbi: GovernanceEnergyAbiService,
-        protected readonly governanceService: GovernanceService,
+        protected readonly governanceService: GovernanceEnergyService,
     ) {
         super(governanceAbi, governanceService);
     }
