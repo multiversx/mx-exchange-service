@@ -12,7 +12,7 @@ import {
 import { GovernanceTokenSnapshotAbiService } from './governance.abi.service';
 import { VoteType } from '../models/governance.proposal.model';
 import { GovernanceComputeService } from './governance.compute.service';
-import { createLkmexProposal } from '../entities/lkmex.proposal';
+import { GovernanceLKMEXProposal } from '../entities/lkmex.proposal';
 
 @Injectable()
 export class GovernanceService {
@@ -51,9 +51,13 @@ export class GovernanceService {
                     );
                    break;
                 case GovernanceType.OLD_ENERGY:
-                    governance.push(
-                        new GovernanceOldEnergyContract(createLkmexProposal(address)),
-                    );
+                    governance.push(new GovernanceOldEnergyContract({
+                        address,
+                        proposals: [{
+                            contractAddress: address,
+                            ...new GovernanceLKMEXProposal().toJSOSN(),
+                        }],
+                    }));
                     break;
             }
 
