@@ -96,7 +96,8 @@ export class GovernanceLKMEXProposalResolver {
         @AuthUser() user: UserAuthResult,
         @Parent() governanceProposal: GovernanceLKMEXProposalModel
     ): Promise<boolean> {
-        return this.governanceService.hasUserVoted(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
+        const userVoteType = await this.governanceService.userVote(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
+        return userVoteType !== VoteType.NotVoted;
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
