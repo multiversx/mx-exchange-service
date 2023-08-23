@@ -107,3 +107,27 @@ export class GovernanceProposalModel {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class GovernanceMexV2ProposalModel {
+    @Field()
+    contractAddress: string;
+    @Field()
+    proposalId: number;
+    @Field( () => GovernanceDescriptionUnion)
+    description: typeof GovernanceDescriptionUnion;
+    @Field( () => ProposalVotes )
+    votes: ProposalVotes;
+    @Field()
+    status: GovernanceProposalStatus;
+    @Field()
+    hasVoted?: boolean;
+    @Field()
+    userVoteType?: VoteType;
+    @Field()
+    turnoutPercentage: string;
+
+    constructor(init: Partial<GovernanceMexV2ProposalModel>) {
+        Object.assign(this, init);
+    }
+}

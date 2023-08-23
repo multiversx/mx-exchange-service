@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { GovernanceProposalModel } from './governance.proposal.model';
+import { GovernanceMexV2ProposalModel, GovernanceProposalModel } from './governance.proposal.model';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
 
 @ObjectType()
@@ -41,6 +41,18 @@ export class GovernanceEnergyContract extends GovernanceTokenSnapshotContract {
 
     constructor(init: Partial<GovernanceEnergyContract>) {
         super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class GovernanceOldEnergyContract {
+    @Field()
+    address: string;
+    @Field(() => [GovernanceMexV2ProposalModel])
+    proposals: GovernanceMexV2ProposalModel[];
+
+    constructor(init: Partial<GovernanceOldEnergyContract>) {
         Object.assign(this, init);
     }
 }

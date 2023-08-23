@@ -18,7 +18,7 @@ import {
 } from './resolvers/governance.contract.resolver';
 import { GovernanceSetterService } from './services/governance.setter.service';
 import { GovernanceQueryResolver } from './resolvers/governance.query.resolver';
-import { GovernanceProposalResolver } from './resolvers/governance.proposal.resolver';
+import { GovernanceMexV2ProposalResolver, GovernanceProposalResolver } from './resolvers/governance.proposal.resolver';
 import { ElasticService } from 'src/helpers/elastic.service';
 
 @Module({
@@ -45,6 +45,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
         GovernanceEnergyContractResolver,
         GovernanceTokenSnapshotContractResolver,
         GovernanceProposalResolver,
+        GovernanceMexV2ProposalResolver,
         ElasticService,
     ],
     exports: [
