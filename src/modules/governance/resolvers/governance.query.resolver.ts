@@ -1,12 +1,12 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { GovernanceContractsFiltersArgs } from '../models/governance.contracts.filter.args';
-import { GovernanceService } from '../services/governance.service';
 import { GovernanceUnion } from '../models/governance.union';
+import { GovernanceTokenSnapshotService } from '../services/governance.service';
 
 @Resolver()
 export class GovernanceQueryResolver {
     constructor(
-        private readonly governanceService: GovernanceService,
+        private readonly governanceService: GovernanceTokenSnapshotService,
     ) {
     }
 

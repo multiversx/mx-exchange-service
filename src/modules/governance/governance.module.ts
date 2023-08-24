@@ -6,7 +6,6 @@ import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.
 import { TokenModule } from '../tokens/token.module';
 import { EnergyModule } from '../energy/energy.module';
 import { GovernanceEnergyAbiService, GovernanceTokenSnapshotAbiService } from './services/governance.abi.service';
-import { GovernanceService } from './services/governance.service';
 import { GovernanceQuorumService } from './services/governance.quorum.service';
 import { GovernanceTokenSnapshotMerkleService } from './services/governance.token.snapshot.merkle.service';
 import { GovernanceComputeService } from './services/governance.compute.service';
@@ -20,6 +19,9 @@ import { GovernanceSetterService } from './services/governance.setter.service';
 import { GovernanceQueryResolver } from './resolvers/governance.query.resolver';
 import { GovernanceProposalResolver } from './resolvers/governance.proposal.resolver';
 import { ElasticService } from 'src/helpers/elastic.service';
+import { GovernanceEnergyService, GovernanceTokenSnapshotService } from './services/governance.service';
+import { GovernanceAbiFactory } from './services/governance.abi.factory';
+import { GovernanceServiceFactory } from './services/governance.factory';
 
 @Module({
     imports: [
@@ -31,7 +33,10 @@ import { ElasticService } from 'src/helpers/elastic.service';
         EnergyModule
     ],
     providers: [
-        GovernanceService,
+        GovernanceTokenSnapshotService,
+        GovernanceEnergyService,
+        GovernanceAbiFactory,
+        GovernanceServiceFactory,
         GovernanceTokenSnapshotAbiService,
         GovernanceEnergyAbiService,
         GovernanceQuorumService,
@@ -52,7 +57,8 @@ import { ElasticService } from 'src/helpers/elastic.service';
         GovernanceEnergyAbiService,
         GovernanceSetterService,
         GovernanceComputeService,
-        GovernanceService,
+        GovernanceTokenSnapshotService,
+        GovernanceEnergyService,
     ],
 })
 export class GovernanceModule {}
