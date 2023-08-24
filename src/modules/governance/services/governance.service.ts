@@ -4,16 +4,21 @@ import { GovernanceContractsFiltersArgs } from '../models/governance.contracts.f
 import { GovernanceUnion } from '../models/governance.union';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
-import { GovernanceEnergyContract, GovernanceTokenSnapshotContract } from '../models/governance.contract.model';
+import {
+    GovernanceEnergyContract,
+    GovernanceOldEnergyContract,
+    GovernanceTokenSnapshotContract,
+} from '../models/governance.contract.model';
 import { GovernanceEnergyAbiService, GovernanceTokenSnapshotAbiService } from './governance.abi.service';
 import { VoteType } from '../models/governance.proposal.model';
 import { GovernanceComputeService } from './governance.compute.service';
+import { GovernanceQuorumService } from './governance.quorum.service';
+import { GovernanceLKMEXProposal } from '../entities/lkmex.proposal';
 import { ErrorLoggerAsync } from '../../../helpers/decorators/error.logger';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import BigNumber from 'bignumber.js';
 import { EnergyService } from '../../energy/services/energy.service';
-import { GovernanceQuorumService } from './governance.quorum.service';
 
 @Injectable()
 export class GovernanceTokenSnapshotService {
@@ -52,6 +57,15 @@ export class GovernanceTokenSnapshotService {
                         }),
                     );
                    break;
+                case GovernanceType.OLD_ENERGY:
+                    governance.push(new GovernanceOldEnergyContract({
+                        address,
+                        proposals: [{
+                            contractAddress: address,
+                            ...new GovernanceLKMEXProposal().toJSOSN(),
+                        }],
+                    }));
+                    break;
             }
 
         }

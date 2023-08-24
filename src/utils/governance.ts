@@ -4,6 +4,7 @@ import { registerEnumType } from '@nestjs/graphql';
 
 export enum GovernanceType {
     ENERGY = 'energy',
+    OLD_ENERGY = 'oldEnergy',
     TOKEN_SNAPSHOT = 'tokenSnapshot',
 }
 
@@ -15,6 +16,8 @@ const toTypeEnum = (type: string): GovernanceType => {
             return GovernanceType.ENERGY;
         case GovernanceType.TOKEN_SNAPSHOT.toString():
             return GovernanceType.TOKEN_SNAPSHOT;
+        case GovernanceType.OLD_ENERGY.toString():
+            return GovernanceType.OLD_ENERGY;
         default:
             return undefined;
     }

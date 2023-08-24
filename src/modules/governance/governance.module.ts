@@ -17,7 +17,7 @@ import {
 } from './resolvers/governance.contract.resolver';
 import { GovernanceSetterService } from './services/governance.setter.service';
 import { GovernanceQueryResolver } from './resolvers/governance.query.resolver';
-import { GovernanceProposalResolver } from './resolvers/governance.proposal.resolver';
+import { GovernanceLKMEXProposalResolver, GovernanceProposalResolver } from './resolvers/governance.proposal.resolver';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { GovernanceEnergyService, GovernanceTokenSnapshotService } from './services/governance.service';
 import { GovernanceAbiFactory } from './services/governance.abi.factory';
@@ -50,6 +50,7 @@ import { GovernanceServiceFactory } from './services/governance.factory';
         GovernanceEnergyContractResolver,
         GovernanceTokenSnapshotContractResolver,
         GovernanceProposalResolver,
+        GovernanceLKMEXProposalResolver,
         ElasticService,
     ],
     exports: [

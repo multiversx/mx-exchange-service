@@ -1,5 +1,10 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { GovernanceProposalModel, GovernanceProposalStatus, VoteType } from '../models/governance.proposal.model';
+import {
+    GovernanceLKMEXProposalModel,
+    GovernanceProposalModel,
+    GovernanceProposalStatus,
+    VoteType,
+} from '../models/governance.proposal.model';
 import { ProposalVotes } from '../models/governance.proposal.votes.model';
 import { UseGuards } from '@nestjs/common';
 import { JwtOrNativeAuthGuard } from '../../auth/jwt.or.native.auth.guard';
@@ -8,6 +13,7 @@ import { AuthUser } from '../../auth/auth.user';
 import { GovernanceTokenSnapshotMerkleService } from '../services/governance.token.snapshot.merkle.service';
 import { GovernanceAbiFactory } from '../services/governance.abi.factory';
 import { GovernanceServiceFactory } from '../services/governance.factory';
+import { GovernanceEnergyService } from '../services/governance.service';
 
 @Resolver(() => GovernanceProposalModel)
 export class GovernanceProposalResolver {
@@ -86,5 +92,32 @@ export class GovernanceProposalResolver {
         return this.governanceServiceFactory
             .userService(governanceProposal.contractAddress)
             .userVotingPower(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
+    }
+}
+
+@Resolver(() => GovernanceLKMEXProposalModel)
+export class GovernanceLKMEXProposalResolver {
+    constructor(
+        private readonly governanceService: GovernanceEnergyService,
+    ) {
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @ResolveField()
+    async hasVoted(
+        @AuthUser() user: UserAuthResult,
+        @Parent() governanceProposal: GovernanceLKMEXProposalModel
+    ): Promise<boolean> {
+        const userVoteType = await this.governanceService.userVote(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
+        return userVoteType !== VoteType.NotVoted;
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @ResolveField()
+    async userVoteType(
+        @AuthUser() user: UserAuthResult,
+        @Parent() governanceProposal: GovernanceLKMEXProposalModel
+    ): Promise<VoteType> {
+        return this.governanceService.userVote(governanceProposal.contractAddress, governanceProposal.proposalId, user.address);
     }
 }
