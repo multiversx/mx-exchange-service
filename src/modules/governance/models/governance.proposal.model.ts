@@ -107,3 +107,7 @@ export class GovernanceProposalModel {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class GovernanceLKMEXProposalModel extends GovernanceProposalModel {
+}
