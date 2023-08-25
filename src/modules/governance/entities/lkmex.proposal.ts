@@ -7,7 +7,7 @@ export class GovernanceLKMEXProposal {
         title: 'Maiar DEX to transform Into xExchange with New MEX 2.0 Economic Model',
         shortDescription:
             'xExchange (Maiar DEX 2.0) presents a set of significant improvements and benefits, while correcting the most important limitations residing in the previous economics model.',
-        strapiId: 0,
+        strapiId: 2,
         version: 1,
     });
     votes = new ProposalVotes({
