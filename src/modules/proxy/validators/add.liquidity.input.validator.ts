@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from '@nestjs/apollo';
 import { scAddress } from 'src/config';
 import { AddLiquidityProxyArgs } from '../models/proxy-pair.args';
 import { ProxyPairAbiService } from '../services/proxy-pair/proxy.pair.abi.service';
