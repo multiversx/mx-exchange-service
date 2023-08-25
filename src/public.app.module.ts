@@ -15,7 +15,7 @@ import { ProxyModule } from './modules/proxy/proxy.module';
 import { LockedAssetModule } from './modules/locked-asset-factory/locked-asset.module';
 import { UserModule } from './modules/user/user.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
-import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import { GraphQLFormattedError } from 'graphql';
 import { CommonAppModule } from './common.app.module';
 import { CachingService } from './services/caching/cache.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -50,15 +50,10 @@ import { GovernanceModule } from './modules/governance/governance.module';
                 buildSchemaOptions: {
                     fieldMiddleware: [deprecationLoggerMiddleware],
                 },
-                formatError: (error: GraphQLError) => {
-                    const graphQLFormattedError: GraphQLFormattedError = {
-                        message: error.message,
-                        path: error.path,
-                        extensions: {
-                            code: error.extensions.code,
-                        },
-                    };
-
+                formatError: (
+                    formattedError: GraphQLFormattedError,
+                    error: any,
+                ): GraphQLFormattedError => {
                     const errorStatus = error.toJSON().extensions['code'];
                     switch (errorStatus) {
                         case 'FORBIDDEN':
@@ -66,7 +61,13 @@ import { GovernanceModule } from './modules/governance/governance.module';
                             break;
                     }
 
-                    return graphQLFormattedError;
+                    return {
+                        message: formattedError.message,
+                        path: formattedError.path,
+                        extensions: {
+                            code: errorStatus,
+                        },
+                    };
                 },
                 fieldResolverEnhancers: ['guards'],
             }),

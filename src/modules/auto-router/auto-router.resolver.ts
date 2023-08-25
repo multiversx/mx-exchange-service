@@ -19,7 +19,7 @@ export class AutoRouterResolver {
         try {
             return await this.autoRouterService.swap(args);
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -57,7 +57,7 @@ export class AutoRouterResolver {
                 parent,
             );
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },

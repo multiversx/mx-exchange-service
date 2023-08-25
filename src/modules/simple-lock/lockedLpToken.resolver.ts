@@ -28,7 +28,7 @@ export class LockedLpTokenResolver {
                 parent.firstTokenLockedNonce,
             );
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -49,7 +49,7 @@ export class LockedLpTokenResolver {
                 parent.secondTokenLockedNonce,
             );
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -67,7 +67,7 @@ export class LockedLpTokenResolver {
                 args,
             );
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },

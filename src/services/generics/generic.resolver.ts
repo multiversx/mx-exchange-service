@@ -8,7 +8,7 @@ export class GenericResolver {
         try {
             return await fieldResolver();
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -22,7 +22,7 @@ export class GenericResolver {
         try {
             return await queryResolver();
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },

@@ -54,7 +54,7 @@ export class TokensResolver extends GenericResolver {
         try {
             return await this.tokenService.getTokens(filters);
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },

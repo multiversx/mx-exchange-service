@@ -33,7 +33,7 @@ export class LockedAssetResolver {
         try {
             return await this.lockedAssetGetter.getAssetToken();
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -46,7 +46,7 @@ export class LockedAssetResolver {
         try {
             return await this.lockedAssetGetter.getLockedToken();
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -59,7 +59,7 @@ export class LockedAssetResolver {
         try {
             return await this.lockedAssetGetter.getDefaultUnlockPeriod();
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -72,7 +72,7 @@ export class LockedAssetResolver {
         try {
             return await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -115,7 +115,7 @@ export class LockedAssetResolver {
                 tokens,
             );
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },

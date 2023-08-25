@@ -27,7 +27,7 @@ export class LockedFarmTokenResolver {
                 parent.farmingTokenLockedNonce,
             );
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -53,7 +53,7 @@ export class LockedFarmTokenResolver {
                 simpleLockAddress,
             );
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
@@ -71,7 +71,7 @@ export class LockedFarmTokenResolver {
                 args,
             );
         } catch (error) {
-            throw new GraphQLError(error, {
+            throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
                 },
