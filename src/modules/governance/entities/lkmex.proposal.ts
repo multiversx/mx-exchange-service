@@ -1,5 +1,6 @@
 import { DescriptionV1, GovernanceProposalStatus } from '../models/governance.proposal.model';
 import { ProposalVotes } from '../models/governance.proposal.votes.model';
+import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 
 export class GovernanceLKMEXProposal {
     description = new DescriptionV1({
@@ -10,28 +11,54 @@ export class GovernanceLKMEXProposal {
         version: 1,
     });
     votes = new ProposalVotes({
-        upVotes: '3615976209993',
-        downVotes: '210776056445',
+        upVotes: '3615976209993000000000',
+        downVotes: '210776056445000000000',
         downVetoVotes: '0',
-        abstainVotes: '274849971635',
-        totalVotes: '4101602200000',
+        abstainVotes: '274849971635000000000',
+        totalVotes: '4101602238073000000000',
         upPercentage: '0.88',
         downPercentage: '0.05',
         downVetoPercentage: '0',
         abstainPercentage: '0.06',
-        quorum: '0',
+        quorum: '4101475400000000000000000000000',
     });
     status = GovernanceProposalStatus.Succeeded;
-    turnoutPercentage = '60.83';
     proposalId = 1;
+    proposer = "erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97";
+    actions = [];
+    rootHash = "";
+    totalQuorum= "6742520471308000000000000000000";
+    totalVotingPower: "2596636400000000";
+    feePayment = new EsdtTokenPaymentModel({
+        tokenIdentifier: "LKMEX-aab910",
+        tokenNonce: 0,
+        amount: "0",
+    });
+    minimumQuorumPercentage= "0";
+    votingDelayInBlocks = 0;
+    votingPeriodInBlocks = 103500;
+    withdrawPercentageDefeated = 8999;
+    proposalStartBlock = 15878809;
+    totalBalance = "6742520471308000000000000000000";
 
     toJSOSN() {
         return {
             proposalId: this.proposalId,
+            proposer: this.proposer,
+            actions: this.actions,
+            feePayment: this.feePayment,
+            minimumQuorumPercentage: this.minimumQuorumPercentage,
+            votingDelayInBlocks: this.votingDelayInBlocks,
+            votingPeriodInBlocks: this.votingPeriodInBlocks,
+            withdrawPercentageDefeated: this.withdrawPercentageDefeated,
+            totalQuorum: this.totalQuorum,
+            totalVotingPower: this.totalVotingPower,
+            proposalStartBlock: this.proposalStartBlock,
+            rootHash: this.rootHash,
+            totalBalance: this.totalBalance,
             description: this.description,
             votes: this.votes,
             status: this.status,
-            turnoutPercentage: this.turnoutPercentage,
         };
     }
 }

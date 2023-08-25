@@ -7,7 +7,7 @@ import { GovernanceProposalModel, GovernanceProposalStatus, VoteArgs } from '../
 import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
-import { GovernanceType, toGovernanceProposalStatus } from '../../../utils/governance';
+import { governanceType, GovernanceType, toGovernanceProposalStatus } from '../../../utils/governance';
 import { TransactionModel } from '../../../models/transaction.model';
 import { gasConfig, mxConfig } from '../../../config';
 import BigNumber from 'bignumber.js';
@@ -135,6 +135,9 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     async feeTokenIdRaw(scAddress: string): Promise<string> {
+        if (governanceType(scAddress) === GovernanceType.OLD_ENERGY) {
+            return 'LKMEX-aab910';
+        }
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
             this.type

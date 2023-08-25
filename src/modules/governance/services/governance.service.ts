@@ -59,7 +59,27 @@ export class GovernanceTokenSnapshotService {
                    break;
                 case GovernanceType.OLD_ENERGY:
                     governance.push(new GovernanceOldEnergyContract({
+                        votingPowerDecimals: 9,
+                        shard: 1,
                         address,
+                        feeToken: new EsdtToken({
+                            type: "MetaESDT",
+                            identifier: "LKMEX-aab910",
+                            name: "LockedMEX",
+                            ticker: "LKMEX",
+                            owner: "erd1qqqqqqqqqqqqqpgqjpt0qqgsrdhp2xqygpjtfrpwf76f9nvg2jpsg4q7th",
+                            minted: "682732123009498031542409908636686",
+                            burnt: "681388208336840162881074018997523",
+                            initialMinted: "0",
+                            decimals: 18,
+                            assets: {
+                                website: "https://xexchange.com",
+                                description: "Locked MEX. Equal in value to MEX. Not tradeable.",
+                                status: "active",
+                                pngUrl: "https://media.elrond.com/tokens/asset/LKMEX-aab910/logo.png",
+                                svgUrl: "https://media.elrond.com/tokens/asset/LKMEX-aab910/logo.svg"
+                            },
+                        }),
                         proposals: [{
                             contractAddress: address,
                             ...new GovernanceLKMEXProposal().toJSOSN(),
