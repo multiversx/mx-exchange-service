@@ -3,19 +3,25 @@ import { MetabondingTransactionService } from '../services/metabonding.transacti
 import { Test, TestingModule } from '@nestjs/testing';
 import { MetabondingAbiServiceMockProvider } from '../mocks/metabonding.abi.service.mock';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { CommonAppModule } from 'src/common.app.module';
 import { Address } from '@multiversx/sdk-core/out';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig, scAddress } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';
+import { WinstonModule } from 'nest-winston';
+import { ConfigModule } from '@nestjs/config';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 describe('MetabondingTransactionsService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule, RedisPubSubModule],
+            imports: [
+                RedisPubSubModule,
+                WinstonModule.forRoot({}),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 MetabondingTransactionService,
                 MetabondingAbiServiceMockProvider,
@@ -26,6 +32,7 @@ describe('MetabondingTransactionsService', () => {
                         publish: jest.fn(),
                     },
                 },
+                ApiConfigService,
             ],
         }).compile();
     });

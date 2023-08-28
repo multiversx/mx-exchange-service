@@ -1,23 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TokenUnstakeTransactionService } from '../services/token.unstake.transaction.service';
 import { TokenUnstakeAbiServiceProvider } from '../mocks/token.unstake.abi.service.mock';
-import { CommonAppModule } from 'src/common.app.module';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 import { TransactionModel } from 'src/models/transaction.model';
 import { mxConfig, scAddress } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
 
 describe('TokenUnstakeTransactionService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule],
+            imports: [WinstonModule.forRoot({}), ConfigModule.forRoot({})],
             providers: [
                 TokenUnstakeTransactionService,
                 TokenUnstakeAbiServiceProvider,
                 MXProxyServiceProvider,
+                ApiConfigService,
             ],
         }).compile();
     });
@@ -60,9 +63,7 @@ describe('TokenUnstakeTransactionService', () => {
             module.get<TokenUnstakeTransactionService>(
                 TokenUnstakeTransactionService,
             );
-        const transaction = await service.cancelUnbond(
-            Address.Zero().bech32(),
-        );
+        const transaction = await service.cancelUnbond(Address.Zero().bech32());
 
         expect(transaction).toEqual(
             new TransactionModel({

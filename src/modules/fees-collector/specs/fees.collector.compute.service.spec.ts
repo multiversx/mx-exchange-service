@@ -9,8 +9,6 @@ import {
 } from 'src/services/context/mocks/context.getter.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { FeesCollectorAbiServiceProvider } from '../mocks/fees.collector.abi.service.mock';
-import { CommonAppModule } from 'src/common.app.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
@@ -28,13 +26,22 @@ import { EnergyModel } from 'src/modules/energy/models/energy.model';
 import BigNumber from 'bignumber.js';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 describe('FeesCollectorComputeService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({}),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 FeesCollectorComputeService,
                 FeesCollectorAbiServiceProvider,
@@ -58,6 +65,8 @@ describe('FeesCollectorComputeService', () => {
                     provide: ContextGetterService,
                     useClass: ContextGetterServiceMock,
                 },
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });

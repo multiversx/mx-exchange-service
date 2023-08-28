@@ -7,7 +7,7 @@ import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 describe('WrapService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
             providers: [
                 WrapService,
