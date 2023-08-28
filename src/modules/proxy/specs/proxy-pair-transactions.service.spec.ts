@@ -25,6 +25,7 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { WinstonModule } from 'nest-winston';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CachingService } from 'src/services/caching/cache.service';
+import winston from 'winston';
 
 describe('TransactionProxyPairService', () => {
     let module: TestingModule;
@@ -33,7 +34,9 @@ describe('TransactionProxyPairService', () => {
         module = await Test.createTestingModule({
             imports: [
                 CacheModule.register(),
-                WinstonModule.forRoot({}),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
                 ConfigModule.forRoot({}),
             ],
             providers: [

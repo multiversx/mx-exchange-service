@@ -20,6 +20,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CachingService } from 'src/services/caching/cache.service';
 import { WinstonModule } from 'nest-winston';
+import winston from 'winston';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -29,7 +30,9 @@ describe('FarmService', () => {
             imports: [
                 CacheModule.register(),
                 ConfigModule.forRoot({}),
-                WinstonModule.forRoot({}),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
             ],
             providers: [
                 ApiConfigService,

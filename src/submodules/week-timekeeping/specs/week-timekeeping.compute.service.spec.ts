@@ -12,6 +12,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('WeekTimekeepingComputeService', () => {
     let module: TestingModule;
@@ -20,7 +21,9 @@ describe('WeekTimekeepingComputeService', () => {
         module = await Test.createTestingModule({
             imports: [
                 CacheModule.register(),
-                WinstonModule.forRoot({}),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
                 ConfigModule.forRoot({}),
             ],
             providers: [

@@ -9,13 +9,19 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
+import winston from 'winston';
 
 describe('TokenUnstakeTransactionService', () => {
     let module: TestingModule;
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [WinstonModule.forRoot({}), ConfigModule.forRoot({})],
+            imports: [
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 TokenUnstakeTransactionService,
                 TokenUnstakeAbiServiceProvider,

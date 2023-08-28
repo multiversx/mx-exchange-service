@@ -22,6 +22,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { CacheModule } from '@nestjs/cache-manager';
 import { WinstonModule } from 'nest-winston';
 import { ConfigModule } from '@nestjs/config';
+import winston from 'winston';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -35,7 +36,9 @@ describe('RouterService', () => {
         module = await Test.createTestingModule({
             imports: [
                 CacheModule.register(),
-                WinstonModule.forRoot({}),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
                 ConfigModule.forRoot({}),
             ],
             providers: [

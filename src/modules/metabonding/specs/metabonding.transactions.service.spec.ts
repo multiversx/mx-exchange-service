@@ -11,6 +11,7 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { WinstonModule } from 'nest-winston';
 import { ConfigModule } from '@nestjs/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('MetabondingTransactionsService', () => {
     let module: TestingModule;
@@ -19,7 +20,9 @@ describe('MetabondingTransactionsService', () => {
         module = await Test.createTestingModule({
             imports: [
                 RedisPubSubModule,
-                WinstonModule.forRoot({}),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
                 ConfigModule.forRoot({}),
             ],
             providers: [

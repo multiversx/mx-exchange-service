@@ -11,13 +11,19 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { WinstonModule } from 'nest-winston';
 import { ConfigModule } from '@nestjs/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('WrapTransactionsService', () => {
     let module: TestingModule;
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [WinstonModule.forRoot({}), ConfigModule.forRoot({})],
+            imports: [
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 WrapTransactionsService,
                 WrapAbiServiceProvider,

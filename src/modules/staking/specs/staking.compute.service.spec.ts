@@ -17,6 +17,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -26,7 +27,9 @@ describe('StakingComputeService', () => {
             imports: [
                 CacheModule.register(),
                 ConfigModule.forRoot({}),
-                WinstonModule.forRoot({}),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
             ],
             providers: [
                 StakingComputeService,
