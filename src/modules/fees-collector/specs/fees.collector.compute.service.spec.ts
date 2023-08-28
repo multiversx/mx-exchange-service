@@ -35,7 +35,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 describe('FeesCollectorComputeService', () => {
     let module: TestingModule;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         module = await Test.createTestingModule({
             imports: [
                 CacheModule.register(),
