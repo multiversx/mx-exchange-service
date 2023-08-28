@@ -14,6 +14,7 @@ export class GovernanceServiceFactory {
     userService(contractAddress: string) {
         switch (governanceType(contractAddress)) {
             case GovernanceType.ENERGY:
+            case GovernanceType.OLD_ENERGY:
                 return this.governanceEnergy;
             case GovernanceType.TOKEN_SNAPSHOT:
                 return this.governanceTokenSnapshot;

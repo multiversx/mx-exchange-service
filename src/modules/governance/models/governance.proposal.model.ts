@@ -92,8 +92,6 @@ export class GovernanceProposalModel {
     status: GovernanceProposalStatus;
     @Field()
     rootHash: string;
-    @Field()
-    totalBalance: string;
     @Field( () => ProposalVotes )
     votes: ProposalVotes;
     @Field()
@@ -106,8 +104,4 @@ export class GovernanceProposalModel {
     constructor(init: Partial<GovernanceProposalModel>) {
         Object.assign(this, init);
     }
-}
-
-@ObjectType()
-export class GovernanceLKMEXProposalModel extends GovernanceProposalModel {
 }

@@ -7,7 +7,7 @@ import { GovernanceProposalModel, GovernanceProposalStatus, VoteArgs } from '../
 import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
-import { governanceType, GovernanceType, toGovernanceProposalStatus } from '../../../utils/governance';
+import { GovernanceType, toGovernanceProposalStatus } from '../../../utils/governance';
 import { TransactionModel } from '../../../models/transaction.model';
 import { gasConfig, mxConfig } from '../../../config';
 import BigNumber from 'bignumber.js';
@@ -17,6 +17,7 @@ import { GovernanceDescriptionService } from './governance.description.service';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { decimalToHex } from '../../../utils/token.converters';
+import { GovernanceLKMEXProposal } from '../entities/lkmex.proposal';
 
 @Injectable()
 export class GovernanceTokenSnapshotAbiService
@@ -135,9 +136,6 @@ export class GovernanceTokenSnapshotAbiService
     }
 
     async feeTokenIdRaw(scAddress: string): Promise<string> {
-        if (governanceType(scAddress) === GovernanceType.OLD_ENERGY) {
-            return 'LKMEX-aab910';
-        }
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
             this.type
@@ -453,5 +451,95 @@ export class GovernanceEnergyAbiService
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+    }
+}
+
+@Injectable()
+export class GovernanceOldEnergyAbiService extends GovernanceEnergyAbiService {
+    constructor(
+        protected readonly mxProxy: MXProxyService,
+        protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
+        protected readonly governanceDescription: GovernanceDescriptionService,
+    ) {
+        super(mxProxy, governanceMerkle, governanceDescription);
+        this.type = GovernanceType.OLD_ENERGY;
+    }
+
+
+    async energyFactoryAddress(scAddress: string): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    async feeTokenId(scAddress: string): Promise<string> {
+        return Promise.resolve('LKMEX-aab910');
+    }
+
+    async feesCollectorAddress(scAddress: string): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    async getAddressShardID(scAddress: string): Promise<number> {
+        return Promise.resolve(1);
+    }
+
+    async minEnergyForPropose(scAddress: string): Promise<string> {
+        return Promise.resolve('0');
+    }
+
+    async minFeeForPropose(scAddress: string): Promise<string> {
+        return Promise.resolve('0');
+    }
+
+    async proposalRootHash(scAddress: string, proposalId: number): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    async proposalStatus(scAddress: string, proposalId: number): Promise<GovernanceProposalStatus> {
+        return Promise.resolve(GovernanceProposalStatus.Succeeded);
+    }
+
+    async proposalVotes(scAddress: string, proposalId: number): Promise<ProposalVotes> {
+        return Promise.resolve(new ProposalVotes({
+            upVotes: '3615976209993000000000',
+            downVotes: '210776056445000000000',
+            downVetoVotes: '0',
+            abstainVotes: '274849971635000000000',
+            totalVotes: '4101602238073000000000',
+            upPercentage: '0.88',
+            downPercentage: '0.05',
+            downVetoPercentage: '0',
+            abstainPercentage: '0.06',
+            quorum: '4101475400000000000000000000000',
+            })
+        );
+    }
+
+    async proposals(scAddress: string): Promise<GovernanceProposalModel[]> {
+        return Promise.resolve([
+            new GovernanceProposalModel({
+                contractAddress: scAddress,
+                ...new GovernanceLKMEXProposal()
+            }),
+        ]);
+    }
+
+    async quorum(scAddress: string): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    async userVotedProposals(scAddress: string, userAddress: string): Promise<number[]> {
+        return Promise.resolve([]);
+    }
+
+    async votingDelayInBlocks(scAddress: string): Promise<number> {
+        return Promise.resolve(0);
+    }
+
+    async votingPeriodInBlocks(scAddress: string): Promise<number> {
+        return Promise.resolve(0);
+    }
+
+    async withdrawPercentageDefeated(scAddress: string): Promise<number> {
+        return Promise.resolve(0);
     }
 }

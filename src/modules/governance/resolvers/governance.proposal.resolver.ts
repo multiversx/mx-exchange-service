@@ -33,15 +33,6 @@ export class GovernanceProposalResolver {
     }
 
     @ResolveField()
-    async totalBalance(@Parent() governanceProposal: GovernanceProposalModel): Promise<string> {
-        const rootHash = await this.governanceAbiFactory
-            .useAbi(governanceProposal.contractAddress)
-            .proposalRootHash(governanceProposal.contractAddress, governanceProposal.proposalId);
-        const mt = await this.governaneMerkle.getMerkleTree(rootHash);
-        return mt.getTotalBalance();
-    }
-
-    @ResolveField()
     async votes(@Parent() governanceProposal: GovernanceProposalModel): Promise<ProposalVotes> {
         return this.governanceAbiFactory
             .useAbi(governanceProposal.contractAddress)
