@@ -1,20 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.66.0-nightly",
-            "commitHash": "b8c35ca26b191bb9a9ac669a4b3f4d3d52d97fb1",
-            "commitDate": "2022-10-15",
+            "version": "1.71.0-nightly",
+            "commitHash": "a2b1646c597329d0a25efa3889b66650f65de1de",
+            "commitDate": "2023-05-25",
             "channel": "Nightly",
-            "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
+            "short": "rustc 1.71.0-nightly (a2b1646c5 2023-05-25)"
         },
         "contractCrate": {
             "name": "farm-with-locked-rewards",
             "version": "0.0.0",
-            "git_version": "v1.6.0-884-g6d1883a4-modified"
+            "gitVersion": "v1.6.0-1401-g81fa7ee8"
         },
         "framework": {
-            "name": "elrond-wasm",
-            "version": "0.36.1"
+            "name": "multiversx-sc",
+            "version": "0.39.4"
         }
     },
     "name": "Farm",
@@ -88,25 +88,6 @@
                 {
                     "type": "EsdtTokenPayment"
                 },
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "compoundRewards",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "opt_orig_caller",
-                    "type": "optional<Address>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": [
                 {
                     "type": "EsdtTokenPayment"
                 }
@@ -431,6 +412,18 @@
             "outputs": []
         },
         {
+            "name": "updateOwnerOrAdmin",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "previous_owner",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "getPermissions",
             "mutability": "readonly",
             "inputs": [
@@ -571,45 +564,33 @@
             "outputs": []
         },
         {
-            "name": "setBoostedYieldsFactors",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "max_rewards_factor",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "user_rewards_energy_const",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "user_rewards_farm_const",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "min_energy_amount",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "min_farm_amount",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": []
-        },
-        {
             "name": "collectUndistributedBoostedRewards",
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
-            "name": "getBoostedYieldsRewardsPercenatage",
+            "name": "getBoostedYieldsRewardsPercentage",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
                     "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getAccumulatedRewardsForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },
@@ -652,6 +633,33 @@
                     "type": "BigUint"
                 }
             ]
+        },
+        {
+            "name": "setBoostedYieldsFactors",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "max_rewards_factor",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "user_rewards_energy_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "user_rewards_farm_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_energy_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_farm_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
         },
         {
             "name": "getBoostedYieldsFactors",
