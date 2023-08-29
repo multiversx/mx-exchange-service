@@ -54,7 +54,7 @@ import { GovernanceModule } from './modules/governance/governance.module';
                     formattedError: GraphQLFormattedError,
                     error: any,
                 ): GraphQLFormattedError => {
-                    const errorStatus = error.toJSON().extensions['code'];
+                    const errorStatus = formattedError.extensions?.code;
                     switch (errorStatus) {
                         case 'FORBIDDEN':
                             logger.log(error.message, 'GraphQLModule');
