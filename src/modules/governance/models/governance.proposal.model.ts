@@ -92,8 +92,6 @@ export class GovernanceProposalModel {
     status: GovernanceProposalStatus;
     @Field()
     rootHash: string;
-    @Field()
-    totalBalance: string;
     @Field( () => ProposalVotes )
     votes: ProposalVotes;
     @Field()
