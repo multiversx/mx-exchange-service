@@ -263,4 +263,42 @@ describe('UserEnergyComputeService', () => {
             claimProgressOutdated: true,
         });
     });
+
+    it('should NOT get outdated contracts if no claim progress', async () => {
+        const service = module.get<UserEnergyComputeService>(
+            UserEnergyComputeService,
+        );
+        const weeklyRewardsSplittingAbi =
+            module.get<WeeklyRewardsSplittingAbiService>(
+                WeeklyRewardsSplittingAbiService,
+            );
+        const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
+            WeekTimekeepingAbiService,
+        );
+        const energyAbi = module.get<EnergyAbiService>(EnergyAbiService);
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'currentClaimProgress',
+        ).mockResolvedValue({
+            week: 0,
+            energy: {
+                amount: '0',
+                lastUpdateEpoch: 0,
+                totalLockedTokens: '0',
+            },
+        });
+        jest.spyOn(weekTimekeepingAbi, 'currentWeek').mockResolvedValue(10);
+        jest.spyOn(energyAbi, 'energyEntryForUser').mockResolvedValue({
+            amount: '0',
+            lastUpdateEpoch: 0,
+            totalLockedTokens: '0',
+        });
+
+        const outdatedContracts =
+            await service.computeFeesCollectorOutdatedContract(
+                Address.Zero().bech32(),
+            );
+
+        expect(outdatedContracts).toEqual({});
+    });
 });

@@ -71,7 +71,7 @@ export class FarmAbiServiceV2
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
-            contract.methodsExplicit.getBoostedYieldsRewardsPercenatage();
+            contract.methodsExplicit.getBoostedYieldsRewardsPercentage();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
@@ -196,8 +196,9 @@ export class FarmAbiServiceV2
     async lastUndistributedBoostedRewardsCollectWeek(
         farmAddress: string,
     ): Promise<number> {
-        return this.gatewayService.getSCStorageKey(farmAddress,
-            'lastUndistributedBoostedRewardsCollectWeek'
+        return this.gatewayService.getSCStorageKey(
+            farmAddress,
+            'lastUndistributedBoostedRewardsCollectWeek',
         );
     }
 

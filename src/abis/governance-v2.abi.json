@@ -10,7 +10,7 @@
         "contractCrate": {
             "name": "governance-v2",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-1377-gd49b05d0"
+            "gitVersion": "v1.6.0-1389-g0655a141"
         },
         "framework": {
             "name": "multiversx-sc",
@@ -25,11 +25,13 @@
         "docs": [
             "- `min_energy_for_propose` - the minimum energy required for submitting a proposal",
             "- `min_fee_for_propose` - the minimum fee required for submitting a proposal",
-            "- `quorum` - the minimum number of (`votes` minus `downvotes`) at the end of voting period  ",
-            "- `maxActionsPerProposal` - Maximum number of actions (transfers and/or smart contract calls) that a proposal may have  ",
+            "- `quorum_percentage` - the minimum number of (`votes` minus `downvotes`) at the end of voting period  ",
             "- `votingDelayInBlocks` - Number of blocks to wait after a block is proposed before being able to vote/downvote that proposal",
             "- `votingPeriodInBlocks` - Number of blocks the voting period lasts (voting delay does not count towards this)  ",
-            "- `lockTimeAfterVotingEndsInBlocks` - Number of blocks to wait before a successful proposal can be executed  "
+            "- `withdraw_percentage_defeated` - Percetange of the fee to be returned if proposal defetead ",
+            "- `energy_factory_address`",
+            "- `fees_collector_address`",
+            "- `fee_token` - The token used to pay the fee"
         ],
         "inputs": [
             {
@@ -77,18 +79,12 @@
                 "Propose a list of actions.",
                 "A maximum of MAX_GOVERNANCE_PROPOSAL_ACTIONS can be proposed at a time.",
                 "",
-                "An action has the following format:",
-                "    - gas limit for action execution",
-                "    - destination address",
-                "    - a fee payment for proposal (if smaller than min_fee_for_propose, state: WaitForFee)",
-                "    - endpoint to be called on the destination",
-                "    - a vector of arguments for the endpoint, in the form of ManagedVec<ManagedBuffer>",
-                "",
                 "The proposer's energy is NOT automatically used for voting. A separate vote is needed.",
                 "",
                 "Returns the ID of the newly created proposal."
             ],
             "name": "propose",
+            "onlyOwner": true,
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -184,7 +180,7 @@
             "outputs": []
         },
         {
-            "name": "changeQuorum",
+            "name": "changeQuorumPercentage",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
