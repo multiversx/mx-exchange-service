@@ -92,8 +92,6 @@ export class GovernanceProposalModel {
     status: GovernanceProposalStatus;
     @Field()
     rootHash: string;
-    @Field()
-    totalBalance: string;
     @Field( () => ProposalVotes )
     votes: ProposalVotes;
     @Field()
@@ -104,30 +102,6 @@ export class GovernanceProposalModel {
     userVotingPower?: string;
 
     constructor(init: Partial<GovernanceProposalModel>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
-export class GovernanceLKMEXProposalModel {
-    @Field()
-    contractAddress: string;
-    @Field()
-    proposalId: number;
-    @Field( () => GovernanceDescriptionUnion)
-    description: typeof GovernanceDescriptionUnion;
-    @Field( () => ProposalVotes )
-    votes: ProposalVotes;
-    @Field()
-    status: GovernanceProposalStatus;
-    @Field()
-    hasVoted?: boolean;
-    @Field()
-    userVoteType?: VoteType;
-    @Field()
-    turnoutPercentage: string;
-
-    constructor(init: Partial<GovernanceLKMEXProposalModel>) {
         Object.assign(this, init);
     }
 }

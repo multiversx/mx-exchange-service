@@ -17,11 +17,13 @@ import {
 } from './resolvers/governance.contract.resolver';
 import { GovernanceSetterService } from './services/governance.setter.service';
 import { GovernanceQueryResolver } from './resolvers/governance.query.resolver';
-import { GovernanceLKMEXProposalResolver, GovernanceProposalResolver } from './resolvers/governance.proposal.resolver';
+import { GovernanceProposalResolver } from './resolvers/governance.proposal.resolver';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { GovernanceEnergyService, GovernanceTokenSnapshotService } from './services/governance.service';
 import { GovernanceAbiFactory } from './services/governance.abi.factory';
 import { GovernanceServiceFactory } from './services/governance.factory';
+import { GovernanceOldEnergyAbiService } from './services/governance.old.energy.abi.service';
+import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 
 @Module({
     imports: [
@@ -30,7 +32,8 @@ import { GovernanceServiceFactory } from './services/governance.factory';
         MXCommunicationModule,
         ContextModule,
         TokenModule,
-        EnergyModule
+        EnergyModule,
+        LockedAssetModule
     ],
     providers: [
         GovernanceTokenSnapshotService,
@@ -39,6 +42,7 @@ import { GovernanceServiceFactory } from './services/governance.factory';
         GovernanceServiceFactory,
         GovernanceTokenSnapshotAbiService,
         GovernanceEnergyAbiService,
+        GovernanceOldEnergyAbiService,
         GovernanceQuorumService,
         GovernanceTokenSnapshotMerkleService,
         GovernanceSetterService,
@@ -50,7 +54,6 @@ import { GovernanceServiceFactory } from './services/governance.factory';
         GovernanceEnergyContractResolver,
         GovernanceTokenSnapshotContractResolver,
         GovernanceProposalResolver,
-        GovernanceLKMEXProposalResolver,
         ElasticService,
     ],
     exports: [
