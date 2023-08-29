@@ -40,9 +40,9 @@ export class GovernanceLKMEXProposal extends GovernanceProposalModel {
             }),
             minimumQuorumPercentage: "0",
             votingDelayInBlocks: 0,
-            votingPeriodInBlocks: 103500,
+            votingPeriodInBlocks: 101672,
             withdrawPercentageDefeated: 8999,
-            proposalStartBlock: 15878809,
+            proposalStartBlock: 12247307,
         });
     }
     toJSON() {

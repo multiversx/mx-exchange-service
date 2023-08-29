@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import {
-    GovernanceEnergyAbiService,
-    GovernanceOldEnergyAbiService,
-    GovernanceTokenSnapshotAbiService,
-} from './governance.abi.service';
+import { GovernanceEnergyAbiService, GovernanceTokenSnapshotAbiService } from './governance.abi.service';
 import { GovernanceType, governanceType } from '../../../utils/governance';
+import { GovernanceOldEnergyAbiService } from './governance.old.energy.abi.service';
 
 
 @Injectable()

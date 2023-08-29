@@ -5,11 +5,7 @@ import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { TokenModule } from '../tokens/token.module';
 import { EnergyModule } from '../energy/energy.module';
-import {
-    GovernanceEnergyAbiService,
-    GovernanceOldEnergyAbiService,
-    GovernanceTokenSnapshotAbiService,
-} from './services/governance.abi.service';
+import { GovernanceEnergyAbiService, GovernanceTokenSnapshotAbiService } from './services/governance.abi.service';
 import { GovernanceQuorumService } from './services/governance.quorum.service';
 import { GovernanceTokenSnapshotMerkleService } from './services/governance.token.snapshot.merkle.service';
 import { GovernanceComputeService } from './services/governance.compute.service';
@@ -26,6 +22,8 @@ import { ElasticService } from 'src/helpers/elastic.service';
 import { GovernanceEnergyService, GovernanceTokenSnapshotService } from './services/governance.service';
 import { GovernanceAbiFactory } from './services/governance.abi.factory';
 import { GovernanceServiceFactory } from './services/governance.factory';
+import { GovernanceOldEnergyAbiService } from './services/governance.old.energy.abi.service';
+import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 
 @Module({
     imports: [
@@ -34,7 +32,8 @@ import { GovernanceServiceFactory } from './services/governance.factory';
         MXCommunicationModule,
         ContextModule,
         TokenModule,
-        EnergyModule
+        EnergyModule,
+        LockedAssetModule
     ],
     providers: [
         GovernanceTokenSnapshotService,
