@@ -7,7 +7,7 @@ import { MXDataApiServiceProvider } from '../../../services/multiversx-communica
 import { WrapAbiServiceProvider } from '../../wrapping/mocks/wrap.abi.service.mock';
 import { RouterAbiServiceProvider } from '../../router/mocks/router.abi.service.mock';
 import { TokenComputeService } from '../../tokens/services/token.compute.service';
-import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { PairComputeServiceProvider } from '../../pair/mocks/pair.compute.service.mock';
 import { PairAbiServiceProvider } from '../../pair/mocks/pair.abi.service.mock';
 import { PairService } from '../../pair/services/pair.service';
@@ -43,7 +43,7 @@ describe('FarmServiceV2', () => {
                 PairService,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 TokenComputeService,
                 RouterAbiServiceProvider,
                 WrapAbiServiceProvider,

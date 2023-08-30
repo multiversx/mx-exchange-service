@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairComputeService } from '../services/pair.compute.service';
 import { PairService } from '../services/pair.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
@@ -36,7 +36,7 @@ describe('PairService', () => {
                 PairService,
                 PairAbiServiceProvider,
                 WrapAbiServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
                 TokenComputeService,

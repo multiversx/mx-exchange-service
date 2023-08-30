@@ -8,7 +8,7 @@ import { MXGatewayService } from 'src/services/multiversx-communication/mx.gatew
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { Address } from '@multiversx/sdk-core';
-import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { StakingAbiServiceProvider } from '../mocks/staking.abi.service.mock';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -38,7 +38,7 @@ describe('StakingService', () => {
                 MXApiServiceProvider,
                 MXGatewayService,
                 ApiConfigService,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 CachingService,
                 ApiConfigService,
             ],

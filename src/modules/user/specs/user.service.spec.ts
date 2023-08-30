@@ -15,7 +15,7 @@ import { StakingProxyServiceProvider } from '../../staking-proxy/mocks/staking.p
 import { PriceDiscoveryServiceProvider } from '../../price-discovery/mocks/price.discovery.service.mock';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
-import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
@@ -129,7 +129,7 @@ describe('UserService', () => {
                 SimpleLockAbiServiceProvider,
                 EnergyAbiServiceProvider,
                 EnergyComputeService,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 TokenComputeService,
                 TokenService,
                 UserEsdtService,

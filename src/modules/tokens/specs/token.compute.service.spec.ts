@@ -6,7 +6,7 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
-import { TokenGetterServiceProvider } from '../mocks/token.getter.service.mock';
+import { TokenServiceProvider } from '../mocks/token.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { tokenProviderUSD } from 'src/config';
 import { ConfigModule } from '@nestjs/config';
@@ -33,7 +33,7 @@ describe('TokenComputeService', () => {
                 PairComputeServiceProvider,
                 PairService,
                 WrapAbiServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
                 ContextGetterServiceProvider,

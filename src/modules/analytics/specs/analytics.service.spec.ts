@@ -7,7 +7,7 @@ import { ContextGetterServiceProvider } from 'src/services/context/mocks/context
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { AbiLockedAssetService } from 'src/modules/locked-asset-factory/services/abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from 'src/modules/locked-asset-factory/mocks/abi.locked.asset.service.mock';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
@@ -89,7 +89,7 @@ describe('AnalyticsService', () => {
                 LockedAssetGetterService,
                 WrapAbiServiceProvider,
                 RouterAbiServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 TokenComputeService,
                 MXDataApiServiceProvider,
                 AnalyticsComputeService,
@@ -103,7 +103,6 @@ describe('AnalyticsService', () => {
                 EnergyAbiServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,
-                TokenGetterServiceProvider,
                 CachingService,
                 ApiConfigService,
             ],

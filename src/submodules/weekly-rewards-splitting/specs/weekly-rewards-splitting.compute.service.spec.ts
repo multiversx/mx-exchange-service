@@ -12,7 +12,7 @@ import { Address } from '@multiversx/sdk-core/out';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
@@ -40,7 +40,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 WeeklyRewardsSplittingAbiServiceProvider,
                 EnergyAbiServiceProvider,
                 TokenComputeService,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 PairService,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,

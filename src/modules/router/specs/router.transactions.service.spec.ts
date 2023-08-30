@@ -13,7 +13,7 @@ import { mxConfig, gasConfig } from 'src/config';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
@@ -53,7 +53,7 @@ describe('RouterService', () => {
                 ApiConfigService,
                 MXProxyService,
                 RouterTransactionService,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 RouterService,
                 CachingService,
             ],

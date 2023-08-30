@@ -4,7 +4,7 @@ import { Address } from '@multiversx/sdk-core';
 import { StakingTokenAttributesModel } from '../models/stakingTokenAttributes.model';
 import BigNumber from 'bignumber.js';
 import { StakingFarmTokenType } from '@multiversx/sdk-exchange';
-import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { StakingAbiServiceProvider } from '../mocks/staking.abi.service.mock';
 import { StakingAbiService } from '../services/staking.abi.service';
 import { StakingService } from '../services/staking.service';
@@ -35,7 +35,7 @@ describe('StakingComputeService', () => {
                 StakingComputeService,
                 StakingService,
                 StakingAbiServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
                 RemoteConfigGetterServiceProvider,

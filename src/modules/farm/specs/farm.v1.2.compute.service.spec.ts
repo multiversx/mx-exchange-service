@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { MXApiServiceProvider } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
@@ -41,7 +41,7 @@ describe('FarmService', () => {
                 PairService,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 TokenComputeService,
                 RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
