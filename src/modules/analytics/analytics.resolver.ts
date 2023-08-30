@@ -4,16 +4,16 @@ import { Args, Resolver } from '@nestjs/graphql';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from './models/query.args';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
-import { TokenGetterService } from '../tokens/services/token.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
+import { TokenService } from '../tokens/services/token.service';
 
 @Resolver()
 export class AnalyticsResolver {
     constructor(
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
         private readonly analyticsCompute: AnalyticsComputeService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
         private readonly pairCompute: PairComputeService,
     ) {}
 
@@ -44,7 +44,7 @@ export class AnalyticsResolver {
 
     @Query(() => String)
     async totalTokenSupply(@Args('tokenID') tokenID: string): Promise<string> {
-        return (await this.tokenGetter.getTokenMetadata(tokenID)).supply;
+        return (await this.tokenService.getTokenMetadata(tokenID)).supply;
     }
 
     @Query(() => String)

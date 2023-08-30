@@ -29,9 +29,9 @@ import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class SimpleLockService {
@@ -39,7 +39,7 @@ export class SimpleLockService {
         private readonly simpleLockAbi: SimpleLockAbiService,
         private readonly farmFactory: FarmFactoryService,
         private readonly farmAbi: FarmAbiFactory,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
         private readonly cacheService: CachingService,
     ) {}
@@ -48,21 +48,21 @@ export class SimpleLockService {
         const tokenID = await this.simpleLockAbi.lockedTokenID(
             simpleLockAddress,
         );
-        return await this.tokenGetter.getNftCollectionMetadata(tokenID);
+        return await this.tokenService.getNftCollectionMetadata(tokenID);
     }
 
     async getLpProxyToken(simpleLockAddress: string): Promise<NftCollection> {
         const tokenID = await this.simpleLockAbi.lpProxyTokenID(
             simpleLockAddress,
         );
-        return await this.tokenGetter.getNftCollectionMetadata(tokenID);
+        return await this.tokenService.getNftCollectionMetadata(tokenID);
     }
 
     async getFarmProxyToken(simpleLockAddress: string): Promise<NftCollection> {
         const tokenID = await this.simpleLockAbi.farmProxyTokenID(
             simpleLockAddress,
         );
-        return await this.tokenGetter.getNftCollectionMetadata(tokenID);
+        return await this.tokenService.getNftCollectionMetadata(tokenID);
     }
 
     async getLockedTokenAttributes(

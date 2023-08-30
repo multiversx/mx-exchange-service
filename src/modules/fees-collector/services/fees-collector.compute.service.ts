@@ -13,9 +13,9 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class FeesCollectorComputeService {
@@ -28,7 +28,7 @@ export class FeesCollectorComputeService {
         private readonly contextGetter: ContextGetterService,
         private readonly energyAbi: EnergyAbiService,
         private readonly energyService: EnergyService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
         private readonly tokenCompute: TokenComputeService,
     ) {}
 
@@ -190,7 +190,7 @@ export class FeesCollectorComputeService {
 
         const [baseToken, userEnergy, totalRewardsForWeekUSD] =
             await Promise.all([
-                this.tokenGetter.getTokenMetadata(baseAssetTokenID),
+                this.tokenService.getTokenMetadata(baseAssetTokenID),
                 this.energyService.getUserEnergy(userAddress),
                 this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
                     scAddress,

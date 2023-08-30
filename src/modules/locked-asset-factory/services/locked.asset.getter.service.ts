@@ -3,13 +3,13 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
 import { UnlockMileStoneModel } from '../models/locked-asset.model';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class LockedAssetGetterService extends GenericGetterService {
@@ -17,7 +17,7 @@ export class LockedAssetGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: AbiLockedAssetService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'lockedAssetFactory';
@@ -43,12 +43,12 @@ export class LockedAssetGetterService extends GenericGetterService {
 
     async getAssetToken(): Promise<EsdtToken> {
         const assetTokenID = await this.getAssetTokenID();
-        return await this.tokenGetter.getTokenMetadata(assetTokenID);
+        return await this.tokenService.getTokenMetadata(assetTokenID);
     }
 
     async getLockedToken(): Promise<NftCollection> {
         const lockedTokenID = await this.getLockedTokenID();
-        return await this.tokenGetter.getNftCollectionMetadata(lockedTokenID);
+        return await this.tokenService.getNftCollectionMetadata(lockedTokenID);
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
@@ -69,9 +69,7 @@ export class LockedAssetGetterService extends GenericGetterService {
 
     async getExtendedAttributesActivationNonce(): Promise<number> {
         return await this.getData(
-            this.getCacheKey(
-                'extendedAttributesActivationNonce',
-            ),
+            this.getCacheKey('extendedAttributesActivationNonce'),
             () => this.abiService.getExtendedAttributesActivationNonce(),
             oneHour(),
         );

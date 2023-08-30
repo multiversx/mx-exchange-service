@@ -20,17 +20,17 @@ import { GraphService } from './graph.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneMinute } from 'src/helpers/helpers';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class AutoRouterService {
     constructor(
         private readonly routerAbi: RouterAbiService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
@@ -79,8 +79,8 @@ export class AutoRouterService {
             await Promise.all([
                 this.remoteConfigGetterService.getMultiSwapStatus(),
                 this.getAllActivePairs(),
-                this.tokenGetter.getTokenMetadata(tokenInID),
-                this.tokenGetter.getTokenMetadata(tokenOutID),
+                this.tokenService.getTokenMetadata(tokenInID),
+                this.tokenService.getTokenMetadata(tokenOutID),
             ]);
 
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
@@ -502,9 +502,9 @@ export class AutoRouterService {
                 intermediaryTokenOut,
                 intermediaryTokenOutPriceUSD,
             ] = await Promise.all([
-                this.tokenGetter.getTokenMetadata(tokenInID),
+                this.tokenService.getTokenMetadata(tokenInID),
                 this.pairCompute.tokenPriceUSD(tokenInID),
-                this.tokenGetter.getTokenMetadata(tokenOutID),
+                this.tokenService.getTokenMetadata(tokenOutID),
                 this.pairCompute.tokenPriceUSD(tokenOutID),
             ]);
 

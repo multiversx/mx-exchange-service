@@ -37,7 +37,6 @@ import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { LockedTokenAttributesModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ProxyAbiService } from './proxy.abi.service';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -46,6 +45,7 @@ import { ProxyPairAbiService } from './proxy-pair/proxy.pair.abi.service';
 import { ProxyFarmAbiService } from './proxy-farm/proxy.farm.abi.service';
 import { proxyVersion } from 'src/utils/proxy.utils';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class ProxyService {
@@ -58,12 +58,12 @@ export class ProxyService {
         private readonly apiService: MXApiService,
         private readonly lockedAssetService: LockedAssetService,
         private readonly cacheService: CachingService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
     ) {}
 
     async getAssetToken(proxyAddress: string): Promise<EsdtToken> {
         const assetTokenID = await this.proxyAbi.assetTokenID(proxyAddress);
-        return this.tokenGetter.getTokenMetadata(assetTokenID);
+        return this.tokenService.getTokenMetadata(assetTokenID);
     }
 
     async getlockedAssetToken(proxyAddress: string): Promise<NftCollection[]> {
@@ -74,7 +74,7 @@ export class ProxyService {
                 : await this.proxyAbiV2.lockedAssetTokenID(proxyAddress);
         return await Promise.all(
             lockedAssetTokenIDs.map((tokenID: string) =>
-                this.tokenGetter.getNftCollectionMetadata(tokenID),
+                this.tokenService.getNftCollectionMetadata(tokenID),
             ),
         );
     }
@@ -83,7 +83,7 @@ export class ProxyService {
         const wrappedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             proxyAddress,
         );
-        return await this.tokenGetter.getNftCollectionMetadata(
+        return await this.tokenService.getNftCollectionMetadata(
             wrappedLpTokenID,
         );
     }
@@ -92,7 +92,7 @@ export class ProxyService {
         const wrappedFarmTokenID = await this.proxyFarmAbi.wrappedFarmTokenID(
             proxyAddress,
         );
-        return this.tokenGetter.getNftCollectionMetadata(wrappedFarmTokenID);
+        return this.tokenService.getNftCollectionMetadata(wrappedFarmTokenID);
     }
 
     getWrappedLpTokenAttributes(

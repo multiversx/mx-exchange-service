@@ -3,7 +3,6 @@ import { BigNumber } from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { StakingTokenAttributesModel } from '../models/stakingTokenAttributes.model';
-import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { StakingAbiService } from './staking.abi.service';
 import { StakingService } from './staking.service';
 import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
@@ -11,6 +10,8 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { denominateAmount } from 'src/utils/token.converters';
 import { OptimalCompoundModel } from '../models/staking.model';
+import { TokenService } from 'src/modules/tokens/services/token.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 @Injectable()
 export class StakingComputeService {
@@ -19,7 +20,8 @@ export class StakingComputeService {
         @Inject(forwardRef(() => StakingService))
         private readonly stakingService: StakingService,
         private readonly contextGetter: ContextGetterService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
+        private readonly tokenCompute: TokenComputeService,
     ) {}
 
     async computeStakeRewardsForPosition(
@@ -158,11 +160,11 @@ export class StakingComputeService {
     async computeStakedValueUSD(stakeAddress: string): Promise<string> {
         const [farmTokenSupply, farmingToken] = await Promise.all([
             this.stakingAbi.farmTokenSupply(stakeAddress),
-            this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
+            this.tokenService.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
             this.stakingService.getFarmingToken(stakeAddress),
         ]);
 
-        const farmingTokenPrice = await this.tokenGetter.getDerivedUSD(
+        const farmingTokenPrice = await this.tokenCompute.tokenPriceDerivedUSD(
             farmingToken.identifier,
         );
         return new BigNumber(farmTokenSupply)
@@ -229,7 +231,7 @@ export class StakingComputeService {
             farmingToken.decimals,
         ).toNumber();
 
-        const farmingTokenPrice = await this.tokenGetter.getDerivedEGLD(
+        const farmingTokenPrice = await this.tokenCompute.tokenPriceDerivedEGLD(
             farmingToken.identifier,
         );
         const egldPriceFarmingToken = new BigNumber(1).dividedBy(

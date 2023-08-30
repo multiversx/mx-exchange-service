@@ -4,11 +4,12 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
 import { RouterSetterService } from 'src/modules/router/services/router.setter.service';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { PairHandler } from './pair.handler.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 @Injectable()
 export class LiquidityHandler {
@@ -16,7 +17,8 @@ export class LiquidityHandler {
         private readonly pairSetter: PairSetterService,
         private readonly routerCompute: RouterComputeService,
         private readonly routerSetter: RouterSetterService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
+        private readonly tokenCompute: TokenComputeService,
         private readonly pairHandler: PairHandler,
         private readonly dataApi: MXDataApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -39,10 +41,14 @@ export class LiquidityHandler {
             secondTokenPriceUSD,
             newTotalLockedValueUSD,
         ] = await Promise.all([
-            this.tokenGetter.getTokenMetadata(event.getFirstToken().tokenID),
-            this.tokenGetter.getTokenMetadata(event.getSecondToken().tokenID),
-            this.tokenGetter.getDerivedUSD(event.getFirstToken().tokenID),
-            this.tokenGetter.getDerivedUSD(event.getSecondToken().tokenID),
+            this.tokenService.getTokenMetadata(event.getFirstToken().tokenID),
+            this.tokenService.getTokenMetadata(event.getSecondToken().tokenID),
+            this.tokenCompute.tokenPriceDerivedUSD(
+                event.getFirstToken().tokenID,
+            ),
+            this.tokenCompute.tokenPriceDerivedUSD(
+                event.getSecondToken().tokenID,
+            ),
             this.routerCompute.computeTotalLockedValueUSD(),
         ]);
 

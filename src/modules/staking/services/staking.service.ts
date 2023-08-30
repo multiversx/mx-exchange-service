@@ -16,9 +16,9 @@ import {
 } from '../models/stakingTokenAttributes.model';
 import { StakingAbiService } from './staking.abi.service';
 import { StakingComputeService } from './staking.compute.service';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class StakingService {
@@ -27,7 +27,7 @@ export class StakingService {
         @Inject(forwardRef(() => StakingComputeService))
         private readonly stakingCompute: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetter: RemoteConfigGetterService,
     ) {}
@@ -50,19 +50,19 @@ export class StakingService {
 
     async getFarmToken(stakeAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.stakingAbi.farmTokenID(stakeAddress);
-        return await this.tokenGetter.getNftCollectionMetadata(farmTokenID);
+        return await this.tokenService.getNftCollectionMetadata(farmTokenID);
     }
 
     async getFarmingToken(stakeAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.stakingAbi.farmingTokenID(
             stakeAddress,
         );
-        return await this.tokenGetter.getTokenMetadata(farmingTokenID);
+        return await this.tokenService.getTokenMetadata(farmingTokenID);
     }
 
     async getRewardToken(stakeAddress: string): Promise<EsdtToken> {
         const rewardTokenID = await this.stakingAbi.rewardTokenID(stakeAddress);
-        return await this.tokenGetter.getTokenMetadata(rewardTokenID);
+        return await this.tokenService.getTokenMetadata(rewardTokenID);
     }
 
     decodeStakingTokenAttributes(

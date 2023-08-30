@@ -3,13 +3,13 @@ import { scAddress } from 'src/config';
 import { MetabondingStakingModel } from '../models/metabonding.model';
 import { MetabondingAbiService } from './metabonding.abi.service';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class MetabondingService {
     constructor(
         private readonly metabondingAbi: MetabondingAbiService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
     ) {}
 
     getMetabondingStaking(): MetabondingStakingModel {
@@ -21,7 +21,7 @@ export class MetabondingService {
     async lockedAssetToken(): Promise<NftCollection> {
         const lockedAssetTokenID =
             await this.metabondingAbi.lockedAssetTokenID();
-        return await this.tokenGetter.getNftCollectionMetadata(
+        return await this.tokenService.getNftCollectionMetadata(
             lockedAssetTokenID,
         );
     }
