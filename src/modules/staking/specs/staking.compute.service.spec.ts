@@ -18,6 +18,7 @@ import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -36,6 +37,7 @@ describe('StakingComputeService', () => {
                 StakingService,
                 StakingAbiServiceProvider,
                 TokenServiceProvider,
+                TokenComputeServiceProvider,
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
                 RemoteConfigGetterServiceProvider,

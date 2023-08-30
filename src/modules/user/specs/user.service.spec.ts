@@ -68,6 +68,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 
 describe('UserService', () => {
     let module: TestingModule;
@@ -130,8 +131,7 @@ describe('UserService', () => {
                 EnergyAbiServiceProvider,
                 EnergyComputeService,
                 TokenServiceProvider,
-                TokenComputeService,
-                TokenService,
+                TokenComputeServiceProvider,
                 UserEsdtService,
                 UserMetaEsdtService,
                 UserMetaEsdtComputeService,

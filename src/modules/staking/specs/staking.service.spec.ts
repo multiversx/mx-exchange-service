@@ -15,6 +15,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
+import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 
 describe('StakingService', () => {
     let module: TestingModule;
@@ -39,6 +40,7 @@ describe('StakingService', () => {
                 MXGatewayService,
                 ApiConfigService,
                 TokenServiceProvider,
+                TokenComputeServiceProvider,
                 CachingService,
                 ApiConfigService,
             ],
