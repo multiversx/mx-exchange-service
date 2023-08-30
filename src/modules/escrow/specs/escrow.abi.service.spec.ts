@@ -5,20 +5,32 @@ import { MXGatewayServiceProvider } from 'src/services/multiversx-communication/
 import { SCPermissions } from '../models/escrow.model';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { Address, ReturnCode, U32Value } from '@multiversx/sdk-core/out';
-import { CommonAppModule } from 'src/common.app.module';
-import { CachingModule } from 'src/services/caching/cache.module';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('EscrowAbiService', () => {
     let service: EscrowAbiService;
     let mxGateway: MXGatewayService;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 EscrowAbiService,
                 MXProxyServiceProvider,
                 MXGatewayServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
 

@@ -1,7 +1,7 @@
-import { Injectable, Inject, CACHE_MANAGER } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateSetLogMessage } from '../../utils/generate-log-message';
 import { Cache } from 'cache-manager';
 import { cacheConfig } from '../../config';
 import { PerformanceProfiler } from '../../utils/performance.profiler';

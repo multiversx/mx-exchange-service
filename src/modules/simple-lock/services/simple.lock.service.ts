@@ -4,7 +4,7 @@ import {
     LockedTokenAttributes,
 } from '@multiversx/sdk-exchange';
 import { Injectable } from '@nestjs/common';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from '@nestjs/apollo';
 import { scAddress } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import {

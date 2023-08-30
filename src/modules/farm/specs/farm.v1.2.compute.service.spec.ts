@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { MXApiServiceProvider } from '../../../services/multiversx-communication/mx.api.service.mock';
-import { CommonAppModule } from '../../../common.app.module';
-import { CachingModule } from '../../../services/caching/cache.module';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.service';
@@ -15,13 +13,25 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { FarmAbiServiceProviderV1_2 } from '../mocks/farm.v1.2.abi.service.mock';
 import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
 import { Address } from '@multiversx/sdk-core/out';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('FarmService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 FarmAbiServiceProviderV1_2,
                 FarmServiceV1_2,
@@ -36,6 +46,8 @@ describe('FarmService', () => {
                 RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 MXDataApiServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });

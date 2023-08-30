@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CachingModule } from '../../../services/caching/cache.module';
 import { MXCommunicationModule } from '../../../services/multiversx-communication/mx.communication.module';
 import { FeesCollectorService } from '../services/fees-collector.service';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
@@ -24,13 +23,26 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('FeesCollectorService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [MXCommunicationModule, CachingModule],
+            imports: [
+                MXCommunicationModule,
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 FeesCollectorService,
                 FeesCollectorAbiServiceProvider,
@@ -54,6 +66,8 @@ describe('FeesCollectorService', () => {
                     provide: ContextGetterService,
                     useClass: ContextGetterServiceMock,
                 },
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });

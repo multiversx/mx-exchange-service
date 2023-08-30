@@ -4,19 +4,32 @@ import { PairFilterArgs } from '../models/filter.args';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { Address } from '@multiversx/sdk-core/out';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('RouterService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 PairAbiServiceProvider,
                 RouterAbiServiceProvider,
                 RouterService,
+                ApiConfigService,
+                CachingService,
             ],
         }).compile();
     });

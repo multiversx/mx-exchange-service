@@ -9,7 +9,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { JwtPayload, verify } from 'jsonwebtoken';
-import { ForbiddenError } from 'apollo-server-express';
+import { ForbiddenError } from '@nestjs/apollo';
 
 @Injectable()
 export class GqlAdminGuard implements CanActivate {

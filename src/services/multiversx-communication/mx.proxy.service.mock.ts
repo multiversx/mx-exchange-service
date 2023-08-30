@@ -22,11 +22,10 @@ export class MXProxyServiceMock extends MXProxyService {
         });
         const json = JSON.parse(jsonContent);
         const abiRegistry = AbiRegistry.create(json);
-        const abi = new SmartContractAbi(abiRegistry, [contractInterface]);
 
         return new SmartContract({
             address: Address.fromString(contractAddress),
-            abi,
+            abi: new SmartContractAbi(abiRegistry, [contractInterface]),
         });
     }
 }

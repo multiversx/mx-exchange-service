@@ -15,7 +15,7 @@ import { EscrowTransactionService } from './services/escrow.transaction.service'
 import { SenderCooldownValidator } from './validators/sender.cooldown.validator';
 import { TransferTokensValidator } from './validators/transfer.tokens.validator';
 import { EscrowAdminValidator } from './validators/admin.validator';
-import { ForbiddenError } from 'apollo-server-express';
+import { ForbiddenError } from '@nestjs/apollo';
 import { EscrowAbiService } from './services/escrow.abi.service';
 
 @Resolver(EscrowModel)

@@ -1,9 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommonAppModule } from 'src/common.app.module';
 import { PairComputeService } from '../services/pair.compute.service';
 import { PairService } from '../services/pair.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
@@ -14,13 +12,25 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { Address } from '@multiversx/sdk-core/out';
 import { PairsData } from '../mocks/pair.constants';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('PairService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 PairComputeService,
                 PairService,
@@ -32,6 +42,8 @@ describe('PairService', () => {
                 TokenComputeService,
                 AnalyticsQueryServiceProvider,
                 ContextGetterServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });

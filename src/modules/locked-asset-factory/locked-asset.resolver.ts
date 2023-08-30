@@ -11,13 +11,14 @@ import { UnlockAssetsArgs } from './models/locked-asset.args';
 import { TransactionsLockedAssetService } from './services/transaction-locked-asset.service';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
-import { ApolloError } from 'apollo-server-express';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { LockedAssetGetterService } from './services/locked.asset.getter.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => LockedAssetModel)
 export class LockedAssetResolver {
@@ -32,7 +33,11 @@ export class LockedAssetResolver {
         try {
             return await this.lockedAssetGetter.getAssetToken();
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 
@@ -41,7 +46,11 @@ export class LockedAssetResolver {
         try {
             return await this.lockedAssetGetter.getLockedToken();
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 
@@ -50,7 +59,11 @@ export class LockedAssetResolver {
         try {
             return await this.lockedAssetGetter.getDefaultUnlockPeriod();
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 
@@ -59,7 +72,11 @@ export class LockedAssetResolver {
         try {
             return await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 
@@ -98,7 +115,11 @@ export class LockedAssetResolver {
                 tokens,
             );
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 

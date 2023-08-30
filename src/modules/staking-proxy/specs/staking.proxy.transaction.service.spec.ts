@@ -5,8 +5,6 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
-import { CommonAppModule } from 'src/common.app.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { StakingProxyAbiServiceProvider } from '../mocks/staking.proxy.abi.service.mock';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { FarmServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.service';
@@ -17,8 +15,6 @@ import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmAbiServiceMock } from 'src/modules/farm/mocks/farm.abi.service.mock';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
-import { FarmAbiServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.abi.service';
-import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
@@ -40,13 +36,25 @@ import { FarmAbiServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.abi
 import { FarmAbiServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.abi.service.mock';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import { CachingService } from 'src/services/caching/cache.service';
+import winston from 'winston';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 StakingProxyTransactionService,
                 StakingProxyAbiServiceProvider,
@@ -85,6 +93,8 @@ describe('StakingProxyTransactionService', () => {
                 MXApiServiceProvider,
                 MXDataApiServiceProvider,
                 RemoteConfigGetterServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });

@@ -1,6 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommonAppModule } from 'src/common.app.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
@@ -13,6 +11,12 @@ import {
 } from '../models/locked-asset.model';
 import { LockedAssetGetterService } from '../services/locked.asset.getter.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('LockedAssetService', () => {
     let service: LockedAssetService;
@@ -28,15 +32,24 @@ describe('LockedAssetService', () => {
         useClass: AbiLockedAssetServiceMock,
     };
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule, MXCommunicationModule],
+            imports: [
+                MXCommunicationModule,
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 ContextGetterServiceProvider,
                 TokenGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetService,
                 LockedAssetGetterService,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
 

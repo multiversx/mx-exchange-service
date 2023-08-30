@@ -1,7 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { CommonAppModule } from '../../../common.app.module';
-import { CachingModule } from '../../../services/caching/cache.module';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
@@ -42,13 +40,25 @@ import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('AnalyticsService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
@@ -94,6 +104,8 @@ describe('AnalyticsService', () => {
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,
                 TokenGetterServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });

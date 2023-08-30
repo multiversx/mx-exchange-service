@@ -3,25 +3,38 @@ import { FeesCollectorTransactionService } from '../services/fees-collector.tran
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { CommonAppModule } from 'src/common.app.module';
 import { TransactionModel } from 'src/models/transaction.model';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { mxConfig, scAddress } from 'src/config';
 import { Address } from '@multiversx/sdk-core/out';
 import { FeesCollectorTransactionModel } from '../models/fees-collector.model';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { CacheModule } from '@nestjs/cache-manager';
+import { WinstonModule } from 'nest-winston';
+import { ConfigModule } from '@nestjs/config';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('FeesCollectorTransactionService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 FeesCollectorTransactionService,
                 WeekTimekeepingAbiServiceProvider,
                 WeeklyRewardsSplittingAbiServiceProvider,
                 MXProxyServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });

@@ -4,24 +4,33 @@ import { WrapAbiServiceProvider } from '../mocks/wrap.abi.service.mock';
 import { WrapService } from '../services/wrap.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { CommonAppModule } from 'src/common.app.module';
 import { Address } from '@multiversx/sdk-core/out';
 import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';
+import { WinstonModule } from 'nest-winston';
+import { ConfigModule } from '@nestjs/config';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('WrapTransactionsService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule],
+            imports: [
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 WrapTransactionsService,
                 WrapAbiServiceProvider,
                 WrapService,
                 TokenGetterServiceProvider,
                 MXProxyServiceProvider,
+                ApiConfigService,
             ],
         }).compile();
     });

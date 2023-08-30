@@ -2,17 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AutoRouterService } from '../services/auto-router.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import winston from 'winston';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as Transport from 'winston-transport';
+import { WinstonModule } from 'nest-winston';
 import { AutoRouterComputeService } from '../services/auto-router.compute.service';
 import { AutoRouterTransactionService } from '../services/auto-router.transactions.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
-import { CommonAppModule } from 'src/common.app.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -34,6 +27,11 @@ import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { ConfigModule } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -53,23 +51,14 @@ describe('AutoRouterService', () => {
         useClass: RemoteConfigGetterServiceMock,
     };
 
-    const logTransports: Transport[] = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                nestWinstonModuleUtilities.format.nestLike(),
-            ),
-        }),
-    ];
-
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [
+                CacheModule.register(),
                 WinstonModule.forRoot({
-                    transports: logTransports,
+                    transports: [new winston.transports.Console({})],
                 }),
-                CommonAppModule,
-                CachingModule,
+                ConfigModule.forRoot({}),
             ],
             providers: [
                 RouterService,
@@ -89,6 +78,8 @@ describe('AutoRouterService', () => {
                 AutoRouterService,
                 AutoRouterComputeService,
                 AutoRouterTransactionService,
+                CachingService,
+                ApiConfigService,
             ],
             exports: [],
         }).compile();

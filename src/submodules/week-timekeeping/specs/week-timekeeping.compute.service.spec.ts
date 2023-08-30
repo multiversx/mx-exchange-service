@@ -7,17 +7,30 @@ import {
 import { WeekTimekeepingAbiServiceProvider } from '../mocks/week.timekeeping.abi.service.mock';
 import { WeekTimekeepingAbiService } from '../services/week-timekeeping.abi.service';
 import { Address } from '@multiversx/sdk-core/out';
-import { CachingModule } from 'src/services/caching/cache.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('WeekTimekeepingComputeService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });
