@@ -50,7 +50,12 @@
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
         "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a",
         "governance": {
-            "energy": [],
+            "oldEnergy": [
+                "erd1qqqqqqqqqqqqqpgqdt9aady5jp7av97m7rqxh6e5ywyqsplz2jps5mw02n"
+            ],
+            "energy": [
+              "erd1qqqqqqqqqqqqqpgqzvcvh8ur47nlwxsa9wf7gvrlmf764aerczfsnsjudc"
+            ],
             "tokenSnapshot": [
                 "erd1qqqqqqqqqqqqqpgq2rkrhef99hhk3ynfcxevcj86axr3sgmcczfstkmdwr"
             ]
@@ -89,8 +94,8 @@
                 "unlockedRewards": [
                 ],
                 "lockedRewards": [
-                    "erd1qqqqqqqqqqqqqpgq59hlx9lmclzngxfnxwjpzru3ukm3hfvj0n4sh8pkmp",
-                    "erd1qqqqqqqqqqqqqpgq835vpevjysz042t3wnp6q5a7skxaerm90n4sg85ekq"
+                    "erd1qqqqqqqqqqqqqpgqnqe5qhepftkxny7n8q2uaytlzjqww64p0n4sylm47u",
+                    "erd1qqqqqqqqqqqqqpgqzwvzevy2dg20fr5t5pfethsqr8zdc3ga0n4svh20vp"
                 ]
         }
     },

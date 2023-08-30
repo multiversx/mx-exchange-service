@@ -16,6 +16,7 @@ import { GovernanceTokenSnapshotMerkleService } from './governance.token.snapsho
 import { GovernanceDescriptionService } from './governance.description.service';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
+import { decimalToHex } from '../../../utils/token.converters';
 
 @Injectable()
 export class GovernanceTokenSnapshotAbiService
@@ -204,41 +205,11 @@ export class GovernanceTokenSnapshotAbiService
                 proposalStartBlock: proposal.proposal_start_block.toNumber(),
                 minimumQuorumPercentage: proposal.minimum_quorum.div(100).toFixed(2),
                 totalQuorum: proposal.total_quorum.toFixed(),
-                totalVotingPower: proposal.total_quorum.toFixed(), //TODO: remove this when totalVotingPower will be added
                 votingDelayInBlocks: proposal.voting_delay_in_blocks.toNumber(),
                 votingPeriodInBlocks: proposal.voting_period_in_blocks.toNumber(),
                 withdrawPercentageDefeated: proposal.withdraw_percentage_defeated.toNumber(),
             });
         });
-    }
-
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async totalVotingPower(scAddress: string, proposalId: number): Promise<string> {
-        return await this.totalVotingPowerRaw(scAddress, proposalId);
-    }
-
-    async totalVotingPowerRaw(scAddress: string, proposalId: number): Promise<string> {
-        //TODO: remove this after totalVotingPower will be implemented
-        const proposal = await this.proposals(scAddress);
-        const proposalIndex = proposal.findIndex((p) => p.proposalId === proposalId);
-        if (proposalIndex === -1) {
-            throw new Error(`Proposal with id ${proposalId} not found`);
-        }
-        return proposal[proposalIndex].totalQuorum;
-
-        const contract = await this.mxProxy.getGovernanceSmartContract(
-            scAddress,
-            this.type
-        );
-        const interaction = contract.methods.getTotalVotingPower([proposalId]);
-        const response = await this.getGenericData(interaction);
-
-        return response.firstValue.valueOf().toFixed();
     }
 
     @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
@@ -343,11 +314,7 @@ export class GovernanceTokenSnapshotAbiService
         const response = await this.getGenericData(interaction);
 
         const stringsArray = response.firstValue.valueOf().map(bn => {
-            let hex = bn.toString(16);
-            if (hex.length === 1) {
-                hex = '0' + hex; // Pad with a leading zero if needed
-            }
-            return hex;
+            return decimalToHex(bn);
         });
         return stringsArray.join('');
     }
