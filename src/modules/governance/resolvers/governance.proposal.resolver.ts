@@ -39,13 +39,6 @@ export class GovernanceProposalResolver {
             .proposalVotes(governanceProposal.contractAddress, governanceProposal.proposalId);
     }
 
-    @ResolveField()
-    async totalVotingPower(@Parent() governanceProposal: GovernanceProposalModel): Promise<string> {
-        return this.governanceServiceFactory
-            .userService(governanceProposal.contractAddress)
-            .totalVotingPower(governanceProposal.contractAddress, governanceProposal.proposalId);
-    }
-
     @UseGuards(JwtOrNativeAuthGuard)
     @ResolveField()
     async hasVoted(
