@@ -5,7 +5,6 @@ import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
 import { EsdtTokenDbModel, EsdtTokenSchema } from './schemas/token.schema';
 import { TokenRepositoryService } from './services/token.repository.service';
-import { TokenGetterService } from './services/token.getter.service';
 import { TokenService } from './services/token.service';
 import { TokensResolver } from './token.resolver';
 import { DatabaseModule } from 'src/services/database/database.module';
@@ -28,7 +27,6 @@ import { NftTokenResolver } from './nftToken.resolver';
     ],
     providers: [
         TokenService,
-        TokenGetterService,
         TokenSetterService,
         TokenComputeService,
         TokenRepositoryService,
@@ -39,7 +37,6 @@ import { NftTokenResolver } from './nftToken.resolver';
     exports: [
         TokenRepositoryService,
         TokenService,
-        TokenGetterService,
         TokenSetterService,
         TokenComputeService,
     ],
