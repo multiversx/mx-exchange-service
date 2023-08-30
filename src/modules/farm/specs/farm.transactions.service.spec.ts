@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
+import { CachingModule } from '../../../services/caching/cache.module';
 import { Address } from '@multiversx/sdk-core';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import { MXProxyServiceProvider } from '../../../services/multiversx-communication/mx.proxy.service.mock';
@@ -16,24 +17,13 @@ import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { FarmAbiServiceProviderV1_2 } from '../mocks/farm.v1.2.abi.service.mock';
-import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
-import { WinstonModule } from 'nest-winston';
-import winston from 'winston';
 
 describe('FarmService', () => {
     let module: TestingModule;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         module = await Test.createTestingModule({
-            imports: [
-                CacheModule.register(),
-                ConfigModule.forRoot({}),
-                WinstonModule.forRoot({
-                    transports: [new winston.transports.Console({})],
-                }),
-            ],
+            imports: [CachingModule],
             providers: [
                 ApiConfigService,
                 MXApiService,
@@ -49,8 +39,6 @@ describe('FarmService', () => {
                 FarmTransactionServiceV1_2,
                 FarmAbiServiceProviderV1_2,
                 MXDataApiServiceProvider,
-                CachingService,
-                ApiConfigService,
             ],
         }).compile();
     });

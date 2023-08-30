@@ -1,5 +1,4 @@
-import { GraphQLError } from 'graphql';
-import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { ApolloError } from 'apollo-server-express';
 
 export class GenericResolver {
     protected async genericFieldResolver<T>(
@@ -8,11 +7,7 @@ export class GenericResolver {
         try {
             return await fieldResolver();
         } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+            throw new ApolloError(error);
         }
     }
 
@@ -22,11 +17,7 @@ export class GenericResolver {
         try {
             return await queryResolver();
         } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+            throw new ApolloError(error);
         }
     }
 }

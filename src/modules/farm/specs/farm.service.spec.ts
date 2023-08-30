@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { FarmAbiServiceMock } from '../mocks/farm.abi.service.mock';
 import { MXApiServiceProvider } from '../../../services/multiversx-communication/mx.api.service.mock';
+import { CommonAppModule } from '../../../common.app.module';
+import { CachingModule } from '../../../services/caching/cache.module';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { Address } from '@multiversx/sdk-core';
@@ -34,25 +36,13 @@ import { FarmCustomService } from '../custom/services/farm.custom.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FarmCustomComputeService } from '../custom/services/farm.custom.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ConfigModule } from '@nestjs/config';
-import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
-import { ApiConfigService } from 'src/helpers/api.config.service';
-import winston from 'winston';
 
 describe('FarmService', () => {
     let module: TestingModule;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         module = await Test.createTestingModule({
-            imports: [
-                CacheModule.register(),
-                WinstonModule.forRoot({
-                    transports: [new winston.transports.Console({})],
-                }),
-                ConfigModule.forRoot({}),
-            ],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 FarmFactoryService,
                 FarmAbiFactory,
@@ -95,8 +85,6 @@ describe('FarmService', () => {
                 EnergyAbiServiceProvider,
                 EnergyComputeService,
                 MXDataApiServiceProvider,
-                CachingService,
-                ApiConfigService,
             ],
         }).compile();
     });

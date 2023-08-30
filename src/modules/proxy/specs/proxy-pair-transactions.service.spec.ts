@@ -6,13 +6,15 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { Address } from '@multiversx/sdk-core';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
+import { CommonAppModule } from 'src/common.app.module';
 import {
     ProxyAbiServiceMock,
     ProxyPairAbiServiceProvider,
 } from '../mocks/proxy.abi.service.mock';
 import { ProxyAbiServiceV2 } from '../v2/services/proxy.v2.abi.service';
+import { CachingModule } from 'src/services/caching/cache.module';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
@@ -22,23 +24,13 @@ import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { encodeTransactionData } from 'src/helpers/helpers';
-import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
-import winston from 'winston';
 
 describe('TransactionProxyPairService', () => {
     let module: TestingModule;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         module = await Test.createTestingModule({
-            imports: [
-                CacheModule.register(),
-                WinstonModule.forRoot({
-                    transports: [new winston.transports.Console({})],
-                }),
-                ConfigModule.forRoot({}),
-            ],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 ApiConfigService,
                 ConfigService,
@@ -58,7 +50,6 @@ describe('TransactionProxyPairService', () => {
                 },
                 RouterAbiServiceProvider,
                 ContextGetterServiceProvider,
-                CachingService,
             ],
         }).compile();
     });

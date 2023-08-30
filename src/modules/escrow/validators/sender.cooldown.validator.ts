@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
-import { ForbiddenError } from '@nestjs/apollo';
+import { ForbiddenError } from 'apollo-server-express';
 import { UserAuthResult } from 'src/modules/auth/user.auth.result';
 import { EscrowComputeService } from '../services/escrow.compute.service';
 

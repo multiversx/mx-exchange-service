@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../services/pair.service';
+import { CommonAppModule } from 'src/common.app.module';
+import { CachingModule } from 'src/services/caching/cache.module';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
@@ -7,25 +9,13 @@ import { PairComputeServiceProvider } from '../mocks/pair.compute.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
-import { ConfigModule } from '@nestjs/config';
-import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
-import { ApiConfigService } from 'src/helpers/api.config.service';
-import winston from 'winston';
 
 describe('PairService', () => {
     let module: TestingModule;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         module = await Test.createTestingModule({
-            imports: [
-                CacheModule.register(),
-                WinstonModule.forRoot({
-                    transports: [new winston.transports.Console({})],
-                }),
-                ConfigModule.forRoot({}),
-            ],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
@@ -34,8 +24,6 @@ describe('PairService', () => {
                 TokenGetterServiceProvider,
                 ContextGetterServiceProvider,
                 RouterAbiServiceProvider,
-                CachingService,
-                ApiConfigService,
             ],
         }).compile();
     });

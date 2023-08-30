@@ -1,10 +1,4 @@
-import {
-    LoggerService,
-    MiddlewareConsumer,
-    Module,
-    RequestMethod,
-} from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager';
+import { CacheModule, LoggerService, MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
@@ -15,7 +9,7 @@ import { ProxyModule } from './modules/proxy/proxy.module';
 import { LockedAssetModule } from './modules/locked-asset-factory/locked-asset.module';
 import { UserModule } from './modules/user/user.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
-import { GraphQLFormattedError } from 'graphql';
+import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { CommonAppModule } from './common.app.module';
 import { CachingService } from './services/caching/cache.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -30,6 +24,7 @@ import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { FeesCollectorModule } from './modules/fees-collector/fees-collector.module';
 import { deprecationLoggerMiddleware } from './utils/deprecate.logger.middleware';
+import { GraphQLRequestContext, GraphQLResponse } from 'apollo-server-types';
 import { EnergyModule } from './modules/energy/energy.module';
 import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
 import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-token-wrapper.module';
@@ -50,24 +45,41 @@ import { GovernanceModule } from './modules/governance/governance.module';
                 buildSchemaOptions: {
                     fieldMiddleware: [deprecationLoggerMiddleware],
                 },
-                formatError: (
-                    formattedError: GraphQLFormattedError,
-                    error: any,
-                ): GraphQLFormattedError => {
-                    const errorStatus = formattedError.extensions?.code;
+                formatResponse: (
+                    response: GraphQLResponse,
+                    requestContext: GraphQLRequestContext,
+                ) => {
+                    const { context } = requestContext;
+                    const { req } = context;
+                    const extensionResponse = req?.deprecationWarning
+                        ? {
+                            extensions: {
+                                deprecationWarning: req?.deprecationWarning,
+                            },
+                        }
+                        : {};
+                    return {
+                        ...response,
+                        ...extensionResponse,
+                    };
+                },
+                formatError: (error: GraphQLError) => {
+                    const graphQLFormattedError: GraphQLFormattedError = {
+                        message: error.message,
+                        path: error.path,
+                        extensions: {
+                            code: error.extensions.code,
+                        },
+                    };
+
+                    const errorStatus = error.toJSON().extensions['code'];
                     switch (errorStatus) {
                         case 'FORBIDDEN':
                             logger.log(error.message, 'GraphQLModule');
                             break;
                     }
 
-                    return {
-                        message: formattedError.message,
-                        path: formattedError.path,
-                        extensions: {
-                            code: errorStatus,
-                        },
-                    };
+                    return graphQLFormattedError;
                 },
                 fieldResolverEnhancers: ['guards'],
             }),

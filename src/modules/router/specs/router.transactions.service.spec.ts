@@ -6,6 +6,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { RouterService } from '../services/router.service';
+import { CachingModule } from 'src/services/caching/cache.module';
 import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
@@ -18,11 +19,6 @@ import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { CachingService } from 'src/services/caching/cache.service';
-import { CacheModule } from '@nestjs/cache-manager';
-import { WinstonModule } from 'nest-winston';
-import { ConfigModule } from '@nestjs/config';
-import winston from 'winston';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -32,15 +28,9 @@ describe('RouterService', () => {
         useClass: ContextGetterServiceMock,
     };
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         module = await Test.createTestingModule({
-            imports: [
-                CacheModule.register(),
-                WinstonModule.forRoot({
-                    transports: [new winston.transports.Console({})],
-                }),
-                ConfigModule.forRoot({}),
-            ],
+            imports: [CachingModule],
             providers: [
                 ContextGetterServiceProvider,
                 PairAbiServiceProvider,
@@ -55,7 +45,6 @@ describe('RouterService', () => {
                 RouterTransactionService,
                 TokenGetterServiceProvider,
                 RouterService,
-                CachingService,
             ],
         }).compile();
     });

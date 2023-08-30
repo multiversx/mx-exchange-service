@@ -1,5 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Int, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { ApolloError } from 'apollo-server-express';
 import { scAddress } from 'src/config';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -18,8 +19,6 @@ import { EnergyTransactionService } from './services/energy.transaction.service'
 import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.validator';
 import { EnergyAbiService } from './services/energy.abi.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
-import { GraphQLError } from 'graphql';
-import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => SimpleLockEnergyModel)
 export class EnergyResolver {
@@ -152,11 +151,7 @@ export class EnergyResolver {
     ): Promise<TransactionModel> {
         const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+            throw new ApolloError('Invalid owner address');
         }
 
         return this.energyTransaction.updateLockOptions(lockOptions, remove);
@@ -171,11 +166,7 @@ export class EnergyResolver {
     ): Promise<TransactionModel> {
         const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+            throw new ApolloError('Invalid owner address');
         }
 
         return this.energyTransaction.setPenaltyPercentage(
@@ -192,11 +183,7 @@ export class EnergyResolver {
     ): Promise<TransactionModel> {
         const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+            throw new ApolloError('Invalid owner address');
         }
 
         return this.energyTransaction.setFeesBurnPercentage(percentage);
@@ -210,11 +197,7 @@ export class EnergyResolver {
     ): Promise<TransactionModel> {
         const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+            throw new ApolloError('Invalid owner address');
         }
 
         return this.energyTransaction.setFeesCollectorAddress(collectorAddress);
@@ -229,11 +212,7 @@ export class EnergyResolver {
     ): Promise<TransactionModel> {
         const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+            throw new ApolloError('Invalid owner address');
         }
 
         return this.energyTransaction.setOldLockedAssetFactoryAddress(
