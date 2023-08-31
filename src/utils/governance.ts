@@ -62,7 +62,6 @@ export const governanceSmoothingFunction = (governanceAddress: string): Governan
     for (const type of types) {
         const smoothingFunctions = Object.keys(governanceConfig[type]);
         for (const smoothingFunction of smoothingFunctions) {
-            console.log(governanceConfig[type][smoothingFunction])
             const address = governanceConfig[type][smoothingFunction].find(
                 (address: string) => address === governanceAddress,
             );
