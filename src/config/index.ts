@@ -1,6 +1,7 @@
 import { envload } from './env_load';
-envload();
 import config from 'config';
+
+envload();
 
 /**
  * Wallet object configuration.
@@ -20,6 +21,8 @@ export const gasConfig = config.get('gasLimits');
 export const abiConfig = config.get('abi');
 
 export const farmsConfig = config.get('farms');
+
+export const governanceConfig = config.get('governance');
 
 export const tokenProviderUSD = config.get('tokenProviderUSD');
 
