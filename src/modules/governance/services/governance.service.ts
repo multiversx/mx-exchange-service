@@ -112,25 +112,6 @@ export class GovernanceTokenSnapshotService {
         return this.smoothingFunction(userQuorum);
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotService.name })
-    @GetOrSetCache({
-        baseKey: 'governance',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async totalVotingPower(scAddress: string, proposalId: number): Promise<string> {
-        return await this.totalVotingPowerRaw(scAddress, proposalId);
-    }
-
-    async totalVotingPowerRaw(scAddress: string, proposalId: number): Promise<string> {
-        const proposal = await this.governanceAbiFactory.useAbi(scAddress).proposals(scAddress);
-        const proposalIndex = proposal.findIndex((p) => p.proposalId === proposalId);
-        if (proposalIndex === -1) {
-            throw new Error(`Proposal with id ${proposalId} not found`);
-        }
-        return this.smoothingFunction(proposal[proposalIndex].totalQuorum);
-    }
-
     protected smoothingFunction(quorum: string): string {
         return new BigNumber(quorum).integerValue().toFixed();
     }
