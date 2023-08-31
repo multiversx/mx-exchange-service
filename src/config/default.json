@@ -47,6 +47,26 @@
     "tokenProviderUSD": "WEGLD-71e90a",
     "tokensSupply": ["MEX-27f4cd"],
     "cachedTokensPrice": ["MEX-27f4cd"],
+    "governance": {
+        "oldEnergy": {
+            "cvadratic": [
+                "erd1qqqqqqqqqqqqqpgqdt9aady5jp7av97m7rqxh6e5ywyqsplz2jps5mw02n"
+            ]
+        },
+        "energy": {
+            "cvadratic": [
+                "erd1qqqqqqqqqqqqqpgqzvcvh8ur47nlwxsa9wf7gvrlmf764aerczfsnsjudc"
+            ]
+        },
+        "tokenSnapshot": {
+            "linear": [
+                "erd1qqqqqqqqqqqqqpgq2rkrhef99hhk3ynfcxevcj86axr3sgmcczfstkmdwr"
+            ],
+            "cvadratic": [
+                "erd1qqqqqqqqqqqqqpgq2rkrhef99hhk3ynfcxevcj86axr3sgmcczfstkmdwr"
+            ]
+        }
+    },
     "farms": {
         "v1.2": [
             "erd1qqqqqqqqqqqqqpgqrlrt28le0vduj0nyqa3zglvy00wlsvav0n4sjvqsy6",

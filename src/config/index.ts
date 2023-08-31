@@ -1,7 +1,6 @@
 import { envload } from './env_load';
-import config from 'config';
-
 envload();
+import config from 'config';
 
 /**
  * Wallet object configuration.
