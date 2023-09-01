@@ -32,7 +32,6 @@ export class GovernanceLKMEXProposal extends GovernanceProposalModel {
             actions: [],
             rootHash: "",
             totalQuorum: "6742520471308000000000000000000",
-            totalVotingPower: "2596636400000000",
             feePayment: new EsdtTokenPaymentModel({
                 tokenIdentifier: "LKMEX-aab910",
                 tokenNonce: 0,
