@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { ForbiddenError } from 'apollo-server-express';
+import { ForbiddenError } from '@nestjs/apollo';
 import { JwtPayload, verify } from 'jsonwebtoken';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 

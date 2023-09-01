@@ -10,14 +10,24 @@ import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/moc
 import { Address } from '@multiversx/sdk-core';
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
 import { StakingAbiServiceProvider } from '../mocks/staking.abi.service.mock';
-import { CachingModule } from 'src/services/caching/cache.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import winston from 'winston';
 
 describe('StakingService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 StakingService,
                 StakingAbiServiceProvider,
@@ -29,6 +39,8 @@ describe('StakingService', () => {
                 MXGatewayService,
                 ApiConfigService,
                 TokenGetterServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });

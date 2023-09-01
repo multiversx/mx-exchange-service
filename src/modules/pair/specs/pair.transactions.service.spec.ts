@@ -4,7 +4,7 @@ import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairService } from '../services/pair.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
@@ -15,16 +15,24 @@ import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { PairComputeServiceProvider } from '../mocks/pair.compute.service.mock';
-import { CachingModule } from 'src/services/caching/cache.module';
-import { CommonAppModule } from 'src/common.app.module';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import winston from 'winston';
 
 describe('TransactionPairService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 ConfigService,
                 ApiConfigService,
@@ -39,6 +47,7 @@ describe('TransactionPairService', () => {
                 WrapService,
                 TokenGetterServiceProvider,
                 PairTransactionService,
+                CachingService,
             ],
         }).compile();
     });

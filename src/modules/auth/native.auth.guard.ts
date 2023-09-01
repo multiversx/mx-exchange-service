@@ -102,7 +102,7 @@ export class NativeAuthGuard implements CanActivate {
 
             return true;
         } catch (error: any) {
-            this.logger.error(`${NativeAuthGuard.name}`, { error });
+            this.logger.error(`${NativeAuthGuard.name}: ${error.message}`);
             return false;
         }
     }

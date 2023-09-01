@@ -9,8 +9,6 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WeeklyRewardsSplittingAbiService } from '../services/weekly-rewards-splitting.abi.service';
 import { Address } from '@multiversx/sdk-core/out';
-import { CachingModule } from 'src/services/caching/cache.module';
-import { CommonAppModule } from 'src/common.app.module';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -18,13 +16,25 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 WeeklyRewardsSplittingComputeService,
                 WeeklyRewardsSplittingAbiServiceProvider,
@@ -38,6 +48,8 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
                 ContextGetterServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
         }).compile();
     });

@@ -1,6 +1,5 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { tokenCollection } from 'src/utils/token.converters';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
@@ -9,6 +8,8 @@ import {
     LpProxyTokenAttributesModel,
 } from './models/simple.lock.model';
 import { SimpleLockService } from './services/simple.lock.service';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(LpProxyTokenAttributesModel)
 export class LockedLpTokenResolver {
@@ -27,7 +28,11 @@ export class LockedLpTokenResolver {
                 parent.firstTokenLockedNonce,
             );
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 
@@ -44,7 +49,11 @@ export class LockedLpTokenResolver {
                 parent.secondTokenLockedNonce,
             );
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 
@@ -58,7 +67,11 @@ export class LockedLpTokenResolver {
                 args,
             );
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 }

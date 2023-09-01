@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from '@nestjs/apollo';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { EnergyAbiService } from '../services/energy.abi.service';
 

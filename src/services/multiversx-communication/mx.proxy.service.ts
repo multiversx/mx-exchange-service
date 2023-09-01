@@ -1,4 +1,9 @@
-import { AbiRegistry, Address, SmartContract, SmartContractAbi } from '@multiversx/sdk-core';
+import {
+    AbiRegistry,
+    Address,
+    SmartContract,
+    SmartContractAbi,
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { abiConfig, mxConfig, scAddress } from '../../config';
 import Agent, { HttpsAgent } from 'agentkeepalive';

@@ -9,7 +9,7 @@ import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.se
 describe('ProgressComputeService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [],
             providers: [

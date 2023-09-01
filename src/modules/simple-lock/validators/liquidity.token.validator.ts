@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from '@nestjs/apollo';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { SimpleLockService } from '../services/simple.lock.service';
 import { SimpleLockAbiService } from '../services/simple.lock.abi.service';

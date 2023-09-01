@@ -1,4 +1,6 @@
 {
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src"
+  "sourceRoot": ".",
+  "compilerOptions": {
+  }
 }

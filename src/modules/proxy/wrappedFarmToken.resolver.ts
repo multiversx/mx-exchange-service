@@ -1,6 +1,5 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenCollection, tokenIdentifier } from 'src/utils/token.converters';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';

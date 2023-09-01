@@ -1,6 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApolloError, UserInputError } from 'apollo-server-express';
+import { UserInputError } from '@nestjs/apollo';
 import { tokenCollection } from 'src/utils/token.converters';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { FarmTokenAttributesUnion } from '../farm/models/farmTokenAttributes.model';
@@ -10,6 +10,8 @@ import {
     LpProxyTokenAttributesModel,
 } from './models/simple.lock.model';
 import { SimpleLockService } from './services/simple.lock.service';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => FarmProxyTokenAttributesModel)
 export class LockedFarmTokenResolver {
@@ -25,7 +27,11 @@ export class LockedFarmTokenResolver {
                 parent.farmingTokenLockedNonce,
             );
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 
@@ -47,7 +53,11 @@ export class LockedFarmTokenResolver {
                 simpleLockAddress,
             );
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 
@@ -61,7 +71,11 @@ export class LockedFarmTokenResolver {
                 args,
             );
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 }

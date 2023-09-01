@@ -1,5 +1,4 @@
 import { Resolver, Query, ResolveField, Args, Parent } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { AutoRouterService } from '../auto-router/services/auto-router.service';
 import { AutoRouterArgs } from '../auto-router/models/auto-router.args';
 import { AutoRouteModel } from './models/auto-route.model';
@@ -8,6 +7,8 @@ import { UseGuards } from '@nestjs/common';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => AutoRouteModel)
 export class AutoRouterResolver {
@@ -18,7 +19,11 @@ export class AutoRouterResolver {
         try {
             return await this.autoRouterService.swap(args);
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 
@@ -52,7 +57,11 @@ export class AutoRouterResolver {
                 parent,
             );
         } catch (error) {
-            throw new ApolloError(error);
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
     }
 }

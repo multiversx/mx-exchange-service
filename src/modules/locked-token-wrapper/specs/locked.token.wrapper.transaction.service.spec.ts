@@ -1,21 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LockedTokenWrapperTransactionService } from '../services/locked-token-wrapper.transaction.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { CommonAppModule } from 'src/common.app.module';
 import { Address } from '@multiversx/sdk-core/out';
 import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig, scAddress } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';
+import { WinstonModule } from 'nest-winston';
+import { ConfigModule } from '@nestjs/config';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('LockedTokenWrapperTransactionService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule],
+            imports: [
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 LockedTokenWrapperTransactionService,
                 MXProxyServiceProvider,
+                ApiConfigService,
             ],
         }).compile();
     });

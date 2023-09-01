@@ -1,8 +1,9 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApolloError } from 'apollo-server-express';
 import { SimpleLockModel } from '../simple-lock/models/simple.lock.model';
 import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
 import { EnableSwapByUserConfig } from './models/factory.model';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => EnableSwapByUserConfig)
 export class SwapEnableConfigResolver {
@@ -17,7 +18,11 @@ export class SwapEnableConfigResolver {
                 parent.lockedTokenID,
             );
         if (address === undefined) {
-            throw new ApolloError('invalid locking token ID');
+            throw new GraphQLError('invalid locking token ID', {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
         }
 
         return new SimpleLockModel({

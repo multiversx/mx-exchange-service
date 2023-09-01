@@ -10,14 +10,24 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { mxConfig, gasConfig } from 'src/config';
 import { StakingAbiServiceProvider } from '../mocks/staking.abi.service.mock';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { CommonAppModule } from 'src/common.app.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import winston from 'winston';
 
 describe('StakingTransactionService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
-            imports: [CommonAppModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
             providers: [
                 StakingTransactionService,
                 StakingAbiServiceProvider,
@@ -25,6 +35,7 @@ describe('StakingTransactionService', () => {
                 MXProxyServiceProvider,
                 MXGatewayService,
                 ApiConfigService,
+                CachingService,
             ],
         }).compile();
     });

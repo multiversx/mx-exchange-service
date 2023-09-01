@@ -7,7 +7,6 @@ import { MXApiServiceProvider } from '../../../services/multiversx-communication
 import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModelV1_2 } from '../../farm/models/farmTokenAttributes.model';
 import { UserMetaEsdtComputeService } from '../services/metaEsdt.compute.service';
-import { CachingModule } from '../../../services/caching/cache.module';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { AbiLockedAssetServiceProvider } from '../../locked-asset-factory/mocks/abi.locked.asset.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
@@ -62,13 +61,18 @@ import { FarmAbiServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.abi
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmServiceBaseMock } from 'src/modules/farm/mocks/farm.service.mock';
-import { CommonAppModule } from 'src/common.app.module';
 import { Address } from '@multiversx/sdk-core/out';
+import { ConfigModule } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CachingService } from 'src/services/caching/cache.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import winston from 'winston';
 
 describe('UserService', () => {
     let module: TestingModule;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         module = await Test.createTestingModule({
             providers: [
                 MXApiServiceProvider,
@@ -134,8 +138,16 @@ describe('UserService', () => {
                 UserEsdtComputeService,
                 RemoteConfigGetterServiceProvider,
                 MXDataApiServiceProvider,
+                CachingService,
+                ApiConfigService,
             ],
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CacheModule.register(),
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+            ],
         }).compile();
     });
 
