@@ -9,6 +9,10 @@ export class MXApiServiceMock {
         return 1;
     }
 
+    async getToken(tokenID: string): Promise<EsdtToken> {
+        return Tokens(tokenID);
+    }
+
     async getAccountStats(address: string): Promise<any | undefined> {
         return {
             address: 'user_address_1',
