@@ -5,8 +5,6 @@ import { scAddress } from 'src/config';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
 import { PriceDiscoverySetterService } from 'src/modules/price-discovery/services/price.discovery.setter.service';
-import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
@@ -15,8 +13,6 @@ export class PriceDiscoveryCacheWarmerService {
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly priceDiscoverySetter: PriceDiscoverySetterService,
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
-        private readonly tokenSetter: TokenSetterService,
-        private readonly apiService: MXApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -30,12 +26,7 @@ export class PriceDiscoveryCacheWarmerService {
                     this.priceDiscoveryAbi.getAcceptedTokenIDRaw(address),
                     this.priceDiscoveryAbi.getRedeemTokenIDRaw(address),
                 ]);
-            const [launchedToken, acceptedToken, redeemToken] =
-                await Promise.all([
-                    this.apiService.getToken(launchedTokenID),
-                    this.apiService.getToken(acceptedTokenID),
-                    this.apiService.getNftCollection(redeemTokenID),
-                ]);
+
             const cachedKeys = await Promise.all([
                 this.priceDiscoverySetter.setLaunchedTokenID(
                     address,
@@ -48,18 +39,6 @@ export class PriceDiscoveryCacheWarmerService {
                 this.priceDiscoverySetter.setRedeemTokenID(
                     address,
                     redeemTokenID,
-                ),
-                this.tokenSetter.setTokenMetadata(
-                    launchedTokenID,
-                    launchedToken,
-                ),
-                this.tokenSetter.setTokenMetadata(
-                    acceptedTokenID,
-                    acceptedToken,
-                ),
-                this.tokenSetter.setNftCollectionMetadata(
-                    redeemTokenID,
-                    redeemToken,
                 ),
             ]);
 

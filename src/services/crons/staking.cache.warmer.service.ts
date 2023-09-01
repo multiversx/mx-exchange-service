@@ -5,8 +5,6 @@ import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-conf
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
-import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
@@ -15,8 +13,6 @@ export class StakingCacheWarmerService {
         private readonly stakingAbi: StakingAbiService,
         private readonly stakeSetterService: StakingSetterService,
         private readonly stakeCompute: StakingComputeService,
-        private readonly apiService: MXApiService,
-        private readonly tokenSetter: TokenSetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -33,12 +29,6 @@ export class StakingCacheWarmerService {
                     this.stakingAbi.getRewardTokenIDRaw(address),
                 ]);
 
-            const [farmToken, farmingToken, rewardToken] = await Promise.all([
-                this.apiService.getNftCollection(farmTokenID),
-                this.apiService.getToken(farmingTokenID),
-                this.apiService.getToken(rewardTokenID),
-            ]);
-
             const cacheKeys = await Promise.all([
                 this.stakeSetterService.setFarmTokenID(address, farmTokenID),
                 this.stakeSetterService.setFarmingTokenID(
@@ -49,12 +39,6 @@ export class StakingCacheWarmerService {
                     address,
                     rewardTokenID,
                 ),
-                this.tokenSetter.setNftCollectionMetadata(
-                    farmTokenID,
-                    farmToken,
-                ),
-                this.tokenSetter.setTokenMetadata(farmingTokenID, farmingToken),
-                this.tokenSetter.setTokenMetadata(rewardTokenID, rewardToken),
             ]);
 
             await this.deleteCacheKeys(cacheKeys);
