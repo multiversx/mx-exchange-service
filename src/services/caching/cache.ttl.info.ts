@@ -10,8 +10,8 @@ export class CacheTtlInfo {
     }
 
     static Token: CacheTtlInfo = new CacheTtlInfo(
+        oneMinute() * 10,
         oneMinute() * 5,
-        oneMinute() * 3,
     );
 
     static ContractState: CacheTtlInfo = new CacheTtlInfo(

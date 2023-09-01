@@ -65,7 +65,13 @@ export class TokenService {
         const cachedToken = await this.cachingService.getCache<EsdtToken>(
             cacheKey,
         );
-        if (cachedToken) {
+        if (cachedToken && cachedToken !== undefined) {
+            await this.cachingService.setCache<EsdtToken>(
+                cacheKey,
+                cachedToken,
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
+            );
             return cachedToken;
         }
 
@@ -93,7 +99,13 @@ export class TokenService {
         const cachedToken = await this.cachingService.getCache<NftCollection>(
             cacheKey,
         );
-        if (cachedToken) {
+        if (cachedToken && cachedToken !== undefined) {
+            await this.cachingService.setCache<NftCollection>(
+                cacheKey,
+                cachedToken,
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
+            );
             return cachedToken;
         }
 
