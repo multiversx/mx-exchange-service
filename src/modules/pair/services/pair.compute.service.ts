@@ -13,6 +13,7 @@ import { AnalyticsQueryService } from 'src/services/analytics/services/analytics
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { computeValueUSD } from 'src/utils/token.converters';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -140,18 +141,18 @@ export class PairComputeService implements IPairComputeService {
             new BigNumber(`1e${lpToken.decimals}`).toFixed(),
         );
 
-        const firstTokenDenom = new BigNumber(10).pow(firstToken.decimals);
-        const secondTokenDenom = new BigNumber(10).pow(secondToken.decimals);
+        const firstTokenValueUSD = computeValueUSD(
+            lpPosition.firstTokenAmount,
+            firstToken.decimals,
+            firstTokenPriceUSD,
+        );
+        const secondTokenValueUSD = computeValueUSD(
+            lpPosition.secondTokenAmount,
+            secondToken.decimals,
+            secondTokenPriceUSD,
+        );
 
-        return new BigNumber(lpPosition.firstTokenAmount)
-            .div(firstTokenDenom)
-            .times(firstTokenPriceUSD)
-            .plus(
-                new BigNumber(lpPosition.secondTokenAmount)
-                    .div(secondTokenDenom)
-                    .times(secondTokenPriceUSD),
-            )
-            .toFixed();
+        return firstTokenValueUSD.plus(secondTokenValueUSD).toFixed();
     }
 
     @ErrorLoggerAsync({
