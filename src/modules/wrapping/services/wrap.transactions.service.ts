@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TokenPayment } from '@multiversx/sdk-core';
+import { TokenTransfer } from '@multiversx/sdk-core';
 import { TransactionModel } from '../../../models/transaction.model';
 import { mxConfig, gasConfig } from '../../../config';
 import { WrapService } from './wrap.service';
@@ -37,7 +37,7 @@ export class WrapTransactionsService {
         return contract.methodsExplicit
             .unwrapEgld()
             .withSingleESDTTransfer(
-                TokenPayment.fungibleFromBigInteger(
+                TokenTransfer.fungibleFromBigInteger(
                     wrappedEgldToken.identifier,
                     new BigNumber(amount),
                 ),

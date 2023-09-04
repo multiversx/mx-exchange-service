@@ -1,4 +1,4 @@
-import { Address, Interaction, TokenPayment } from '@multiversx/sdk-core';
+import { Address, Interaction, TokenTransfer } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
@@ -66,7 +66,7 @@ export class PriceDiscoveryTransactionService {
         return contract.methodsExplicit
             .deposit()
             .withSingleESDTTransfer(
-                TokenPayment.fungibleFromBigInteger(
+                TokenTransfer.fungibleFromBigInteger(
                     inputToken.tokenID,
                     new BigNumber(inputToken.amount),
                 ),
@@ -143,13 +143,13 @@ export class PriceDiscoveryTransactionService {
 
         return interaction
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     inputToken.tokenID,
                     inputToken.nonce,
                     new BigNumber(inputToken.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.priceDiscovery.withdraw)
             .withChainID(mxConfig.chainID)
             .buildTransaction()

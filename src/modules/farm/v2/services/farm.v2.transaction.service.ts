@@ -1,4 +1,4 @@
-import { Address, BigUIntValue, TokenPayment } from '@multiversx/sdk-core';
+import { Address, BigUIntValue, TokenTransfer } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
@@ -49,7 +49,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         await this.validateInputTokens(args.farmAddress, args.tokens);
 
         const mappedPayments = args.tokens.map((tokenPayment) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,
                 new BigNumber(tokenPayment.amount),
@@ -58,10 +58,8 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
 
         return contract.methodsExplicit
             .enterFarm()
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -87,13 +85,13 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         return contract.methodsExplicit
             .exitFarm([new BigUIntValue(new BigNumber(args.exitAmount))])
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
                     args.farmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -120,13 +118,13 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         return contract.methodsExplicit
             .claimRewards()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
                     args.farmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()

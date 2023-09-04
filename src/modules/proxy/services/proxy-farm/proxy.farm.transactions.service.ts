@@ -5,7 +5,7 @@ import {
     BytesValue,
     TypedValue,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
-import { Address, Interaction, TokenPayment } from '@multiversx/sdk-core';
+import { Address, Interaction, TokenTransfer } from '@multiversx/sdk-core';
 import { TransactionModel } from '../../../../models/transaction.model';
 import BigNumber from 'bignumber.js';
 
@@ -63,17 +63,15 @@ export class ProxyFarmTransactionsService {
                 ? gasConfig.proxy.farms[version].enterFarm.withTokenMerge
                 : gasConfig.proxy.farms[version].enterFarm.default;
         const mappedPayments = args.tokens.map((token) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 token.tokenID,
                 token.nonce,
                 new BigNumber(token.amount),
             ),
         );
         return interaction
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -109,13 +107,13 @@ export class ProxyFarmTransactionsService {
         return contract.methodsExplicit
             .exitFarmProxy(endpointArgs)
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.wrappedFarmTokenID,
                     args.wrappedFarmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -153,13 +151,13 @@ export class ProxyFarmTransactionsService {
         return contract.methodsExplicit
             .claimRewardsProxy(endpointArgs)
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.wrappedFarmTokenID,
                     args.wrappedFarmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -184,13 +182,13 @@ export class ProxyFarmTransactionsService {
         return contract.methodsExplicit
             .compoundRewardsProxy(endpointArgs)
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.tokenID,
                     args.tokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.proxy.farms[version].compoundRewards)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -214,13 +212,13 @@ export class ProxyFarmTransactionsService {
         return contract.methodsExplicit
             .migrateV1_2Position(endpointArgs)
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.wrappedFarmTokenID,
                     args.wrappedFarmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.proxy.farms[version].migrateToNewFarm)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -249,7 +247,7 @@ export class ProxyFarmTransactionsService {
         ];
         const gasLimit = gasConfig.proxy.farms.defaultMergeWFMT * tokens.length;
         const mappedPayments = tokens.map((token) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 token.tokenID,
                 token.nonce,
                 new BigNumber(token.amount),
@@ -258,10 +256,8 @@ export class ProxyFarmTransactionsService {
 
         return contract.methodsExplicit
             .mergeWrappedFarmTokens(endpointArgs)
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()

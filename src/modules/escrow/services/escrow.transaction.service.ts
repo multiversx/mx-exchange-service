@@ -1,4 +1,4 @@
-import { Address, AddressValue, TokenPayment } from '@multiversx/sdk-core/out';
+import { Address, AddressValue, TokenTransfer } from '@multiversx/sdk-core/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { gasConfig, mxConfig } from 'src/config';
@@ -49,14 +49,14 @@ export class EscrowTransactionService {
             .lockFunds([new AddressValue(Address.fromString(receiverAddress))])
             .withMultiESDTNFTTransfer(
                 payments.map((payment) =>
-                    TokenPayment.metaEsdtFromBigInteger(
+                    TokenTransfer.metaEsdtFromBigInteger(
                         payment.tokenID,
                         payment.nonce,
                         new BigNumber(payment.amount),
                     ),
                 ),
-                Address.fromString(senderAddress),
             )
+            .withSender(Address.fromString(senderAddress))
             .withChainID(mxConfig.chainID)
             .withGasLimit(gasConfig.escrow.lockFunds)
             .buildTransaction()

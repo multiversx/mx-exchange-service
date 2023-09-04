@@ -6,7 +6,7 @@ import {
     U64Value,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
-import { Address, TokenPayment } from '@multiversx/sdk-core';
+import { Address, TokenTransfer } from '@multiversx/sdk-core';
 import { mxConfig, gasConfig, scAddress, constantsConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
@@ -125,19 +125,17 @@ export class PairTransactionService {
 
         return contract.methodsExplicit
             .addInitialLiquidity()
-            .withMultiESDTNFTTransfer(
-                [
-                    TokenPayment.fungibleFromBigInteger(
-                        firstTokenInput.tokenID,
-                        new BigNumber(firstTokenInput.amount),
-                    ),
-                    TokenPayment.fungibleFromBigInteger(
-                        secondTokenInput.tokenID,
-                        new BigNumber(secondTokenInput.amount),
-                    ),
-                ],
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer([
+                TokenTransfer.fungibleFromBigInteger(
+                    firstTokenInput.tokenID,
+                    new BigNumber(firstTokenInput.amount),
+                ),
+                TokenTransfer.fungibleFromBigInteger(
+                    secondTokenInput.tokenID,
+                    new BigNumber(secondTokenInput.amount),
+                ),
+            ])
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.pairs.addLiquidity)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -178,19 +176,17 @@ export class PairTransactionService {
 
         return contract.methodsExplicit
             .addLiquidity(endpointArgs)
-            .withMultiESDTNFTTransfer(
-                [
-                    TokenPayment.fungibleFromBigInteger(
-                        firstTokenInput.tokenID,
-                        new BigNumber(firstTokenInput.amount),
-                    ),
-                    TokenPayment.fungibleFromBigInteger(
-                        secondTokenInput.tokenID,
-                        new BigNumber(secondTokenInput.amount),
-                    ),
-                ],
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer([
+                TokenTransfer.fungibleFromBigInteger(
+                    firstTokenInput.tokenID,
+                    new BigNumber(firstTokenInput.amount),
+                ),
+                TokenTransfer.fungibleFromBigInteger(
+                    secondTokenInput.tokenID,
+                    new BigNumber(secondTokenInput.amount),
+                ),
+            ])
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.pairs.addLiquidity)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -234,7 +230,7 @@ export class PairTransactionService {
             contract.methodsExplicit
                 .removeLiquidity(endpointArgs)
                 .withSingleESDTTransfer(
-                    TokenPayment.fungibleFromBigInteger(
+                    TokenTransfer.fungibleFromBigInteger(
                         args.liquidityTokenID,
                         new BigNumber(args.liquidity),
                     ),
@@ -317,7 +313,7 @@ export class PairTransactionService {
                     contract.methodsExplicit
                         .swapTokensFixedInput(endpointArgs)
                         .withSingleESDTTransfer(
-                            TokenPayment.fungibleFromBigInteger(
+                            TokenTransfer.fungibleFromBigInteger(
                                 wrappedTokenID,
                                 new BigNumber(amountIn),
                             ),
@@ -337,7 +333,7 @@ export class PairTransactionService {
                     contract.methodsExplicit
                         .swapTokensFixedInput(endpointArgs)
                         .withSingleESDTTransfer(
-                            TokenPayment.fungibleFromBigInteger(
+                            TokenTransfer.fungibleFromBigInteger(
                                 args.tokenInID,
                                 new BigNumber(amountIn),
                             ),
@@ -364,7 +360,7 @@ export class PairTransactionService {
                     contract.methodsExplicit
                         .swapTokensFixedInput(endpointArgs)
                         .withSingleESDTTransfer(
-                            TokenPayment.fungibleFromBigInteger(
+                            TokenTransfer.fungibleFromBigInteger(
                                 args.tokenInID,
                                 new BigNumber(amountIn),
                             ),
@@ -433,7 +429,7 @@ export class PairTransactionService {
                     contract.methodsExplicit
                         .swapTokensFixedOutput(endpointArgs)
                         .withSingleESDTTransfer(
-                            TokenPayment.fungibleFromBigInteger(
+                            TokenTransfer.fungibleFromBigInteger(
                                 wrappedTokenID,
                                 new BigNumber(amountIn),
                             ),
@@ -453,7 +449,7 @@ export class PairTransactionService {
                     contract.methodsExplicit
                         .swapTokensFixedOutput(endpointArgs)
                         .withSingleESDTTransfer(
-                            TokenPayment.fungibleFromBigInteger(
+                            TokenTransfer.fungibleFromBigInteger(
                                 args.tokenInID,
                                 new BigNumber(amountIn),
                             ),
@@ -480,7 +476,7 @@ export class PairTransactionService {
                     contract.methodsExplicit
                         .swapTokensFixedOutput(endpointArgs)
                         .withSingleESDTTransfer(
-                            TokenPayment.fungibleFromBigInteger(
+                            TokenTransfer.fungibleFromBigInteger(
                                 args.tokenInID,
                                 new BigNumber(amountIn),
                             ),

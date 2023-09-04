@@ -3,7 +3,7 @@ import {
     AddressValue,
     BigUIntValue,
     BytesValue,
-    TokenPayment,
+    TokenTransfer,
     TypedValue,
     U64Value,
 } from '@multiversx/sdk-core';
@@ -42,7 +42,7 @@ export class StakingTransactionService {
                 ? gasConfig.stake.stakeFarm.withTokenMerge
                 : gasConfig.stake.stakeFarm.default;
         const mappedPayments = payments.map((payment) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
                 new BigNumber(payment.amount),
@@ -51,10 +51,8 @@ export class StakingTransactionService {
 
         return contract.methodsExplicit
             .stakeFarm()
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -72,13 +70,13 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .unstakeFarm()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     payment.tokenID,
                     payment.nonce,
                     new BigNumber(payment.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.stake.unstakeFarm)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -96,13 +94,13 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .unbondFarm()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     payment.tokenID,
                     payment.nonce,
                     new BigNumber(payment.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.stake.unbondFarm)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -120,13 +118,13 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .claimRewards()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     payment.tokenID,
                     payment.nonce,
                     new BigNumber(payment.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.stake.claimRewards)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -147,13 +145,13 @@ export class StakingTransactionService {
                 new BigUIntValue(new BigNumber(newValue)),
             ])
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     payment.tokenID,
                     payment.nonce,
                     new BigNumber(payment.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.stake.claimRewardsWithNewValue)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -171,13 +169,13 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .compoundRewards()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     payment.tokenID,
                     payment.nonce,
                     new BigNumber(payment.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.stake.compoundRewards)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -194,7 +192,7 @@ export class StakingTransactionService {
         return contract.methodsExplicit
             .topUpRewards([])
             .withSingleESDTTransfer(
-                TokenPayment.fungibleFromBigInteger(
+                TokenTransfer.fungibleFromBigInteger(
                     payment.tokenID,
                     new BigNumber(payment.amount),
                 ),
@@ -214,7 +212,7 @@ export class StakingTransactionService {
             stakeAddress,
         );
         const mappedPayments = payments.map((payment) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
                 new BigNumber(payment.amount),
@@ -222,10 +220,8 @@ export class StakingTransactionService {
         );
         return contract.methodsExplicit
             .mergeFarmTokens()
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.stake.mergeTokens)
             .withChainID(mxConfig.chainID)
             .buildTransaction()

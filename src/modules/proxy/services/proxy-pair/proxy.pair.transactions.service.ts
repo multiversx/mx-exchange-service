@@ -5,7 +5,7 @@ import {
     BytesValue,
     TypedValue,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
-import { Address, TokenPayment } from '@multiversx/sdk-core';
+import { Address, TokenTransfer } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import BigNumber from 'bignumber.js';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -108,9 +108,9 @@ export class ProxyPairTransactionsService {
             liquidityTokens.length > 2
                 ? gasConfig.proxy.pairs.addLiquidity.withTokenMerge
                 : gasConfig.proxy.pairs.addLiquidity.default;
-        const mappedPayments: TokenPayment[] = liquidityTokens.map(
+        const mappedPayments: TokenTransfer[] = liquidityTokens.map(
             (inputToken) =>
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     inputToken.tokenID,
                     inputToken.nonce,
                     new BigNumber(inputToken.amount),
@@ -119,10 +119,8 @@ export class ProxyPairTransactionsService {
 
         return contract.methodsExplicit
             .addLiquidityProxy(endpointArgs)
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -172,13 +170,13 @@ export class ProxyPairTransactionsService {
             contract.methodsExplicit
                 .removeLiquidityProxy(endpointArgs)
                 .withSingleESDTNFTTransfer(
-                    TokenPayment.metaEsdtFromBigInteger(
+                    TokenTransfer.metaEsdtFromBigInteger(
                         args.wrappedLpTokenID,
                         args.wrappedLpTokenNonce,
                         new BigNumber(args.liquidity),
                     ),
-                    Address.fromString(sender),
                 )
+                .withSender(Address.fromString(sender))
                 .withGasLimit(gasConfig.proxy.pairs.removeLiquidity)
                 .withChainID(mxConfig.chainID)
                 .buildTransaction()
@@ -223,7 +221,7 @@ export class ProxyPairTransactionsService {
         );
         const gasLimit = gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length;
         const mappedPayments = tokens.map((token) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 token.tokenID,
                 token.nonce,
                 new BigNumber(token.amount),
@@ -232,10 +230,8 @@ export class ProxyPairTransactionsService {
 
         return contract.methodsExplicit
             .mergeWrappedLpTokens()
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()

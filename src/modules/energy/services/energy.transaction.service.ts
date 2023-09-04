@@ -3,10 +3,11 @@ import {
     AddressValue,
     IGasLimit,
     Interaction,
-    TokenPayment,
+    TokenTransfer,
     U16Value,
     U64Type,
     U64Value,
+    VariadicType,
     VariadicValue,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
@@ -37,17 +38,17 @@ export class EnergyTransactionService {
                 ? contract.methodsExplicit
                       .lockTokens([new U64Value(new BigNumber(lockEpochs))])
                       .withSingleESDTNFTTransfer(
-                          TokenPayment.metaEsdtFromBigInteger(
+                          TokenTransfer.metaEsdtFromBigInteger(
                               inputTokens.tokenID,
                               inputTokens.nonce,
                               new BigNumber(inputTokens.amount),
                           ),
-                          Address.fromString(sender),
                       )
+                      .withSender(Address.fromString(sender))
                 : contract.methodsExplicit
                       .lockTokens([new U64Value(new BigNumber(lockEpochs))])
                       .withSingleESDTTransfer(
-                          TokenPayment.fungibleFromBigInteger(
+                          TokenTransfer.fungibleFromBigInteger(
                               inputTokens.tokenID,
                               new BigNumber(inputTokens.amount),
                           ),
@@ -89,13 +90,13 @@ export class EnergyTransactionService {
 
         return endpoint
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     inputTokens.tokenID,
                     inputTokens.nonce,
                     new BigNumber(inputTokens.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -109,7 +110,7 @@ export class EnergyTransactionService {
         const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
 
         const mappedTokenPayments = inputTokens.map((inputToken) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 inputToken.tokenID,
                 inputToken.nonce,
                 new BigNumber(inputToken.amount),
@@ -118,10 +119,8 @@ export class EnergyTransactionService {
 
         return contract.methodsExplicit
             .mergeTokens()
-            .withMultiESDTNFTTransfer(
-                mappedTokenPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedTokenPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(
                 gasConfig.simpleLockEnergy.defaultMergeTokens *
                     inputTokens.length,
@@ -140,14 +139,14 @@ export class EnergyTransactionService {
             .migrateOldTokens()
             .withMultiESDTNFTTransfer(
                 args.map((token) =>
-                    TokenPayment.metaEsdtFromBigInteger(
+                    TokenTransfer.metaEsdtFromBigInteger(
                         token.tokenID,
                         token.nonce,
                         new BigNumber(token.amount),
                     ),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(
                 gasConfig.simpleLockEnergy.migrateOldTokens * args.length,
             )
@@ -165,7 +164,7 @@ export class EnergyTransactionService {
 
         const endpointArgs = [
             new VariadicValue(
-                new U64Type(),
+                new VariadicType(new U64Type(), true),
                 lockOptions.map(
                     (lockOption) => new U64Value(new BigNumber(lockOption)),
                 ),

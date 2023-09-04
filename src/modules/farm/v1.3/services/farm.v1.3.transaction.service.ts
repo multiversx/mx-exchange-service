@@ -12,7 +12,7 @@ import {
 } from '../../models/farm.args';
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { TransactionsFarmService } from '../../base-module/services/farm.transaction.service';
-import { Address, TokenPayment } from '@multiversx/sdk-core';
+import { Address, TokenTransfer } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { FarmAbiServiceV1_3 } from './farm.v1.3.abi.service';
@@ -49,7 +49,7 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
         await this.validateInputTokens(args.farmAddress, args.tokens);
 
         const mappedPayments = args.tokens.map((tokenPayment) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,
                 new BigNumber(tokenPayment.amount),
@@ -58,10 +58,8 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
 
         return contract.methodsExplicit
             .enterFarm()
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -84,13 +82,13 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
         return contract.methodsExplicit
             .exitFarm()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
                     args.farmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -118,13 +116,13 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
         return contract.methodsExplicit
             .claimRewards()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
                     args.farmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -151,13 +149,13 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
         return contract.methodsExplicit
             .compoundRewards()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
                     args.farmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
