@@ -1,4 +1,4 @@
-import { scAddress } from '../config';
+import { governanceConfig } from '../config';
 import { GovernanceProposalStatus } from '../modules/governance/models/governance.proposal.model';
 import { registerEnumType } from '@nestjs/graphql';
 
@@ -23,30 +23,66 @@ const toTypeEnum = (type: string): GovernanceType => {
     }
 };
 
+export enum GovernanceSmoothingFunction {
+    CVADRATIC = 'cvadratic',
+    LINEAR = 'linear',
+}
+
+registerEnumType(GovernanceSmoothingFunction, { name: 'GovernanceSmoothingFunction' });
+
+const toSmoothingFunctionEnum = (type: string): GovernanceSmoothingFunction => {
+    switch (type) {
+        case GovernanceSmoothingFunction.CVADRATIC.toString():
+            return GovernanceSmoothingFunction.CVADRATIC;
+        case GovernanceSmoothingFunction.LINEAR.toString():
+            return GovernanceSmoothingFunction.LINEAR;
+        default:
+            return undefined;
+    }
+};
 
 export const governanceType = (governanceAddress: string): GovernanceType | undefined => {
-    const govConfig = scAddress.governance
-    const types = Object.keys(scAddress.governance);
+    const types = Object.keys(governanceConfig);
     for (const type of types) {
-        const address = govConfig[type].find(
-            (address: string) => address === governanceAddress,
-        );
-        if (address !== undefined) {
-            return toTypeEnum(type);
+        const smoothingFunctions = Object.keys(governanceConfig[type]);
+        for (const smoothingFunction of smoothingFunctions) {
+            const address = governanceConfig[type][smoothingFunction].find(
+                (address: string) => address === governanceAddress,
+            );
+            if (address !== undefined) {
+                return toTypeEnum(type);
+            }
         }
     }
     return undefined;
 };
 
+export const governanceSmoothingFunction = (governanceAddress: string): GovernanceSmoothingFunction | undefined => {
+    const types = Object.keys(governanceConfig);
+    for (const type of types) {
+        const smoothingFunctions = Object.keys(governanceConfig[type]);
+        for (const smoothingFunction of smoothingFunctions) {
+            const address = governanceConfig[type][smoothingFunction].find(
+                (address: string) => address === governanceAddress,
+            );
+            if (address !== undefined) {
+                return toSmoothingFunctionEnum(smoothingFunction);
+            }
+        }
+    }
+    return undefined;
+};
 
 export const governanceContractsAddresses = (types?: string[]): string[] => {
-    const govConfig = scAddress.governance
     const addresses = [];
     if (types === undefined || types.length === 0) {
-        types = Object.keys(govConfig)
+        types = Object.keys(governanceConfig)
     }
     for (const type of types) {
-        addresses.push(...govConfig[type]);
+        const smoothingFunctions = Object.keys(governanceConfig[type]);
+        for (const smoothingFunction of smoothingFunctions) {
+            addresses.push(...governanceConfig[type][smoothingFunction]);
+        }
     }
     return addresses;
 };

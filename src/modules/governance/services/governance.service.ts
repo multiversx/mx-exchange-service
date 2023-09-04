@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { governanceContractsAddresses, GovernanceType, governanceType } from '../../../utils/governance';
+import {
+    governanceContractsAddresses,
+    GovernanceSmoothingFunction,
+    governanceSmoothingFunction,
+    GovernanceType,
+    governanceType,
+} from '../../../utils/governance';
 import { GovernanceContractsFiltersArgs } from '../models/governance.contracts.filter.args';
 import { GovernanceUnion } from '../models/governance.union';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
@@ -96,7 +102,7 @@ export class GovernanceTokenSnapshotService {
     async votingPowerDecimals(scAddress: string): Promise<number> {
         const feeToken = await this.feeToken(scAddress);
         const oneUnit = new BigNumber(10).pow(feeToken.decimals);
-        const smoothedOneUnit = this.smoothingFunction(oneUnit.toFixed());
+        const smoothedOneUnit = this.smoothingFunction(scAddress, oneUnit.toFixed());
         return smoothedOneUnit.length - 1;
     }
 
@@ -109,11 +115,16 @@ export class GovernanceTokenSnapshotService {
     async userVotingPower(contractAddress: string, proposalId: number, userAddress: string): Promise<string> {
         const rootHash = await this.governanceAbiFactory.useAbi(contractAddress).proposalRootHash(contractAddress, proposalId);
         const userQuorum = await this.governanceQuorum.userQuorum(contractAddress, userAddress, rootHash);
-        return this.smoothingFunction(userQuorum);
+        return this.smoothingFunction(contractAddress, userQuorum);
     }
 
-    protected smoothingFunction(quorum: string): string {
-        return new BigNumber(quorum).integerValue().toFixed();
+    smoothingFunction(scAddress: string, quorum: string): string {
+        switch (governanceSmoothingFunction(scAddress)){
+            case GovernanceSmoothingFunction.CVADRATIC:
+                return new BigNumber(quorum).sqrt().integerValue().toFixed();
+            case GovernanceSmoothingFunction.LINEAR:
+                return new BigNumber(quorum).integerValue().toFixed();
+        }
     }
 }
 
@@ -139,10 +150,6 @@ export class GovernanceEnergyService extends GovernanceTokenSnapshotService {
     async userVotingPower(contractAddress: string, proposalId: number, userAddress: string) {
         //TODO: retrieve energy from event in case the user already voted
         const userEnergy = await this.energyService.getUserEnergy(userAddress);
-        return this.smoothingFunction(userEnergy.amount);
-    }
-
-    protected smoothingFunction(quorum: string): string {
-        return new BigNumber(quorum).sqrt().integerValue().toFixed();
+        return this.smoothingFunction(contractAddress, userEnergy.amount);
     }
 }
