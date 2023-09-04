@@ -15,7 +15,7 @@ import { StakingProxyServiceProvider } from '../../staking-proxy/mocks/staking.p
 import { PriceDiscoveryServiceProvider } from '../../price-discovery/mocks/price.discovery.service.mock';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
-import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
@@ -68,6 +68,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 
 describe('UserService', () => {
     let module: TestingModule;
@@ -129,9 +130,8 @@ describe('UserService', () => {
                 SimpleLockAbiServiceProvider,
                 EnergyAbiServiceProvider,
                 EnergyComputeService,
-                TokenGetterServiceProvider,
-                TokenComputeService,
-                TokenService,
+                TokenServiceProvider,
+                TokenComputeServiceProvider,
                 UserEsdtService,
                 UserMetaEsdtService,
                 UserMetaEsdtComputeService,

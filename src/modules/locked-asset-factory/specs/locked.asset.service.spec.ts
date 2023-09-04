@@ -10,7 +10,7 @@ import {
     UnlockMileStoneModel,
 } from '../models/locked-asset.model';
 import { LockedAssetGetterService } from '../services/locked.asset.getter.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -44,7 +44,7 @@ describe('LockedAssetService', () => {
             ],
             providers: [
                 ContextGetterServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetService,
                 LockedAssetGetterService,

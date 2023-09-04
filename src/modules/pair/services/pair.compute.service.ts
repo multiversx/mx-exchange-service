@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { leastType } from 'src/utils/token.type.compare';
 import { PairService } from './pair.service';
@@ -13,6 +12,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -20,8 +20,8 @@ export class PairComputeService implements IPairComputeService {
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
-        @Inject(forwardRef(() => TokenGetterService))
-        private readonly tokenGetter: TokenGetterService,
+        @Inject(forwardRef(() => TokenService))
+        private readonly tokenService: TokenService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly dataApi: MXDataApiService,
@@ -481,8 +481,8 @@ export class PairComputeService implements IPairComputeService {
         ]);
 
         const [firstTokenType, secondTokenType] = await Promise.all([
-            this.tokenGetter.getEsdtTokenType(firstTokenID),
-            this.tokenGetter.getEsdtTokenType(secondTokenID),
+            this.tokenService.getEsdtTokenType(firstTokenID),
+            this.tokenService.getEsdtTokenType(secondTokenID),
         ]);
 
         return leastType(firstTokenType, secondTokenType);

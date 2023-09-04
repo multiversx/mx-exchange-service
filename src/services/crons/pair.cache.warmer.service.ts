@@ -2,11 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
-import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
-import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { delay } from 'src/helpers/helpers';
 import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -24,8 +22,6 @@ export class PairCacheWarmerService {
         private readonly pairComputeService: PairComputeService,
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
-        private readonly apiService: MXApiService,
-        private readonly tokenSetter: TokenSetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -42,11 +38,6 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                 );
 
-                const [firstToken, secondToken] = await Promise.all([
-                    this.apiService.getToken(pairMetadata.firstTokenID),
-                    this.apiService.getToken(pairMetadata.secondTokenID),
-                ]);
-
                 const cachedKeys = await Promise.all([
                     this.pairSetterService.setFirstTokenID(
                         pairMetadata.address,
@@ -58,32 +49,13 @@ export class PairCacheWarmerService {
                     ),
                 ]);
                 if (lpTokenID !== undefined) {
-                    const lpToken = await this.apiService.getToken(lpTokenID);
                     cachedKeys.push(
                         await this.pairSetterService.setLpTokenID(
                             pairMetadata.address,
                             lpTokenID,
                         ),
                     );
-                    cachedKeys.push(
-                        await this.tokenSetter.setTokenMetadata(
-                            lpTokenID,
-                            lpToken,
-                        ),
-                    );
                 }
-                cachedKeys.push(
-                    await this.tokenSetter.setTokenMetadata(
-                        pairMetadata.firstTokenID,
-                        firstToken,
-                    ),
-                );
-                cachedKeys.push(
-                    await this.tokenSetter.setTokenMetadata(
-                        pairMetadata.secondTokenID,
-                        secondToken,
-                    ),
-                );
 
                 await this.deleteCacheKeys(cachedKeys);
             }

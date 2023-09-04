@@ -3,13 +3,13 @@ import { scAddress } from '../../../config';
 import { WrapModel } from '../models/wrapping.model';
 import { WrapAbiService } from './wrap.abi.service';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
-import { TokenGetterService } from '../../tokens/services/token.getter.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class WrapService {
     constructor(
         private wrapAbi: WrapAbiService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
     ) {}
 
     async getWrappingInfo(): Promise<WrapModel[]> {
@@ -31,6 +31,6 @@ export class WrapService {
 
     async wrappedEgldToken(): Promise<EsdtToken> {
         const wrappedEgldTokenID = await this.wrapAbi.wrappedEgldTokenID();
-        return this.tokenGetter.getTokenMetadata(wrappedEgldTokenID);
+        return this.tokenService.getTokenMetadata(wrappedEgldTokenID);
     }
 }

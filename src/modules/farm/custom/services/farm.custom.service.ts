@@ -7,7 +7,7 @@ import { FarmCustomAbiService } from './farm.custom.abi.service';
 import { FarmCustomComputeService } from './farm.custom.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class FarmCustomService extends FarmServiceBase {
@@ -17,9 +17,15 @@ export class FarmCustomService extends FarmServiceBase {
         protected readonly farmCompute: FarmCustomComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
-        protected readonly tokenGetter: TokenGetterService,
+        protected readonly tokenService: TokenService,
     ) {
-        super(farmAbi, farmCompute, contextGetter, cachingService, tokenGetter);
+        super(
+            farmAbi,
+            farmCompute,
+            contextGetter,
+            cachingService,
+            tokenService,
+        );
     }
 
     getRewardsForPosition(

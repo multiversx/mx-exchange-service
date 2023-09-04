@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WrapTransactionsService } from '../services/wrap.transactions.service';
 import { WrapAbiServiceProvider } from '../mocks/wrap.abi.service.mock';
 import { WrapService } from '../services/wrap.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -28,7 +28,7 @@ describe('WrapTransactionsService', () => {
                 WrapTransactionsService,
                 WrapAbiServiceProvider,
                 WrapService,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 MXProxyServiceProvider,
                 ApiConfigService,
             ],

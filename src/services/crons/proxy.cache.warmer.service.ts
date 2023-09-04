@@ -6,11 +6,9 @@ import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
 import { cacheConfig, scAddress } from 'src/config';
-import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour } from '../../helpers/helpers';
-import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { CacheTtlInfo } from '../caching/cache.ttl.info';
 
 @Injectable()
@@ -21,9 +19,7 @@ export class ProxyCacheWarmerService {
         private readonly proxyAbi: ProxyAbiService,
         private readonly proxyPairAbi: ProxyPairAbiService,
         private readonly proxyFarmAbi: ProxyFarmAbiService,
-        private readonly apiService: MXApiService,
         private readonly cachingService: CachingService,
-        private readonly tokenSetter: TokenSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -53,13 +49,6 @@ export class ProxyCacheWarmerService {
                     scAddress.proxyDexAddress[version],
                 ),
             ]);
-
-            const [assetToken, wrappedLpToken, wrappedFarmToken] =
-                await Promise.all([
-                    this.apiService.getToken(assetTokenID),
-                    this.apiService.getNftCollection(wrappedLpTokenID),
-                    this.apiService.getNftCollection(wrappedFarmTokenID),
-                ]);
 
             await Promise.all([
                 this.setProxyCache(
@@ -94,15 +83,6 @@ export class ProxyCacheWarmerService {
                     'intermediatedFarms',
                     intermediatedFarms,
                     oneHour(),
-                ),
-                this.tokenSetter.setTokenMetadata(assetTokenID, assetToken),
-                this.tokenSetter.setNftCollectionMetadata(
-                    wrappedLpTokenID,
-                    wrappedLpToken,
-                ),
-                this.tokenSetter.setNftCollectionMetadata(
-                    wrappedFarmTokenID,
-                    wrappedFarmToken,
                 ),
             ]);
             await this.deleteCacheKeys();

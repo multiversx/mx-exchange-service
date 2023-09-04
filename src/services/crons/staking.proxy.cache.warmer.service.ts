@@ -4,8 +4,6 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingProxySetterService } from 'src/modules/staking-proxy/services/staking.proxy.setter.service';
-import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
@@ -13,8 +11,6 @@ export class StakingProxyCacheWarmerService {
     constructor(
         private readonly abiService: StakingProxyAbiService,
         private readonly stakingProxySetter: StakingProxySetterService,
-        private readonly apiService: MXApiService,
-        private readonly tokenSetter: TokenSetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -42,14 +38,6 @@ export class StakingProxyCacheWarmerService {
                 this.abiService.getLpFarmTokenIDRaw(address),
             ]);
 
-            const [stakingToken, farmToken, dualYieldToken, lpFarmToken] =
-                await Promise.all([
-                    this.apiService.getToken(stakingTokenID),
-                    this.apiService.getNftCollection(farmTokenID),
-                    this.apiService.getNftCollection(dualYieldTokenID),
-                    this.apiService.getNftCollection(lpFarmTokenID),
-                ]);
-
             const cacheKeys = await Promise.all([
                 this.stakingProxySetter.setLpFarmAddress(
                     address,
@@ -69,18 +57,9 @@ export class StakingProxyCacheWarmerService {
                     address,
                     lpFarmTokenID,
                 ),
-                this.tokenSetter.setTokenMetadata(stakingTokenID, stakingToken),
-                this.tokenSetter.setNftCollectionMetadata(
-                    farmTokenID,
-                    farmToken,
-                ),
-                this.tokenSetter.setNftCollectionMetadata(
-                    dualYieldTokenID,
-                    dualYieldToken,
-                ),
-                this.tokenSetter.setNftCollectionMetadata(
-                    lpFarmTokenID,
-                    lpFarmToken,
+                this.stakingProxySetter.setStakingTokenID(
+                    address,
+                    stakingTokenID,
                 ),
             ]);
 

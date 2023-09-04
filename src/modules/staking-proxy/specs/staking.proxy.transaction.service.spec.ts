@@ -18,7 +18,7 @@ import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compu
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
@@ -87,7 +87,7 @@ describe('StakingProxyTransactionService', () => {
                 WeeklyRewardsSplittingAbiServiceProvider,
                 WeeklyRewardsSplittingComputeService,
                 EnergyAbiServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 TokenComputeService,
                 MXProxyServiceProvider,
                 MXApiServiceProvider,

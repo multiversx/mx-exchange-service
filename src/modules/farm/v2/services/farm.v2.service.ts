@@ -16,7 +16,7 @@ import {
 import { constantsConfig } from '../../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class FarmServiceV2 extends FarmServiceBase {
@@ -26,11 +26,17 @@ export class FarmServiceV2 extends FarmServiceBase {
         protected readonly farmCompute: FarmComputeServiceV2,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
-        protected readonly tokenGetter: TokenGetterService,
+        protected readonly tokenService: TokenService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
-        super(farmAbi, farmCompute, contextGetter, cachingService, tokenGetter);
+        super(
+            farmAbi,
+            farmCompute,
+            contextGetter,
+            cachingService,
+            tokenService,
+        );
     }
 
     async getBatchRewardsForPosition(

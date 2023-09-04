@@ -14,11 +14,11 @@ import { oneHour } from 'src/helpers/helpers';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { PairComputeService } from './pair.compute.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class PairService {
@@ -28,27 +28,27 @@ export class PairService {
         private readonly pairCompute: PairComputeService,
         private readonly routerAbi: RouterAbiService,
         private readonly wrapAbi: WrapAbiService,
-        @Inject(forwardRef(() => TokenGetterService))
-        private readonly tokenGetter: TokenGetterService,
+        @Inject(forwardRef(() => TokenService))
+        private readonly tokenService: TokenService,
         private readonly cachingService: CachingService,
         private readonly contextGetter: ContextGetterService,
     ) {}
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         const firstTokenID = await this.pairAbi.firstTokenID(pairAddress);
-        return await this.tokenGetter.getTokenMetadata(firstTokenID);
+        return await this.tokenService.getTokenMetadata(firstTokenID);
     }
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.pairAbi.secondTokenID(pairAddress);
-        return await this.tokenGetter.getTokenMetadata(secondTokenID);
+        return await this.tokenService.getTokenMetadata(secondTokenID);
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
         return lpTokenID === undefined
             ? undefined
-            : await this.tokenGetter.getTokenMetadata(lpTokenID);
+            : await this.tokenService.getTokenMetadata(lpTokenID);
     }
 
     async getAmountOut(

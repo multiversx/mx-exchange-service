@@ -20,9 +20,9 @@ import {
 } from '../models/staking.proxy.model';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { StakingProxyAbiService } from './staking.proxy.abi.service';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class StakingProxyService {
@@ -31,7 +31,7 @@ export class StakingProxyService {
         private readonly stakingService: StakingService,
         private readonly farmFactory: FarmFactoryService,
         private readonly pairService: PairService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cachingService: CachingService,
@@ -57,14 +57,14 @@ export class StakingProxyService {
         const stakingTokenID = await this.stakingProxyAbi.stakingTokenID(
             stakingProxyAddress,
         );
-        return await this.tokenGetter.getTokenMetadata(stakingTokenID);
+        return await this.tokenService.getTokenMetadata(stakingTokenID);
     }
 
     async getFarmToken(stakingProxyAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.stakingProxyAbi.farmTokenID(
             stakingProxyAddress,
         );
-        return await this.tokenGetter.getNftCollectionMetadata(farmTokenID);
+        return await this.tokenService.getNftCollectionMetadata(farmTokenID);
     }
 
     async getDualYieldToken(
@@ -73,7 +73,7 @@ export class StakingProxyService {
         const dualYieldTokenID = await this.stakingProxyAbi.dualYieldTokenID(
             stakingProxyAddress,
         );
-        return await this.tokenGetter.getNftCollectionMetadata(
+        return await this.tokenService.getNftCollectionMetadata(
             dualYieldTokenID,
         );
     }
@@ -82,7 +82,7 @@ export class StakingProxyService {
         const lpFarmTokenID = await this.stakingProxyAbi.lpFarmTokenID(
             stakingProxyAddress,
         );
-        return await this.tokenGetter.getNftCollectionMetadata(lpFarmTokenID);
+        return await this.tokenService.getNftCollectionMetadata(lpFarmTokenID);
     }
 
     async getBatchRewardsForPosition(

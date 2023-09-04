@@ -4,7 +4,7 @@ import { Address } from '@multiversx/sdk-core';
 import { StakingTokenAttributesModel } from '../models/stakingTokenAttributes.model';
 import BigNumber from 'bignumber.js';
 import { StakingFarmTokenType } from '@multiversx/sdk-exchange';
-import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { StakingAbiServiceProvider } from '../mocks/staking.abi.service.mock';
 import { StakingAbiService } from '../services/staking.abi.service';
 import { StakingService } from '../services/staking.service';
@@ -18,6 +18,7 @@ import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -35,7 +36,8 @@ describe('StakingComputeService', () => {
                 StakingComputeService,
                 StakingService,
                 StakingAbiServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
+                TokenComputeServiceProvider,
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
                 RemoteConfigGetterServiceProvider,

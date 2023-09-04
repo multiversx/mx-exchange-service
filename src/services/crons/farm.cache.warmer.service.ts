@@ -1,10 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
-import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
@@ -24,8 +22,6 @@ export class FarmCacheWarmerService {
         private readonly farmComputeV1_2: FarmComputeServiceV1_2,
         private readonly farmComputeV1_3: FarmComputeServiceV1_3,
         private readonly farmSetterFactory: FarmSetterFactory,
-        private readonly apiService: MXApiService,
-        private readonly tokenSetter: TokenSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -46,12 +42,6 @@ export class FarmCacheWarmerService {
                         .getFarmedTokenIDRaw(farmAddress),
                 ]);
 
-            const [farmToken, farmingToken, farmedToken] = await Promise.all([
-                this.apiService.getNftCollection(farmTokenID),
-                this.apiService.getToken(farmingTokenID),
-                this.apiService.getToken(farmedTokenID),
-            ]);
-
             const cacheKeys = await Promise.all([
                 this.farmSetterFactory
                     .useSetter(farmAddress)
@@ -62,12 +52,6 @@ export class FarmCacheWarmerService {
                 this.farmSetterFactory
                     .useSetter(farmAddress)
                     .setFarmedTokenID(farmAddress, farmedTokenID),
-                this.tokenSetter.setNftCollectionMetadata(
-                    farmTokenID,
-                    farmToken,
-                ),
-                this.tokenSetter.setTokenMetadata(farmingTokenID, farmingToken),
-                this.tokenSetter.setTokenMetadata(farmedTokenID, farmedToken),
             ]);
             this.invalidatedKeys.push(cacheKeys);
             await this.deleteCacheKeys();

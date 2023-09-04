@@ -19,7 +19,7 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
@@ -55,7 +55,7 @@ describe('FeesCollectorService', () => {
                 EnergyComputeService,
                 EnergyAbiServiceProvider,
                 TokenComputeService,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 PairService,

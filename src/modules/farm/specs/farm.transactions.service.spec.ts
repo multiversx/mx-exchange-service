@@ -7,7 +7,7 @@ import { MXApiService } from '../../../services/multiversx-communication/mx.api.
 import { encodeTransactionData } from '../../../helpers/helpers';
 import { mxConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { FarmTransactionServiceV1_2 } from '../v1.2/services/farm.v1.2.transaction.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
@@ -42,7 +42,7 @@ describe('FarmService', () => {
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 TokenComputeService,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 MXProxyServiceProvider,

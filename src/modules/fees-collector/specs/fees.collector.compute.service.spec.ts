@@ -20,7 +20,7 @@ import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { EnergyModel } from 'src/modules/energy/models/energy.model';
 import BigNumber from 'bignumber.js';
@@ -56,7 +56,7 @@ describe('FeesCollectorComputeService', () => {
                 EnergyComputeService,
                 EnergyAbiServiceProvider,
                 TokenComputeService,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 PairService,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,

@@ -18,7 +18,7 @@ import { Address } from '@multiversx/sdk-core';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { gasConfig } from 'src/config';
@@ -65,7 +65,7 @@ describe('AutoRouterService', () => {
                 RouterAbiServiceProvider,
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 PairService,
