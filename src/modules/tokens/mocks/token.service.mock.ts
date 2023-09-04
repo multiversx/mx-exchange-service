@@ -8,7 +8,7 @@ export class TokenServiceMock {
         return Tokens(tokenID);
     }
 
-    async esdtTokenType(tokenID: string): Promise<string> {
+    async getEsdtTokenType(tokenID: string): Promise<string> {
         return Tokens(tokenID).type;
     }
 

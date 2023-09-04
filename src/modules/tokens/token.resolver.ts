@@ -35,7 +35,7 @@ export class TokensResolver extends GenericResolver {
     @ResolveField(() => String)
     async type(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.tokenService.esdtTokenType(parent.identifier),
+            this.tokenService.getEsdtTokenType(parent.identifier),
         );
     }
 

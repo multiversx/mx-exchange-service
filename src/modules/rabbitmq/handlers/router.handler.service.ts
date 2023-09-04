@@ -44,8 +44,8 @@ export class RouterHandlerService {
         ] = await Promise.all([
             this.routerAbiService.getPairsMetadataRaw(),
             this.routerAbiService.getAllPairsAddressRaw(),
-            this.tokenService.esdtTokenType(firstTokenID),
-            this.tokenService.esdtTokenType(secondTokenID),
+            this.tokenService.getEsdtTokenType(firstTokenID),
+            this.tokenService.getEsdtTokenType(secondTokenID),
             this.tokenService.getUniqueTokenIDs(true),
             this.routerAbiService.commonTokensForUserPairs(),
         ]);

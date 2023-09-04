@@ -36,7 +36,7 @@ export class TokenService {
 
         if (filters.type) {
             for (const token of tokens) {
-                token.type = await this.esdtTokenType(token.identifier);
+                token.type = await this.getEsdtTokenType(token.identifier);
             }
             tokens = tokens.filter((token) => token.type === filters.type);
         }
@@ -53,7 +53,7 @@ export class TokenService {
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async esdtTokenType(tokenID: string): Promise<string> {
+    async getEsdtTokenType(tokenID: string): Promise<string> {
         return await this.tokenRepository.getTokenType(tokenID);
     }
 

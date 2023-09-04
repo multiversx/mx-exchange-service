@@ -481,8 +481,8 @@ export class PairComputeService implements IPairComputeService {
         ]);
 
         const [firstTokenType, secondTokenType] = await Promise.all([
-            this.tokenService.esdtTokenType(firstTokenID),
-            this.tokenService.esdtTokenType(secondTokenID),
+            this.tokenService.getEsdtTokenType(firstTokenID),
+            this.tokenService.getEsdtTokenType(secondTokenID),
         ]);
 
         return leastType(firstTokenType, secondTokenType);
