@@ -270,6 +270,12 @@ export class EscrowAbiService extends GenericAbiService {
         remoteTtl: oneDay(),
     })
     async addressPermission(address: string): Promise<SCPermissions[]> {
+        const addressesWithPermissions =
+            await this.allAddressesWithPermissions();
+        if (!addressesWithPermissions.includes(address)) {
+            return [SCPermissions.NONE];
+        }
+
         return await this.getAddressPermissionRaw(address);
     }
 
