@@ -93,10 +93,14 @@ describe('EscrowTransactionService', () => {
                 gasLimit: gasConfig.escrow.withdraw,
                 value: '0',
                 receiver: scAddress.escrow,
-                sender: Address.Zero().bech32(),
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 options: undefined,
                 signature: undefined,
                 version: 1,
+                guardian: undefined,
+                guardianSignature: undefined,
             }),
         );
     });
@@ -121,10 +125,14 @@ describe('EscrowTransactionService', () => {
                 gasLimit: gasConfig.escrow.cancelTransfer,
                 value: '0',
                 receiver: scAddress.escrow,
-                sender: Address.Zero().bech32(),
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 options: undefined,
                 signature: undefined,
                 version: 1,
+                guardian: undefined,
+                guardianSignature: undefined,
             }),
         );
     });

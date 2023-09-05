@@ -56,10 +56,14 @@ describe('DistributionTransactionsService', () => {
                 options: undefined,
                 receiver:
                     'erd1qqqqqqqqqqqqqpgq29s98mhxwyknmxcpdtdx6nm0wkvnkvwe0n4sjpdhyq',
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 signature: undefined,
                 value: '0',
                 version: 1,
+                guardian: undefined,
+                guardianSignature: undefined,
             }),
         );
     });

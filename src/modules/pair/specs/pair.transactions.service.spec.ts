@@ -96,7 +96,9 @@ describe('TransactionPairService', () => {
             value: secondTokenAmount,
             receiver:
                 'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.wrapeGLD,
             data: encodeTransactionData('wrapEgld'),
@@ -104,6 +106,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
         expect(addLiquidityTransaction).toEqual({
             nonce: 0,
@@ -260,7 +264,9 @@ describe('TransactionPairService', () => {
             value: '10',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.wrapeGLD,
             data: encodeTransactionData('wrapEgld'),
@@ -268,6 +274,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
         expect(addLiquidity).toEqual({
             nonce: 0,
@@ -275,6 +283,8 @@ describe('TransactionPairService', () => {
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
@@ -286,6 +296,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -326,7 +338,9 @@ describe('TransactionPairService', () => {
             value: secondTokenAmount,
             receiver:
                 'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.wrapeGLD,
             data: encodeTransactionData('wrapEgld'),
@@ -334,6 +348,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
         expect(addLiquidity).toEqual({
             nonce: 0,
@@ -341,6 +357,8 @@ describe('TransactionPairService', () => {
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
@@ -352,6 +370,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -379,7 +399,9 @@ describe('TransactionPairService', () => {
                 receiver: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.removeLiquidity,
                 data: encodeTransactionData(
@@ -389,13 +411,17 @@ describe('TransactionPairService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
             {
                 nonce: 0,
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData(
@@ -405,6 +431,8 @@ describe('TransactionPairService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
         ]);
     });
@@ -434,7 +462,9 @@ describe('TransactionPairService', () => {
                 value: '5',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData('wrapEgld'),
@@ -442,6 +472,8 @@ describe('TransactionPairService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
             {
                 nonce: 0,
@@ -449,7 +481,9 @@ describe('TransactionPairService', () => {
                 receiver: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
                 data: encodeTransactionData(
@@ -459,6 +493,8 @@ describe('TransactionPairService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
         ]);
     });
@@ -488,7 +524,9 @@ describe('TransactionPairService', () => {
                 receiver: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedOutput.default,
                 data: encodeTransactionData(
@@ -498,13 +536,17 @@ describe('TransactionPairService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
             {
                 nonce: 0,
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData(
@@ -514,6 +556,8 @@ describe('TransactionPairService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
         ]);
     });
@@ -589,7 +633,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.whitelist,
             data: encodeTransactionData(
@@ -599,6 +645,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -620,7 +668,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.removeWhitelist,
             data: encodeTransactionData(
@@ -630,6 +680,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -653,7 +705,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.addTrustedSwapPair,
             data: encodeTransactionData(
@@ -663,6 +717,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -685,7 +741,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.removeTrustedSwapPair,
             data: encodeTransactionData(
@@ -695,6 +753,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -715,7 +775,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.pause,
             data: encodeTransactionData('pause'),
@@ -723,6 +785,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -743,7 +807,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.resume,
             data: encodeTransactionData('resume'),
@@ -751,6 +817,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -771,7 +839,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setStateActiveNoSwaps,
             data: encodeTransactionData('setStateActiveNoSwaps'),
@@ -779,6 +849,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -801,7 +873,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setFeePercents,
             data: encodeTransactionData('setFeePercents@03@05'),
@@ -809,6 +883,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -830,7 +906,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setLockingDeadlineEpoch,
             data: encodeTransactionData('setLockingDeadlineEpoch@1000'),
@@ -838,6 +916,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -859,7 +939,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setUnlockEpoch,
             data: encodeTransactionData('setUnlockEpoch@1005'),
@@ -867,6 +949,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -888,7 +972,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: 200000000,
             data: encodeTransactionData(
@@ -898,6 +984,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -918,7 +1006,9 @@ describe('TransactionPairService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: 10000000,
             data: encodeTransactionData(
@@ -928,6 +1018,8 @@ describe('TransactionPairService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 });

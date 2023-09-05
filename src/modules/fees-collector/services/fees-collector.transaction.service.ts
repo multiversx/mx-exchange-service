@@ -88,7 +88,7 @@ export class FeesCollectorTransactionService {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const endpointArgs = [
             new VariadicValue(
-                new VariadicType(new AddressType(), true),
+                new VariadicType(new AddressType(), false),
                 pairAddresses.map(
                     (address) => new AddressValue(Address.fromString(address)),
                 ),
@@ -112,7 +112,7 @@ export class FeesCollectorTransactionService {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const endpointArgs = [
             new VariadicValue(
-                new VariadicType(new TokenIdentifierType(), true),
+                new VariadicType(new TokenIdentifierType(), false),
                 tokenIDs.map((id) => new TokenIdentifierValue(id)),
             ),
         ];

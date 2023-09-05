@@ -247,7 +247,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.setFarmMigrationConfig,
             data: encodeTransactionData(
@@ -257,6 +259,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -273,7 +277,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms['v1.2'].stopRewards,
             data: encodeTransactionData('stopRewardsAndMigrateRps'),
@@ -281,6 +287,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -307,7 +315,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcs2zduud',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.end_produce_rewards,
             data: encodeTransactionData('end_produce_rewards'),
@@ -315,6 +325,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -341,7 +353,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.start_produce_rewards,
             data: encodeTransactionData('start_produce_rewards'),
@@ -349,6 +363,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -377,7 +393,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.setPerBlockRewardAmount,
             data: encodeTransactionData(
@@ -387,6 +405,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -415,7 +435,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_penalty_percent,
             data: encodeTransactionData('set_penalty_percent@05'),
@@ -423,6 +445,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -451,7 +475,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_minimum_farming_epochs,
             data: encodeTransactionData('set_minimum_farming_epochs@10'),
@@ -459,6 +485,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -487,7 +515,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_transfer_exec_gas_limit,
             data: encodeTransactionData(
@@ -497,6 +527,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -525,7 +557,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcs2zduud',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_burn_gas_limit,
             data: encodeTransactionData('set_burn_gas_limit@0100000000'),
@@ -533,6 +567,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -559,7 +595,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.pause,
             data: encodeTransactionData('pause'),
@@ -567,6 +605,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -593,7 +633,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.resume,
             data: encodeTransactionData('resume'),
@@ -601,6 +643,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -633,7 +677,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.registerFarmToken,
             data: encodeTransactionData(
@@ -643,6 +689,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -669,7 +717,9 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.setLocalRolesFarmToken,
             data: encodeTransactionData('setLocalRolesFarmToken'),
@@ -677,6 +727,8 @@ describe('FarmService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 

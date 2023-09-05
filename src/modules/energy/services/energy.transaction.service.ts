@@ -164,7 +164,7 @@ export class EnergyTransactionService {
 
         const endpointArgs = [
             new VariadicValue(
-                new VariadicType(new U64Type(), true),
+                new VariadicType(new U64Type(), false),
                 lockOptions.map(
                     (lockOption) => new U64Value(new BigNumber(lockOption)),
                 ),
