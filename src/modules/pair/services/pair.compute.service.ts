@@ -13,6 +13,7 @@ import { AnalyticsQueryService } from 'src/services/analytics/services/analytics
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { computeValueUSD } from 'src/utils/token.converters';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -117,36 +118,41 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeLpTokenPriceUSD(pairAddress: string): Promise<string> {
-        const [secondToken, lpToken, firstTokenPrice] = await Promise.all([
+        const [
+            firstToken,
+            secondToken,
+            lpToken,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+        ] = await Promise.all([
+            this.pairService.getFirstToken(pairAddress),
             this.pairService.getSecondToken(pairAddress),
             this.pairService.getLpToken(pairAddress),
-            this.firstTokenPrice(pairAddress),
+            this.firstTokenPriceUSD(pairAddress),
+            this.secondTokenPriceUSD(pairAddress),
         ]);
 
         if (lpToken === undefined) {
             return undefined;
         }
 
-        const [secondTokenPriceUSD, lpTokenPosition] = await Promise.all([
-            this.tokenCompute.computeTokenPriceDerivedUSD(
-                secondToken.identifier,
-            ),
-            this.pairService.getLiquidityPosition(
-                pairAddress,
-                new BigNumber(`1e${lpToken.decimals}`).toFixed(),
-            ),
-        ]);
+        const lpPosition = await this.pairService.getLiquidityPosition(
+            pairAddress,
+            new BigNumber(`1e${lpToken.decimals}`).toFixed(),
+        );
 
-        const lpTokenPrice = new BigNumber(firstTokenPrice)
-            .multipliedBy(new BigNumber(lpTokenPosition.firstTokenAmount))
-            .plus(new BigNumber(lpTokenPosition.secondTokenAmount));
-        const lpTokenPriceDenom = lpTokenPrice
-            .multipliedBy(`1e-${secondToken.decimals}`)
-            .toFixed();
+        const firstTokenValueUSD = computeValueUSD(
+            lpPosition.firstTokenAmount,
+            firstToken.decimals,
+            firstTokenPriceUSD,
+        );
+        const secondTokenValueUSD = computeValueUSD(
+            lpPosition.secondTokenAmount,
+            secondToken.decimals,
+            secondTokenPriceUSD,
+        );
 
-        return new BigNumber(lpTokenPriceDenom)
-            .multipliedBy(secondTokenPriceUSD)
-            .toFixed();
+        return firstTokenValueUSD.plus(secondTokenValueUSD).toFixed();
     }
 
     @ErrorLoggerAsync({

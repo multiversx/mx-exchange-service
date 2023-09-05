@@ -141,18 +141,21 @@ describe('PairService', () => {
 
     it('should get lpToken Price in USD from pair', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
-        const tokenCompute =
-            module.get<TokenComputeService>(TokenComputeService);
-        jest.spyOn(tokenCompute, 'getEgldPriceInUSD').mockReturnValue(
-            Promise.resolve('20'),
-        );
 
-        const lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
+        let lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
             Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
         );
-        expect(lpTokenPriceUSD).toEqual('40');
+        expect(lpTokenPriceUSD).toEqual('20');
+
+        lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000013',
+            ).bech32(),
+        );
+
+        expect(lpTokenPriceUSD).toEqual('2000000000000');
     });
 
     it('should get pair type: Core', async () => {
