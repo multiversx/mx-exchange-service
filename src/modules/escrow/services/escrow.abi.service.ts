@@ -114,10 +114,17 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     async getAllReceiversRaw(senderAddress: string): Promise<string[]> {
-        const hexValues = await this.mxGateway.getSCStorageKeys(
-            scAddress.escrow,
-            [],
+        let hexValues = await this.cachingService.getCache<object>(
+            `escrow.scKeys`,
         );
+        if (!hexValues || hexValues === undefined) {
+            hexValues = await this.mxGateway.getSCStorageKeys(
+                scAddress.escrow,
+                [],
+            );
+            await this.escrowSetter.setSCStorageKeys(hexValues);
+        }
+
         const receivers = [];
         const allSendersHex = Buffer.from('allSenders').toString('hex');
         const itemHex = Buffer.from('.item').toString('hex');
