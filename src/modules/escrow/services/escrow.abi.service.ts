@@ -17,12 +17,16 @@ import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneDay } from 'src/helpers/helpers';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { CachingService } from 'src/services/caching/cache.service';
+import { EscrowSetterService } from './escrow.setter.service';
 
 @Injectable()
 export class EscrowAbiService extends GenericAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
         private readonly mxGateway: MXGatewayService,
+        private readonly cachingService: CachingService,
+        private readonly escrowSetter: EscrowSetterService,
     ) {
         super(mxProxy);
     }
@@ -292,5 +296,41 @@ export class EscrowAbiService extends GenericAbiService {
             default:
                 return [];
         }
+    }
+
+    @ErrorLoggerAsync({
+        className: EscrowAbiService.name,
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: oneDay(),
+    })
+    async allAddressesWithPermissions(): Promise<string[]> {
+        return await this.getAllAddressesWithPermissionsRaw();
+    }
+
+    async getAllAddressesWithPermissionsRaw(): Promise<string[]> {
+        let hexValues = await this.cachingService.getCache<object>(
+            `escrow.scKeys`,
+        );
+        if (!hexValues || hexValues === undefined) {
+            hexValues = await this.mxGateway.getSCStorageKeys(
+                scAddress.escrow,
+                [],
+            );
+            await this.escrowSetter.setSCStorageKeys(hexValues);
+        }
+
+        const addresses = [];
+        const permissionsHex = Buffer.from('permissions').toString('hex');
+        Object.keys(hexValues).forEach((key) => {
+            if (key.includes(permissionsHex)) {
+                const addressHex = key.split(permissionsHex)[1];
+                addresses.push(Address.fromHex(addressHex).bech32());
+            }
+        });
+
+        return addresses;
     }
 }

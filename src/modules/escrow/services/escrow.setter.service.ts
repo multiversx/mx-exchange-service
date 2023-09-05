@@ -5,6 +5,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
 import { ScheduledTransferModel } from '../models/escrow.model';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class EscrowSetterService extends GenericSetterService {
@@ -68,6 +69,15 @@ export class EscrowSetterService extends GenericSetterService {
             this.getCacheKey('receiverLastTransferEpoch', address),
             value,
             oneDay(),
+        );
+    }
+
+    async setSCStorageKeys(value: object): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('scKeys'),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 }
