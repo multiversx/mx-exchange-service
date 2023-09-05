@@ -41,11 +41,14 @@
                 "erd1qqqqqqqqqqqqqpgqdt9aady5jp7av97m7rqxh6e5ywyqsplz2jps5mw02n"
             ]
         },
-        "energy": {},
+        "energy": {
+            "cvadratic": []
+        },
         "tokenSnapshot": {
             "linear": [
                 "erd1qqqqqqqqqqqqqpgq7cywmem5g66ad49rce0ctu6yqmscmp9v7j6q7cded4"
-            ]
+            ],
+            "cvadratic": []
         }
     },
     "farms": {
