@@ -3,17 +3,17 @@ import { AssetsModel } from './models/assets.model';
 import { EsdtToken } from './models/esdtToken.model';
 import { RolesModel } from './models/roles.model';
 import { TokensFiltersArgs } from './models/tokens.filter.args';
-import { TokenGetterService } from './services/token.getter.service';
 import { TokenService } from './services/token.service';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { TokenComputeService } from './services/token.compute.service';
 
 @Resolver(() => EsdtToken)
 export class TokensResolver extends GenericResolver {
     constructor(
         private readonly tokenService: TokenService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenCompute: TokenComputeService,
     ) {
         super();
     }
@@ -21,21 +21,21 @@ export class TokensResolver extends GenericResolver {
     @ResolveField(() => String)
     async derivedEGLD(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.tokenGetter.getDerivedEGLD(parent.identifier),
+            this.tokenCompute.tokenPriceDerivedEGLD(parent.identifier),
         );
     }
 
     @ResolveField(() => String)
     async price(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.tokenGetter.getDerivedUSD(parent.identifier),
+            this.tokenCompute.tokenPriceDerivedUSD(parent.identifier),
         );
     }
 
     @ResolveField(() => String)
     async type(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.tokenGetter.getEsdtTokenType(parent.identifier),
+            this.tokenService.getEsdtTokenType(parent.identifier),
         );
     }
 

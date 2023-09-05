@@ -7,9 +7,9 @@ import { EnergyModel } from '../models/energy.model';
 import { EnergyAbiService } from './energy.abi.service';
 import { EnergyComputeService } from './energy.compute.service';
 import { constantsConfig } from '../../../config';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class EnergyService {
@@ -17,22 +17,22 @@ export class EnergyService {
         private readonly energyAbi: EnergyAbiService,
         private readonly energyCompute: EnergyComputeService,
         private readonly contextGetter: ContextGetterService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
     ) {}
 
     async getBaseAssetToken(): Promise<EsdtToken> {
         const tokenID = await this.energyAbi.baseAssetTokenID();
-        return await this.tokenGetter.getTokenMetadata(tokenID);
+        return await this.tokenService.getTokenMetadata(tokenID);
     }
 
     async getLockedToken(): Promise<NftCollection> {
         const collection = await this.energyAbi.lockedTokenID();
-        return await this.tokenGetter.getNftCollectionMetadata(collection);
+        return await this.tokenService.getNftCollectionMetadata(collection);
     }
 
     async getLegacyLockedToken(): Promise<NftCollection> {
         const collection = await this.energyAbi.legacyLockedTokenID();
-        return await this.tokenGetter.getNftCollectionMetadata(collection);
+        return await this.tokenService.getNftCollectionMetadata(collection);
     }
 
     async getUserEnergy(

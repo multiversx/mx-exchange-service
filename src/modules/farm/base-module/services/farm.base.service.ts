@@ -12,10 +12,10 @@ import {
     FarmTokenAttributesModelV2,
 } from '../../models/farmTokenAttributes.model';
 import { CachingService } from 'src/services/caching/cache.service';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Inject, forwardRef } from '@nestjs/common';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 export abstract class FarmServiceBase {
     constructor(
@@ -24,22 +24,22 @@ export abstract class FarmServiceBase {
         protected readonly farmCompute: FarmComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
-        protected readonly tokenGetter: TokenGetterService,
+        protected readonly tokenService: TokenService,
     ) {}
 
     async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
         const farmedTokenID = await this.farmAbi.farmedTokenID(farmAddress);
-        return this.tokenGetter.getTokenMetadata(farmedTokenID);
+        return this.tokenService.getTokenMetadata(farmedTokenID);
     }
 
     async getFarmToken(farmAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.farmAbi.farmTokenID(farmAddress);
-        return this.tokenGetter.getNftCollectionMetadata(farmTokenID);
+        return this.tokenService.getNftCollectionMetadata(farmTokenID);
     }
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
-        return this.tokenGetter.getTokenMetadata(farmingTokenID);
+        return this.tokenService.getTokenMetadata(farmingTokenID);
     }
 
     protected async getRemainingFarmingEpochs(

@@ -10,7 +10,6 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { RouterAbiService } from '../../router/services/router.abi.service';
 import { RouterSetterService } from '../../router/services/router.setter.service';
 import { CreateTokenDto } from '../../tokens/dto/create.token.dto';
-import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { TokenRepositoryService } from '../../tokens/services/token.repository.service';
 import { TokenService } from '../../tokens/services/token.service';
 import { TokenSetterService } from '../../tokens/services/token.setter.service';
@@ -24,7 +23,6 @@ export class RouterHandlerService {
         private readonly routerSetterService: RouterSetterService,
         private readonly pairAbi: PairAbiService,
         private readonly pairSetter: PairSetterService,
-        private readonly tokenGetter: TokenGetterService,
         private readonly tokenService: TokenService,
         private readonly tokenSetter: TokenSetterService,
         private readonly tokenRepository: TokenRepositoryService,
@@ -46,8 +44,8 @@ export class RouterHandlerService {
         ] = await Promise.all([
             this.routerAbiService.getPairsMetadataRaw(),
             this.routerAbiService.getAllPairsAddressRaw(),
-            this.tokenGetter.getEsdtTokenType(firstTokenID),
-            this.tokenGetter.getEsdtTokenType(secondTokenID),
+            this.tokenService.getEsdtTokenType(firstTokenID),
+            this.tokenService.getEsdtTokenType(secondTokenID),
             this.tokenService.getUniqueTokenIDs(true),
             this.routerAbiService.commonTokensForUserPairs(),
         ]);

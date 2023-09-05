@@ -5,13 +5,13 @@ import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class PriceDiscoveryService {
     constructor(
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
     ) {}
 
     getPriceDiscoveryContracts(): PriceDiscoveryModel[] {
@@ -30,14 +30,14 @@ export class PriceDiscoveryService {
         const launchedTokenID = await this.priceDiscoveryAbi.launchedTokenID(
             priceDiscoveryAddress,
         );
-        return this.tokenGetter.getTokenMetadata(launchedTokenID);
+        return this.tokenService.getTokenMetadata(launchedTokenID);
     }
 
     async getAcceptedToken(priceDiscoveryAddress: string): Promise<EsdtToken> {
         const acceptedTokenID = await this.priceDiscoveryAbi.acceptedTokenID(
             priceDiscoveryAddress,
         );
-        return this.tokenGetter.getTokenMetadata(acceptedTokenID);
+        return this.tokenService.getTokenMetadata(acceptedTokenID);
     }
 
     async getRedeemToken(
@@ -46,7 +46,7 @@ export class PriceDiscoveryService {
         const redeemTokenID = await this.priceDiscoveryAbi.redeemTokenID(
             priceDiscoveryAddress,
         );
-        return this.tokenGetter.getNftCollectionMetadata(redeemTokenID);
+        return this.tokenService.getNftCollectionMetadata(redeemTokenID);
     }
 
     async getLockingSC(

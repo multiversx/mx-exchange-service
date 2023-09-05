@@ -54,7 +54,6 @@ import { FarmTokenAttributesModelV1_2 } from 'src/modules/farm/models/farmTokenA
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
@@ -62,6 +61,7 @@ import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 @Injectable()
 export class UserMetaEsdtComputeService {
@@ -83,13 +83,13 @@ export class UserMetaEsdtComputeService {
         private readonly lockedTokenWrapperService: LockedTokenWrapperService,
         private readonly energyAbi: EnergyAbiService,
         private readonly userEsdtCompute: UserEsdtComputeService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenCompute: TokenComputeService,
         private readonly cacheService: CachingService,
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
-        const tokenPriceUSD = await this.tokenGetter.getDerivedUSD(
+        const tokenPriceUSD = await this.tokenCompute.tokenPriceDerivedUSD(
             esdtToken.identifier,
         );
         return new UserToken({
@@ -231,7 +231,7 @@ export class UserMetaEsdtComputeService {
             }),
         ]);
 
-        const tokenPriceUSD = await this.tokenGetter.getDerivedUSD(
+        const tokenPriceUSD = await this.tokenCompute.tokenPriceDerivedUSD(
             assetTokenID,
         );
         return new UserLockedAssetToken({

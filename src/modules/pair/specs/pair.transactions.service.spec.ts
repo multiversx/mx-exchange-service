@@ -10,7 +10,7 @@ import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { mxConfig, gasConfig } from 'src/config';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
@@ -45,7 +45,7 @@ describe('TransactionPairService', () => {
                 WrapAbiServiceProvider,
                 WrapTransactionsService,
                 WrapService,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 PairTransactionService,
                 CachingService,
             ],

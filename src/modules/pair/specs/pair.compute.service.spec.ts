@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairComputeService } from '../services/pair.compute.service';
 import { PairService } from '../services/pair.service';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
@@ -36,7 +36,7 @@ describe('PairService', () => {
                 PairService,
                 PairAbiServiceProvider,
                 WrapAbiServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
                 RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
                 TokenComputeService,
@@ -141,18 +141,21 @@ describe('PairService', () => {
 
     it('should get lpToken Price in USD from pair', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
-        const tokenCompute =
-            module.get<TokenComputeService>(TokenComputeService);
-        jest.spyOn(tokenCompute, 'getEgldPriceInUSD').mockReturnValue(
-            Promise.resolve('20'),
-        );
 
-        const lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
+        let lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
             Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
         );
-        expect(lpTokenPriceUSD).toEqual('40');
+        expect(lpTokenPriceUSD).toEqual('20');
+
+        lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000013',
+            ).bech32(),
+        );
+
+        expect(lpTokenPriceUSD).toEqual('2000000000000');
     });
 
     it('should get pair type: Core', async () => {

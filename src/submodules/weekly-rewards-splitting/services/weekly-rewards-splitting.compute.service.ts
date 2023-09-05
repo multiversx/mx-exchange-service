@@ -11,7 +11,7 @@ import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingComputeService
@@ -21,7 +21,7 @@ export class WeeklyRewardsSplittingComputeService
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly energyAbi: EnergyAbiService,
         private readonly tokenCompute: TokenComputeService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenService: TokenService,
     ) {}
 
     async computeDistribution(
@@ -186,7 +186,7 @@ export class WeeklyRewardsSplittingComputeService
                         ? baseAssetTokenID
                         : reward.tokenID;
                 const [token, rewardsPriceUSD] = await Promise.all([
-                    this.tokenGetter.getTokenMetadata(tokenID),
+                    this.tokenService.getTokenMetadata(tokenID),
                     this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
                 ]);
                 return computeValueUSD(

@@ -7,10 +7,8 @@ import {
 } from 'src/modules/farm/models/farm.model';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
-import { TokenGetterService } from '../../tokens/services/token.getter.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
-import { ApiConfigService } from 'src/helpers/api.config.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
@@ -21,6 +19,8 @@ import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneMinute } from 'src/helpers/helpers';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -31,12 +31,12 @@ export class AnalyticsComputeService {
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly stakingCompute: StakingComputeService,
-        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenCompute: TokenComputeService,
+        private readonly tokenService: TokenService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
-        private readonly apiConfig: ApiConfigService,
     ) {}
 
     @ErrorLoggerAsync({
@@ -215,8 +215,12 @@ export class AnalyticsComputeService {
         );
         const [mexTokenPrice, tokenMetadata, totalLockedTokens] =
             await Promise.all([
-                this.tokenGetter.getDerivedUSD(constantsConfig.MEX_TOKEN_ID),
-                this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
+                this.tokenCompute.tokenPriceDerivedUSD(
+                    constantsConfig.MEX_TOKEN_ID,
+                ),
+                this.tokenService.getTokenMetadata(
+                    constantsConfig.MEX_TOKEN_ID,
+                ),
                 this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
                     scAddress.feesCollector,
                     currentWeek,

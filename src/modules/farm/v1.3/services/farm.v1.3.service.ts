@@ -9,7 +9,7 @@ import { FarmComputeServiceV1_3 } from './farm.v1.3.compute.service';
 import { FarmTokenAttributesV1_3 } from '@multiversx/sdk-exchange';
 import { FarmTokenAttributesModelV1_3 } from '../../models/farmTokenAttributes.model';
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
-import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class FarmServiceV1_3 extends FarmServiceBase {
@@ -19,9 +19,15 @@ export class FarmServiceV1_3 extends FarmServiceBase {
         protected readonly farmCompute: FarmComputeServiceV1_3,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
-        protected readonly tokenGetter: TokenGetterService,
+        protected readonly tokenService: TokenService,
     ) {
-        super(farmAbi, farmCompute, contextGetter, cachingService, tokenGetter);
+        super(
+            farmAbi,
+            farmCompute,
+            contextGetter,
+            cachingService,
+            tokenService,
+        );
     }
 
     async getRewardsForPosition(

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WrapService } from '../services/wrap.service';
 import { WrapAbiServiceProvider } from '../mocks/wrap.abi.service.mock';
-import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 
 describe('WrapService', () => {
@@ -12,7 +12,7 @@ describe('WrapService', () => {
             providers: [
                 WrapService,
                 WrapAbiServiceProvider,
-                TokenGetterServiceProvider,
+                TokenServiceProvider,
             ],
         }).compile();
     });
