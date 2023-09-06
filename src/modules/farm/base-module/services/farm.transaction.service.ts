@@ -3,7 +3,7 @@ import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/b
 import {
     Address,
     BigUIntValue,
-    TokenPayment,
+    TokenTransfer,
     TypedValue,
 } from '@multiversx/sdk-core';
 import { mxConfig, gasConfig } from '../../../../config';
@@ -262,7 +262,7 @@ export abstract class TransactionsFarmService {
     ): Promise<TransactionModel> {
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const mappedPayments = payments.map((tokenPayment) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,
                 new BigNumber(tokenPayment.amount),
@@ -270,10 +270,8 @@ export abstract class TransactionsFarmService {
         );
         return contract.methodsExplicit
             .mergeFarmTokens()
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(
                 gasConfig.farms.admin.mergeFarmTokensMultiplier *
                     payments.length,

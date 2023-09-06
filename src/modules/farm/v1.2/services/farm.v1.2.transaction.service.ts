@@ -2,7 +2,7 @@ import {
     Address,
     AddressValue,
     BytesValue,
-    TokenPayment,
+    TokenTransfer,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -58,7 +58,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
                 : gasConfig.farms[FarmVersion.V1_2].enterFarm.default;
 
         const mappedPayments = args.tokens.map((tokenPayment) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,
                 new BigNumber(tokenPayment.amount),
@@ -66,10 +66,8 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         );
 
         return interaction
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -96,13 +94,13 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         return contract.methodsExplicit
             .exitFarm()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
                     args.farmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -132,13 +130,13 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         return contract.methodsExplicit
             .claimRewards()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
                     args.farmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -165,13 +163,13 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         return contract.methodsExplicit
             .compoundRewards()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
                     args.farmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -189,13 +187,13 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         return contract.methodsExplicit
             .migrateToNewFarm([new AddressValue(Address.fromString(sender))])
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
                     args.farmTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()

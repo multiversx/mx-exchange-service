@@ -1,9 +1,4 @@
-import {
-    AbiRegistry,
-    Address,
-    SmartContract,
-    SmartContractAbi,
-} from '@multiversx/sdk-core';
+import { AbiRegistry, Address, SmartContract } from '@multiversx/sdk-core';
 import { promises } from 'fs';
 import { MXProxyService } from './mx.proxy.service';
 
@@ -21,11 +16,10 @@ export class MXProxyServiceMock extends MXProxyService {
             encoding: 'utf8',
         });
         const json = JSON.parse(jsonContent);
-        const abiRegistry = AbiRegistry.create(json);
 
         return new SmartContract({
             address: Address.fromString(contractAddress),
-            abi: new SmartContractAbi(abiRegistry, [contractInterface]),
+            abi: AbiRegistry.create(json),
         });
     }
 }

@@ -227,7 +227,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            senderUsername: undefined,
+            receiverUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.topUpRewards,
             data: encodeTransactionData(
@@ -237,6 +239,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -293,7 +297,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.set_penalty_percent,
             data: encodeTransactionData('set_penalty_percent@05'),
@@ -301,6 +307,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -318,7 +326,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.set_minimum_farming_epochs,
             data: encodeTransactionData('set_minimum_farming_epochs@10'),
@@ -326,6 +336,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -343,7 +355,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.set_burn_gas_limit,
             data: encodeTransactionData('set_burn_gas_limit@01000000'),
@@ -351,6 +365,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -368,7 +384,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.set_transfer_exec_gas_limit,
             data: encodeTransactionData('set_transfer_exec_gas_limit@01000000'),
@@ -376,6 +394,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -394,7 +414,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.whitelist,
             data: encodeTransactionData(
@@ -404,6 +426,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -422,7 +446,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.whitelist,
             data: encodeTransactionData(
@@ -432,6 +458,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -449,7 +477,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setState,
             data: encodeTransactionData('pause'),
@@ -457,6 +487,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -474,7 +506,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setState,
             data: encodeTransactionData('resume'),
@@ -482,6 +516,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -501,7 +537,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.registerFarmToken,
             data: encodeTransactionData(
@@ -511,6 +549,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -527,7 +567,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setLocalRolesFarmToken,
             data: encodeTransactionData('setLocalRolesFarmToken'),
@@ -535,6 +577,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -552,7 +596,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setPerBlockRewardAmount,
             data: encodeTransactionData('setPerBlockRewardAmount@0100'),
@@ -560,6 +606,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -577,7 +625,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setMaxApr,
             data: encodeTransactionData('setMaxApr@0100'),
@@ -585,6 +635,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -602,7 +654,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setMinUnbondEpochs,
             data: encodeTransactionData('setMinUnbondEpochs@0100'),
@@ -610,6 +664,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -627,7 +683,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setRewardsState,
             data: encodeTransactionData('startProduceRewards'),
@@ -635,6 +693,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -652,7 +712,9 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setRewardsState,
             data: encodeTransactionData('end_produce_rewards'),
@@ -660,6 +722,8 @@ describe('StakingTransactionService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 });

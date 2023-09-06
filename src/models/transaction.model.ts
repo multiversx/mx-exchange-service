@@ -10,6 +10,10 @@ export class TransactionModel {
     sender: string;
     @Field()
     receiver: string;
+    @Field({ nullable: true })
+    senderUsername?: string;
+    @Field({ nullable: true })
+    receiverUsername?: string;
     @Field()
     gasPrice: number;
     @Field()
@@ -23,9 +27,11 @@ export class TransactionModel {
     @Field({ nullable: true })
     options?: number;
     @Field({ nullable: true })
-    status?: string;
+    guardian?: string;
     @Field({ nullable: true })
     signature?: string;
+    @Field({ nullable: true })
+    guardianSignature?: string;
 
     constructor(init?: Partial<TransactionModel>) {
         Object.assign(this, init);

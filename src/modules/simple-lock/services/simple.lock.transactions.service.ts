@@ -4,7 +4,7 @@ import {
     ContractFunction,
     EnumValue,
     Interaction,
-    TokenPayment,
+    TokenTransfer,
     TypedValue,
     U64Value,
 } from '@multiversx/sdk-core';
@@ -57,7 +57,7 @@ export class SimpleLockTransactionService {
         return contract.methodsExplicit
             .lockTokens([new U64Value(new BigNumber(unlockEpoch))])
             .withSingleESDTTransfer(
-                TokenPayment.fungibleFromBigInteger(
+                TokenTransfer.fungibleFromBigInteger(
                     inputTokens.tokenID,
                     new BigNumber(inputTokens.amount),
                 ),
@@ -80,13 +80,13 @@ export class SimpleLockTransactionService {
         return contract.methodsExplicit
             .unlockTokens()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     inputTokens.tokenID,
                     inputTokens.nonce,
                     new BigNumber(inputTokens.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.simpleLock.unlockTokens)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -203,21 +203,19 @@ export class SimpleLockTransactionService {
 
         return contract.methodsExplicit
             .addLiquidityLockedToken(endpointArgs)
-            .withMultiESDTNFTTransfer(
-                [
-                    TokenPayment.metaEsdtFromBigInteger(
-                        firstInputToken.tokenID,
-                        firstInputToken.nonce,
-                        new BigNumber(firstInputToken.amount),
-                    ),
-                    TokenPayment.metaEsdtFromBigInteger(
-                        secondInputToken.tokenID,
-                        secondInputToken.nonce,
-                        new BigNumber(secondInputToken.amount),
-                    ),
-                ],
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer([
+                TokenTransfer.metaEsdtFromBigInteger(
+                    firstInputToken.tokenID,
+                    firstInputToken.nonce,
+                    new BigNumber(firstInputToken.amount),
+                ),
+                TokenTransfer.metaEsdtFromBigInteger(
+                    secondInputToken.tokenID,
+                    secondInputToken.nonce,
+                    new BigNumber(secondInputToken.amount),
+                ),
+            ])
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.simpleLock.addLiquidityLockedToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -270,13 +268,13 @@ export class SimpleLockTransactionService {
             contract.methodsExplicit
                 .removeLiquidityLockedToken(endpointArgs)
                 .withSingleESDTNFTTransfer(
-                    TokenPayment.metaEsdtFromBigInteger(
+                    TokenTransfer.metaEsdtFromBigInteger(
                         inputTokens.tokenID,
                         inputTokens.nonce,
                         new BigNumber(inputTokens.amount),
                     ),
-                    Address.fromString(sender),
                 )
+                .withSender(Address.fromString(sender))
                 .withGasLimit(gasConfig.simpleLock.removeLiquidityLockedToken)
                 .withChainID(mxConfig.chainID)
                 .buildTransaction()
@@ -322,7 +320,7 @@ export class SimpleLockTransactionService {
                 ? gasConfig.simpleLock.enterFarmLockedToken.withTokenMerge
                 : gasConfig.simpleLock.enterFarmLockedToken.default;
         const mappedPayments = inputTokens.map((inputToken) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 inputToken.tokenID,
                 inputToken.nonce,
                 new BigNumber(inputToken.amount),
@@ -335,10 +333,8 @@ export class SimpleLockTransactionService {
                     farmTypeDiscriminant,
                 ),
             ])
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -368,13 +364,13 @@ export class SimpleLockTransactionService {
         return contract.methodsExplicit
             .exitFarmLockedToken(endpointArgs)
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     inputTokens.tokenID,
                     inputTokens.nonce,
                     new BigNumber(inputTokens.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -395,13 +391,13 @@ export class SimpleLockTransactionService {
         return contract.methodsExplicit
             .farmClaimRewardsLockedToken()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     inputTokens.tokenID,
                     inputTokens.nonce,
                     new BigNumber(inputTokens.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.simpleLock.claimRewardsFarmLockedToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -425,13 +421,13 @@ export class SimpleLockTransactionService {
             [],
         )
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     inputTokens.tokenID,
                     inputTokens.nonce,
                     new BigNumber(inputTokens.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()

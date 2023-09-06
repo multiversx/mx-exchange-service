@@ -96,10 +96,14 @@ describe('MetabondingTransactionsService', () => {
                 nonce: 0,
                 options: undefined,
                 receiver: scAddress.metabondingStakingAddress,
-                sender: Address.Zero().bech32(),
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 signature: undefined,
                 value: '0',
                 version: 1,
+                guardian: undefined,
+                guardianSignature: undefined,
             }),
         );
     });
@@ -119,10 +123,14 @@ describe('MetabondingTransactionsService', () => {
                 nonce: 0,
                 options: undefined,
                 receiver: scAddress.metabondingStakingAddress,
-                sender: Address.Zero().bech32(),
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 signature: undefined,
                 value: '0',
                 version: 1,
+                guardian: undefined,
+                guardianSignature: undefined,
             }),
         );
     });

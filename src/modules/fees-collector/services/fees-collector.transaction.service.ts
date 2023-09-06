@@ -11,6 +11,7 @@ import {
     AddressValue,
     TokenIdentifierType,
     TokenIdentifierValue,
+    VariadicType,
     VariadicValue,
 } from '@multiversx/sdk-core/out';
 
@@ -87,7 +88,7 @@ export class FeesCollectorTransactionService {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const endpointArgs = [
             new VariadicValue(
-                new AddressType(),
+                new VariadicType(new AddressType(), false),
                 pairAddresses.map(
                     (address) => new AddressValue(Address.fromString(address)),
                 ),
@@ -111,7 +112,7 @@ export class FeesCollectorTransactionService {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const endpointArgs = [
             new VariadicValue(
-                new TokenIdentifierType(),
+                new VariadicType(new TokenIdentifierType(), false),
                 tokenIDs.map((id) => new TokenIdentifierValue(id)),
             ),
         ];

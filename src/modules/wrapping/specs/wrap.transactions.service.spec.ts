@@ -59,11 +59,15 @@ describe('WrapTransactionsService', () => {
                 data: encodeTransactionData('wrapEgld'),
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: Address.Zero().bech32(),
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 options: undefined,
                 version: 1,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             }),
         );
     });
@@ -88,11 +92,15 @@ describe('WrapTransactionsService', () => {
                 ),
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: Address.Zero().bech32(),
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 options: undefined,
                 version: 1,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             }),
         );
     });
