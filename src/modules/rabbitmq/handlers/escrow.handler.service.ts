@@ -6,8 +6,10 @@ import {
 } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { scAddress } from 'src/config';
 import { EscrowAbiService } from 'src/modules/escrow/services/escrow.abi.service';
 import { EscrowSetterService } from 'src/modules/escrow/services/escrow.setter.service';
+import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 
 @Injectable()
@@ -15,6 +17,7 @@ export class EscrowHandlerService {
     constructor(
         private readonly escrowAbi: EscrowAbiService,
         private readonly escrowSetter: EscrowSetterService,
+        private readonly mxGateway: MXGatewayService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -82,6 +85,13 @@ export class EscrowHandlerService {
         sender: string,
         receiver: string,
     ): Promise<void> {
+        const scKeys = await this.mxGateway.getSCStorageKeys(
+            scAddress.escrow,
+            [],
+        );
+        const cachedKey = await this.escrowSetter.setSCStorageKeys(scKeys);
+        await this.deleteCacheKeys([cachedKey]);
+
         const [allSenders, allReceivers, scheduledTransfers] =
             await Promise.all([
                 this.escrowAbi.getAllSendersRaw(receiver),
