@@ -13,7 +13,7 @@ import { GovernanceEnergyContract, GovernanceTokenSnapshotContract } from '../mo
 import { VoteType } from '../models/governance.proposal.model';
 import { GovernanceComputeService } from './governance.compute.service';
 import { GovernanceQuorumService } from './governance.quorum.service';
-import { ErrorLoggerAsync } from '../../../helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import BigNumber from 'bignumber.js';
@@ -93,7 +93,7 @@ export class GovernanceTokenSnapshotService {
         return await this.tokenService.getTokenMetadata(feeTokenId);
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -106,7 +106,7 @@ export class GovernanceTokenSnapshotService {
         return smoothedOneUnit.length - 1;
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -141,7 +141,7 @@ export class GovernanceEnergyService extends GovernanceTokenSnapshotService {
         super(governanceAbiFactory, governanceCompute, governanceQuorum, tokenService);
     }
 
-    @ErrorLoggerAsync({ className: GovernanceEnergyService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,

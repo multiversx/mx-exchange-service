@@ -14,6 +14,7 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { Lock } from '@multiversx/sdk-nestjs-common';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 
 @Injectable()
 export class PairCacheWarmerService {

@@ -12,6 +12,7 @@ import { AnalyticsQueryService } from '../analytics/services/analytics.query.ser
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 
 @Injectable()
 export class AWSQueryCacheWarmerService {
