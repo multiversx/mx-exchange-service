@@ -23,7 +23,7 @@ import {
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { constantsConfig, mxConfig } from 'src/config';
 import { VmQueryError } from 'src/utils/errors.constants';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { oneHour } from 'src/helpers/helpers';
@@ -43,7 +43,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -65,7 +64,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -87,7 +85,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -112,7 +109,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -125,7 +121,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -139,7 +134,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -165,7 +159,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -187,7 +180,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -213,7 +205,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -238,7 +229,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -265,7 +255,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -289,7 +278,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -335,7 +323,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -356,7 +343,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -379,7 +365,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     async lockingScAddress(pairAddress: string): Promise<string | undefined> {
@@ -441,7 +426,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     async unlockEpoch(pairAddress: string): Promise<number | undefined> {
@@ -499,7 +483,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     async lockingDeadlineEpoch(
@@ -561,7 +544,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -592,7 +574,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -615,7 +596,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -636,7 +616,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -705,7 +684,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -731,7 +709,6 @@ export class PairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({

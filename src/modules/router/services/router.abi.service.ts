@@ -10,7 +10,7 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { EnableSwapByUserConfig } from '../models/factory.model';
 import { PairMetadata } from '../models/pair.metadata.model';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { IRouterAbiService } from './interfaces';
@@ -25,9 +25,7 @@ export class RouterAbiService
         super(mxProxy);
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneMinute(),
@@ -47,9 +45,7 @@ export class RouterAbiService
         });
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneMinute(),
@@ -73,9 +69,7 @@ export class RouterAbiService
         });
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneHour(),
@@ -92,9 +86,7 @@ export class RouterAbiService
         return response.firstValue.valueOf();
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneHour(),
@@ -110,9 +102,7 @@ export class RouterAbiService
         return response.firstValue.valueOf();
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneHour(),
@@ -128,9 +118,7 @@ export class RouterAbiService
         return response.firstValue.valueOf().bech32();
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneHour(),
@@ -152,9 +140,7 @@ export class RouterAbiService
         });
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneHour(),
@@ -171,9 +157,7 @@ export class RouterAbiService
         return response.firstValue.valueOf().bech32();
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneMinute() * 10,
@@ -190,9 +174,7 @@ export class RouterAbiService
         return response.firstValue.valueOf().toString();
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneHour(),
@@ -233,9 +215,7 @@ export class RouterAbiService
         });
     }
 
-    @ErrorLoggerAsync({
-        className: RouterAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneHour(),

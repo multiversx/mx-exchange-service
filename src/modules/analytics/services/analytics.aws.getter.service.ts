@@ -3,7 +3,7 @@ import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { CachingService } from '../../../services/caching/cache.service';
 import { HistoricDataModel } from '../models/analytics.model';
 import moment from 'moment';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class AnalyticsAWSGetterService {
@@ -17,9 +17,7 @@ export class AnalyticsAWSGetterService {
         return data;
     }
 
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-    })
+    @ErrorLoggerAsync()
     async getLatestCompleteValues(
         series: string,
         metric: string,
@@ -58,9 +56,7 @@ export class AnalyticsAWSGetterService {
         return data;
     }
 
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-    })
+    @ErrorLoggerAsync()
     async getSumCompleteValues(
         series: string,
         metric: string,
@@ -73,9 +69,7 @@ export class AnalyticsAWSGetterService {
         return await this.getCachedData(cacheKey);
     }
 
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-    })
+    @ErrorLoggerAsync()
     async getValues24hSum(
         series: string,
         metric: string,
@@ -88,9 +82,7 @@ export class AnalyticsAWSGetterService {
         return await this.getCachedData(cacheKey);
     }
 
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-    })
+    @ErrorLoggerAsync()
     async getValues24h(
         series: string,
         metric: string,

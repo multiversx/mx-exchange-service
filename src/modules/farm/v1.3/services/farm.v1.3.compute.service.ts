@@ -9,7 +9,7 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
 import { FarmAbiServiceV1_3 } from './farm.v1.3.abi.service';
 import { FarmServiceV1_3 } from './farm.v1.3.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneMinute } from 'src/helpers/helpers';
 import { IFarmComputeServiceV1_3 } from './interfaces';
@@ -66,7 +66,6 @@ export class FarmComputeServiceV1_3
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV1_3.name,
         logArgs: true,
     })
     @GetOrSetCache({

@@ -6,7 +6,7 @@ import { PhaseModel } from '../models/price.discovery.model';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IPriceDiscoveryAbiService } from './interfaces';
@@ -21,7 +21,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -47,7 +46,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -73,7 +71,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -97,7 +94,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -123,7 +119,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -149,7 +144,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -181,7 +175,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -213,7 +206,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -237,7 +229,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -260,7 +251,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -298,7 +288,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -326,7 +315,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -355,7 +343,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -384,7 +371,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -413,7 +399,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -438,7 +423,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -461,7 +445,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -489,7 +472,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -517,7 +499,6 @@ export class PriceDiscoveryAbiService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({

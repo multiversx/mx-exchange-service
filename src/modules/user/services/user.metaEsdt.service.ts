@@ -51,7 +51,7 @@ import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lo
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -606,7 +606,6 @@ export class UserMetaEsdtService {
     }
 
     @ErrorLoggerAsync({
-        className: UserMetaEsdtService.name,
         logArgs: true,
     })
     @GetOrSetCache({

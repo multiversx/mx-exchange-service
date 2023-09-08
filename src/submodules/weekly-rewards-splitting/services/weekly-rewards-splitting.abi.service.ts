@@ -15,7 +15,7 @@ import { Energy, EnergyType } from '@multiversx/sdk-exchange';
 import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { scAddress } from 'src/config';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
@@ -34,7 +34,6 @@ export class WeeklyRewardsSplittingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -82,7 +81,6 @@ export class WeeklyRewardsSplittingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -155,7 +153,6 @@ export class WeeklyRewardsSplittingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -184,7 +181,6 @@ export class WeeklyRewardsSplittingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -205,7 +201,6 @@ export class WeeklyRewardsSplittingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -244,7 +239,6 @@ export class WeeklyRewardsSplittingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -270,7 +264,6 @@ export class WeeklyRewardsSplittingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({

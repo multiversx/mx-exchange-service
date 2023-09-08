@@ -22,7 +22,7 @@ import { MXProxyService } from '../../../services/multiversx-communication/mx.pr
 import { SetLocalRoleOwnerArgs } from '../models/router.args';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from './router.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class RouterTransactionService {
@@ -227,7 +227,6 @@ export class RouterTransactionService {
     }
 
     @ErrorLoggerAsync({
-        className: RouterTransactionService.name,
         logArgs: true,
     })
     async setSwapEnabledByUser(

@@ -7,7 +7,7 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { UnstakePairModel } from '../models/token.unstake.model';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ITokenUnstakeAbiService } from './interfaces';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class TokenUnstakeAbiService
         super(mxProxy);
     }
 
-    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'tokenUnstake',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -37,7 +37,7 @@ export class TokenUnstakeAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
-    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'tokenUnstake',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -55,7 +55,7 @@ export class TokenUnstakeAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
-    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'tokenUnstake',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -73,7 +73,7 @@ export class TokenUnstakeAbiService
         return response.firstValue.valueOf().bech32();
     }
 
-    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'tokenUnstake',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -91,7 +91,7 @@ export class TokenUnstakeAbiService
         return response.firstValue.valueOf().bech32();
     }
 
-    @ErrorLoggerAsync({ className: TokenUnstakeAbiService.name, logArgs: true })
+    @ErrorLoggerAsync({ logArgs: true })
     @GetOrSetCache({
         baseKey: 'tokenUnstake',
         remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,

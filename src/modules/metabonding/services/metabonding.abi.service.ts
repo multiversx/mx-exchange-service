@@ -5,7 +5,7 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { UserEntryModel } from '../models/metabonding.model';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { IMetabondingAbiService } from './interfaces';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class MetabondingAbiService
         super(mxProxy);
     }
 
-    @ErrorLoggerAsync({ className: MetabondingAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'metabonding',
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
@@ -37,7 +37,7 @@ export class MetabondingAbiService
         return response.firstValue.valueOf().toString();
     }
 
-    @ErrorLoggerAsync({ className: MetabondingAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'metabonding',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -57,7 +57,7 @@ export class MetabondingAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    @ErrorLoggerAsync({ className: MetabondingAbiService.name, logArgs: true })
+    @ErrorLoggerAsync({ logArgs: true })
     @GetOrSetCache({
         baseKey: 'metabonding',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -79,7 +79,7 @@ export class MetabondingAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    @ErrorLoggerAsync({ className: MetabondingAbiService.name, logArgs: true })
+    @ErrorLoggerAsync({ logArgs: true })
     @GetOrSetCache({
         baseKey: 'metabonding',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,

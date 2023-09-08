@@ -5,7 +5,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { StakingTokenAttributesModel } from '../models/stakingTokenAttributes.model';
 import { StakingAbiService } from './staking.abi.service';
 import { StakingService } from './staking.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { denominateAmount } from 'src/utils/token.converters';
@@ -145,7 +145,6 @@ export class StakingComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: StakingComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -174,7 +173,6 @@ export class StakingComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: StakingComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({

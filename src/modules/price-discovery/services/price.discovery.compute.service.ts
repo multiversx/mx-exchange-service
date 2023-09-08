@@ -4,7 +4,7 @@ import { quote } from 'src/modules/pair/pair.utils';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { PriceDiscoveryService } from './price.discovery.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IPriceDiscoveryComputeService } from './interfaces';
@@ -26,7 +26,6 @@ export class PriceDiscoveryComputeService
     ) {}
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -77,7 +76,6 @@ export class PriceDiscoveryComputeService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -128,7 +126,6 @@ export class PriceDiscoveryComputeService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -171,7 +168,6 @@ export class PriceDiscoveryComputeService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -207,7 +203,6 @@ export class PriceDiscoveryComputeService
     }
 
     @ErrorLoggerAsync({
-        className: PriceDiscoveryComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({

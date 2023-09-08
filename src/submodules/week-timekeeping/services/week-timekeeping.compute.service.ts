@@ -6,7 +6,7 @@ import {
 } from '../errors';
 import { IWeekTimekeepingComputeService } from '../interfaces';
 import { WeekTimekeepingAbiService } from './week-timekeeping.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
@@ -23,7 +23,6 @@ export class WeekTimekeepingComputeService
     }
 
     @ErrorLoggerAsync({
-        className: WeekTimekeepingComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -51,7 +50,6 @@ export class WeekTimekeepingComputeService
     }
 
     @ErrorLoggerAsync({
-        className: WeekTimekeepingComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -76,7 +74,6 @@ export class WeekTimekeepingComputeService
     }
 
     @ErrorLoggerAsync({
-        className: WeekTimekeepingComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({

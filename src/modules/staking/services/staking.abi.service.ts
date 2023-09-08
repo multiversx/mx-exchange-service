@@ -11,7 +11,7 @@ import { BigNumber } from 'bignumber.js';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
@@ -30,7 +30,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -56,7 +55,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -79,7 +77,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -102,7 +99,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -125,7 +121,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -148,7 +143,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -171,7 +165,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -194,7 +187,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -217,7 +209,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -240,7 +231,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -263,7 +253,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -286,7 +275,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -309,7 +297,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -332,7 +319,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -353,7 +339,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -375,7 +360,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -397,7 +381,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -438,7 +421,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -466,7 +448,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -498,7 +479,6 @@ export class StakingAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({

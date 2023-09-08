@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { MetricsService } from 'src/endpoints/metrics/metrics.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { RouterAbiService } from './router.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 
@@ -16,9 +16,7 @@ export class RouterComputeService {
         private readonly metrics: MetricsService,
     ) {}
 
-    @ErrorLoggerAsync({
-        className: RouterComputeService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneMinute(),
@@ -47,7 +45,6 @@ export class RouterComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: RouterComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -78,7 +75,6 @@ export class RouterComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: RouterComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -105,9 +101,7 @@ export class RouterComputeService {
         return totalFeesUSD;
     }
 
-    @ErrorLoggerAsync({
-        className: RouterComputeService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneMinute(),
@@ -129,9 +123,7 @@ export class RouterComputeService {
         return totalTxCount;
     }
 
-    @ErrorLoggerAsync({
-        className: RouterComputeService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
         remoteTtl: oneHour(),

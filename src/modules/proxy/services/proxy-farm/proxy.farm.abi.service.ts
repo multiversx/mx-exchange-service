@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneHour } from 'src/helpers/helpers';
 import { AddressValue } from '@multiversx/sdk-core/out';
@@ -19,7 +19,6 @@ export class ProxyFarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: ProxyFarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -42,7 +41,6 @@ export class ProxyFarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: ProxyFarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({

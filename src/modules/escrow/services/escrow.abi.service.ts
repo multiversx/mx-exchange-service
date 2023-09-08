@@ -13,7 +13,7 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { SCPermissions, ScheduledTransferModel } from '../models/escrow.model';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { oneDay } from 'src/helpers/helpers';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
@@ -32,7 +32,6 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -79,7 +78,6 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -102,7 +100,6 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -147,7 +144,6 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -167,7 +163,6 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -186,9 +181,7 @@ export class EscrowAbiService extends GenericAbiService {
         return hexValue === '' ? 0 : new BigNumber(hexValue, 16).toNumber();
     }
 
-    @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'escrow',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -206,9 +199,7 @@ export class EscrowAbiService extends GenericAbiService {
         return Address.fromHex(hexValue).bech32();
     }
 
-    @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'escrow',
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
@@ -226,9 +217,7 @@ export class EscrowAbiService extends GenericAbiService {
         return Buffer.from(hexValue, 'hex').toString();
     }
 
-    @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'escrow',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -247,9 +236,7 @@ export class EscrowAbiService extends GenericAbiService {
         return new BigNumber(hexValue, 16).toNumber();
     }
 
-    @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'escrow',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -269,7 +256,6 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -312,7 +298,6 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({

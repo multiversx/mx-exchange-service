@@ -2,7 +2,7 @@ import { Interaction } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { oneHour } from 'src/helpers/helpers';
@@ -18,7 +18,6 @@ export class StakingProxyAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingProxyAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -40,7 +39,6 @@ export class StakingProxyAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingProxyAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -64,7 +62,6 @@ export class StakingProxyAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingProxyAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -86,7 +83,6 @@ export class StakingProxyAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingProxyAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -108,7 +104,6 @@ export class StakingProxyAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingProxyAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -131,7 +126,6 @@ export class StakingProxyAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingProxyAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -154,7 +148,6 @@ export class StakingProxyAbiService
     }
 
     @ErrorLoggerAsync({
-        className: StakingProxyAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
