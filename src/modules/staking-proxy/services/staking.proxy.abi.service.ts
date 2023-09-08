@@ -5,7 +5,7 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IStakingProxyAbiService } from './interfaces';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class StakingProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'stakeProxy',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async lpFarmAddress(stakingProxyAddress: string): Promise<string> {
         return await this.getlpFarmAddressRaw(stakingProxyAddress);
@@ -43,7 +43,7 @@ export class StakingProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'stakeProxy',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async stakingFarmAddress(stakingProxyAddress: string): Promise<string> {
         return await this.getStakingFarmAddressRaw(stakingProxyAddress);
@@ -66,7 +66,7 @@ export class StakingProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'stakeProxy',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async pairAddress(stakingProxyAddress: string): Promise<string> {
         return await this.getPairAddressRaw(stakingProxyAddress);
@@ -87,7 +87,7 @@ export class StakingProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'stakeProxy',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async stakingTokenID(stakingProxyAddress: string): Promise<string> {
         return await this.getStakingTokenIDRaw(stakingProxyAddress);

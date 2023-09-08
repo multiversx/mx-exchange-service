@@ -4,7 +4,7 @@ import { MXProxyService } from '../../../../services/multiversx-communication/mx
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { AddressValue } from '@multiversx/sdk-core/out';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IProxyFarmAbiService } from '../interfaces';
@@ -45,7 +45,7 @@ export class ProxyFarmAbiService
     })
     @GetOrSetCache({
         baseKey: 'proxyFarm',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async intermediatedFarms(proxyAddress: string): Promise<string[]> {
         return this.getIntermediatedFarmsRaw(proxyAddress);

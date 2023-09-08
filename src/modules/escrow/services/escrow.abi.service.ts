@@ -15,7 +15,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { SCPermissions, ScheduledTransferModel } from '../models/escrow.model';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneDay } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { CachingService } from 'src/services/caching/cache.service';
 import { EscrowSetterService } from './escrow.setter.service';
@@ -36,7 +36,7 @@ export class EscrowAbiService extends GenericAbiService {
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async scheduledTransfers(
         receiverAddress: string,
@@ -82,7 +82,7 @@ export class EscrowAbiService extends GenericAbiService {
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async allSenders(receiverAddress: string): Promise<string[]> {
         return await this.getAllSendersRaw(receiverAddress);
@@ -104,7 +104,7 @@ export class EscrowAbiService extends GenericAbiService {
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async allReceivers(senderAddress: string): Promise<string[]> {
         return await this.getAllReceiversRaw(senderAddress);
@@ -148,7 +148,7 @@ export class EscrowAbiService extends GenericAbiService {
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async senderLastTransferEpoch(senderAddress: string): Promise<number> {
         return await this.getSenderLastTransferEpochRaw(senderAddress);
@@ -167,7 +167,7 @@ export class EscrowAbiService extends GenericAbiService {
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async receiverLastTransferEpoch(receiverAddress: string): Promise<number> {
         return await this.getReceiverLastTransferEpochRaw(receiverAddress);
@@ -260,7 +260,7 @@ export class EscrowAbiService extends GenericAbiService {
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async addressPermission(address: string): Promise<SCPermissions[]> {
         const addressesWithPermissions =
@@ -302,7 +302,7 @@ export class EscrowAbiService extends GenericAbiService {
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async allAddressesWithPermissions(): Promise<string[]> {
         return await this.getAllAddressesWithPermissionsRaw();

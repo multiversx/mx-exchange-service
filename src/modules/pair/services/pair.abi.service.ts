@@ -26,7 +26,7 @@ import { VmQueryError } from 'src/utils/errors.constants';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { IPairAbiService } from '../interfaces';
 
@@ -380,7 +380,11 @@ export class PairAbiService
         }
         const value = await this.getLockingScAddressRaw(pairAddress);
         if (value) {
-            await this.cachingService.setCache(cacheKey, value, oneHour());
+            await this.cachingService.setCache(
+                cacheKey,
+                value,
+                Constants.oneHour(),
+            );
             return value;
         }
         await this.cachingService.setCache(
@@ -441,7 +445,11 @@ export class PairAbiService
         }
         const value = await this.getUnlockEpochRaw(pairAddress);
         if (value) {
-            await this.cachingService.setCache(cacheKey, value, oneHour());
+            await this.cachingService.setCache(
+                cacheKey,
+                value,
+                Constants.oneHour(),
+            );
             return value;
         }
         await this.cachingService.setCache(
@@ -500,7 +508,11 @@ export class PairAbiService
         }
         const value = await this.getLockingDeadlineEpochRaw(pairAddress);
         if (value) {
-            await this.cachingService.setCache(cacheKey, value, oneHour());
+            await this.cachingService.setCache(
+                cacheKey,
+                value,
+                Constants.oneHour(),
+            );
             return value;
         }
         await this.cachingService.setCache(

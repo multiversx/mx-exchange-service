@@ -13,7 +13,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IStakingAbiService } from './interfaces';
 
@@ -34,7 +34,7 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async pairContractAddress(stakeAddress: string): Promise<string> {
         return await this.getPairContractAddressRaw(stakeAddress);
@@ -343,7 +343,7 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async burnGasLimit(stakeAddress: string): Promise<string> {
         return await this.getBurnGasLimitRaw(stakeAddress);
@@ -364,7 +364,7 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async transferExecGasLimit(stakeAddress: string): Promise<string> {
         return await this.getTransferExecGasLimitRaw(stakeAddress);
@@ -425,7 +425,7 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async lockedAssetFactoryAddress(stakeAddress: string): Promise<string> {
         return await this.getLockedAssetFactoryAddressRaw(stakeAddress);
@@ -452,7 +452,7 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async isWhitelisted(
         stakeAddress: string,
@@ -483,7 +483,7 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: oneMinute(),
+        remoteTtl: Constants.oneMinute(),
     })
     async lastErrorMessage(stakeAddress: string): Promise<string> {
         return await this.getLastErrorMessageRaw(stakeAddress);

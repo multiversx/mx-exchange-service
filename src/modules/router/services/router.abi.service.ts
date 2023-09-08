@@ -12,7 +12,7 @@ import { EnableSwapByUserConfig } from '../models/factory.model';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IRouterAbiService } from './interfaces';
 import { constantsConfig } from 'src/config';
 
@@ -28,7 +28,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneMinute(),
+        remoteTtl: Constants.oneMinute(),
     })
     async pairsAddress(): Promise<string[]> {
         return await this.getAllPairsAddressRaw();
@@ -48,7 +48,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneMinute(),
+        remoteTtl: Constants.oneMinute(),
     })
     async pairsMetadata(): Promise<PairMetadata[]> {
         return await this.getPairsMetadataRaw();
@@ -72,7 +72,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async pairCreationEnabled(): Promise<boolean> {
         return await this.getPairCreationEnabledRaw();
@@ -89,7 +89,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async state(): Promise<boolean> {
         return await this.getStateRaw();
@@ -105,7 +105,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async owner(): Promise<string> {
         return await this.getOwnerRaw();
@@ -121,7 +121,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async allPairTokens(): Promise<PairTokens[]> {
         return await this.getAllPairTokensRaw();
@@ -143,7 +143,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async pairTemplateAddress(): Promise<string> {
         return await this.getPairTemplateAddressRaw();
@@ -160,7 +160,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneMinute() * 10,
+        remoteTtl: Constants.oneMinute() * 10,
     })
     async temporaryOwnerPeriod(): Promise<string> {
         return await this.getTemporaryOwnerPeriodRaw();
@@ -177,7 +177,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async enableSwapByUserConfig(
         tokenID: string,
@@ -218,7 +218,7 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async commonTokensForUserPairs(): Promise<string[]> {
         return await this.getCommonTokensForUserPairsRaw();

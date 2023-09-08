@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { oneDay } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
@@ -24,7 +24,7 @@ export class EscrowSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('scheduledTransfers', receiverAddress),
             value,
-            oneDay(),
+            Constants.oneDay(),
         );
     }
 
@@ -35,7 +35,7 @@ export class EscrowSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('allSenders', receiverAddress),
             value,
-            oneDay(),
+            Constants.oneDay(),
         );
     }
 
@@ -46,7 +46,7 @@ export class EscrowSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('allReceivers', senderAddress),
             value,
-            oneDay(),
+            Constants.oneDay(),
         );
     }
 
@@ -57,7 +57,7 @@ export class EscrowSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('senderLastTransferEpoch', address),
             value,
-            oneDay(),
+            Constants.oneDay(),
         );
     }
 
@@ -68,7 +68,7 @@ export class EscrowSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('receiverLastTransferEpoch', address),
             value,
-            oneDay(),
+            Constants.oneDay(),
         );
     }
 

@@ -11,7 +11,7 @@ import { FarmAbiServiceV1_3 } from './farm.v1.3.abi.service';
 import { FarmServiceV1_3 } from './farm.v1.3.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IFarmComputeServiceV1_3 } from './interfaces';
 
 @Injectable()
@@ -70,7 +70,7 @@ export class FarmComputeServiceV1_3
     })
     @GetOrSetCache({
         baseKey: 'farm',
-        remoteTtl: oneMinute(),
+        remoteTtl: Constants.oneMinute(),
     })
     async farmAPR(farmAddress: string): Promise<string> {
         return this.computeFarmAPR(farmAddress);

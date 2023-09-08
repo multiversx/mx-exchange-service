@@ -12,7 +12,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { LockOption } from '../models/simple.lock.energy.model';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneMinute, oneSecond } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { scAddress } from 'src/config';
@@ -151,7 +151,7 @@ export class EnergyAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
-        remoteTtl: oneMinute(),
+        remoteTtl: Constants.oneMinute(),
     })
     async energyEntryForUser(userAddress: string): Promise<EnergyType> {
         return await this.getEnergyEntryForUserRaw(userAddress);
@@ -172,8 +172,8 @@ export class EnergyAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
-        remoteTtl: oneSecond(),
-        localTtl: oneSecond(),
+        remoteTtl: Constants.oneSecond(),
+        localTtl: Constants.oneSecond(),
     })
     async energyAmountForUser(userAddress: string): Promise<string> {
         return await this.getEnergyAmountForUserRaw(userAddress);

@@ -8,7 +8,7 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IFarmAbiServiceV1_2 } from './interfaces';
 
 @Injectable()
@@ -136,7 +136,7 @@ export class FarmAbiServiceV1_2
     })
     @GetOrSetCache({
         baseKey: 'farm',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async farmMigrationConfiguration(
         farmAddress: string,

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { FarmAbiService } from '../../base-module/services/farm.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IFarmCustomAbiService } from './interfaces';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class FarmCustomAbiService
     })
     @GetOrSetCache({
         baseKey: 'farm',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async whitelist(farmAddress: string): Promise<string[]> {
         return await this.getWhitelistRaw(farmAddress);

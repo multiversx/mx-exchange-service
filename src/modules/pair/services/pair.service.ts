@@ -10,7 +10,7 @@ import {
 } from '../pair.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { CachingService } from 'src/services/caching/cache.service';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -241,7 +241,7 @@ export class PairService {
         await this.cachingService.setCache(
             `${tokenID}.pairAddress`,
             returnedData,
-            oneHour(),
+            Constants.oneHour(),
         );
         return returnedData;
     }

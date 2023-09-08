@@ -11,7 +11,7 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { IFarmAbiService } from './interfaces';
 
@@ -233,7 +233,7 @@ export class FarmAbiService
     })
     @GetOrSetCache({
         baseKey: 'farm',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async divisionSafetyConstant(farmAddress: string): Promise<string> {
         return await this.getDivisionSafetyConstantRaw(farmAddress);

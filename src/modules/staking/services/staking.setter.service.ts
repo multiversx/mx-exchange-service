@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
@@ -23,7 +23,7 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairContractAddress', stakeAddress),
             value,
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 

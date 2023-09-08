@@ -5,7 +5,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
@@ -31,7 +31,11 @@ export class RabbitMQEsdtTokenHandlerService {
             event.getTopics().tokenID,
         );
         const token = await this.apiService.getToken(event.getTopics().tokenID);
-        await this.cachingService.setCache(cacheKey, token, oneHour());
+        await this.cachingService.setCache(
+            cacheKey,
+            token,
+            Constants.oneHour(),
+        );
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
     }

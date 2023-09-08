@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
@@ -20,7 +20,7 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairsAddress'),
             value,
-            oneMinute(),
+            Constants.oneMinute(),
         );
     }
 
@@ -28,7 +28,7 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairsMetadata'),
             value,
-            oneMinute(),
+            Constants.oneMinute(),
         );
     }
 
@@ -36,7 +36,7 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairsTokens'),
             value,
-            oneMinute(),
+            Constants.oneMinute(),
         );
     }
 
@@ -44,7 +44,7 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('totalLockedValueUSD'),
             value,
-            oneMinute(),
+            Constants.oneMinute(),
         );
     }
 
@@ -52,7 +52,7 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('totalVolumeUSD', time),
             value,
-            oneMinute(),
+            Constants.oneMinute(),
         );
     }
 
@@ -60,7 +60,7 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('totalFeesUSD', time),
             value,
-            oneMinute(),
+            Constants.oneMinute(),
         );
     }
 
@@ -68,7 +68,7 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairCount'),
             value,
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 }

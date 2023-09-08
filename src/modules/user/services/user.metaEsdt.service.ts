@@ -12,7 +12,7 @@ import {
     LockedFarmToken,
     LockedFarmTokenV2,
 } from 'src/modules/tokens/models/lockedFarmToken.model';
-import { oneHour } from '../../../helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
@@ -610,7 +610,7 @@ export class UserMetaEsdtService {
     })
     @GetOrSetCache({
         baseKey: 'user',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     private async nftTokenType(tokenID: string): Promise<NftTokenType> {
         return await this.getNftTokenTypeRaw(tokenID);

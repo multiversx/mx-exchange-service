@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -55,7 +55,7 @@ export class LockedAssetGetterService extends GenericGetterService {
         return await this.getData(
             this.getCacheKey('defaultUnlockPeriod'),
             () => this.abiService.getDefaultUnlockPeriod(),
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -63,7 +63,7 @@ export class LockedAssetGetterService extends GenericGetterService {
         return await this.getData(
             this.getCacheKey('initEpoch'),
             () => this.abiService.getInitEpoch(),
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -71,7 +71,7 @@ export class LockedAssetGetterService extends GenericGetterService {
         return await this.getData(
             this.getCacheKey('extendedAttributesActivationNonce'),
             () => this.abiService.getExtendedAttributesActivationNonce(),
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 }

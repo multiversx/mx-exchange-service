@@ -2,7 +2,7 @@ import { EnergyType } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
@@ -56,7 +56,7 @@ export class EnergySetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('energyEntryForUser', userAddress),
             value,
-            oneMinute(),
+            Constants.oneMinute(),
         );
     }
 }

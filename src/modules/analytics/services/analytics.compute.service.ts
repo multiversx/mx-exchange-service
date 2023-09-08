@@ -16,7 +16,7 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
@@ -42,8 +42,8 @@ export class AnalyticsComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: oneMinute() * 10,
-        localTtl: oneMinute() * 5,
+        remoteTtl: Constants.oneMinute() * 10,
+        localTtl: Constants.oneMinute() * 5,
     })
     async lockedValueUSDFarms(): Promise<string> {
         return await this.computeLockedValueUSDFarms();
@@ -74,8 +74,8 @@ export class AnalyticsComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: oneMinute() * 10,
-        localTtl: oneMinute() * 5,
+        remoteTtl: Constants.oneMinute() * 10,
+        localTtl: Constants.oneMinute() * 5,
     })
     async totalValueLockedUSD(): Promise<string> {
         return await this.computeTotalValueLockedUSD();
@@ -107,8 +107,8 @@ export class AnalyticsComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: oneMinute() * 10,
-        localTtl: oneMinute() * 5,
+        remoteTtl: Constants.oneMinute() * 10,
+        localTtl: Constants.oneMinute() * 5,
     })
     async totalValueStakedUSD(): Promise<string> {
         return await this.computeTotalValueStakedUSD();
@@ -155,8 +155,8 @@ export class AnalyticsComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: oneMinute() * 10,
-        localTtl: oneMinute() * 5,
+        remoteTtl: Constants.oneMinute() * 10,
+        localTtl: Constants.oneMinute() * 5,
     })
     async totalAggregatedRewards(days: number): Promise<string> {
         return await this.computeTotalAggregatedRewards(days);
@@ -192,8 +192,8 @@ export class AnalyticsComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: oneMinute() * 10,
-        localTtl: oneMinute() * 5,
+        remoteTtl: Constants.oneMinute() * 10,
+        localTtl: Constants.oneMinute() * 5,
     })
     async totalLockedMexStakedUSD(): Promise<string> {
         return await this.computeTotalLockedMexStakedUSD();
@@ -226,8 +226,8 @@ export class AnalyticsComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: oneMinute() * 30,
-        localTtl: oneMinute() * 10,
+        remoteTtl: Constants.oneMinute() * 30,
+        localTtl: Constants.oneMinute() * 10,
     })
     async feeTokenBurned(tokenID: string, time: string): Promise<string> {
         return await this.computeTokenBurned(tokenID, time, 'feeBurned');
@@ -236,8 +236,8 @@ export class AnalyticsComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: oneMinute() * 30,
-        localTtl: oneMinute() * 10,
+        remoteTtl: Constants.oneMinute() * 30,
+        localTtl: Constants.oneMinute() * 10,
     })
     async penaltyTokenBurned(tokenID: string, time: string): Promise<string> {
         return await this.computeTokenBurned(tokenID, time, 'penaltyBurned');
