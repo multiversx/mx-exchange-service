@@ -7,7 +7,7 @@ import {
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { CpuProfiler } from './cpu.profiler';
+import { CpuProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { MetricsCollector } from './metrics.collector';
 import { PerformanceProfiler } from './performance.profiler';
 
@@ -29,7 +29,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
             const profiler = new PerformanceProfiler();
             const cpuProfiler = new CpuProfiler();
-            
+
             return next.handle().pipe(
                 tap(() => {
                     profiler.stop();
