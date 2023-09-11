@@ -3,14 +3,12 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { VoteType } from '../models/governance.proposal.model';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
-import { ElasticQuery } from '../../../helpers/entities/elastic/elastic.query';
-import { QueryType } from '../../../helpers/entities/elastic/query.type';
-import { ElasticSortOrder } from '../../../helpers/entities/elastic/elastic.sort.order';
-import { ElasticService } from '../../../helpers/elastic.service';
 import { GovernanceSetterService } from './governance.setter.service';
 import { convertToVoteType } from '../event-decoder/governance.event';
 import { Address } from '@multiversx/sdk-core/out';
 import { decimalToHex } from '../../../utils/token.converters';
+import { ElasticQuery, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 @Injectable()
 export class GovernanceComputeService {
