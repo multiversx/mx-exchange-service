@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { QueryType } from 'src/helpers/entities/elastic/query.type';
+import { QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { ElasticQuery } from '@multiversx/sdk-nestjs-elastic';
 import { ElasticService } from 'src/helpers/elastic.service';
 
