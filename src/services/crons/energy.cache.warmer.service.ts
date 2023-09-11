@@ -5,7 +5,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { EnergySetterService } from 'src/modules/energy/services/energy.setter.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
-import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 
 @Injectable()
 export class EnergyCacheWarmerService {
