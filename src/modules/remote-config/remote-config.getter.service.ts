@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
@@ -12,7 +12,7 @@ import { AnalyticsRepositoryService } from 'src/services/database/repositories/a
 @Injectable()
 export class RemoteConfigGetterService extends GenericGetterService {
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly scAddressRepositoryService: SCAddressRepositoryService,
         protected readonly flagRepositoryService: FlagRepositoryService,

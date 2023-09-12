@@ -6,7 +6,7 @@ import { FarmTokenAttributesModel } from '../../models/farmTokenAttributes.model
 import { FarmCustomAbiService } from './farm.custom.abi.service';
 import { FarmCustomComputeService } from './farm.custom.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class FarmCustomService extends FarmServiceBase {
         @Inject(forwardRef(() => FarmCustomComputeService))
         protected readonly farmCompute: FarmCustomComputeService,
         protected readonly contextGetter: ContextGetterService,
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         protected readonly tokenService: TokenService,
     ) {
         super(

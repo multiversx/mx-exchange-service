@@ -2,14 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { Logger } from 'winston';
-import { CachingService } from '../caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { GenericGetterService } from '../generics/generic.getter.service';
 
 @Injectable()
 export class ContextGetterService extends GenericGetterService {
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly apiService: MXApiService,
     ) {

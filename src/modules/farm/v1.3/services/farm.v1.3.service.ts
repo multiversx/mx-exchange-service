@@ -3,7 +3,7 @@ import { RewardsModel } from '../../models/farm.model';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import BigNumber from 'bignumber.js';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { FarmAbiServiceV1_3 } from './farm.v1.3.abi.service';
 import { FarmComputeServiceV1_3 } from './farm.v1.3.compute.service';
 import { FarmTokenAttributesV1_3 } from '@multiversx/sdk-exchange';
@@ -18,7 +18,7 @@ export class FarmServiceV1_3 extends FarmServiceBase {
         @Inject(forwardRef(() => FarmComputeServiceV1_3))
         protected readonly farmCompute: FarmComputeServiceV1_3,
         protected readonly contextGetter: ContextGetterService,
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         protected readonly tokenService: TokenService,
     ) {
         super(

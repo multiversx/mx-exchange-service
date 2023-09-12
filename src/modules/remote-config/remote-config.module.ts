@@ -9,7 +9,6 @@ import { RemoteConfigController } from './remote-config.controller';
 import { RemoteConfigGetterService } from './remote-config.getter.service';
 import { RemoteConfigSetterService } from './remote-config.setter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
 import { Analytics, AnalyticsSchema } from './schemas/analytics.schema';
 
@@ -21,9 +20,8 @@ import { Analytics, AnalyticsSchema } from './schemas/analytics.schema';
             { name: SCAddress.name, schema: SCAddressSchema },
         ]),
         MongooseModule.forFeature([
-            { name: Analytics.name, schema: AnalyticsSchema }
+            { name: Analytics.name, schema: AnalyticsSchema },
         ]),
-        CachingModule,
     ],
     providers: [
         RemoteConfigController,
@@ -42,4 +40,4 @@ import { Analytics, AnalyticsSchema } from './schemas/analytics.schema';
         AnalyticsRepositoryService,
     ],
 })
-export class RemoteConfigModule { }
+export class RemoteConfigModule {}

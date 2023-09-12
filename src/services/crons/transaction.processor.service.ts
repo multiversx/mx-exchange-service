@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Address } from '@multiversx/sdk-core';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
-import { constantsConfig } from 'src/config';
+import { cacheConfig, constantsConfig } from 'src/config';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class TransactionProcessorService {
     isProcessing = false;
 
     constructor(
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         private readonly apiService: MXApiService,
     ) {}
 
@@ -23,11 +23,15 @@ export class TransactionProcessorService {
 
         try {
             this.isProcessing = true;
-            let lastProcessedTimestamp: number =
-                await this.cachingService.getCache('lastProcessedTimestamp');
+            let lastProcessedTimestamp: number = await this.cachingService.get(
+                'lastProcessedTimestamp',
+            );
             let currentTimestamp: number;
 
-            if (lastProcessedTimestamp === null) {
+            if (
+                !lastProcessedTimestamp ||
+                lastProcessedTimestamp === undefined
+            ) {
                 lastProcessedTimestamp =
                     await this.apiService.getShardTimestamp(1);
                 currentTimestamp = lastProcessedTimestamp;
@@ -36,9 +40,10 @@ export class TransactionProcessorService {
             }
 
             if (currentTimestamp === lastProcessedTimestamp) {
-                await this.cachingService.setCache(
+                await this.cachingService.set(
                     'lastProcessedTimestamp',
                     currentTimestamp,
+                    cacheConfig.default,
                 );
                 return;
             }
@@ -102,9 +107,10 @@ export class TransactionProcessorService {
                     );
                 }
             }
-            await this.cachingService.setCache(
+            await this.cachingService.set(
                 'lastProcessedTimestamp',
                 currentTimestamp,
+                cacheConfig.default,
             );
         } catch (error) {
             console.log(error);

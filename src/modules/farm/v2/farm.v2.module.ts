@@ -1,6 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TokenModule } from 'src/modules/tokens/token.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { FarmAbiServiceV2 } from './services/farm.v2.abi.service';
@@ -16,7 +15,6 @@ import { EnergyModule } from '../../energy/energy.module';
 
 @Module({
     imports: [
-        CachingModule,
         ContextModule,
         MXCommunicationModule,
         PairModule,

@@ -2,14 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateSetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { CachingService } from '../caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 
 @Injectable()
 export class GenericSetterService {
     protected baseKey: string | undefined;
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
@@ -19,12 +19,7 @@ export class GenericSetterService {
         remoteTtl: number,
         localTtl?: number,
     ): Promise<string> {
-        await this.cachingService.setCache(
-            cacheKey,
-            value,
-            remoteTtl,
-            localTtl,
-        );
+        await this.cachingService.set(cacheKey, value, remoteTtl, localTtl);
         return cacheKey;
     }
 

@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
@@ -12,7 +12,7 @@ import { SCAddressType } from './models/sc-address.model';
 @Injectable()
 export class RemoteConfigSetterService extends GenericSetterService {
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         private readonly scAddressRepositoryService: SCAddressRepositoryService,

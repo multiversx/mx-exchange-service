@@ -9,7 +9,7 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingService } from 'src/modules/staking/services/staking.service';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
@@ -35,7 +35,7 @@ export class StakingProxyService {
         private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -222,7 +222,7 @@ export class StakingProxyService {
     async getStakingProxyAddressByDualYieldTokenID(
         tokenID: string,
     ): Promise<string> {
-        const cachedValue: string = await this.cachingService.getCache(
+        const cachedValue: string = await this.cachingService.get(
             `${tokenID}.stakingProxyAddress`,
         );
         if (cachedValue && cachedValue !== undefined) {
@@ -235,7 +235,7 @@ export class StakingProxyService {
             const dualYieldTokenID =
                 await this.stakingProxyAbi.dualYieldTokenID(address);
             if (dualYieldTokenID === tokenID) {
-                await this.cachingService.setCache(
+                await this.cachingService.set(
                     `${tokenID}.stakingProxyAddress`,
                     address,
                     Constants.oneHour(),
