@@ -31,7 +31,7 @@ export class GovernanceComputeService {
         let voteType = VoteType.NotVoted;
         if (log.length > 0) {
             const voteEvent = log[0]._source.events.find((event) => event.identifier === 'vote');
-            voteType = convertToVoteType(atob(voteEvent.topics[0]));
+            voteType = toVoteType(atob(voteEvent.topics[0]));
         }
         const proposalVoteType = {
             proposalId,
