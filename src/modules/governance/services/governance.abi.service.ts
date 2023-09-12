@@ -1,17 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ProposalVotes } from '../models/governance.proposal.votes.model';
-import { GovernanceProposalModel, GovernanceProposalStatus, VoteArgs } from '../models/governance.proposal.model';
+import {
+    GovernanceProposalModel,
+    GovernanceProposalStatus,
+    VoteArgs,
+} from '../models/governance.proposal.model';
 import { GovernanceAction } from '../models/governance.action.model';
 import { EsdtTokenPaymentModel } from '../../tokens/models/esdt.token.payment.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
-import { GovernanceType, toGovernanceProposalStatus } from '../../../utils/governance';
+import {
+    GovernanceType,
+    toGovernanceProposalStatus,
+} from '../../../utils/governance';
 import { TransactionModel } from '../../../models/transaction.model';
 import { gasConfig, mxConfig } from '../../../config';
 import BigNumber from 'bignumber.js';
-import { BytesValue, U64Value } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+import {
+    BytesValue,
+    U64Value,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { GovernanceTokenSnapshotMerkleService } from './governance.token.snapshot.merkle.service';
 import { GovernanceDescriptionService } from './governance.description.service';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
@@ -19,8 +29,7 @@ import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { decimalToHex } from '../../../utils/token.converters';
 
 @Injectable()
-export class GovernanceTokenSnapshotAbiService
-    extends GenericAbiService {
+export class GovernanceTokenSnapshotAbiService extends GenericAbiService {
     protected type = GovernanceType.TOKEN_SNAPSHOT;
     constructor(
         protected readonly mxProxy: MXProxyService,
@@ -30,7 +39,7 @@ export class GovernanceTokenSnapshotAbiService
         super(mxProxy);
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -40,7 +49,7 @@ export class GovernanceTokenSnapshotAbiService
         return await this.mxProxy.getAddressShardID(scAddress);
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -53,7 +62,7 @@ export class GovernanceTokenSnapshotAbiService
     async minFeeForProposeRaw(scAddress: string): Promise<string> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methods.getMinFeeForPropose();
         const response = await this.getGenericData(interaction);
@@ -61,7 +70,7 @@ export class GovernanceTokenSnapshotAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -74,7 +83,7 @@ export class GovernanceTokenSnapshotAbiService
     async quorumRaw(scAddress: string): Promise<string> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methods.getQuorum();
         const response = await this.getGenericData(interaction);
@@ -82,7 +91,7 @@ export class GovernanceTokenSnapshotAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -95,7 +104,7 @@ export class GovernanceTokenSnapshotAbiService
     async votingDelayInBlocksRaw(scAddress: string): Promise<number> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methods.getVotingDelayInBlocks();
         const response = await this.getGenericData(interaction);
@@ -103,7 +112,7 @@ export class GovernanceTokenSnapshotAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -116,7 +125,7 @@ export class GovernanceTokenSnapshotAbiService
     async votingPeriodInBlocksRaw(scAddress: string): Promise<number> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methods.getVotingPeriodInBlocks();
         const response = await this.getGenericData(interaction);
@@ -124,7 +133,7 @@ export class GovernanceTokenSnapshotAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -137,7 +146,7 @@ export class GovernanceTokenSnapshotAbiService
     async feeTokenIdRaw(scAddress: string): Promise<string> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methods.getFeeTokenId();
         const response = await this.getGenericData(interaction);
@@ -145,7 +154,7 @@ export class GovernanceTokenSnapshotAbiService
         return response.firstValue.valueOf();
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -158,7 +167,7 @@ export class GovernanceTokenSnapshotAbiService
     async withdrawPercentageDefeatedRaw(scAddress: string): Promise<number> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methods.getWithdrawPercentageDefeated();
         const response = await this.getGenericData(interaction);
@@ -166,7 +175,7 @@ export class GovernanceTokenSnapshotAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -179,7 +188,7 @@ export class GovernanceTokenSnapshotAbiService
     async proposalsRaw(scAddress: string): Promise<GovernanceProposalModel[]> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methodsExplicit.getProposals();
         const response = await this.getGenericData(interaction);
@@ -198,55 +207,80 @@ export class GovernanceTokenSnapshotAbiService
                 proposalId: proposal.proposal_id.toNumber(),
                 proposer: proposal.proposer.bech32(),
                 actions,
-                description: this.governanceDescription.getGovernanceDescription(proposal.description.toString()),
+                description:
+                    this.governanceDescription.getGovernanceDescription(
+                        proposal.description.toString(),
+                    ),
                 feePayment: new EsdtTokenPaymentModel(
-                    EsdtTokenPayment.fromDecodedAttributes(proposal.fee_payment)
+                    EsdtTokenPayment.fromDecodedAttributes(
+                        proposal.fee_payment,
+                    ),
                 ),
                 proposalStartBlock: proposal.proposal_start_block.toNumber(),
-                minimumQuorumPercentage: proposal.minimum_quorum.div(100).toFixed(2),
+                minimumQuorumPercentage: proposal.minimum_quorum
+                    .div(100)
+                    .toFixed(2),
                 totalQuorum: proposal.total_quorum.toFixed(),
                 votingDelayInBlocks: proposal.voting_delay_in_blocks.toNumber(),
-                votingPeriodInBlocks: proposal.voting_period_in_blocks.toNumber(),
-                withdrawPercentageDefeated: proposal.withdraw_percentage_defeated.toNumber(),
+                votingPeriodInBlocks:
+                    proposal.voting_period_in_blocks.toNumber(),
+                withdrawPercentageDefeated:
+                    proposal.withdraw_percentage_defeated.toNumber(),
             });
         });
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async userVotedProposals(scAddress: string, userAddress: string): Promise<number[]> {
+    async userVotedProposals(
+        scAddress: string,
+        userAddress: string,
+    ): Promise<number[]> {
         return await this.userVotedProposalsRaw(scAddress, userAddress);
     }
 
-    async userVotedProposalsRaw(scAddress: string, userAddress: string): Promise<number[]> {
+    async userVotedProposalsRaw(
+        scAddress: string,
+        userAddress: string,
+    ): Promise<number[]> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
-        const interaction = contract.methods.getUserVotedProposals([userAddress]);
+        const interaction = contract.methods.getUserVotedProposals([
+            userAddress,
+        ]);
         const response = await this.getGenericData(interaction);
 
-        return response.firstValue.valueOf().map((proposalId: any) => proposalId.toNumber());
+        return response.firstValue
+            .valueOf()
+            .map((proposalId: any) => proposalId.toNumber());
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async proposalVotes(scAddress: string, proposalId: number): Promise<ProposalVotes> {
+    async proposalVotes(
+        scAddress: string,
+        proposalId: number,
+    ): Promise<ProposalVotes> {
         return await this.proposalVotesRaw(scAddress, proposalId);
     }
 
-    async proposalVotesRaw(scAddress: string, proposalId: number): Promise<ProposalVotes> {
+    async proposalVotesRaw(
+        scAddress: string,
+        proposalId: number,
+    ): Promise<ProposalVotes> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methods.getProposalVotes([proposalId]);
         const response = await this.getGenericData(interaction);
@@ -258,7 +292,7 @@ export class GovernanceTokenSnapshotAbiService
         const totalVotesBigNumber = votes.up_votes
             .plus(votes.down_votes)
             .plus(votes.abstain_votes)
-            .plus(votes.down_veto_votes)
+            .plus(votes.down_veto_votes);
 
         return new ProposalVotes({
             upVotes: votes.up_votes.toFixed(),
@@ -266,28 +300,58 @@ export class GovernanceTokenSnapshotAbiService
             downVetoVotes: votes.down_veto_votes.toFixed(),
             abstainVotes: votes.abstain_votes.toFixed(),
             totalVotes: totalVotesBigNumber.toFixed(),
-            upPercentage: totalVotesBigNumber > 0 ? votes.up_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2) : "0",
-            downPercentage: totalVotesBigNumber > 0 ? votes.down_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2) : "0",
-            abstainPercentage: totalVotesBigNumber > 0 ? votes.abstain_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2) : "0",
-            downVetoPercentage: totalVotesBigNumber > 0 ? votes.down_veto_votes.div(totalVotesBigNumber).multipliedBy(100).toFixed(2) : "0",
-            quorum: votes.quorum.toFixed()
+            upPercentage:
+                totalVotesBigNumber > 0
+                    ? votes.up_votes
+                          .div(totalVotesBigNumber)
+                          .multipliedBy(100)
+                          .toFixed(2)
+                    : '0',
+            downPercentage:
+                totalVotesBigNumber > 0
+                    ? votes.down_votes
+                          .div(totalVotesBigNumber)
+                          .multipliedBy(100)
+                          .toFixed(2)
+                    : '0',
+            abstainPercentage:
+                totalVotesBigNumber > 0
+                    ? votes.abstain_votes
+                          .div(totalVotesBigNumber)
+                          .multipliedBy(100)
+                          .toFixed(2)
+                    : '0',
+            downVetoPercentage:
+                totalVotesBigNumber > 0
+                    ? votes.down_veto_votes
+                          .div(totalVotesBigNumber)
+                          .multipliedBy(100)
+                          .toFixed(2)
+                    : '0',
+            quorum: votes.quorum.toFixed(),
         });
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async proposalStatus(scAddress: string, proposalId: number): Promise<GovernanceProposalStatus> {
+    async proposalStatus(
+        scAddress: string,
+        proposalId: number,
+    ): Promise<GovernanceProposalStatus> {
         return await this.proposalStatusRaw(scAddress, proposalId);
     }
 
-    async proposalStatusRaw(scAddress: string, proposalId: number): Promise<GovernanceProposalStatus> {
+    async proposalStatusRaw(
+        scAddress: string,
+        proposalId: number,
+    ): Promise<GovernanceProposalStatus> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methods.getProposalStatus([proposalId]);
         const response = await this.getGenericData(interaction);
@@ -295,55 +359,60 @@ export class GovernanceTokenSnapshotAbiService
         return toGovernanceProposalStatus(response.firstValue.valueOf().name);
     }
 
-    @ErrorLoggerAsync({ className: GovernanceTokenSnapshotAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async proposalRootHash(scAddress: string, proposalId: number): Promise<string> {
+    async proposalRootHash(
+        scAddress: string,
+        proposalId: number,
+    ): Promise<string> {
         return await this.proposalRootHashRaw(scAddress, proposalId);
     }
 
-    async proposalRootHashRaw(scAddress: string, proposalId: number): Promise<string> {
+    async proposalRootHashRaw(
+        scAddress: string,
+        proposalId: number,
+    ): Promise<string> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type
+            this.type,
         );
         const interaction = contract.methods.getProposalRootHash([proposalId]);
         const response = await this.getGenericData(interaction);
 
-        const stringsArray = response.firstValue.valueOf().map(bn => {
+        const stringsArray = response.firstValue.valueOf().map((bn) => {
             return decimalToHex(bn);
         });
         return stringsArray.join('');
     }
 
     @ErrorLoggerAsync({
-        className: GovernanceTokenSnapshotAbiService.name,
         logArgs: true,
     })
-    async vote(
-        sender: string,
-        args: VoteArgs,
-    ): Promise<TransactionModel> {
+    async vote(sender: string, args: VoteArgs): Promise<TransactionModel> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             args.contractAddress,
-            this.type
+            this.type,
         );
 
-        const rootHash = await this.proposalRootHash(args.contractAddress, args.proposalId);
+        const rootHash = await this.proposalRootHash(
+            args.contractAddress,
+            args.proposalId,
+        );
         const governanceMerkle = await this.governanceMerkle.getMerkleTree(
             rootHash,
         );
 
-        const addressLeaf = governanceMerkle.getUserLeaf(sender)
+        const addressLeaf = governanceMerkle.getUserLeaf(sender);
         return contract.methodsExplicit
             .vote([
                 new U64Value(new BigNumber(args.proposalId)),
                 new U64Value(new BigNumber(args.vote)),
                 new U64Value(new BigNumber(addressLeaf.balance)),
-                new BytesValue(governanceMerkle.getProofBuffer(addressLeaf))
+                new BytesValue(governanceMerkle.getProofBuffer(addressLeaf)),
             ])
             .withGasLimit(gasConfig.governance.vote)
             .withChainID(mxConfig.chainID)
@@ -353,8 +422,7 @@ export class GovernanceTokenSnapshotAbiService
 }
 
 @Injectable()
-export class GovernanceEnergyAbiService
-    extends GovernanceTokenSnapshotAbiService {
+export class GovernanceEnergyAbiService extends GovernanceTokenSnapshotAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly governanceMerkle: GovernanceTokenSnapshotMerkleService,
@@ -364,7 +432,7 @@ export class GovernanceEnergyAbiService
         this.type = GovernanceType.ENERGY;
     }
 
-    @ErrorLoggerAsync({ className: GovernanceEnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -385,8 +453,7 @@ export class GovernanceEnergyAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-
-    @ErrorLoggerAsync({ className: GovernanceEnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -407,7 +474,7 @@ export class GovernanceEnergyAbiService
         return response.firstValue.valueOf().bech32();
     }
 
-    @ErrorLoggerAsync({ className: GovernanceEnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -429,13 +496,9 @@ export class GovernanceEnergyAbiService
     }
 
     @ErrorLoggerAsync({
-        className: GovernanceEnergyAbiService.name,
         logArgs: true,
     })
-    async vote(
-        sender: string,
-        args: VoteArgs,
-    ): Promise<TransactionModel> {
+    async vote(sender: string, args: VoteArgs): Promise<TransactionModel> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             args.contractAddress,
             this.type,

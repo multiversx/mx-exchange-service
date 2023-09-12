@@ -1,8 +1,8 @@
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
-import { oneMinute } from 'src/helpers/helpers';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
@@ -18,7 +18,7 @@ export class EnergySetterService extends GenericSetterService {
         this.baseKey = 'energy';
     }
 
-    @ErrorLoggerAsync({ className: EnergySetterService.name })
+    @ErrorLoggerAsync()
     async setBaseAssetTokenID(value: string): Promise<string> {
         return await this.setData(
             this.getCacheKey('baseAssetTokenID'),
@@ -28,7 +28,7 @@ export class EnergySetterService extends GenericSetterService {
         );
     }
 
-    @ErrorLoggerAsync({ className: EnergySetterService.name })
+    @ErrorLoggerAsync()
     async setLockOptions(values: number[]): Promise<string> {
         return await this.setData(
             this.getCacheKey('lockOptions'),
@@ -38,7 +38,7 @@ export class EnergySetterService extends GenericSetterService {
         );
     }
 
-    @ErrorLoggerAsync({ className: EnergySetterService.name })
+    @ErrorLoggerAsync()
     async setPauseState(value: boolean): Promise<string> {
         return await this.setData(
             this.getCacheKey('isPaused'),
@@ -48,7 +48,7 @@ export class EnergySetterService extends GenericSetterService {
         );
     }
 
-    @ErrorLoggerAsync({ className: EnergySetterService.name })
+    @ErrorLoggerAsync()
     async setEnergyEntryForUser(
         userAddress: string,
         value: EnergyType,
@@ -56,7 +56,7 @@ export class EnergySetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('energyEntryForUser', userAddress),
             value,
-            oneMinute(),
+            Constants.oneMinute(),
         );
     }
 }

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
@@ -23,7 +23,7 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'lpFarmAddress'),
             value,
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -37,7 +37,7 @@ export class StakingProxySetterService extends GenericSetterService {
                 'stakingFarmAddress',
             ),
             value,
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -48,7 +48,7 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'pairAddress'),
             value,
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 

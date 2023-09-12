@@ -6,7 +6,7 @@ import { Cache } from 'cache-manager';
 import { cacheConfig } from '../../config';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { ApiConfigService } from '../../helpers/api.config.service';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { setClient } from 'src/utils/redisClient';
@@ -66,7 +66,7 @@ export class CachingService {
                 key,
                 this.UNDEFINED_CACHE_VALUE,
                 'EX',
-                oneMinute() * 2,
+                Constants.oneMinute() * 2,
             );
             return value;
         }
@@ -108,7 +108,7 @@ export class CachingService {
     ): Promise<T> {
         if (value === undefined) {
             localCache.set(key, this.UNDEFINED_CACHE_VALUE, {
-                ttl: oneMinute() * 1000,
+                ttl: Constants.oneMinute() * 1000,
             });
             return value;
         }

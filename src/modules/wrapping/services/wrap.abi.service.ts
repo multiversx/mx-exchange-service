@@ -4,7 +4,7 @@ import { MXProxyService } from '../../../services/multiversx-communication/mx.pr
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class WrapAbiService extends GenericAbiService {
@@ -12,7 +12,7 @@ export class WrapAbiService extends GenericAbiService {
         super(mxProxy);
     }
 
-    @ErrorLoggerAsync({ className: WrapAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'wrap',
         remoteTtl: CacheTtlInfo.Token.remoteTtl,

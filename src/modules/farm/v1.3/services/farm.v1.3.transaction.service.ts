@@ -16,7 +16,7 @@ import { Address, TokenTransfer } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { FarmAbiServiceV1_3 } from './farm.v1.3.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
@@ -30,7 +30,6 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
     }
 
     @ErrorLoggerAsync({
-        className: FarmTransactionServiceV1_3.name,
         logArgs: true,
     })
     async enterFarm(

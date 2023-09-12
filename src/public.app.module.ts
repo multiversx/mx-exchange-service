@@ -36,6 +36,7 @@ import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-
 import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
 import { EscrowModule } from './modules/escrow/escrow.module';
 import { GovernanceModule } from './modules/governance/governance.module';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 
 @Module({
     imports: [

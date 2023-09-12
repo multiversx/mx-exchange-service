@@ -4,7 +4,7 @@ import { TokensFiltersArgs } from '../models/tokens.filter.args';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenRepositoryService } from './token.repository.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { NftCollection } from '../models/nftCollection.model';
@@ -45,7 +45,6 @@ export class TokenService {
     }
 
     @ErrorLoggerAsync({
-        className: 'TokenService',
         logArgs: true,
     })
     @GetOrSetCache({

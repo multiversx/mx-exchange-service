@@ -3,9 +3,9 @@ import BigNumber from 'bignumber.js';
 import { MetricsService } from 'src/endpoints/metrics/metrics.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { RouterAbiService } from './router.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class RouterComputeService {
@@ -16,12 +16,10 @@ export class RouterComputeService {
         private readonly metrics: MetricsService,
     ) {}
 
-    @ErrorLoggerAsync({
-        className: RouterComputeService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneMinute(),
+        remoteTtl: Constants.oneMinute(),
     })
     async totalLockedValueUSD(): Promise<BigNumber> {
         return await this.computeTotalLockedValueUSD();
@@ -47,12 +45,11 @@ export class RouterComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: RouterComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneMinute() * 5,
+        remoteTtl: Constants.oneMinute() * 5,
     })
     async totalVolumeUSD(time: string): Promise<BigNumber> {
         return await this.computeTotalVolumeUSD(time);
@@ -78,12 +75,11 @@ export class RouterComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: RouterComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneMinute() * 5,
+        remoteTtl: Constants.oneMinute() * 5,
     })
     async totalFeesUSD(time: string): Promise<BigNumber> {
         return await this.computeTotalFeesUSD(time);
@@ -105,12 +101,10 @@ export class RouterComputeService {
         return totalFeesUSD;
     }
 
-    @ErrorLoggerAsync({
-        className: RouterComputeService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneMinute(),
+        remoteTtl: Constants.oneMinute(),
     })
     async totalTxCount(): Promise<number> {
         return await this.computeTotalTxCount();
@@ -129,12 +123,10 @@ export class RouterComputeService {
         return totalTxCount;
     }
 
-    @ErrorLoggerAsync({
-        className: RouterComputeService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async pairCount(): Promise<number> {
         return await this.computePairCount();

@@ -8,7 +8,7 @@ import { CachingService } from '../caching/cache.service';
 import { cacheConfig, scAddress } from 'src/config';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
-import { oneHour } from '../../helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from '../caching/cache.ttl.info';
 
 @Injectable()
@@ -69,7 +69,7 @@ export class ProxyCacheWarmerService {
                     'proxyPair',
                     'intermediatedPairs',
                     intermediatedPairs,
-                    oneHour(),
+                    Constants.oneHour(),
                 ),
                 this.setProxyCache(
                     'proxyFarm',
@@ -82,7 +82,7 @@ export class ProxyCacheWarmerService {
                     'proxyFarm',
                     'intermediatedFarms',
                     intermediatedFarms,
-                    oneHour(),
+                    Constants.oneHour(),
                 ),
             ]);
             await this.deleteCacheKeys();

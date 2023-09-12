@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { oneSecond } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { IEsdtToken } from 'src/modules/tokens/models/esdtToken.interface';
@@ -30,7 +30,7 @@ export class UserEsdtService {
 
     @GetOrSetCache({
         baseKey: 'user',
-        remoteTtl: oneSecond() * 6,
+        remoteTtl: Constants.oneSecond() * 6,
     })
     private async uniquePairTokens(): Promise<string[]> {
         return await this.getUniquePairTokensRaw();

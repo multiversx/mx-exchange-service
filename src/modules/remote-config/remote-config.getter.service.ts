@@ -6,7 +6,7 @@ import { SCAddressRepositoryService } from 'src/services/database/repositories/s
 import { FlagRepositoryService } from 'src/services/database/repositories/flag.repository';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { SCAddressType } from './models/sc-address.model';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
 
 @Injectable()
@@ -34,7 +34,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .then((res) => {
                         return res.value;
                     }),
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -51,7 +51,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .then((res) => {
                         return res ? res.value : false;
                     }),
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -69,7 +69,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .then((res) => {
                         return res.map((scAddress) => scAddress.address);
                     }),
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -86,7 +86,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .then((res) => {
                         return res.map((scAddress) => scAddress.address);
                     }),
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -103,7 +103,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .then((res) => {
                         return res.map((scAddress) => scAddress.address);
                     }),
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 }

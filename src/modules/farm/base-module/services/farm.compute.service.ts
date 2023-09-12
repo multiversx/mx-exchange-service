@@ -7,7 +7,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { computeValueUSD } from 'src/utils/token.converters';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { FarmAbiService } from './farm.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { FarmServiceBase } from './farm.base.service';
@@ -26,7 +26,6 @@ export abstract class FarmComputeService implements IFarmComputeService {
     ) {}
 
     @ErrorLoggerAsync({
-        className: FarmComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -43,7 +42,6 @@ export abstract class FarmComputeService implements IFarmComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -71,7 +69,6 @@ export abstract class FarmComputeService implements IFarmComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -84,7 +81,6 @@ export abstract class FarmComputeService implements IFarmComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({

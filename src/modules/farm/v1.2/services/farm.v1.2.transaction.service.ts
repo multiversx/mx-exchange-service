@@ -22,7 +22,7 @@ import { TransactionsFarmService } from '../../base-module/services/farm.transac
 import { farmVersion } from 'src/utils/farm.utils';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { FarmAbiServiceV1_2 } from './farm.v1.2.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
@@ -36,7 +36,6 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
     }
 
     @ErrorLoggerAsync({
-        className: FarmTransactionServiceV1_2.name,
         logArgs: true,
     })
     async enterFarm(

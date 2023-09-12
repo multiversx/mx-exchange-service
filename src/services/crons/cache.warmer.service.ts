@@ -5,14 +5,14 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { oneMinute, oneSecond } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import axios from 'axios';
 import moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { MetricsCollector } from 'src/utils/metrics.collector';
-import { Locker } from 'src/utils/locker';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { MXDataApiService } from '../multiversx-communication/mx.data.api.service';
+import { Locker } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class CacheWarmerService {
@@ -134,7 +134,7 @@ export class CacheWarmerService {
                     return this.cachingService.setCache(
                         `${prefix}.${key}.response`,
                         data,
-                        30 * oneSecond(),
+                        Constants.oneSecond() * 30,
                     );
                 });
             }),
@@ -161,7 +161,7 @@ export class CacheWarmerService {
             await this.cachingService.setCache(
                 cacheKey,
                 shardsNonces[index],
-                oneMinute(),
+                Constants.oneMinute(),
             );
         }
 

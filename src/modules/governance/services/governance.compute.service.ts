@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { VoteType } from '../models/governance.proposal.model';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
@@ -42,7 +42,7 @@ export class GovernanceComputeService {
         return proposalVoteType.vote;
     }
 
-    @ErrorLoggerAsync({ className: GovernanceComputeService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,

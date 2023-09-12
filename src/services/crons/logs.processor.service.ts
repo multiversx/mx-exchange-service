@@ -8,7 +8,7 @@ import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 import { ElasticService } from 'src/helpers/elastic.service';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -49,7 +49,7 @@ export class LogsProcessorService {
             this.isProcessing = true;
 
             const [lastProcessedTimestamp, currentTimestamp] =
-                await this.getProcessingInterval(oneMinute());
+                await this.getProcessingInterval(Constants.oneMinute());
             if (lastProcessedTimestamp === currentTimestamp) {
                 return;
             }

@@ -4,7 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { OutdatedContract } from '../../models/user.model';
 import { GenericSetterService } from '../../../../services/generics/generic.setter.service';
-import { oneMinute } from '../../../../helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class UserEnergySetterService extends GenericSetterService {
@@ -24,7 +24,7 @@ export class UserEnergySetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('outdatedContract', userAddress, contractAddress),
             value,
-            oneMinute() * 10,
+            Constants.oneMinute() * 10,
         );
     }
 

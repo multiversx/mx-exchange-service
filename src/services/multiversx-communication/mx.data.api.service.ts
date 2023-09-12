@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
@@ -61,8 +61,8 @@ export class MXDataApiService {
         return await this.cachingService.getOrSet(
             `token.${tokenTicker}.externalPrice`,
             () => this.getTokenPriceRaw(tokenTicker),
-            oneMinute() * 10,
-            oneMinute() * 7,
+            Constants.oneMinute() * 10,
+            Constants.oneMinute() * 7,
         );
     }
 
@@ -71,8 +71,8 @@ export class MXDataApiService {
         await this.cachingService.setCache(
             key,
             price,
-            oneMinute() * 10,
-            oneMinute() * 7,
+            Constants.oneMinute() * 10,
+            Constants.oneMinute() * 7,
         );
         return key;
     }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { Interaction } from '@multiversx/sdk-core';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
@@ -12,9 +12,7 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
         super(mxProxy);
     }
 
-    @ErrorLoggerAsync({
-        className: LockedTokenWrapperAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'lockedTokenWrapper',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -32,9 +30,7 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    @ErrorLoggerAsync({
-        className: LockedTokenWrapperAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'lockedTokenWrapper',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,

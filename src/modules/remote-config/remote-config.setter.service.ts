@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CachingService } from 'src/services/caching/cache.service';
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
@@ -21,14 +21,18 @@ export class RemoteConfigSetterService extends GenericSetterService {
     }
 
     async setFlag(name: string, value: boolean): Promise<string> {
-        return await this.setData(this.getFlagCacheKey(name), value, oneHour());
+        return await this.setData(
+            this.getFlagCacheKey(name),
+            value,
+            Constants.oneHour(),
+        );
     }
 
     async setSCAddresses(
         cacheKey: string,
         addresses: string[],
     ): Promise<string> {
-        await this.setData(cacheKey, addresses, oneHour());
+        await this.setData(cacheKey, addresses, Constants.oneHour());
         await this.deleteCacheKeys([cacheKey]);
         return cacheKey;
     }
@@ -47,7 +51,11 @@ export class RemoteConfigSetterService extends GenericSetterService {
     }
 
     async setAnalytics(name: string, value: string): Promise<string> {
-        return await this.setData(this.getAnalyticsCacheKey(name), value, oneHour());
+        return await this.setData(
+            this.getAnalyticsCacheKey(name),
+            value,
+            Constants.oneHour(),
+        );
     }
 
     async deleteFlag(name: string): Promise<void> {

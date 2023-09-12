@@ -6,7 +6,7 @@ import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.
 import { leastType } from 'src/utils/token.type.compare';
 import { PairService } from './pair.service';
 import { PairAbiService } from './pair.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
@@ -45,7 +45,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -75,7 +74,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -105,7 +103,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -156,7 +153,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -169,7 +165,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -206,7 +201,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -243,7 +237,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -274,7 +267,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -305,7 +297,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -331,7 +322,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -358,7 +348,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -388,7 +377,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -412,7 +400,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -437,7 +424,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -468,7 +454,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: PairComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({

@@ -2,7 +2,8 @@ import { DualYieldTokenAttributes } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, ruleOfThree } from 'src/helpers/helpers';
+import { ruleOfThree } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
@@ -237,7 +238,7 @@ export class StakingProxyService {
                 await this.cachingService.setCache(
                     `${tokenID}.stakingProxyAddress`,
                     address,
-                    oneHour(),
+                    Constants.oneHour(),
                 );
                 return address;
             }

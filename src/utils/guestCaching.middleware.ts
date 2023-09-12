@@ -6,7 +6,7 @@ import moment from 'moment';
 import * as crypto from 'crypto';
 import { CachingService } from 'src/services/caching/cache.service';
 import { NextFunction } from 'express';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MetricsCollector } from '../utils/metrics.collector';
 
 
@@ -64,7 +64,7 @@ export class GuestCachingMiddleware implements NestMiddleware {
         if (isFirstEntryForThisKey) {
             // If it is first entry for this key, set expire
             await this.cacheService.executeRemoteRaw('zincrby', redisCounterKey, 0, gqlQueryMd5);
-            await this.cacheService.executeRemoteRaw('expire', redisCounterKey, 2 * oneMinute());
+            await this.cacheService.executeRemoteRaw('expire', redisCounterKey, 2 * Constants.oneMinute());
         }
 
         // If the value for this is already computed

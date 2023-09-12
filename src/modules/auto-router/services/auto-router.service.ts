@@ -19,7 +19,7 @@ import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-conf
 import { GraphService } from './graph.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
@@ -61,7 +61,7 @@ export class AutoRouterService {
                         source,
                         destination,
                     ),
-                oneMinute() * 10,
+                Constants.oneMinute() * 10,
             );
         } catch (error) {}
     }
