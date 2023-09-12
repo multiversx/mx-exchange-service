@@ -4,10 +4,6 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
-import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
-import { QueryType } from 'src/helpers/entities/elastic/query.type';
-import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
-import { ElasticService } from 'src/helpers/elastic.service';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -23,6 +19,12 @@ import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { AnalyticsWriteService } from '../analytics/services/analytics.write.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IngestRecord } from '../analytics/entities/ingest.record';
+import {
+    ElasticQuery,
+    ElasticSortOrder,
+    QueryType,
+} from '@multiversx/sdk-nestjs-elastic';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 @Injectable()
 export class LogsProcessorService {
@@ -169,10 +171,17 @@ export class LogsProcessorService {
         ];
 
         elasticQueryAdapter.filter = [
-            QueryType.Range('timestamp', {
-                before: gte,
-                after: lte,
-            }),
+            QueryType.Range(
+                'timestamp',
+                {
+                    key: 'gte',
+                    value: lte,
+                },
+                {
+                    key: 'lte',
+                    value: gte,
+                },
+            ),
         ];
 
         elasticQueryAdapter.sort = [
