@@ -8,9 +8,9 @@ import { QueryType } from '../../../helpers/entities/elastic/query.type';
 import { ElasticSortOrder } from '../../../helpers/entities/elastic/elastic.sort.order';
 import { ElasticService } from '../../../helpers/elastic.service';
 import { GovernanceSetterService } from './governance.setter.service';
-import { convertToVoteType } from '../event-decoder/governance.event';
 import { Address } from '@multiversx/sdk-core/out';
 import { decimalToHex } from '../../../utils/token.converters';
+import { toVoteType } from '../../../utils/governance';
 
 @Injectable()
 export class GovernanceComputeService {
