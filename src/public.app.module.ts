@@ -34,13 +34,8 @@ import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-
 import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
 import { EscrowModule } from './modules/escrow/escrow.module';
 import { GovernanceModule } from './modules/governance/governance.module';
-import {
-    CacheModule,
-    RedisCacheModuleOptions,
-} from '@multiversx/sdk-nestjs-cache';
+import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
-import { ApiConfigService } from './helpers/api.config.service';
-import { mxConfig } from './config';
 
 @Module({
     imports: [
@@ -100,21 +95,7 @@ import { mxConfig } from './config';
         LockedTokenWrapperModule,
         EscrowModule,
         GovernanceModule,
-        CacheModule.forRootAsync(
-            {
-                imports: [CommonAppModule],
-                inject: [ApiConfigService],
-                useFactory: (configService: ApiConfigService) =>
-                    new RedisCacheModuleOptions({
-                        host: configService.getRedisUrl(),
-                        port: configService.getRedisPort(),
-                        password: configService.getRedisPassword(),
-                    }),
-            },
-            {
-                maxItems: mxConfig.localCacheMaxItems,
-            },
-        ),
+        DynamicModuleUtils.getCacheModule(),
     ],
 })
 export class PublicAppModule {

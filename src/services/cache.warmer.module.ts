@@ -32,12 +32,7 @@ import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { ElasticService } from 'src/helpers/elastic.service';
-import { ApiConfigService } from 'src/helpers/api.config.service';
-import {
-    CacheModule,
-    RedisCacheModuleOptions,
-} from '@multiversx/sdk-nestjs-cache';
-import { mxConfig } from 'src/config';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
     imports: [
@@ -61,21 +56,7 @@ import { mxConfig } from 'src/config';
         TokenModule,
         AnalyticsServicesModule,
         RemoteConfigModule,
-        CacheModule.forRootAsync(
-            {
-                imports: [CommonAppModule],
-                inject: [ApiConfigService],
-                useFactory: (configService: ApiConfigService) =>
-                    new RedisCacheModuleOptions({
-                        host: configService.getRedisUrl(),
-                        port: configService.getRedisPort(),
-                        password: configService.getRedisPassword(),
-                    }),
-            },
-            {
-                maxItems: mxConfig.localCacheMaxItems,
-            },
-        ),
+        DynamicModuleUtils.getCacheModule(),
     ],
     controllers: [],
     providers: [

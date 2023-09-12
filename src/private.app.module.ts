@@ -8,12 +8,7 @@ import { RemoteConfigController } from './modules/remote-config/remote-config.co
 import { RemoteConfigModule } from './modules/remote-config/remote-config.module';
 import { TokenController } from './modules/tokens/token.controller';
 import { TokenModule } from './modules/tokens/token.module';
-import {
-    CacheModule,
-    RedisCacheModuleOptions,
-} from '@multiversx/sdk-nestjs-cache';
-import { ApiConfigService } from './helpers/api.config.service';
-import { mxConfig } from './config';
+import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 
 @Module({
     imports: [
@@ -21,21 +16,7 @@ import { mxConfig } from './config';
         PairModule,
         TokenModule,
         RemoteConfigModule,
-        CacheModule.forRootAsync(
-            {
-                inject: [ApiConfigService],
-                imports: [CommonAppModule],
-                useFactory: (configService: ApiConfigService) =>
-                    new RedisCacheModuleOptions({
-                        host: configService.getRedisUrl(),
-                        port: configService.getRedisPort(),
-                        password: configService.getRedisPassword(),
-                    }),
-            },
-            {
-                maxItems: mxConfig.localCacheMaxItems,
-            },
-        ),
+        DynamicModuleUtils.getCacheModule(),
     ],
     controllers: [MetricsController, TokenController, RemoteConfigController],
     providers: [MetricsService, ElasticService],
