@@ -62,10 +62,9 @@ import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/servi
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -130,15 +129,14 @@ describe('UserEnergyComputeService', () => {
                 LockedAssetGetterService,
                 RemoteConfigGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
         }).compile();
     });

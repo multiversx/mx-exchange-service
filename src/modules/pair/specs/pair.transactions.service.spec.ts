@@ -17,9 +17,8 @@ import { ContextGetterServiceProvider } from 'src/services/context/mocks/context
 import { PairComputeServiceProvider } from '../mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('TransactionPairService', () => {
     let module: TestingModule;
@@ -27,11 +26,11 @@ describe('TransactionPairService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 ConfigService,
@@ -47,7 +46,6 @@ describe('TransactionPairService', () => {
                 WrapService,
                 TokenServiceProvider,
                 PairTransactionService,
-                CachingService,
             ],
         }).compile();
     });

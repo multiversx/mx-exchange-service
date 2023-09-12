@@ -17,9 +17,7 @@ import { SimpleLockService } from '../../simple-lock/services/simple.lock.servic
 import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/remote-config.getter.mock';
 import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
-import { TokenService } from 'src/modules/tokens/services/token.service';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
-import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
@@ -64,11 +62,10 @@ import { FarmServiceBaseMock } from 'src/modules/farm/mocks/farm.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('UserService', () => {
     let module: TestingModule;
@@ -138,15 +135,14 @@ describe('UserService', () => {
                 UserEsdtComputeService,
                 RemoteConfigGetterServiceProvider,
                 MXDataApiServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
         }).compile();
     });

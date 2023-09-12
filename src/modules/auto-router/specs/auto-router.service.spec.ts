@@ -28,10 +28,9 @@ import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -54,11 +53,11 @@ describe('AutoRouterService', () => {
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 RouterService,
@@ -78,7 +77,6 @@ describe('AutoRouterService', () => {
                 AutoRouterService,
                 AutoRouterComputeService,
                 AutoRouterTransactionService,
-                CachingService,
                 ApiConfigService,
             ],
             exports: [],

@@ -6,10 +6,9 @@ import { encodeTransactionData } from 'src/helpers/helpers';
 import { gasConfig, mxConfig } from 'src/config';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('DistributionTransactionsService', () => {
     let module: TestingModule;
@@ -17,16 +16,15 @@ describe('DistributionTransactionsService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 DistributionTransactionsService,
                 MXProxyServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();
