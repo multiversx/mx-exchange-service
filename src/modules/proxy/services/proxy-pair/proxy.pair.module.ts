@@ -4,7 +4,6 @@ import { ProxyPairAbiService } from './proxy.pair.abi.service';
 import { ProxyPairTransactionsService } from './proxy.pair.transactions.service';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { WrappingModule } from 'src/modules/wrapping/wrap.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
 import { CommonAppModule } from 'src/common.app.module';
 import { ProxyModuleV2 } from '../../v2/proxy.v2.module';
@@ -13,7 +12,6 @@ import { ProxyModuleV2 } from '../../v2/proxy.v2.module';
     imports: [
         CommonAppModule,
         MXCommunicationModule,
-        CachingModule,
         PairModule,
         WrappingModule,
         TokenModule,

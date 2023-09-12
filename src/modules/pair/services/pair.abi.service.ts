@@ -27,7 +27,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { IPairAbiService } from '../interfaces';
 
 @Injectable()
@@ -37,7 +37,7 @@ export class PairAbiService
 {
     constructor(
         protected readonly mxProxy: MXProxyService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
     ) {
         super(mxProxy);
     }
@@ -369,9 +369,7 @@ export class PairAbiService
     })
     async lockingScAddress(pairAddress: string): Promise<string | undefined> {
         const cacheKey = `pair.lockingScAddress.${pairAddress}`;
-        const cachedValue: string = await this.cachingService.getCache(
-            cacheKey,
-        );
+        const cachedValue: string = await this.cachingService.get(cacheKey);
         if (cachedValue === '') {
             return undefined;
         }
@@ -380,14 +378,10 @@ export class PairAbiService
         }
         const value = await this.getLockingScAddressRaw(pairAddress);
         if (value) {
-            await this.cachingService.setCache(
-                cacheKey,
-                value,
-                Constants.oneHour(),
-            );
+            await this.cachingService.set(cacheKey, value, Constants.oneHour());
             return value;
         }
-        await this.cachingService.setCache(
+        await this.cachingService.set(
             cacheKey,
             '',
             CacheTtlInfo.ContractState.remoteTtl,
@@ -434,9 +428,7 @@ export class PairAbiService
     })
     async unlockEpoch(pairAddress: string): Promise<number | undefined> {
         const cacheKey = `pair.unlockEpoch.${pairAddress}`;
-        const cachedValue: number = await this.cachingService.getCache(
-            cacheKey,
-        );
+        const cachedValue: number = await this.cachingService.get(cacheKey);
         if (cachedValue === -1) {
             return undefined;
         }
@@ -445,14 +437,10 @@ export class PairAbiService
         }
         const value = await this.getUnlockEpochRaw(pairAddress);
         if (value) {
-            await this.cachingService.setCache(
-                cacheKey,
-                value,
-                Constants.oneHour(),
-            );
+            await this.cachingService.set(cacheKey, value, Constants.oneHour());
             return value;
         }
-        await this.cachingService.setCache(
+        await this.cachingService.set(
             cacheKey,
             -1,
             CacheTtlInfo.ContractState.remoteTtl,
@@ -497,9 +485,7 @@ export class PairAbiService
         pairAddress: string,
     ): Promise<number | undefined> {
         const cacheKey = `pair.lockingDeadlineEpoch.${pairAddress}`;
-        const cachedValue: number = await this.cachingService.getCache(
-            cacheKey,
-        );
+        const cachedValue: number = await this.cachingService.get(cacheKey);
         if (cachedValue === -1) {
             return undefined;
         }
@@ -508,14 +494,10 @@ export class PairAbiService
         }
         const value = await this.getLockingDeadlineEpochRaw(pairAddress);
         if (value) {
-            await this.cachingService.setCache(
-                cacheKey,
-                value,
-                Constants.oneHour(),
-            );
+            await this.cachingService.set(cacheKey, value, Constants.oneHour());
             return value;
         }
-        await this.cachingService.setCache(
+        await this.cachingService.set(
             cacheKey,
             -1,
             CacheTtlInfo.ContractState.remoteTtl,

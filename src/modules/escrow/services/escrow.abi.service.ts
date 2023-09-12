@@ -17,7 +17,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { EscrowSetterService } from './escrow.setter.service';
 
 @Injectable()
@@ -25,7 +25,7 @@ export class EscrowAbiService extends GenericAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
         private readonly mxGateway: MXGatewayService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         private readonly escrowSetter: EscrowSetterService,
     ) {
         super(mxProxy);
@@ -111,9 +111,7 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     async getAllReceiversRaw(senderAddress: string): Promise<string[]> {
-        let hexValues = await this.cachingService.getCache<object>(
-            `escrow.scKeys`,
-        );
+        let hexValues = await this.cachingService.get<object>(`escrow.scKeys`);
         if (!hexValues || hexValues === undefined) {
             hexValues = await this.mxGateway.getSCStorageKeys(
                 scAddress.escrow,
@@ -309,9 +307,7 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     async getAllAddressesWithPermissionsRaw(): Promise<string[]> {
-        let hexValues = await this.cachingService.getCache<object>(
-            `escrow.scKeys`,
-        );
+        let hexValues = await this.cachingService.get<object>(`escrow.scKeys`);
         if (!hexValues || hexValues === undefined) {
             hexValues = await this.mxGateway.getSCStorageKeys(
                 scAddress.escrow,

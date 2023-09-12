@@ -1,5 +1,4 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { CachingModule } from '../../services/caching/cache.module';
 import { WeeklyRewardsSplittingAbiService } from './services/weekly-rewards-splitting.abi.service';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { ApiConfigService } from '../../helpers/api.config.service';
@@ -19,7 +18,6 @@ import { WeeklyRewardsSplittingSetterService } from './services/weekly.rewarrds.
 @Module({
     imports: [
         MXCommunicationModule,
-        CachingModule,
         EnergyModule,
         forwardRef(() => RouterModule),
         PairModule,

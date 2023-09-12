@@ -15,10 +15,9 @@ import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
 import { Address } from '@multiversx/sdk-core/out';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -26,11 +25,11 @@ describe('FarmService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 FarmAbiServiceProviderV1_2,
@@ -46,7 +45,6 @@ describe('FarmService', () => {
                 RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 MXDataApiServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

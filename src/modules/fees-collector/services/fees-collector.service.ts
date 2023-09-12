@@ -37,16 +37,17 @@ export class FeesCollectorService {
         );
 
         const accumulatedFeesByToken = await Promise.all(promises);
-        for (const index in accumulatedFeesByToken) {
+
+        accumulatedFeesByToken.forEach((accumulatedFee, index) => {
             accumulatedFees.push(
                 new EsdtTokenPayment({
                     tokenID: allTokens[index],
                     tokenType: 0,
-                    amount: accumulatedFeesByToken[index],
+                    amount: accumulatedFee,
                     nonce: 0,
                 }),
             );
-        }
+        });
 
         const [lockedTokenId, accumulatedTokenForInflation] = await Promise.all(
             [

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PairModule } from 'src/modules/pair/pair.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { FarmAbiServiceV1_2 } from './services/farm.v1.2.abi.service';
@@ -13,13 +12,7 @@ import { FarmSetterService } from '../base-module/services/farm.setter.service';
 import { FarmSetterServiceV1_2 } from './services/farm.v1.2.setter.service';
 
 @Module({
-    imports: [
-        CachingModule,
-        ContextModule,
-        MXCommunicationModule,
-        TokenModule,
-        PairModule,
-    ],
+    imports: [ContextModule, MXCommunicationModule, TokenModule, PairModule],
     providers: [
         FarmServiceV1_2,
         FarmAbiServiceV1_2,

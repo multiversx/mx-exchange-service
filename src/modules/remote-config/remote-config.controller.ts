@@ -21,7 +21,7 @@ import mongoose from 'mongoose';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { CacheKeysArgs } from './args/cacheKeys.args';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
 import { AnalyticsModel } from './models/analytics.model';
 import { AnalyticsArgs } from './args/analytics.args';
@@ -34,7 +34,7 @@ export class RemoteConfigController {
         private readonly scAddressRepositoryService: SCAddressRepositoryService,
         private readonly analyticsRepositoryService: AnalyticsRepositoryService,
         private readonly remoteConfigSetterService: RemoteConfigSetterService,
-        private readonly cacheService: CachingService,
+        private readonly cacheService: CacheService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 

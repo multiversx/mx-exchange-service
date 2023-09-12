@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PairModule } from '../modules/pair/pair.module';
 import { ContextModule } from './context/context.module';
 import { CacheWarmerService } from './crons/cache.warmer.service';
-import { CachingService } from './caching/cache.service';
 import { ProxyModule } from 'src/modules/proxy/proxy.module';
 import { ProxyFarmModule } from 'src/modules/proxy/services/proxy-farm/proxy.farm.module';
 import { ProxyPairModule } from 'src/modules/proxy/services/proxy-pair/proxy.pair.module';
@@ -34,12 +32,12 @@ import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { ElasticService } from 'src/helpers/elastic.service';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
     imports: [
         ScheduleModule.forRoot(),
         CommonAppModule,
-        CacheModule.register(),
         PairModule,
         RouterModule,
         MXCommunicationModule,
@@ -58,6 +56,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
         TokenModule,
         AnalyticsServicesModule,
         RemoteConfigModule,
+        DynamicModuleUtils.getCacheModule(),
     ],
     controllers: [],
     providers: [
@@ -71,7 +70,6 @@ import { ElasticService } from 'src/helpers/elastic.service';
         AnalyticsCacheWarmerService,
         AWSQueryCacheWarmerService,
         PriceDiscoveryCacheWarmerService,
-        CachingService,
         TransactionProcessorService,
         LogsProcessorService,
         ElasticService,

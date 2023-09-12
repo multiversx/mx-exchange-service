@@ -17,10 +17,9 @@ import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { FarmAbiServiceProviderV1_2 } from '../mocks/farm.v1.2.abi.service.mock';
 import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -28,11 +27,11 @@ describe('FarmService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 ConfigModule.forRoot({}),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 ApiConfigService,
@@ -49,7 +48,6 @@ describe('FarmService', () => {
                 FarmTransactionServiceV1_2,
                 FarmAbiServiceProviderV1_2,
                 MXDataApiServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

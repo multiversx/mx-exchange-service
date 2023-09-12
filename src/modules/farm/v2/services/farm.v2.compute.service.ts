@@ -15,7 +15,7 @@ import { FarmServiceV2 } from './farm.v2.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { IFarmComputeServiceV2 } from './interfaces';
@@ -36,7 +36,7 @@ export class FarmComputeServiceV2
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
     ) {
         super(
             farmAbi,

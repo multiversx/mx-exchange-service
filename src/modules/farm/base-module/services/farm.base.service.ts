@@ -11,7 +11,7 @@ import {
     FarmTokenAttributesModelV1_3,
     FarmTokenAttributesModelV2,
 } from '../../models/farmTokenAttributes.model';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Inject, forwardRef } from '@nestjs/common';
@@ -23,7 +23,7 @@ export abstract class FarmServiceBase {
         @Inject(forwardRef(() => FarmComputeService))
         protected readonly farmCompute: FarmComputeService,
         protected readonly contextGetter: ContextGetterService,
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         protected readonly tokenService: TokenService,
     ) {}
 

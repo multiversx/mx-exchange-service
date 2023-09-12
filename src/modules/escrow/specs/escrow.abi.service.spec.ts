@@ -7,39 +7,38 @@ import { MXGatewayService } from 'src/services/multiversx-communication/mx.gatew
 import { Address, ReturnCode, U32Value } from '@multiversx/sdk-core/out';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { EscrowSetterService } from '../services/escrow.setter.service';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 describe('EscrowAbiService', () => {
     let service: EscrowAbiService;
     let mxGateway: MXGatewayService;
-    let cachingService: CachingService;
+    let cachingService: CacheService;
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 EscrowAbiService,
                 EscrowSetterService,
                 MXProxyServiceProvider,
                 MXGatewayServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();
 
         service = module.get<EscrowAbiService>(EscrowAbiService);
         mxGateway = module.get<MXGatewayService>(MXGatewayService);
-        cachingService = module.get<CachingService>(CachingService);
+        cachingService = module.get<CacheService>(CacheService);
     });
 
     it('should be defined', () => {

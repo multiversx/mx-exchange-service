@@ -5,7 +5,6 @@ import { ProxyAbiService } from './services/proxy.abi.service';
 import { ProxyFarmModule } from './services/proxy-farm/proxy.farm.module';
 import { ProxyPairModule } from './services/proxy-pair/proxy.pair.module';
 import { ProxyService } from './services/proxy.service';
-import { CachingModule } from '../../services/caching/cache.module';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { WrappedLpTokenResolver } from './wrappedLpToken.resolver';
 import { WrappedFarmTokenResolver } from './wrappedFarmToken.resolver';
@@ -21,7 +20,6 @@ import { WrappedFarmTokenResolverV2 } from './wrappedFarm.token.v2.resolver';
 @Module({
     imports: [
         MXCommunicationModule,
-        CachingModule,
         ContextModule,
         LockedAssetModule,
         TokenModule,

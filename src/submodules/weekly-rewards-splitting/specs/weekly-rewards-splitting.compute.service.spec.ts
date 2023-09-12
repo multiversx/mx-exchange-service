@@ -18,10 +18,9 @@ import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.serv
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     let module: TestingModule;
@@ -29,11 +28,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 WeeklyRewardsSplittingComputeService,
@@ -48,7 +47,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 RouterAbiServiceProvider,
                 MXDataApiServiceProvider,
                 ContextGetterServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

@@ -10,7 +10,6 @@ import { UserMetaEsdtService } from './services/user.metaEsdt.service';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { UserMetaEsdtComputeService } from './services/metaEsdt.compute.service';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { StakingModule } from '../staking/staking.module';
 import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
@@ -37,7 +36,6 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 @Module({
     imports: [
         MXCommunicationModule,
-        CachingModule,
         ContextModule,
         RouterModule,
         PairModule,

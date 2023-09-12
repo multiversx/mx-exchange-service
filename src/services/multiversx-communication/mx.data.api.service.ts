@@ -5,7 +5,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { Logger } from 'winston';
-import { CachingService } from '../caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class MXDataApiService {
@@ -14,7 +14,7 @@ export class MXDataApiService {
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         this.BASE_URL = this.apiConfigService.getMXDataApiURL();
@@ -68,7 +68,7 @@ export class MXDataApiService {
 
     async setTokenPrice(tokenTicker: string, price: number): Promise<string> {
         const key = `token.${tokenTicker}.externalPrice`;
-        await this.cachingService.setCache(
+        await this.cachingService.set(
             key,
             price,
             Constants.oneMinute() * 10,

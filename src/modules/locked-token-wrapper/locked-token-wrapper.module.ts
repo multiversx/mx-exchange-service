@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
-import { CachingModule } from '../../services/caching/cache.module';
 import { LockedTokenWrapperAbiService } from './services/locked-token-wrapper.abi.service';
 import { LockedTokenWrapperTransactionService } from './services/locked-token-wrapper.transaction.service';
 import { LockedTokenWrapperResolver } from './locked-token-wrapper.resolver';
@@ -8,7 +7,7 @@ import { LockedTokenWrapperService } from './services/locked-token-wrapper.servi
 import { EnergyModule } from '../energy/energy.module';
 
 @Module({
-    imports: [MXCommunicationModule, CachingModule, EnergyModule],
+    imports: [MXCommunicationModule, EnergyModule],
     providers: [
         LockedTokenWrapperAbiService,
         LockedTokenWrapperTransactionService,

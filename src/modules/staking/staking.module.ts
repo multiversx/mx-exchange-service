@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
@@ -16,7 +15,6 @@ import { StakingResolver } from './staking.resolver';
     imports: [
         CommonAppModule,
         ContextModule,
-        CachingModule,
         MXCommunicationModule,
         RemoteConfigModule,
         TokenModule,

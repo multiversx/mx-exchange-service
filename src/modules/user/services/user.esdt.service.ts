@@ -8,7 +8,6 @@ import {
     EsdtTokenType,
 } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { CachingService } from 'src/services/caching/cache.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { UserToken } from '../models/user.model';
 import { UserEsdtComputeService } from './esdt.compute.service';
@@ -25,7 +24,6 @@ export class UserEsdtService {
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly userEsdtCompute: UserEsdtComputeService,
-        private readonly cachingService: CachingService,
     ) {}
 
     @GetOrSetCache({

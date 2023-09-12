@@ -1,12 +1,12 @@
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { CachingService } from '../caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 
 export class GenericGetterService {
     protected baseKey: string | undefined;
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         protected readonly logger: Logger,
     ) {}
 

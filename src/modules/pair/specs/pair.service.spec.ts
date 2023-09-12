@@ -9,10 +9,9 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { Address } from '@multiversx/sdk-core/out';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -20,11 +19,11 @@ describe('PairService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 PairAbiServiceProvider,
@@ -34,7 +33,6 @@ describe('PairService', () => {
                 TokenServiceProvider,
                 ContextGetterServiceProvider,
                 RouterAbiServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

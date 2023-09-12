@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
-import { constantsConfig } from 'src/config';
+import { cacheConfig, constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -33,7 +33,7 @@ export class LogsProcessorService {
     penaltyMap: Map<number, string> = new Map();
 
     constructor(
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         private readonly apiService: MXApiService,
         private readonly elasticService: ElasticService,
         private readonly analyticsWrite: AnalyticsWriteService,
@@ -62,9 +62,10 @@ export class LogsProcessorService {
                 lastProcessedTimestamp,
             );
 
-            await this.cachingService.setCache(
+            await this.cachingService.set(
                 'lastLogProcessedTimestamp',
                 currentTimestamp,
+                cacheConfig.default,
             );
         } catch (error) {
             const logMessage = generateLogMessage(
@@ -82,7 +83,7 @@ export class LogsProcessorService {
     private async getProcessingInterval(
         delay: number,
     ): Promise<[number, number]> {
-        let lastProcessedTimestamp: number = await this.cachingService.getCache(
+        let lastProcessedTimestamp: number = await this.cachingService.get(
             'lastLogProcessedTimestamp',
         );
 
@@ -98,9 +99,10 @@ export class LogsProcessorService {
         }
 
         if (currentTimestamp === lastProcessedTimestamp) {
-            await this.cachingService.setCache(
+            await this.cachingService.set(
                 'lastLogProcessedTimestamp',
                 currentTimestamp,
+                cacheConfig.default,
             );
         }
 

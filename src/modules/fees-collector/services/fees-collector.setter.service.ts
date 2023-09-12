@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CachingService } from '../../../services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
@@ -9,7 +9,7 @@ import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 @Injectable()
 export class FeesCollectorSetterService extends GenericSetterService {
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
