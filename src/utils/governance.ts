@@ -1,6 +1,7 @@
 import { governanceConfig } from '../config';
-import { GovernanceProposalStatus } from '../modules/governance/models/governance.proposal.model';
+import { GovernanceProposalStatus, VoteType } from '../modules/governance/models/governance.proposal.model';
 import { registerEnumType } from '@nestjs/graphql';
+import { GOVERNANCE_EVENTS } from '@multiversx/sdk-exchange';
 
 export enum GovernanceType {
     ENERGY = 'energy',
@@ -106,3 +107,18 @@ export const toGovernanceProposalStatus = (status: string): GovernanceProposalSt
             return undefined;
     }
 };
+
+export const toVoteType = (event: GOVERNANCE_EVENTS | string): VoteType => {
+    switch(event) {
+        case GOVERNANCE_EVENTS.UP:
+            return VoteType.UpVote;
+        case GOVERNANCE_EVENTS.DOWN:
+            return VoteType.DownVote;
+        case GOVERNANCE_EVENTS.DOWN_VETO:
+            return VoteType.DownVetoVote;
+        case GOVERNANCE_EVENTS.ABSTAIN:
+            return VoteType.AbstainVote;
+        default:
+            return VoteType.NotVoted;
+    }
+}

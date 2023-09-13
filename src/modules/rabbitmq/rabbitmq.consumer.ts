@@ -30,6 +30,7 @@ import {
     ExitFarmProxyEvent,
     FARM_EVENTS,
     FEES_COLLECTOR_EVENTS,
+    GOVERNANCE_EVENTS,
     METABONDING_EVENTS,
     MetabondingEvent,
     PAIR_EVENTS,
@@ -47,6 +48,7 @@ import {
     UpdateGlobalAmountsEvent,
     UpdateUserEnergyEvent,
     UserUnlockedTokensEvent,
+    VoteEvent,
     WEEKLY_REWARDS_SPLITTING_EVENTS,
     WithdrawEvent,
 } from '@multiversx/sdk-exchange';
@@ -61,7 +63,6 @@ import { AnalyticsWriteService } from 'src/services/analytics/services/analytics
 import { RouterAbiService } from '../router/services/router.abi.service';
 import { EscrowHandlerService } from './handlers/escrow.handler.service';
 import { governanceContractsAddresses } from '../../utils/governance';
-import { GOVERNANCE_EVENTS, VoteEvent } from '../governance/event-decoder/governance.event';
 import { GovernanceHandlerService } from './handlers/governance.handler.service';
 
 @Injectable()
