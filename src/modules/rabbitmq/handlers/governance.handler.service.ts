@@ -3,12 +3,13 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
-import { convertToVoteType, GOVERNANCE_EVENTS, VoteEvent } from '../../governance/event-decoder/governance.event';
 import { GovernanceSetterService } from '../../governance/services/governance.setter.service';
 import { GovernanceTokenSnapshotAbiService } from '../../governance/services/governance.abi.service';
 import BigNumber from 'bignumber.js';
 import { ProposalVotes } from '../../governance/models/governance.proposal.votes.model';
 import { GovernanceComputeService } from '../../governance/services/governance.compute.service';
+import { toVoteType } from '../../../utils/governance';
+import { GOVERNANCE_EVENTS, VoteEvent } from '@multiversx/sdk-exchange';
 
 @Injectable()
 export class GovernanceHandlerService {
@@ -42,10 +43,10 @@ export class GovernanceHandlerService {
         if (!cachedVoteType) {
             userVotedProposalsWithVoteType.push({
                 proposalId: topics.proposalId,
-                vote: convertToVoteType(voteType),
+                vote: toVoteType(voteType),
             });
         } else {
-            cachedVoteType.vote = convertToVoteType(voteType);
+            cachedVoteType.vote = toVoteType(voteType);
         }
         cacheKey = await this.governanceSetter.userVoteTypesForContract(
             event.address,

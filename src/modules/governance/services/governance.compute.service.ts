@@ -4,11 +4,11 @@ import { VoteType } from '../models/governance.proposal.model';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { GovernanceSetterService } from './governance.setter.service';
-import { convertToVoteType } from '../event-decoder/governance.event';
 import { Address } from '@multiversx/sdk-core/out';
 import { decimalToHex } from '../../../utils/token.converters';
 import { ElasticQuery, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { ElasticService } from 'src/helpers/elastic.service';
+import { toVoteType } from '../../../utils/governance';
 
 @Injectable()
 export class GovernanceComputeService {
@@ -29,7 +29,7 @@ export class GovernanceComputeService {
         let voteType = VoteType.NotVoted;
         if (log.length > 0) {
             const voteEvent = log[0]._source.events.find((event) => event.identifier === 'vote');
-            voteType = convertToVoteType(atob(voteEvent.topics[0]));
+            voteType = toVoteType(atob(voteEvent.topics[0]));
         }
         const proposalVoteType = {
             proposalId,
