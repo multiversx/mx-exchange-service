@@ -21,11 +21,12 @@ export class ElasticService {
         collection: string,
         elasticQueryAdapter: ElasticQuery | undefined = undefined,
     ) {
+        const query = elasticQueryAdapter?.toJson().query;
         try {
             const result: any = await this.elasticClient.count({
                 index: collection,
                 body: {
-                    query: elasticQueryAdapter?.toJson().query,
+                    query,
                 },
             });
             return result.body.count;
@@ -72,6 +73,7 @@ export class ElasticService {
         key: string,
         elasticQueryAdapter: ElasticQuery,
     ): Promise<any[]> {
+        const query = elasticQueryAdapter.toJson().query;
         try {
             return await this.scrollSearch({
                 index: collection,
@@ -79,7 +81,7 @@ export class ElasticService {
                 scroll: '5s',
                 _source: [key],
                 body: {
-                    query: elasticQueryAdapter.toJson().query,
+                    query,
                 },
             });
         } catch (error) {
