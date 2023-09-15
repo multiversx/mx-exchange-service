@@ -63,6 +63,7 @@ import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
         GovernanceComputeService,
         GovernanceTokenSnapshotService,
         GovernanceEnergyService,
+        GovernanceAbiFactory,
     ],
 })
 export class GovernanceModule {}
