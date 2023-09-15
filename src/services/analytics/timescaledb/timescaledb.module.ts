@@ -26,6 +26,7 @@ import {
                 database: apiConfig.getTimescaleDbDatabase(),
                 username: apiConfig.getTimescaleDbUsername(),
                 password: apiConfig.getTimescaleDbPassword(),
+                applicationName: 'xExchangeService',
                 ssl: true,
                 extra: {
                     ssl: {
