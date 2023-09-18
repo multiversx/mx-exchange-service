@@ -66,6 +66,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
         GovernanceComputeService,
         GovernanceTokenSnapshotService,
         GovernanceEnergyService,
+        GovernanceAbiFactory,
     ],
 })
 export class GovernanceModule {}

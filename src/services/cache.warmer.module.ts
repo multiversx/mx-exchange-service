@@ -33,6 +33,8 @@ import { FarmModule } from 'src/modules/farm/farm.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { GovernanceCacheWarmerService } from './crons/governance.cache.warmer.service';
+import { GovernanceModule } from '../modules/governance/governance.module';
 
 @Module({
     imports: [
@@ -56,6 +58,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
         TokenModule,
         AnalyticsServicesModule,
         RemoteConfigModule,
+        GovernanceModule,
         DynamicModuleUtils.getCacheModule(),
     ],
     controllers: [],
@@ -70,6 +73,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
         AnalyticsCacheWarmerService,
         AWSQueryCacheWarmerService,
         PriceDiscoveryCacheWarmerService,
+        GovernanceCacheWarmerService,
         TransactionProcessorService,
         LogsProcessorService,
         ElasticService,
