@@ -89,7 +89,7 @@ export class LogsProcessorService {
 
         let currentTimestamp: number;
 
-        if (lastProcessedTimestamp === null) {
+        if (!lastProcessedTimestamp || lastProcessedTimestamp === undefined) {
             lastProcessedTimestamp =
                 (await this.apiService.getShardTimestamp(1)) - delay;
             currentTimestamp = lastProcessedTimestamp;
@@ -109,10 +109,21 @@ export class LogsProcessorService {
         return [lastProcessedTimestamp, currentTimestamp];
     }
 
-    private async getFeeBurned(gte: number, lte: number) {
+    private async getFeeBurned(
+        currentTimestamp: number,
+        lastProcessedTimestamp: number,
+    ) {
         this.feeMap.clear();
-        await this.getSwapLogs('swapTokensFixedInput', gte, lte);
-        await this.getSwapLogs('swapTokensFixedOutput', gte, lte);
+        await this.getSwapLogs(
+            'swapTokensFixedInput',
+            currentTimestamp,
+            lastProcessedTimestamp,
+        );
+        await this.getSwapLogs(
+            'swapTokensFixedOutput',
+            currentTimestamp,
+            lastProcessedTimestamp,
+        );
 
         const totalWriteRecords = await this.writeRecords(
             this.feeMap,
@@ -122,11 +133,15 @@ export class LogsProcessorService {
         this.logger.info(`fee burned records: ${totalWriteRecords}`);
     }
 
-    private async getSwapLogs(swapType: string, gte: number, lte: number) {
+    private async getSwapLogs(
+        swapType: string,
+        currentTimestamp: number,
+        lastProcessedTimestamp: number,
+    ) {
         const transactionsLogs = await this.getTransactionsLogs(
             swapType,
-            gte,
-            lte,
+            currentTimestamp,
+            lastProcessedTimestamp,
         );
 
         for (const transactionLogs of transactionsLogs) {
@@ -136,11 +151,14 @@ export class LogsProcessorService {
         }
     }
 
-    private async getExitFarmLogs(gte: number, lte: number) {
+    private async getExitFarmLogs(
+        currentTimestamp: number,
+        lastProcessedTimestamp: number,
+    ) {
         const transactionsLogs = await this.getTransactionsLogs(
             'exitFarm',
-            gte,
-            lte,
+            currentTimestamp,
+            lastProcessedTimestamp,
         );
 
         this.penaltyMap.clear();
@@ -162,8 +180,8 @@ export class LogsProcessorService {
 
     private async getTransactionsLogs(
         eventName: string,
-        gte: number,
-        lte: number,
+        currentTimestamp: number,
+        lastProcessedTimestamp: number,
     ): Promise<any[]> {
         const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
         elasticQueryAdapter.condition.must = [
@@ -177,11 +195,11 @@ export class LogsProcessorService {
                 'timestamp',
                 {
                     key: 'gte',
-                    value: lte,
+                    value: lastProcessedTimestamp,
                 },
                 {
                     key: 'lte',
-                    value: gte,
+                    value: currentTimestamp,
                 },
             ),
         ];
