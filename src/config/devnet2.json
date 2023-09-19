@@ -17,9 +17,9 @@
             "erd1qqqqqqqqqqqqqpgq2l97gw2j4wnlem4y2rx7dudqlssjtwpu0n4sd0u3w2"
         ],
         "wrappingAddress": {
-            "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
+            "shardID-0": "erd1qqqqqqqqqqqqqpgqqkwzsxkjc83vlfex9dmznwm7tjvxlqqkpauqx0n782",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp",
-            "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
+            "shardID-2": "erd1qqqqqqqqqqqqqpgqvn9ew0wwn7a3pk053ezex98497hd4exqdg0q8v2e0c"
         },
         "priceDiscovery": [
         ],
@@ -27,8 +27,8 @@
         "feesCollector": "erd1qqqqqqqqqqqqqpgqw88ux2l44eufvwz2uhvduhq03g8pxc4j0n4s0frzjz",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqz2ctz77j9we0r99mnhehv24he3pxmsmq0n4sntf4n7",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqu6s4e5mndgf37psxw9mdlmjavp2er3f00n4snwyk3q",
-        "lockedTokenWrapper": "",
-        "escrow": ""
+        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqasr2asq07e6ur274eecx3vd0pnej2vxs0n4sqqyp52",
+        "escrow": "erd1qqqqqqqqqqqqqpgqnx4t9kwy5n9atuumvnrluv5yrwmpxzx60n4sj497ms"
     },
     "governance": {
         "oldEnergy": {
