@@ -84,7 +84,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.createPair,
             data: encodeTransactionData(
@@ -94,6 +96,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -113,7 +117,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.issueToken,
             data: encodeTransactionData(
@@ -123,6 +129,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -160,7 +168,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.setLocalRoles,
             data: encodeTransactionData(
@@ -172,6 +182,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -190,7 +202,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setState,
             data: encodeTransactionData(
@@ -200,6 +214,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -220,7 +236,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setState,
             data: encodeTransactionData(
@@ -232,6 +250,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -254,7 +274,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
@@ -266,6 +288,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -288,7 +312,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
@@ -300,6 +326,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -319,7 +347,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setLocalRolesOwner,
             data: encodeTransactionData(
@@ -329,6 +359,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -347,7 +379,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.removePair,
             data: encodeTransactionData('removePair@WEGLD-123456@USDC-123456'),
@@ -355,6 +389,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -370,7 +406,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@01'),
@@ -378,6 +416,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -393,7 +433,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@'),
@@ -401,6 +443,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -416,7 +460,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: 200000000,
             data: 'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
@@ -424,6 +470,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -441,7 +489,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: 200000000,
             data: encodeTransactionData(
@@ -451,6 +501,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 
@@ -468,7 +520,9 @@ describe('RouterService', () => {
             receiver: Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
             ).bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: 200000000,
             data: encodeTransactionData(
@@ -478,6 +532,8 @@ describe('RouterService', () => {
             version: 1,
             options: undefined,
             signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
         });
     });
 

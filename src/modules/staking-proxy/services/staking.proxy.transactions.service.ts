@@ -1,4 +1,4 @@
-import { Address, BigUIntValue, TokenPayment } from '@multiversx/sdk-core';
+import { Address, BigUIntValue, TokenTransfer } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -64,7 +64,7 @@ export class StakingProxyTransactionService {
                 ? gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge
                 : gasConfig.stakeProxy.stakeFarmTokens.default;
         const mappedPayments = args.payments.map((payment) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
                 new BigNumber(payment.amount),
@@ -73,10 +73,8 @@ export class StakingProxyTransactionService {
 
         return contract.methodsExplicit
             .stakeFarmTokens()
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -100,7 +98,7 @@ export class StakingProxyTransactionService {
             args.proxyStakingAddress,
         );
         const mappedPayments = args.payments.map((payment) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
                 new BigNumber(payment.amount),
@@ -109,10 +107,8 @@ export class StakingProxyTransactionService {
 
         return contract.methodsExplicit
             .claimDualYield()
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.stakeProxy.claimDualYield)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -192,13 +188,13 @@ export class StakingProxyTransactionService {
         return contract.methodsExplicit
             .unstakeFarmTokens(endpointArgs)
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.payment.tokenID,
                     args.payment.nonce,
                     new BigNumber(args.payment.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.stakeProxy.unstakeFarmTokens)
             .withChainID(mxConfig.chainID)
             .buildTransaction()

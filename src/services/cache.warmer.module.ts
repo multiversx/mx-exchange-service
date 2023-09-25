@@ -34,6 +34,8 @@ import { FarmModuleV1_2 } from 'src/modules/farm/v1.2/farm.v1.2.module';
 import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
+import { GovernanceCacheWarmerService } from './crons/governance.cache.warmer.service';
+import { GovernanceModule } from '../modules/governance/governance.module';
 
 @Module({
     imports: [
@@ -58,6 +60,7 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         TokenModule,
         AnalyticsServicesModule,
         RemoteConfigModule,
+        GovernanceModule,
     ],
     controllers: [],
     providers: [
@@ -72,6 +75,7 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         AWSQueryCacheWarmerService,
         PriceDiscoveryCacheWarmerService,
         CachingService,
+        GovernanceCacheWarmerService,
         TransactionProcessorService,
         LogsProcessorService,
         ElasticService,

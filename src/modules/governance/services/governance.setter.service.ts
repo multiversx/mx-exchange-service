@@ -5,7 +5,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
 import { ProposalVotes } from '../models/governance.proposal.votes.model';
-import { VoteType } from '../models/governance.proposal.model';
+import { GovernanceProposalModel, GovernanceProposalStatus, VoteType } from '../models/governance.proposal.model';
 
 export class GovernanceSetterService extends GenericSetterService {
     constructor(
@@ -37,6 +37,24 @@ export class GovernanceSetterService extends GenericSetterService {
     async proposalVotes(scAddress: string, proposalId: number, value: ProposalVotes): Promise<string> {
         return await this.setData(
             this.getCacheKey('proposalVotes', scAddress, proposalId),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async proposals(scAddress: string, value: GovernanceProposalModel[]): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('proposals', scAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async proposalStatus(scAddress: string, proposalId: number, value: GovernanceProposalStatus): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('proposalStatus', scAddress, proposalId),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,

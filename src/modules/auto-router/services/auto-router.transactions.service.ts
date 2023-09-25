@@ -3,7 +3,7 @@ import {
     AddressValue,
     BigUIntValue,
     BytesValue,
-    TokenPayment,
+    TokenTransfer,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -62,7 +62,7 @@ export class AutoRouterTransactionService {
             contract.methodsExplicit
                 .multiPairSwap(transactionArgs)
                 .withSingleESDTTransfer(
-                    TokenPayment.fungibleFromBigInteger(
+                    TokenTransfer.fungibleFromBigInteger(
                         args.tokenRoute[0],
                         amountIn.integerValue(),
                     ),

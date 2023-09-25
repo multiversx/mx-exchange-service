@@ -11,10 +11,12 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { EscrowSetterService } from '../services/escrow.setter.service';
 
 describe('EscrowAbiService', () => {
     let service: EscrowAbiService;
     let mxGateway: MXGatewayService;
+    let cachingService: CachingService;
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -27,6 +29,7 @@ describe('EscrowAbiService', () => {
             ],
             providers: [
                 EscrowAbiService,
+                EscrowSetterService,
                 MXProxyServiceProvider,
                 MXGatewayServiceProvider,
                 CachingService,
@@ -36,6 +39,7 @@ describe('EscrowAbiService', () => {
 
         service = module.get<EscrowAbiService>(EscrowAbiService);
         mxGateway = module.get<MXGatewayService>(MXGatewayService);
+        cachingService = module.get<CachingService>(CachingService);
     });
 
     it('should be defined', () => {
@@ -119,6 +123,7 @@ describe('EscrowAbiService', () => {
 
         receivers = await service.getAllReceiversRaw(sender.bech32());
         expect(receivers).toEqual([]);
+        await cachingService.deleteInCache(`escrow.scKeys`);
     });
 
     it('should get one receiver for sender', async () => {
@@ -136,6 +141,7 @@ describe('EscrowAbiService', () => {
         expect(receivers).toEqual([
             'erd1devnet6uy8xjusvusfy3q83qadfhwrtty5fwa8ceh9cl60q2p6ysra7aaa',
         ]);
+        await cachingService.deleteInCache(`escrow.scKeys`);
     });
 
     it('should get two receivers for sender', async () => {
@@ -160,5 +166,6 @@ describe('EscrowAbiService', () => {
             'erd1devnet6uy8xjusvusfy3q83qadfhwrtty5fwa8ceh9cl60q2p6ysra7aaa',
             'erd1932eft30w753xyvme8d49qejgkjc09n5e49w4mwdjtm0neld797su0dlxp',
         ]);
+        await cachingService.deleteInCache(`escrow.scKeys`);
     });
 });

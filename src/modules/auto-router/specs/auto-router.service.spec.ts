@@ -275,7 +275,9 @@ describe('AutoRouterService', () => {
                 value: '1000000000000000000',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData('wrapEgld'),
@@ -283,6 +285,8 @@ describe('AutoRouterService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
             {
                 nonce: 0,
@@ -290,7 +294,9 @@ describe('AutoRouterService', () => {
                 receiver: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',
                 ).bech32(),
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
                 data: encodeTransactionData(
@@ -300,6 +306,8 @@ describe('AutoRouterService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
         ]);
     });
@@ -345,7 +353,9 @@ describe('AutoRouterService', () => {
                 receiver: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000011',
                 ).bech32(),
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: 2 * gasConfig.router.multiPairSwapMultiplier,
                 data: encodeTransactionData(
@@ -359,13 +369,17 @@ describe('AutoRouterService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
             {
                 nonce: 0,
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: '',
+                receiverUsername: undefined,
+                senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData(
@@ -375,6 +389,8 @@ describe('AutoRouterService', () => {
                 version: 1,
                 options: undefined,
                 signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
             },
         ]);
     });

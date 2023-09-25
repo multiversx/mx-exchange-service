@@ -6,7 +6,7 @@ import {
     BooleanValue,
     BytesValue,
     TokenIdentifierValue,
-    TokenPayment,
+    TokenTransfer,
     TypedValue,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
@@ -251,13 +251,13 @@ export class RouterTransactionService {
                 new AddressValue(Address.fromString(pairAddress)),
             ])
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     inputTokens.tokenID,
                     inputTokens.nonce,
                     new BigNumber(inputTokens.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.router.swapEnableByUser)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -334,7 +334,7 @@ export class RouterTransactionService {
             contract.methodsExplicit
                 .multiPairSwap(endpointArgs)
                 .withSingleESDTTransfer(
-                    TokenPayment.fungibleFromBigInteger(
+                    TokenTransfer.fungibleFromBigInteger(
                         args.tokenRoute[0],
                         args.intermediaryAmounts[0],
                     ),

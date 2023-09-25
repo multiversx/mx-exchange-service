@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Address, TokenPayment } from '@multiversx/sdk-core';
+import { Address, TokenTransfer } from '@multiversx/sdk-core';
 import { constantsConfig, mxConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { BigNumber } from 'bignumber.js';
@@ -28,13 +28,13 @@ export class TransactionsLockedAssetService {
         return contract.methodsExplicit
             .unlockAssets()
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     args.lockedTokenID,
                     args.lockedTokenNonce,
                     new BigNumber(args.amount),
                 ),
-                Address.fromString(sender),
             )
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasConfig.lockedAssetFactory.unlockAssets)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -48,7 +48,7 @@ export class TransactionsLockedAssetService {
         return contract.methodsExplicit
             .lockAssets()
             .withSingleESDTTransfer(
-                TokenPayment.fungibleFromBigInteger(
+                TokenTransfer.fungibleFromBigInteger(
                     token.tokenID,
                     new BigNumber(token.amount),
                 ),
@@ -88,7 +88,7 @@ export class TransactionsLockedAssetService {
             await this.mxProxy.getLockedAssetFactorySmartContract();
 
         const mappedPayments = tokens.map((tokenPayment) =>
-            TokenPayment.metaEsdtFromBigInteger(
+            TokenTransfer.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,
                 new BigNumber(tokenPayment.amount),
@@ -103,10 +103,8 @@ export class TransactionsLockedAssetService {
 
         return contract.methodsExplicit
             .mergeLockedAssetTokens()
-            .withMultiESDTNFTTransfer(
-                mappedPayments,
-                Address.fromString(sender),
-            )
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
