@@ -241,7 +241,7 @@ export abstract class FarmSetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getCacheKey('totalValueLockedUSD', farmAddress),
+            this.getCacheKey('farmLockedValueUSD', farmAddress),
             value,
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
