@@ -17,9 +17,9 @@ import { PairTransactionService } from 'src/modules/pair/services/pair.transacti
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { GraphService } from './graph.service';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
@@ -39,7 +39,7 @@ export class AutoRouterService {
         private readonly wrapAbi: WrapAbiService,
         private readonly pairService: PairService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
-        private readonly cacheService: CachingService,
+        private readonly cacheService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -61,7 +61,7 @@ export class AutoRouterService {
                         source,
                         destination,
                     ),
-                oneMinute() * 10,
+                Constants.oneMinute() * 10,
             );
         } catch (error) {}
     }

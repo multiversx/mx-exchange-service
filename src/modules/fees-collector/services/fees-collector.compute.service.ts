@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { BigNumber } from 'bignumber.js';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
@@ -33,7 +33,6 @@ export class FeesCollectorComputeService {
     ) {}
 
     @ErrorLoggerAsync({
-        className: FeesCollectorComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -104,7 +103,6 @@ export class FeesCollectorComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: FeesCollectorComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -140,7 +138,6 @@ export class FeesCollectorComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: FeesCollectorComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({

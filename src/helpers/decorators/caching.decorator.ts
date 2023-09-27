@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 
 export interface ICachingOptions {
@@ -9,7 +9,7 @@ export interface ICachingOptions {
 }
 
 export function GetOrSetCache(cachingOptions: ICachingOptions) {
-    const cachingServiceInjector = Inject(CachingService);
+    const cachingServiceInjector = Inject(CacheService);
 
     return function (
         target: any,
@@ -26,7 +26,7 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
                 ...args,
             );
 
-            const cachingService: CachingService = this.cachingService;
+            const cachingService: CacheService = this.cachingService;
 
             return await cachingService.getOrSet(
                 cacheKey,

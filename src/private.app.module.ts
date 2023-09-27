@@ -8,15 +8,15 @@ import { RemoteConfigController } from './modules/remote-config/remote-config.co
 import { RemoteConfigModule } from './modules/remote-config/remote-config.module';
 import { TokenController } from './modules/tokens/token.controller';
 import { TokenModule } from './modules/tokens/token.module';
-import { CachingModule } from './services/caching/cache.module';
+import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 
 @Module({
     imports: [
         CommonAppModule,
-        CachingModule,
         PairModule,
         TokenModule,
         RemoteConfigModule,
+        DynamicModuleUtils.getCacheModule(),
     ],
     controllers: [MetricsController, TokenController, RemoteConfigController],
     providers: [MetricsService, ElasticService],

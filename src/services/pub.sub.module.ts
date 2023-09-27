@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
 import { CacheController } from '../endpoints/cache/cache.controller';
-import { CachingModule } from './caching/cache.module';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
-    imports: [CommonAppModule, CachingModule],
+    imports: [CommonAppModule, DynamicModuleUtils.getCacheModule()],
     controllers: [CacheController],
     providers: [],
 })

@@ -1,14 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
-import { constantsConfig } from 'src/config';
+import { cacheConfig, constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
-import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
-import { QueryType } from 'src/helpers/entities/elastic/query.type';
-import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
-import { ElasticService } from 'src/helpers/elastic.service';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -23,6 +19,12 @@ import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { AnalyticsWriteService } from '../analytics/services/analytics.write.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IngestRecord } from '../analytics/entities/ingest.record';
+import {
+    ElasticQuery,
+    ElasticSortOrder,
+    QueryType,
+} from '@multiversx/sdk-nestjs-elastic';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 @Injectable()
 export class LogsProcessorService {
@@ -31,7 +33,7 @@ export class LogsProcessorService {
     penaltyMap: Map<number, string> = new Map();
 
     constructor(
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         private readonly apiService: MXApiService,
         private readonly elasticService: ElasticService,
         private readonly analyticsWrite: AnalyticsWriteService,
@@ -49,7 +51,7 @@ export class LogsProcessorService {
             this.isProcessing = true;
 
             const [lastProcessedTimestamp, currentTimestamp] =
-                await this.getProcessingInterval(oneMinute());
+                await this.getProcessingInterval(Constants.oneMinute());
             if (lastProcessedTimestamp === currentTimestamp) {
                 return;
             }
@@ -60,9 +62,10 @@ export class LogsProcessorService {
                 lastProcessedTimestamp,
             );
 
-            await this.cachingService.setCache(
+            await this.cachingService.set(
                 'lastLogProcessedTimestamp',
                 currentTimestamp,
+                cacheConfig.default,
             );
         } catch (error) {
             const logMessage = generateLogMessage(
@@ -80,13 +83,13 @@ export class LogsProcessorService {
     private async getProcessingInterval(
         delay: number,
     ): Promise<[number, number]> {
-        let lastProcessedTimestamp: number = await this.cachingService.getCache(
+        let lastProcessedTimestamp: number = await this.cachingService.get(
             'lastLogProcessedTimestamp',
         );
 
         let currentTimestamp: number;
 
-        if (lastProcessedTimestamp === null) {
+        if (!lastProcessedTimestamp || lastProcessedTimestamp === undefined) {
             lastProcessedTimestamp =
                 (await this.apiService.getShardTimestamp(1)) - delay;
             currentTimestamp = lastProcessedTimestamp;
@@ -96,19 +99,31 @@ export class LogsProcessorService {
         }
 
         if (currentTimestamp === lastProcessedTimestamp) {
-            await this.cachingService.setCache(
+            await this.cachingService.set(
                 'lastLogProcessedTimestamp',
                 currentTimestamp,
+                cacheConfig.default,
             );
         }
 
         return [lastProcessedTimestamp, currentTimestamp];
     }
 
-    private async getFeeBurned(gte: number, lte: number) {
+    private async getFeeBurned(
+        currentTimestamp: number,
+        lastProcessedTimestamp: number,
+    ) {
         this.feeMap.clear();
-        await this.getSwapLogs('swapTokensFixedInput', gte, lte);
-        await this.getSwapLogs('swapTokensFixedOutput', gte, lte);
+        await this.getSwapLogs(
+            'swapTokensFixedInput',
+            currentTimestamp,
+            lastProcessedTimestamp,
+        );
+        await this.getSwapLogs(
+            'swapTokensFixedOutput',
+            currentTimestamp,
+            lastProcessedTimestamp,
+        );
 
         const totalWriteRecords = await this.writeRecords(
             this.feeMap,
@@ -118,11 +133,15 @@ export class LogsProcessorService {
         this.logger.info(`fee burned records: ${totalWriteRecords}`);
     }
 
-    private async getSwapLogs(swapType: string, gte: number, lte: number) {
+    private async getSwapLogs(
+        swapType: string,
+        currentTimestamp: number,
+        lastProcessedTimestamp: number,
+    ) {
         const transactionsLogs = await this.getTransactionsLogs(
             swapType,
-            gte,
-            lte,
+            currentTimestamp,
+            lastProcessedTimestamp,
         );
 
         for (const transactionLogs of transactionsLogs) {
@@ -132,11 +151,14 @@ export class LogsProcessorService {
         }
     }
 
-    private async getExitFarmLogs(gte: number, lte: number) {
+    private async getExitFarmLogs(
+        currentTimestamp: number,
+        lastProcessedTimestamp: number,
+    ) {
         const transactionsLogs = await this.getTransactionsLogs(
             'exitFarm',
-            gte,
-            lte,
+            currentTimestamp,
+            lastProcessedTimestamp,
         );
 
         this.penaltyMap.clear();
@@ -158,8 +180,8 @@ export class LogsProcessorService {
 
     private async getTransactionsLogs(
         eventName: string,
-        gte: number,
-        lte: number,
+        currentTimestamp: number,
+        lastProcessedTimestamp: number,
     ): Promise<any[]> {
         const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
         elasticQueryAdapter.condition.must = [
@@ -169,10 +191,17 @@ export class LogsProcessorService {
         ];
 
         elasticQueryAdapter.filter = [
-            QueryType.Range('timestamp', {
-                before: gte,
-                after: lte,
-            }),
+            QueryType.Range(
+                'timestamp',
+                {
+                    key: 'gte',
+                    value: lastProcessedTimestamp,
+                },
+                {
+                    key: 'lte',
+                    value: currentTimestamp,
+                },
+            ),
         ];
 
         elasticQueryAdapter.sort = [

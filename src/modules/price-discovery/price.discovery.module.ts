@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
 import { TokenModule } from '../tokens/token.module';
@@ -12,13 +11,7 @@ import { PriceDiscoverySetterService } from './services/price.discovery.setter.s
 import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
 
 @Module({
-    imports: [
-        MXCommunicationModule,
-        CachingModule,
-        PairModule,
-        WrappingModule,
-        TokenModule,
-    ],
+    imports: [MXCommunicationModule, PairModule, WrappingModule, TokenModule],
     providers: [
         PriceDiscoveryService,
         PriceDiscoveryAbiService,

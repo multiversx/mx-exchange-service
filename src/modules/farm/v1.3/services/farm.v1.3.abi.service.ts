@@ -5,9 +5,9 @@ import { FarmAbiService } from '../../base-module/services/farm.abi.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IFarmAbiServiceV1_3 } from './interfaces';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
@@ -25,7 +25,6 @@ export class FarmAbiServiceV1_3
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -56,12 +55,11 @@ export class FarmAbiServiceV1_3
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV1_3.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'farm',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async farmMigrationConfiguration(
         farmAddress: string,

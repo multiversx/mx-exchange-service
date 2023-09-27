@@ -4,10 +4,9 @@ import { DistributionAbiService } from './services/distribution.abi.service';
 import { DistributionResolver } from './distribution.resolver';
 import { DistributionTransactionsService } from './services/distribution.transactions.service';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
-import { CachingModule } from '../../services/caching/cache.module';
 
 @Module({
-    imports: [ContextModule, MXCommunicationModule, CachingModule],
+    imports: [ContextModule, MXCommunicationModule],
     providers: [
         DistributionAbiService,
         DistributionTransactionsService,

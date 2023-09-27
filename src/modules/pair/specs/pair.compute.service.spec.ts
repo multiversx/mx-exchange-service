@@ -14,10 +14,9 @@ import { PairsData } from '../mocks/pair.constants';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -25,11 +24,11 @@ describe('PairService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 PairComputeService,
@@ -42,7 +41,6 @@ describe('PairService', () => {
                 TokenComputeService,
                 AnalyticsQueryServiceProvider,
                 ContextGetterServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

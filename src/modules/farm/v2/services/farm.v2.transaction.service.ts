@@ -12,7 +12,7 @@ import {
     CompoundRewardsArgs,
 } from '../../models/farm.args';
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -30,7 +30,6 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
     }
 
     @ErrorLoggerAsync({
-        className: FarmTransactionServiceV2.name,
         logArgs: true,
     })
     async enterFarm(

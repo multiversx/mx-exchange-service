@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { PairModule } from '../pair/pair.module';
 import { ContextModule } from '../../services/context/context.module';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
-import { CachingModule } from '../../services/caching/cache.module';
 import { CommonAppModule } from 'src/common.app.module';
 import { TokenModule } from '../tokens/token.module';
 import { FarmQueryResolver } from './farm.query.resolver';
@@ -21,7 +20,6 @@ import { FarmSetterFactory } from './farm.setter.factory';
     imports: [
         CommonAppModule,
         MXCommunicationModule,
-        CachingModule,
         ContextModule,
         PairModule,
         TokenModule,

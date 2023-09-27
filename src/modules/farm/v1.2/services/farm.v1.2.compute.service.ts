@@ -9,7 +9,7 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
 import { FarmAbiServiceV1_2 } from './farm.v1.2.abi.service';
 import { FarmServiceV1_2 } from './farm.v1.2.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IFarmComputeServiceV1_2 } from './interfaces';
@@ -66,7 +66,6 @@ export class FarmComputeServiceV1_2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV1_2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -92,7 +91,6 @@ export class FarmComputeServiceV1_2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV1_2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -122,7 +120,6 @@ export class FarmComputeServiceV1_2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV1_2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -164,7 +161,6 @@ export class FarmComputeServiceV1_2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV1_2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -223,7 +219,6 @@ export class FarmComputeServiceV1_2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV1_2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -277,7 +272,6 @@ export class FarmComputeServiceV1_2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV1_2.name,
         logArgs: true,
     })
     @GetOrSetCache({

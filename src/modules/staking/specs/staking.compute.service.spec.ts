@@ -12,13 +12,12 @@ import { ContextGetterServiceProvider } from 'src/services/context/mocks/context
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { OptimalCompoundModel } from '../models/staking.model';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -26,11 +25,11 @@ describe('StakingComputeService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 ConfigModule.forRoot({}),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 StakingComputeService,
@@ -41,7 +40,6 @@ describe('StakingComputeService', () => {
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
                 RemoteConfigGetterServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

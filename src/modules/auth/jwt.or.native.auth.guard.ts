@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Logger } from 'winston';
 import { GqlAuthGuard } from './gql.auth.guard';
 import { NativeAuthGuard } from './native.auth.guard';
@@ -15,7 +15,7 @@ import { NativeAuthGuard } from './native.auth.guard';
 export class JwtOrNativeAuthGuard implements CanActivate {
     constructor(
         private readonly apiConfigService: ApiConfigService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 

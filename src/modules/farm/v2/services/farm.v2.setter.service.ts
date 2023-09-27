@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Logger } from 'winston';
 import { FarmSetterService } from '../../base-module/services/farm.setter.service';
@@ -9,7 +9,7 @@ import { FarmSetterService } from '../../base-module/services/farm.setter.servic
 @Injectable()
 export class FarmSetterServiceV2 extends FarmSetterService {
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);

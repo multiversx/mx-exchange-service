@@ -23,7 +23,7 @@ import { PairService } from './pair.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class PairTransactionService {
@@ -100,7 +100,6 @@ export class PairTransactionService {
     }
 
     @ErrorLoggerAsync({
-        className: PairTransactionService.name,
         logArgs: true,
     })
     async addInitialLiquidity(
@@ -143,7 +142,6 @@ export class PairTransactionService {
     }
 
     @ErrorLoggerAsync({
-        className: PairTransactionService.name,
         logArgs: true,
     })
     async addLiquidity(
@@ -263,7 +261,6 @@ export class PairTransactionService {
     }
 
     @ErrorLoggerAsync({
-        className: PairTransactionService.name,
         logArgs: true,
     })
     async swapTokensFixedInput(
@@ -377,7 +374,6 @@ export class PairTransactionService {
     }
 
     @ErrorLoggerAsync({
-        className: PairTransactionService.name,
         logArgs: true,
     })
     async swapTokensFixedOutput(

@@ -4,7 +4,6 @@ import { RouterResolver } from './router.resolver';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { RouterAbiService } from './services/router.abi.service';
 import { RouterTransactionService } from './services/router.transactions.service';
-import { CachingModule } from '../../services/caching/cache.module';
 import { RouterComputeService } from './services/router.compute.service';
 import { PairModule } from '../pair/pair.module';
 import { RouterSetterService } from './services/router.setter.service';
@@ -21,7 +20,6 @@ import { SimpleLockModule } from '../simple-lock/simple.lock.module';
     imports: [
         CommonAppModule,
         MXCommunicationModule,
-        CachingModule,
         PairModule,
         SimpleLockModule,
         ContextModule,

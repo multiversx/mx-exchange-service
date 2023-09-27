@@ -22,7 +22,7 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 
 @Injectable()
@@ -62,7 +62,7 @@ export class UserEnergyComputeService {
 
     @GetOrSetCache({
         baseKey: 'userEnergy',
-        remoteTtl: oneMinute() * 10,
+        remoteTtl: Constants.oneMinute() * 10,
     })
     async outdatedContract(
         userAddress: string,
@@ -162,7 +162,7 @@ export class UserEnergyComputeService {
 
     @GetOrSetCache({
         baseKey: 'userEnergy',
-        remoteTtl: oneMinute(),
+        remoteTtl: Constants.oneMinute(),
     })
     async userActiveFarmsV2(userAddress: string): Promise<string[]> {
         return await this.computeActiveFarmsV2ForUser(userAddress);

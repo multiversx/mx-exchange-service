@@ -10,7 +10,7 @@ import {
 import BigNumber from 'bignumber.js';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { IFeesCollectorAbiService } from './interfaces';
 
 @Injectable()
@@ -23,7 +23,6 @@ export class FeesCollectorAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FeesCollectorAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -46,9 +45,7 @@ export class FeesCollectorAbiService
         return response.firstValue.valueOf().integerValue().toFixed();
     }
 
-    @ErrorLoggerAsync({
-        className: FeesCollectorAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -66,9 +63,7 @@ export class FeesCollectorAbiService
         return response.firstValue.valueOf();
     }
 
-    @ErrorLoggerAsync({
-        className: FeesCollectorAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -86,9 +81,7 @@ export class FeesCollectorAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    @ErrorLoggerAsync({
-        className: FeesCollectorAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -106,9 +99,7 @@ export class FeesCollectorAbiService
         return response.firstValue.valueOf();
     }
 
-    @ErrorLoggerAsync({
-        className: FeesCollectorAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,

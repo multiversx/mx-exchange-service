@@ -5,8 +5,8 @@ import { FarmVersion } from './models/farm.model';
 import { FarmAbiServiceV1_2 } from './v1.2/services/farm.v1.2.abi.service';
 import { FarmAbiServiceV1_3 } from './v1.3/services/farm.v1.3.abi.service';
 import { FarmAbiServiceV2 } from './v2/services/farm.v2.abi.service';
-import { CachingService } from 'src/services/caching/cache.service';
-import { oneHour } from 'src/helpers/helpers';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class FarmAbiFactory {
@@ -14,7 +14,7 @@ export class FarmAbiFactory {
         private readonly abiServiceV1_2: FarmAbiServiceV1_2,
         private readonly abiServiceV1_3: FarmAbiServiceV1_3,
         private readonly abiServiceV2: FarmAbiServiceV2,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
     ) {}
 
     useAbi(farmAddress: string): FarmAbiService {
@@ -43,7 +43,7 @@ export class FarmAbiFactory {
     async getFarmAddressByFarmTokenID(
         tokenID: string,
     ): Promise<string | undefined> {
-        const cachedValue: string = await this.cachingService.getCache(
+        const cachedValue: string = await this.cachingService.get(
             `${tokenID}.farmAddress`,
         );
         if (cachedValue && cachedValue !== undefined) {
@@ -54,10 +54,10 @@ export class FarmAbiFactory {
                 farmAddress,
             );
             if (farmTokenID === tokenID) {
-                await this.cachingService.setCache(
+                await this.cachingService.set(
                     `${tokenID}.farmAddress`,
                     farmAddress,
-                    oneHour(),
+                    Constants.oneHour(),
                 );
                 return farmAddress;
             }

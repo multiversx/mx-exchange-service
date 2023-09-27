@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { TokenModule } from '../tokens/token.module';
@@ -14,7 +13,6 @@ import { EnergyTransactionService } from './services/energy.transaction.service'
 @Module({
     imports: [
         CommonAppModule,
-        CachingModule,
         MXCommunicationModule,
         ContextModule,
         TokenModule,

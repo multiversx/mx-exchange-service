@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PairModule } from '../modules/pair/pair.module';
 import { ContextModule } from './context/context.module';
 import { CacheWarmerService } from './crons/cache.warmer.service';
-import { CachingService } from './caching/cache.service';
 import { ProxyModule } from 'src/modules/proxy/proxy.module';
 import { ProxyFarmModule } from 'src/modules/proxy/services/proxy-farm/proxy.farm.module';
 import { ProxyPairModule } from 'src/modules/proxy/services/proxy-pair/proxy.pair.module';
@@ -17,7 +15,6 @@ import { AnalyticsCacheWarmerService } from './crons/analytics.cache.warmer.serv
 import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
 import { TransactionProcessorService } from './crons/transaction.processor.service';
 import { LogsProcessorService } from './crons/logs.processor.service';
-import { ElasticService } from 'src/helpers/elastic.service';
 import { StakingModule } from 'src/modules/staking/staking.module';
 import { StakingCacheWarmerService } from './crons/staking.cache.warmer.service';
 import { StakingProxyCacheWarmerService } from './crons/staking.proxy.cache.warmer.service';
@@ -34,6 +31,8 @@ import { FarmModuleV1_2 } from 'src/modules/farm/v1.2/farm.v1.2.module';
 import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
+import { ElasticService } from 'src/helpers/elastic.service';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { GovernanceCacheWarmerService } from './crons/governance.cache.warmer.service';
 import { GovernanceModule } from '../modules/governance/governance.module';
 
@@ -41,7 +40,6 @@ import { GovernanceModule } from '../modules/governance/governance.module';
     imports: [
         ScheduleModule.forRoot(),
         CommonAppModule,
-        CacheModule.register(),
         PairModule,
         RouterModule,
         MXCommunicationModule,
@@ -61,6 +59,7 @@ import { GovernanceModule } from '../modules/governance/governance.module';
         AnalyticsServicesModule,
         RemoteConfigModule,
         GovernanceModule,
+        DynamicModuleUtils.getCacheModule(),
     ],
     controllers: [],
     providers: [
@@ -74,7 +73,6 @@ import { GovernanceModule } from '../modules/governance/governance.module';
         AnalyticsCacheWarmerService,
         AWSQueryCacheWarmerService,
         PriceDiscoveryCacheWarmerService,
-        CachingService,
         GovernanceCacheWarmerService,
         TransactionProcessorService,
         LogsProcessorService,

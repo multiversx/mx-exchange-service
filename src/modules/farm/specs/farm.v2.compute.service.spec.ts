@@ -20,10 +20,9 @@ import { WeeklyRewardsSplittingComputeService } from '../../../submodules/weekly
 import { EnergyAbiServiceProvider } from '../../energy/mocks/energy.abi.service.mock';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('FarmServiceV2', () => {
     let module: TestingModule;
@@ -31,11 +30,11 @@ describe('FarmServiceV2', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 MXApiServiceProvider,
@@ -56,7 +55,6 @@ describe('FarmServiceV2', () => {
                 FarmComputeServiceV2,
                 FarmAbiServiceProviderV2,
                 FarmServiceV2,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

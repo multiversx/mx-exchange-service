@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { GqlAdminGuard } from './gql.admin.guard';
 import { NativeAdminGuard } from './native.admin.guard';
 
@@ -15,7 +15,7 @@ import { NativeAdminGuard } from './native.admin.guard';
 export class JwtOrNativeAdminGuard implements CanActivate {
     constructor(
         private readonly apiConfigService: ApiConfigService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     ) {}
 

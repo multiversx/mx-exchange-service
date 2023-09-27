@@ -35,7 +35,7 @@ import { LockedAssetService } from 'src/modules/locked-asset-factory/services/lo
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { LockedTokenAttributesModel } from 'src/modules/simple-lock/models/simple.lock.model';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ProxyAbiService } from './proxy.abi.service';
@@ -57,7 +57,7 @@ export class ProxyService {
         private readonly farmAbi: FarmAbiFactory,
         private readonly apiService: MXApiService,
         private readonly lockedAssetService: LockedAssetService,
-        private readonly cacheService: CachingService,
+        private readonly cacheService: CacheService,
         private readonly tokenService: TokenService,
     ) {}
 
@@ -170,7 +170,7 @@ export class ProxyService {
         lockedTokenNonce: number,
     ): Promise<LockedTokenAttributesModel> {
         const cachedValue: LockedTokenAttributesModel =
-            await this.cacheService.getCache(
+            await this.cacheService.get(
                 `${tokenIdentifier(
                     lockedTokenCollection,
                     lockedTokenNonce,
@@ -190,19 +190,21 @@ export class ProxyService {
                 nftIdentifier,
             );
 
-        return await this.cacheService.setCache(
+        const value = new LockedTokenAttributesModel({
+            ...LockedTokenAttributes.fromAttributes(nftAttributes),
+            identifier: nftIdentifier,
+            attributes: nftAttributes,
+        });
+        await this.cacheService.set(
             `${tokenIdentifier(
                 lockedTokenCollection,
                 lockedTokenNonce,
             )}.decodedAttributes`,
-            new LockedTokenAttributesModel({
-                ...LockedTokenAttributes.fromAttributes(nftAttributes),
-                identifier: nftIdentifier,
-                attributes: nftAttributes,
-            }),
+            value,
             CacheTtlInfo.Attributes.remoteTtl,
             CacheTtlInfo.Attributes.localTtl,
         );
+        return value;
     }
 
     getWrappedFarmTokenAttributes(
@@ -266,9 +268,7 @@ export class ProxyService {
             farmTokenNonce,
         );
         const cachedValue: LockedTokenAttributesModel =
-            await this.cacheService.getCache(
-                `${nftIdentifier}.decodedAttributes`,
-            );
+            await this.cacheService.get(`${nftIdentifier}.decodedAttributes`);
         if (cachedValue && cachedValue !== undefined) {
             switch (version) {
                 case FarmVersion.V1_2:
@@ -316,12 +316,14 @@ export class ProxyService {
                 });
                 break;
         }
-        return await this.cacheService.setCache(
+
+        await this.cacheService.set(
             `${nftIdentifier}.decodedAttributes`,
             decodedAttributes,
             CacheTtlInfo.Attributes.remoteTtl,
             CacheTtlInfo.Attributes.localTtl,
         );
+        return decodedAttributes;
     }
 
     async getProxyAddressByToken(tokenID: string): Promise<string> {

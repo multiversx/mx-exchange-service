@@ -13,10 +13,9 @@ import { LockedAssetGetterService } from '../services/locked.asset.getter.servic
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('LockedAssetService', () => {
     let service: LockedAssetService;
@@ -36,11 +35,11 @@ describe('LockedAssetService', () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [
                 MXCommunicationModule,
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 ContextGetterServiceProvider,
@@ -48,7 +47,6 @@ describe('LockedAssetService', () => {
                 AbiLockedAssetServiceProvider,
                 LockedAssetService,
                 LockedAssetGetterService,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

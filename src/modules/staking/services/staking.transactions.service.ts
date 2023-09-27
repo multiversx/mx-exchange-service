@@ -14,7 +14,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { StakingAbiService } from './staking.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class StakingTransactionService {
@@ -23,9 +23,7 @@ export class StakingTransactionService {
         private readonly mxProxy: MXProxyService,
     ) {}
 
-    @ErrorLoggerAsync({
-        className: StakingTransactionService.name,
-    })
+    @ErrorLoggerAsync()
     async stakeFarm(
         sender: string,
         stakeAddress: string,

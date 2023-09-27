@@ -24,7 +24,7 @@ import { MXProxyService } from '../../../../services/multiversx-communication/mx
 import { MXGatewayService } from '../../../../services/multiversx-communication/mx.gateway.service';
 import { tokenNonce } from '../../../../utils/token.converters';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IFarmAbiServiceV2 } from './interfaces';
@@ -51,7 +51,6 @@ export class FarmAbiServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -77,7 +76,6 @@ export class FarmAbiServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -103,7 +101,6 @@ export class FarmAbiServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -129,7 +126,6 @@ export class FarmAbiServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -161,7 +157,6 @@ export class FarmAbiServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -185,7 +180,6 @@ export class FarmAbiServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -203,7 +197,6 @@ export class FarmAbiServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -239,7 +232,6 @@ export class FarmAbiServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -274,7 +266,6 @@ export class FarmAbiServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
