@@ -64,4 +64,20 @@ export class AutoRouterResolver {
             });
         }
     }
+
+    @ResolveField(() => [TransactionModel])
+    async noAuthTransactions(
+        @Parent() parent: AutoRouteModel,
+        @Args('sender') sender: string,
+    ) {
+        try {
+            return await this.autoRouterService.getTransactions(sender, parent);
+        } catch (error) {
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                },
+            });
+        }
+    }
 }
