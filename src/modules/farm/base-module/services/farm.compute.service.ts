@@ -106,36 +106,22 @@ export abstract class FarmComputeService implements IFarmComputeService {
         return this.pairCompute.computeLpTokenPriceUSD(pairAddress);
     }
 
-    async computeFarmRewardsForPosition(
-        positon: CalculateRewardsArgs,
-        rewardPerShare: string,
-    ): Promise<BigNumber> {
+    async computeMintedRewards(farmAddress: string): Promise<BigNumber> {
         const [
             currentNonce,
             lastRewardBlockNonce,
             perBlockRewardAmount,
-            divisionSafetyConstant,
-            farmTokenSupply,
-            farmRewardPerShare,
             produceRewardsEnabled,
         ] = await Promise.all([
             this.contextGetter.getShardCurrentBlockNonce(1),
-            this.farmAbi.lastRewardBlockNonce(positon.farmAddress),
-            this.farmAbi.rewardsPerBlock(positon.farmAddress),
-            this.farmAbi.divisionSafetyConstant(positon.farmAddress),
-            this.farmAbi.farmTokenSupply(positon.farmAddress),
-            this.farmAbi.rewardPerShare(positon.farmAddress),
-            this.farmAbi.produceRewardsEnabled(positon.farmAddress),
+            this.farmAbi.lastRewardBlockNonce(farmAddress),
+            this.farmAbi.rewardsPerBlock(farmAddress),
+            this.farmAbi.produceRewardsEnabled(farmAddress),
         ]);
 
-        const amountBig = new BigNumber(positon.liquidity);
         const currentBlockBig = new BigNumber(currentNonce);
         const lastRewardBlockNonceBig = new BigNumber(lastRewardBlockNonce);
         const perBlockRewardAmountBig = new BigNumber(perBlockRewardAmount);
-        const divisionSafetyConstantBig = new BigNumber(divisionSafetyConstant);
-        const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
-        const farmRewardPerShareBig = new BigNumber(farmRewardPerShare);
-        const rewardPerShareBig = new BigNumber(rewardPerShare);
 
         let toBeMinted = new BigNumber(0);
 
@@ -144,10 +130,36 @@ export abstract class FarmComputeService implements IFarmComputeService {
                 currentBlockBig.minus(lastRewardBlockNonceBig),
             );
         }
-        const rewardIncrease = toBeMinted;
+
+        return toBeMinted;
+    }
+
+    async computeFarmRewardsForPosition(
+        positon: CalculateRewardsArgs,
+        rewardPerShare: string,
+    ): Promise<BigNumber> {
+        const [
+            rewardIncrease,
+            divisionSafetyConstant,
+            farmTokenSupply,
+            farmRewardPerShare,
+        ] = await Promise.all([
+            this.computeMintedRewards(positon.farmAddress),
+            this.farmAbi.divisionSafetyConstant(positon.farmAddress),
+            this.farmAbi.farmTokenSupply(positon.farmAddress),
+            this.farmAbi.rewardPerShare(positon.farmAddress),
+        ]);
+
+        const amountBig = new BigNumber(positon.liquidity);
+        const divisionSafetyConstantBig = new BigNumber(divisionSafetyConstant);
+        const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
+        const farmRewardPerShareBig = new BigNumber(farmRewardPerShare);
+        const rewardPerShareBig = new BigNumber(rewardPerShare);
+
         const rewardPerShareIncrease = rewardIncrease
             .times(divisionSafetyConstantBig)
-            .dividedBy(farmTokenSupplyBig);
+            .dividedBy(farmTokenSupplyBig)
+            .integerValue();
         const futureRewardPerShare = farmRewardPerShareBig.plus(
             rewardPerShareIncrease,
         );
@@ -158,7 +170,8 @@ export abstract class FarmComputeService implements IFarmComputeService {
 
             return amountBig
                 .times(rewardPerShareDiff)
-                .dividedBy(divisionSafetyConstantBig);
+                .dividedBy(divisionSafetyConstantBig)
+                .integerValue();
         }
         return new BigNumber(0);
     }
