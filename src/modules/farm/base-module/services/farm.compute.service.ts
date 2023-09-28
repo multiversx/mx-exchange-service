@@ -107,13 +107,14 @@ export abstract class FarmComputeService implements IFarmComputeService {
     }
 
     async computeMintedRewards(farmAddress: string): Promise<BigNumber> {
+        const shardID = await this.farmAbi.farmShard(farmAddress);
         const [
             currentNonce,
             lastRewardBlockNonce,
             perBlockRewardAmount,
             produceRewardsEnabled,
         ] = await Promise.all([
-            this.contextGetter.getShardCurrentBlockNonce(1),
+            this.contextGetter.getShardCurrentBlockNonce(shardID),
             this.farmAbi.lastRewardBlockNonce(farmAddress),
             this.farmAbi.rewardsPerBlock(farmAddress),
             this.farmAbi.produceRewardsEnabled(farmAddress),

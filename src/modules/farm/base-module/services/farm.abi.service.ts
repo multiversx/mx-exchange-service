@@ -404,4 +404,20 @@ export class FarmAbiService
         return (await this.apiService.getAccountStats(farmAddress))
             .ownerAddress;
     }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmShard(farmAddress: string): Promise<number> {
+        return await this.getFarmShardRaw(farmAddress);
+    }
+
+    async getFarmShardRaw(farmAddress: string): Promise<number> {
+        return (await this.apiService.getAccountStats(farmAddress)).shard;
+    }
 }
