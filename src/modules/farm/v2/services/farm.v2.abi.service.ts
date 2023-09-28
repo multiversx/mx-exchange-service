@@ -1,5 +1,6 @@
 import {
     Address,
+    AddressType,
     AddressValue,
     BigUIntType,
     BigUIntValue,
@@ -16,13 +17,12 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { FarmAbiService } from '../../base-module/services/farm.abi.service';
-import { FarmTokenAttributesV1_3 } from '@multiversx/sdk-exchange';
+import { FarmTokenAttributesV2 } from '@multiversx/sdk-exchange';
 import { FarmRewardType } from '../../models/farm.model';
 import { farmType } from 'src/utils/farm.utils';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { MXGatewayService } from '../../../../services/multiversx-communication/mx.gateway.service';
-import { tokenNonce } from '../../../../utils/token.converters';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
@@ -296,13 +296,12 @@ export class FarmAbiServiceV2
         const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );
-        const decodedAttributes = FarmTokenAttributesV1_3.fromAttributes(
+        const decodedAttributes = FarmTokenAttributesV2.fromAttributes(
             args.attributes,
         );
         const interaction: Interaction =
             contract.methodsExplicit.calculateRewardsForGivenPosition([
                 new AddressValue(Address.fromString(args.user)),
-                new U64Value(new BigNumber(tokenNonce(args.identifier))),
                 new BigUIntValue(new BigNumber(args.liquidity)),
                 new Struct(
                     new StructType('FarmTokenAttributes', [
@@ -312,19 +311,9 @@ export class FarmAbiServiceV2
                             new BigUIntType(),
                         ),
                         new FieldDefinition(
-                            'original_entering_epoch',
-                            '',
-                            new U64Type(),
-                        ),
-                        new FieldDefinition(
                             'entering_epoch',
                             '',
                             new U64Type(),
-                        ),
-                        new FieldDefinition(
-                            'initial_farming_amount',
-                            '',
-                            new BigUIntType(),
                         ),
                         new FieldDefinition(
                             'compounded_reward',
@@ -336,6 +325,11 @@ export class FarmAbiServiceV2
                             '',
                             new BigUIntType(),
                         ),
+                        new FieldDefinition(
+                            'original_owner',
+                            '',
+                            new AddressType(),
+                        ),
                     ]),
                     [
                         new Field(
@@ -346,25 +340,9 @@ export class FarmAbiServiceV2
                         ),
                         new Field(
                             new U64Value(
-                                new BigNumber(
-                                    decodedAttributes.originalEnteringEpoch,
-                                ),
-                            ),
-                            'original_entering_epoch',
-                        ),
-                        new Field(
-                            new U64Value(
                                 new BigNumber(decodedAttributes.enteringEpoch),
                             ),
                             'entering_epoch',
-                        ),
-                        new Field(
-                            new BigUIntValue(
-                                new BigNumber(
-                                    decodedAttributes.initialFarmingAmount,
-                                ),
-                            ),
-                            'initial_farming_amount',
                         ),
                         new Field(
                             new BigUIntValue(
@@ -381,6 +359,14 @@ export class FarmAbiServiceV2
                                 ),
                             ),
                             'current_farm_amount',
+                        ),
+                        new Field(
+                            new AddressValue(
+                                Address.fromString(
+                                    decodedAttributes.originalOwner,
+                                ),
+                            ),
+                            'original_owner',
                         ),
                     ],
                 ),
