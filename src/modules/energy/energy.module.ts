@@ -9,6 +9,7 @@ import { EnergyComputeService } from './services/energy.compute.service';
 import { EnergyService } from './services/energy.service';
 import { EnergySetterService } from './services/energy.setter.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
+import { EnergyUpdateResolver } from './energy.update.resolver';
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { EnergyTransactionService } from './services/energy.transaction.service'
         EnergyComputeService,
         EnergyTransactionService,
         EnergyResolver,
+        EnergyUpdateResolver,
     ],
     exports: [
         EnergyAbiService,
