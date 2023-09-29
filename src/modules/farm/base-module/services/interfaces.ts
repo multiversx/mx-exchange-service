@@ -23,6 +23,7 @@ export interface IFarmAbiService {
     pairContractAddress(farmAddress: string): Promise<string>;
     lastErrorMessage(farmAddress: string): Promise<string>;
     ownerAddress(farmAddress: string): Promise<string>;
+    farmShard(farmAddress: string): Promise<number>;
 }
 
 export interface IFarmComputeService {
@@ -30,4 +31,5 @@ export interface IFarmComputeService {
     farmedTokenPriceUSD(farmAddress: string): Promise<string>;
     farmTokenPriceUSD(farmAddress: string): Promise<string>;
     farmingTokenPriceUSD(farmAddress: string): Promise<string>;
+    computeMintedRewards(farmAddress: string): Promise<BigNumber>;
 }

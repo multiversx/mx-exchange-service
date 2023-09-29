@@ -92,6 +92,20 @@ export class FarmComputeServiceV2
             .toFixed();
     }
 
+    async computeMintedRewards(farmAddress: string): Promise<BigNumber> {
+        const [toBeMinted, boostedYieldsRewardsPercenatage] = await Promise.all(
+            [
+                super.computeMintedRewards(farmAddress),
+                this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
+            ],
+        );
+
+        return this.computeBaseRewards(
+            toBeMinted,
+            boostedYieldsRewardsPercenatage,
+        );
+    }
+
     async computeFarmRewardsForPosition(
         positon: CalculateRewardsArgs,
         rewardPerShare: string,
