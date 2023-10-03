@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
+import { FarmHandlerService } from './handlers/farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { scAddress } from 'src/config';
@@ -74,7 +74,7 @@ export class RabbitMqConsumer {
         private readonly routerAbi: RouterAbiService,
         private readonly liquidityHandler: LiquidityHandler,
         private readonly swapHandler: SwapEventHandler,
-        private readonly wsFarmHandler: RabbitMQFarmHandlerService,
+        private readonly wsFarmHandler: FarmHandlerService,
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
         private readonly routerHandler: RouterHandlerService,
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
@@ -169,6 +169,7 @@ export class RabbitMqConsumer {
                     break;
                 case FARM_EVENTS.EXIT_FARM:
                     await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
+
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
                     await this.wsFarmHandler.handleRewardsEvent(rawEvent);
