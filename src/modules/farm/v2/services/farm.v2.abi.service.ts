@@ -7,6 +7,7 @@ import {
     Field,
     FieldDefinition,
     Interaction,
+    ReturnCode,
     Struct,
     StructType,
     U32Value,
@@ -408,6 +409,11 @@ export class FarmAbiServiceV2
                 new AddressValue(Address.fromString(userAddress)),
             ]);
         const response = await this.getGenericData(interaction);
+
+        if (response.returnCode.equals(ReturnCode.FunctionNotFound)) {
+            return '0';
+        }
+
         return response.firstValue.valueOf().toFixed();
     }
 }
