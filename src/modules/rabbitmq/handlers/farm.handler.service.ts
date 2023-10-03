@@ -24,7 +24,7 @@ import { FarmSetterFactory } from '../../farm/farm.setter.factory';
 import { FarmAbiFactory } from '../../farm/farm.abi.factory';
 
 @Injectable()
-export class RabbitMQFarmHandlerService {
+export class FarmHandlerService {
     constructor(
         private readonly farmAbiFactory: FarmAbiFactory,
         private readonly farmSetterFactory: FarmSetterFactory,
