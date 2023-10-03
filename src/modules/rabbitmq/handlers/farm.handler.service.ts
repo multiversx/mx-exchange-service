@@ -19,9 +19,9 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { farmVersion } from 'src/utils/farm.utils';
 import { Logger } from 'winston';
-import { FarmVersion } from '../farm/models/farm.model';
-import { FarmSetterFactory } from '../farm/farm.setter.factory';
-import { FarmAbiFactory } from '../farm/farm.abi.factory';
+import { FarmVersion } from '../../farm/models/farm.model';
+import { FarmSetterFactory } from '../../farm/farm.setter.factory';
+import { FarmAbiFactory } from '../../farm/farm.abi.factory';
 
 @Injectable()
 export class RabbitMQFarmHandlerService {
@@ -34,16 +34,68 @@ export class RabbitMQFarmHandlerService {
 
     async handleEnterFarmEvent(rawEvent: RawEventType): Promise<void> {
         const version = farmVersion(rawEvent.address);
-        let event: BaseFarmEvent;
         switch (version) {
             case FarmVersion.V1_2:
-                event = new EnterFarmEventV1_2(rawEvent);
-                break;
+                await this.handleEnterFarmEventV1_3(
+                    new EnterFarmEventV1_2(rawEvent),
+                );
+                return;
             case FarmVersion.V1_3:
-                event = new EnterFarmEventV1_3(rawEvent);
-                break;
+                await this.handleEnterFarmEventV1_3(
+                    new EnterFarmEventV1_3(rawEvent),
+                );
+                return;
+            case FarmVersion.V2:
+                await this.handleEnterFarmEventV2(
+                    new EnterFarmEventV2(rawEvent),
+                );
+                return;
         }
+    }
 
+    async handleExitFarmEvent(rawEvent: RawEventType): Promise<void> {
+        const version = farmVersion(rawEvent.address);
+        switch (version) {
+            case FarmVersion.V1_2:
+                await this.handleExitFarmEventV1_3(
+                    new ExitFarmEventV1_2(rawEvent),
+                );
+                return;
+            case FarmVersion.V1_3:
+                await this.handleExitFarmEventV1_3(
+                    new ExitFarmEventV1_3(rawEvent),
+                );
+                return;
+            case FarmVersion.V2:
+                await this.handleExitFarmEventV2(new ExitFarmEventV2(rawEvent));
+                return;
+        }
+    }
+
+    async handleRewardsEvent(rawEvent: RawEventType): Promise<void> {
+        const version = farmVersion(rawEvent.address);
+        switch (version) {
+            case FarmVersion.V1_2:
+                await this.handleClaimRewardsEventV1_3(
+                    new RewardsEventV1_2(rawEvent),
+                );
+                return;
+            case FarmVersion.V1_3:
+                await this.handleClaimRewardsEventV1_3(
+                    new RewardsEventV1_3(rawEvent),
+                );
+                return;
+            case FarmVersion.V2:
+                await this.handleClaimRewardsEventV2(
+                    new ClaimRewardsEventV2(rawEvent),
+                );
+                return;
+        }
+    }
+
+    private async handleEnterFarmEventV1_3(
+        event: BaseFarmEvent,
+    ): Promise<void> {
         const cacheKey = await this.farmSetterFactory
             .useSetter(event.getAddress())
             .setFarmTokenSupply(event.getAddress(), event.farmSupply.toFixed());
@@ -53,17 +105,7 @@ export class RabbitMQFarmHandlerService {
         });
     }
 
-    async handleExitFarmEvent(rawEvent: RawEventType): Promise<void> {
-        const version = farmVersion(rawEvent.address);
-        let event: BaseFarmEvent;
-        switch (version) {
-            case FarmVersion.V1_2:
-                event = new ExitFarmEventV1_2(rawEvent);
-                break;
-            case FarmVersion.V1_3:
-                event = new ExitFarmEventV1_3(rawEvent);
-                break;
-        }
+    private async handleExitFarmEventV1_3(event: BaseFarmEvent): Promise<void> {
         const cacheKey = await this.farmSetterFactory
             .useSetter(event.address)
             .setFarmTokenSupply(event.address, event.farmSupply.toFixed());
@@ -73,18 +115,9 @@ export class RabbitMQFarmHandlerService {
         });
     }
 
-    async handleRewardsEvent(rawEvent: RawEventType): Promise<void> {
-        const version = farmVersion(rawEvent.address);
-        let event: BaseRewardsEvent;
-        switch (version) {
-            case FarmVersion.V1_2:
-                event = new RewardsEventV1_2(rawEvent);
-                break;
-            case FarmVersion.V1_3:
-                event = new RewardsEventV1_3(rawEvent);
-                break;
-        }
-
+    private async handleClaimRewardsEventV1_3(
+        event: BaseRewardsEvent,
+    ): Promise<void> {
         const rewardPerShare = await this.farmAbiFactory
             .useAbi(event.address)
             .rewardPerShare(event.address);
@@ -98,9 +131,9 @@ export class RabbitMQFarmHandlerService {
         });
     }
 
-    async handleEnterFarmEventV2(rawEvent: RawEventType): Promise<void> {
-        const event = new EnterFarmEventV2(rawEvent);
-
+    private async handleEnterFarmEventV2(
+        event: EnterFarmEventV2,
+    ): Promise<void> {
         const cacheKeys = await Promise.all([
             this.farmSetterFactory
                 .useSetter(event.address)
@@ -110,9 +143,7 @@ export class RabbitMQFarmHandlerService {
         await this.deleteCacheKeys(cacheKeys);
     }
 
-    async handleExitFarmEventV2(rawEvent: RawEventType): Promise<void> {
-        const event = new ExitFarmEventV2(rawEvent);
-
+    private async handleExitFarmEventV2(event: ExitFarmEventV2): Promise<void> {
         const cacheKeys = await Promise.all([
             this.farmSetterFactory
                 .useSetter(event.address)
@@ -122,9 +153,9 @@ export class RabbitMQFarmHandlerService {
         await this.deleteCacheKeys(cacheKeys);
     }
 
-    async handleClaimRewardsEventV2(rawEvent: RawEventType): Promise<void> {
-        const event = new ClaimRewardsEventV2(rawEvent);
-
+    private async handleClaimRewardsEventV2(
+        event: ClaimRewardsEventV2,
+    ): Promise<void> {
         const cacheKeys = await Promise.all([
             this.farmSetterFactory
                 .useSetter(event.address)

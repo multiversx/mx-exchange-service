@@ -3,7 +3,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
 import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
-import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
+import { RabbitMQFarmHandlerService } from './handlers/farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { RabbitMqConsumer } from './rabbitmq.consumer';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
