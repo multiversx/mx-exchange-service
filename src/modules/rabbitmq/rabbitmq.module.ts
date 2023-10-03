@@ -36,6 +36,7 @@ import { EscrowHandlerService } from './handlers/escrow.handler.service';
 import { EscrowModule } from '../escrow/escrow.module';
 import { GovernanceHandlerService } from './handlers/governance.handler.service';
 import { GovernanceModule } from '../governance/governance.module';
+import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 
 @Module({
     imports: [
@@ -47,6 +48,7 @@ import { GovernanceModule } from '../governance/governance.module';
         FarmModule,
         FarmModuleV1_2,
         FarmModuleV1_3,
+        FarmModuleV2,
         RouterModule,
         MetabondingModule,
         PriceDiscoveryModule,
