@@ -6,7 +6,7 @@ import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
-import { farmsAddresses } from 'src/utils/farm.utils';
+import { farmVersion, farmsAddresses } from 'src/utils/farm.utils';
 import { RouterHandlerService } from './handlers/router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.service';
@@ -64,6 +64,8 @@ import { RouterAbiService } from '../router/services/router.abi.service';
 import { EscrowHandlerService } from './handlers/escrow.handler.service';
 import { governanceContractsAddresses } from '../../utils/governance';
 import { GovernanceHandlerService } from './handlers/governance.handler.service';
+import { FarmVersion } from '../farm/models/farm.model';
+import { raw } from '@nestjs/mongoose';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -165,13 +167,31 @@ export class RabbitMqConsumer {
                     this.updateIngestData(eventData);
                     break;
                 case FARM_EVENTS.ENTER_FARM:
-                    await this.wsFarmHandler.handleEnterFarmEvent(rawEvent);
+                    if (farmVersion(rawEvent.address) === FarmVersion.V2) {
+                        await this.wsFarmHandler.handleEnterFarmEventV2(
+                            rawEvent,
+                        );
+                    } else {
+                        await this.wsFarmHandler.handleEnterFarmEvent(rawEvent);
+                    }
                     break;
                 case FARM_EVENTS.EXIT_FARM:
-                    await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
+                    if (farmVersion(rawEvent.address) === FarmVersion.V2) {
+                        await this.wsFarmHandler.handleExitFarmEventV2(
+                            rawEvent,
+                        );
+                    } else {
+                        await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
+                    }
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
-                    await this.wsFarmHandler.handleRewardsEvent(rawEvent);
+                    if (farmVersion(rawEvent.address) === FarmVersion.V2) {
+                        await this.wsFarmHandler.handleClaimRewardsEventV2(
+                            rawEvent,
+                        );
+                    } else {
+                        await this.wsFarmHandler.handleRewardsEvent(rawEvent);
+                    }
                     break;
                 case FARM_EVENTS.COMPOUND_REWARDS:
                     await this.wsFarmHandler.handleRewardsEvent(rawEvent);
