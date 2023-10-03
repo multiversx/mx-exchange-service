@@ -134,35 +134,26 @@ export class FarmHandlerService {
     private async handleEnterFarmEventV2(
         event: EnterFarmEventV2,
     ): Promise<void> {
-        const cacheKeys = await Promise.all([
-            this.farmSetterFactory
-                .useSetter(event.address)
-                .setFarmTokenSupply(event.address, event.farmSupply.toFixed()),
-        ]);
-
-        await this.deleteCacheKeys(cacheKeys);
+        const cacheKey = await this.farmSetterFactory
+            .useSetter(event.address)
+            .setFarmTokenSupply(event.address, event.farmSupply.toFixed());
+        await this.deleteCacheKeys([cacheKey]);
     }
 
     private async handleExitFarmEventV2(event: ExitFarmEventV2): Promise<void> {
-        const cacheKeys = await Promise.all([
-            this.farmSetterFactory
-                .useSetter(event.address)
-                .setFarmTokenSupply(event.address, event.farmSupply.toFixed()),
-        ]);
-
-        await this.deleteCacheKeys(cacheKeys);
+        const cacheKey = await this.farmSetterFactory
+            .useSetter(event.address)
+            .setFarmTokenSupply(event.address, event.farmSupply.toFixed());
+        await this.deleteCacheKeys([cacheKey]);
     }
 
     private async handleClaimRewardsEventV2(
         event: ClaimRewardsEventV2,
     ): Promise<void> {
-        const cacheKeys = await Promise.all([
-            this.farmSetterFactory
-                .useSetter(event.address)
-                .setFarmTokenSupply(event.address, event.farmSupply.toFixed()),
-        ]);
-
-        await this.deleteCacheKeys(cacheKeys);
+        const cacheKey = await this.farmSetterFactory
+            .useSetter(event.address)
+            .setFarmTokenSupply(event.address, event.farmSupply.toFixed());
+        await this.deleteCacheKeys([cacheKey]);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
