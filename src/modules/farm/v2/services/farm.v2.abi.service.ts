@@ -410,11 +410,14 @@ export class FarmAbiServiceV2
             ]);
         const response = await this.getGenericData(interaction);
 
-        if (response.returnCode.equals(ReturnCode.FunctionNotFound)) {
+        if (
+            response.returnCode.equals(ReturnCode.FunctionNotFound) ||
+            response.returnCode.equals(ReturnCode.UserError)
+        ) {
             return '0';
         }
 
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().total_farm_position.toFixed();
     }
 
     @ErrorLoggerAsync({
