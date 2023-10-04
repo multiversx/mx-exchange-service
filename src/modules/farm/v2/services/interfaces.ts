@@ -25,6 +25,7 @@ export interface IFarmAbiServiceV2 extends IFarmAbiService {
         farmAddress: string,
         userAddress: string,
     ): Promise<string>;
+    farmPositionMigrationNonce(farmAddress: string): Promise<number>;
 }
 
 export interface IFarmComputeServiceV2 extends IFarmComputeService {

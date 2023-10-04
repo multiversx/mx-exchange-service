@@ -55,6 +55,10 @@ export class FarmAbiServiceMockV2
     ): Promise<string> {
         throw new Error('Method not implemented.');
     }
+
+    async farmPositionMigrationNonce(farmAddress: string): Promise<number> {
+        return 10;
+    }
 }
 
 export const FarmAbiServiceProviderV2 = {
