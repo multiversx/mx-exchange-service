@@ -13,6 +13,10 @@ import { UseGuards } from '@nestjs/common';
 import { JwtOrNativeAuthGuard } from 'src/modules/auth/jwt.or.native.auth.guard';
 import { UserAuthResult } from 'src/modules/auth/user.auth.result';
 import { AuthUser } from 'src/modules/auth/auth.user';
+import { farmVersion } from 'src/utils/farm.utils';
+import { FarmVersion } from '../models/farm.model';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/dist/esm/errors';
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
@@ -144,11 +148,20 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => String)
+    @Query(() => String, {
+        description: 'Returns the total farm position of the user in the farm',
+    })
     async userTotalFarmPosition(
         @Args('farmAddress') farmAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<string> {
+        if (farmVersion(farmAddress) !== FarmVersion.V2) {
+            throw new GraphQLError('Farm version is not supported', {
+                extensions: {
+                    code: ApolloServerErrorCode.BAD_USER_INPUT,
+                },
+            });
+        }
         return this.farmAbi.userTotalFarmPosition(farmAddress, user.address);
     }
 }
