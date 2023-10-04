@@ -195,4 +195,16 @@ export class ProxyTransactionResolver {
             args,
         );
     }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [TransactionModel])
+    async migrateTotalFarmPositionsProxy(
+        @Args('proxyAddress') proxyAddress: string,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel[]> {
+        return this.transactionsProxyFarmService.migrateTotalFarmPosition(
+            user.address,
+            proxyAddress,
+        );
+    }
 }
