@@ -7,6 +7,7 @@ import {
     Field,
     FieldDefinition,
     Interaction,
+    ReturnCode,
     Struct,
     StructType,
     U32Value,
@@ -380,6 +381,39 @@ export class FarmAbiServiceV2
         const interaction: Interaction =
             contract.methodsExplicit.getBurnGasLimit();
         const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async userTotalFarmPosition(
+        farmAddress: string,
+        userAddress: string,
+    ): Promise<string> {
+        return await this.getUserTotalFarmPositionRaw(farmAddress, userAddress);
+    }
+
+    async getUserTotalFarmPositionRaw(
+        farmAddress: string,
+        userAddress: string,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getUserTotalFarmPosition([
+                new AddressValue(Address.fromString(userAddress)),
+            ]);
+        const response = await this.getGenericData(interaction);
+
+        if (response.returnCode.equals(ReturnCode.FunctionNotFound)) {
+            return '0';
+        }
+
         return response.firstValue.valueOf().toFixed();
     }
 }

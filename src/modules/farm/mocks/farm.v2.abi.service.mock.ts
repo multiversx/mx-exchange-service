@@ -22,7 +22,10 @@ export class FarmAbiServiceMockV2
         return '1000';
     }
 
-    accumulatedRewardsForWeek(scAddress: string, week: number): Promise<string> {
+    accumulatedRewardsForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
         throw new Error('Method not implemented.');
     }
 
@@ -45,8 +48,14 @@ export class FarmAbiServiceMockV2
     lockingScAddress(farmAddress: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
-}
 
+    userTotalFarmPosition(
+        farmAddress: string,
+        userAddress: string,
+    ): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
+}
 
 export const FarmAbiServiceProviderV2 = {
     provide: FarmAbiServiceV2,

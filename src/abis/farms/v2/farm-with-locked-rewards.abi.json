@@ -1,20 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.71.0-nightly",
-            "commitHash": "a2b1646c597329d0a25efa3889b66650f65de1de",
-            "commitDate": "2023-05-25",
+            "version": "1.73.0-nightly",
+            "commitHash": "4c8bb79d9f565115637cc6da739f8389e79f3a29",
+            "commitDate": "2023-07-15",
             "channel": "Nightly",
-            "short": "rustc 1.71.0-nightly (a2b1646c5 2023-05-25)"
+            "short": "rustc 1.73.0-nightly (4c8bb79d9 2023-07-15)"
         },
         "contractCrate": {
             "name": "farm-with-locked-rewards",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-1401-g81fa7ee8"
+            "gitVersion": "v1.6.0-1513-g4dc02033"
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.39.4"
+            "version": "0.43.3"
         }
     },
     "name": "Farm",
@@ -101,10 +101,6 @@
             ],
             "inputs": [
                 {
-                    "name": "exit_amount",
-                    "type": "BigUint"
-                },
-                {
                     "name": "opt_orig_caller",
                     "type": "optional<Address>",
                     "multi_arg": true
@@ -116,32 +112,6 @@
                 },
                 {
                     "type": "EsdtTokenPayment"
-                },
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "calculateRewardsForGivenPosition",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "user",
-                    "type": "Address"
-                },
-                {
-                    "name": "farm_token_amount",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "attributes",
-                    "type": "FarmTokenAttributes"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
                 }
             ]
         },
@@ -154,6 +124,25 @@
             "inputs": [
                 {
                     "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "claimBoostedRewards",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "opt_user",
                     "type": "optional<Address>",
                     "multi_arg": true
                 }
@@ -188,6 +177,29 @@
             "outputs": []
         },
         {
+            "name": "calculateRewardsForGivenPosition",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                },
+                {
+                    "name": "farm_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "attributes",
+                    "type": "FarmTokenAttributes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
             "name": "getRewardPerShare",
             "mutability": "readonly",
             "inputs": [],
@@ -206,6 +218,17 @@
                     "type": "BigUint"
                 }
             ]
+        },
+        {
+            "name": "allowExternalClaimBoostedRewards",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "allow_external_claim",
+                    "type": "bool"
+                }
+            ],
+            "outputs": []
         },
         {
             "name": "getFarmingTokenId",
@@ -254,6 +277,31 @@
             "outputs": [
                 {
                     "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getUserTotalFarmPosition",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "UserTotalFarmPosition"
+                }
+            ]
+        },
+        {
+            "name": "getFarmPositionMigrationNonce",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
                 }
             ]
         },
@@ -1292,6 +1340,19 @@
                 {
                     "name": "PartialActive",
                     "discriminant": 2
+                }
+            ]
+        },
+        "UserTotalFarmPosition": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "total_farm_position",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "allow_external_claim_boosted_rewards",
+                    "type": "bool"
                 }
             ]
         }

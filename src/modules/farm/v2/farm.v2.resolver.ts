@@ -1,18 +1,22 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { BoostedYieldsFactors, FarmModelV2 } from '../models/farm.v2.model';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmServiceV2 } from './services/farm.v2.service';
-import {
-    GlobalInfoByWeekModel,
-} from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import { FarmComputeServiceV2 } from './services/farm.v2.compute.service';
 import { constantsConfig } from '../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import {
-    WeeklyRewardsSplittingAbiService,
-} from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FarmAbiServiceV2 } from './services/farm.v2.abi.service';
+import { UseGuards } from '@nestjs/common';
+import { JwtOrNativeAuthGuard } from 'src/modules/auth/jwt.or.native.auth.guard';
+import { UserAuthResult } from 'src/modules/auth/user.auth.result';
+import { AuthUser } from 'src/modules/auth/auth.user';
+import { farmVersion } from 'src/utils/farm.utils';
+import { FarmVersion } from '../models/farm.model';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
@@ -118,7 +122,10 @@ export class FarmResolverV2 extends FarmResolver {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
-        return this.farmCompute.undistributedBoostedRewards(parent.address, currentWeek);
+        return this.farmCompute.undistributedBoostedRewards(
+            parent.address,
+            currentWeek,
+        );
     }
 
     @ResolveField()
@@ -138,5 +145,23 @@ export class FarmResolverV2 extends FarmResolver {
     @ResolveField()
     async energyFactoryAddress(@Parent() parent: FarmModelV2): Promise<string> {
         return this.farmAbi.energyFactoryAddress(parent.address);
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => String, {
+        description: 'Returns the total farm position of the user in the farm',
+    })
+    async userTotalFarmPosition(
+        @Args('farmAddress') farmAddress: string,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<string> {
+        if (farmVersion(farmAddress) !== FarmVersion.V2) {
+            throw new GraphQLError('Farm version is not supported', {
+                extensions: {
+                    code: ApolloServerErrorCode.BAD_USER_INPUT,
+                },
+            });
+        }
+        return this.farmAbi.userTotalFarmPosition(farmAddress, user.address);
     }
 }
