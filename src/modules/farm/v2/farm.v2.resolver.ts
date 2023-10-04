@@ -16,7 +16,7 @@ import { AuthUser } from 'src/modules/auth/auth.user';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from '../models/farm.model';
 import { GraphQLError } from 'graphql';
-import { ApolloServerErrorCode } from '@apollo/server/dist/esm/errors';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
