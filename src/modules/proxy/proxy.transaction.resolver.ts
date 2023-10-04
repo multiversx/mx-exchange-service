@@ -197,7 +197,10 @@ export class ProxyTransactionResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => [TransactionModel])
+    @Query(() => [TransactionModel], {
+        description:
+            'Generate transactions to initialize the total farm positions for a user',
+    })
     async migrateTotalFarmPositionsProxy(
         @Args('proxyAddress') proxyAddress: string,
         @AuthUser() user: UserAuthResult,
