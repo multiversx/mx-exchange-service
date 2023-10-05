@@ -140,7 +140,6 @@ export class FarmComputeServiceV2
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<TokenDistributionModel[]> {
         return await this.cachingService.getOrSet(
             `farm.userRewardsDistributionForWeek.${scAddress}.${userAddress}.${week}`,
@@ -149,7 +148,6 @@ export class FarmComputeServiceV2
                     scAddress,
                     userAddress,
                     week,
-                    liquidity,
                 ),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -160,13 +158,11 @@ export class FarmComputeServiceV2
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<TokenDistributionModel[]> {
         const userRewardsForWeek = await this.userRewardsForWeek(
             scAddress,
             userAddress,
             week,
-            liquidity,
         );
         return await this.weeklyRewardsSplittingCompute.computeDistribution(
             userRewardsForWeek,
@@ -180,7 +176,6 @@ export class FarmComputeServiceV2
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<string> {
         return await this.cachingService.getOrSet(
             `farm.userAccumulatedRewards.${scAddress}.${userAddress}.${week}`,
@@ -189,7 +184,6 @@ export class FarmComputeServiceV2
                     scAddress,
                     userAddress,
                     week,
-                    liquidity,
                 ),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
@@ -200,7 +194,6 @@ export class FarmComputeServiceV2
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<string> {
         const [
             boostedYieldsFactors,
@@ -211,6 +204,7 @@ export class FarmComputeServiceV2
             farmTokenSupply,
             totalEnergy,
             blocksInWeek,
+            liquidity,
         ] = await Promise.all([
             this.farmAbi.boostedYieldsFactors(scAddress),
             this.farmAbi.boostedYieldsRewardsPercenatage(scAddress),
@@ -224,6 +218,7 @@ export class FarmComputeServiceV2
             this.farmAbi.farmTokenSupply(scAddress),
             this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
             this.computeBlocksInWeek(scAddress, week),
+            this.farmAbi.userTotalFarmPosition(scAddress, userAddress),
         ]);
 
         const energyAmount = userEnergy.amount;
@@ -291,17 +286,10 @@ export class FarmComputeServiceV2
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<EsdtTokenPayment[]> {
         return await this.cachingService.getOrSet(
             `farm.userRewardsForWeek.${scAddress}.${userAddress}.${week}`,
-            () =>
-                this.computeUserRewardsForWeek(
-                    scAddress,
-                    userAddress,
-                    week,
-                    liquidity,
-                ),
+            () => this.computeUserRewardsForWeek(scAddress, userAddress, week),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
         );
@@ -311,25 +299,23 @@ export class FarmComputeServiceV2
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<EsdtTokenPayment[]> {
         const payments: EsdtTokenPayment[] = [];
-        const [totalRewardsForWeek, userEnergyForWeek, totalEnergyForWeek] =
-            await Promise.all([
-                this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
-                    scAddress,
-                    week,
-                ),
-                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
-                    scAddress,
-                    userAddress,
-                    week,
-                ),
-                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
-                    scAddress,
-                    week,
-                ),
-            ]);
+        const [
+            totalRewardsForWeek,
+            userEnergyForWeek,
+            totalEnergyForWeek,
+            liquidity,
+        ] = await Promise.all([
+            this.weeklyRewardsSplittingAbi.totalRewardsForWeek(scAddress, week),
+            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                scAddress,
+                userAddress,
+                week,
+            ),
+            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
+            this.farmAbi.userTotalFarmPosition(scAddress, userAddress),
+        ]);
 
         const boostedYieldsFactors = await this.farmAbi.boostedYieldsFactors(
             scAddress,
