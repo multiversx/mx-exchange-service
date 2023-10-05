@@ -172,22 +172,17 @@ export class FarmComputeServiceV2
     @ErrorLoggerAsync({
         logArgs: true,
     })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
     async userAccumulatedRewards(
         scAddress: string,
         userAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.cachingService.getOrSet(
-            `farm.userAccumulatedRewards.${scAddress}.${userAddress}.${week}`,
-            () =>
-                this.computeUserAccumulatedRewards(
-                    scAddress,
-                    userAddress,
-                    week,
-                ),
-            CacheTtlInfo.ContractBalance.remoteTtl,
-            CacheTtlInfo.ContractBalance.localTtl,
-        );
+        return this.computeUserAccumulatedRewards(scAddress, userAddress, week);
     }
 
     async computeUserAccumulatedRewards(
@@ -282,17 +277,17 @@ export class FarmComputeServiceV2
     @ErrorLoggerAsync({
         logArgs: true,
     })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
     async userRewardsForWeek(
         scAddress: string,
         userAddress: string,
         week: number,
     ): Promise<EsdtTokenPayment[]> {
-        return await this.cachingService.getOrSet(
-            `farm.userRewardsForWeek.${scAddress}.${userAddress}.${week}`,
-            () => this.computeUserRewardsForWeek(scAddress, userAddress, week),
-            CacheTtlInfo.ContractBalance.remoteTtl,
-            CacheTtlInfo.ContractBalance.localTtl,
-        );
+        return this.computeUserRewardsForWeek(scAddress, userAddress, week);
     }
 
     async computeUserRewardsForWeek(
