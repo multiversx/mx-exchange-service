@@ -510,10 +510,12 @@ export class FarmComputeServiceV2
         scAddress: string,
         week: number,
     ): Promise<number> {
-        const [startEpochForCurrentWeek, currentEpoch] = await Promise.all([
-            this.weekTimekeepingCompute.startEpochForWeek(scAddress, week),
-            this.contextGetter.getCurrentEpoch(),
-        ]);
+        const [startEpochForCurrentWeek, currentEpoch, shardID] =
+            await Promise.all([
+                this.weekTimekeepingCompute.startEpochForWeek(scAddress, week),
+                this.contextGetter.getCurrentEpoch(),
+                this.farmAbi.farmShard(scAddress),
+            ]);
 
         const promises = [];
         for (
@@ -521,7 +523,9 @@ export class FarmComputeServiceV2
             epoch <= currentEpoch;
             epoch++
         ) {
-            promises.push(this.contextGetter.getBlocksCountInEpoch(epoch, 1));
+            promises.push(
+                this.contextGetter.getBlocksCountInEpoch(epoch, shardID),
+            );
         }
 
         const blocksInEpoch = await Promise.all(promises);
