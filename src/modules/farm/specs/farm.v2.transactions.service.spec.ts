@@ -115,7 +115,7 @@ describe('FarmTransactionsServiceV2', () => {
             ).bech32(),
             Address.Zero().bech32(),
         );
-        console.log(transactions);
+
         expect(transactions[0].data).toEqual(
             encodeTransactionData(
                 `ESDTNFTTransfer@EGLDMEXFL-ghijkl@01@12120193336145595@${Address.fromHex(
