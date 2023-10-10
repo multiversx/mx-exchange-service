@@ -32,6 +32,8 @@ import { StakingTransactionService } from './services/staking.transactions.servi
 import { StakingAbiService } from './services/staking.abi.service';
 import { StakingComputeService } from './services/staking.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -40,6 +42,7 @@ export class StakingResolver {
         private readonly stakingAbi: StakingAbiService,
         private readonly stakingCompute: StakingComputeService,
         private readonly stakingTransactionService: StakingTransactionService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
     ) {}
 
     @ResolveField()
@@ -135,6 +138,17 @@ export class StakingResolver {
     @ResolveField()
     async state(@Parent() parent: StakingModel) {
         return this.stakingAbi.state(parent.address);
+    }
+
+    @ResolveField()
+    async time(@Parent() parent: StakingModel): Promise<WeekTimekeepingModel> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return new WeekTimekeepingModel({
+            scAddress: parent.address,
+            currentWeek: currentWeek,
+        });
     }
 
     @Query(() => String)

@@ -2,6 +2,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { StakingTokenAttributesModel } from './stakingTokenAttributes.model';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 
 @ObjectType()
 export class StakingModel {
@@ -45,6 +46,8 @@ export class StakingModel {
     transferExecGasLimit: string;
     @Field()
     state: string;
+    @Field({ description: 'Timekeeping for boosted rewards' })
+    time: WeekTimekeepingModel;
 
     constructor(init?: Partial<StakingModel>) {
         Object.assign(this, init);
