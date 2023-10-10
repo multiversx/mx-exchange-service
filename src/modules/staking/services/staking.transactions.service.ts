@@ -237,7 +237,7 @@ export class StakingTransactionService {
 
         if (whitelist)
             return contract.methodsExplicit
-                .addAddressToWhitelist([
+                .addSCAddressToWhitelist([
                     new AddressValue(Address.fromString(address)),
                 ])
                 .withGasLimit(gasConfig.stake.admin.whitelist)
@@ -246,7 +246,7 @@ export class StakingTransactionService {
                 .toPlainObject();
 
         return contract.methodsExplicit
-            .removeAddressFromWhitelist([
+            .removeSCAddressFromWhitelist([
                 new AddressValue(Address.fromString(address)),
             ])
             .withGasLimit(gasConfig.stake.admin.whitelist)
@@ -286,7 +286,7 @@ export class StakingTransactionService {
             stakeAddress,
         );
         return contract.methodsExplicit
-            .setLocalRolesFarmToken()
+            .setBurnRoleForAddress()
             .withGasLimit(gasConfig.stake.admin.setLocalRolesFarmToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -379,7 +379,7 @@ export class StakingTransactionService {
                 .toPlainObject();
 
         return contract.methodsExplicit
-            .end_produce_rewards()
+            .endProduceRewards()
             .withGasLimit(gasConfig.stake.admin.setRewardsState)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
