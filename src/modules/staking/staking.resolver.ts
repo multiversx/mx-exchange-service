@@ -209,34 +209,6 @@ export class StakingResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async setPenaltyPercent(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('percent') percent: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setPenaltyPercent(
-            farmStakeAddress,
-            percent,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setMinimumFarmingEpochs(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('epochs') epochs: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setMinimumFarmingEpochs(
-            farmStakeAddress,
-            epochs,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
     async setPerBlockRewardAmount(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('perBlockAmount') perBlockAmount: string,
@@ -300,34 +272,6 @@ export class StakingResolver {
         return this.stakingTransactionService.setRewardsState(
             farmStakeAddress,
             false,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setBurnGasLimit(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('gasLimit') gasLimit: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setBurnGasLimit(
-            farmStakeAddress,
-            gasLimit,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setTransferExecGasLimit(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('gasLimit') gasLimit: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setTransferExecGasLimit(
-            farmStakeAddress,
-            gasLimit,
         );
     }
 
