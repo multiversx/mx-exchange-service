@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
@@ -14,17 +13,6 @@ export class StakingSetterService extends GenericSetterService {
     ) {
         super(cachingService, logger);
         this.baseKey = 'stake';
-    }
-
-    async setPairContractManagedAddress(
-        stakeAddress: string,
-        value: string,
-    ): Promise<string> {
-        return await this.setData(
-            this.getCacheKey('pairContractAddress', stakeAddress),
-            value,
-            Constants.oneHour(),
-        );
     }
 
     async setFarmTokenID(stakeAddress: string, value: string): Promise<string> {
