@@ -1,12 +1,8 @@
 import BigNumber from 'bignumber.js';
 import { IStakingAbiService } from '../services/interfaces';
 import { StakingAbiService } from '../services/staking.abi.service';
-import { Address } from '@multiversx/sdk-core/out';
 
 export class StakingAbiServiceMock implements IStakingAbiService {
-    async pairContractAddress(stakeAddress: string): Promise<string> {
-        return Address.Zero().bech32();
-    }
     async farmTokenID(stakeAddress: string): Promise<string> {
         return 'STAKETOK-1111';
     }
@@ -45,12 +41,6 @@ export class StakingAbiServiceMock implements IStakingAbiService {
     }
     async produceRewardsEnabled(stakeAddress: string): Promise<boolean> {
         return true;
-    }
-    burnGasLimit(stakeAddress: string): Promise<string> {
-        throw new Error('Method not implemented.');
-    }
-    transferExecGasLimit(stakeAddress: string): Promise<string> {
-        throw new Error('Method not implemented.');
     }
     state(stakeAddress: string): Promise<string> {
         throw new Error('Method not implemented.');

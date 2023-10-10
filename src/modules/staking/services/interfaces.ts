@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
 
 export interface IStakingAbiService {
-    pairContractAddress(stakeAddress: string): Promise<string>;
     farmTokenID(stakeAddress: string): Promise<string>;
     farmingTokenID(stakeAddress: string): Promise<string>;
     rewardTokenID(stakeAddress: string): Promise<string>;
@@ -16,8 +15,6 @@ export interface IStakingAbiService {
     lastRewardBlockNonce(stakeAddress: string): Promise<number>;
     divisionSafetyConstant(stakeAddress: string): Promise<number>;
     produceRewardsEnabled(stakeAddress: string): Promise<boolean>;
-    burnGasLimit(stakeAddress: string): Promise<string>;
-    transferExecGasLimit(stakeAddress: string): Promise<string>;
     state(stakeAddress: string): Promise<string>;
     calculateRewardsForGivenPosition(
         stakeAddress: string,

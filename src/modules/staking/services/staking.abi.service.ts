@@ -34,31 +34,6 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: Constants.oneHour(),
-    })
-    async pairContractAddress(stakeAddress: string): Promise<string> {
-        return await this.getPairContractAddressRaw(stakeAddress);
-    }
-
-    async getPairContractAddressRaw(stakeAddress: string): Promise<string> {
-        try {
-            const contract = await this.mxProxy.getStakingSmartContract(
-                stakeAddress,
-            );
-            const interaction: Interaction =
-                contract.methodsExplicit.getPairContractManagedAddress();
-            const response = await this.getGenericData(interaction);
-            return response.firstValue.valueOf().hex32();
-        } catch {
-            return undefined;
-        }
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'stake',
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
         localTtl: CacheTtlInfo.Token.localTtl,
     })
@@ -336,48 +311,6 @@ export class StakingAbiService
             'produce_rewards_enabled',
         );
         return response === '01';
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'stake',
-        remoteTtl: Constants.oneHour(),
-    })
-    async burnGasLimit(stakeAddress: string): Promise<string> {
-        return await this.getBurnGasLimitRaw(stakeAddress);
-    }
-
-    async getBurnGasLimitRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        const interaction: Interaction =
-            contract.methodsExplicit.getBurnGasLimit();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'stake',
-        remoteTtl: Constants.oneHour(),
-    })
-    async transferExecGasLimit(stakeAddress: string): Promise<string> {
-        return await this.getTransferExecGasLimitRaw(stakeAddress);
-    }
-
-    async getTransferExecGasLimitRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        const interaction: Interaction =
-            contract.methodsExplicit.getTransferExecGasLimit();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
     }
 
     @ErrorLoggerAsync({

@@ -17,8 +17,6 @@ export class StakingModel {
     @Field()
     farmTokenSupply: string;
     @Field()
-    pairContractManagedAddress: string;
-    @Field()
     rewardPerShare: string;
     @Field()
     accumulatedRewards: string;
@@ -40,10 +38,6 @@ export class StakingModel {
     produceRewardsEnabled: boolean;
     @Field({ nullable: true })
     lockedAssetFactoryManagedAddress: string;
-    @Field({ nullable: true })
-    burnGasLimit: string;
-    @Field({ nullable: true })
-    transferExecGasLimit: string;
     @Field()
     state: string;
     @Field({ description: 'Timekeeping for boosted rewards' })
