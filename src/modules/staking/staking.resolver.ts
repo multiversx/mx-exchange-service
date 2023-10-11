@@ -30,6 +30,7 @@ import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/servi
 import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { constantsConfig } from 'src/config';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { StakeAddressValidationPipe } from './validators/stake.address';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -239,6 +240,21 @@ export class StakingResolver {
             stakeAddress,
             amount,
             timeInterval,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => String, {
+        description:
+            'Returns the total staked position of the user in the staking contract',
+    })
+    async userTotalStakePosition(
+        @Args('stakeAddress', StakeAddressValidationPipe) stakeAddress: string,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<string> {
+        return this.stakingAbi.userTotalStakePosition(
+            stakeAddress,
+            user.address,
         );
     }
 

@@ -4,6 +4,7 @@ import {
     BigUIntValue,
     BytesValue,
     Interaction,
+    ReturnCode,
     TypedValue,
     U32Value,
 } from '@multiversx/sdk-core';
@@ -529,5 +530,43 @@ export class StakingAbiService
             ]);
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async userTotalStakePosition(
+        stakeAddress: string,
+        userAddress: string,
+    ): Promise<string> {
+        return await this.getUserTotalStakePositionRaw(
+            stakeAddress,
+            userAddress,
+        );
+    }
+
+    async getUserTotalStakePositionRaw(
+        stakeAddress: string,
+        userAddress: string,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getUserTotalFarmPosition([
+                new AddressValue(Address.fromString(userAddress)),
+            ]);
+        const response = await this.getGenericData(interaction);
+
+        if (response.returnCode.equals(ReturnCode.FunctionNotFound)) {
+            return '0';
+        }
+
+        return response.firstValue.valueOf().total_farm_position.toFixed();
     }
 }
