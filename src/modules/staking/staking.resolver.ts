@@ -31,6 +31,7 @@ import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/m
 import { constantsConfig } from 'src/config';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakeAddressValidationPipe } from './validators/stake.address.validator';
+import { BoostedYieldsFactors } from '../farm/models/farm.v2.model';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -174,6 +175,20 @@ export class StakingResolver {
         @Parent() parent: StakingModel,
     ): Promise<string> {
         return this.stakingAbi.energyFactoryAddress(parent.address);
+    }
+
+    @ResolveField()
+    async boostedYieldsRewardsPercenatage(
+        @Parent() parent: StakingModel,
+    ): Promise<number> {
+        return this.stakingAbi.boostedYieldsRewardsPercenatage(parent.address);
+    }
+
+    @ResolveField()
+    async boostedYieldsFactors(
+        @Parent() parent: StakingModel,
+    ): Promise<BoostedYieldsFactors> {
+        return this.stakingAbi.boostedYieldsFactors(parent.address);
     }
 
     @ResolveField()

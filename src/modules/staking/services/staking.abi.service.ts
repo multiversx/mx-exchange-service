@@ -18,6 +18,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IStakingAbiService } from './interfaces';
+import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 
 @Injectable()
 export class StakingAbiService
@@ -455,6 +456,66 @@ export class StakingAbiService
             contract.methodsExplicit.getEnergyFactoryAddress();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().bech32();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async boostedYieldsRewardsPercenatage(
+        stakeAddress: string,
+    ): Promise<number> {
+        return await this.getBoostedYieldsRewardsPercenatageRaw(stakeAddress);
+    }
+
+    async getBoostedYieldsRewardsPercenatageRaw(
+        stakeAddress: string,
+    ): Promise<number> {
+        const contract = await this.mxProxy.getFarmSmartContract(stakeAddress);
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getBoostedYieldsRewardsPercentage();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async boostedYieldsFactors(
+        stakeAddress: string,
+    ): Promise<BoostedYieldsFactors> {
+        return await this.getBoostedYieldsFactorsRaw(stakeAddress);
+    }
+
+    async getBoostedYieldsFactorsRaw(
+        stakeAddress: string,
+    ): Promise<BoostedYieldsFactors> {
+        const contract = await this.mxProxy.getFarmSmartContract(stakeAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getBoostedYieldsFactors();
+        const response = await this.getGenericData(interaction);
+        const rawBoostedYieldsFactors = response.firstValue.valueOf();
+        return new BoostedYieldsFactors({
+            maxRewardsFactor:
+                rawBoostedYieldsFactors.max_rewards_factor.toFixed(),
+            userRewardsEnergy:
+                rawBoostedYieldsFactors.user_rewards_energy_const.toFixed(),
+            userRewardsFarm:
+                rawBoostedYieldsFactors.user_rewards_farm_const.toFixed(),
+            minEnergyAmount:
+                rawBoostedYieldsFactors.min_energy_amount.toFixed(),
+            minFarmAmount: rawBoostedYieldsFactors.min_farm_amount.toFixed(),
+        });
     }
 
     @ErrorLoggerAsync({
