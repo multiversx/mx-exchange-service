@@ -563,7 +563,10 @@ export class StakingAbiService
             ]);
         const response = await this.getGenericData(interaction);
 
-        if (response.returnCode.equals(ReturnCode.FunctionNotFound)) {
+        if (
+            response.returnCode.equals(ReturnCode.FunctionNotFound) ||
+            response.returnCode.equals(ReturnCode.UserError)
+        ) {
             return '0';
         }
 
