@@ -19,6 +19,7 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IStakingAbiService } from './interfaces';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class StakingAbiService
@@ -28,6 +29,7 @@ export class StakingAbiService
     constructor(
         protected readonly mxProxy: MXProxyService,
         private readonly gatewayService: MXGatewayService,
+        private readonly apiService: MXApiService,
     ) {
         super(mxProxy);
     }
@@ -475,7 +477,9 @@ export class StakingAbiService
     async getBoostedYieldsRewardsPercenatageRaw(
         stakeAddress: string,
     ): Promise<number> {
-        const contract = await this.mxProxy.getFarmSmartContract(stakeAddress);
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
 
         const interaction: Interaction =
             contract.methodsExplicit.getBoostedYieldsRewardsPercentage();
@@ -500,7 +504,9 @@ export class StakingAbiService
     async getBoostedYieldsFactorsRaw(
         stakeAddress: string,
     ): Promise<BoostedYieldsFactors> {
-        const contract = await this.mxProxy.getFarmSmartContract(stakeAddress);
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getBoostedYieldsFactors();
         const response = await this.getGenericData(interaction);
@@ -537,7 +543,9 @@ export class StakingAbiService
         stakeAddress: string,
         week: number,
     ): Promise<string> {
-        const contract = await this.mxProxy.getFarmSmartContract(stakeAddress);
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getAccumulatedRewardsForWeek([
                 new U32Value(new BigNumber(week)),
@@ -660,5 +668,21 @@ export class StakingAbiService
         }
 
         return response.firstValue.valueOf().total_farm_position.toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async stakingShard(stakeAddress: string): Promise<number> {
+        return await this.getStakingShardRaw(stakeAddress);
+    }
+
+    async getStakingShardRaw(stakeAddress: string): Promise<number> {
+        return (await this.apiService.getAccountStats(stakeAddress)).shard;
     }
 }
