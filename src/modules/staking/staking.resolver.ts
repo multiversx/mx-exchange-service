@@ -30,7 +30,7 @@ import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/servi
 import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { constantsConfig } from 'src/config';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import { StakeAddressValidationPipe } from './validators/stake.address';
+import { StakeAddressValidationPipe } from './validators/stake.address.validator';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
