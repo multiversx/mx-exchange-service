@@ -58,6 +58,8 @@ export class StakingModel {
     lastGlobalUpdateWeek: number;
     @Field()
     energyFactoryAddress: string;
+    @Field({ description: 'Accumulated boosted rewards for specific week' })
+    accumulatedRewardsForWeek: string;
     @Field()
     undistributedBoostedRewards: string;
     @Field()

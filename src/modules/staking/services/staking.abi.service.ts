@@ -526,6 +526,34 @@ export class StakingAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
+    async accumulatedRewardsForWeek(
+        stakeAddress: string,
+        week: number,
+    ): Promise<string> {
+        return await this.getAccumulatedRewardsForWeekRaw(stakeAddress, week);
+    }
+
+    async getAccumulatedRewardsForWeekRaw(
+        stakeAddress: string,
+        week: number,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(stakeAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getAccumulatedRewardsForWeek([
+                new U32Value(new BigNumber(week)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().integerValue().toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
     async undistributedBoostedRewards(stakeAddress: string): Promise<string> {
         return await this.getUndistributedBoostedRewardsRaw(stakeAddress);
     }

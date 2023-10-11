@@ -192,6 +192,20 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async accumulatedRewardsForWeek(
+        @Parent() parent: StakingModel,
+        @Args('week', { nullable: true }) week: number,
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return this.stakingAbi.accumulatedRewardsForWeek(
+            parent.address,
+            week ?? currentWeek,
+        );
+    }
+
+    @ResolveField()
     async undistributedBoostedRewards(
         @Parent() parent: StakingModel,
     ): Promise<string> {
