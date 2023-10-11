@@ -24,6 +24,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { LiquidityTokensValidationPipe } from './validators/add.liquidity.input.validator';
 import { ProxyService } from './services/proxy.service';
 import { scAddress } from 'src/config';
+import { ProxyAddressValidationPipe } from './validators/proxy.address.validator';
 
 @Resolver()
 export class ProxyTransactionResolver {
@@ -202,7 +203,7 @@ export class ProxyTransactionResolver {
             'Generate transactions to initialize the total farm positions for a user',
     })
     async migrateTotalFarmPositionsProxy(
-        @Args('proxyAddress') proxyAddress: string,
+        @Args('proxyAddress', ProxyAddressValidationPipe) proxyAddress: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
         return this.transactionsProxyFarmService.migrateTotalFarmPosition(
