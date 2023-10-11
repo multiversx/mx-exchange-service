@@ -410,10 +410,35 @@ export class FarmAbiServiceV2
             ]);
         const response = await this.getGenericData(interaction);
 
-        if (response.returnCode.equals(ReturnCode.FunctionNotFound)) {
+        if (
+            response.returnCode.equals(ReturnCode.FunctionNotFound) ||
+            response.returnCode.equals(ReturnCode.UserError)
+        ) {
             return '0';
         }
 
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().total_farm_position.toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmPositionMigrationNonce(farmAddress: string): Promise<number> {
+        return this.getFarmPositionMigrationNonceRaw(farmAddress);
+    }
+
+    async getFarmPositionMigrationNonceRaw(
+        farmAddress: string,
+    ): Promise<number> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmPositionMigrationNonce();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toNumber();
     }
 }
