@@ -2,8 +2,14 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { FarmToken } from 'src/modules/tokens/models/farmToken.model';
-import { LockedLpToken, LockedLpTokenV2 } from 'src/modules/tokens/models/lockedLpToken.model';
-import { LockedFarmToken, LockedFarmTokenV2 } from 'src/modules/tokens/models/lockedFarmToken.model';
+import {
+    LockedLpToken,
+    LockedLpTokenV2,
+} from 'src/modules/tokens/models/lockedLpToken.model';
+import {
+    LockedFarmToken,
+    LockedFarmTokenV2,
+} from 'src/modules/tokens/models/lockedFarmToken.model';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
@@ -14,10 +20,10 @@ import { LockedSimpleLpToken } from 'src/modules/tokens/models/lockedSimpleLpTok
 import { PaginationArgs } from 'src/modules/dex.model';
 import { WrappedLockedTokenAttributesModel } from 'src/modules/simple-lock/models/simple.lock.model';
 
-
 export enum ContractType {
     Farm = 'Farm',
-    FeesCollector = 'FeesCollector'
+    FeesCollector = 'FeesCollector',
+    StakingFarm = 'StakingFarm',
 }
 
 @ObjectType()
