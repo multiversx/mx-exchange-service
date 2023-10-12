@@ -252,9 +252,11 @@ export class StakingResolver {
     @Query(() => [StakingRewardsModel])
     async getStakingRewardsForPosition(
         @Args('stakingPositions') args: BatchFarmRewardsComputeArgs,
+        @Args('computeBoosted', { nullable: true }) computeBoosted: boolean,
     ): Promise<StakingRewardsModel[]> {
         return this.stakingService.getBatchRewardsForPosition(
             args.farmsPositions,
+            computeBoosted,
         );
     }
 
