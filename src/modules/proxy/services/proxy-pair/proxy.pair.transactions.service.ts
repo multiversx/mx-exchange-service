@@ -18,7 +18,7 @@ import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.tran
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ProxyAbiServiceV2 } from 'src/modules/proxy/v2/services/proxy.v2.abi.service';
 
 @Injectable()
@@ -67,9 +67,7 @@ export class ProxyPairTransactionsService {
         return transactions;
     }
 
-    @ErrorLoggerAsync({
-        className: ProxyPairTransactionsService.name,
-    })
+    @ErrorLoggerAsync()
     async addLiquidityProxy(
         sender: string,
         proxyAddress: string,

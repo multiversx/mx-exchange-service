@@ -38,10 +38,9 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { CachingService } from 'src/services/caching/cache.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -49,11 +48,11 @@ describe('StakingProxyTransactionService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 StakingProxyTransactionService,
@@ -93,7 +92,6 @@ describe('StakingProxyTransactionService', () => {
                 MXApiServiceProvider,
                 MXDataApiServiceProvider,
                 RemoteConfigGetterServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

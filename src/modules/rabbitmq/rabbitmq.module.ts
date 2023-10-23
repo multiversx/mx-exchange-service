@@ -3,12 +3,11 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
 import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
-import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
+import { FarmHandlerService } from './handlers/farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { RabbitMqConsumer } from './rabbitmq.consumer';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { RouterModule } from '../router/router.module';
 import { RouterHandlerService } from './handlers/router.handler.service';
@@ -43,7 +42,6 @@ import { GovernanceModule } from '../governance/governance.module';
         CommonAppModule,
         AnalyticsServicesModule,
         MXCommunicationModule,
-        CachingModule,
         ContextModule,
         PairModule,
         FarmModule,
@@ -64,7 +62,7 @@ import { GovernanceModule } from '../governance/governance.module';
     ],
     providers: [
         RabbitMqConsumer,
-        RabbitMQFarmHandlerService,
+        FarmHandlerService,
         RabbitMQProxyHandlerService,
         RouterHandlerService,
         RabbitMQEsdtTokenHandlerService,

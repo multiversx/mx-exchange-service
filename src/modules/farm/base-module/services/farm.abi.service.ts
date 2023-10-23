@@ -8,10 +8,10 @@ import { CalculateRewardsArgs } from '../../models/farm.args';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { IFarmAbiService } from './interfaces';
 
@@ -28,7 +28,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -49,7 +48,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -70,7 +68,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -91,7 +88,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -113,7 +109,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -134,7 +129,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -155,7 +149,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -176,7 +169,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -197,7 +189,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -218,7 +209,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -239,12 +229,11 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'farm',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async divisionSafetyConstant(farmAddress: string): Promise<string> {
         return await this.getDivisionSafetyConstantRaw(farmAddress);
@@ -276,7 +265,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -296,7 +284,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -317,7 +304,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -334,7 +320,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -355,7 +340,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -385,7 +369,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -406,7 +389,6 @@ export class FarmAbiService
     }
 
     @ErrorLoggerAsync({
-        className: FarmAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -421,5 +403,21 @@ export class FarmAbiService
     async getOwnerAddressRaw(farmAddress: string): Promise<string> {
         return (await this.apiService.getAccountStats(farmAddress))
             .ownerAddress;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmShard(farmAddress: string): Promise<number> {
+        return await this.getFarmShardRaw(farmAddress);
+    }
+
+    async getFarmShardRaw(farmAddress: string): Promise<number> {
+        return (await this.apiService.getAccountStats(farmAddress)).shard;
     }
 }

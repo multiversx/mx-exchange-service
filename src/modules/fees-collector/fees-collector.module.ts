@@ -5,7 +5,6 @@ import {
     UserEntryFeesCollectorResolver,
 } from './fees-collector.resolver';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
-import { CachingModule } from '../../services/caching/cache.module';
 import { FeesCollectorService } from './services/fees-collector.service';
 import { WeeklyRewardsSplittingModule } from '../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-timekeeping.module';
@@ -19,7 +18,6 @@ import { TokenModule } from '../tokens/token.module';
 @Module({
     imports: [
         MXCommunicationModule,
-        CachingModule,
         forwardRef(() => WeekTimekeepingModule),
         forwardRef(() => WeeklyRewardsSplittingModule),
         ContextModule,

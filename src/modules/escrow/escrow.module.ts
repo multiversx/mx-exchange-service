@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { EscrowResolver } from './escrow.resolver';
@@ -10,12 +9,7 @@ import { EscrowTransactionService } from './services/escrow.transaction.service'
 import { EscrowSetterService } from './services/escrow.setter.service';
 
 @Module({
-    imports: [
-        CommonAppModule,
-        MXCommunicationModule,
-        CachingModule,
-        ContextModule,
-    ],
+    imports: [CommonAppModule, MXCommunicationModule, ContextModule],
     providers: [
         EscrowAbiService,
         EscrowSetterService,

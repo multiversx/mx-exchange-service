@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Locker } from 'src/utils/locker';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { EnergySetterService } from 'src/modules/energy/services/energy.setter.service';
+import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class EnergyCacheWarmerService {
@@ -15,12 +15,11 @@ export class EnergyCacheWarmerService {
     ) {}
 
     @Cron(CronExpression.EVERY_MINUTE)
+    @Lock({ name: 'cacheEnergyContract', verbose: true })
     async cacheEnergyContract(): Promise<void> {
-        Locker.lock('cacheEnergyContract', async () => {
-            const pauseState = await this.energyAbi.isPausedRaw();
-            const cacheKey = await this.energySetter.setPauseState(pauseState);
-            await this.deleteCacheKeys([cacheKey]);
-        });
+        const pauseState = await this.energyAbi.isPausedRaw();
+        const cacheKey = await this.energySetter.setPauseState(pauseState);
+        await this.deleteCacheKeys([cacheKey]);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

@@ -23,7 +23,7 @@ import {
     LockedTokenAttributesModel,
     LpProxyTokenAttributesModel,
 } from '../models/simple.lock.model';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { farmVersion } from 'src/utils/farm.utils';
@@ -41,7 +41,7 @@ export class SimpleLockService {
         private readonly farmAbi: FarmAbiFactory,
         private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
-        private readonly cacheService: CachingService,
+        private readonly cacheService: CacheService,
     ) {}
 
     async getLockedToken(simpleLockAddress: string): Promise<NftCollection> {
@@ -79,7 +79,7 @@ export class SimpleLockService {
             lockedEsdtCollection,
             tokenNonce,
         );
-        const cachedValue = await this.cacheService.getCache(
+        const cachedValue = await this.cacheService.get(
             `${lockedTokenIdentifier}.decodedAttributes`,
         );
         if (cachedValue && cachedValue !== undefined) {
@@ -94,12 +94,13 @@ export class SimpleLockService {
             identifier: lockedTokenIdentifier,
             attributes: lockedTokenAttributes,
         });
-        return await this.cacheService.setCache(
+        await this.cacheService.set(
             `${tokenID}.decodedAttributes`,
             decodedAttributes,
             CacheTtlInfo.Attributes.remoteTtl,
             CacheTtlInfo.Attributes.localTtl,
         );
+        return decodedAttributes;
     }
 
     decodeBatchLockedTokenAttributes(
@@ -135,7 +136,7 @@ export class SimpleLockService {
             tokenNonce,
         );
 
-        const cachedValue = await this.cacheService.getCache(
+        const cachedValue = await this.cacheService.get(
             `${lockedLpTokenIdentifier}.decodedAttributes`,
         );
         if (cachedValue && cachedValue !== undefined) {
@@ -152,12 +153,13 @@ export class SimpleLockService {
             identifier: lockedLpTokenIdentifier,
             attributes: lockedLpTokenAttributes,
         });
-        return await this.cacheService.setCache(
+        await this.cacheService.set(
             `${lockedLpTokenIdentifier}.decodedAttributes`,
             decodedAttributes,
             CacheTtlInfo.Attributes.remoteTtl,
             CacheTtlInfo.Attributes.localTtl,
         );
+        return decodedAttributes;
     }
 
     decodeBatchLpTokenProxyAttributes(
@@ -216,7 +218,7 @@ export class SimpleLockService {
             farmTokenID,
             farmTokenNonce,
         );
-        const cachedValue = await this.cacheService.getCache(
+        const cachedValue = await this.cacheService.get(
             `${farmTokenIdentifier}.decodedAttributes`,
         );
         if (cachedValue && cachedValue !== undefined) {
@@ -237,12 +239,13 @@ export class SimpleLockService {
                 farmTokenIdentifier,
                 farmTokenAttributes,
             );
-        return await this.cacheService.setCache(
+        await this.cacheService.set(
             `${farmTokenIdentifier}.decodedAttributes`,
             decodedAttributes,
             CacheTtlInfo.Attributes.remoteTtl,
             CacheTtlInfo.Attributes.localTtl,
         );
+        return decodedAttributes;
     }
 
     async getSimpleLockAddressByTokenID(tokenID: string): Promise<string> {

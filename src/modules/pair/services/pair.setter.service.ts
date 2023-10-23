@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
-import { CachingService } from 'src/services/caching/cache.service';
+import { Constants } from '@multiversx/sdk-nestjs-common';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { FeeDestination } from '../models/pair.model';
 import { Logger } from 'winston';
@@ -11,7 +11,7 @@ import { PairInfoModel } from '../models/pair-info.model';
 @Injectable()
 export class PairSetterService extends GenericSetterService {
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
@@ -317,7 +317,7 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('routerAddress', pairAddress),
             value,
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -328,7 +328,7 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('whitelistedAddresses', pairAddress),
             value,
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 
@@ -336,7 +336,7 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('feeDestinations', pairAddress),
             value,
-            oneHour(),
+            Constants.oneHour(),
         );
     }
 

@@ -8,22 +8,16 @@ import { constantsConfig } from '../../../../config';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { PairService } from '../../../pair/services/pair.service';
 import { ContextGetterService } from '../../../../services/context/context.getter.service';
-import {
-    WeekTimekeepingComputeService,
-} from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
-import {
-    WeeklyRewardsSplittingAbiService,
-} from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { FarmServiceV2 } from './farm.v2.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import {
-    WeeklyRewardsSplittingComputeService,
-} from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { IFarmComputeServiceV2 } from './interfaces';
 
 @Injectable()
@@ -42,7 +36,7 @@ export class FarmComputeServiceV2
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
     ) {
         super(
             farmAbi,
@@ -68,7 +62,6 @@ export class FarmComputeServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -99,6 +92,20 @@ export class FarmComputeServiceV2
             .toFixed();
     }
 
+    async computeMintedRewards(farmAddress: string): Promise<BigNumber> {
+        const [toBeMinted, boostedYieldsRewardsPercenatage] = await Promise.all(
+            [
+                super.computeMintedRewards(farmAddress),
+                this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
+            ],
+        );
+
+        return this.computeBaseRewards(
+            toBeMinted,
+            boostedYieldsRewardsPercenatage,
+        );
+    }
+
     async computeFarmRewardsForPosition(
         positon: CalculateRewardsArgs,
         rewardPerShare: string,
@@ -127,7 +134,6 @@ export class FarmComputeServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV2.name,
         logArgs: true,
     })
     async userRewardsDistributionForWeek(
@@ -168,7 +174,6 @@ export class FarmComputeServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV2.name,
         logArgs: true,
     })
     async userAccumulatedRewards(
@@ -280,7 +285,6 @@ export class FarmComputeServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV2.name,
         logArgs: true,
     })
     async userRewardsForWeek(
@@ -408,7 +412,6 @@ export class FarmComputeServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -464,7 +467,6 @@ export class FarmComputeServiceV2
     }
 
     @ErrorLoggerAsync({
-        className: FarmComputeServiceV2.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -492,9 +494,7 @@ export class FarmComputeServiceV2
             lastUndistributedBoostedRewardsCollectWeek,
         ] = await Promise.all([
             this.farmAbi.undistributedBoostedRewards(scAddress),
-            this.farmAbi.lastUndistributedBoostedRewardsCollectWeek(
-                scAddress,
-            ),
+            this.farmAbi.lastUndistributedBoostedRewardsCollectWeek(scAddress),
         ]);
 
         const firstWeek = lastUndistributedBoostedRewardsCollectWeek + 1;
@@ -502,22 +502,22 @@ export class FarmComputeServiceV2
         if (firstWeek > lastWeek) {
             return new BigNumber(undistributedBoostedRewards);
         }
-        const promises = []
+        const promises = [];
         for (let week = firstWeek; week <= lastWeek; week++) {
             promises.push(
                 this.farmAbi.remainingBoostedRewardsToDistribute(
                     scAddress,
                     week,
-                )
-            )
+                ),
+            );
         }
         const remainingRewards = await Promise.all(promises);
         const totalRemainingRewards = remainingRewards.reduce((acc, curr) => {
             return new BigNumber(acc).plus(curr);
         });
-        return new BigNumber(undistributedBoostedRewards)
-            .plus(totalRemainingRewards);
-
+        return new BigNumber(undistributedBoostedRewards).plus(
+            totalRemainingRewards,
+        );
     }
 
     async computeBlocksInWeek(

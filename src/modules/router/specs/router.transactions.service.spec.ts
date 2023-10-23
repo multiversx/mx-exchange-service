@@ -18,11 +18,10 @@ import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { CachingService } from 'src/services/caching/cache.service';
-import { CacheModule } from '@nestjs/cache-manager';
 import { WinstonModule } from 'nest-winston';
 import { ConfigModule } from '@nestjs/config';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -35,11 +34,11 @@ describe('RouterService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 ContextGetterServiceProvider,
@@ -55,7 +54,6 @@ describe('RouterService', () => {
                 RouterTransactionService,
                 TokenServiceProvider,
                 RouterService,
-                CachingService,
             ],
         }).compile();
     });

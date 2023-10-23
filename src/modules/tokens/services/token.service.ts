@@ -4,12 +4,12 @@ import { TokensFiltersArgs } from '../models/tokens.filter.args';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenRepositoryService } from './token.repository.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { NftCollection } from '../models/nftCollection.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class TokenService {
@@ -18,7 +18,7 @@ export class TokenService {
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
     ) {}
 
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
@@ -45,7 +45,6 @@ export class TokenService {
     }
 
     @ErrorLoggerAsync({
-        className: 'TokenService',
         logArgs: true,
     })
     @GetOrSetCache({
@@ -62,11 +61,9 @@ export class TokenService {
             return undefined;
         }
         const cacheKey = `token.${tokenID}`;
-        const cachedToken = await this.cachingService.getCache<EsdtToken>(
-            cacheKey,
-        );
+        const cachedToken = await this.cachingService.get<EsdtToken>(cacheKey);
         if (cachedToken && cachedToken !== undefined) {
-            await this.cachingService.setCache<EsdtToken>(
+            await this.cachingService.set<EsdtToken>(
                 cacheKey,
                 cachedToken,
                 CacheTtlInfo.Token.remoteTtl,
@@ -78,7 +75,7 @@ export class TokenService {
         const token = await this.apiService.getToken(tokenID);
 
         if (token !== undefined) {
-            await this.cachingService.setCache<EsdtToken>(
+            await this.cachingService.set<EsdtToken>(
                 cacheKey,
                 token,
                 CacheTtlInfo.Token.remoteTtl,
@@ -96,11 +93,11 @@ export class TokenService {
             return undefined;
         }
         const cacheKey = `token.${collection}`;
-        const cachedToken = await this.cachingService.getCache<NftCollection>(
+        const cachedToken = await this.cachingService.get<NftCollection>(
             cacheKey,
         );
         if (cachedToken && cachedToken !== undefined) {
-            await this.cachingService.setCache<NftCollection>(
+            await this.cachingService.set<NftCollection>(
                 cacheKey,
                 cachedToken,
                 CacheTtlInfo.Token.remoteTtl,
@@ -112,7 +109,7 @@ export class TokenService {
         const token = await this.apiService.getNftCollection(collection);
 
         if (token !== undefined) {
-            await this.cachingService.setCache<NftCollection>(
+            await this.cachingService.set<NftCollection>(
                 cacheKey,
                 token,
                 CacheTtlInfo.Token.remoteTtl,

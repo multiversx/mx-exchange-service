@@ -13,11 +13,11 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { SCPermissions, ScheduledTransferModel } from '../models/escrow.model';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneDay } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { EscrowSetterService } from './escrow.setter.service';
 
 @Injectable()
@@ -25,19 +25,18 @@ export class EscrowAbiService extends GenericAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
         private readonly mxGateway: MXGatewayService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         private readonly escrowSetter: EscrowSetterService,
     ) {
         super(mxProxy);
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async scheduledTransfers(
         receiverAddress: string,
@@ -79,12 +78,11 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async allSenders(receiverAddress: string): Promise<string[]> {
         return await this.getAllSendersRaw(receiverAddress);
@@ -102,21 +100,18 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async allReceivers(senderAddress: string): Promise<string[]> {
         return await this.getAllReceiversRaw(senderAddress);
     }
 
     async getAllReceiversRaw(senderAddress: string): Promise<string[]> {
-        let hexValues = await this.cachingService.getCache<object>(
-            `escrow.scKeys`,
-        );
+        let hexValues = await this.cachingService.get<object>(`escrow.scKeys`);
         if (!hexValues || hexValues === undefined) {
             hexValues = await this.mxGateway.getSCStorageKeys(
                 scAddress.escrow,
@@ -147,12 +142,11 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async senderLastTransferEpoch(senderAddress: string): Promise<number> {
         return await this.getSenderLastTransferEpochRaw(senderAddress);
@@ -167,12 +161,11 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async receiverLastTransferEpoch(receiverAddress: string): Promise<number> {
         return await this.getReceiverLastTransferEpochRaw(receiverAddress);
@@ -186,9 +179,7 @@ export class EscrowAbiService extends GenericAbiService {
         return hexValue === '' ? 0 : new BigNumber(hexValue, 16).toNumber();
     }
 
-    @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'escrow',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -206,9 +197,7 @@ export class EscrowAbiService extends GenericAbiService {
         return Address.fromHex(hexValue).bech32();
     }
 
-    @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'escrow',
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
@@ -226,9 +215,7 @@ export class EscrowAbiService extends GenericAbiService {
         return Buffer.from(hexValue, 'hex').toString();
     }
 
-    @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'escrow',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -247,9 +234,7 @@ export class EscrowAbiService extends GenericAbiService {
         return new BigNumber(hexValue, 16).toNumber();
     }
 
-    @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
-    })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'escrow',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
@@ -269,12 +254,11 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async addressPermission(address: string): Promise<SCPermissions[]> {
         const addressesWithPermissions =
@@ -312,21 +296,18 @@ export class EscrowAbiService extends GenericAbiService {
     }
 
     @ErrorLoggerAsync({
-        className: EscrowAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'escrow',
-        remoteTtl: oneDay(),
+        remoteTtl: Constants.oneDay(),
     })
     async allAddressesWithPermissions(): Promise<string[]> {
         return await this.getAllAddressesWithPermissionsRaw();
     }
 
     async getAllAddressesWithPermissionsRaw(): Promise<string[]> {
-        let hexValues = await this.cachingService.getCache<object>(
-            `escrow.scKeys`,
-        );
+        let hexValues = await this.cachingService.get<object>(`escrow.scKeys`);
         if (!hexValues || hexValues === undefined) {
             hexValues = await this.mxGateway.getSCStorageKeys(
                 scAddress.escrow,

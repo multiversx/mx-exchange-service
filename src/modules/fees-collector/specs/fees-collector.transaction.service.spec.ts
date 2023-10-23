@@ -11,10 +11,9 @@ import { FeesCollectorTransactionModel } from '../models/fees-collector.model';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { CacheModule } from '@nestjs/cache-manager';
 import { WinstonModule } from 'nest-winston';
-import { ConfigModule } from '@nestjs/config';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('FeesCollectorTransactionService', () => {
     let module: TestingModule;
@@ -26,14 +25,13 @@ describe('FeesCollectorTransactionService', () => {
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
-                ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 FeesCollectorTransactionService,
                 WeekTimekeepingAbiServiceProvider,
                 WeeklyRewardsSplittingAbiServiceProvider,
                 MXProxyServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

@@ -4,7 +4,7 @@ import { scAddress } from '../../../config';
 import { PairModel } from '../../pair/models/pair.model';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
-import { oneSecond } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from './router.abi.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
@@ -94,8 +94,8 @@ export class RouterService {
 
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: oneSecond() * 30,
-        localTtl: oneSecond() * 6,
+        remoteTtl: Constants.oneSecond() * 30,
+        localTtl: Constants.oneSecond() * 6,
     })
     private async pairsByIssuedLpToken(
         pairsMetadata: PairMetadata[],

@@ -4,8 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateComputeLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { buildElasticQuery } from './elastic.queries';
-import { ElasticQuery } from './entities/elastic/elastic.query';
+import { ElasticQuery } from '@multiversx/sdk-nestjs-elastic';
 
 @Injectable()
 export class ElasticService {
@@ -22,17 +21,12 @@ export class ElasticService {
         collection: string,
         elasticQueryAdapter: ElasticQuery | undefined = undefined,
     ) {
-        let elasticQuery;
-
-        if (elasticQueryAdapter) {
-            elasticQuery = buildElasticQuery(elasticQueryAdapter);
-        }
-
+        const query = elasticQueryAdapter?.toJson().query;
         try {
             const result: any = await this.elasticClient.count({
                 index: collection,
                 body: {
-                    query: elasticQuery.query,
+                    query,
                 },
             });
             return result.body.count;
@@ -79,8 +73,7 @@ export class ElasticService {
         key: string,
         elasticQueryAdapter: ElasticQuery,
     ): Promise<any[]> {
-        const elasticQuery = buildElasticQuery(elasticQueryAdapter);
-
+        const query = elasticQueryAdapter.toJson().query;
         try {
             return await this.scrollSearch({
                 index: collection,
@@ -88,7 +81,7 @@ export class ElasticService {
                 scroll: '5s',
                 _source: [key],
                 body: {
-                    query: elasticQuery.query,
+                    query,
                 },
             });
         } catch (error) {

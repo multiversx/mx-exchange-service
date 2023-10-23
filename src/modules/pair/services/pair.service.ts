@@ -9,8 +9,8 @@ import {
     getTokenForGivenPosition,
 } from '../pair.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { CachingService } from 'src/services/caching/cache.service';
-import { oneHour } from 'src/helpers/helpers';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -30,7 +30,7 @@ export class PairService {
         private readonly wrapAbi: WrapAbiService,
         @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         private readonly contextGetter: ContextGetterService,
     ) {}
 
@@ -219,7 +219,7 @@ export class PairService {
     }
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
-        const cachedValue: string = await this.cachingService.getCache(
+        const cachedValue: string = await this.cachingService.get(
             `${tokenID}.pairAddress`,
         );
         if (cachedValue && cachedValue !== undefined) {
@@ -238,10 +238,10 @@ export class PairService {
             }
         }
 
-        await this.cachingService.setCache(
+        await this.cachingService.set(
             `${tokenID}.pairAddress`,
             returnedData,
-            oneHour(),
+            Constants.oneHour(),
         );
         return returnedData;
     }

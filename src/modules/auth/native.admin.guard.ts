@@ -10,8 +10,8 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { CachingService } from 'src/services/caching/cache.service';
-import { UrlUtils } from 'src/utils/url.utils';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { UrlUtils } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class NativeAdminGuard implements CanActivate {
@@ -19,7 +19,7 @@ export class NativeAdminGuard implements CanActivate {
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
-        private readonly cachingService: CachingService,
+        private readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     ) {
         this.authServer = new NativeAuthServer({
@@ -35,14 +35,14 @@ export class NativeAdminGuard implements CanActivate {
                         // @ts-ignore
                         return new Date().getTime() / 1000;
                     }
-                    return await this.cachingService.getCache<T>(key);
+                    return await this.cachingService.get<T>(key);
                 },
                 setValue: async <T>(
                     key: string,
                     value: T,
                     ttl: number,
                 ): Promise<void> => {
-                    await this.cachingService.setCache(key, value, ttl);
+                    await this.cachingService.set(key, value, ttl);
                 },
             },
         });

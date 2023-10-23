@@ -1,15 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Logger } from 'winston';
 import { HistoricDataModel } from '../models/analytics.model';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { oneMinute } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class AnalyticsAWSSetterService extends GenericSetterService {
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
@@ -24,8 +24,8 @@ export class AnalyticsAWSSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('latestCompleteValues', series, metric),
             values,
-            oneMinute() * 30,
-            oneMinute() * 10,
+            Constants.oneMinute() * 30,
+            Constants.oneMinute() * 10,
         );
     }
 
@@ -37,8 +37,8 @@ export class AnalyticsAWSSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('sumCompleteValues', series, metric),
             values,
-            oneMinute() * 30,
-            oneMinute() * 10,
+            Constants.oneMinute() * 30,
+            Constants.oneMinute() * 10,
         );
     }
 
@@ -50,8 +50,8 @@ export class AnalyticsAWSSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('values24hSum', series, metric),
             values,
-            oneMinute() * 30,
-            oneMinute() * 10,
+            Constants.oneMinute() * 30,
+            Constants.oneMinute() * 10,
         );
     }
 
@@ -63,8 +63,8 @@ export class AnalyticsAWSSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('values24h', series, metric),
             values,
-            oneMinute() * 30,
-            oneMinute() * 10,
+            Constants.oneMinute() * 30,
+            Constants.oneMinute() * 10,
         );
     }
 }

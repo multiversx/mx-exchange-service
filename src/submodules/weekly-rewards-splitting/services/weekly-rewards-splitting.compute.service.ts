@@ -7,7 +7,7 @@ import { scAddress } from '../../../config';
 import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { WeeklyRewardsSplittingAbiService } from './weekly-rewards-splitting.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { computeValueUSD } from 'src/utils/token.converters';
@@ -67,7 +67,6 @@ export class WeeklyRewardsSplittingComputeService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -100,7 +99,6 @@ export class WeeklyRewardsSplittingComputeService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -149,7 +147,6 @@ export class WeeklyRewardsSplittingComputeService
     }
 
     @ErrorLoggerAsync({
-        className: WeeklyRewardsSplittingComputeService.name,
         logArgs: true,
     })
     @GetOrSetCache({

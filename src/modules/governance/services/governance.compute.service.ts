@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { VoteType } from '../models/governance.proposal.model';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
-import { ElasticQuery } from '../../../helpers/entities/elastic/elastic.query';
-import { QueryType } from '../../../helpers/entities/elastic/query.type';
-import { ElasticSortOrder } from '../../../helpers/entities/elastic/elastic.sort.order';
-import { ElasticService } from '../../../helpers/elastic.service';
 import { GovernanceSetterService } from './governance.setter.service';
 import { Address } from '@multiversx/sdk-core/out';
 import { decimalToHex } from '../../../utils/token.converters';
+import { ElasticQuery, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { ElasticService } from 'src/helpers/elastic.service';
 import { toVoteType } from '../../../utils/governance';
 
 @Injectable()
@@ -42,7 +40,7 @@ export class GovernanceComputeService {
         return proposalVoteType.vote;
     }
 
-    @ErrorLoggerAsync({ className: GovernanceComputeService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'governance',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,

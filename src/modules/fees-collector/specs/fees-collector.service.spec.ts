@@ -25,10 +25,9 @@ import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('FeesCollectorService', () => {
     let module: TestingModule;
@@ -37,11 +36,11 @@ describe('FeesCollectorService', () => {
         module = await Test.createTestingModule({
             imports: [
                 MXCommunicationModule,
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 FeesCollectorService,
@@ -66,7 +65,6 @@ describe('FeesCollectorService', () => {
                     provide: ContextGetterService,
                     useClass: ContextGetterServiceMock,
                 },
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

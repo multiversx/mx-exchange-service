@@ -36,10 +36,9 @@ import { FarmCustomComputeService } from '../custom/services/farm.custom.compute
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -47,11 +46,11 @@ describe('FarmService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 FarmFactoryService,
@@ -95,7 +94,6 @@ describe('FarmService', () => {
                 EnergyAbiServiceProvider,
                 EnergyComputeService,
                 MXDataApiServiceProvider,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

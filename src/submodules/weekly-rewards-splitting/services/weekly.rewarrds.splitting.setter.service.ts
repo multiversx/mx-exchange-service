@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { CachingService } from 'src/services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
 import { IWeeklyRewardsSplittingSetterService } from '../interfaces';
@@ -15,7 +15,7 @@ export class WeeklyRewardsSplittingSetterService
     implements IWeeklyRewardsSplittingSetterService
 {
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);

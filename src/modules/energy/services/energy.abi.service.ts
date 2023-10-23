@@ -12,12 +12,12 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { LockOption } from '../models/simple.lock.energy.model';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { oneMinute, oneSecond } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { scAddress } from 'src/config';
 import { IEnergyAbiService } from './interfaces';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class EnergyAbiService
@@ -31,7 +31,7 @@ export class EnergyAbiService
         super(mxProxy);
     }
 
-    @ErrorLoggerAsync({ className: EnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
@@ -50,7 +50,7 @@ export class EnergyAbiService
         return response.firstValue.valueOf().toString();
     }
 
-    @ErrorLoggerAsync({ className: EnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
@@ -69,7 +69,7 @@ export class EnergyAbiService
         return response.firstValue.valueOf().toString();
     }
 
-    @ErrorLoggerAsync({ className: EnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
@@ -88,7 +88,7 @@ export class EnergyAbiService
         return response.firstValue.valueOf().toString();
     }
 
-    @ErrorLoggerAsync({ className: EnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -114,7 +114,7 @@ export class EnergyAbiService
         );
     }
 
-    @ErrorLoggerAsync({ className: EnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -133,7 +133,7 @@ export class EnergyAbiService
         return response.firstValue.valueOf().bech32();
     }
 
-    @ErrorLoggerAsync({ className: EnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
@@ -148,10 +148,10 @@ export class EnergyAbiService
             .ownerAddress;
     }
 
-    @ErrorLoggerAsync({ className: EnergyAbiService.name, logArgs: true })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
-        remoteTtl: oneMinute(),
+        remoteTtl: Constants.oneMinute(),
     })
     async energyEntryForUser(userAddress: string): Promise<EnergyType> {
         return await this.getEnergyEntryForUserRaw(userAddress);
@@ -169,11 +169,11 @@ export class EnergyAbiService
         return Energy.fromDecodedAttributes(rawEnergy).toJSON();
     }
 
-    @ErrorLoggerAsync({ className: EnergyAbiService.name, logArgs: true })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
-        remoteTtl: oneSecond(),
-        localTtl: oneSecond(),
+        remoteTtl: Constants.oneSecond(),
+        localTtl: Constants.oneSecond(),
     })
     async energyAmountForUser(userAddress: string): Promise<string> {
         return await this.getEnergyAmountForUserRaw(userAddress);
@@ -208,7 +208,7 @@ export class EnergyAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    @ErrorLoggerAsync({ className: EnergyAbiService.name })
+    @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,

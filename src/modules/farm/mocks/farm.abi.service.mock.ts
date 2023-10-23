@@ -76,6 +76,10 @@ export class FarmAbiServiceMock implements IFarmAbiService {
     ): Promise<BigNumber> {
         return new BigNumber('1000000000000000000');
     }
+
+    async farmShard(farmAddress: string): Promise<number> {
+        return 1;
+    }
 }
 
 export const FarmAbiServiceProvider = {

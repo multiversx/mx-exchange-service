@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { oneHour } from 'src/helpers/helpers';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { AddressValue } from '@multiversx/sdk-core/out';
 import { IProxyPairAbiService } from '../interfaces';
 
@@ -19,7 +19,6 @@ export class ProxyPairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: ProxyPairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
@@ -42,12 +41,11 @@ export class ProxyPairAbiService
     }
 
     @ErrorLoggerAsync({
-        className: ProxyPairAbiService.name,
         logArgs: true,
     })
     @GetOrSetCache({
         baseKey: 'proxyPair',
-        remoteTtl: oneHour(),
+        remoteTtl: Constants.oneHour(),
     })
     async intermediatedPairs(proxyAddress: string): Promise<string[]> {
         return this.getIntermediatedPairsRaw(proxyAddress);

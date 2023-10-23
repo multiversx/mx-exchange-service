@@ -6,7 +6,6 @@ import { PairTransactionService } from './services/pair.transactions.service';
 import { ContextModule } from '../../services/context/context.module';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
-import { CachingModule } from '../../services/caching/cache.module';
 import { PairComputeService } from './services/pair.compute.service';
 import { PairSetterService } from './services/pair.setter.service';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
@@ -20,7 +19,6 @@ import { CommonAppModule } from 'src/common.app.module';
         MXCommunicationModule,
         ContextModule,
         WrappingModule,
-        CachingModule,
         AnalyticsServicesModule,
         DatabaseModule,
         forwardRef(() => RouterModule),

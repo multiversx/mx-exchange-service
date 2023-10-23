@@ -11,10 +11,9 @@ import { ContextGetterServiceProvider } from 'src/services/context/mocks/context
 import { tokenProviderUSD } from 'src/config';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CachingService } from 'src/services/caching/cache.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('TokenComputeService', () => {
     let module: TestingModule;
@@ -22,11 +21,11 @@ describe('TokenComputeService', () => {
     beforeAll(async () => {
         module = await Test.createTestingModule({
             imports: [
-                CacheModule.register(),
                 WinstonModule.forRoot({
                     transports: [new winston.transports.Console({})],
                 }),
                 ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
                 PairAbiServiceProvider,
@@ -38,7 +37,6 @@ describe('TokenComputeService', () => {
                 MXDataApiServiceProvider,
                 ContextGetterServiceProvider,
                 TokenComputeService,
-                CachingService,
                 ApiConfigService,
             ],
         }).compile();

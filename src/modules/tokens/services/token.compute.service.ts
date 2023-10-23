@@ -13,7 +13,7 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
@@ -34,7 +34,6 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: 'TokenComputeService',
         logArgs: true,
     })
     @GetOrSetCache({
@@ -143,7 +142,6 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     @ErrorLoggerAsync({
-        className: 'TokenComputeService',
         logArgs: true,
     })
     @GetOrSetCache({

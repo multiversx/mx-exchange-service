@@ -1,25 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
-import { CachingService } from '../../../services/caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { HistoricDataModel } from '../models/analytics.model';
 import moment from 'moment';
-import { ErrorLoggerAsync } from 'src/helpers/decorators/error.logger';
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class AnalyticsAWSGetterService {
-    constructor(private readonly cachingService: CachingService) {}
+    constructor(private readonly cachingService: CacheService) {}
 
     private async getCachedData<T>(cacheKey: string): Promise<T> {
-        const data = await this.cachingService.getCache<T>(cacheKey);
+        const data = await this.cachingService.get<T>(cacheKey);
         if (!data || data === undefined) {
             throw new Error(`Unavailable cached key ${cacheKey}`);
         }
         return data;
     }
 
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-    })
+    @ErrorLoggerAsync()
     async getLatestCompleteValues(
         series: string,
         metric: string,
@@ -58,9 +56,7 @@ export class AnalyticsAWSGetterService {
         return data;
     }
 
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-    })
+    @ErrorLoggerAsync()
     async getSumCompleteValues(
         series: string,
         metric: string,
@@ -73,9 +69,7 @@ export class AnalyticsAWSGetterService {
         return await this.getCachedData(cacheKey);
     }
 
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-    })
+    @ErrorLoggerAsync()
     async getValues24hSum(
         series: string,
         metric: string,
@@ -88,9 +82,7 @@ export class AnalyticsAWSGetterService {
         return await this.getCachedData(cacheKey);
     }
 
-    @ErrorLoggerAsync({
-        className: AnalyticsAWSGetterService.name,
-    })
+    @ErrorLoggerAsync()
     async getValues24h(
         series: string,
         metric: string,

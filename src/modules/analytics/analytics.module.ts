@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
@@ -27,7 +26,6 @@ import { AnalyticsSetterService } from './services/analytics.setter.service';
     imports: [
         AnalyticsServicesModule,
         MXCommunicationModule,
-        CachingModule,
         ContextModule,
         RouterModule,
         PairModule,

@@ -2,7 +2,6 @@ import { forwardRef, Module } from '@nestjs/common';
 import { WeekTimekeepingAbiService } from './services/week-timekeeping.abi.service';
 import { WeekTimekeepingComputeService } from './services/week-timekeeping.compute.service';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
-import { CachingModule } from '../../services/caching/cache.module';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import { WeekTimekeepingResolver } from './week-timekeeping.resolver';
 import { FarmModuleV2 } from 'src/modules/farm/v2/farm.v2.module';
@@ -12,7 +11,6 @@ import { ContextModule } from 'src/services/context/context.module';
 @Module({
     imports: [
         MXCommunicationModule,
-        CachingModule,
         ContextModule,
         forwardRef(() => FarmModuleV2),
         forwardRef(() => FeesCollectorModule),

@@ -63,6 +63,9 @@ export class AutoRouteModel {
     @Field(() => [TransactionModel], { nullable: true })
     transactions: TransactionModel[];
 
+    @Field(() => [TransactionModel], { nullable: true })
+    noAuthTransactions: TransactionModel[];
+
     constructor(init?: Partial<AutoRouteModel>) {
         Object.assign(this, init);
     }

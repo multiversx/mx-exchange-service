@@ -4,7 +4,6 @@ import {
     Module,
     RequestMethod,
 } from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
@@ -17,7 +16,6 @@ import { UserModule } from './modules/user/user.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { GraphQLFormattedError } from 'graphql';
 import { CommonAppModule } from './common.app.module';
-import { CachingService } from './services/caching/cache.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { StakingModule } from './modules/staking/staking.module';
@@ -36,11 +34,12 @@ import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-
 import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
 import { EscrowModule } from './modules/escrow/escrow.module';
 import { GovernanceModule } from './modules/governance/governance.module';
+import { DynamicModuleUtils } from './utils/dynamic.module.utils';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 
 @Module({
     imports: [
         CommonAppModule,
-        CacheModule.register(),
         GraphQLModule.forRootAsync<ApolloDriverConfig>({
             driver: ApolloDriver,
             imports: [CommonAppModule],
@@ -96,8 +95,8 @@ import { GovernanceModule } from './modules/governance/governance.module';
         LockedTokenWrapperModule,
         EscrowModule,
         GovernanceModule,
+        DynamicModuleUtils.getCacheModule(),
     ],
-    providers: [CachingService],
 })
 export class PublicAppModule {
     configure(consumer: MiddlewareConsumer) {

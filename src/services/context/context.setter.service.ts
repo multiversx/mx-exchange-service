@@ -1,17 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneSecond } from 'src/helpers/helpers';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
-import { CachingService } from '../caching/cache.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { GenericSetterService } from '../generics/generic.setter.service';
 
 @Injectable()
 export class ContextSetterService extends GenericSetterService {
     constructor(
-        protected readonly cachingService: CachingService,
+        protected readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
@@ -19,7 +17,7 @@ export class ContextSetterService extends GenericSetterService {
 
     async setCurrentEpoch(value: number): Promise<string> {
         const cacheKey = this.getContextCacheKey('currentEpoch');
-        return await this.setData(cacheKey, value, oneSecond() * 12);
+        return await this.setData(cacheKey, value, Constants.oneSecond() * 12);
     }
 
     async setShardCurrentBlockNonce(
@@ -27,7 +25,7 @@ export class ContextSetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         const cacheKey = this.getContextCacheKey('shardBlockNonce', shardID);
-        return await this.setData(cacheKey, value, oneSecond() * 12);
+        return await this.setData(cacheKey, value, Constants.oneSecond() * 12);
     }
 
     private getContextCacheKey(...args: any) {

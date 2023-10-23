@@ -1,21 +1,18 @@
-import { register, Histogram, collectDefaultMetrics, Gauge } from 'prom-client';
+import { MetricsService } from '@multiversx/sdk-nestjs-monitoring';
+import { register, Histogram, Gauge } from 'prom-client';
 
 export class MetricsCollector {
     private static fieldDurationHistogram: Histogram<string>;
     private static queryDurationHistogram: Histogram<string>;
     private static queryCpuHistogram: Histogram<string>;
-    private static redisDurationHistogram: Histogram<string>;
-    private static externalCallsHistogram: Histogram<string>;
     private static awsQueryDurationHistogram: Histogram<string>;
     private static dataApiQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
     private static guestQueriesGauge: Gauge<string>;
-    private static guestHitsGauge: Gauge<string>;
-    private static guestNoCacheHitsGauge: Gauge<string>;
-    private static guestHitQueriesGauge: Gauge<string>;
     private static currentNonceGauge: Gauge<string>;
     private static lastProcessedNonceGauge: Gauge<string>;
-    private static isDefaultMetricsRegistered = false;
+
+    private static baseMetrics = new MetricsService();
 
     static ensureIsInitialized() {
         if (!MetricsCollector.fieldDurationHistogram) {
@@ -41,24 +38,6 @@ export class MetricsCollector {
                 name: 'query_cpu',
                 help: 'The CPU time it takes to resolve a query',
                 labelNames: ['query', 'origin'],
-                buckets: [],
-            });
-        }
-
-        if (!MetricsCollector.redisDurationHistogram) {
-            MetricsCollector.redisDurationHistogram = new Histogram({
-                name: 'redis_duration',
-                help: 'The time it takes to get from redis',
-                labelNames: ['redis'],
-                buckets: [],
-            });
-        }
-
-        if (!MetricsCollector.externalCallsHistogram) {
-            MetricsCollector.externalCallsHistogram = new Histogram({
-                name: 'external_apis',
-                help: 'External Calls',
-                labelNames: ['system', 'func'],
                 buckets: [],
             });
         }
@@ -106,41 +85,12 @@ export class MetricsCollector {
             });
         }
 
-        if (!MetricsCollector.guestNoCacheHitsGauge) {
-            MetricsCollector.guestNoCacheHitsGauge = new Gauge({
-                name: 'guest_no_cache_hits',
-                help: 'Request no-cache hits for guest users',
-                labelNames: [],
-            });
-        }
-
         if (!MetricsCollector.guestQueriesGauge) {
             MetricsCollector.guestQueriesGauge = new Gauge({
                 name: 'guest_queries',
                 help: 'Guest queries by operation',
                 labelNames: ['operation'],
             });
-        }
-
-        if (!MetricsCollector.guestHitsGauge) {
-            MetricsCollector.guestHitsGauge = new Gauge({
-                name: 'guest_hits',
-                help: 'Request hits for guest users',
-                labelNames: [],
-            });
-        }
-
-        if (!MetricsCollector.guestHitQueriesGauge) {
-            MetricsCollector.guestHitQueriesGauge = new Gauge({
-                name: 'guest_hit_queries',
-                help: 'Distinct queries for guest hit caching',
-                labelNames: [],
-            });
-        }
-
-        if (!MetricsCollector.isDefaultMetricsRegistered) {
-            MetricsCollector.isDefaultMetricsRegistered = true;
-            collectDefaultMetrics();
         }
     }
 
@@ -167,19 +117,13 @@ export class MetricsCollector {
 
     static setRedisDuration(action: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
-        MetricsCollector.externalCallsHistogram
-            .labels('redis', action)
-            .observe(duration);
-        MetricsCollector.redisDurationHistogram
-            .labels(action)
-            .observe(duration);
+        MetricsCollector.baseMetrics.setExternalCall('redis', duration);
+        MetricsCollector.baseMetrics.setRedisDuration(action, duration);
     }
 
     static setExternalCall(system: string, func: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
-        MetricsCollector.externalCallsHistogram
-            .labels(system, func)
-            .observe(duration);
+        MetricsCollector.baseMetrics.setExternalCall(system, duration);
     }
 
     static setAWSQueryDuration(queryName: string, duration: number) {
@@ -224,20 +168,23 @@ export class MetricsCollector {
 
     static incrementGuestHits() {
         MetricsCollector.ensureIsInitialized();
-        MetricsCollector.guestHitsGauge.inc();
+        MetricsService.incrementGuestHits();
     }
 
     static incrementGuestNoCacheHits() {
         MetricsCollector.ensureIsInitialized();
-        MetricsCollector.guestNoCacheHitsGauge.inc();
+        MetricsService.incrementGuestNoCacheHits();
     }
 
     static setGuestHitQueries(count: number) {
         MetricsCollector.ensureIsInitialized();
-        MetricsCollector.guestHitQueriesGauge.set(count);
+        MetricsService.setGuestHitQueries(count);
     }
 
     static async getMetrics(): Promise<string> {
-        return register.metrics();
+        const baseMetrics = await MetricsCollector.baseMetrics.getMetrics();
+        const currentMetrics = await register.metrics();
+
+        return baseMetrics + '\n' + currentMetrics;
     }
 }
