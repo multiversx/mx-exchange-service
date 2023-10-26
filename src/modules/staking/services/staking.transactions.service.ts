@@ -15,12 +15,14 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { StakingAbiService } from './staking.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class StakingTransactionService {
     constructor(
         private readonly stakingAbi: StakingAbiService,
         private readonly mxProxy: MXProxyService,
+        private readonly mxApi: MXApiService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -178,6 +180,46 @@ export class StakingTransactionService {
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+    }
+
+    async migrateTotalStakingPosition(
+        stakingAddress: string,
+        userAddress: string,
+    ): Promise<TransactionModel[]> {
+        const [stakeTokenID, migrationNonce, userNftsCount] = await Promise.all(
+            [
+                this.stakingAbi.farmTokenID(stakingAddress),
+                this.stakingAbi.farmPositionMigrationNonce(stakingAddress),
+                this.mxApi.getNftsCountForUser(userAddress),
+            ],
+        );
+
+        const userNfts = await this.mxApi.getNftsForUser(
+            userAddress,
+            0,
+            userNftsCount,
+            'MetaESDT',
+            [stakeTokenID],
+        );
+
+        if (userNfts.length === 0) {
+            return [];
+        }
+
+        const promises: Promise<TransactionModel>[] = [];
+        userNfts.forEach((nft) => {
+            if (nft.nonce < migrationNonce) {
+                promises.push(
+                    this.claimRewards(userAddress, stakingAddress, {
+                        tokenID: nft.collection,
+                        nonce: nft.nonce,
+                        amount: nft.balance,
+                    }),
+                );
+            }
+        });
+
+        return Promise.all(promises);
     }
 
     async topUpRewards(

@@ -327,6 +327,18 @@ export class StakingResolver {
         );
     }
 
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [TransactionModel])
+    async migrateTotalStakingPosition(
+        @Args('stakeAddress') stakeAddress: string,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel[]> {
+        return this.stakingTransactionService.migrateTotalStakingPosition(
+            stakeAddress,
+            user.address,
+        );
+    }
+
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setPerBlockRewardAmount(
