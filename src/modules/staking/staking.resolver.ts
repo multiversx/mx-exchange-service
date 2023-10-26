@@ -225,6 +225,13 @@ export class StakingResolver {
         return this.stakingAbi.undistributedBoostedRewards(parent.address);
     }
 
+    @ResolveField()
+    async stakingPositionMigrationNonce(
+        @Parent() parent: StakingModel,
+    ): Promise<number> {
+        return this.stakingAbi.farmPositionMigrationNonce(parent.address);
+    }
+
     @Query(() => String)
     async getLastErrorMessage(
         @Args('stakeAddress') stakeAddress: string,

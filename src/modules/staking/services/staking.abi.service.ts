@@ -678,6 +678,31 @@ export class StakingAbiService
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
+    async farmPositionMigrationNonce(stakeAddress: string): Promise<number> {
+        return await this.getFarmPositionMigrationNonceRaw(stakeAddress);
+    }
+
+    async getFarmPositionMigrationNonceRaw(
+        stakeAddress: string,
+    ): Promise<number> {
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmPositionMigrationNonce();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
     async stakingShard(stakeAddress: string): Promise<number> {
         return await this.getStakingShardRaw(stakeAddress);
     }

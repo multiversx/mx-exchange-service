@@ -68,6 +68,11 @@ export class StakingModel {
     undistributedBoostedRewards: string;
     @Field()
     undistributedBoostedRewardsClaimed: string;
+    @Field({
+        description:
+            'The nonce of the first staking farm token with total farm position',
+    })
+    stakingPositionMigrationNonce: number;
 
     constructor(init?: Partial<StakingModel>) {
         Object.assign(this, init);
