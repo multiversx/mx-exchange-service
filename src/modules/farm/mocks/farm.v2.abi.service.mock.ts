@@ -2,6 +2,7 @@ import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
 import { FarmAbiServiceMock } from './farm.abi.service.mock';
 import { IFarmAbiServiceV2 } from '../v2/services/interfaces';
 import { BoostedYieldsFactors } from '../models/farm.v2.model';
+import BigNumber from 'bignumber.js';
 
 export class FarmAbiServiceMockV2
     extends FarmAbiServiceMock
@@ -22,27 +23,40 @@ export class FarmAbiServiceMockV2
         return '1000';
     }
 
-    accumulatedRewardsForWeek(
+    async accumulatedRewardsForWeek(
         scAddress: string,
         week: number,
     ): Promise<string> {
-        throw new Error('Method not implemented.');
+        return new BigNumber('1000000000000000000')
+            .multipliedBy(10 * 60 * 24 * 7)
+            .multipliedBy(0.6)
+            .toFixed();
     }
 
-    boostedYieldsFactors(farmAddress: string): Promise<BoostedYieldsFactors> {
-        throw new Error('Method not implemented.');
+    async boostedYieldsFactors(
+        farmAddress: string,
+    ): Promise<BoostedYieldsFactors> {
+        return {
+            maxRewardsFactor: '2',
+            minFarmAmount: '1',
+            minEnergyAmount: '1',
+            userRewardsFarm: '0',
+            userRewardsEnergy: '1',
+        };
     }
 
-    boostedYieldsRewardsPercenatage(farmAddress: string): Promise<number> {
-        throw new Error('Method not implemented.');
+    async boostedYieldsRewardsPercenatage(
+        farmAddress: string,
+    ): Promise<number> {
+        return 6000;
     }
 
     energyFactoryAddress(farmAddress: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
 
-    lockEpochs(farmAddress: string): Promise<number> {
-        throw new Error('Method not implemented.');
+    async lockEpochs(farmAddress: string): Promise<number> {
+        return 1440;
     }
 
     lockingScAddress(farmAddress: string): Promise<string> {

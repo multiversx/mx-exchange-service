@@ -31,13 +31,16 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
-    async accumulatedRewards(@Parent() parent: FarmModelV2): Promise<string> {
+    async accumulatedRewards(
+        @Parent() parent: FarmModelV2,
+        @Args('week', { nullable: true }) week: number,
+    ): Promise<string> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
         return this.farmAbi.accumulatedRewardsForWeek(
             parent.address,
-            currentWeek,
+            week ?? currentWeek,
         );
     }
 

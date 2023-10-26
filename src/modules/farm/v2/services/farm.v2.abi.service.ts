@@ -251,15 +251,10 @@ export class FarmAbiServiceV2
         scAddress: string,
         week: number,
     ): Promise<string> {
-        const hexValue = await this.gatewayService.getSCStorageKeys(scAddress, [
-            'accumulatedRewardsForWeek',
-            week,
-        ]);
-        return new BigNumber(hexValue, 16).integerValue().toFixed();
         // TODO: remove the code above after the contracts are upgraded with the required view
         const contract = await this.mxProxy.getFarmSmartContract(scAddress);
         const interaction: Interaction =
-            contract.methodsExplicit.getAccumulatedFees([
+            contract.methodsExplicit.getAccumulatedRewardsForWeek([
                 new U32Value(new BigNumber(week)),
             ]);
         const response = await this.getGenericData(interaction);

@@ -55,7 +55,6 @@ export class UserInfoByWeekResolver {
             parent.scAddress,
             parent.userAddress,
             parent.week,
-            parent.positionAmount,
         );
     }
 
@@ -74,7 +73,6 @@ export class UserInfoByWeekResolver {
             parent.scAddress,
             parent.userAddress,
             parent.week,
-            parent.positionAmount,
         );
     }
 }
