@@ -226,70 +226,6 @@ export class StakingTransactionService {
             .toPlainObject();
     }
 
-    async setPenaltyPercent(
-        stakeAddress: string,
-        percent: number,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        return contract.methodsExplicit
-            .set_penalty_percent([new BigUIntValue(new BigNumber(percent))])
-            .withGasLimit(gasConfig.stake.admin.set_penalty_percent)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    async setMinimumFarmingEpochs(
-        stakeAddress: string,
-        epochs: number,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        return contract.methodsExplicit
-            .set_minimum_farming_epochs([
-                new BigUIntValue(new BigNumber(epochs)),
-            ])
-            .withGasLimit(gasConfig.stake.admin.set_minimum_farming_epochs)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    async setBurnGasLimit(
-        stakeAddress: string,
-        gasLimit: number,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        return contract.methodsExplicit
-            .set_burn_gas_limit([new BigUIntValue(new BigNumber(gasLimit))])
-            .withGasLimit(gasConfig.stake.admin.set_burn_gas_limit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    async setTransferExecGasLimit(
-        stakeAddress: string,
-        gasLimit: number,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        return contract.methodsExplicit
-            .set_transfer_exec_gas_limit([
-                new BigUIntValue(new BigNumber(gasLimit)),
-            ])
-            .withGasLimit(gasConfig.stake.admin.set_transfer_exec_gas_limit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
     async setAddressWhitelist(
         stakeAddress: string,
         address: string,
@@ -301,7 +237,7 @@ export class StakingTransactionService {
 
         if (whitelist)
             return contract.methodsExplicit
-                .addAddressToWhitelist([
+                .addSCAddressToWhitelist([
                     new AddressValue(Address.fromString(address)),
                 ])
                 .withGasLimit(gasConfig.stake.admin.whitelist)
@@ -310,7 +246,7 @@ export class StakingTransactionService {
                 .toPlainObject();
 
         return contract.methodsExplicit
-            .removeAddressFromWhitelist([
+            .removeSCAddressFromWhitelist([
                 new AddressValue(Address.fromString(address)),
             ])
             .withGasLimit(gasConfig.stake.admin.whitelist)
@@ -350,7 +286,7 @@ export class StakingTransactionService {
             stakeAddress,
         );
         return contract.methodsExplicit
-            .setLocalRolesFarmToken()
+            .setBurnRoleForAddress()
             .withGasLimit(gasConfig.stake.admin.setLocalRolesFarmToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -443,7 +379,7 @@ export class StakingTransactionService {
                 .toPlainObject();
 
         return contract.methodsExplicit
-            .end_produce_rewards()
+            .endProduceRewards()
             .withGasLimit(gasConfig.stake.admin.setRewardsState)
             .withChainID(mxConfig.chainID)
             .buildTransaction()

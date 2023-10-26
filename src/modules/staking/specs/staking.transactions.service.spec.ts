@@ -281,122 +281,6 @@ describe('StakingTransactionService', () => {
         });
     });
 
-    it('should get set penalty percent transaction', async () => {
-        const service = module.get<StakingTransactionService>(
-            StakingTransactionService,
-        );
-
-        const transaction = await service.setPenaltyPercent(
-            Address.Zero().bech32(),
-            5,
-        );
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
-            receiverUsername: undefined,
-            senderUsername: undefined,
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.set_penalty_percent,
-            data: encodeTransactionData('set_penalty_percent@05'),
-            chainID: 'T',
-            version: 1,
-            options: undefined,
-            signature: undefined,
-            guardian: undefined,
-            guardianSignature: undefined,
-        });
-    });
-
-    it('should get set minimum farming epochs transaction', async () => {
-        const service = module.get<StakingTransactionService>(
-            StakingTransactionService,
-        );
-
-        const transaction = await service.setMinimumFarmingEpochs(
-            Address.Zero().bech32(),
-            10,
-        );
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
-            receiverUsername: undefined,
-            senderUsername: undefined,
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.set_minimum_farming_epochs,
-            data: encodeTransactionData('set_minimum_farming_epochs@10'),
-            chainID: 'T',
-            version: 1,
-            options: undefined,
-            signature: undefined,
-            guardian: undefined,
-            guardianSignature: undefined,
-        });
-    });
-
-    it('should get set burn gas limit transaction', async () => {
-        const service = module.get<StakingTransactionService>(
-            StakingTransactionService,
-        );
-
-        const transaction = await service.setBurnGasLimit(
-            Address.Zero().bech32(),
-            1000000,
-        );
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
-            receiverUsername: undefined,
-            senderUsername: undefined,
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.set_burn_gas_limit,
-            data: encodeTransactionData('set_burn_gas_limit@01000000'),
-            chainID: 'T',
-            version: 1,
-            options: undefined,
-            signature: undefined,
-            guardian: undefined,
-            guardianSignature: undefined,
-        });
-    });
-
-    it('should get set transfer exec gas limit transaction', async () => {
-        const service = module.get<StakingTransactionService>(
-            StakingTransactionService,
-        );
-
-        const transaction = await service.setTransferExecGasLimit(
-            Address.Zero().bech32(),
-            1000000,
-        );
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
-            receiverUsername: undefined,
-            senderUsername: undefined,
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.set_transfer_exec_gas_limit,
-            data: encodeTransactionData('set_transfer_exec_gas_limit@01000000'),
-            chainID: 'T',
-            version: 1,
-            options: undefined,
-            signature: undefined,
-            guardian: undefined,
-            guardianSignature: undefined,
-        });
-    });
-
     it('should get add address to whitelist transaction', async () => {
         const service = module.get<StakingTransactionService>(
             StakingTransactionService,
@@ -418,7 +302,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.whitelist,
             data: encodeTransactionData(
-                'addAddressToWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                'addSCAddressToWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: 'T',
             version: 1,
@@ -450,7 +334,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.whitelist,
             data: encodeTransactionData(
-                'removeAddressFromWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                'removeSCAddressFromWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: 'T',
             version: 1,
@@ -570,7 +454,7 @@ describe('StakingTransactionService', () => {
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setLocalRolesFarmToken,
-            data: encodeTransactionData('setLocalRolesFarmToken'),
+            data: encodeTransactionData('setBurnRoleForAddress'),
             chainID: 'T',
             version: 1,
             options: undefined,
@@ -715,7 +599,7 @@ describe('StakingTransactionService', () => {
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setRewardsState,
-            data: encodeTransactionData('end_produce_rewards'),
+            data: encodeTransactionData('endProduceRewards'),
             chainID: 'T',
             version: 1,
             options: undefined,

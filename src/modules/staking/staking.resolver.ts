@@ -1,12 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import {
-    Args,
-    Int,
-    Parent,
-    Query,
-    ResolveField,
-    Resolver,
-} from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -32,6 +25,8 @@ import { StakingTransactionService } from './services/staking.transactions.servi
 import { StakingAbiService } from './services/staking.abi.service';
 import { StakingComputeService } from './services/staking.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -40,6 +35,7 @@ export class StakingResolver {
         private readonly stakingAbi: StakingAbiService,
         private readonly stakingCompute: StakingComputeService,
         private readonly stakingTransactionService: StakingTransactionService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
     ) {}
 
     @ResolveField()
@@ -118,23 +114,19 @@ export class StakingResolver {
     }
 
     @ResolveField()
-    async pairContractManagedAddress(@Parent() parent: StakingModel) {
-        return this.stakingAbi.pairContractAddress(parent.address);
-    }
-
-    @ResolveField()
-    async burnGasLimit(@Parent() parent: StakingModel) {
-        return this.stakingAbi.burnGasLimit(parent.address);
-    }
-
-    @ResolveField()
-    async transferExecGasLimit(@Parent() parent: StakingModel) {
-        return this.stakingAbi.transferExecGasLimit(parent.address);
-    }
-
-    @ResolveField()
     async state(@Parent() parent: StakingModel) {
         return this.stakingAbi.state(parent.address);
+    }
+
+    @ResolveField()
+    async time(@Parent() parent: StakingModel): Promise<WeekTimekeepingModel> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return new WeekTimekeepingModel({
+            scAddress: parent.address,
+            currentWeek: currentWeek,
+        });
     }
 
     @Query(() => String)
@@ -217,34 +209,6 @@ export class StakingResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async setPenaltyPercent(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('percent') percent: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setPenaltyPercent(
-            farmStakeAddress,
-            percent,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setMinimumFarmingEpochs(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('epochs') epochs: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setMinimumFarmingEpochs(
-            farmStakeAddress,
-            epochs,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
     async setPerBlockRewardAmount(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('perBlockAmount') perBlockAmount: string,
@@ -308,34 +272,6 @@ export class StakingResolver {
         return this.stakingTransactionService.setRewardsState(
             farmStakeAddress,
             false,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setBurnGasLimit(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('gasLimit') gasLimit: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setBurnGasLimit(
-            farmStakeAddress,
-            gasLimit,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setTransferExecGasLimit(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('gasLimit') gasLimit: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setTransferExecGasLimit(
-            farmStakeAddress,
-            gasLimit,
         );
     }
 
