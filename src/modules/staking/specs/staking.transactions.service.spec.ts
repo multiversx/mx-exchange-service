@@ -14,6 +14,8 @@ import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('StakingTransactionService', () => {
     let module: TestingModule;
@@ -33,6 +35,7 @@ describe('StakingTransactionService', () => {
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
                 MXGatewayService,
+                MXApiServiceProvider,
                 ApiConfigService,
             ],
         }).compile();
@@ -205,6 +208,56 @@ describe('StakingTransactionService', () => {
             options: undefined,
             signature: undefined,
         });
+    });
+
+    it('should get total staking migrate transaction', async () => {
+        const service = module.get<StakingTransactionService>(
+            StakingTransactionService,
+        );
+        const mxApi = module.get<MXApiService>(MXApiService);
+        jest.spyOn(mxApi, 'getNftsForUser').mockResolvedValue([
+            {
+                identifier: 'STAKETOK-1111-01',
+                collection: 'STAKETOK-1111',
+                attributes:
+                    'AAAABHA3g/MAAAAAAAAACA3gtrOnZAAAYLtgEaeB64tT1h15BHRQrapGl34gI5MSlRJiwQV9EJA=',
+                nonce: 1,
+                type: 'MetaESDT',
+                name: 'STAKETOK',
+                creator: Address.Zero().bech32(),
+                balance: '1000000000000000000',
+                decimals: 18,
+                ticker: 'STAKETOK',
+            },
+        ]);
+
+        const transactions = await service.migrateTotalStakingPosition(
+            Address.Zero().bech32(),
+            Address.Zero().bech32(),
+        );
+
+        expect(transactions).toEqual([
+            {
+                nonce: 0,
+                value: '0',
+                receiver:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                senderUsername: undefined,
+                receiverUsername: undefined,
+                gasPrice: 1000000000,
+                gasLimit: 17000000,
+                data: encodeTransactionData(
+                    'ESDTNFTTransfer@STAKETOK-1111@01@1000000000000000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
+                ),
+                chainID: 'T',
+                version: 1,
+                options: undefined,
+                guardian: undefined,
+                signature: undefined,
+                guardianSignature: undefined,
+            },
+        ]);
     });
 
     it('should get top up rewards transaction', async () => {
