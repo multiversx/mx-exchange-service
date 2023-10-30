@@ -261,7 +261,8 @@
                     "withTokenMerge": 40000000
                 },
                 "removeLiquidity": 30000000,
-                "defaultMergeWLPT": 20000000
+                "defaultMergeWLPT": 20000000,
+                "increaseEnergy": 20000000
             },
             "farms": {
                 "v1.2": {

@@ -16,6 +16,7 @@ import { ProxyQueryResolver } from './proxy.query.resolver';
 import { ProxyResolver } from './proxy.resolver';
 import { WrappedLpTokenAttributesResolverV2 } from './wrappedLp.token.v2.resolver';
 import { WrappedFarmTokenResolverV2 } from './wrappedFarm.token.v2.resolver';
+import { EnergyModule } from '../energy/energy.module';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { WrappedFarmTokenResolverV2 } from './wrappedFarm.token.v2.resolver';
         forwardRef(() => ProxyFarmModule),
         forwardRef(() => ProxyModuleV2),
         FarmModule,
+        EnergyModule,
     ],
     providers: [
         ProxyAbiService,
