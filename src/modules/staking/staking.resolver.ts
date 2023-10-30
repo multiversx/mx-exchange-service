@@ -27,6 +27,9 @@ import { StakingComputeService } from './services/staking.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { constantsConfig } from 'src/config';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -36,6 +39,7 @@ export class StakingResolver {
         private readonly stakingCompute: StakingComputeService,
         private readonly stakingTransactionService: StakingTransactionService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {}
 
     @ResolveField()
@@ -127,6 +131,68 @@ export class StakingResolver {
             scAddress: parent.address,
             currentWeek: currentWeek,
         });
+    }
+
+    @ResolveField()
+    async boosterRewards(
+        @Parent() parent: StakingModel,
+    ): Promise<GlobalInfoByWeekModel[]> {
+        const modelsList = [];
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        for (
+            let week = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS;
+            week <= currentWeek;
+            week++
+        ) {
+            if (week < 1) {
+                continue;
+            }
+            modelsList.push(
+                new GlobalInfoByWeekModel({
+                    scAddress: parent.address,
+                    week: week,
+                }),
+            );
+        }
+        return modelsList;
+    }
+
+    @ResolveField()
+    async lastGlobalUpdateWeek(
+        @Parent() parent: StakingModel,
+    ): Promise<number> {
+        return this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(
+            parent.address,
+        );
+    }
+
+    @ResolveField()
+    async energyFactoryAddress(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        return this.stakingAbi.energyFactoryAddress(parent.address);
+    }
+
+    @ResolveField()
+    async undistributedBoostedRewards(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return this.stakingCompute.undistributedBoostedRewards(
+            parent.address,
+            currentWeek,
+        );
+    }
+
+    @ResolveField()
+    async undistributedBoostedRewardsClaimed(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        return this.stakingAbi.undistributedBoostedRewards(parent.address);
     }
 
     @Query(() => String)

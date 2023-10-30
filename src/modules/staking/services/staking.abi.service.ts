@@ -5,6 +5,7 @@ import {
     BytesValue,
     Interaction,
     TypedValue,
+    U32Value,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
@@ -430,5 +431,103 @@ export class StakingAbiService
             contract.methodsExplicit.getLastErrorMessage();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async energyFactoryAddress(stakeAddress: string): Promise<string> {
+        return await this.getEnergyFactoryAddressRaw(stakeAddress);
+    }
+
+    async getEnergyFactoryAddressRaw(stakeAddress: string): Promise<string> {
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getEnergyFactoryAddress();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().bech32();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async undistributedBoostedRewards(stakeAddress: string): Promise<string> {
+        return await this.getUndistributedBoostedRewardsRaw(stakeAddress);
+    }
+
+    async getUndistributedBoostedRewardsRaw(
+        stakeAddress: string,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getUndistributedBoostedRewards();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async lastUndistributedBoostedRewardsCollectWeek(
+        stakeAddress: string,
+    ): Promise<number> {
+        return this.gatewayService.getSCStorageKey(
+            stakeAddress,
+            'lastUndistributedBoostedRewardsCollectWeek',
+        );
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async remainingBoostedRewardsToDistribute(
+        stakeAddress: string,
+        week: number,
+    ): Promise<string> {
+        return await this.getRemainingBoostedRewardsToDistributeRaw(
+            stakeAddress,
+            week,
+        );
+    }
+
+    async getRemainingBoostedRewardsToDistributeRaw(
+        stakeAddress: string,
+        week: number,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getRemainingBoostedRewardsToDistribute([
+                new U32Value(new BigNumber(week)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 }

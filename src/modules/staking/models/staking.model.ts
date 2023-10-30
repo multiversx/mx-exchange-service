@@ -3,6 +3,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { StakingTokenAttributesModel } from './stakingTokenAttributes.model';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 
 @ObjectType()
 export class StakingModel {
@@ -42,6 +43,18 @@ export class StakingModel {
     state: string;
     @Field({ description: 'Timekeeping for boosted rewards' })
     time: WeekTimekeepingModel;
+    @Field(() => [GlobalInfoByWeekModel], {
+        description: 'Global info for boosted rewards',
+    })
+    boosterRewards: [GlobalInfoByWeekModel];
+    @Field()
+    lastGlobalUpdateWeek: number;
+    @Field()
+    energyFactoryAddress: string;
+    @Field()
+    undistributedBoostedRewards: string;
+    @Field()
+    undistributedBoostedRewardsClaimed: string;
 
     constructor(init?: Partial<StakingModel>) {
         Object.assign(this, init);

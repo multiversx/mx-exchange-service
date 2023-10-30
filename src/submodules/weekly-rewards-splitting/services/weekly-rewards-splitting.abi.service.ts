@@ -20,6 +20,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { IWeeklyRewardsSplittingAbiService } from '../interfaces';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService
@@ -28,6 +29,7 @@ export class WeeklyRewardsSplittingAbiService
 {
     constructor(
         protected readonly mxProxy: MXProxyService,
+        private readonly remoteConfig: RemoteConfigGetterService,
         private readonly weekTimekeepCompute: WeekTimekeepingComputeService,
     ) {
         super(mxProxy);
@@ -291,11 +293,16 @@ export class WeeklyRewardsSplittingAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    private getContractHandler(
+    private async getContractHandler(
         contractAddress: string,
     ): Promise<SmartContract> {
         if (scAddress.feesCollector === contractAddress) {
             return this.mxProxy.getFeesCollectorContract();
+        }
+
+        const stakingAddresses = await this.remoteConfig.getStakingAddresses();
+        if (stakingAddresses.includes(contractAddress)) {
+            return this.mxProxy.getStakingSmartContract(contractAddress);
         }
 
         return this.mxProxy.getFarmSmartContract(contractAddress);
