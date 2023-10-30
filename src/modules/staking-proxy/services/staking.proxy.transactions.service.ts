@@ -20,6 +20,8 @@ import {
 } from '../models/staking.proxy.args.model';
 import { StakingProxyService } from './staking.proxy.service';
 import { StakingProxyAbiService } from './staking.proxy.abi.service';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 
 @Injectable()
 export class StakingProxyTransactionService {
@@ -28,6 +30,8 @@ export class StakingProxyTransactionService {
         private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly pairService: PairService,
         private readonly farmFactory: FarmFactoryService,
+        private readonly farmAbiV2: FarmAbiServiceV2,
+        private readonly stakingAbi: StakingAbiService,
         private readonly mxProxy: MXProxyService,
         private readonly apiService: MXApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -193,6 +197,72 @@ export class StakingProxyTransactionService {
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+    }
+
+    async migrateDualYieldTokens(
+        proxyStakeAddress: string,
+        userAddress: string,
+    ): Promise<TransactionModel | undefined> {
+        const [dualYieldTokenID, farmAddress, stakingAddress, userNftsCount] =
+            await Promise.all([
+                this.stakeProxyAbi.dualYieldTokenID(proxyStakeAddress),
+                this.stakeProxyAbi.lpFarmAddress(proxyStakeAddress),
+                this.stakeProxyAbi.stakingFarmAddress(proxyStakeAddress),
+                this.apiService.getNftsCountForUser(userAddress),
+            ]);
+
+        const userNfts = await this.apiService.getNftsForUser(
+            userAddress,
+            0,
+            userNftsCount,
+            'MetaESDT',
+            [dualYieldTokenID],
+        );
+
+        if (userNfts.length === 0) {
+            return undefined;
+        }
+
+        const [farmMigrationNonce, stakingMigrationNonce] = await Promise.all([
+            this.farmAbiV2.farmPositionMigrationNonce(farmAddress),
+            this.stakingAbi.farmPositionMigrationNonce(stakingAddress),
+        ]);
+
+        const userDualYiledTokensAttrs =
+            this.stakeProxyService.decodeDualYieldTokenAttributes({
+                batchAttributes: userNfts.map((nft) => {
+                    return {
+                        identifier: nft.identifier,
+                        attributes: nft.attributes,
+                    };
+                }),
+            });
+
+        const payments: InputTokenModel[] = [];
+        userDualYiledTokensAttrs.forEach(
+            (dualYieldTokenAttrs, index: number) => {
+                if (
+                    dualYieldTokenAttrs.lpFarmTokenNonce < farmMigrationNonce ||
+                    dualYieldTokenAttrs.stakingFarmTokenNonce <
+                        stakingMigrationNonce
+                ) {
+                    payments.push({
+                        tokenID: userNfts[index].identifier,
+                        nonce: userNfts[index].nonce,
+                        amount: userNfts[index].balance,
+                    });
+                }
+            },
+        );
+
+        if (payments.length > 0) {
+            return this.claimDualYield(userAddress, {
+                proxyStakingAddress: proxyStakeAddress,
+                payments: payments,
+            });
+        }
+
+        return undefined;
     }
 
     private async validateInputTokens(
