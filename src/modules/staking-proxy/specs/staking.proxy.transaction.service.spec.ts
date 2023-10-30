@@ -12,8 +12,6 @@ import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.servic
 import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
-import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
-import { FarmAbiServiceMock } from 'src/modules/farm/mocks/farm.abi.service.mock';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
@@ -41,6 +39,9 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { FarmAbiServiceProviderV2 } from 'src/modules/farm/mocks/farm.v2.abi.service.mock';
+import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -76,10 +77,8 @@ describe('StakingProxyTransactionService', () => {
                 FarmComputeServiceV2,
                 FarmAbiServiceProviderV1_2,
                 FarmAbiServiceProviderV1_3,
-                {
-                    provide: FarmAbiServiceV2,
-                    useClass: FarmAbiServiceMock,
-                },
+                FarmAbiServiceProviderV2,
+                StakingAbiServiceProvider,
                 ContextGetterServiceProvider,
                 WeekTimekeepingAbiServiceProvider,
                 WeekTimekeepingComputeService,
@@ -158,7 +157,7 @@ describe('StakingProxyTransactionService', () => {
                         amount: '1',
                     },
                     {
-                        tokenID: 'METASTAKE-1234',
+                        tokenID: 'METASTAKE-123456',
                         nonce: 1,
                         amount: '1',
                     },
@@ -176,7 +175,7 @@ describe('StakingProxyTransactionService', () => {
                 sender: Address.Zero().bech32(),
                 receiver: Address.Zero().bech32(),
                 data: encodeTransactionData(
-                    `MultiESDTNFTTransfer@${Address.Zero().bech32()}@02@EGLDTOK4FL-abcdef@01@1@METASTAKE-1234@01@1@stakeFarmTokens`,
+                    `MultiESDTNFTTransfer@${Address.Zero().bech32()}@02@EGLDTOK4FL-abcdef@01@1@METASTAKE-123456@01@1@stakeFarmTokens`,
                 ),
                 options: undefined,
                 signature: undefined,
@@ -236,4 +235,114 @@ describe('StakingProxyTransactionService', () => {
             }
         },
     );
+
+    describe('dual yield token migration', () => {
+        const expectedTransactionStub = {
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            senderUsername: undefined,
+            receiverUsername: undefined,
+            gasPrice: 1000000000,
+            gasLimit: 50000000,
+            data: encodeTransactionData(
+                `MultiESDTNFTTransfer@0000000000000000000000000000000000000000000000000000000000000000@01@METASTAKE-123456@01@1000000000000000000@claimDualYield`,
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            guardian: undefined,
+            signature: undefined,
+            guardianSignature: undefined,
+        };
+
+        it('migrate on staking token', async () => {
+            const service = module.get<StakingProxyTransactionService>(
+                StakingProxyTransactionService,
+            );
+            const mxApi = module.get<MXApiService>(MXApiService);
+            jest.spyOn(mxApi, 'getNftsForUser').mockResolvedValue([
+                {
+                    identifier: 'METASTAKE-123456-01',
+                    collection: 'METASTAKE-123456',
+                    attributes:
+                        'AAAAAAAAAAsAAAAIAvm+bx2CRdUAAAAAAAAAAQAAAAkDigAw1aDQ9RM=',
+                    nonce: 1,
+                    type: 'MetaESDT',
+                    name: 'MetaStaked',
+                    creator: Address.Zero().bech32(),
+                    balance: '1000000000000000000',
+                    decimals: 18,
+                    ticker: 'METASTAKE-123456',
+                },
+            ]);
+
+            const transaction = await service.migrateDualYieldTokens(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+            );
+
+            expect(transaction).toEqual(expectedTransactionStub);
+        });
+
+        it('migrate on lp farm token', async () => {
+            const service = module.get<StakingProxyTransactionService>(
+                StakingProxyTransactionService,
+            );
+            const mxApi = module.get<MXApiService>(MXApiService);
+            jest.spyOn(mxApi, 'getNftsForUser').mockResolvedValue([
+                {
+                    identifier: 'METASTAKE-123456-01',
+                    collection: 'METASTAKE-123456',
+                    attributes:
+                        'AAAAAAAAAAkAAAAIAvm+bx2CRdUAAAAAAAAAAwAAAAkDigAw1aDQ9RM=',
+                    nonce: 1,
+                    type: 'MetaESDT',
+                    name: 'MetaStaked',
+                    creator: Address.Zero().bech32(),
+                    balance: '1000000000000000000',
+                    decimals: 18,
+                    ticker: 'METASTAKE-123456',
+                },
+            ]);
+
+            const transaction = await service.migrateDualYieldTokens(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+            );
+
+            expect(transaction).toEqual(expectedTransactionStub);
+        });
+
+        it('migrate on both tokens', async () => {
+            const service = module.get<StakingProxyTransactionService>(
+                StakingProxyTransactionService,
+            );
+            const mxApi = module.get<MXApiService>(MXApiService);
+            jest.spyOn(mxApi, 'getNftsForUser').mockResolvedValue([
+                {
+                    identifier: 'METASTAKE-123456-01',
+                    collection: 'METASTAKE-123456',
+                    attributes:
+                        'AAAAAAAAAAkAAAAIAvm+bx2CRdUAAAAAAAAAAQAAAAkDigAw1aDQ9RM=',
+                    nonce: 1,
+                    type: 'MetaESDT',
+                    name: 'MetaStaked',
+                    creator: Address.Zero().bech32(),
+                    balance: '1000000000000000000',
+                    decimals: 18,
+                    ticker: 'METASTAKE-123456',
+                },
+            ]);
+
+            const transaction = await service.migrateDualYieldTokens(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+            );
+
+            expect(transaction).toEqual(expectedTransactionStub);
+        });
+    });
 });

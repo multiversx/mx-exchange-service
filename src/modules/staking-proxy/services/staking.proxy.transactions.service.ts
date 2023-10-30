@@ -247,7 +247,7 @@ export class StakingProxyTransactionService {
                         stakingMigrationNonce
                 ) {
                     payments.push({
-                        tokenID: userNfts[index].identifier,
+                        tokenID: userNfts[index].collection,
                         nonce: userNfts[index].nonce,
                         amount: userNfts[index].balance,
                     });
