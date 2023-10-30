@@ -184,7 +184,7 @@ export class StakingSetterService extends GenericSetterService {
     ): Promise<string> {
         return this.setData(
             this.getCacheKey(
-                'userTotalFarmPosition',
+                'userTotalStakePosition',
                 stakeAddress,
                 userAddress,
             ),
