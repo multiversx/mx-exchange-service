@@ -176,4 +176,21 @@ export class StakingSetterService extends GenericSetterService {
             CacheTtlInfo.ContractState.localTtl,
         );
     }
+
+    async setUserTotalStakePosition(
+        stakeAddress: string,
+        userAddress: string,
+        value: string,
+    ): Promise<string> {
+        return this.setData(
+            this.getCacheKey(
+                'userTotalStakePosition',
+                stakeAddress,
+                userAddress,
+            ),
+            value,
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
+        );
+    }
 }
