@@ -25,6 +25,7 @@ export interface IFarmAbiServiceV2 extends IFarmAbiService {
         farmAddress: string,
         userAddress: string,
     ): Promise<string>;
+    farmPositionMigrationNonce(farmAddress: string): Promise<number>;
 }
 
 export interface IFarmComputeServiceV2 extends IFarmComputeService {
@@ -33,19 +34,16 @@ export interface IFarmComputeServiceV2 extends IFarmComputeService {
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<TokenDistributionModel[]>;
     userAccumulatedRewards(
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<string>;
     userRewardsForWeek(
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<EsdtTokenPayment[]>;
     optimalEnergyPerLP(scAddress: string, week: number): Promise<string>;
 }

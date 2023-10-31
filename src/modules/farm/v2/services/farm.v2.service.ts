@@ -129,7 +129,6 @@ export class FarmServiceV2 extends FarmServiceBase {
                     positon.farmAddress,
                     positon.user,
                     currentWeek,
-                    positon.liquidity,
                 );
         }
 
