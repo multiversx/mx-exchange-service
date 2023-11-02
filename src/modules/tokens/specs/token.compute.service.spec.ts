@@ -70,4 +70,18 @@ describe('TokenComputeService', () => {
         const price = await service.computeTokenPriceDerivedEGLD('TOK4-123456');
         expect(price).toEqual('0.01');
     });
+
+    it('should compute token price derived EGLD for TOK5-123456', async () => {
+        const service: TokenComputeService =
+            module.get<TokenComputeService>(TokenComputeService);
+        const price = await service.computeTokenPriceDerivedEGLD('TOK5-123456');
+        expect(price).toEqual('0.01');
+    });
+
+    it('should compute token price derived EGLD for TOK6-123456', async () => {
+        const service: TokenComputeService =
+            module.get<TokenComputeService>(TokenComputeService);
+        const price = await service.computeTokenPriceDerivedEGLD('TOK6-123456');
+        expect(price).toEqual('0.01');
+    });
 });
