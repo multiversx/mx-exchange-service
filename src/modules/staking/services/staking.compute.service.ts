@@ -399,11 +399,11 @@ export class StakingComputeService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    // @GetOrSetCache({
-    //     baseKey: 'stake',
-    //     remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
-    //     localTtl: CacheTtlInfo.ContractBalance.localTtl,
-    // })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
     async userAccumulatedRewards(
         scAddress: string,
         userAddress: string,
