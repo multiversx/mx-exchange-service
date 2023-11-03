@@ -3,7 +3,12 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { StakingTokenAttributesModel } from './stakingTokenAttributes.model';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
-import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import {
+    ClaimProgress,
+    GlobalInfoByWeekModel,
+    UserInfoByWeekModel,
+} from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 
 @ObjectType()
 export class StakingModel {
@@ -41,6 +46,12 @@ export class StakingModel {
     lockedAssetFactoryManagedAddress: string;
     @Field()
     state: string;
+    @Field(() => Int, { description: 'The percentage of boosted rewards' })
+    boostedYieldsRewardsPercenatage: number;
+    @Field(() => BoostedYieldsFactors, {
+        description: 'Factors used to compute boosted rewards',
+    })
+    boostedYieldsFactors: BoostedYieldsFactors;
     @Field({ description: 'Timekeeping for boosted rewards' })
     time: WeekTimekeepingModel;
     @Field(() => [GlobalInfoByWeekModel], {
@@ -51,6 +62,8 @@ export class StakingModel {
     lastGlobalUpdateWeek: number;
     @Field()
     energyFactoryAddress: string;
+    @Field({ description: 'Accumulated boosted rewards for specific week' })
+    accumulatedRewardsForWeek: string;
     @Field()
     undistributedBoostedRewards: string;
     @Field()
@@ -67,6 +80,14 @@ export class StakingRewardsModel {
     decodedAttributes: StakingTokenAttributesModel;
     @Field()
     rewards: string;
+    @Field(() => Int, { nullable: true })
+    remainingFarmingEpochs?: number;
+    @Field(() => [UserInfoByWeekModel], { nullable: true })
+    boostedRewardsWeeklyInfo: UserInfoByWeekModel[];
+    @Field(() => ClaimProgress, { nullable: true })
+    claimProgress: ClaimProgress;
+    @Field({ nullable: true })
+    accumulatedRewards: string;
 
     constructor(init?: Partial<StakingRewardsModel>) {
         Object.assign(this, init);

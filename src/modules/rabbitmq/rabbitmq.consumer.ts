@@ -169,30 +169,21 @@ export class RabbitMqConsumer {
                     this.updateIngestData(eventData);
                     break;
                 case FARM_EVENTS.ENTER_FARM:
-                    let isStakingAddress = await this.isStakingAddress(
-                        rawEvent.address,
-                    );
-                    if (isStakingAddress) {
+                    if (await this.isStakingAddress(rawEvent.address)) {
                         await this.stakingHandler.handleStakeEvent(rawEvent);
                     } else {
                         await this.wsFarmHandler.handleEnterFarmEvent(rawEvent);
                     }
                     break;
                 case FARM_EVENTS.EXIT_FARM:
-                    isStakingAddress = await this.isStakingAddress(
-                        rawEvent.address,
-                    );
-                    if (isStakingAddress) {
+                    if (await this.isStakingAddress(rawEvent.address)) {
                         await this.stakingHandler.handleUnstakeEvent(rawEvent);
                     } else {
                         await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
                     }
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
-                    isStakingAddress = await this.isStakingAddress(
-                        rawEvent.address,
-                    );
-                    if (isStakingAddress) {
+                    if (await this.isStakingAddress(rawEvent.address)) {
                         await this.stakingHandler.handleClaimRewardsEvent(
                             rawEvent,
                         );

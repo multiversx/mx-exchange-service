@@ -18,6 +18,11 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
+import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -35,8 +40,13 @@ describe('StakingComputeService', () => {
                 StakingComputeService,
                 StakingService,
                 StakingAbiServiceProvider,
+                EnergyAbiServiceProvider,
                 TokenServiceProvider,
                 TokenComputeServiceProvider,
+                WeekTimekeepingAbiServiceProvider,
+                WeekTimekeepingComputeService,
+                WeeklyRewardsSplittingAbiServiceProvider,
+                WeeklyRewardsSplittingComputeService,
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
                 RemoteConfigGetterServiceProvider,

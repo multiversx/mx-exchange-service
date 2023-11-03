@@ -1,8 +1,8 @@
 import {
-    ClaimRewardsEventV2,
-    EnterFarmEventV2,
-    ExitFarmEventV2,
     RawEvent,
+    StakeClaimRewardsEvent,
+    StakeEvent,
+    UnstakeEvent,
 } from '@multiversx/sdk-exchange';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -21,7 +21,7 @@ export class StakingHandlerService {
     ) {}
 
     async handleStakeEvent(rawEvent: RawEvent): Promise<void> {
-        const event = new EnterFarmEventV2(rawEvent);
+        const event = new StakeEvent(rawEvent);
         const userTotalFarmPosition =
             await this.stakingAbi.getUserTotalStakePositionRaw(
                 event.address,
@@ -42,7 +42,7 @@ export class StakingHandlerService {
     }
 
     async handleUnstakeEvent(rawEvent: RawEvent): Promise<void> {
-        const event = new ExitFarmEventV2(rawEvent);
+        const event = new UnstakeEvent(rawEvent);
         const userTotalFarmPosition =
             await this.stakingAbi.getUserTotalStakePositionRaw(
                 event.address,
@@ -63,7 +63,7 @@ export class StakingHandlerService {
     }
 
     async handleClaimRewardsEvent(rawEvent: RawEvent): Promise<void> {
-        const event = new ClaimRewardsEventV2(rawEvent);
+        const event = new StakeClaimRewardsEvent(rawEvent);
         const userTotalFarmPosition =
             await this.stakingAbi.getUserTotalStakePositionRaw(
                 event.address,

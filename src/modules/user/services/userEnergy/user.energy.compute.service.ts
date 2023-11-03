@@ -24,6 +24,8 @@ import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
+import { StakingService } from 'src/modules/staking/services/staking.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -35,8 +37,10 @@ export class UserEnergyComputeService {
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyAbi: StakingProxyAbiService,
+        private readonly stakingService: StakingService,
         private readonly energyAbi: EnergyAbiService,
         private readonly proxyService: ProxyService,
+        private readonly remoteConfig: RemoteConfigGetterService,
     ) {}
 
     async getUserOutdatedContracts(
@@ -48,6 +52,14 @@ export class UserEnergyComputeService {
         const promises = activeFarms.map((farm) =>
             this.outdatedContract(userAddress, farm),
         );
+
+        const activeStakings = await this.userActiveStakings(userAddress);
+        promises.push(
+            ...activeStakings.map((stake) =>
+                this.outdatedContract(userAddress, stake),
+            ),
+        );
+
         if (!skipFeesCollector) {
             promises.push(
                 this.outdatedContract(userAddress, scAddress.feesCollector),
@@ -78,6 +90,14 @@ export class UserEnergyComputeService {
         userAddress: string,
         contractAddress: string,
     ): Promise<OutdatedContract> {
+        const stakeAddresses = await this.remoteConfig.getStakingAddresses();
+        if (stakeAddresses.includes(contractAddress)) {
+            return await this.computeStakingOutdatedContract(
+                userAddress,
+                contractAddress,
+            );
+        }
+
         const isFarmAddress = contractAddress !== scAddress.feesCollector;
 
         if (isFarmAddress) {
@@ -121,6 +141,41 @@ export class UserEnergyComputeService {
             return new OutdatedContract({
                 address: contractAddress,
                 type: ContractType.Farm,
+                claimProgressOutdated: outdatedClaimProgress,
+                farmToken: farmToken.collection,
+            });
+        }
+        return new OutdatedContract();
+    }
+
+    async computeStakingOutdatedContract(
+        userAddress: string,
+        contractAddress: string,
+    ): Promise<OutdatedContract> {
+        const [currentClaimProgress, currentWeek, farmToken, userEnergy] =
+            await Promise.all([
+                this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    contractAddress,
+                    userAddress,
+                ),
+                this.weekTimekeepingAbi.currentWeek(contractAddress),
+                this.stakingService.getFarmToken(contractAddress),
+                this.energyAbi.energyEntryForUser(userAddress),
+            ]);
+
+        if (currentClaimProgress.week === 0) {
+            return new OutdatedContract();
+        }
+
+        const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
+
+        if (
+            this.isEnergyOutdated(userEnergy, currentClaimProgress) ||
+            outdatedClaimProgress
+        ) {
+            return new OutdatedContract({
+                address: contractAddress,
+                type: ContractType.StakingFarm,
                 claimProgressOutdated: outdatedClaimProgress,
                 farmToken: farmToken.collection,
             });
@@ -211,6 +266,44 @@ export class UserEnergyComputeService {
         );
     }
 
+    @GetOrSetCache({
+        baseKey: 'userEnergy',
+        remoteTtl: Constants.oneMinute(),
+    })
+    async userActiveStakings(userAddress: string): Promise<string[]> {
+        return await this.computeActiveStakingsForUser(userAddress);
+    }
+
+    async computeActiveStakingsForUser(userAddress: string): Promise<string[]> {
+        const maxPagination = new PaginationArgs({
+            limit: 100,
+            offset: 0,
+        });
+        const [stakeTokens, dualYieldTokens] = await Promise.all([
+            this.userMetaEsdtService.getUserStakeFarmTokens(
+                userAddress,
+                maxPagination,
+            ),
+            this.userMetaEsdtService.getUserDualYieldTokens(
+                userAddress,
+                maxPagination,
+                false,
+            ),
+        ]);
+
+        let userActiveStakeAddresses = stakeTokens.map(
+            (token) => token.creator,
+        );
+        const promisesDualYieldTokens = dualYieldTokens.map((token) => {
+            return this.getFarmAddressForDualYieldToken(token);
+        });
+
+        userActiveStakeAddresses = userActiveStakeAddresses.concat(
+            await Promise.all([...promisesDualYieldTokens]),
+        );
+        return [...new Set(userActiveStakeAddresses)];
+    }
+
     decodeAndGetFarmAddressFarmLockedTokens(token: UserLockedFarmTokenV2) {
         const decodedWFMTAttributes =
             this.proxyService.getWrappedFarmTokenAttributesV2({
@@ -237,6 +330,18 @@ export class UserEnergyComputeService {
                 token.collection,
             );
         return this.stakeProxyAbi.lpFarmAddress(stakingProxyAddress);
+    }
+
+    async getStakeAddressForDualYieldToken(token: UserDualYiledToken) {
+        if (!token || token === undefined) {
+            return undefined;
+        }
+
+        const stakingProxyAddress =
+            await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(
+                token.collection,
+            );
+        return this.stakeProxyAbi.stakingFarmAddress(stakingProxyAddress);
     }
 
     isEnergyOutdated(

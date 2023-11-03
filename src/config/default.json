@@ -117,7 +117,7 @@
             "removeLiquidity": 8500000,
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
-                "default": 12000000,
+                "default": 13000000,
                 "withFeeSwap": 25500000
             },
             "swapTokensFixedOutput": {
@@ -379,14 +379,14 @@
         },
         "stake": {
             "stakeFarm": {
-                "default": 7500000,
-                "withTokenMerge": 10000000
+                "default": 17500000,
+                "withTokenMerge": 20000000
             },
-            "unstakeFarm": 9500000,
+            "unstakeFarm": 20000000,
             "unbondFarm": 7500000,
-            "claimRewards": 8500000,
-            "claimRewardsWithNewValue": 7500000,
-            "compoundRewards": 8500000,
+            "claimRewards": 17000000,
+            "claimRewardsWithNewValue": 17000000,
+            "compoundRewards": 17000000,
             "mergeTokens": 20000000,
             "admin": {
                 "setState": 20000000,

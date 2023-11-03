@@ -31,6 +31,7 @@ import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/m
 import { constantsConfig } from 'src/config';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakeAddressValidationPipe } from './validators/stake.address.validator';
+import { BoostedYieldsFactors } from '../farm/models/farm.v2.model';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -177,6 +178,34 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async boostedYieldsRewardsPercenatage(
+        @Parent() parent: StakingModel,
+    ): Promise<number> {
+        return this.stakingAbi.boostedYieldsRewardsPercenatage(parent.address);
+    }
+
+    @ResolveField()
+    async boostedYieldsFactors(
+        @Parent() parent: StakingModel,
+    ): Promise<BoostedYieldsFactors> {
+        return this.stakingAbi.boostedYieldsFactors(parent.address);
+    }
+
+    @ResolveField()
+    async accumulatedRewardsForWeek(
+        @Parent() parent: StakingModel,
+        @Args('week', { nullable: true }) week: number,
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return this.stakingAbi.accumulatedRewardsForWeek(
+            parent.address,
+            week ?? currentWeek,
+        );
+    }
+
+    @ResolveField()
     async undistributedBoostedRewards(
         @Parent() parent: StakingModel,
     ): Promise<string> {
@@ -223,9 +252,11 @@ export class StakingResolver {
     @Query(() => [StakingRewardsModel])
     async getStakingRewardsForPosition(
         @Args('stakingPositions') args: BatchFarmRewardsComputeArgs,
+        @Args('computeBoosted', { nullable: true }) computeBoosted: boolean,
     ): Promise<StakingRewardsModel[]> {
         return this.stakingService.getBatchRewardsForPosition(
             args.farmsPositions,
+            computeBoosted,
         );
     }
 
