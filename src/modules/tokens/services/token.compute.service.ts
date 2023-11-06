@@ -42,10 +42,13 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async tokenPriceDerivedEGLD(tokenID: string): Promise<string> {
-        return await this.computeTokenPriceDerivedEGLD(tokenID);
+        return await this.computeTokenPriceDerivedEGLD(tokenID, []);
     }
 
-    async computeTokenPriceDerivedEGLD(tokenID: string): Promise<string> {
+    async computeTokenPriceDerivedEGLD(
+        tokenID: string,
+        pairsNotToVisit: PairMetadata[],
+    ): Promise<string> {
         if (tokenID === tokenProviderUSD) {
             return new BigNumber('1').toFixed();
         }
@@ -72,40 +75,14 @@ export class TokenComputeService implements ITokenComputeService {
             }
         }
 
-        const pairedTokens = tokenPairs.map((pair) => {
-            if (pair.firstTokenID === tokenID) {
-                return pair.secondTokenID;
-            }
-            return pair.firstTokenID;
-        });
+        tokenPairs = tokenPairs.filter(
+            (pair) =>
+                pairsNotToVisit.find(
+                    (pairNotToVisit) => pairNotToVisit.address === pair.address,
+                ) === undefined,
+        );
 
-        for (const token of pairedTokens) {
-            if (token === tokenProviderUSD) {
-                continue;
-            }
-
-            const pairsOfToken = pairsMetadata.filter(
-                (pair) =>
-                    pair.firstTokenID === token || pair.secondTokenID === token,
-            );
-
-            if (
-                pairsOfToken.find(
-                    (pair) =>
-                        pair.firstTokenID === tokenProviderUSD ||
-                        pair.secondTokenID === tokenProviderUSD,
-                ) === undefined
-            ) {
-                for (const pair of tokenPairs) {
-                    if (
-                        pair.firstTokenID === token ||
-                        pair.secondTokenID === token
-                    ) {
-                        tokenPairs.splice(tokenPairs.indexOf(pair), 1);
-                    }
-                }
-            }
-        }
+        pairsNotToVisit.push(...tokenPairs);
 
         let largestLiquidityEGLD = new BigNumber(0);
         let priceSoFar = '0';
@@ -126,6 +103,7 @@ export class TokenComputeService implements ITokenComputeService {
                         ] = await Promise.all([
                             this.computeTokenPriceDerivedEGLD(
                                 pair.secondTokenID,
+                                pairsNotToVisit,
                             ),
                             this.pairAbi.secondTokenReserve(pair.address),
                             this.pairCompute.firstTokenPrice(pair.address),
@@ -153,6 +131,7 @@ export class TokenComputeService implements ITokenComputeService {
                         ] = await Promise.all([
                             this.computeTokenPriceDerivedEGLD(
                                 pair.firstTokenID,
+                                pairsNotToVisit,
                             ),
                             this.pairAbi.firstTokenReserve(pair.address),
                             this.pairCompute.secondTokenPrice(pair.address),
@@ -191,7 +170,7 @@ export class TokenComputeService implements ITokenComputeService {
     async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
         const [egldPriceUSD, derivedEGLD, usdcPrice] = await Promise.all([
             this.getEgldPriceInUSD(),
-            this.computeTokenPriceDerivedEGLD(tokenID),
+            this.computeTokenPriceDerivedEGLD(tokenID, []),
             this.dataApi.getTokenPrice('USDC'),
         ]);
 
