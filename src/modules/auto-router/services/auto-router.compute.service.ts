@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PairModel } from 'src/modules/pair/models/pair.model';
@@ -44,6 +44,10 @@ export class AutoRouterComputeService {
             amounts,
             swapType,
         );
+
+        if (pathIndex === -1) {
+            throw new BadRequestException('No route found');
+        }
 
         const addressRoute = this.getAddressRoute(pairs, paths[pathIndex]);
 
@@ -109,10 +113,8 @@ export class AutoRouterComputeService {
                     continue;
                 }
 
-                const [
-                    tokenInReserves,
-                    tokenOutReserves,
-                ] = this.getOrderedReserves(tokenInID, pair);
+                const [tokenInReserves, tokenOutReserves] =
+                    this.getOrderedReserves(tokenInID, pair);
                 const amountOut = getAmountOut(
                     pathAmounts[pathAmounts.length - 1],
                     tokenInReserves,
@@ -143,10 +145,8 @@ export class AutoRouterComputeService {
                 if (pair === undefined) {
                     continue;
                 }
-                const [
-                    tokenInReserves,
-                    tokenOutReserves,
-                ] = this.getOrderedReserves(tokenInID, pair);
+                const [tokenInReserves, tokenOutReserves] =
+                    this.getOrderedReserves(tokenInID, pair);
                 const amountIn =
                     pathAmounts[0] === 'Infinity'
                         ? new BigNumber(0)
@@ -227,9 +227,6 @@ export class AutoRouterComputeService {
     }
 
     computePriceImpactPercent(reserves: string, amount: string): string {
-        return new BigNumber(amount)
-            .dividedBy(reserves)
-            .times(100)
-            .toFixed();
+        return new BigNumber(amount).dividedBy(reserves).times(100).toFixed();
     }
 }
