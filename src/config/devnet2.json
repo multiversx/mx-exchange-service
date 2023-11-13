@@ -28,7 +28,8 @@
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqz2ctz77j9we0r99mnhehv24he3pxmsmq0n4sntf4n7",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqu6s4e5mndgf37psxw9mdlmjavp2er3f00n4snwyk3q",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqasr2asq07e6ur274eecx3vd0pnej2vxs0n4sqqyp52",
-        "escrow": "erd1qqqqqqqqqqqqqpgqnx4t9kwy5n9atuumvnrluv5yrwmpxzx60n4sj497ms"
+        "escrow": "erd1qqqqqqqqqqqqqpgqnx4t9kwy5n9atuumvnrluv5yrwmpxzx60n4sj497ms",
+        "positionCreator": "erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6"
     },
     "governance": {
         "oldEnergy": {
