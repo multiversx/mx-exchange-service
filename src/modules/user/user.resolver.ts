@@ -105,11 +105,11 @@ export class UserResolver {
         );
     }
 
-    // @UseGuards(JwtOrNativeAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => UserNegativeEnergyCheck)
     async userNegativeEnergyCheck(
-        @Args('user') user: string,
+        @AuthUser() user: UserAuthResult,
     ): Promise<UserNegativeEnergyCheck> {
-        return this.userEnergyCompute.computeNegativeEnergyCheck(user);
+        return this.userEnergyCompute.computeNegativeEnergyCheck(user.address);
     }
 }
