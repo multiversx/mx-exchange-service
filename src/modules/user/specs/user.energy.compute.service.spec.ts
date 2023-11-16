@@ -65,6 +65,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MetabondingAbiServiceMockProvider } from 'src/modules/metabonding/mocks/metabonding.abi.service.mock';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -127,6 +128,7 @@ describe('UserEnergyComputeService', () => {
                 MXApiServiceProvider,
                 MXProxyServiceProvider,
                 LockedAssetGetterService,
+                MetabondingAbiServiceMockProvider,
                 RemoteConfigGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 ApiConfigService,
