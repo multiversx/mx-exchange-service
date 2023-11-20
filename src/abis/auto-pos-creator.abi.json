@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.43.3"
+            "version": "0.44.0"
         }
     },
     "name": "AutoPosCreator",
@@ -24,8 +24,8 @@
                 "type": "Address"
             },
             {
-                "name": "wegld_token_id",
-                "type": "TokenIdentifier"
+                "name": "router_address",
+                "type": "Address"
             }
         ],
         "outputs": []
@@ -38,45 +38,46 @@
             "outputs": []
         },
         {
-            "name": "addPairsToWhitelist",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "pair_addresses",
-                    "type": "variadic<Address>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "removePairsFromWhitelist",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "pair_addresses",
-                    "type": "variadic<Address>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "createPosFromSingleToken",
+            "name": "createLpPosFromSingleToken",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
             "inputs": [
                 {
-                    "name": "dest_pair_address",
+                    "name": "pair_address",
                     "type": "Address"
                 },
                 {
-                    "name": "steps",
-                    "type": "StepsToPerform"
+                    "name": "add_liq_first_token_min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "add_liq_second_token_min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "swap_operations",
+                    "type": "variadic<multi<Address,bytes,TokenIdentifier,BigUint>>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "createLpPosFromTwoTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
                 },
                 {
                     "name": "add_liq_first_token_min_amount_out",
@@ -94,20 +95,46 @@
             ]
         },
         {
-            "docs": [
-                "Create pos from two payments, entering the pair for the two tokens",
-                "It will try doing this with the optimal amounts,",
-                "performing swaps before adding liqudity if necessary"
-            ],
-            "name": "createPosFromTwoTokens",
+            "name": "createFarmPosFromSingleToken",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
             "inputs": [
                 {
-                    "name": "steps",
-                    "type": "StepsToPerform"
+                    "name": "farm_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "add_liq_first_token_min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "add_liq_second_token_min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "swap_operations",
+                    "type": "variadic<multi<Address,bytes,TokenIdentifier,BigUint>>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "createFarmPosFromTwoTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
                 },
                 {
                     "name": "add_liq_first_token_min_amount_out",
@@ -125,15 +152,28 @@
             ]
         },
         {
-            "name": "createPosFromLp",
+            "name": "createMetastakingPosFromSingleToken",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
             "inputs": [
                 {
-                    "name": "steps",
-                    "type": "StepsToPerform"
+                    "name": "metastaking_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "add_liq_first_token_min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "add_liq_second_token_min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "swap_operations",
+                    "type": "variadic<multi<Address,bytes,TokenIdentifier,BigUint>>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -143,12 +183,121 @@
             ]
         },
         {
-            "name": "fullExitPos",
+            "name": "createMetastakingPosFromTwoTokens",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
             "inputs": [
+                {
+                    "name": "metastaking_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "add_liq_first_token_min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "add_liq_second_token_min_amount_out",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "createFarmStakingPosFromSingleToken",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "farm_staking_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "swap_operations",
+                    "type": "variadic<multi<Address,bytes,TokenIdentifier,BigUint>>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "exitMetastakingPos",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "metastaking_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token_min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_min_amont_out",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "exitFarmPos",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token_min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_min_amont_out",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "exitLpPos",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                },
                 {
                     "name": "first_token_min_amount_out",
                     "type": "BigUint"
@@ -166,6 +315,7 @@
         }
     ],
     "events": [],
+    "esdtAttributes": [],
     "hasCallback": false,
     "types": {
         "EsdtTokenPayment": {
@@ -182,70 +332,6 @@
                 {
                     "name": "amount",
                     "type": "BigUint"
-                }
-            ]
-        },
-        "FarmConfig": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "state",
-                    "type": "State"
-                },
-                {
-                    "name": "farm_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "farming_token_id",
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        "MetastakingConfig": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "dual_yield_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "lp_farm_token_id",
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        "State": {
-            "type": "enum",
-            "variants": [
-                {
-                    "name": "Inactive",
-                    "discriminant": 0
-                },
-                {
-                    "name": "Active",
-                    "discriminant": 1
-                },
-                {
-                    "name": "PartialActive",
-                    "discriminant": 2
-                }
-            ]
-        },
-        "StepsToPerform": {
-            "type": "enum",
-            "variants": [
-                {
-                    "name": "AddLiquidity",
-                    "discriminant": 0
-                },
-                {
-                    "name": "EnterFarm",
-                    "discriminant": 1
-                },
-                {
-                    "name": "EnterMetastaking",
-                    "discriminant": 2
                 }
             ]
         }

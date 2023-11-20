@@ -5,9 +5,15 @@ import { RouterModule } from '../router/router.module';
 import { PositionCreatorComputeService } from './services/position.creator.compute';
 import { PositionCreatorTransactionService } from './services/position.creator.transaction';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
+import { AutoRouterModule } from '../auto-router/auto-router.module';
 
 @Module({
-    imports: [PairModule, RouterModule, MXCommunicationModule],
+    imports: [
+        PairModule,
+        RouterModule,
+        AutoRouterModule,
+        MXCommunicationModule,
+    ],
     providers: [
         PositionCreatorComputeService,
         PositionCreatorTransactionService,
