@@ -6,12 +6,20 @@ import { PositionCreatorComputeService } from './services/position.creator.compu
 import { PositionCreatorTransactionService } from './services/position.creator.transaction';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { AutoRouterModule } from '../auto-router/auto-router.module';
+import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
+import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
+import { StakingModule } from '../staking/staking.module';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
         PairModule,
         RouterModule,
         AutoRouterModule,
+        FarmModuleV2,
+        StakingModule,
+        StakingProxyModule,
+        TokenModule,
         MXCommunicationModule,
     ],
     providers: [

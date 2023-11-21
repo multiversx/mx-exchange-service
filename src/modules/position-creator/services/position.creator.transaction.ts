@@ -15,15 +15,26 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PositionCreatorComputeService } from './position.creator.compute';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
-import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
+import { AutoRouterTransactionService } from 'src/modules/auto-router/services/auto-router.transactions.service';
+import { SWAP_TYPE } from 'src/modules/auto-router/models/auto-route.model';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class PositionCreatorTransactionService {
     constructor(
         private readonly autoRouterService: AutoRouterService,
-        private readonly routerAbi: RouterAbiService,
+        private readonly autoRouterTransaction: AutoRouterTransactionService,
         private readonly posCreatorCompute: PositionCreatorComputeService,
         private readonly pairAbi: PairAbiService,
+        private readonly pairService: PairService,
+        private readonly farmAbiV2: FarmAbiServiceV2,
+        private readonly stakingAbi: StakingAbiService,
+        private readonly stakingProxyAbi: StakingProxyAbiService,
+        private readonly tokenService: TokenService,
         private readonly mxProxy: MXProxyService,
     ) {}
 
@@ -32,13 +43,41 @@ export class PositionCreatorTransactionService {
         payment: EsdtTokenPayment,
         tolerance: number,
     ): Promise<TransactionModel> {
-        const acceptedPairedTokensIDs =
-            await this.routerAbi.commonTokensForUserPairs();
+        const uniqueTokensIDs = await this.tokenService.getUniqueTokenIDs(
+            false,
+        );
 
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairAbi.firstTokenID(pairAddress),
-            this.pairAbi.secondTokenID(pairAddress),
-        ]);
+        if (!uniqueTokensIDs.includes(payment.tokenIdentifier)) {
+            throw new Error('Invalid token');
+        }
+
+        const singleTokenPairInput =
+            await this.posCreatorCompute.computeSingleTokenPairInput(
+                pairAddress,
+                payment,
+                tolerance,
+            );
+
+        const contract = await this.mxProxy.getPostitionCreatorContract();
+
+        return contract.methodsExplicit
+            .createLpPosFromSingleToken([
+                new AddressValue(Address.fromBech32(pairAddress)),
+                new BigUIntValue(singleTokenPairInput.amount0Min),
+                new BigUIntValue(singleTokenPairInput.amount1Min),
+                ...singleTokenPairInput.swapRouteArgs,
+            ])
+            .withSingleESDTTransfer(
+                TokenTransfer.fungibleFromBigInteger(
+                    payment.tokenIdentifier,
+                    new BigNumber(payment.amount),
+                ),
+            )
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
 
         const swapToTokenID = acceptedPairedTokensIDs.includes(firstTokenID)
             ? firstTokenID
