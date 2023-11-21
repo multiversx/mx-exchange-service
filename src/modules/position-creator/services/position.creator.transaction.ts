@@ -296,6 +296,61 @@ export class PositionCreatorTransactionService {
             .toPlainObject();
     }
 
+    async createDualFarmPositionDualTokens(
+        stakingProxyAddress: string,
+        payments: EsdtTokenPayment[],
+        tolerance: number,
+    ): Promise<TransactionModel> {
+        const pairAddress = await this.stakingProxyAbi.pairAddress(
+            stakingProxyAddress,
+        );
+        const [firstTokenID, secondTokenID] = await Promise.all([
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
+        ]);
+
+        if (!this.checkTokensPayments(payments, firstTokenID, secondTokenID)) {
+            throw new Error('Invalid tokens payments');
+        }
+
+        const [firstPayment, secondPayment] =
+            payments[0].tokenIdentifier === firstTokenID
+                ? [payments[0], payments[1]]
+                : [payments[1], payments[0]];
+
+        const amount0Min = new BigNumber(firstPayment.amount)
+            .multipliedBy(1 - tolerance)
+            .integerValue();
+        const amount1Min = new BigNumber(secondPayment.amount)
+            .multipliedBy(1 - tolerance)
+            .integerValue();
+
+        const contract = await this.mxProxy.getPostitionCreatorContract();
+
+        return contract.methodsExplicit
+            .createMetastakingPosFromTwoTokens([
+                new AddressValue(Address.fromBech32(stakingProxyAddress)),
+                new BigUIntValue(amount0Min),
+                new BigUIntValue(amount1Min),
+            ])
+            .withMultiESDTNFTTransfer([
+                TokenTransfer.fungibleFromBigInteger(
+                    firstPayment.tokenIdentifier,
+                    new BigNumber(firstPayment.amount),
+                ),
+                TokenTransfer.fungibleFromBigInteger(
+                    secondPayment.tokenIdentifier,
+
+                    new BigNumber(secondPayment.amount),
+                ),
+            ])
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+
     private checkTokensPayments(
         payments: EsdtTokenPayment[],
         firstTokenID: string,
