@@ -2,8 +2,6 @@ import {
     Address,
     AddressValue,
     BigUIntValue,
-    BytesValue,
-    TokenIdentifierValue,
     TokenTransfer,
 } from '@multiversx/sdk-core/out';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
@@ -350,6 +348,45 @@ export class PositionCreatorTransactionService {
             .toPlainObject();
     }
 
+    async exitFarmPositionDualTokens(
+        farmAddress: string,
+        payment: EsdtTokenPayment,
+        tolerance: number,
+    ): Promise<TransactionModel> {
+        const pairAddress = await this.farmAbiV2.pairContractAddress(
+            farmAddress,
+        );
+        const liquidityPosition = await this.pairService.getLiquidityPosition(
+            pairAddress,
+            payment.amount,
+        );
+        const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
+            .multipliedBy(1 - tolerance)
+            .integerValue();
+        const amount1Min = new BigNumber(liquidityPosition.secondTokenAmount)
+            .multipliedBy(1 - tolerance)
+            .integerValue();
+
+        const contract = await this.mxProxy.getPostitionCreatorContract();
+
+        return contract.methodsExplicit
+            .exitFarmPos([
+                new AddressValue(Address.fromBech32(farmAddress)),
+                new BigUIntValue(amount0Min),
+                new BigUIntValue(amount1Min),
+            ])
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    payment.tokenIdentifier,
+                    payment.tokenNonce,
+                    new BigNumber(payment.amount),
+                ),
+            )
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
 
     private checkTokensPayments(
         payments: EsdtTokenPayment[],

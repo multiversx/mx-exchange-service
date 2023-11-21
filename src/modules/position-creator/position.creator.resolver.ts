@@ -137,4 +137,20 @@ export class PositionCreatorResolver {
         );
     }
 
+    @Query(() => TransactionModel)
+    async exitFarmPositionDualTokens(
+        @Args('farmAddress') farmAddress: string,
+        @Args('payment') payment: InputTokenModel,
+        @Args('tolerance') tolerance: number,
+    ): Promise<TransactionModel> {
+        return this.posCreatorTransaction.exitFarmPositionDualTokens(
+            farmAddress,
+            new EsdtTokenPayment({
+                tokenIdentifier: payment.tokenID,
+                tokenNonce: payment.nonce,
+                amount: payment.amount,
+            }),
+            tolerance,
+        );
+    }
 }
