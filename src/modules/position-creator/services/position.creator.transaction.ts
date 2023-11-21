@@ -184,55 +184,43 @@ export class PositionCreatorTransactionService {
             .toPlainObject();
     }
 
+    async createStakingPositionSingleToken(
+        stakingAddress: string,
+        payment: EsdtTokenPayment,
+        tolerance: number,
+    ): Promise<TransactionModel> {
+        const [farmingTokenID, uniqueTokensIDs] = await Promise.all([
+            this.stakingAbi.farmingTokenID(stakingAddress),
+            this.tokenService.getUniqueTokenIDs(false),
+        ]);
+
+        if (!uniqueTokensIDs.includes(payment.tokenIdentifier)) {
+            throw new Error('Invalid ESDT token payment');
+        }
 
         const swapRoute = await this.autoRouterService.swap({
             tokenInID: payment.tokenIdentifier,
             amountIn: payment.amount,
-            tokenOutID: swapToTokenID,
+            tokenOutID: farmingTokenID,
             tolerance,
         });
 
-        const halfPayment = new BigNumber(swapRoute.amountOut)
-            .dividedBy(2)
-            .integerValue()
-            .toFixed();
-
-        const remainingPayment = new BigNumber(swapRoute.amountOut)
-            .minus(halfPayment)
-            .toFixed();
-
-        const [amount0, amount1] = await Promise.all([
-            await this.posCreatorCompute.computeSwap(
-                swapRoute.tokenOutID,
-                firstTokenID,
-                halfPayment,
-            ),
-            await this.posCreatorCompute.computeSwap(
-                swapRoute.tokenOutID,
-                secondTokenID,
-                remainingPayment,
-            ),
-        ]);
-
-        const amount0Min = new BigNumber(amount0)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(amount1)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
+        const multiSwapArgs =
+            this.autoRouterTransaction.multiPairFixedInputSwaps({
+                tokenInID: swapRoute.tokenInID,
+                tokenOutID: swapRoute.tokenOutID,
+                swapType: SWAP_TYPE.fixedInput,
+                tolerance,
+                addressRoute: swapRoute.pairs.map((pair) => pair.address),
+                intermediaryAmounts: swapRoute.intermediaryAmounts,
+                tokenRoute: swapRoute.tokenRoute,
+            });
+
         return contract.methodsExplicit
-            .createLpPosFromSingleToken([
-                new AddressValue(Address.fromBech32(pairAddress)),
-                new BigUIntValue(amount0Min),
-                new BigUIntValue(amount1Min),
-                new AddressValue(
-                    Address.fromBech32(swapRoute.pairs[0].address),
-                ),
-                new BytesValue(Buffer.from('swapTokensFixedInput')),
-                new TokenIdentifierValue(swapRoute.tokenOutID),
+            .createFarmStakingPosFromSingleToken([
+                new AddressValue(Address.fromBech32(stakingAddress)),
                 new BigUIntValue(
                     new BigNumber(
                         swapRoute.intermediaryAmounts[
@@ -240,6 +228,7 @@ export class PositionCreatorTransactionService {
                         ],
                     ),
                 ),
+                ...multiSwapArgs,
             ])
             .withSingleESDTTransfer(
                 TokenTransfer.fungibleFromBigInteger(
@@ -252,4 +241,5 @@ export class PositionCreatorTransactionService {
             .buildTransaction()
             .toPlainObject();
     }
+
 }
