@@ -79,9 +79,58 @@ export class PositionCreatorTransactionService {
             .toPlainObject();
     }
 
-        const swapToTokenID = acceptedPairedTokensIDs.includes(firstTokenID)
-            ? firstTokenID
-            : secondTokenID;
+    async createFarmPositionSingleToken(
+        farmAddress: string,
+        payments: EsdtTokenPayment[],
+        tolerance: number,
+    ): Promise<TransactionModel> {
+        const [pairAddress, farmTokenID, uniqueTokensIDs] = await Promise.all([
+            this.farmAbiV2.pairContractAddress(farmAddress),
+            this.farmAbiV2.farmTokenID(farmAddress),
+            this.tokenService.getUniqueTokenIDs(false),
+        ]);
+
+        if (!uniqueTokensIDs.includes(payments[0].tokenIdentifier)) {
+            throw new Error('Invalid ESDT token payment');
+        }
+
+        for (const payment of payments.slice(1)) {
+            if (payment.tokenIdentifier !== farmTokenID) {
+                throw new Error('Invalid farm token payment');
+            }
+        }
+
+        const singleTokenPairInput =
+            await this.posCreatorCompute.computeSingleTokenPairInput(
+                pairAddress,
+                payments[0],
+                tolerance,
+            );
+
+        const contract = await this.mxProxy.getPostitionCreatorContract();
+
+        return contract.methodsExplicit
+            .createFarmPosFromSingleToken([
+                new AddressValue(Address.fromBech32(farmAddress)),
+                new BigUIntValue(singleTokenPairInput.amount0Min),
+                new BigUIntValue(singleTokenPairInput.amount1Min),
+                ...singleTokenPairInput.swapRouteArgs,
+            ])
+            .withMultiESDTNFTTransfer(
+                payments.map((payment) =>
+                    TokenTransfer.metaEsdtFromBigInteger(
+                        payment.tokenIdentifier,
+                        payment.tokenNonce,
+                        new BigNumber(payment.amount),
+                    ),
+                ),
+            )
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
 
         const swapRoute = await this.autoRouterService.swap({
             tokenInID: payment.tokenIdentifier,

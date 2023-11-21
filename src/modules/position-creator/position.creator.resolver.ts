@@ -35,4 +35,26 @@ export class PositionCreatorResolver {
             tolerance,
         );
     }
+
+    @Query(() => TransactionModel)
+    async createFarmPositionSingleToken(
+        @Args('farmAddress') farmAddress: string,
+        @Args('payments', { type: () => [InputTokenModel] })
+        payments: InputTokenModel[],
+        @Args('tolerance') tolerance: number,
+    ): Promise<TransactionModel> {
+        return this.posCreatorTransaction.createFarmPositionSingleToken(
+            farmAddress,
+            payments.map(
+                (payment) =>
+                    new EsdtTokenPayment({
+                        tokenIdentifier: payment.tokenID,
+                        tokenNonce: payment.nonce,
+                        amount: payment.amount,
+                    }),
+            ),
+            tolerance,
+        );
+    }
+
 }
