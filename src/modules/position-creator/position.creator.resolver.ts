@@ -95,4 +95,25 @@ export class PositionCreatorResolver {
         );
     }
 
+    @Query(() => TransactionModel)
+    async createFarmPositionDualTokens(
+        @Args('farmAddress') farmAddress: string,
+        @Args('payments', { type: () => [InputTokenModel] })
+        payments: InputTokenModel[],
+        @Args('tolerance') tolerance: number,
+    ): Promise<TransactionModel> {
+        return this.posCreatorTransaction.createFarmPositionDualTokens(
+            farmAddress,
+            payments.map(
+                (payment) =>
+                    new EsdtTokenPayment({
+                        tokenIdentifier: payment.tokenID,
+                        tokenNonce: payment.nonce,
+                        amount: payment.amount,
+                    }),
+            ),
+            tolerance,
+        );
+    }
+
 }
