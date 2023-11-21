@@ -131,6 +131,59 @@ export class PositionCreatorTransactionService {
             .toPlainObject();
     }
 
+    async createDualFarmPositionSingleToken(
+        stakingProxyAddress: string,
+        payments: EsdtTokenPayment[],
+        tolerance: number,
+    ): Promise<TransactionModel> {
+        const [pairAddress, dualYieldTokenID, uniqueTokensIDs] =
+            await Promise.all([
+                this.stakingProxyAbi.pairAddress(stakingProxyAddress),
+                this.stakingProxyAbi.dualYieldTokenID(stakingProxyAddress),
+                this.tokenService.getUniqueTokenIDs(false),
+            ]);
+
+        if (!uniqueTokensIDs.includes(payments[0].tokenIdentifier)) {
+            throw new Error('Invalid ESDT token payment');
+        }
+
+        for (const payment of payments.slice(1)) {
+            if (payment.tokenIdentifier !== dualYieldTokenID) {
+                throw new Error('Invalid dual yield token payment');
+            }
+        }
+
+        const singleTokenPairInput =
+            await this.posCreatorCompute.computeSingleTokenPairInput(
+                pairAddress,
+                payments[0],
+                tolerance,
+            );
+
+        const contract = await this.mxProxy.getPostitionCreatorContract();
+
+        return contract.methodsExplicit
+            .createMetastakingPosFromSingleToken([
+                new AddressValue(Address.fromBech32(stakingProxyAddress)),
+                new BigUIntValue(singleTokenPairInput.amount0Min),
+                new BigUIntValue(singleTokenPairInput.amount1Min),
+                ...singleTokenPairInput.swapRouteArgs,
+            ])
+            .withMultiESDTNFTTransfer(
+                payments.map((payment) =>
+                    TokenTransfer.metaEsdtFromBigInteger(
+                        payment.tokenIdentifier,
+                        payment.tokenNonce,
+                        new BigNumber(payment.amount),
+                    ),
+                ),
+            )
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
 
         const swapRoute = await this.autoRouterService.swap({
             tokenInID: payment.tokenIdentifier,
