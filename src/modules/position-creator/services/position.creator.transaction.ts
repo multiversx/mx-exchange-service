@@ -46,7 +46,7 @@ export class PositionCreatorTransactionService {
         );
 
         if (!uniqueTokensIDs.includes(payment.tokenIdentifier)) {
-            throw new Error('Invalid token');
+            throw new Error('Invalid ESDT token payment');
         }
 
         const singleTokenPairInput =
@@ -184,21 +184,29 @@ export class PositionCreatorTransactionService {
 
     async createStakingPositionSingleToken(
         stakingAddress: string,
-        payment: EsdtTokenPayment,
+        payments: EsdtTokenPayment[],
         tolerance: number,
     ): Promise<TransactionModel> {
-        const [farmingTokenID, uniqueTokensIDs] = await Promise.all([
-            this.stakingAbi.farmingTokenID(stakingAddress),
-            this.tokenService.getUniqueTokenIDs(false),
-        ]);
+        const [farmingTokenID, farmTokenID, uniqueTokensIDs] =
+            await Promise.all([
+                this.stakingAbi.farmingTokenID(stakingAddress),
+                this.stakingAbi.farmTokenID(stakingAddress),
+                this.tokenService.getUniqueTokenIDs(false),
+            ]);
 
-        if (!uniqueTokensIDs.includes(payment.tokenIdentifier)) {
+        if (!uniqueTokensIDs.includes(payments[0].tokenIdentifier)) {
             throw new Error('Invalid ESDT token payment');
         }
 
+        for (const payment of payments.slice(1)) {
+            if (payment.tokenIdentifier !== farmTokenID) {
+                throw new Error('Invalid staking token payment');
+            }
+        }
+
         const swapRoute = await this.autoRouterService.swap({
-            tokenInID: payment.tokenIdentifier,
-            amountIn: payment.amount,
+            tokenInID: payments[0].tokenIdentifier,
+            amountIn: payments[0].amount,
             tokenOutID: farmingTokenID,
             tolerance,
         });
@@ -228,10 +236,13 @@ export class PositionCreatorTransactionService {
                 ),
                 ...multiSwapArgs,
             ])
-            .withSingleESDTTransfer(
-                TokenTransfer.fungibleFromBigInteger(
-                    payment.tokenIdentifier,
-                    new BigNumber(payment.amount),
+            .withMultiESDTNFTTransfer(
+                payments.map((payment) =>
+                    TokenTransfer.metaEsdtFromBigInteger(
+                        payment.tokenIdentifier,
+                        payment.tokenNonce,
+                        new BigNumber(payment.amount),
+                    ),
                 ),
             )
             .withGasLimit(gasConfig.positionCreator.singleToken)
@@ -248,13 +259,20 @@ export class PositionCreatorTransactionService {
         const pairAddress = await this.farmAbiV2.pairContractAddress(
             farmAddress,
         );
-        const [firstTokenID, secondTokenID] = await Promise.all([
+        const [firstTokenID, secondTokenID, farmTokenID] = await Promise.all([
             this.pairAbi.firstTokenID(pairAddress),
             this.pairAbi.secondTokenID(pairAddress),
+            this.farmAbiV2.farmTokenID(farmAddress),
         ]);
 
         if (!this.checkTokensPayments(payments, firstTokenID, secondTokenID)) {
             throw new Error('Invalid tokens payments');
+        }
+
+        for (const payment of payments.slice(2)) {
+            if (payment.tokenIdentifier !== farmTokenID) {
+                throw new Error('Invalid farm token payment');
+            }
         }
 
         const [firstPayment, secondPayment] =
@@ -287,6 +305,15 @@ export class PositionCreatorTransactionService {
 
                     new BigNumber(secondPayment.amount),
                 ),
+                ...payments
+                    .slice(2)
+                    .map((payment) =>
+                        TokenTransfer.metaEsdtFromBigInteger(
+                            payment.tokenIdentifier,
+                            payment.tokenNonce,
+                            new BigNumber(payment.amount),
+                        ),
+                    ),
             ])
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
@@ -302,13 +329,21 @@ export class PositionCreatorTransactionService {
         const pairAddress = await this.stakingProxyAbi.pairAddress(
             stakingProxyAddress,
         );
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairAbi.firstTokenID(pairAddress),
-            this.pairAbi.secondTokenID(pairAddress),
-        ]);
+        const [firstTokenID, secondTokenID, dualYieldTokenID] =
+            await Promise.all([
+                this.pairAbi.firstTokenID(pairAddress),
+                this.pairAbi.secondTokenID(pairAddress),
+                this.stakingProxyAbi.dualYieldTokenID(stakingProxyAddress),
+            ]);
 
         if (!this.checkTokensPayments(payments, firstTokenID, secondTokenID)) {
             throw new Error('Invalid tokens payments');
+        }
+
+        for (const payment of payments.slice(2)) {
+            if (payment.tokenIdentifier !== dualYieldTokenID) {
+                throw new Error('Invalid dual farm token payment');
+            }
         }
 
         const [firstPayment, secondPayment] =
@@ -341,6 +376,15 @@ export class PositionCreatorTransactionService {
 
                     new BigNumber(secondPayment.amount),
                 ),
+                ...payments
+                    .slice(2)
+                    .map((payment) =>
+                        TokenTransfer.metaEsdtFromBigInteger(
+                            payment.tokenIdentifier,
+                            payment.tokenNonce,
+                            new BigNumber(payment.amount),
+                        ),
+                    ),
             ])
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
@@ -353,9 +397,15 @@ export class PositionCreatorTransactionService {
         payment: EsdtTokenPayment,
         tolerance: number,
     ): Promise<TransactionModel> {
-        const pairAddress = await this.farmAbiV2.pairContractAddress(
-            farmAddress,
-        );
+        const [pairAddress, farmTokenID] = await Promise.all([
+            this.farmAbiV2.pairContractAddress(farmAddress),
+            this.farmAbiV2.farmTokenID(farmAddress),
+        ]);
+
+        if (payment.tokenIdentifier !== farmTokenID) {
+            throw new Error('Invalid farm token payment');
+        }
+
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             pairAddress,
             payment.amount,
