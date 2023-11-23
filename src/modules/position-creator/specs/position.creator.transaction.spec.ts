@@ -82,6 +82,7 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createLiquidityPositionSingleToken(
+                    Address.Zero().bech32(),
                     Address.fromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
@@ -101,6 +102,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const transaction =
                 await service.createLiquidityPositionSingleToken(
+                    Address.Zero().bech32(),
                     Address.fromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
@@ -117,7 +119,7 @@ describe('PositionCreatorTransaction', () => {
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                sender: '',
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -142,6 +144,7 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createFarmPositionSingleToken(
+                    Address.Zero().bech32(),
                     Address.fromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
@@ -163,6 +166,7 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createFarmPositionSingleToken(
+                    Address.Zero().bech32(),
                     Address.fromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
@@ -188,6 +192,7 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transaction = await service.createFarmPositionSingleToken(
+                Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
@@ -204,8 +209,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -227,6 +232,7 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transaction = await service.createFarmPositionSingleToken(
+                Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
@@ -248,8 +254,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -275,6 +281,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createDualFarmPositionSingleToken(
                     Address.Zero().bech32(),
+                    Address.Zero().bech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'USDC-abcdef',
@@ -293,6 +300,7 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createDualFarmPositionSingleToken(
+                    Address.Zero().bech32(),
                     Address.Zero().bech32(),
                     [
                         new EsdtTokenPayment({
@@ -326,6 +334,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transaction = await service.createDualFarmPositionSingleToken(
                 Address.Zero().bech32(),
+                Address.Zero().bech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -339,8 +348,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -372,6 +381,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transaction = await service.createDualFarmPositionSingleToken(
                 Address.Zero().bech32(),
+                Address.Zero().bech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -390,8 +400,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -417,6 +427,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createStakingPositionSingleToken(
                     Address.Zero().bech32(),
+                    Address.Zero().bech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'USDC-abcdef',
@@ -435,6 +446,7 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createStakingPositionSingleToken(
+                    Address.Zero().bech32(),
                     Address.Zero().bech32(),
                     [
                         new EsdtTokenPayment({
@@ -459,6 +471,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const transaction = await service.createStakingPositionSingleToken(
                 Address.Zero().bech32(),
+                Address.Zero().bech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -472,8 +485,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -496,6 +509,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const transaction = await service.createStakingPositionSingleToken(
                 Address.Zero().bech32(),
+                Address.Zero().bech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -514,8 +528,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -540,6 +554,7 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createFarmPositionDualTokens(
+                    Address.Zero().bech32(),
                     Address.fromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
@@ -566,6 +581,7 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createFarmPositionDualTokens(
+                    Address.Zero().bech32(),
                     Address.fromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
@@ -596,6 +612,7 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transaction = await service.createFarmPositionDualTokens(
+                Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
@@ -617,8 +634,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -640,6 +657,7 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transaction = await service.createFarmPositionDualTokens(
+                Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
@@ -666,8 +684,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -702,6 +720,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createDualFarmPositionDualTokens(
                     Address.Zero().bech32(),
+                    Address.Zero().bech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'WEGLD-123456',
@@ -734,6 +753,7 @@ describe('PositionCreatorTransaction', () => {
 
             expect(
                 service.createDualFarmPositionDualTokens(
+                    Address.Zero().bech32(),
                     Address.Zero().bech32(),
                     [
                         new EsdtTokenPayment({
@@ -772,6 +792,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transaction = await service.createDualFarmPositionDualTokens(
                 Address.Zero().bech32(),
+                Address.Zero().bech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'WEGLD-123456',
@@ -790,8 +811,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -823,6 +844,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transaction = await service.createDualFarmPositionDualTokens(
                 Address.Zero().bech32(),
+                Address.Zero().bech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'WEGLD-123456',
@@ -846,8 +868,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -872,6 +894,7 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.exitFarmPositionDualTokens(
+                    Address.Zero().bech32(),
                     Address.fromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
@@ -890,6 +913,7 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transaction = await service.exitFarmPositionDualTokens(
+                Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
@@ -904,8 +928,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: '',
-                sender: '',
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
