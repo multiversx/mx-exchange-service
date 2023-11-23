@@ -37,6 +37,7 @@ export class PositionCreatorTransactionService {
     ) {}
 
     async createLiquidityPositionSingleToken(
+        sender: string,
         pairAddress: string,
         payment: EsdtTokenPayment,
         tolerance: number,
@@ -71,6 +72,7 @@ export class PositionCreatorTransactionService {
                     new BigNumber(payment.amount),
                 ),
             )
+            .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -78,6 +80,7 @@ export class PositionCreatorTransactionService {
     }
 
     async createFarmPositionSingleToken(
+        sender: string,
         farmAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
@@ -123,6 +126,7 @@ export class PositionCreatorTransactionService {
                     ),
                 ),
             )
+            .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -130,6 +134,7 @@ export class PositionCreatorTransactionService {
     }
 
     async createDualFarmPositionSingleToken(
+        sender: string,
         stakingProxyAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
@@ -176,6 +181,7 @@ export class PositionCreatorTransactionService {
                     ),
                 ),
             )
+            .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -183,6 +189,7 @@ export class PositionCreatorTransactionService {
     }
 
     async createStakingPositionSingleToken(
+        sender: string,
         stakingAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
@@ -245,6 +252,7 @@ export class PositionCreatorTransactionService {
                     ),
                 ),
             )
+            .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -252,6 +260,7 @@ export class PositionCreatorTransactionService {
     }
 
     async createFarmPositionDualTokens(
+        sender: string,
         farmAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
@@ -315,6 +324,7 @@ export class PositionCreatorTransactionService {
                         ),
                     ),
             ])
+            .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -322,6 +332,7 @@ export class PositionCreatorTransactionService {
     }
 
     async createDualFarmPositionDualTokens(
+        sender: string,
         stakingProxyAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
@@ -386,6 +397,7 @@ export class PositionCreatorTransactionService {
                         ),
                     ),
             ])
+            .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
@@ -393,6 +405,7 @@ export class PositionCreatorTransactionService {
     }
 
     async exitFarmPositionDualTokens(
+        sender: string,
         farmAddress: string,
         payment: EsdtTokenPayment,
         tolerance: number,
@@ -432,6 +445,7 @@ export class PositionCreatorTransactionService {
                     new BigNumber(payment.amount),
                 ),
             )
+            .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
