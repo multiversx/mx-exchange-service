@@ -10,6 +10,7 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { StakingModule } from '../staking/staking.module';
 import { TokenModule } from '../tokens/token.module';
+import { PositionCreatorTransactionResolver } from './position.creator.transaction.resolver';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { TokenModule } from '../tokens/token.module';
         PositionCreatorComputeService,
         PositionCreatorTransactionService,
         PositionCreatorResolver,
+        PositionCreatorTransactionResolver,
     ],
     exports: [],
 })
