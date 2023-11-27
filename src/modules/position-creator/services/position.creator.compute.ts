@@ -1,5 +1,6 @@
 import { TypedValue } from '@multiversx/sdk-core/out';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { SWAP_TYPE } from 'src/modules/auto-router/models/auto-route.model';
@@ -8,7 +9,6 @@ import { AutoRouterTransactionService } from 'src/modules/auto-router/services/a
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
-import { RouterService } from 'src/modules/router/services/router.service';
 
 export type PositionCreatorSingleTokenPairInput = {
     swapRouteArgs: TypedValue[];
@@ -22,12 +22,12 @@ export class PositionCreatorComputeService {
         private readonly pairAbi: PairAbiService,
         private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
-        private readonly routerService: RouterService,
         private readonly autoRouterService: AutoRouterService,
         private readonly autoRouterTransaction: AutoRouterTransactionService,
     ) {}
 
     async computeSwap(
+        pairAddress: string,
         fromTokenID: string,
         toTokenID: string,
         amount: string,
@@ -36,20 +36,8 @@ export class PositionCreatorComputeService {
             return new BigNumber(amount);
         }
 
-        const pairs = await this.routerService.getAllPairs(0, 1, {
-            address: null,
-            issuedLpToken: true,
-            firstTokenID: fromTokenID,
-            secondTokenID: toTokenID,
-            state: 'Active',
-        });
-
-        if (pairs.length === 0) {
-            throw new Error('Pair not found');
-        }
-
         const amountOut = await this.pairService.getAmountOut(
-            pairs[0].address,
+            pairAddress,
             fromTokenID,
             amount,
         );
@@ -74,12 +62,16 @@ export class PositionCreatorComputeService {
             ? firstTokenID
             : secondTokenID;
 
+        const profiler = new PerformanceProfiler();
+
         const swapRoute = await this.autoRouterService.swap({
             tokenInID: payment.tokenIdentifier,
             amountIn: payment.amount,
             tokenOutID: swapToTokenID,
             tolerance,
         });
+
+        profiler.stop('swap route', true);
 
         const halfPayment = new BigNumber(swapRoute.amountOut)
             .dividedBy(2)
@@ -92,11 +84,13 @@ export class PositionCreatorComputeService {
 
         const [amount0, amount1] = await Promise.all([
             await this.computeSwap(
+                pairAddress,
                 swapRoute.tokenOutID,
                 firstTokenID,
                 halfPayment,
             ),
             await this.computeSwap(
+                pairAddress,
                 swapRoute.tokenOutID,
                 secondTokenID,
                 remainingPayment,
