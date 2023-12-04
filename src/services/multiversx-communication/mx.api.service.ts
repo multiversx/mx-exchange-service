@@ -11,7 +11,12 @@ import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
-import { isEsdtToken, isEsdtTokenValid, isNftCollection, isNftCollectionValid } from 'src/utils/token.type.compare';
+import {
+    isEsdtToken,
+    isEsdtTokenValid,
+    isNftCollection,
+    isNftCollectionValid,
+} from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { MXProxyService } from './mx.proxy.service';
 
@@ -263,6 +268,23 @@ export class MXApiService {
         return userNfts;
     }
 
+    async getNftsAttributesForUser(
+        address: string,
+        type = 'MetaESDT',
+        identifiers: string[],
+    ): Promise<string[]> {
+        if (identifiers.length === 0) {
+            return [];
+        }
+        const nfts = await this.genericGetExecutor.execute({
+            methodName: this.getNftsAttributesForUser.name,
+            resourceUrl: `accounts/${address}/nfts?type=${type}&fields=attributes&identifiers=${identifiers.join(
+                ',',
+            )}`,
+        });
+        return nfts.map((nft) => nft.attributes);
+    }
+
     async getNftByTokenIdentifier(
         address: string,
         nftIdentifier: string,
@@ -327,13 +349,11 @@ export class MXApiService {
         );
     }
 
-    async getTransactionsWithOptions(
-        {
-            sender,
-            receiver,
-            functionName,
-        },
-    ): Promise<any> {
+    async getTransactionsWithOptions({
+        sender,
+        receiver,
+        functionName,
+    }): Promise<any> {
         return await this.doGetGeneric(
             this.getTransactions.name,
             `transactions?sender=${sender}&receiver=${receiver}&function=${functionName}`,

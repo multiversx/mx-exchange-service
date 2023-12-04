@@ -1,12 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../../../config';
-import { EnergyType } from '@multiversx/sdk-exchange';
+import {
+    EnergyType,
+    LockedAssetAttributes,
+    LockedTokenAttributes,
+    WrappedFarmTokenAttributes,
+    WrappedFarmTokenAttributesV2,
+    WrappedLpTokenAttributes,
+    WrappedLpTokenAttributesV2,
+} from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import {
     ContractType,
     OutdatedContract,
     UserDualYiledToken,
     UserLockedFarmTokenV2,
+    UserNegativeEnergyCheck,
 } from '../../models/user.model';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
 import { PaginationArgs } from '../../../dex.model';
@@ -22,8 +31,15 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { Constants } from '@multiversx/sdk-nestjs-common';
+import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { tokenIdentifier } from 'src/utils/token.converters';
+import { ProxyPairAbiService } from 'src/modules/proxy/services/proxy-pair/proxy.pair.abi.service';
+import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
+import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
+import { ProxyAbiServiceV2 } from 'src/modules/proxy/v2/services/proxy.v2.abi.service';
+import { MetabondingAbiService } from 'src/modules/metabonding/services/metabonding.abi.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -36,7 +52,13 @@ export class UserEnergyComputeService {
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly energyAbi: EnergyAbiService,
+        private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly proxyService: ProxyService,
+        private readonly proxyAbiV2: ProxyAbiServiceV2,
+        private readonly proxyPairAbi: ProxyPairAbiService,
+        private readonly proxyFarmAbi: ProxyFarmAbiService,
+        private readonly metabondingAbi: MetabondingAbiService,
+        private readonly mxApi: MXApiService,
     ) {}
 
     async getUserOutdatedContracts(
@@ -208,6 +230,370 @@ export class UserEnergyComputeService {
         );
         return [...new Set(userActiveFarmAddresses)].filter(
             (address) => farmVersion(address) === FarmVersion.V2,
+        );
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async computeNegativeEnergyCheck(
+        userAddress: string,
+    ): Promise<UserNegativeEnergyCheck> {
+        const userNftsCount = await this.mxApi.getNftsCountForUser(userAddress);
+
+        if (userNftsCount === 0) {
+            return new UserNegativeEnergyCheck({
+                LKMEX: false,
+                XMEX: false,
+                lockedLPTokenV1: false,
+                lockedLPTokenV2: false,
+                lockedFarmTokenV1: false,
+                lockedFarmTokenV2: false,
+                metabonding: false,
+            });
+        }
+
+        const [
+            lkmexTokenID,
+            xmexTokenID,
+            lockedLPTokenIDV1,
+            lockedLPTokenIDV2,
+            lockedFarmTokenIDV1,
+            lockedFarmTokenIDV2,
+            lkmexActivationNonce,
+            stats,
+        ] = await Promise.all([
+            this.lockedAssetGetter.getLockedTokenID(),
+            this.energyAbi.lockedTokenID(),
+            this.proxyPairAbi.wrappedLpTokenID(scAddress.proxyDexAddress.v1),
+            this.proxyPairAbi.wrappedLpTokenID(scAddress.proxyDexAddress.v2),
+            this.proxyFarmAbi.wrappedFarmTokenID(scAddress.proxyDexAddress.v1),
+            this.proxyFarmAbi.wrappedFarmTokenID(scAddress.proxyDexAddress.v2),
+            this.lockedAssetGetter.getExtendedAttributesActivationNonce(),
+            this.mxApi.getStats(),
+        ]);
+
+        const userNfts = await this.mxApi.getNftsForUser(
+            userAddress,
+            0,
+            userNftsCount,
+            'MetaESDT',
+            [
+                lkmexTokenID,
+                xmexTokenID,
+                lockedLPTokenIDV1,
+                lockedLPTokenIDV2,
+                lockedFarmTokenIDV1,
+                lockedFarmTokenIDV2,
+            ],
+        );
+
+        const lkmexTokens = userNfts.filter((nft) =>
+            nft.collection.includes(lkmexTokenID),
+        );
+        const xmexTokens = userNfts.filter((nft) =>
+            nft.collection.includes(xmexTokenID),
+        );
+        const lockedLPTokensV1 = userNfts.filter(
+            (nft) => nft.collection === lockedLPTokenIDV1,
+        );
+        const lockedLPTokensV2 = userNfts.filter(
+            (nft) => nft.collection === lockedLPTokenIDV2,
+        );
+        const lockedFarmTokensV1 = userNfts.filter(
+            (nft) => nft.collection === lockedFarmTokenIDV1,
+        );
+        const lockedFarmTokensV2 = userNfts.filter(
+            (nft) => nft.collection === lockedFarmTokenIDV2,
+        );
+
+        const [
+            checkLKMEX,
+            checkXMEX,
+            checkLockedLPTokenV1,
+            checkLockedLPTokenV2,
+            checkLockedFarmTokenV1,
+            checkLockedFarmTokenV2,
+        ] = await Promise.all([
+            this.checkLKMEXNegativeEnergy(
+                stats.epoch,
+                lkmexTokens.map((token) =>
+                    LockedAssetAttributes.fromAttributes(
+                        token.nonce >= lkmexActivationNonce,
+                        token.attributes,
+                    ),
+                ),
+            ),
+            this.checkXMEXNegativeEnergy(
+                stats.epoch,
+                xmexTokens.map((token) =>
+                    LockedTokenAttributes.fromAttributes(token.attributes),
+                ),
+            ),
+            this.checkLockedLPTokenNegativeEnergyV1(
+                stats.epoch,
+                lkmexActivationNonce,
+                lkmexTokenID,
+                lockedLPTokensV1.map((token) =>
+                    WrappedLpTokenAttributes.fromAttributes(token.attributes),
+                ),
+            ),
+            this.checkLockedLPTokenNegativeEnergyV2(
+                stats.epoch,
+                lkmexActivationNonce,
+                lkmexTokenID,
+                lockedLPTokensV2.map((token) =>
+                    WrappedLpTokenAttributesV2.fromAttributes(token.attributes),
+                ),
+            ),
+            this.checkLockedFarmTokenNegativeEnergyV1(
+                stats.epoch,
+                lkmexActivationNonce,
+                lkmexTokenID,
+                lockedFarmTokensV1.map((token) =>
+                    WrappedFarmTokenAttributes.fromAttributes(token.attributes),
+                ),
+            ),
+            this.checkLockedFarmTokenNegativeEnergyV2(
+                stats.epoch,
+                lkmexActivationNonce,
+                lkmexTokenID,
+                lockedFarmTokensV2.map((token) =>
+                    WrappedFarmTokenAttributesV2.fromAttributes(
+                        token.attributes,
+                    ),
+                ),
+            ),
+        ]);
+
+        let metabondingCheck = false;
+        if (scAddress.metabondingStakingAddress) {
+            const userMetabondingEntry = await this.metabondingAbi.userEntry(
+                userAddress,
+            );
+            const metabondingTokensAttributes =
+                await this.mxApi.getNftAttributesByTokenIdentifier(
+                    scAddress.metabondingStakingAddress,
+                    tokenIdentifier(
+                        lkmexTokenID,
+                        userMetabondingEntry.tokenNonce,
+                    ),
+                );
+            metabondingCheck = this.checkLKMEXNegativeEnergy(stats.epoch, [
+                LockedAssetAttributes.fromAttributes(
+                    userMetabondingEntry.tokenNonce >= lkmexActivationNonce,
+                    metabondingTokensAttributes,
+                ),
+            ]);
+        }
+
+        return new UserNegativeEnergyCheck({
+            LKMEX: checkLKMEX,
+            XMEX: checkXMEX,
+            lockedLPTokenV1: checkLockedLPTokenV1,
+            lockedLPTokenV2: checkLockedLPTokenV2,
+            lockedFarmTokenV1: checkLockedFarmTokenV1,
+            lockedFarmTokenV2: checkLockedFarmTokenV2,
+            metabonding: metabondingCheck,
+        });
+    }
+
+    checkLKMEXNegativeEnergy(
+        currentEpoch: number,
+        lockedTokensAttributes: LockedAssetAttributes[],
+    ): boolean {
+        for (const attributes of lockedTokensAttributes) {
+            for (const schedule of attributes.unlockSchedule) {
+                if (schedule.epoch.integerValue().toNumber() > currentEpoch) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    checkXMEXNegativeEnergy(
+        currentEpoch: number,
+        lockedTokensAttributes: LockedTokenAttributes[],
+    ): boolean {
+        for (const attributes of lockedTokensAttributes) {
+            if (attributes.unlockEpoch > currentEpoch) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    async checkLockedLPTokenNegativeEnergyV1(
+        currentEpoch: number,
+        lkmexExtendedAttributesActivationNonce: number,
+        lkmexTokenID: string,
+        attributes: WrappedLpTokenAttributes[],
+    ): Promise<boolean> {
+        const identifiers = attributes.map((attribute) =>
+            tokenIdentifier(lkmexTokenID, attribute.lockedAssetsNonce),
+        );
+        const lockedTokensAttributes =
+            await this.mxApi.getNftsAttributesForUser(
+                scAddress.proxyDexAddress.v1,
+                'MetaESDT',
+                identifiers,
+            );
+
+        return this.checkLKMEXNegativeEnergy(
+            currentEpoch,
+            lockedTokensAttributes.map((attribute, index) =>
+                LockedAssetAttributes.fromAttributes(
+                    attributes[index].lockedAssetsNonce >=
+                        lkmexExtendedAttributesActivationNonce,
+                    attribute,
+                ),
+            ),
+        );
+    }
+
+    async checkLockedLPTokenNegativeEnergyV2(
+        currentEpoch: number,
+        lkmexExtendedAttributesActivationNonce: number,
+        lkmexTokenID: string,
+        attributes: WrappedLpTokenAttributesV2[],
+    ): Promise<boolean> {
+        const lockedLPWithLKMEX = attributes.filter(
+            (attribute) =>
+                attribute.lockedTokens.tokenIdentifier === lkmexTokenID,
+        );
+        const lockedLPWithXMEX = attributes.filter(
+            (attribute) =>
+                attribute.lockedTokens.tokenIdentifier !== lkmexTokenID,
+        );
+
+        const [lkmexAttributesRaw, xmexAttributesRaw] = await Promise.all([
+            this.mxApi.getNftsAttributesForUser(
+                scAddress.proxyDexAddress.v2,
+                'MetaESDT',
+                lockedLPWithLKMEX.map((attribute) =>
+                    tokenIdentifier(
+                        attribute.lockedTokens.tokenIdentifier,
+                        attribute.lockedTokens.tokenNonce,
+                    ),
+                ),
+            ),
+            this.mxApi.getNftsAttributesForUser(
+                scAddress.proxyDexAddress.v2,
+                'MetaESDT',
+                lockedLPWithXMEX.map((attribute) =>
+                    tokenIdentifier(
+                        attribute.lockedTokens.tokenIdentifier,
+                        attribute.lockedTokens.tokenNonce,
+                    ),
+                ),
+            ),
+        ]);
+
+        const checkLKMEX = this.checkLKMEXNegativeEnergy(
+            currentEpoch,
+            lkmexAttributesRaw.map((attribute, index) =>
+                LockedAssetAttributes.fromAttributes(
+                    lockedLPWithLKMEX[index].lockedTokens.tokenNonce >=
+                        lkmexExtendedAttributesActivationNonce,
+                    attribute,
+                ),
+            ),
+        );
+        const checkXMEX = this.checkXMEXNegativeEnergy(
+            currentEpoch,
+            xmexAttributesRaw.map((attribute) =>
+                LockedTokenAttributes.fromAttributes(attribute),
+            ),
+        );
+
+        return checkLKMEX || checkXMEX;
+    }
+
+    async checkLockedFarmTokenNegativeEnergyV1(
+        currentEpoch: number,
+        lkmexExtendedAttributesActivationNonce: number,
+        lkmexTokenID: string,
+        attributes: WrappedFarmTokenAttributes[],
+    ): Promise<boolean> {
+        const lockedFarmTokensWithLKMEX = attributes.filter(
+            (attribute) => attribute.farmingTokenID === lkmexTokenID,
+        );
+        const lockedFarmTokensWithLKLP = attributes.filter(
+            (attribute) => attribute.farmingTokenID !== lkmexTokenID,
+        );
+
+        const [lkmexAttributesRaw, lklpAttributesRaw] = await Promise.all([
+            this.mxApi.getNftsAttributesForUser(
+                scAddress.proxyDexAddress.v1,
+                'MetaESDT',
+                lockedFarmTokensWithLKMEX.map((attribute) =>
+                    tokenIdentifier(
+                        attribute.farmingTokenID,
+                        attribute.farmingTokenNonce,
+                    ),
+                ),
+            ),
+            this.mxApi.getNftsAttributesForUser(
+                scAddress.proxyDexAddress.v1,
+                'MetaESDT',
+                lockedFarmTokensWithLKLP.map((attribute) =>
+                    tokenIdentifier(
+                        attribute.farmingTokenID,
+                        attribute.farmingTokenNonce,
+                    ),
+                ),
+            ),
+        ]);
+
+        const checkLKMEX = this.checkLKMEXNegativeEnergy(
+            currentEpoch,
+            lkmexAttributesRaw.map((attribute, index) => {
+                return LockedAssetAttributes.fromAttributes(
+                    lockedFarmTokensWithLKMEX[index].farmingTokenNonce >=
+                        lkmexExtendedAttributesActivationNonce,
+                    attribute,
+                );
+            }),
+        );
+
+        const checkLockedLPTokenV1 =
+            await this.checkLockedLPTokenNegativeEnergyV1(
+                currentEpoch,
+                lkmexExtendedAttributesActivationNonce,
+                lkmexTokenID,
+                lklpAttributesRaw.map((attribute) =>
+                    WrappedLpTokenAttributes.fromAttributes(attribute),
+                ),
+            );
+
+        return checkLKMEX || checkLockedLPTokenV1;
+    }
+
+    async checkLockedFarmTokenNegativeEnergyV2(
+        currentEpoch: number,
+        lkmexExtendedAttributesActivationNonce: number,
+        lkmexTokenID: string,
+        attributes: WrappedFarmTokenAttributesV2[],
+    ): Promise<boolean> {
+        const lklpAttributesRaw = await this.mxApi.getNftsAttributesForUser(
+            scAddress.proxyDexAddress.v2,
+            'MetaESDT',
+            attributes.map((attribute) =>
+                tokenIdentifier(
+                    attribute.proxyFarmingToken.tokenIdentifier,
+                    attribute.proxyFarmingToken.tokenNonce,
+                ),
+            ),
+        );
+
+        return this.checkLockedLPTokenNegativeEnergyV2(
+            currentEpoch,
+            lkmexExtendedAttributesActivationNonce,
+            lkmexTokenID,
+            lklpAttributesRaw.map((attribute) =>
+                WrappedLpTokenAttributesV2.fromAttributes(attribute),
+            ),
         );
     }
 
