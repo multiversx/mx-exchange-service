@@ -223,6 +223,14 @@ export class MXProxyService {
         );
     }
 
+    async getComposableTasksSmartContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.composableTasks,
+            abiConfig.composableTasks,
+            'ComposableTasksContract',
+        );
+    }
+
     async getSmartContract(
         contractAddress: string,
         contractAbiPath: string,

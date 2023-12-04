@@ -42,7 +42,8 @@
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqnysvq99c2t4a9pvvv22elnl6p73el8vw0n4spyfv7p",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
-        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a"
+        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a",
+        "composableTasks": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh"
     },
     "tokenProviderUSD": "WEGLD-71e90a",
     "tokensSupply": ["MEX-27f4cd"],

@@ -36,6 +36,7 @@ import { EscrowModule } from './modules/escrow/escrow.module';
 import { GovernanceModule } from './modules/governance/governance.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
+import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
 
 @Module({
     imports: [
@@ -95,6 +96,7 @@ import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
         LockedTokenWrapperModule,
         EscrowModule,
         GovernanceModule,
+        ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
     ],
 })
