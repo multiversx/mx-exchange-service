@@ -100,7 +100,7 @@
             "issueToken": 150000000,
             "setLocalRoles": 150000000,
             "multiPairSwapMultiplier": 50000000,
-            "swapEnableByUser": 50000000,
+            "swapEnableByUser": 75000000,
             "admin": {
                 "setState": 200000000,
                 "setFee": 200000000,

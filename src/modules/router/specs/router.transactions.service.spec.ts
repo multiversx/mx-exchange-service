@@ -557,7 +557,7 @@ describe('RouterService', () => {
             receiver: Address.Zero().bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: 50000000,
+            gasLimit: 75000000,
             data: encodeTransactionData(
                 `ESDTNFTTransfer@LKESDT-1234@01@10000000000@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000011',
