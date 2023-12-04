@@ -494,6 +494,9 @@
         "governance": {
             "vote": 50000000
         },
+        "composableTasks": {
+            "default": 30000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
@@ -534,7 +537,8 @@
         "governance": {
             "energy": "./src/abis/governance-v2.abi.json",
             "tokenSnapshot": "./src/abis/governance-v2-merkle-proof.abi.json"
-        }
+        },
+        "composableTasks": "./src/abis/composable-tasks.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,
