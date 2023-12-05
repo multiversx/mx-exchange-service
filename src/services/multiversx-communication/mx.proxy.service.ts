@@ -223,6 +223,14 @@ export class MXProxyService {
         );
     }
 
+    async getPostitionCreatorContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.positionCreator,
+            abiConfig.positionCreator,
+            'AutoPosCreator',
+        );
+    }
+
     async getComposableTasksSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.composableTasks,

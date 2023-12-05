@@ -43,6 +43,7 @@
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqnysvq99c2t4a9pvvv22elnl6p73el8vw0n4spyfv7p",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
         "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a",
+        "positionCreator": "erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6",
         "composableTasks": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh"
     },
     "tokenProviderUSD": "WEGLD-71e90a",
@@ -100,7 +101,7 @@
             "issueToken": 150000000,
             "setLocalRoles": 150000000,
             "multiPairSwapMultiplier": 50000000,
-            "swapEnableByUser": 50000000,
+            "swapEnableByUser": 75000000,
             "admin": {
                 "setState": 200000000,
                 "setFee": 200000000,
@@ -494,6 +495,9 @@
         "governance": {
             "vote": 50000000
         },
+        "positionCreator": {
+            "singleToken": 50000000
+        },
         "composableTasks": {
             "default": 30000000
         },
@@ -538,6 +542,7 @@
             "energy": "./src/abis/governance-v2.abi.json",
             "tokenSnapshot": "./src/abis/governance-v2-merkle-proof.abi.json"
         },
+        "positionCreator": "./src/abis/auto-pos-creator.abi.json",
         "composableTasks": "./src/abis/composable-tasks.abi.json"
     },
     "cron": {
