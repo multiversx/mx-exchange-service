@@ -13,6 +13,7 @@ import { AutoRouterResolver } from './auto-router.resolver';
 import { PairTransactionService } from '../pair/services/pair.transactions.service';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { TokenModule } from '../tokens/token.module';
+import { ComposableTasksModule } from '../composable-tasks/composable.tasks.module';
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { TokenModule } from '../tokens/token.module';
         WrappingModule,
         RouterModule,
         TokenModule,
+        ComposableTasksModule,
         RemoteConfigModule,
     ],
     providers: [
