@@ -25,6 +25,7 @@ import BigNumber from 'bignumber.js';
 import { gasConfig, mxConfig } from 'src/config';
 import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { decimalToHex } from 'src/utils/token.converters';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 export type ComposableTask = {
     type: ComposableTaskType;
@@ -33,7 +34,10 @@ export type ComposableTask = {
 
 @Injectable()
 export class ComposableTasksTransactionService {
-    constructor(private readonly mxPorxy: MXProxyService) {}
+    constructor(
+        private readonly mxPorxy: MXProxyService,
+        private readonly wrapAbi: WrapAbiService,
+    ) {}
 
     async getComposeTasksTransaction(
         payment: EsdtTokenPayment,
@@ -99,7 +103,7 @@ export class ComposableTasksTransactionService {
         return interaction.buildTransaction().toPlainObject();
     }
 
-    async wrapEgldAndSwapTransaction(
+    async wrapEgldAndSwapFixedInputTransaction(
         value: string,
         tokenOutID: string,
         tokenOutAmountMin: string,
@@ -108,7 +112,7 @@ export class ComposableTasksTransactionService {
             type: ComposableTaskType.WRAP_EGLD,
             arguments: [],
         };
-        console.log(decimalToHex(new BigNumber(tokenOutAmountMin)));
+
         const swapTask: ComposableTask = {
             type: ComposableTaskType.SWAP,
             arguments: [
@@ -133,6 +137,39 @@ export class ComposableTasksTransactionService {
                 amount: tokenOutAmountMin,
             }),
             [wrapTask, swapTask],
+        );
+    }
+
+    async swapFixedInputAndUnwrapEgldTransaction(
+        payment: EsdtTokenPayment,
+        minimumValue: string,
+    ): Promise<TransactionModel> {
+        const wrappedEgldTokenID = await this.wrapAbi.wrappedEgldTokenID();
+
+        const swapTask: ComposableTask = {
+            type: ComposableTaskType.SWAP,
+            arguments: [
+                new BytesValue(Buffer.from(wrappedEgldTokenID, 'utf-8')),
+                new BytesValue(
+                    Buffer.from(
+                        decimalToHex(new BigNumber(minimumValue)),
+                        'hex',
+                    ),
+                ),
+            ],
+        };
+        const unwrapTask: ComposableTask = {
+            type: ComposableTaskType.UNWRAP_EGLD,
+            arguments: [],
+        };
+
+        return this.getComposeTasksTransaction(
+            payment,
+            new EgldOrEsdtTokenPayment({
+                tokenIdentifier: 'EGLD',
+                amount: minimumValue,
+            }),
+            [swapTask, unwrapTask],
         );
     }
 }
