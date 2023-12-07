@@ -5,7 +5,8 @@
         "WEGLD_USDC": "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfsr2ycrs",
         "proxyDexAddress": {
             "v1": "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl"
-        }
+        },
+        "composableTasks": "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu"
     },
     "farms": {
         "v1.2": [
