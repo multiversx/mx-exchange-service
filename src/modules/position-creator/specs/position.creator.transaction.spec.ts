@@ -30,6 +30,7 @@ import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import exp from 'constants';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -63,6 +64,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiServiceProvider,
                 TokenServiceProvider,
                 RemoteConfigGetterServiceProvider,
+                ComposableTasksTransactionService,
                 MXProxyServiceProvider,
                 ConfigService,
                 ApiConfigService,
