@@ -25,4 +25,8 @@ export class ComposableTaskEnumType {
 export class ComposableTaskModel {
     @Field()
     address: string;
+
+    constructor(init: Partial<ComposableTaskModel>) {
+        Object.assign(this, init);
+    }
 }
