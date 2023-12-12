@@ -52,7 +52,7 @@ export class RouterAbiServiceMock implements IRouterAbiService {
         });
     }
     async commonTokensForUserPairs(): Promise<string[]> {
-        return ['USDC-123456'];
+        return ['USDC-123456', 'WEGLD-123456'];
     }
 }
 

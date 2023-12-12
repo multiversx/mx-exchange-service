@@ -3,31 +3,31 @@
         "chainID": "T"
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqp84x6wcux4hyuwcvnzdyg7yqgy4szpks295qml8wpm",
-        "MEX-4638e4": "erd1qqqqqqqqqqqqqpgqsa0hwt0m05308mxlagc6wm3qs6duuh5f295qs5du2a",
-        "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqqccjzsw3y8r0q52egfnnj9v26ehlkcw6295qnlq4nt",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqfd2apcqxxmvngsnhmq4xfq22pfnq7gctexksm0gudw",
+        "MEX-708726": "erd1qqqqqqqqqqqqqpgqzjstzefzeastekqpxz6ysh3d0k9eap9aexkscvsdqn",
+        "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqfsfcrxnlym0fjlnuvus2dmlz6ju9cpsfexks8wq4d4",
         "proxyDexAddress": {
-            "v1": "erd1qqqqqqqqqqqqqpgq7kl4lj75v4g33jc0e2snhzk6rzwfank3295qsuz7mk",
-            "v2": "erd1qqqqqqqqqqqqqpgqat0auzsgk9x0g9gm8n6tq6qa9xtmwu4h295qaalzvq"
+            "v1": "erd1qqqqqqqqqqqqqpgqyxu6kgfxmw22zx5atyal4vtpwkc62v86exkshygpfx",
+            "v2": "erd1qqqqqqqqqqqqqpgqkh74aapaz5cahf4rf8fzyxvqkh6ca86yexksjtmmnm"
         },
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqsn34ftz2g7822ta0dq3ddd57frup220q295qrwnw3g",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq68yyplpvzs40urda5y7ce8xgn6kj3sarexkslzm02u",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
         "simpleLockAddress": [
-            "erd1qqqqqqqqqqqqqpgq0yyzn9yuk6jetcjy5zdzlum83hgsvq6r295qlcfral"
+            "erd1qqqqqqqqqqqqqpgq5fszwql529edaggetu7vkauc07dzed9zexksqdewxw"
         ],
         "wrappingAddress": {
-            "shardID-0": "erd1qqqqqqqqqqqqqpgq7gp69s5k8xyv5z668pqhn2g8yatzr663295qeww2dg",
-            "shardID-1": "erd1qqqqqqqqqqqqqpgqfy4z88duqdusaksn399f4dny527m6xe07h0sll0m2t",
-            "shardID-2": "erd1qqqqqqqqqqqqqpgqyjudtgtm76ch59lktf454uvsz8qtntlplyrqw30vfm"
+            "shardID-0": "erd1qqqqqqqqqqqqqpgqqkwzsxkjc83vlfex9dmznwm7tjvxlqqkpauqx0n782",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqhpmz3gh6jnwuyw4qxnksfh74tv8kdf6gexksrputsf",
+            "shardID-2": "erd1qqqqqqqqqqqqqpgqvn9ew0wwn7a3pk053ezex98497hd4exqdg0q8v2e0c"
         },
         "priceDiscovery": [
         ],
-        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgq887a04xhpjnuzwrn5pfhygxtptf43q4l295qu982yv",
-        "feesCollector": "erd1qqqqqqqqqqqqqpgqeatzcksgacmpf0wq0lmcmhsv9mqgpjtt295q85ygk4",
-        "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
-        "tokenUnstake": "erd1qqqqqqqqqqqqqpgq9smwjt59tdjdx8etcfr4m5pm4m2cqty0295qf9ytj8",
-        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqp628sk5y6c5w8twdddmf4n6kcpatnfuk295q0xuzle",
-        "escrow": "erd1qqqqqqqqqqqqqpgqpd6ymzum53u0645a4v2hrmpmf2aqh2jw295q8dsv45"
+        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgqgcd4wquv46u5u9gvvz4x3avuwmjqwfstexksk37nf4",
+        "feesCollector": "erd1qqqqqqqqqqqqqpgqt5mtw8hjy5n8vkap5ea3nmd4qd9rwyzvexksw07tns",
+        "energyUpdate": "erd1qqqqqqqqqqqqqpgq37e5r67hvtrkyhs6yadwvwtk3rxk792e0n4s066pa5",
+        "tokenUnstake": "erd1qqqqqqqqqqqqqpgqyxus98ytge6yt2ptesjxa5dzjfuz60dgexks3zee0k",
+        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqs9c75ev7kzttp33gq0868qcwynv2ajgt0n4s9k628r",
+        "escrow": "erd1qqqqqqqqqqqqqpgqcsmrv0hh6fvmhe4e7q4resj7rkeqxp7p0n4s0qfapx"
     },
     "governance": {
         "oldEnergy": {},
@@ -47,28 +47,26 @@
                 "unlockedRewards": [
                 ],
                 "lockedRewards": [
-                    "erd1qqqqqqqqqqqqqpgqutt0e74phpgxz254ylw5q7a6yjwvx0pn295qjrfekp",
-                    "erd1qqqqqqqqqqqqqpgqkgwcmjk7f4xt9tjfcmfz3saflnl3zh3n295q2u6965",
-                    "erd1qqqqqqqqqqqqqpgqjm07lvdzdz8j73wx4da998kw5nx68uyj295qfw8gtg",
-                    "erd1qqqqqqqqqqqqqpgqaathw30vz468zxukyjzxc4aqnzrd2n5u295q4l9ycs",
-                    "erd1qqqqqqqqqqqqqpgqklt6n96ljjtr6vr8vqjjqcn9an46ylfj295qzu44uk",
-                    "erd1qqqqqqqqqqqqqpgq6nu45zq54wg6x85n2cfwq8zmh7asdu2n295qwpsrt6",
-                    "erd1qqqqqqqqqqqqqpgqran5d3p0jkpukqan2zxqwuvmy8273ldd295qumqvkr"
+                    "erd1qqqqqqqqqqqqqpgqk232ukl7944vmjq44krjns0yturh6ms9exksgmr2sc",
+                    "erd1qqqqqqqqqqqqqpgq3qw8j5kd6295y8ud4kwc7k3qyhdcvu6fexksas5lm6",
+                    "erd1qqqqqqqqqqqqqpgqzqlavpqgwkrnslzrl05aqms2au2327asexksc4u3qg",
+                    "erd1qqqqqqqqqqqqqpgqv2w0j3wveyv09mclcnnulcn0d5vwuhe8exksu2n3rz"
+                    
                 ]
         }
     },
-    "tokenProviderUSD": "WEGLD-01e49d",
-    "tokensSupply": ["MEX-4638e4"],
-    "cachedTokensPrice": ["MEX-4638e4"],
+    "tokenProviderUSD": "WEGLD-dd8471",
+    "tokensSupply": ["MEX-708726"],
+    "cachedTokensPrice": ["MEX-708726"],
     "constants": {
         "MAX_SWAP_SPREAD": 0.9,
-        "MEX_TOKEN_ID": "MEX-4638e4",
-        "USDC_TOKEN_ID": "USDC-f89dfe",
+        "MEX_TOKEN_ID": "MEX-708726",
+        "USDC_TOKEN_ID": "USDC-5bee92",
         "MAINTENANCE": false,
         "EPOCHS_IN_WEEK": 7,
         "roundedSwapEnable": {
-            "USDC-8d4068": "5000000",
-            "WEGLD-d7c6bb": "100000000000000000"
+            "USDC-5bee92": "5000000",
+            "WEGLD-dd8471": "100000000000000000"
         }
     }
 }

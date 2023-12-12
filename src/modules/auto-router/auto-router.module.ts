@@ -33,6 +33,6 @@ import { TokenModule } from '../tokens/token.module';
         AutoRouterTransactionService,
         PairTransactionService,
     ],
-    exports: [],
+    exports: [AutoRouterService, AutoRouterTransactionService],
 })
 export class AutoRouterModule {}
