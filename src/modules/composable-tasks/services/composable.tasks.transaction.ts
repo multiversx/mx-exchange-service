@@ -46,26 +46,6 @@ export class ComposableTasksTransactionService {
     ): Promise<TransactionModel> {
         const contract = await this.mxPorxy.getComposableTasksSmartContract();
 
-        const rawTasks: TypedValue[] = [];
-
-        for (const task of tasks) {
-            rawTasks.push(
-                new EnumValue(
-                    ComposableTaskEnumType.getEnumType(),
-                    new EnumVariantDefinition(
-                        task.type,
-                        ComposableTaskEnumType.getEnumType().getVariantByName(
-                            task.type,
-                        ).discriminant,
-                    ),
-                    [],
-                ),
-            );
-            rawTasks.push(
-                new List(new ListType(new BytesType()), task.arguments),
-            );
-        }
-
         let interaction = contract.methodsExplicit
             .composeTasks([
                 new Struct(EgldOrEsdtTokenPayment.getStructure(), [
@@ -79,7 +59,7 @@ export class ComposableTasksTransactionService {
                         'amount',
                     ),
                 ]),
-                ...rawTasks,
+                ...this.getRawTasks(tasks),
             ])
             .withGasLimit(gasConfig.composableTasks.default)
             .withChainID(mxConfig.chainID);
@@ -171,5 +151,29 @@ export class ComposableTasksTransactionService {
             }),
             [swapTask, unwrapTask],
         );
+    }
+
+    private getRawTasks(tasks: ComposableTask[]): TypedValue[] {
+        const rawTasks: TypedValue[] = [];
+
+        tasks.forEach((task) => {
+            rawTasks.push(
+                new EnumValue(
+                    ComposableTaskEnumType.getEnumType(),
+                    new EnumVariantDefinition(
+                        task.type,
+                        ComposableTaskEnumType.getEnumType().getVariantByName(
+                            task.type,
+                        ).discriminant,
+                    ),
+                    [],
+                ),
+            );
+            rawTasks.push(
+                new List(new ListType(new BytesType()), task.arguments),
+            );
+        });
+
+        return rawTasks;
     }
 }
