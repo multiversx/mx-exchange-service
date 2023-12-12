@@ -49,7 +49,7 @@ export class PositionCreatorTransactionService {
         );
 
         if (
-            !uniqueTokensIDs.includes(payment.tokenIdentifier) ||
+            !uniqueTokensIDs.includes(payment.tokenIdentifier) &&
             payment.tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
             throw new Error('Invalid ESDT token payment');
