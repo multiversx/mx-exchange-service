@@ -48,7 +48,10 @@ export class PositionCreatorTransactionService {
             false,
         );
 
-        if (!uniqueTokensIDs.includes(payment.tokenIdentifier)) {
+        if (
+            !uniqueTokensIDs.includes(payment.tokenIdentifier) ||
+            payment.tokenIdentifier !== mxConfig.EGLDIdentifier
+        ) {
             throw new Error('Invalid ESDT token payment');
         }
 
@@ -61,24 +64,29 @@ export class PositionCreatorTransactionService {
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
-        return contract.methodsExplicit
+        const interaction = contract.methodsExplicit
             .createLpPosFromSingleToken([
                 new AddressValue(Address.fromBech32(pairAddress)),
                 new BigUIntValue(singleTokenPairInput.amount0Min),
                 new BigUIntValue(singleTokenPairInput.amount1Min),
                 ...singleTokenPairInput.swapRouteArgs,
             ])
-            .withSingleESDTTransfer(
+            .withSender(Address.fromBech32(sender))
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID);
+
+        if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
+            interaction.withValue(new BigNumber(payment.amount));
+        } else {
+            interaction.withSingleESDTTransfer(
                 TokenTransfer.fungibleFromBigInteger(
                     payment.tokenIdentifier,
                     new BigNumber(payment.amount),
                 ),
-            )
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+            );
+        }
+
+        return interaction.buildTransaction().toPlainObject();
     }
 
     async createFarmPositionSingleToken(
