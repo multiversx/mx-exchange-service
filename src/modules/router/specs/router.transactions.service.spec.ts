@@ -557,7 +557,7 @@ describe('RouterService', () => {
             receiver: Address.Zero().bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: 50000000,
+            gasLimit: 75000000,
             data: encodeTransactionData(
                 `ESDTNFTTransfer@LKESDT-1234@01@10000000000@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000011',
@@ -655,7 +655,7 @@ describe('RouterService', () => {
                         nonce: 1,
                         amount: '1000000000000000000',
                         attributes:
-                            'AAAAEEVHTERNRVhMUC1hYmNkZWYAAAAAAAAAAAAAAAAAAAAB',
+                            'AAAAEVRPSzVUT0s2TFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAQ==',
                     }),
                 ),
             ).rejects.toThrow('Not a valid user defined pair');
@@ -678,7 +678,7 @@ describe('RouterService', () => {
                         nonce: 1,
                         amount: '1000',
                         attributes:
-                            'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
+                            'AAAAEVRPSzVVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
                     }),
                 ),
             ).rejects.toThrow('Not enough value locked');

@@ -4,6 +4,7 @@ import {
     BigUIntValue,
     BytesValue,
     TokenTransfer,
+    TypedValue,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -55,8 +56,8 @@ export class AutoRouterTransactionService {
 
         const transactionArgs =
             args.swapType == SWAP_TYPE.fixedInput
-                ? await this.multiPairFixedInputSwaps(args)
-                : await this.multiPairFixedOutputSwaps(args);
+                ? this.multiPairFixedInputSwaps(args)
+                : this.multiPairFixedOutputSwaps(args);
 
         transactions.push(
             contract.methodsExplicit
@@ -78,10 +79,8 @@ export class AutoRouterTransactionService {
         return transactions;
     }
 
-    private async multiPairFixedInputSwaps(
-        args: MultiSwapTokensArgs,
-    ): Promise<any[]> {
-        const swaps = [];
+    multiPairFixedInputSwaps(args: MultiSwapTokensArgs): TypedValue[] {
+        const swaps: TypedValue[] = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;
 
@@ -113,10 +112,8 @@ export class AutoRouterTransactionService {
         return swaps;
     }
 
-    private async multiPairFixedOutputSwaps(
-        args: MultiSwapTokensArgs,
-    ): Promise<any[]> {
-        const swaps = [];
+    multiPairFixedOutputSwaps(args: MultiSwapTokensArgs): TypedValue[] {
+        const swaps: TypedValue[] = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;
 

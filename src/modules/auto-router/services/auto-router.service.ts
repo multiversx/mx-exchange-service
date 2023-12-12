@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -145,6 +145,10 @@ export class AutoRouterService {
             this.pairCompute.tokenPriceUSD(tokenInID),
             this.pairCompute.tokenPriceUSD(tokenOutID),
         ]);
+
+        if (result === '0') {
+            throw new BadRequestException('Invalid amounts');
+        }
 
         let [amountIn, amountOut] = this.isFixedInput(swapType)
             ? [args.amountIn, result]
@@ -378,6 +382,10 @@ export class AutoRouterService {
         amountIn: string,
         amountOut: string,
     ): string[] {
+        if (amountIn === '0' || amountOut === '0') {
+            return ['0', '0'];
+        }
+
         const tokenInPrice = new BigNumber(10)
             .pow(tokenInDecimals)
             .multipliedBy(amountOut)
