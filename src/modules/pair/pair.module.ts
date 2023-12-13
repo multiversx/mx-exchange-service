@@ -13,6 +13,7 @@ import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
 import { CommonAppModule } from 'src/common.app.module';
+import { ComposableTasksModule } from '../composable-tasks/composable.tasks.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -23,6 +24,7 @@ import { CommonAppModule } from 'src/common.app.module';
         DatabaseModule,
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
+        ComposableTasksModule,
     ],
     providers: [
         PairService,

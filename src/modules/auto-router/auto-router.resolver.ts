@@ -57,7 +57,7 @@ export class AutoRouterResolver {
     async transactions(
         @Parent() parent: AutoRouteModel,
         @AuthUser() user: UserAuthResult,
-    ) {
+    ): Promise<TransactionModel[]> {
         try {
             return await this.autoRouterService.getTransactions(
                 user.address,

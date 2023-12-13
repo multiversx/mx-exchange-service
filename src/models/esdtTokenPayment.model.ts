@@ -64,3 +64,25 @@ export class EsdtTokenType {
         ]);
     }
 }
+
+export class EgldOrEsdtTokenPayment {
+    tokenIdentifier: string;
+    nonce: number;
+    amount: string;
+
+    constructor(init?: Partial<EgldOrEsdtTokenPayment>) {
+        Object.assign(this, init);
+    }
+
+    static getStructure(): StructType {
+        return new StructType('EgldOrEsdtTokenPayment', [
+            new FieldDefinition(
+                'token_identifier',
+                '',
+                new TokenIdentifierType(),
+            ),
+            new FieldDefinition('token_nonce', '', new U64Type()),
+            new FieldDefinition('amount', '', new BigUIntType()),
+        ]);
+    }
+}
