@@ -4,7 +4,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { CalculateRewardsArgs } from '../../models/farm.args';
-import { RewardsModel } from '../../models/farm.model';
+import { BoostedRewardsModel, RewardsModel } from '../../models/farm.model';
 import { FarmTokenAttributesModelV2 } from '../../models/farmTokenAttributes.model';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
 import { FarmTokenAttributesV2 } from '@multiversx/sdk-exchange';
@@ -139,6 +139,74 @@ export class FarmServiceV2 extends FarmServiceBase {
                 farmTokenAttributes.enteringEpoch,
             ),
             rewards: rewards.integerValue().toFixed(),
+            boostedRewardsWeeklyInfo: modelsList,
+            claimProgress: currentClaimProgress,
+            accumulatedRewards: userAccumulatedRewards,
+        });
+    }
+
+    async getFarmBoostedRewardsBatch(
+        farmsAddresses: string[],
+        userAddress: string,
+    ): Promise<BoostedRewardsModel[]> {
+        const promises = farmsAddresses.map((address) =>
+            this.getFarmBoostedRewards(address, userAddress),
+        );
+
+        return Promise.all(promises);
+    }
+
+    async getFarmBoostedRewards(
+        farmAddress: string,
+        userAddress: string,
+    ): Promise<BoostedRewardsModel> {
+        const modelsList: UserInfoByWeekModel[] = [];
+
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            farmAddress,
+        );
+
+        let lastActiveWeekUser =
+            await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
+                farmAddress,
+                userAddress,
+            );
+        if (lastActiveWeekUser === 0) {
+            lastActiveWeekUser = currentWeek;
+        }
+        const startWeek = Math.max(
+            currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
+            lastActiveWeekUser,
+        );
+
+        for (let week = startWeek; week <= currentWeek - 1; week++) {
+            if (week < 1) {
+                continue;
+            }
+
+            const model = new UserInfoByWeekModel({
+                scAddress: farmAddress,
+                userAddress: userAddress,
+                week: week,
+            });
+            modelsList.push(model);
+        }
+
+        const currentClaimProgress =
+            await this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                farmAddress,
+                userAddress,
+            );
+
+        const userAccumulatedRewards =
+            await this.farmCompute.userAccumulatedRewards(
+                farmAddress,
+                userAddress,
+                currentWeek,
+            );
+
+        return new BoostedRewardsModel({
+            farmAddress,
             boostedRewardsWeeklyInfo: modelsList,
             claimProgress: currentClaimProgress,
             accumulatedRewards: userAccumulatedRewards,
