@@ -35,7 +35,7 @@ export type ComposableTask = {
 @Injectable()
 export class ComposableTasksTransactionService {
     constructor(
-        private readonly mxPorxy: MXProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly wrapAbi: WrapAbiService,
     ) {}
 
@@ -44,7 +44,7 @@ export class ComposableTasksTransactionService {
         tokenOut: EgldOrEsdtTokenPayment,
         tasks: ComposableTask[],
     ): Promise<TransactionModel> {
-        const contract = await this.mxPorxy.getComposableTasksSmartContract();
+        const contract = await this.mxProxy.getComposableTasksSmartContract();
 
         let interaction = contract.methodsExplicit
             .composeTasks([
