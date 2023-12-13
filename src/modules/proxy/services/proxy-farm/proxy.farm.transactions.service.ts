@@ -26,14 +26,24 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { proxyVersion } from 'src/utils/proxy.utils';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { ProxyFarmAbiService } from './proxy.farm.abi.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import {
+    WrappedFarmTokenAttributes,
+    WrappedFarmTokenAttributesV2,
+} from '@multiversx/sdk-exchange';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 
 @Injectable()
 export class ProxyFarmTransactionsService {
     constructor(
         private readonly mxProxy: MXProxyService,
+        private readonly mxApi: MXApiService,
         private readonly farmAbi: FarmAbiFactory,
+        private readonly farmAbiV2: FarmAbiServiceV2,
         private readonly pairService: PairService,
         private readonly pairAbi: PairAbiService,
+        private readonly proxyFarmAbi: ProxyFarmAbiService,
     ) {}
 
     async enterFarmProxy(
@@ -262,6 +272,62 @@ export class ProxyFarmTransactionsService {
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+    }
+
+    async migrateTotalFarmPosition(
+        sender: string,
+        proxyAddress: string,
+    ): Promise<TransactionModel[]> {
+        const wrappedFarmTokenID = await this.proxyFarmAbi.wrappedFarmTokenID(
+            proxyAddress,
+        );
+        const userNftsCount = await this.mxApi.getNftsCountForUser(sender);
+        const userNfts = await this.mxApi.getNftsForUser(
+            sender,
+            0,
+            userNftsCount,
+            'MetaESDT',
+            [wrappedFarmTokenID],
+        );
+        const promises: Promise<TransactionModel>[] = [];
+        for (const nft of userNfts) {
+            const version = proxyVersion(proxyAddress);
+
+            let farmTokenID: string;
+            let farmTokenNonce: number;
+            if (version === 'v2') {
+                const decodedAttributes =
+                    WrappedFarmTokenAttributesV2.fromAttributes(nft.attributes);
+                farmTokenID = decodedAttributes.farmToken.tokenIdentifier;
+                farmTokenNonce = decodedAttributes.farmToken.tokenNonce;
+            } else {
+                const decodedAttributes =
+                    WrappedFarmTokenAttributes.fromAttributes(nft.attributes);
+                farmTokenID = decodedAttributes.farmTokenID;
+                farmTokenNonce = decodedAttributes.farmTokenNonce;
+            }
+
+            const farmAddress = await this.farmAbi.getFarmAddressByFarmTokenID(
+                farmTokenID,
+            );
+
+            const migrationNonce =
+                await this.farmAbiV2.farmPositionMigrationNonce(farmAddress);
+
+            if (farmTokenNonce < migrationNonce) {
+                promises.push(
+                    this.claimFarmRewardsProxy(sender, proxyAddress, {
+                        farmAddress,
+                        wrappedFarmTokenID: nft.collection,
+                        wrappedFarmTokenNonce: nft.nonce,
+                        amount: nft.balance,
+                        lockRewards: true,
+                    }),
+                );
+            }
+        }
+
+        return Promise.all(promises);
     }
 
     private async getExitFarmProxyGasLimit(

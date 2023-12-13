@@ -20,6 +20,7 @@ import { AutoRouterTransactionService } from 'src/modules/auto-router/services/a
 import { SWAP_TYPE } from 'src/modules/auto-router/models/auto-route.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 
 @Injectable()
 export class PositionCreatorTransactionService {
@@ -33,6 +34,7 @@ export class PositionCreatorTransactionService {
         private readonly stakingAbi: StakingAbiService,
         private readonly stakingProxyAbi: StakingProxyAbiService,
         private readonly tokenService: TokenService,
+        private readonly wrapTransaction: WrapTransactionsService,
         private readonly mxProxy: MXProxyService,
     ) {}
 
@@ -46,7 +48,10 @@ export class PositionCreatorTransactionService {
             false,
         );
 
-        if (!uniqueTokensIDs.includes(payment.tokenIdentifier)) {
+        if (
+            !uniqueTokensIDs.includes(payment.tokenIdentifier) &&
+            payment.tokenIdentifier !== mxConfig.EGLDIdentifier
+        ) {
             throw new Error('Invalid ESDT token payment');
         }
 
@@ -59,24 +64,29 @@ export class PositionCreatorTransactionService {
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
-        return contract.methodsExplicit
+        const interaction = contract.methodsExplicit
             .createLpPosFromSingleToken([
                 new AddressValue(Address.fromBech32(pairAddress)),
                 new BigUIntValue(singleTokenPairInput.amount0Min),
                 new BigUIntValue(singleTokenPairInput.amount1Min),
                 ...singleTokenPairInput.swapRouteArgs,
             ])
-            .withSingleESDTTransfer(
+            .withSender(Address.fromBech32(sender))
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID);
+
+        if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
+            interaction.withValue(new BigNumber(payment.amount));
+        } else {
+            interaction.withSingleESDTTransfer(
                 TokenTransfer.fungibleFromBigInteger(
                     payment.tokenIdentifier,
                     new BigNumber(payment.amount),
                 ),
-            )
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+            );
+        }
+
+        return interaction.buildTransaction().toPlainObject();
     }
 
     async createFarmPositionSingleToken(
@@ -84,14 +94,25 @@ export class PositionCreatorTransactionService {
         farmAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         const [pairAddress, farmTokenID, uniqueTokensIDs] = await Promise.all([
             this.farmAbiV2.pairContractAddress(farmAddress),
             this.farmAbiV2.farmTokenID(farmAddress),
             this.tokenService.getUniqueTokenIDs(false),
         ]);
 
-        if (!uniqueTokensIDs.includes(payments[0].tokenIdentifier)) {
+        const transactions = [];
+        if (
+            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
+            payments.length > 1
+        ) {
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
+            );
+        } else if (
+            !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
+            payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
+        ) {
             throw new Error('Invalid ESDT token payment');
         }
 
@@ -110,7 +131,7 @@ export class PositionCreatorTransactionService {
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
-        return contract.methodsExplicit
+        const transaction = contract.methodsExplicit
             .createFarmPosFromSingleToken([
                 new AddressValue(Address.fromBech32(farmAddress)),
                 new BigUIntValue(singleTokenPairInput.amount0Min),
@@ -131,6 +152,9 @@ export class PositionCreatorTransactionService {
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+
+        transactions.push(transaction);
+        return transactions;
     }
 
     async createDualFarmPositionSingleToken(
@@ -138,7 +162,7 @@ export class PositionCreatorTransactionService {
         stakingProxyAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         const [pairAddress, dualYieldTokenID, uniqueTokensIDs] =
             await Promise.all([
                 this.stakingProxyAbi.pairAddress(stakingProxyAddress),
@@ -146,7 +170,18 @@ export class PositionCreatorTransactionService {
                 this.tokenService.getUniqueTokenIDs(false),
             ]);
 
-        if (!uniqueTokensIDs.includes(payments[0].tokenIdentifier)) {
+        const transactions = [];
+        if (
+            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
+            payments.length > 1
+        ) {
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
+            );
+        } else if (
+            !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
+            payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
+        ) {
             throw new Error('Invalid ESDT token payment');
         }
 
@@ -165,7 +200,7 @@ export class PositionCreatorTransactionService {
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
-        return contract.methodsExplicit
+        const transaction = contract.methodsExplicit
             .createMetastakingPosFromSingleToken([
                 new AddressValue(Address.fromBech32(stakingProxyAddress)),
                 new BigUIntValue(singleTokenPairInput.amount0Min),
@@ -186,6 +221,9 @@ export class PositionCreatorTransactionService {
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+
+        transactions.push(transaction);
+        return transactions;
     }
 
     async createStakingPositionSingleToken(
@@ -193,7 +231,7 @@ export class PositionCreatorTransactionService {
         stakingAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         const [farmingTokenID, farmTokenID, uniqueTokensIDs] =
             await Promise.all([
                 this.stakingAbi.farmingTokenID(stakingAddress),
@@ -201,7 +239,19 @@ export class PositionCreatorTransactionService {
                 this.tokenService.getUniqueTokenIDs(false),
             ]);
 
-        if (!uniqueTokensIDs.includes(payments[0].tokenIdentifier)) {
+        const transactions = [];
+
+        if (
+            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
+            payments.length > 1
+        ) {
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
+            );
+        } else if (
+            !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
+            payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
+        ) {
             throw new Error('Invalid ESDT token payment');
         }
 
@@ -231,7 +281,7 @@ export class PositionCreatorTransactionService {
                 tokenRoute: swapRoute.tokenRoute,
             });
 
-        return contract.methodsExplicit
+        const transaction = contract.methodsExplicit
             .createFarmStakingPosFromSingleToken([
                 new AddressValue(Address.fromBech32(stakingAddress)),
                 new BigUIntValue(
@@ -257,6 +307,9 @@ export class PositionCreatorTransactionService {
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+
+        transactions.push(transaction);
+        return transactions;
     }
 
     async createFarmPositionDualTokens(
@@ -275,7 +328,7 @@ export class PositionCreatorTransactionService {
         ]);
 
         if (!this.checkTokensPayments(payments, firstTokenID, secondTokenID)) {
-            throw new Error('Invalid tokens payments');
+            throw new Error('Invalid ESDT tokens payments');
         }
 
         for (const payment of payments.slice(2)) {
@@ -348,7 +401,7 @@ export class PositionCreatorTransactionService {
             ]);
 
         if (!this.checkTokensPayments(payments, firstTokenID, secondTokenID)) {
-            throw new Error('Invalid tokens payments');
+            throw new Error('Invalid ESDT tokens payments');
         }
 
         for (const payment of payments.slice(2)) {
