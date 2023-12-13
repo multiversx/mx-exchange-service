@@ -12,6 +12,7 @@ import { FarmSetterServiceV2 } from './services/farm.v2.setter.service';
 import { WeekTimekeepingModule } from '../../../submodules/week-timekeeping/week-timekeeping.module';
 import { WeeklyRewardsSplittingModule } from '../../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { EnergyModule } from '../../energy/energy.module';
+import { FarmTransactionResolverV2 } from './farm.v2.transaction.resolver';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { EnergyModule } from '../../energy/energy.module';
         FarmComputeServiceV2,
         FarmTransactionServiceV2,
         FarmResolverV2,
+        FarmTransactionResolverV2,
     ],
     exports: [
         FarmServiceV2,

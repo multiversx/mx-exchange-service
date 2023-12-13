@@ -33,6 +33,10 @@ export class MXApiServiceMock {
         ];
     }
 
+    async getNftsCountForUser(address: string): Promise<number> {
+        return 1;
+    }
+
     async getNftsForUser(address: string): Promise<NftToken[]> {
         return [
             {

@@ -24,6 +24,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { LiquidityTokensValidationPipe } from './validators/add.liquidity.input.validator';
 import { ProxyService } from './services/proxy.service';
 import { scAddress } from 'src/config';
+import { ProxyAddressValidationPipe } from './validators/proxy.address.validator';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { EnergyAbiService } from '../energy/services/energy.abi.service';
@@ -201,6 +202,20 @@ export class ProxyTransactionResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [TransactionModel], {
+        description:
+            'Generate transactions to initialize the total farm positions for a user',
+    })
+    async migrateTotalFarmPositionsProxy(
+        @Args('proxyAddress', ProxyAddressValidationPipe) proxyAddress: string,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel[]> {
+        return this.transactionsProxyFarmService.migrateTotalFarmPosition(
+            user.address,
+            proxyAddress,
+        );
+    }
+
     @Query(() => TransactionModel)
     async increaseProxyPairTokenEnergy(
         @Args('payment') payment: InputTokenModel,

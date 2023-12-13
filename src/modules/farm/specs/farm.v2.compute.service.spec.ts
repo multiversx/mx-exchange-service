@@ -23,6 +23,10 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
+import { Address } from '@multiversx/sdk-core/out';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 describe('FarmServiceV2', () => {
     let module: TestingModule;
@@ -83,4 +87,60 @@ describe('FarmServiceV2', () => {
     //     // expect(mockFarmAbi.undistributedBoostedRewards).toHaveBeenCalled();
     //     // expect(mockFarmAbi.lastUndistributedBoostedRewardsCollectWeek).toHaveBeenCalled();
     // }, 10000);
+
+    it('should compute blocks in week', async () => {
+        const service = module.get<FarmComputeServiceV2>(FarmComputeServiceV2);
+        const contextGetter =
+            module.get<ContextGetterService>(ContextGetterService);
+        jest.spyOn(contextGetter, 'getCurrentEpoch').mockResolvedValue(256);
+
+        const blocksInWeek = await service.computeBlocksInWeek(
+            Address.fromBech32(
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
+            ).bech32(),
+            1,
+        );
+
+        expect(blocksInWeek).toEqual(10 * 60 * 24 * 7);
+    });
+
+    it('should compute user accumulated rewards', async () => {
+        const service = module.get<FarmComputeServiceV2>(FarmComputeServiceV2);
+        const farmAbi = module.get<FarmAbiServiceV2>(FarmAbiServiceV2);
+        const weeklyRewardsSplittingAbi =
+            module.get<WeeklyRewardsSplittingAbiService>(
+                WeeklyRewardsSplittingAbiService,
+            );
+        const contextGetter =
+            module.get<ContextGetterService>(ContextGetterService);
+
+        jest.spyOn(contextGetter, 'getCurrentEpoch').mockResolvedValue(256);
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'totalEnergyForWeek',
+        ).mockResolvedValue('1440');
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'userEnergyForWeek',
+        ).mockResolvedValue({
+            amount: '1440',
+            totalLockedTokens: '1',
+            lastUpdateEpoch: 256,
+        });
+        jest.spyOn(farmAbi, 'farmTokenSupply').mockResolvedValue('2');
+        jest.spyOn(farmAbi, 'rewardsPerBlock').mockResolvedValue(
+            '1000000000000000000',
+        );
+        jest.spyOn(farmAbi, 'userTotalFarmPosition').mockResolvedValue('2');
+
+        const accumulatedRewards = await service.computeUserAccumulatedRewards(
+            Address.fromBech32(
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
+            ).bech32(),
+            Address.Zero().bech32(),
+            1,
+        );
+
+        expect(accumulatedRewards).toEqual('60480000000000000000000');
+    });
 });

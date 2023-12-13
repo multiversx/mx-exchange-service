@@ -1,5 +1,8 @@
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { IFarmAbiService, IFarmComputeService } from '../../base-module/services/interfaces';
+import {
+    IFarmAbiService,
+    IFarmComputeService,
+} from '../../base-module/services/interfaces';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { EsdtTokenPayment } from '../../../../models/esdtTokenPayment.model';
 
@@ -18,6 +21,11 @@ export interface IFarmAbiServiceV2 extends IFarmAbiService {
     boostedYieldsFactors(farmAddress: string): Promise<BoostedYieldsFactors>;
     accumulatedRewardsForWeek(scAddress: string, week: number): Promise<string>;
     energyFactoryAddress(farmAddress: string): Promise<string>;
+    userTotalFarmPosition(
+        farmAddress: string,
+        userAddress: string,
+    ): Promise<string>;
+    farmPositionMigrationNonce(farmAddress: string): Promise<number>;
 }
 
 export interface IFarmComputeServiceV2 extends IFarmComputeService {
@@ -26,19 +34,16 @@ export interface IFarmComputeServiceV2 extends IFarmComputeService {
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<TokenDistributionModel[]>;
     userAccumulatedRewards(
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<string>;
     userRewardsForWeek(
         scAddress: string,
         userAddress: string,
         week: number,
-        liquidity: string,
     ): Promise<EsdtTokenPayment[]>;
     optimalEnergyPerLP(scAddress: string, week: number): Promise<string>;
 }

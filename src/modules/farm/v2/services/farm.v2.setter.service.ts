@@ -33,4 +33,17 @@ export class FarmSetterServiceV2 extends FarmSetterService {
             CacheTtlInfo.ContractBalance.localTtl,
         );
     }
+
+    async setUserTotalFarmPosition(
+        farmAddress: string,
+        userAddress: string,
+        value: string,
+    ): Promise<string> {
+        return this.setData(
+            this.getCacheKey('userTotalFarmPosition', farmAddress, userAddress),
+            value,
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
+        );
+    }
 }
