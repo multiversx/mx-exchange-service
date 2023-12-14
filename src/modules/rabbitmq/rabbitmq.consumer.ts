@@ -64,6 +64,8 @@ import { RouterAbiService } from '../router/services/router.abi.service';
 import { EscrowHandlerService } from './handlers/escrow.handler.service';
 import { governanceContractsAddresses } from '../../utils/governance';
 import { GovernanceHandlerService } from './handlers/governance.handler.service';
+import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
+import { StakingHandlerService } from './handlers/staking.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -75,6 +77,7 @@ export class RabbitMqConsumer {
         private readonly liquidityHandler: LiquidityHandler,
         private readonly swapHandler: SwapEventHandler,
         private readonly wsFarmHandler: FarmHandlerService,
+        private readonly stakingHandler: StakingHandlerService,
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
         private readonly routerHandler: RouterHandlerService,
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
@@ -87,6 +90,7 @@ export class RabbitMqConsumer {
         private readonly escrowHandler: EscrowHandlerService,
         private readonly analyticsWrite: AnalyticsWriteService,
         private readonly governanceHandler: GovernanceHandlerService,
+        private readonly remoteConfig: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -165,14 +169,27 @@ export class RabbitMqConsumer {
                     this.updateIngestData(eventData);
                     break;
                 case FARM_EVENTS.ENTER_FARM:
-                    await this.wsFarmHandler.handleEnterFarmEvent(rawEvent);
+                    if (await this.isStakingAddress(rawEvent.address)) {
+                        await this.stakingHandler.handleStakeEvent(rawEvent);
+                    } else {
+                        await this.wsFarmHandler.handleEnterFarmEvent(rawEvent);
+                    }
                     break;
                 case FARM_EVENTS.EXIT_FARM:
-                    await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
-
+                    if (await this.isStakingAddress(rawEvent.address)) {
+                        await this.stakingHandler.handleUnstakeEvent(rawEvent);
+                    } else {
+                        await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
+                    }
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
-                    await this.wsFarmHandler.handleRewardsEvent(rawEvent);
+                    if (await this.isStakingAddress(rawEvent.address)) {
+                        await this.stakingHandler.handleClaimRewardsEvent(
+                            rawEvent,
+                        );
+                    } else {
+                        await this.wsFarmHandler.handleRewardsEvent(rawEvent);
+                    }
                     break;
                 case FARM_EVENTS.COMPOUND_REWARDS:
                     await this.wsFarmHandler.handleRewardsEvent(rawEvent);
@@ -335,6 +352,9 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.tokenUnstake);
         this.filterAddresses.push(scAddress.escrow);
         this.filterAddresses.push(...governanceContractsAddresses());
+
+        const stakeAddresses = await this.remoteConfig.getStakingAddresses();
+        this.filterAddresses.push(...stakeAddresses);
     }
 
     private isFilteredAddress(address: string): boolean {
@@ -342,6 +362,14 @@ export class RabbitMqConsumer {
             this.filterAddresses.find(
                 (filterAddress) => address === filterAddress,
             ) !== undefined
+        );
+    }
+
+    private async isStakingAddress(address: string): Promise<boolean> {
+        const stakeAddresses = await this.remoteConfig.getStakingAddresses();
+        return (
+            stakeAddresses.find((stakeAddress) => address === stakeAddress) !==
+            undefined
         );
     }
 
