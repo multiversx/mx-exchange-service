@@ -10,6 +10,8 @@ import { StakingService } from './services/staking.service';
 import { StakingSetterService } from './services/staking.setter.service';
 import { StakingTransactionService } from './services/staking.transactions.service';
 import { StakingResolver } from './staking.resolver';
+import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
+import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 
 @Module({
     imports: [
@@ -18,6 +20,8 @@ import { StakingResolver } from './staking.resolver';
         MXCommunicationModule,
         RemoteConfigModule,
         TokenModule,
+        WeekTimekeepingModule,
+        WeeklyRewardsSplittingModule,
     ],
     providers: [
         StakingAbiService,

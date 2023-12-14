@@ -14,6 +14,8 @@ import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('StakingTransactionService', () => {
     let module: TestingModule;
@@ -33,6 +35,7 @@ describe('StakingTransactionService', () => {
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
                 MXGatewayService,
+                MXApiServiceProvider,
                 ApiConfigService,
             ],
         }).compile();
@@ -207,6 +210,56 @@ describe('StakingTransactionService', () => {
         });
     });
 
+    it('should get total staking migrate transaction', async () => {
+        const service = module.get<StakingTransactionService>(
+            StakingTransactionService,
+        );
+        const mxApi = module.get<MXApiService>(MXApiService);
+        jest.spyOn(mxApi, 'getNftsForUser').mockResolvedValue([
+            {
+                identifier: 'STAKETOK-1111-01',
+                collection: 'STAKETOK-1111',
+                attributes:
+                    'AAAABHA3g/MAAAAAAAAACA3gtrOnZAAAYLtgEaeB64tT1h15BHRQrapGl34gI5MSlRJiwQV9EJA=',
+                nonce: 1,
+                type: 'MetaESDT',
+                name: 'STAKETOK',
+                creator: Address.Zero().bech32(),
+                balance: '1000000000000000000',
+                decimals: 18,
+                ticker: 'STAKETOK',
+            },
+        ]);
+
+        const transactions = await service.migrateTotalStakingPosition(
+            Address.Zero().bech32(),
+            Address.Zero().bech32(),
+        );
+
+        expect(transactions).toEqual([
+            {
+                nonce: 0,
+                value: '0',
+                receiver:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                senderUsername: undefined,
+                receiverUsername: undefined,
+                gasPrice: 1000000000,
+                gasLimit: 17000000,
+                data: encodeTransactionData(
+                    'ESDTNFTTransfer@STAKETOK-1111@01@1000000000000000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
+                ),
+                chainID: 'T',
+                version: 1,
+                options: undefined,
+                guardian: undefined,
+                signature: undefined,
+                guardianSignature: undefined,
+            },
+        ]);
+    });
+
     it('should get top up rewards transaction', async () => {
         const service = module.get<StakingTransactionService>(
             StakingTransactionService,
@@ -281,122 +334,6 @@ describe('StakingTransactionService', () => {
         });
     });
 
-    it('should get set penalty percent transaction', async () => {
-        const service = module.get<StakingTransactionService>(
-            StakingTransactionService,
-        );
-
-        const transaction = await service.setPenaltyPercent(
-            Address.Zero().bech32(),
-            5,
-        );
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
-            receiverUsername: undefined,
-            senderUsername: undefined,
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.set_penalty_percent,
-            data: encodeTransactionData('set_penalty_percent@05'),
-            chainID: 'T',
-            version: 1,
-            options: undefined,
-            signature: undefined,
-            guardian: undefined,
-            guardianSignature: undefined,
-        });
-    });
-
-    it('should get set minimum farming epochs transaction', async () => {
-        const service = module.get<StakingTransactionService>(
-            StakingTransactionService,
-        );
-
-        const transaction = await service.setMinimumFarmingEpochs(
-            Address.Zero().bech32(),
-            10,
-        );
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
-            receiverUsername: undefined,
-            senderUsername: undefined,
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.set_minimum_farming_epochs,
-            data: encodeTransactionData('set_minimum_farming_epochs@10'),
-            chainID: 'T',
-            version: 1,
-            options: undefined,
-            signature: undefined,
-            guardian: undefined,
-            guardianSignature: undefined,
-        });
-    });
-
-    it('should get set burn gas limit transaction', async () => {
-        const service = module.get<StakingTransactionService>(
-            StakingTransactionService,
-        );
-
-        const transaction = await service.setBurnGasLimit(
-            Address.Zero().bech32(),
-            1000000,
-        );
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
-            receiverUsername: undefined,
-            senderUsername: undefined,
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.set_burn_gas_limit,
-            data: encodeTransactionData('set_burn_gas_limit@01000000'),
-            chainID: 'T',
-            version: 1,
-            options: undefined,
-            signature: undefined,
-            guardian: undefined,
-            guardianSignature: undefined,
-        });
-    });
-
-    it('should get set transfer exec gas limit transaction', async () => {
-        const service = module.get<StakingTransactionService>(
-            StakingTransactionService,
-        );
-
-        const transaction = await service.setTransferExecGasLimit(
-            Address.Zero().bech32(),
-            1000000,
-        );
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
-            receiverUsername: undefined,
-            senderUsername: undefined,
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.set_transfer_exec_gas_limit,
-            data: encodeTransactionData('set_transfer_exec_gas_limit@01000000'),
-            chainID: 'T',
-            version: 1,
-            options: undefined,
-            signature: undefined,
-            guardian: undefined,
-            guardianSignature: undefined,
-        });
-    });
-
     it('should get add address to whitelist transaction', async () => {
         const service = module.get<StakingTransactionService>(
             StakingTransactionService,
@@ -418,7 +355,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.whitelist,
             data: encodeTransactionData(
-                'addAddressToWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                'addSCAddressToWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: 'T',
             version: 1,
@@ -450,7 +387,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.whitelist,
             data: encodeTransactionData(
-                'removeAddressFromWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                'removeSCAddressFromWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: 'T',
             version: 1,
@@ -570,7 +507,7 @@ describe('StakingTransactionService', () => {
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setLocalRolesFarmToken,
-            data: encodeTransactionData('setLocalRolesFarmToken'),
+            data: encodeTransactionData('setBurnRoleForAddress'),
             chainID: 'T',
             version: 1,
             options: undefined,
@@ -715,7 +652,7 @@ describe('StakingTransactionService', () => {
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setRewardsState,
-            data: encodeTransactionData('end_produce_rewards'),
+            data: encodeTransactionData('endProduceRewards'),
             chainID: 'T',
             version: 1,
             options: undefined,

@@ -1,12 +1,9 @@
 import BigNumber from 'bignumber.js';
 import { IStakingAbiService } from '../services/interfaces';
 import { StakingAbiService } from '../services/staking.abi.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 
 export class StakingAbiServiceMock implements IStakingAbiService {
-    async pairContractAddress(stakeAddress: string): Promise<string> {
-        return Address.Zero().bech32();
-    }
     async farmTokenID(stakeAddress: string): Promise<string> {
         return 'STAKETOK-1111';
     }
@@ -46,12 +43,6 @@ export class StakingAbiServiceMock implements IStakingAbiService {
     async produceRewardsEnabled(stakeAddress: string): Promise<boolean> {
         return true;
     }
-    burnGasLimit(stakeAddress: string): Promise<string> {
-        throw new Error('Method not implemented.');
-    }
-    transferExecGasLimit(stakeAddress: string): Promise<string> {
-        throw new Error('Method not implemented.');
-    }
     state(stakeAddress: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
@@ -70,6 +61,47 @@ export class StakingAbiServiceMock implements IStakingAbiService {
     }
     lastErrorMessage(stakeAddress: string): Promise<string> {
         throw new Error('Method not implemented.');
+    }
+    energyFactoryAddress(stakeAddress: string): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
+    boostedYieldsRewardsPercenatage(stakeAddress: string): Promise<number> {
+        throw new Error('Method not implemented.');
+    }
+    boostedYieldsFactors(stakeAddress: string): Promise<BoostedYieldsFactors> {
+        throw new Error('Method not implemented.');
+    }
+    accumulatedRewardsForWeek(
+        stakeAddress: string,
+        week: number,
+    ): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
+    undistributedBoostedRewards(stakeAddress: string): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
+    lastUndistributedBoostedRewardsCollectWeek(
+        stakeAddress: string,
+    ): Promise<number> {
+        throw new Error('Method not implemented.');
+    }
+    remainingBoostedRewardsToDistribute(
+        stakeAddress: string,
+        week: number,
+    ): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
+    userTotalStakePosition(
+        stakeAddress: string,
+        userAddress: string,
+    ): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
+    async farmPositionMigrationNonce(stakeAddress: string): Promise<number> {
+        return 2;
+    }
+    async stakingShard(stakeAddress: string): Promise<number> {
+        return 1;
     }
 }
 
