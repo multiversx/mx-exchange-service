@@ -231,6 +231,14 @@ export class MXProxyService {
         );
     }
 
+    async getLockedTokenPositionCreatorContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.lockedTokenPositionCreator,
+            abiConfig.lockedTokenPositionCreator,
+            'LockedTokenPosCreatorContract',
+        );
+    }
+
     async getComposableTasksSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.composableTasks,

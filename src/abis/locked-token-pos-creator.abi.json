@@ -1,0 +1,233 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.71.0-nightly",
+            "commitHash": "a2b1646c597329d0a25efa3889b66650f65de1de",
+            "commitDate": "2023-05-25",
+            "channel": "Nightly",
+            "short": "rustc 1.71.0-nightly (a2b1646c5 2023-05-25)"
+        },
+        "contractCrate": {
+            "name": "locked-token-pos-creator",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "multiversx-sc",
+            "version": "0.45.1"
+        }
+    },
+    "name": "LockedTokenPosCreatorContract",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "energy_factory_adddress",
+                "type": "Address"
+            },
+            {
+                "name": "egld_wrapper_address",
+                "type": "Address"
+            },
+            {
+                "name": "mex_wegld_lp_pair_address",
+                "type": "Address"
+            },
+            {
+                "name": "mex_wegld_lp_farm_address",
+                "type": "Address"
+            },
+            {
+                "name": "proxy_dex_address",
+                "type": "Address"
+            },
+            {
+                "name": "router_address",
+                "type": "Address"
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "upgrade",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "createEnergyPosition",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "lock_epochs",
+                    "type": "u64"
+                },
+                {
+                    "name": "min_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "swap_operations",
+                    "type": "variadic<multi<Address,bytes,TokenIdentifier,BigUint>>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "setEnergyFactoryAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sc_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getEnergyFactoryAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "createPairPosFromSingleToken",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "lock_epochs",
+                    "type": "u64"
+                },
+                {
+                    "name": "add_liq_first_token_min_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "add_liq_second_token_min_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "swap_operations",
+                    "type": "variadic<multi<Address,bytes,TokenIdentifier,BigUint>>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "createPairPosFromTwoTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "add_liq_first_token_min_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "add_liq_second_token_min_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "createFarmPosFromSingleToken",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "lock_epochs",
+                    "type": "u64"
+                },
+                {
+                    "name": "add_liq_first_token_min_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "add_liq_second_token_min_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "swap_operations",
+                    "type": "variadic<multi<Address,bytes,TokenIdentifier,BigUint>>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "createFarmPosFromTwoTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "add_liq_first_token_min_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "add_liq_second_token_min_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        }
+    ],
+    "esdtAttributes": [],
+    "hasCallback": false,
+    "types": {
+        "EsdtTokenPayment": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_identifier",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        }
+    }
+}
