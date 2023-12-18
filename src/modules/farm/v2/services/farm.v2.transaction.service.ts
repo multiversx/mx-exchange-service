@@ -132,6 +132,21 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             .toPlainObject();
     }
 
+    async claimBoostedRewards(
+        sender: string,
+        farmAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+
+        return contract.methodsExplicit
+            .claimBoostedRewards()
+            .withSender(Address.fromString(sender))
+            .withChainID(mxConfig.chainID)
+            .withGasLimit(gasConfig.farms[FarmVersion.V2].claimBoostedRewards)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
     compoundRewards(
         sender: string,
         args: CompoundRewardsArgs,
