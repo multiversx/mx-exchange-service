@@ -239,7 +239,8 @@
                         }
                     },
                     "claimRewards": 17000000
-                }
+                },
+                "claimBoostedRewards": 20000000
             },
             "admin": {
                 "end_produce_rewards": 200000000,
