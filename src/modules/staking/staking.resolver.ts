@@ -32,6 +32,7 @@ import { constantsConfig } from 'src/config';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakeAddressValidationPipe } from './validators/stake.address.validator';
 import { BoostedYieldsFactors } from '../farm/models/farm.v2.model';
+import { BoostedRewardsModel } from '../farm/models/farm.model';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -264,6 +265,21 @@ export class StakingResolver {
         return this.stakingService.getBatchRewardsForPosition(
             args.farmsPositions,
             computeBoosted,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [BoostedRewardsModel], {
+        description: 'Returns staking boosted rewards for the user',
+    })
+    async getStakingBoostedRewardsBatch(
+        @Args('stakingAddresses', { type: () => [String] })
+        stakingAddresses: string[],
+        @AuthUser() user: UserAuthResult,
+    ): Promise<BoostedRewardsModel[]> {
+        return this.stakingService.getStakingBoostedRewardsBatch(
+            stakingAddresses,
+            user.address,
         );
     }
 
