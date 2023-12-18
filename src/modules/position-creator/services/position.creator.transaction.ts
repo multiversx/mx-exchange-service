@@ -3,6 +3,7 @@ import {
     AddressValue,
     BigUIntValue,
     TokenTransfer,
+    U64Value,
 } from '@multiversx/sdk-core/out';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { Injectable } from '@nestjs/common';
@@ -503,6 +504,56 @@ export class PositionCreatorTransactionService {
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+    }
+
+    async createEnergyPosition(
+        sender: string,
+        payment: EsdtTokenPayment,
+        lockEpochs: number,
+        tolerance: number,
+    ): Promise<TransactionModel> {
+        const uniqueTokensIDs = await this.tokenService.getUniqueTokenIDs(
+            false,
+        );
+
+        if (
+            !uniqueTokensIDs.includes(payment.tokenIdentifier) &&
+            payment.tokenIdentifier !== mxConfig.EGLDIdentifier
+        ) {
+            throw new Error('Invalid ESDT token payment');
+        }
+
+        const singleTokenInput =
+            await this.posCreatorCompute.computeSingleTokenInput(
+                payment,
+                tolerance,
+            );
+
+        const contract =
+            await this.mxProxy.getLockedTokenPositionCreatorContract();
+
+        const interaction = contract.methodsExplicit
+            .createEnergyPosition([
+                new U64Value(new BigNumber(lockEpochs)),
+                new BigUIntValue(singleTokenInput.amountOutMin),
+                ...singleTokenInput.swapRouteArgs,
+            ])
+            .withSender(Address.fromBech32(sender))
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID);
+
+        if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
+            interaction.withValue(new BigNumber(payment.amount));
+        } else {
+            interaction.withSingleESDTTransfer(
+                TokenTransfer.fungibleFromBigInteger(
+                    payment.tokenIdentifier,
+                    new BigNumber(payment.amount),
+                ),
+            );
+        }
+
+        return interaction.buildTransaction().toPlainObject();
     }
 
     private checkTokensPayments(

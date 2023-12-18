@@ -3,6 +3,7 @@ import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
+import { constantsConfig } from 'src/config';
 import { SWAP_TYPE } from 'src/modules/auto-router/models/auto-route.model';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
 import { AutoRouterTransactionService } from 'src/modules/auto-router/services/auto-router.transactions.service';
@@ -14,6 +15,11 @@ export type PositionCreatorSingleTokenPairInput = {
     swapRouteArgs: TypedValue[];
     amount0Min: BigNumber;
     amount1Min: BigNumber;
+};
+
+export type PositionCreatorSingleTokenInput = {
+    swapRouteArgs: TypedValue[];
+    amountOutMin: BigNumber;
 };
 
 @Injectable()
@@ -119,6 +125,38 @@ export class PositionCreatorComputeService {
             swapRouteArgs,
             amount0Min,
             amount1Min,
+        };
+    }
+
+    async computeSingleTokenInput(
+        payment: EsdtTokenPayment,
+        tolerance: number,
+    ): Promise<PositionCreatorSingleTokenInput> {
+        const swapRoute = await this.autoRouterService.swap({
+            tokenInID: payment.tokenIdentifier,
+            amountIn: payment.amount,
+            tokenOutID: constantsConfig.MEX_TOKEN_ID,
+            tolerance,
+        });
+
+        const amountOutMin = new BigNumber(swapRoute.amountOut)
+            .multipliedBy(1 - tolerance)
+            .integerValue();
+
+        const swapRouteArgs =
+            this.autoRouterTransaction.multiPairFixedInputSwaps({
+                tokenInID: swapRoute.tokenInID,
+                tokenOutID: swapRoute.tokenOutID,
+                swapType: SWAP_TYPE.fixedInput,
+                tolerance,
+                addressRoute: swapRoute.pairs.map((pair) => pair.address),
+                intermediaryAmounts: swapRoute.intermediaryAmounts,
+                tokenRoute: swapRoute.tokenRoute,
+            });
+
+        return {
+            swapRouteArgs,
+            amountOutMin,
         };
     }
 }

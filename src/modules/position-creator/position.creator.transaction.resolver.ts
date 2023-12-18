@@ -167,4 +167,23 @@ export class PositionCreatorTransactionResolver {
             tolerance,
         );
     }
+
+    @Query(() => TransactionModel)
+    async createEnergyPosition(
+        @AuthUser() user: UserAuthResult,
+        @Args('payment') payment: InputTokenModel,
+        @Args('lockEpochs') lockEpochs: number,
+        @Args('tolerance') tolerance: number,
+    ): Promise<TransactionModel> {
+        return this.posCreatorTransaction.createEnergyPosition(
+            user.address,
+            new EsdtTokenPayment({
+                tokenIdentifier: payment.tokenID,
+                tokenNonce: payment.nonce,
+                amount: payment.amount,
+            }),
+            lockEpochs,
+            tolerance,
+        );
+    }
 }
