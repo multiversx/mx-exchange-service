@@ -2,13 +2,14 @@ import {
     Address,
     AddressValue,
     BigUIntValue,
+    Interaction,
     TokenTransfer,
     U64Value,
 } from '@multiversx/sdk-core/out';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { gasConfig, mxConfig } from 'src/config';
+import { gasConfig, mxConfig, scAddress } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
@@ -22,6 +23,9 @@ import { SWAP_TYPE } from 'src/modules/auto-router/models/auto-route.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
+import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 @Injectable()
 export class PositionCreatorTransactionService {
@@ -35,7 +39,10 @@ export class PositionCreatorTransactionService {
         private readonly stakingAbi: StakingAbiService,
         private readonly stakingProxyAbi: StakingProxyAbiService,
         private readonly tokenService: TokenService,
+        private readonly wrapAbi: WrapAbiService,
         private readonly wrapTransaction: WrapTransactionsService,
+        private readonly proxyFarmAbi: ProxyFarmAbiService,
+        private readonly energyAbi: EnergyAbiService,
         private readonly mxProxy: MXProxyService,
     ) {}
 
@@ -44,6 +51,7 @@ export class PositionCreatorTransactionService {
         pairAddress: string,
         payment: EsdtTokenPayment,
         tolerance: number,
+        lockEpochs?: number,
     ): Promise<TransactionModel> {
         const uniqueTokensIDs = await this.tokenService.getUniqueTokenIDs(
             false,
@@ -63,23 +71,41 @@ export class PositionCreatorTransactionService {
                 tolerance,
             );
 
-        const contract = await this.mxProxy.getPostitionCreatorContract();
+        const contract = lockEpochs
+            ? await this.mxProxy.getLockedTokenPositionCreatorContract()
+            : await this.mxProxy.getPostitionCreatorContract();
 
-        const interaction = contract.methodsExplicit
-            .createLpPosFromSingleToken([
-                new AddressValue(Address.fromBech32(pairAddress)),
-                new BigUIntValue(singleTokenPairInput.amount0Min),
-                new BigUIntValue(singleTokenPairInput.amount1Min),
-                ...singleTokenPairInput.swapRouteArgs,
-            ])
+        let interaction: Interaction;
+
+        if (lockEpochs) {
+            interaction = contract.methodsExplicit
+                .createPairPosFromSingleToken([
+                    new U64Value(new BigNumber(lockEpochs)),
+                    new BigUIntValue(singleTokenPairInput.amount0Min),
+                    new BigUIntValue(singleTokenPairInput.amount1Min),
+                    ...singleTokenPairInput.swapRouteArgs,
+                ])
+                .withGasLimit(gasConfig.positionCreator.singleToken);
+        } else {
+            interaction = contract.methodsExplicit
+                .createLpPosFromSingleToken([
+                    new AddressValue(Address.fromBech32(pairAddress)),
+                    new BigUIntValue(singleTokenPairInput.amount0Min),
+                    new BigUIntValue(singleTokenPairInput.amount1Min),
+                    ...singleTokenPairInput.swapRouteArgs,
+                ])
+                .withGasLimit(gasConfig.positionCreator.singleToken);
+        }
+
+        interaction = interaction
             .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID);
 
         if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
-            interaction.withValue(new BigNumber(payment.amount));
+            interaction = interaction.withValue(new BigNumber(payment.amount));
         } else {
-            interaction.withSingleESDTTransfer(
+            interaction = interaction.withSingleESDTTransfer(
                 TokenTransfer.fungibleFromBigInteger(
                     payment.tokenIdentifier,
                     new BigNumber(payment.amount),
@@ -95,6 +121,7 @@ export class PositionCreatorTransactionService {
         farmAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
+        lockEpochs?: number,
     ): Promise<TransactionModel[]> {
         const [pairAddress, farmTokenID, uniqueTokensIDs] = await Promise.all([
             this.farmAbiV2.pairContractAddress(farmAddress),
@@ -130,15 +157,26 @@ export class PositionCreatorTransactionService {
                 tolerance,
             );
 
-        const contract = await this.mxProxy.getPostitionCreatorContract();
+        const contract = lockEpochs
+            ? await this.mxProxy.getLockedTokenPositionCreatorContract()
+            : await this.mxProxy.getPostitionCreatorContract();
+
+        const endpointArgs = lockEpochs
+            ? [
+                  new U64Value(new BigNumber(lockEpochs)),
+                  new BigUIntValue(singleTokenPairInput.amount0Min),
+                  new BigUIntValue(singleTokenPairInput.amount1Min),
+                  ...singleTokenPairInput.swapRouteArgs,
+              ]
+            : [
+                  new AddressValue(Address.fromBech32(farmAddress)),
+                  new BigUIntValue(singleTokenPairInput.amount0Min),
+                  new BigUIntValue(singleTokenPairInput.amount1Min),
+                  ...singleTokenPairInput.swapRouteArgs,
+              ];
 
         const transaction = contract.methodsExplicit
-            .createFarmPosFromSingleToken([
-                new AddressValue(Address.fromBech32(farmAddress)),
-                new BigUIntValue(singleTokenPairInput.amount0Min),
-                new BigUIntValue(singleTokenPairInput.amount1Min),
-                ...singleTokenPairInput.swapRouteArgs,
-            ])
+            .createFarmPosFromSingleToken(endpointArgs)
             .withMultiESDTNFTTransfer(
                 payments.map((payment) =>
                     TokenTransfer.metaEsdtFromBigInteger(
@@ -318,30 +356,86 @@ export class PositionCreatorTransactionService {
         farmAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         const pairAddress = await this.farmAbiV2.pairContractAddress(
             farmAddress,
         );
-        const [firstTokenID, secondTokenID, farmTokenID] = await Promise.all([
+        const [
+            firstTokenID,
+            secondTokenID,
+            farmTokenID,
+            wrappedFarmTokenID,
+            xmexTokenID,
+        ] = await Promise.all([
             this.pairAbi.firstTokenID(pairAddress),
             this.pairAbi.secondTokenID(pairAddress),
             this.farmAbiV2.farmTokenID(farmAddress),
+            this.proxyFarmAbi.wrappedFarmTokenID(scAddress.proxyDexAddress.v2),
+            this.energyAbi.lockedTokenID(),
         ]);
 
-        if (!this.checkTokensPayments(payments, firstTokenID, secondTokenID)) {
-            throw new Error('Invalid ESDT tokens payments');
+        const transactions = [];
+
+        if (payments[0].tokenIdentifier === mxConfig.EGLDIdentifier) {
+            payments[0].tokenIdentifier =
+                await this.wrapAbi.wrappedEgldTokenID();
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
+            );
         }
 
-        for (const payment of payments.slice(2)) {
-            if (payment.tokenIdentifier !== farmTokenID) {
-                throw new Error('Invalid farm token payment');
-            }
+        if (payments[1].tokenIdentifier === mxConfig.EGLDIdentifier) {
+            payments[1].tokenIdentifier =
+                await this.wrapAbi.wrappedEgldTokenID();
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[1].amount),
+            );
         }
 
         const [firstPayment, secondPayment] =
             payments[0].tokenIdentifier === firstTokenID
                 ? [payments[0], payments[1]]
                 : [payments[1], payments[0]];
+
+        const isLockedToken =
+            firstPayment.tokenIdentifier === xmexTokenID ||
+            secondPayment.tokenIdentifier === xmexTokenID;
+
+        if (
+            isLockedToken &&
+            !this.checkLockedTokenPayments(
+                [firstPayment, secondPayment],
+                firstTokenID,
+                xmexTokenID,
+            )
+        ) {
+            throw new Error('Invalid Locked tokens payments');
+        }
+
+        if (
+            !isLockedToken &&
+            !this.checkTokensPayments(
+                [firstPayment, secondPayment],
+                firstTokenID,
+                secondTokenID,
+            )
+        ) {
+            throw new Error('Invalid ESDT tokens payments');
+        }
+
+        if (!isLockedToken) {
+            for (const payment of payments.slice(2)) {
+                if (payment.tokenIdentifier !== farmTokenID) {
+                    throw new Error('Invalid farm token payment');
+                }
+            }
+        } else {
+            for (const payment of payments.slice(2)) {
+                if (payment.tokenIdentifier !== wrappedFarmTokenID) {
+                    throw new Error('Invalid wrapped farm token payment');
+                }
+            }
+        }
 
         const amount0Min = new BigNumber(firstPayment.amount)
             .multipliedBy(1 - tolerance)
@@ -350,22 +444,28 @@ export class PositionCreatorTransactionService {
             .multipliedBy(1 - tolerance)
             .integerValue();
 
-        const contract = await this.mxProxy.getPostitionCreatorContract();
+        const endpointArgs = isLockedToken
+            ? [new BigUIntValue(amount0Min), new BigUIntValue(amount1Min)]
+            : [
+                  new AddressValue(Address.fromBech32(farmAddress)),
+                  new BigUIntValue(amount0Min),
+                  new BigUIntValue(amount1Min),
+              ];
 
-        return contract.methodsExplicit
-            .createFarmPosFromTwoTokens([
-                new AddressValue(Address.fromBech32(farmAddress)),
-                new BigUIntValue(amount0Min),
-                new BigUIntValue(amount1Min),
-            ])
+        const contract = isLockedToken
+            ? await this.mxProxy.getLockedTokenPositionCreatorContract()
+            : await this.mxProxy.getPostitionCreatorContract();
+
+        const transaction = contract.methodsExplicit
+            .createFarmPosFromTwoTokens(endpointArgs)
             .withMultiESDTNFTTransfer([
                 TokenTransfer.fungibleFromBigInteger(
                     firstPayment.tokenIdentifier,
                     new BigNumber(firstPayment.amount),
                 ),
-                TokenTransfer.fungibleFromBigInteger(
+                TokenTransfer.metaEsdtFromBigInteger(
                     secondPayment.tokenIdentifier,
-
+                    secondPayment.tokenNonce,
                     new BigNumber(secondPayment.amount),
                 ),
                 ...payments
@@ -383,6 +483,10 @@ export class PositionCreatorTransactionService {
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+
+        transactions.push(transaction);
+
+        return transactions;
     }
 
     async createDualFarmPositionDualTokens(
@@ -567,5 +671,24 @@ export class PositionCreatorTransactionService {
             (payments[1].tokenIdentifier === firstTokenID &&
                 payments[0].tokenIdentifier === secondTokenID)
         );
+    }
+
+    private checkLockedTokenPayments(
+        payments: EsdtTokenPayment[],
+        firstTokenID: string,
+        lockedTokenID: string,
+    ): boolean {
+        if (payments[0].tokenNonce > 0 || payments[1].tokenNonce < 1) {
+            return false;
+        }
+
+        if (
+            payments[0].tokenIdentifier !== firstTokenID ||
+            payments[1].tokenIdentifier !== lockedTokenID
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }
