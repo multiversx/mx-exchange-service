@@ -409,7 +409,7 @@ export class PositionCreatorTransactionService {
                 xmexTokenID,
             )
         ) {
-            throw new Error('Invalid Locked tokens payments');
+            throw new Error('Invalid locked tokens payments');
         }
 
         if (
