@@ -1244,4 +1244,101 @@ describe('PositionCreatorTransaction', () => {
             });
         });
     });
+
+    describe('Energy position creator', () => {
+        it('should return error on invalid ESDT payment', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+
+            expect(
+                service.createEnergyPosition(
+                    Address.Zero().bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'WEGLD-abcdef',
+                        tokenNonce: 0,
+                        amount: '1000000000000000000',
+                    }),
+                    1440,
+                    0.01,
+                ),
+            ).rejects.toThrowError('Invalid ESDT token payment');
+        });
+
+        it('should return transaction with ESDT payment', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+
+            const transaction = await service.createEnergyPosition(
+                Address.Zero().bech32(),
+                new EsdtTokenPayment({
+                    tokenIdentifier: 'WEGLD-123456',
+                    tokenNonce: 0,
+                    amount: '1000000000000000000',
+                }),
+                1440,
+                0.01,
+            );
+
+            expect(transaction).toEqual({
+                chainID: 'T',
+                data: encodeTransactionData(
+                    'ESDTTransfer@WEGLD-123456@1000000000000000000@createEnergyPosition@1440@986046911229504184328@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@986046911229504184328',
+                ),
+                gasLimit: 50000000,
+                gasPrice: 1000000000,
+                guardian: undefined,
+                guardianSignature: undefined,
+                nonce: 0,
+                options: undefined,
+                receiver:
+                    'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                receiverUsername: undefined,
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                senderUsername: undefined,
+                signature: undefined,
+                value: '0',
+                version: 1,
+            });
+        });
+
+        it('should return transaction with EGLD payment', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+
+            const transaction = await service.createEnergyPosition(
+                Address.Zero().bech32(),
+                new EsdtTokenPayment({
+                    tokenIdentifier: 'EGLD',
+                    tokenNonce: 0,
+                    amount: '1000000000000000000',
+                }),
+                1440,
+                0.01,
+            );
+
+            expect(transaction).toEqual({
+                chainID: 'T',
+                data: encodeTransactionData(
+                    'createEnergyPosition@1440@986046911229504184328@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@986046911229504184328',
+                ),
+                gasLimit: 50000000,
+                gasPrice: 1000000000,
+                guardian: undefined,
+                guardianSignature: undefined,
+                nonce: 0,
+                options: undefined,
+                receiver:
+                    'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                receiverUsername: undefined,
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                senderUsername: undefined,
+                signature: undefined,
+                value: '1000000000000000000',
+                version: 1,
+            });
+        });
+    });
 });
