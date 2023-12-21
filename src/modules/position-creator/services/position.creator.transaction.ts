@@ -175,9 +175,18 @@ export class PositionCreatorTransactionService {
                   ...singleTokenPairInput.swapRouteArgs,
               ];
 
-        const transaction = contract.methodsExplicit
+        let interaction = contract.methodsExplicit
             .createFarmPosFromSingleToken(endpointArgs)
-            .withMultiESDTNFTTransfer(
+            .withSender(Address.fromBech32(sender))
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID);
+
+        if (payments[0].tokenIdentifier === mxConfig.EGLDIdentifier) {
+            interaction = interaction.withValue(
+                new BigNumber(payments[0].amount),
+            );
+        } else {
+            interaction = interaction.withMultiESDTNFTTransfer(
                 payments.map((payment) =>
                     TokenTransfer.metaEsdtFromBigInteger(
                         payment.tokenIdentifier,
@@ -185,14 +194,10 @@ export class PositionCreatorTransactionService {
                         new BigNumber(payment.amount),
                     ),
                 ),
-            )
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+            );
+        }
 
-        transactions.push(transaction);
+        transactions.push(interaction.buildTransaction().toPlainObject());
         return transactions;
     }
 
