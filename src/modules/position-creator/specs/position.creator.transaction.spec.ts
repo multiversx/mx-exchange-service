@@ -143,6 +143,90 @@ describe('PositionCreatorTransaction', () => {
         });
     });
 
+    describe('Create liquidity position locked token', () => {
+        it('should return transaction with ESDT payment', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const transaction =
+                await service.createLiquidityPositionSingleToken(
+                    Address.Zero().bech32(),
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                    1440,
+                );
+
+            expect(transaction).toEqual({
+                nonce: 0,
+                value: '0',
+                receiver:
+                    'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                sender: Address.Zero().bech32(),
+                senderUsername: undefined,
+                receiverUsername: undefined,
+                gasPrice: 1000000000,
+                gasLimit: 50000000,
+                data: encodeTransactionData(
+                    `ESDTTransfer@USDC-123456@100000000000000000000@createPairPosFromSingleToken@1440@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
+                ),
+                chainID: 'T',
+                version: 1,
+                options: undefined,
+                guardian: undefined,
+                signature: undefined,
+                guardianSignature: undefined,
+            });
+        });
+
+        it('should return transaction with EGLD payment', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const transaction =
+                await service.createLiquidityPositionSingleToken(
+                    Address.Zero().bech32(),
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                    1440,
+                );
+
+            expect(transaction).toEqual({
+                nonce: 0,
+                value: '100000000000000000000',
+                receiver:
+                    'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                sender: Address.Zero().bech32(),
+                senderUsername: undefined,
+                receiverUsername: undefined,
+                gasPrice: 1000000000,
+                gasLimit: 50000000,
+                data: encodeTransactionData(
+                    `createPairPosFromSingleToken@1440@49500000000000000000@47008144020574367766823`,
+                ),
+                chainID: 'T',
+                version: 1,
+                options: undefined,
+                guardian: undefined,
+                signature: undefined,
+                guardianSignature: undefined,
+            });
+        });
+    });
+
     describe('Create farm position single token', () => {
         it('should return error on ESDT token', async () => {
             const service = module.get<PositionCreatorTransactionService>(
@@ -271,6 +355,95 @@ describe('PositionCreatorTransaction', () => {
                     gasLimit: 50000000,
                     data: encodeTransactionData(
                         `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
+    });
+
+    describe('Create farm position single token with locked token', () => {
+        it('should return transaction with ESDT payment', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const transaction = await service.createFarmPositionSingleToken(
+                Address.Zero().bech32(),
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+                1440,
+            );
+
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmPosFromSingleToken@1440@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
+
+        it('should return transaction with EGLD payment', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const transaction = await service.createFarmPositionSingleToken(
+                Address.Zero().bech32(),
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+                1440,
+            );
+
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '100000000000000000000',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        `createFarmPosFromSingleToken@1440@49500000000000000000@47008144020574367766823`,
                     ),
                     chainID: 'T',
                     version: 1,
