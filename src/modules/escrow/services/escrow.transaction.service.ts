@@ -43,6 +43,10 @@ export class EscrowTransactionService {
         receiverAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
+        if (senderAddress === receiverAddress) {
+            throw new Error('Sender and receiver cannot be the same');
+        }
+
         const contract = await this.mxProxy.getEscrowContract();
 
         return contract.methodsExplicit
