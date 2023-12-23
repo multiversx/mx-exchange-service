@@ -10,6 +10,12 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { MXGatewayServiceProvider } from 'src/services/multiversx-communication/mx.gateway.service.mock';
+import { EscrowSetterService } from '../services/escrow.setter.service';
+import { EscrowAbiServiceProvider } from '../mocks/escrow.abi.service.mock';
 
 describe('EscrowTransactionService', () => {
     let module: TestingModule;
@@ -25,7 +31,12 @@ describe('EscrowTransactionService', () => {
             ],
             providers: [
                 EscrowTransactionService,
+                EscrowAbiServiceProvider,
+                EscrowSetterService,
                 MXProxyServiceProvider,
+                MXApiServiceProvider,
+                MXGatewayServiceProvider,
+                ContextGetterServiceProvider,
                 ApiConfigService,
             ],
         }).compile();
@@ -93,11 +104,42 @@ describe('EscrowTransactionService', () => {
         );
     });
 
+    it('should return error on withdraw transaction after unlock epoch', async () => {
+        const service = module.get<EscrowTransactionService>(
+            EscrowTransactionService,
+        );
+        const mxApi = module.get<MXApiService>(MXApiService);
+        jest.spyOn(
+            mxApi,
+            'getNftAttributesByTokenIdentifier',
+        ).mockResolvedValue('AAAACk1FWC00NTVjNTcAAAAAAAAAAAAAAAAAAAAB');
+
+        await expect(
+            service.withdraw(
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000001',
+                ).bech32(),
+                Address.Zero().bech32(),
+            ),
+        ).rejects.toThrowError('Cannot withdraw funds after unlock epoch');
+    });
+
     it('should return a withdraw transaction', async () => {
         const service = module.get<EscrowTransactionService>(
             EscrowTransactionService,
         );
-        const transaction = await service.withdraw(Address.Zero().bech32());
+        const mxApi = module.get<MXApiService>(MXApiService);
+        jest.spyOn(
+            mxApi,
+            'getNftAttributesByTokenIdentifier',
+        ).mockResolvedValue('AAAACk1FWC00NTVjNTcAAAAAAAAAAAAAAAAAAAAC');
+
+        const transaction = await service.withdraw(
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000001',
+            ).bech32(),
+            Address.Zero().bech32(),
+        );
 
         expect(transaction).toEqual(
             new TransactionModel({

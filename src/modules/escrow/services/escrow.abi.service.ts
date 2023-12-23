@@ -19,9 +19,13 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { EscrowSetterService } from './escrow.setter.service';
+import { EscrowAbiServiceInterface } from './interfaces';
 
 @Injectable()
-export class EscrowAbiService extends GenericAbiService {
+export class EscrowAbiService
+    extends GenericAbiService
+    implements EscrowAbiServiceInterface
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
         private readonly mxGateway: MXGatewayService,
