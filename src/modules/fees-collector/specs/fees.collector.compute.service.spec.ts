@@ -31,6 +31,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 
 describe('FeesCollectorComputeService', () => {
     let module: TestingModule;
@@ -67,6 +68,7 @@ describe('FeesCollectorComputeService', () => {
                     provide: ContextGetterService,
                     useClass: ContextGetterServiceMock,
                 },
+                AnalyticsQueryServiceProvider,
                 ApiConfigService,
             ],
         }).compile();
