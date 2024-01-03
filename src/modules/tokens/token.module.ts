@@ -12,6 +12,7 @@ import { TokenSetterService } from './services/token.setter.service';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { NftCollectionResolver } from './nftCollection.resolver';
 import { NftTokenResolver } from './nftToken.resolver';
+import { AnalyticsModule } from 'src/services/analytics/analytics.module';
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { NftTokenResolver } from './nftToken.resolver';
         MongooseModule.forFeature([
             { name: EsdtTokenDbModel.name, schema: EsdtTokenSchema },
         ]),
+        AnalyticsModule,
     ],
     providers: [
         TokenService,
