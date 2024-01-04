@@ -65,6 +65,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -129,6 +130,7 @@ describe('UserEnergyComputeService', () => {
                 LockedAssetGetterService,
                 RemoteConfigGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
+                AnalyticsQueryServiceProvider,
                 ApiConfigService,
             ],
             imports: [
