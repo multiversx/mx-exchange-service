@@ -14,6 +14,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 
 describe('TokenComputeService', () => {
     let module: TestingModule;
@@ -38,6 +39,7 @@ describe('TokenComputeService', () => {
                 ContextGetterServiceProvider,
                 TokenComputeService,
                 ApiConfigService,
+                AnalyticsQueryServiceProvider,
             ],
         }).compile();
     });

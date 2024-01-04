@@ -16,6 +16,7 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -27,6 +28,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly dataApi: MXDataApiService,
+        private readonly analyticsQuery: AnalyticsQueryService,
     ) {}
 
     async getEgldPriceInUSD(): Promise<string> {
@@ -178,5 +180,26 @@ export class TokenComputeService implements ITokenComputeService {
             .times(egldPriceUSD)
             .times(usdcPrice)
             .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async tokenPrevious24hPrice(tokenID: string): Promise<string> {
+        return await this.computeTokenPrevious24hPrice(tokenID);
+    }
+
+    async computeTokenPrevious24hPrice(tokenID: string): Promise<string> {
+        const values24h = await this.analyticsQuery.getValues24h({
+            series: tokenID,
+            metric: 'priceUSD',
+        });
+
+        return values24h[0]?.value ?? undefined;
     }
 }
