@@ -320,11 +320,11 @@ export class PairResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => [TransactionModel])
+    @Query(() => TransactionModel)
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
         @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel[]> {
+    ): Promise<TransactionModel> {
         return this.transactionService.swapTokensFixedInput(user.address, args);
     }
 

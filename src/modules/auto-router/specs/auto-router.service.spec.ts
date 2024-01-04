@@ -31,6 +31,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -77,6 +78,7 @@ describe('AutoRouterService', () => {
                 AutoRouterService,
                 AutoRouterComputeService,
                 AutoRouterTransactionService,
+                ComposableTasksTransactionService,
                 ApiConfigService,
             ],
             exports: [],
@@ -271,35 +273,13 @@ describe('AutoRouterService', () => {
             {
                 nonce: 0,
                 value: '1000000000000000000',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
+                receiver: Address.Zero().bech32(),
                 sender: '',
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
-                gasLimit: gasConfig.wrapeGLD,
-                data: encodeTransactionData('wrapEgld'),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                signature: undefined,
-                guardian: undefined,
-                guardianSignature: undefined,
-            },
-            {
-                nonce: 0,
-                value: '0',
-                receiver: Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000013',
-                ).bech32(),
-                sender: '',
-                receiverUsername: undefined,
-                senderUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
-                data: encodeTransactionData(
-                    'ESDTTransfer@WEGLD-123456@01000000000000000000@swapTokensFixedInput@USDC-123456@4911161424654532',
-                ),
+                gasLimit: 30000000,
+                data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNzExNzJhY2UwMjZiMGM0QEBAMDJAMDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDcxMTcyYWNlMDI2YjBjNA==',
                 chainID: 'T',
                 version: 1,
                 options: undefined,

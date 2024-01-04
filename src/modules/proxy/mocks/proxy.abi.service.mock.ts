@@ -9,13 +9,13 @@ import { ProxyFarmAbiService } from '../services/proxy-farm/proxy.farm.abi.servi
 
 export class ProxyAbiServiceMock implements IProxyAbiService {
     async lockedAssetTokenID(proxyAddress: string): Promise<string[]> {
-        return ['LKMEX-1234'];
+        return ['LKMEX-123456'];
     }
 }
 
 export class ProxyPairAbiServiceMock implements IProxyPairAbiService {
     async wrappedLpTokenID(proxyAddress: string): Promise<string> {
-        return 'LKLP-abcd';
+        return 'LKLP-abcdef';
     }
     intermediatedPairs(proxyAddress: string): Promise<string[]> {
         throw new Error('Method not implemented.');
@@ -24,7 +24,7 @@ export class ProxyPairAbiServiceMock implements IProxyPairAbiService {
 
 export class ProxyFarmAbiServiceMock implements IProxyFarmAbiService {
     async wrappedFarmTokenID(proxyAddress: string): Promise<string> {
-        return 'LKFARM-1234';
+        return 'LKFARM-123456';
     }
     intermediatedFarms(proxyAddress: string): Promise<string[]> {
         throw new Error('Method not implemented.');

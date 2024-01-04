@@ -34,14 +34,14 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
-    @Query(() => TransactionModel)
+    @Query(() => [TransactionModel])
     async createFarmPositionSingleToken(
         @AuthUser() user: UserAuthResult,
         @Args('farmAddress') farmAddress: string,
         @Args('payments', { type: () => [InputTokenModel] })
         payments: InputTokenModel[],
         @Args('tolerance') tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return this.posCreatorTransaction.createFarmPositionSingleToken(
             user.address,
             farmAddress,
@@ -57,14 +57,14 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
-    @Query(() => TransactionModel)
+    @Query(() => [TransactionModel])
     async createDualFarmPositionSingleToken(
         @AuthUser() user: UserAuthResult,
         @Args('dualFarmAddress') dualFarmAddress: string,
         @Args('payments', { type: () => [InputTokenModel] })
         payments: InputTokenModel[],
         @Args('tolerance') tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return this.posCreatorTransaction.createDualFarmPositionSingleToken(
             user.address,
             dualFarmAddress,
@@ -80,14 +80,14 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
-    @Query(() => TransactionModel)
+    @Query(() => [TransactionModel])
     async createStakingPositionSingleToken(
         @AuthUser() user: UserAuthResult,
         @Args('stakingAddress') stakingAddress: string,
         @Args('payments', { type: () => [InputTokenModel] })
         payments: InputTokenModel[],
         @Args('tolerance') tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return this.posCreatorTransaction.createStakingPositionSingleToken(
             user.address,
             stakingAddress,

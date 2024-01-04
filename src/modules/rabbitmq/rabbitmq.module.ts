@@ -36,6 +36,10 @@ import { EscrowHandlerService } from './handlers/escrow.handler.service';
 import { EscrowModule } from '../escrow/escrow.module';
 import { GovernanceHandlerService } from './handlers/governance.handler.service';
 import { GovernanceModule } from '../governance/governance.module';
+import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
+import { StakingHandlerService } from './handlers/staking.handler.service';
+import { StakingModule } from '../staking/staking.module';
 
 @Module({
     imports: [
@@ -47,6 +51,8 @@ import { GovernanceModule } from '../governance/governance.module';
         FarmModule,
         FarmModuleV1_2,
         FarmModuleV1_3,
+        FarmModuleV2,
+        StakingModule,
         RouterModule,
         MetabondingModule,
         PriceDiscoveryModule,
@@ -59,6 +65,7 @@ import { GovernanceModule } from '../governance/governance.module';
         WeeklyRewardsSplittingModule,
         GovernanceModule,
         EscrowModule,
+        RemoteConfigModule,
     ],
     providers: [
         RabbitMqConsumer,
@@ -77,6 +84,7 @@ import { GovernanceModule } from '../governance/governance.module';
         WeeklyRewardsSplittingHandlerService,
         GovernanceHandlerService,
         EscrowHandlerService,
+        StakingHandlerService,
     ],
 })
 export class RabbitMqModule {

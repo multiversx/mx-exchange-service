@@ -11,7 +11,12 @@ import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
-import { isEsdtToken, isEsdtTokenValid, isNftCollection, isNftCollectionValid } from 'src/utils/token.type.compare';
+import {
+    isEsdtToken,
+    isEsdtTokenValid,
+    isNftCollection,
+    isNftCollectionValid,
+} from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { MXProxyService } from './mx.proxy.service';
 
@@ -114,8 +119,8 @@ export class MXApiService {
     async getShardBlockCountInEpoch(
         epoch: number,
         shardId: number,
-    ): Promise<Stats> {
-        return await this.doGetGeneric<Stats>(
+    ): Promise<number> {
+        return await this.doGetGeneric<number>(
             this.getStats.name,
             `blocks/count?epoch=${epoch}&shard=${shardId}`,
         );
@@ -327,13 +332,11 @@ export class MXApiService {
         );
     }
 
-    async getTransactionsWithOptions(
-        {
-            sender,
-            receiver,
-            functionName,
-        },
-    ): Promise<any> {
+    async getTransactionsWithOptions({
+        sender,
+        receiver,
+        functionName,
+    }): Promise<any> {
         return await this.doGetGeneric(
             this.getTransactions.name,
             `transactions?sender=${sender}&receiver=${receiver}&function=${functionName}`,

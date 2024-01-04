@@ -19,6 +19,14 @@ import { StakingComputeService } from './staking.compute.service';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import {
+    ClaimProgress,
+    UserInfoByWeekModel,
+} from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { constantsConfig } from 'src/config';
+import { BoostedRewardsModel } from 'src/modules/farm/models/farm.model';
 
 @Injectable()
 export class StakingService {
@@ -30,6 +38,8 @@ export class StakingService {
         private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetter: RemoteConfigGetterService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {}
 
     async getFarmsStaking(): Promise<StakingModel[]> {
@@ -102,15 +112,17 @@ export class StakingService {
 
     async getBatchRewardsForPosition(
         positions: CalculateRewardsArgs[],
+        computeBoosted = false,
     ): Promise<StakingRewardsModel[]> {
         const promises = positions.map(async (position) => {
-            return await this.getRewardsForPosition(position);
+            return await this.getRewardsForPosition(position, computeBoosted);
         });
         return await Promise.all(promises);
     }
 
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
+        computeBoosted = false,
     ): Promise<StakingRewardsModel> {
         const stakeTokenAttributes = this.decodeStakingTokenAttributes({
             batchAttributes: [
@@ -135,9 +147,124 @@ export class StakingService {
             );
         }
 
+        let modelsList: UserInfoByWeekModel[] = undefined;
+        let currentClaimProgress: ClaimProgress = undefined;
+        let userAccumulatedRewards: string = undefined;
+        if (computeBoosted) {
+            const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+                positon.farmAddress,
+            );
+            modelsList = [];
+            let lastActiveWeekUser =
+                await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
+                    positon.farmAddress,
+                    positon.user,
+                );
+            if (lastActiveWeekUser === 0) {
+                lastActiveWeekUser = currentWeek;
+            }
+            const startWeek = Math.max(
+                currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
+                lastActiveWeekUser,
+            );
+
+            for (let week = startWeek; week <= currentWeek - 1; week++) {
+                if (week < 1) {
+                    continue;
+                }
+                const model = new UserInfoByWeekModel({
+                    scAddress: positon.farmAddress,
+                    userAddress: positon.user,
+                    week: week,
+                });
+                model.positionAmount = positon.liquidity;
+                modelsList.push(model);
+            }
+
+            currentClaimProgress =
+                await this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    positon.farmAddress,
+                    positon.user,
+                );
+
+            userAccumulatedRewards =
+                await this.stakingCompute.userAccumulatedRewards(
+                    positon.farmAddress,
+                    positon.user,
+                    currentWeek,
+                );
+        }
+
         return new StakingRewardsModel({
             decodedAttributes: stakeTokenAttributes[0],
             rewards: rewards.integerValue().toFixed(),
+            boostedRewardsWeeklyInfo: modelsList,
+            claimProgress: currentClaimProgress,
+            accumulatedRewards: userAccumulatedRewards,
+        });
+    }
+
+    async getStakingBoostedRewardsBatch(
+        stakingAddresses: string[],
+        userAddress: string,
+    ): Promise<BoostedRewardsModel[]> {
+        const promises = stakingAddresses.map(async (address) => {
+            return await this.getStakingBoostedRewards(address, userAddress);
+        });
+        return Promise.all(promises);
+    }
+
+    async getStakingBoostedRewards(
+        stakingAddress: string,
+        userAddress: string,
+    ): Promise<BoostedRewardsModel> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            stakingAddress,
+        );
+        const modelsList = [];
+        let lastActiveWeekUser =
+            await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
+                stakingAddress,
+                userAddress,
+            );
+        if (lastActiveWeekUser === 0) {
+            lastActiveWeekUser = currentWeek;
+        }
+        const startWeek = Math.max(
+            currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
+            lastActiveWeekUser,
+        );
+
+        for (let week = startWeek; week <= currentWeek - 1; week++) {
+            if (week < 1) {
+                continue;
+            }
+            const model = new UserInfoByWeekModel({
+                scAddress: stakingAddress,
+                userAddress: userAddress,
+                week: week,
+            });
+
+            modelsList.push(model);
+        }
+
+        const currentClaimProgress =
+            await this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                stakingAddress,
+                userAddress,
+            );
+
+        const userAccumulatedRewards =
+            await this.stakingCompute.userAccumulatedRewards(
+                stakingAddress,
+                userAddress,
+                currentWeek,
+            );
+
+        return new BoostedRewardsModel({
+            boostedRewardsWeeklyInfo: modelsList,
+            claimProgress: currentClaimProgress,
+            accumulatedRewards: userAccumulatedRewards,
         });
     }
 

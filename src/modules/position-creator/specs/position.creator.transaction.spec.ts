@@ -30,6 +30,7 @@ import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import exp from 'constants';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -63,6 +64,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiServiceProvider,
                 TokenServiceProvider,
                 RemoteConfigGetterServiceProvider,
+                ComposableTasksTransactionService,
                 MXProxyServiceProvider,
                 ConfigService,
                 ApiConfigService,
@@ -206,25 +208,27 @@ describe('PositionCreatorTransaction', () => {
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: 50000000,
-                data: encodeTransactionData(
-                    `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
 
         it('should return transaction with merge farm tokens', async () => {
@@ -251,25 +255,27 @@ describe('PositionCreatorTransaction', () => {
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: 50000000,
-                data: encodeTransactionData(
-                    `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
     });
 
@@ -345,25 +351,27 @@ describe('PositionCreatorTransaction', () => {
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: 50000000,
-                data: encodeTransactionData(
-                    'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
 
         it('should return transaction with merge dual farm tokens', async () => {
@@ -397,25 +405,27 @@ describe('PositionCreatorTransaction', () => {
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: 50000000,
-                data: encodeTransactionData(
-                    'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
     });
 
@@ -482,25 +492,27 @@ describe('PositionCreatorTransaction', () => {
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: 50000000,
-                data: encodeTransactionData(
-                    'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@999999999899699097301@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@999999999899699097301@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
 
         it('should return transaction with merge staking tokens', async () => {
@@ -525,25 +537,27 @@ describe('PositionCreatorTransaction', () => {
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: 50000000,
-                data: encodeTransactionData(
-                    'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@STAKETOK-1111@01@100000000000000000000@createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@999999999899699097301@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@STAKETOK-1111@01@100000000000000000000@createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@999999999899699097301@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
     });
 
@@ -572,7 +586,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid tokens payments');
+            ).rejects.toThrowError('Invalid ESDT tokens payments');
         });
 
         it('should return error on invalid farm token merge', async () => {
@@ -735,7 +749,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid tokens payments');
+            ).rejects.toThrowError('Invalid ESDT tokens payments');
         });
 
         it('should return error on invalid farm token merge', async () => {

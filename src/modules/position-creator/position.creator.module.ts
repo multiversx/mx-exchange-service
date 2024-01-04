@@ -11,6 +11,7 @@ import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { StakingModule } from '../staking/staking.module';
 import { TokenModule } from '../tokens/token.module';
 import { PositionCreatorTransactionResolver } from './position.creator.transaction.resolver';
+import { WrappingModule } from '../wrapping/wrap.module';
 
 @Module({
     imports: [
@@ -21,6 +22,7 @@ import { PositionCreatorTransactionResolver } from './position.creator.transacti
         StakingModule,
         StakingProxyModule,
         TokenModule,
+        WrappingModule,
         MXCommunicationModule,
     ],
     providers: [

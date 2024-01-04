@@ -14,12 +14,18 @@ import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.tran
 import { TransactionModel } from '../../../models/transaction.model';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
+import { ComposableTaskType } from 'src/modules/composable-tasks/models/composable.tasks.model';
+import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
+import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
+import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { decimalToHex } from 'src/utils/token.converters';
 
 @Injectable()
 export class AutoRouterTransactionService {
     constructor(
         private readonly mxProxy: MXProxyService,
         private readonly transactionsWrapService: WrapTransactionsService,
+        private readonly composeTasksTransactionService: ComposableTasksTransactionService,
     ) {}
 
     async multiPairSwap(
@@ -27,30 +33,23 @@ export class AutoRouterTransactionService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const [contract, wrapTransaction, unwrapTransaction] =
-            await Promise.all([
-                this.mxProxy.getRouterSmartContract(),
-                this.wrapIfNeeded(
-                    sender,
-                    args.tokenInID,
-                    args.intermediaryAmounts[0],
-                ),
-                this.unwrapIfNeeded(
-                    sender,
-                    args.tokenOutID,
-                    args.intermediaryAmounts[
-                        args.intermediaryAmounts.length - 1
-                    ],
-                ),
-            ]);
-
-        if (wrapTransaction) transactions.push(wrapTransaction);
+        const contract = await this.mxProxy.getRouterSmartContract();
 
         const amountIn = new BigNumber(args.intermediaryAmounts[0]).plus(
             new BigNumber(args.intermediaryAmounts[0]).multipliedBy(
                 args.swapType === SWAP_TYPE.fixedOutput ? args.tolerance : 0,
             ),
         );
+
+        if (args.tokenInID === mxConfig.EGLDIdentifier) {
+            return [
+                await this.wrapEgldAndMultiSwapFixedInputTransaction(
+                    args.intermediaryAmounts[0],
+                    args,
+                ),
+            ];
+        }
+
         const gasLimit =
             args.addressRoute.length * gasConfig.router.multiPairSwapMultiplier;
 
@@ -73,8 +72,16 @@ export class AutoRouterTransactionService {
                 .buildTransaction()
                 .toPlainObject(),
         );
-
-        if (unwrapTransaction) transactions.push(unwrapTransaction);
+        if (args.tokenOutID === mxConfig.EGLDIdentifier) {
+            transactions.push(
+                await this.transactionsWrapService.unwrapEgld(
+                    sender,
+                    args.intermediaryAmounts[
+                        args.intermediaryAmounts.length - 1
+                    ],
+                ),
+            );
+        }
 
         return transactions;
     }
@@ -192,26 +199,69 @@ export class AutoRouterTransactionService {
         return swaps;
     }
 
-    async wrapIfNeeded(
-        sender: string,
-        tokenID: string,
-        amount: string,
+    async wrapEgldAndMultiSwapFixedInputTransaction(
+        value: string,
+        args: MultiSwapTokensArgs,
     ): Promise<TransactionModel> {
-        if (tokenID === mxConfig.EGLDIdentifier) {
-            return await this.transactionsWrapService.wrapEgld(sender, amount);
-        }
-    }
+        const swaps: BytesValue[] = [];
 
-    async unwrapIfNeeded(
-        sender: string,
-        tokenID: string,
-        amount: string,
-    ): Promise<TransactionModel> {
-        if (tokenID === mxConfig.EGLDIdentifier) {
-            return await this.transactionsWrapService.unwrapEgld(
-                sender,
-                amount,
+        const intermediaryTolerance = args.tolerance / args.addressRoute.length;
+
+        for (const [index, address] of args.addressRoute.entries()) {
+            const intermediaryToleranceMultiplier =
+                args.addressRoute.length - index;
+
+            const toleranceAmount = new BigNumber(
+                args.intermediaryAmounts[index + 1],
+            ).multipliedBy(
+                intermediaryToleranceMultiplier * intermediaryTolerance,
+            );
+
+            const amountOutMin = new BigNumber(
+                args.intermediaryAmounts[index + 1],
+            )
+                .minus(toleranceAmount)
+                .integerValue();
+
+            swaps.push(
+                ...[
+                    new BytesValue(
+                        Buffer.from(Address.fromString(address).hex(), 'hex'),
+                    ),
+                    BytesValue.fromUTF8(args.tokenRoute[index + 1]),
+                    new BytesValue(
+                        Buffer.from(
+                            decimalToHex(new BigNumber(amountOutMin)),
+                            'hex',
+                        ),
+                    ),
+                ],
             );
         }
+
+        return this.composeTasksTransactionService.getComposeTasksTransaction(
+            new EsdtTokenPayment({
+                tokenIdentifier: 'EGLD',
+                tokenNonce: 0,
+                amount: value,
+            }),
+            new EgldOrEsdtTokenPayment({
+                tokenIdentifier: args.tokenRoute[args.tokenRoute.length - 1],
+                nonce: 0,
+                amount: args.intermediaryAmounts[
+                    args.intermediaryAmounts.length - 1
+                ],
+            }),
+            [
+                {
+                    type: ComposableTaskType.WRAP_EGLD,
+                    arguments: [],
+                },
+                {
+                    type: ComposableTaskType.ROUTER_SWAP,
+                    arguments: swaps,
+                },
+            ],
+        );
     }
 }

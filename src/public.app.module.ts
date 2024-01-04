@@ -37,6 +37,7 @@ import { GovernanceModule } from './modules/governance/governance.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { PositionCreatorModule } from './modules/position-creator/position.creator.module';
+import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
 
 @Module({
     imports: [
@@ -97,6 +98,7 @@ import { PositionCreatorModule } from './modules/position-creator/position.creat
         EscrowModule,
         GovernanceModule,
         PositionCreatorModule,
+        ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
     ],
 })

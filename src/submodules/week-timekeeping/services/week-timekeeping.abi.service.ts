@@ -7,13 +7,17 @@ import { IWeekTimekeepingAbiService } from '../interfaces';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
 export class WeekTimekeepingAbiService
     extends GenericAbiService
     implements IWeekTimekeepingAbiService
 {
-    constructor(protected readonly mxProxy: MXProxyService) {
+    constructor(
+        protected readonly mxProxy: MXProxyService,
+        private readonly remoteConfig: RemoteConfigGetterService,
+    ) {
         super(mxProxy);
     }
 
@@ -57,11 +61,16 @@ export class WeekTimekeepingAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
-    private getContractHandler(
+    private async getContractHandler(
         contractAddress: string,
     ): Promise<SmartContract> {
         if (scAddress.feesCollector === contractAddress) {
             return this.mxProxy.getFeesCollectorContract();
+        }
+
+        const stakingAddresses = await this.remoteConfig.getStakingAddresses();
+        if (stakingAddresses.includes(contractAddress)) {
+            return this.mxProxy.getStakingSmartContract(contractAddress);
         }
 
         return this.mxProxy.getFarmSmartContract(contractAddress);
