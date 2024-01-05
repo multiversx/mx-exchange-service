@@ -215,7 +215,7 @@
             },
             "v2": {
                 "enterFarm": {
-                    "default": 13000000,
+                    "default": 13500000,
                     "withTokenMerge": 15000000
                 },
                 "unlockedRewards": {
