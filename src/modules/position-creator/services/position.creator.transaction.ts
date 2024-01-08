@@ -641,7 +641,7 @@ export class PositionCreatorTransactionService {
         const contract =
             await this.mxProxy.getLockedTokenPositionCreatorContract();
 
-        const interaction = contract.methodsExplicit
+        let interaction = contract.methodsExplicit
             .createEnergyPosition([
                 new U64Value(new BigNumber(lockEpochs)),
                 new BigUIntValue(singleTokenInput.amountOutMin),
@@ -652,9 +652,9 @@ export class PositionCreatorTransactionService {
             .withChainID(mxConfig.chainID);
 
         if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
-            interaction.withValue(new BigNumber(payment.amount));
+            interaction = interaction.withValue(new BigNumber(payment.amount));
         } else {
-            interaction.withSingleESDTTransfer(
+            interaction = interaction.withSingleESDTTransfer(
                 TokenTransfer.fungibleFromBigInteger(
                     payment.tokenIdentifier,
                     new BigNumber(payment.amount),
