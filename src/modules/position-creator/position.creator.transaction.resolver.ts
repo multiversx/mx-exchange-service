@@ -21,6 +21,7 @@ export class PositionCreatorTransactionResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('payment') payment: InputTokenModel,
         @Args('tolerance') tolerance: number,
+        @Args('lockEpochs', { nullable: true }) lockEpochs: number,
     ): Promise<TransactionModel> {
         return this.posCreatorTransaction.createLiquidityPositionSingleToken(
             user.address,
@@ -31,6 +32,7 @@ export class PositionCreatorTransactionResolver {
                 amount: payment.amount,
             }),
             tolerance,
+            lockEpochs,
         );
     }
 
@@ -41,6 +43,7 @@ export class PositionCreatorTransactionResolver {
         @Args('payments', { type: () => [InputTokenModel] })
         payments: InputTokenModel[],
         @Args('tolerance') tolerance: number,
+        @Args('lockEpochs', { nullable: true }) lockEpochs: number,
     ): Promise<TransactionModel[]> {
         return this.posCreatorTransaction.createFarmPositionSingleToken(
             user.address,
@@ -54,6 +57,7 @@ export class PositionCreatorTransactionResolver {
                     }),
             ),
             tolerance,
+            lockEpochs,
         );
     }
 
@@ -103,14 +107,14 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
-    @Query(() => TransactionModel)
+    @Query(() => [TransactionModel])
     async createFarmPositionDualTokens(
         @AuthUser() user: UserAuthResult,
         @Args('farmAddress') farmAddress: string,
         @Args('payments', { type: () => [InputTokenModel] })
         payments: InputTokenModel[],
         @Args('tolerance') tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return this.posCreatorTransaction.createFarmPositionDualTokens(
             user.address,
             farmAddress,
@@ -164,6 +168,25 @@ export class PositionCreatorTransactionResolver {
                 tokenNonce: payment.nonce,
                 amount: payment.amount,
             }),
+            tolerance,
+        );
+    }
+
+    @Query(() => TransactionModel)
+    async createEnergyPosition(
+        @AuthUser() user: UserAuthResult,
+        @Args('payment') payment: InputTokenModel,
+        @Args('lockEpochs') lockEpochs: number,
+        @Args('tolerance') tolerance: number,
+    ): Promise<TransactionModel> {
+        return this.posCreatorTransaction.createEnergyPosition(
+            user.address,
+            new EsdtTokenPayment({
+                tokenIdentifier: payment.tokenID,
+                tokenNonce: payment.nonce,
+                amount: payment.amount,
+            }),
+            lockEpochs,
             tolerance,
         );
     }

@@ -44,6 +44,7 @@
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
         "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a",
         "positionCreator": "erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6",
+        "lockedTokenPositionCreator": "erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6",
         "composableTasks": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh"
     },
     "tokenProviderUSD": "WEGLD-71e90a",
@@ -497,7 +498,8 @@
             "vote": 50000000
         },
         "positionCreator": {
-            "singleToken": 50000000
+            "singleToken": 50000000,
+            "energyPosition": 20000000
         },
         "composableTasks": {
             "default": 30000000
@@ -544,6 +546,7 @@
             "tokenSnapshot": "./src/abis/governance-v2-merkle-proof.abi.json"
         },
         "positionCreator": "./src/abis/auto-pos-creator.abi.json",
+        "lockedTokenPositionCreator": "./src/abis/locked-token-pos-creator.abi.json",
         "composableTasks": "./src/abis/composable-tasks.abi.json"
     },
     "cron": {
