@@ -26,6 +26,7 @@ import {
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { constantsConfig } from 'src/config';
+import { BoostedRewardsModel } from 'src/modules/farm/models/farm.model';
 
 @Injectable()
 export class StakingService {
@@ -197,6 +198,70 @@ export class StakingService {
         return new StakingRewardsModel({
             decodedAttributes: stakeTokenAttributes[0],
             rewards: rewards.integerValue().toFixed(),
+            boostedRewardsWeeklyInfo: modelsList,
+            claimProgress: currentClaimProgress,
+            accumulatedRewards: userAccumulatedRewards,
+        });
+    }
+
+    async getStakingBoostedRewardsBatch(
+        stakingAddresses: string[],
+        userAddress: string,
+    ): Promise<BoostedRewardsModel[]> {
+        const promises = stakingAddresses.map(async (address) => {
+            return await this.getStakingBoostedRewards(address, userAddress);
+        });
+        return Promise.all(promises);
+    }
+
+    async getStakingBoostedRewards(
+        stakingAddress: string,
+        userAddress: string,
+    ): Promise<BoostedRewardsModel> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            stakingAddress,
+        );
+        const modelsList = [];
+        let lastActiveWeekUser =
+            await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
+                stakingAddress,
+                userAddress,
+            );
+        if (lastActiveWeekUser === 0) {
+            lastActiveWeekUser = currentWeek;
+        }
+        const startWeek = Math.max(
+            currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
+            lastActiveWeekUser,
+        );
+
+        for (let week = startWeek; week <= currentWeek - 1; week++) {
+            if (week < 1) {
+                continue;
+            }
+            const model = new UserInfoByWeekModel({
+                scAddress: stakingAddress,
+                userAddress: userAddress,
+                week: week,
+            });
+
+            modelsList.push(model);
+        }
+
+        const currentClaimProgress =
+            await this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                stakingAddress,
+                userAddress,
+            );
+
+        const userAccumulatedRewards =
+            await this.stakingCompute.userAccumulatedRewards(
+                stakingAddress,
+                userAddress,
+                currentWeek,
+            );
+
+        return new BoostedRewardsModel({
             boostedRewardsWeeklyInfo: modelsList,
             claimProgress: currentClaimProgress,
             accumulatedRewards: userAccumulatedRewards,
