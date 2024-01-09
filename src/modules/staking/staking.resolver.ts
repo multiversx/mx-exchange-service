@@ -559,6 +559,18 @@ export class StakingResolver {
         );
     }
 
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => TransactionModel)
+    async claimStakingBoostedRewards(
+        @Args('stakeAddress') stakeAddress: string,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        return this.stakingTransactionService.claimBoostedRewards(
+            user.address,
+            stakeAddress,
+        );
+    }
+
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async topUpRewards(

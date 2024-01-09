@@ -1,20 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.73.0-nightly",
-            "commitHash": "4c8bb79d9f565115637cc6da739f8389e79f3a29",
-            "commitDate": "2023-07-15",
+            "version": "1.76.0-nightly",
+            "commitHash": "d86d65bbc19b928387f68427fcc3a0da498d8a19",
+            "commitDate": "2023-12-10",
             "channel": "Nightly",
-            "short": "rustc 1.73.0-nightly (4c8bb79d9 2023-07-15)"
+            "short": "rustc 1.76.0-nightly (d86d65bbc 2023-12-10)"
         },
         "contractCrate": {
             "name": "farm-staking",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-1527-g9534cc41"
+            "gitVersion": "v1.6.0-1579-ge4b95afa"
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.43.3"
+            "version": "0.45.2"
         }
     },
     "name": "FarmStaking",
@@ -214,6 +214,21 @@
                 }
             ],
             "outputs": []
+        },
+        {
+            "name": "getAllowExternalClaimRewards",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
         },
         {
             "name": "getFarmingTokenId",
@@ -1143,6 +1158,7 @@
             ]
         }
     ],
+    "esdtAttributes": [],
     "hasCallback": true,
     "types": {
         "BoostedYieldsFactors": {

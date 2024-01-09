@@ -182,6 +182,22 @@ export class StakingTransactionService {
             .toPlainObject();
     }
 
+    async claimBoostedRewards(
+        sender: string,
+        stakeAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .claimBoostedRewards()
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.stake.claimBoostedRewards)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
     async migrateTotalStakingPosition(
         stakingAddress: string,
         userAddress: string,
