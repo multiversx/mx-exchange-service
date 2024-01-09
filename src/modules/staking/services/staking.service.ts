@@ -262,6 +262,7 @@ export class StakingService {
             );
 
         return new BoostedRewardsModel({
+            farmAddress: stakingAddress,
             boostedRewardsWeeklyInfo: modelsList,
             claimProgress: currentClaimProgress,
             accumulatedRewards: userAccumulatedRewards,
