@@ -32,7 +32,7 @@ export class TokensResolver extends GenericResolver {
         );
     }
 
-    @ResolveField(() => String)
+    @ResolveField(() => String, { nullable: true })
     async previous24hPrice(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.tokenCompute.tokenPrevious24hPrice(parent.identifier),
