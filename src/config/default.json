@@ -216,8 +216,8 @@
             },
             "v2": {
                 "enterFarm": {
-                    "default": 13500000,
-                    "withTokenMerge": 15000000
+                    "default": 15000000,
+                    "withTokenMerge": 17500000
                 },
                 "unlockedRewards": {
                     "exitFarm": {
@@ -365,7 +365,7 @@
                                 "buybackAndBurn": 48000000
                             }
                         },
-                        "claimRewards": 27500000
+                        "claimRewards": 28500000
                     },
                     "customRewards": {
                         "exitFarm": {
@@ -377,7 +377,8 @@
                             }
                         },
                         "claimRewards": 20700000
-                    }
+                    },
+                    "increaseEnergy": 20000000
                 },
                 "defaultMergeWFMT": 20000000
             }
@@ -389,7 +390,7 @@
             },
             "unstakeFarm": 20000000,
             "unbondFarm": 7500000,
-            "claimRewards": 17000000,
+            "claimRewards": 18000000,
             "claimRewardsWithNewValue": 17000000,
             "compoundRewards": 17000000,
             "claimBoostedRewards": 20000000,
