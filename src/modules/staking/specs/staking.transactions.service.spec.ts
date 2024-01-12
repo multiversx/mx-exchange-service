@@ -273,7 +273,7 @@ describe('StakingTransactionService', () => {
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
-                gasLimit: 17000000,
+                gasLimit: gasConfig.stake.claimRewards,
                 data: encodeTransactionData(
                     'ESDTNFTTransfer@STAKETOK-1111@01@1000000000000000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
                 ),
