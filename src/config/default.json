@@ -98,7 +98,7 @@
             "createPair": 30000000,
             "issueToken": 150000000,
             "setLocalRoles": 150000000,
-            "multiPairSwapMultiplier": 50000000,
+            "multiPairSwapMultiplier": 65000000,
             "swapEnableByUser": 75000000,
             "admin": {
                 "setState": 200000000,
@@ -118,11 +118,11 @@
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
                 "default": 14500000,
-                "withFeeSwap": 25500000
+                "withFeeSwap": 30000000
             },
             "swapTokensFixedOutput": {
                 "default": 15000000,
-                "withFeeSwap": 25500000
+                "withFeeSwap": 35000000
             },
             "swapNoFeeAndForward": 25500000,
             "setLpTokenIdentifier": 200000000,
@@ -379,14 +379,14 @@
         },
         "stake": {
             "stakeFarm": {
-                "default": 7500000,
-                "withTokenMerge": 10000000
+                "default": 8000000,
+                "withTokenMerge": 11000000
             },
             "unstakeFarm": 9500000,
-            "unbondFarm": 7500000,
-            "claimRewards": 8500000,
+            "unbondFarm": 8000000,
+            "claimRewards": 10000000,
             "claimRewardsWithNewValue": 7500000,
-            "compoundRewards": 8500000,
+            "compoundRewards": 10000000,
             "mergeTokens": 20000000,
             "admin": {
                 "setState": 20000000,
