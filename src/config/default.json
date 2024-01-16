@@ -213,8 +213,8 @@
             },
             "v2": {
                 "enterFarm": {
-                    "default": 13500000,
-                    "withTokenMerge": 15000000
+                    "default": 15000000,
+                    "withTokenMerge": 16500000
                 },
                 "unlockedRewards": {
                     "exitFarm": {
@@ -229,14 +229,14 @@
                 },
                 "lockedRewards": {
                     "exitFarm": {
-                        "default": 20300000,
+                        "default": 30300000,
                         "withPenalty": {
-                            "localBurn": 16000000,
-                            "pairBurn": 23000000,
-                            "buybackAndBurn": 37300000
+                            "localBurn": 36000000,
+                            "pairBurn": 33000000,
+                            "buybackAndBurn": 48300000
                         }
                     },
-                    "claimRewards": 17000000
+                    "claimRewards": 30000000
                 }
             },
             "admin": {
@@ -257,7 +257,7 @@
         "proxy": {
             "pairs": {
                 "addLiquidity": {
-                    "default": 19500000,
+                    "default": 20000000,
                     "withTokenMerge": 40000000
                 },
                 "removeLiquidity": 30000000,
@@ -353,14 +353,14 @@
                     },
                     "lockedRewards": {
                         "exitFarm": {
-                            "default": 24000000,
+                            "default": 30000000,
                             "withPenalty": {
-                                "localBurn": 26000000,
-                                "pairBurn": 45000000,
-                                "buybackAndBurn": 48000000
+                                "localBurn": 32000000,
+                                "pairBurn": 51000000,
+                                "buybackAndBurn": 56000000
                             }
                         },
-                        "claimRewards": 27500000
+                        "claimRewards": 41500000
                     },
                     "customRewards": {
                         "exitFarm": {
