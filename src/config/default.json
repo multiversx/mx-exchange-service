@@ -96,10 +96,10 @@
     "gasLimits": {
         "router": {
             "createPair": 30000000,
-            "issueToken": 150000000,
+            "issueToken": 270000000,
             "setLocalRoles": 150000000,
-            "multiPairSwapMultiplier": 65000000,
-            "swapEnableByUser": 75000000,
+            "multiPairSwapMultiplier": 100000000,
+            "swapEnableByUser": 170000000,
             "admin": {
                 "setState": 200000000,
                 "setFee": 200000000,
@@ -113,8 +113,8 @@
             }
         },
         "pairs": {
-            "addLiquidity": 9500000,
-            "removeLiquidity": 8500000,
+            "addLiquidity": 10000000,
+            "removeLiquidity": 10000000,
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
                 "default": 14500000,
@@ -406,11 +406,11 @@
         },
         "stakeProxy": {
             "stakeFarmTokens": {
-                "default": 23000000,
-                "withTokenMerge": 33000000
+                "default": 26000000,
+                "withTokenMerge": 36000000
             },
-            "claimDualYield": 50000000,
-            "unstakeFarmTokens": 62000000
+            "claimDualYield": 55000000,
+            "unstakeFarmTokens": 75000000
         },
         "metabonding": {
             "stakeLockedAsset": {
