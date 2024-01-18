@@ -97,9 +97,9 @@
         "router": {
             "createPair": 30000000,
             "issueToken": 270000000,
-            "setLocalRoles": 150000000,
+            "setLocalRoles": 270000000,
             "multiPairSwapMultiplier": 100000000,
-            "swapEnableByUser": 170000000,
+            "swapEnableByUser": 180000000,
             "admin": {
                 "setState": 200000000,
                 "setFee": 200000000,
