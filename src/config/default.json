@@ -99,10 +99,10 @@
     "gasLimits": {
         "router": {
             "createPair": 30000000,
-            "issueToken": 150000000,
+            "issueToken": 270000000,
             "setLocalRoles": 150000000,
-            "multiPairSwapMultiplier": 50000000,
-            "swapEnableByUser": 75000000,
+            "multiPairSwapMultiplier": 100000000,
+            "swapEnableByUser": 170000000,
             "admin": {
                 "setState": 200000000,
                 "setFee": 200000000,
@@ -116,16 +116,16 @@
             }
         },
         "pairs": {
-            "addLiquidity": 9500000,
-            "removeLiquidity": 8500000,
+            "addLiquidity": 10000000,
+            "removeLiquidity": 10000000,
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
-                "default": 14500000,
-                "withFeeSwap": 25500000
+                "default": 17500000,
+                "withFeeSwap": 30000000
             },
             "swapTokensFixedOutput": {
-                "default": 15000000,
-                "withFeeSwap": 25500000
+                "default": 18000000,
+                "withFeeSwap": 35000000
             },
             "swapNoFeeAndForward": 25500000,
             "setLpTokenIdentifier": 200000000,
@@ -217,7 +217,7 @@
             "v2": {
                 "enterFarm": {
                     "default": 15000000,
-                    "withTokenMerge": 17500000
+                    "withTokenMerge": 16500000
                 },
                 "unlockedRewards": {
                     "exitFarm": {
@@ -232,16 +232,15 @@
                 },
                 "lockedRewards": {
                     "exitFarm": {
-                        "default": 20300000,
+                        "default": 30300000,
                         "withPenalty": {
-                            "localBurn": 16000000,
-                            "pairBurn": 23000000,
-                            "buybackAndBurn": 37300000
+                            "localBurn": 36000000,
+                            "pairBurn": 33000000,
+                            "buybackAndBurn": 48300000
                         }
                     },
-                    "claimRewards": 17000000
-                },
-                "claimBoostedRewards": 20000000
+                    "claimRewards": 30000000
+                }
             },
             "admin": {
                 "end_produce_rewards": 200000000,
@@ -261,7 +260,7 @@
         "proxy": {
             "pairs": {
                 "addLiquidity": {
-                    "default": 19500000,
+                    "default": 20000000,
                     "withTokenMerge": 40000000
                 },
                 "removeLiquidity": 30000000,
@@ -358,14 +357,14 @@
                     },
                     "lockedRewards": {
                         "exitFarm": {
-                            "default": 24000000,
+                            "default": 30000000,
                             "withPenalty": {
-                                "localBurn": 26000000,
-                                "pairBurn": 45000000,
-                                "buybackAndBurn": 48000000
+                                "localBurn": 32000000,
+                                "pairBurn": 51000000,
+                                "buybackAndBurn": 56000000
                             }
                         },
-                        "claimRewards": 28500000
+                        "claimRewards": 41500000
                     },
                     "customRewards": {
                         "exitFarm": {
@@ -385,15 +384,14 @@
         },
         "stake": {
             "stakeFarm": {
-                "default": 17500000,
-                "withTokenMerge": 20000000
+                "default": 9000000,
+                "withTokenMerge": 12000000
             },
-            "unstakeFarm": 20000000,
-            "unbondFarm": 7500000,
-            "claimRewards": 18000000,
-            "claimRewardsWithNewValue": 17000000,
-            "compoundRewards": 17000000,
-            "claimBoostedRewards": 20000000,
+            "unstakeFarm": 9500000,
+            "unbondFarm": 8000000,
+            "claimRewards": 10000000,
+            "claimRewardsWithNewValue": 7500000,
+            "compoundRewards": 10000000,
             "mergeTokens": 20000000,
             "admin": {
                 "setState": 20000000,
@@ -413,11 +411,11 @@
         },
         "stakeProxy": {
             "stakeFarmTokens": {
-                "default": 23000000,
-                "withTokenMerge": 33000000
+                "default": 26000000,
+                "withTokenMerge": 36000000
             },
-            "claimDualYield": 50000000,
-            "unstakeFarmTokens": 62000000
+            "claimDualYield": 55000000,
+            "unstakeFarmTokens": 75000000
         },
         "metabonding": {
             "stakeLockedAsset": {
