@@ -240,7 +240,8 @@
                         }
                     },
                     "claimRewards": 30000000
-                }
+                },
+                "claimBoostedRewards": 20000000
             },
             "admin": {
                 "end_produce_rewards": 200000000,
@@ -390,6 +391,7 @@
             "unstakeFarm": 9500000,
             "unbondFarm": 8000000,
             "claimRewards": 10000000,
+            "claimBoostedRewards": 20000000,
             "claimRewardsWithNewValue": 7500000,
             "compoundRewards": 10000000,
             "mergeTokens": 20000000,
