@@ -325,8 +325,8 @@ export class PositionCreatorTransactionService {
                 tokenRoute: swapRoute.tokenRoute,
             });
 
-        const transaction = contract.methodsExplicit
-            .createFarmStakingPosFromSingleToken([
+        let interaction =
+            contract.methodsExplicit.createFarmStakingPosFromSingleToken([
                 new AddressValue(Address.fromBech32(stakingAddress)),
                 new BigUIntValue(
                     new BigNumber(
@@ -336,8 +336,14 @@ export class PositionCreatorTransactionService {
                     ),
                 ),
                 ...multiSwapArgs,
-            ])
-            .withMultiESDTNFTTransfer(
+            ]);
+
+        if (payments[0].tokenIdentifier === mxConfig.EGLDIdentifier) {
+            interaction = interaction.withValue(
+                new BigNumber(payments[0].amount),
+            );
+        } else {
+            interaction = interaction.withMultiESDTNFTTransfer(
                 payments.map((payment) =>
                     TokenTransfer.metaEsdtFromBigInteger(
                         payment.tokenIdentifier,
@@ -345,7 +351,10 @@ export class PositionCreatorTransactionService {
                         new BigNumber(payment.amount),
                     ),
                 ),
-            )
+            );
+        }
+
+        const transaction = interaction
             .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID)
