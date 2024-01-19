@@ -276,33 +276,79 @@ export class PositionCreatorTransactionService {
         payments: EsdtTokenPayment[],
         tolerance: number,
     ): Promise<TransactionModel[]> {
-        const [farmingTokenID, farmTokenID, uniqueTokensIDs] =
-            await Promise.all([
-                this.stakingAbi.farmingTokenID(stakingAddress),
-                this.stakingAbi.farmTokenID(stakingAddress),
-                this.tokenService.getUniqueTokenIDs(false),
-            ]);
+        const [
+            farmingTokenID,
+            farmTokenID,
+            uniqueTokensIDs,
+            wrappedEgldTokenID,
+        ] = await Promise.all([
+            this.stakingAbi.farmingTokenID(stakingAddress),
+            this.stakingAbi.farmTokenID(stakingAddress),
+            this.tokenService.getUniqueTokenIDs(false),
+            this.wrapAbi.wrappedEgldTokenID(),
+        ]);
 
         const transactions = [];
-
-        if (
-            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
-            payments.length > 1
-        ) {
-            transactions.push(
-                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
-            );
-        } else if (
-            !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
-            payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
-        ) {
-            throw new Error('Invalid ESDT token payment');
-        }
+        const contract = await this.mxProxy.getPostitionCreatorContract();
 
         for (const payment of payments.slice(1)) {
             if (payment.tokenIdentifier !== farmTokenID) {
                 throw new Error('Invalid staking token payment');
             }
+        }
+
+        if (payments[0].tokenIdentifier === mxConfig.EGLDIdentifier) {
+            if (payments.length > 1) {
+                payments[0].tokenIdentifier = wrappedEgldTokenID;
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        sender,
+                        payments[0].amount,
+                    ),
+                );
+                transactions.push(
+                    contract.methodsExplicit
+                        .createFarmStakingPosFromSingleToken([
+                            new AddressValue(
+                                Address.fromBech32(stakingAddress),
+                            ),
+                            new BigUIntValue(new BigNumber(payments[0].amount)),
+                        ])
+                        .withMultiESDTNFTTransfer(
+                            payments.map((payment) =>
+                                TokenTransfer.metaEsdtFromBigInteger(
+                                    payment.tokenIdentifier,
+                                    payment.tokenNonce,
+                                    new BigNumber(payment.amount),
+                                ),
+                            ),
+                        )
+                        .withSender(Address.fromBech32(sender))
+                        .withGasLimit(gasConfig.positionCreator.singleToken)
+                        .withChainID(mxConfig.chainID)
+                        .buildTransaction()
+                        .toPlainObject(),
+                );
+                return transactions;
+            } else {
+                return [
+                    contract.methodsExplicit
+                        .createFarmStakingPosFromSingleToken([
+                            new AddressValue(
+                                Address.fromBech32(stakingAddress),
+                            ),
+                            new BigUIntValue(new BigNumber(payments[0].amount)),
+                        ])
+                        .withValue(new BigNumber(payments[0].amount))
+                        .withSender(Address.fromBech32(sender))
+                        .withGasLimit(gasConfig.positionCreator.singleToken)
+                        .withChainID(mxConfig.chainID)
+                        .buildTransaction()
+                        .toPlainObject(),
+                ];
+            }
+        } else if (!uniqueTokensIDs.includes(payments[0].tokenIdentifier)) {
+            throw new Error('Invalid ESDT token payment');
         }
 
         const swapRoute = await this.autoRouterService.swap({
@@ -311,8 +357,6 @@ export class PositionCreatorTransactionService {
             tokenOutID: farmingTokenID,
             tolerance,
         });
-
-        const contract = await this.mxProxy.getPostitionCreatorContract();
 
         const multiSwapArgs =
             this.autoRouterTransaction.multiPairFixedInputSwaps({
@@ -325,43 +369,34 @@ export class PositionCreatorTransactionService {
                 tokenRoute: swapRoute.tokenRoute,
             });
 
-        let interaction =
-            contract.methodsExplicit.createFarmStakingPosFromSingleToken([
-                new AddressValue(Address.fromBech32(stakingAddress)),
-                new BigUIntValue(
-                    new BigNumber(
-                        swapRoute.intermediaryAmounts[
-                            swapRoute.intermediaryAmounts.length - 1
-                        ],
+        transactions.push(
+            contract.methodsExplicit
+                .createFarmStakingPosFromSingleToken([
+                    new AddressValue(Address.fromBech32(stakingAddress)),
+                    new BigUIntValue(
+                        new BigNumber(
+                            swapRoute.intermediaryAmounts[
+                                swapRoute.intermediaryAmounts.length - 1
+                            ],
+                        ),
                     ),
-                ),
-                ...multiSwapArgs,
-            ]);
-
-        if (payments[0].tokenIdentifier === mxConfig.EGLDIdentifier) {
-            interaction = interaction.withValue(
-                new BigNumber(payments[0].amount),
-            );
-        } else {
-            interaction = interaction.withMultiESDTNFTTransfer(
-                payments.map((payment) =>
-                    TokenTransfer.metaEsdtFromBigInteger(
-                        payment.tokenIdentifier,
-                        payment.tokenNonce,
-                        new BigNumber(payment.amount),
+                    ...multiSwapArgs,
+                ])
+                .withMultiESDTNFTTransfer(
+                    payments.map((payment) =>
+                        TokenTransfer.metaEsdtFromBigInteger(
+                            payment.tokenIdentifier,
+                            payment.tokenNonce,
+                            new BigNumber(payment.amount),
+                        ),
                     ),
-                ),
-            );
-        }
-
-        const transaction = interaction
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-
-        transactions.push(transaction);
+                )
+                .withSender(Address.fromBech32(sender))
+                .withGasLimit(gasConfig.positionCreator.singleToken)
+                .withChainID(mxConfig.chainID)
+                .buildTransaction()
+                .toPlainObject(),
+        );
         return transactions;
     }
 
