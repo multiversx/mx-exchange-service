@@ -32,7 +32,10 @@ import { constantsConfig } from 'src/config';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakeAddressValidationPipe } from './validators/stake.address.validator';
 import { BoostedYieldsFactors } from '../farm/models/farm.v2.model';
-import { BoostedRewardsModel } from '../farm/models/farm.model';
+import {
+    BoostedRewardsModel,
+    UserTotalBoostedPosition,
+} from '../farm/models/farm.model';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -298,18 +301,34 @@ export class StakingResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => String, {
+    @Query(() => [UserTotalBoostedPosition], {
         description:
             'Returns the total staked position of the user in the staking contract',
     })
     async userTotalStakePosition(
-        @Args('stakeAddress', StakeAddressValidationPipe) stakeAddress: string,
+        @Args(
+            'stakeAddresses',
+            { type: () => [String] },
+            StakeAddressValidationPipe,
+        )
+        stakeAddresses: string[],
         @AuthUser() user: UserAuthResult,
-    ): Promise<string> {
-        return this.stakingAbi.userTotalStakePosition(
-            stakeAddress,
-            user.address,
+    ): Promise<UserTotalBoostedPosition[]> {
+        const positions = await Promise.all(
+            stakeAddresses.map((stakeAddress) =>
+                this.stakingAbi.userTotalStakePosition(
+                    stakeAddress,
+                    user.address,
+                ),
+            ),
         );
+
+        return stakeAddresses.map((stakeAddress, index) => {
+            return new UserTotalBoostedPosition({
+                address: stakeAddress,
+                boostedTokensAmount: positions[index],
+            });
+        });
     }
 
     @Query(() => [StakingModel])

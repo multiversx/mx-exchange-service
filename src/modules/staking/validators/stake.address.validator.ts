@@ -7,16 +7,20 @@ import { Address } from '@multiversx/sdk-core/out';
 export class StakeAddressValidationPipe implements PipeTransform {
     constructor(private readonly remoteConfig: RemoteConfigGetterService) {}
 
-    async transform(value: string, metadata: ArgumentMetadata) {
+    async transform(value: string | string[], metadata: ArgumentMetadata) {
         let address: Address;
-        try {
-            address = Address.fromBech32(value);
-        } catch (error) {
-            throw new UserInputError('Invalid address');
-        }
+        const values = Array.isArray(value) ? value : [value];
         const stakingAddresses = await this.remoteConfig.getStakingAddresses();
-        if (!stakingAddresses.includes(address.bech32())) {
-            throw new UserInputError('Invalid staking address');
+
+        for (const entry of values) {
+            try {
+                address = Address.fromBech32(entry);
+            } catch (error) {
+                throw new UserInputError('Invalid address');
+            }
+            if (!stakingAddresses.includes(address.bech32())) {
+                throw new UserInputError('Invalid staking address');
+            }
         }
 
         return value;
