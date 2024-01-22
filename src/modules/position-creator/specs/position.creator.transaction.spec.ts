@@ -28,11 +28,12 @@ import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/moc
 import { Address } from '@multiversx/sdk-core/out';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { encodeTransactionData } from 'src/helpers/helpers';
-import exp from 'constants';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { ProxyFarmAbiServiceProvider } from 'src/modules/proxy/mocks/proxy.abi.service.mock';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { scAddress } from 'src/config';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -277,6 +278,49 @@ describe('PositionCreatorTransaction', () => {
             ).rejects.toThrowError('Invalid farm token payment');
         });
 
+        it('should return transaction with EGLD and no merge farm tokens', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const transaction = await service.createFarmPositionSingleToken(
+                Address.Zero().bech32(),
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+            );
+
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '100000000000000000000',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        `createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@49500000000000000000@47008144020574367766823`,
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
+
         it('should return transaction no merge farm tokens', async () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
@@ -308,6 +352,71 @@ describe('PositionCreatorTransaction', () => {
                     gasLimit: 50000000,
                     data: encodeTransactionData(
                         `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
+
+        it('should return transaction with EGLD and merge farm tokens', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const transaction = await service.createFarmPositionSingleToken(
+                Address.Zero().bech32(),
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000021',
+                ).bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLDMEXFL-abcdef',
+                        tokenNonce: 1,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+            );
+
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '100000000000000000000',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
+                    sender: '',
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 4200000,
+                    data: encodeTransactionData('wrapEgld'),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@49500000000000000000@47008144020574367766823`,
                     ),
                     chainID: 'T',
                     version: 1,
@@ -502,6 +611,55 @@ describe('PositionCreatorTransaction', () => {
             ).rejects.toThrowError('Invalid dual yield token payment');
         });
 
+        it('should return transaction with EGLD no merge dual farm tokens', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const stakingProxyAbi = module.get<StakingProxyAbiService>(
+                StakingProxyAbiService,
+            );
+            jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
+            );
+
+            const transaction = await service.createDualFarmPositionSingleToken(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+            );
+
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '100000000000000000000',
+                    receiver: scAddress.positionCreator,
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        'createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@49500000000000000000@47008144020574367766823',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
+
         it('should return transaction no merge dual farm tokens', async () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
@@ -540,6 +698,78 @@ describe('PositionCreatorTransaction', () => {
                     gasLimit: 50000000,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@494999999950351053163@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
+
+        it('should return transaction with EGLD and merge dual farm tokens', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const stakingProxyAbi = module.get<StakingProxyAbiService>(
+                StakingProxyAbiService,
+            );
+            jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
+            );
+
+            const transaction = await service.createDualFarmPositionSingleToken(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'METASTAKE-1234',
+                        tokenNonce: 1,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+            );
+
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '100000000000000000000',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
+                    sender: '',
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 4200000,
+                    data: encodeTransactionData('wrapEgld'),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@49500000000000000000@47008144020574367766823',
                     ),
                     chainID: 'T',
                     version: 1,
@@ -652,6 +882,51 @@ describe('PositionCreatorTransaction', () => {
             ).rejects.toThrowError('Invalid staking token payment');
         });
 
+        it('should return transaction with EGLD no merge staking tokens', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const stakingAbi = module.get<StakingAbiService>(StakingAbiService);
+            jest.spyOn(stakingAbi, 'farmingTokenID').mockResolvedValue(
+                'MEX-123456',
+            );
+
+            const transaction = await service.createStakingPositionSingleToken(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+            );
+
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '100000000000000000000',
+                    receiver: scAddress.positionCreator,
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        'createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@90661089388014913158134@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@89754478494134764026552',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
+
         it('should return transaction no merge staking tokens', async () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
@@ -681,6 +956,74 @@ describe('PositionCreatorTransaction', () => {
                     gasLimit: 50000000,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@999999999899699097301@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
+
+        it('should return transaction with EGLD and merge staking tokens', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const stakingAbi = module.get<StakingAbiService>(StakingAbiService);
+            jest.spyOn(stakingAbi, 'farmingTokenID').mockResolvedValue(
+                'MEX-123456',
+            );
+
+            const transaction = await service.createStakingPositionSingleToken(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'STAKETOK-1111',
+                        tokenNonce: 1,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+            );
+
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '100000000000000000000',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
+                    sender: '',
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 4200000,
+                    data: encodeTransactionData('wrapEgld'),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@STAKETOK-1111@01@100000000000000000000@createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@90661089388014913158134@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@89754478494134764026552',
                     ),
                     chainID: 'T',
                     version: 1,

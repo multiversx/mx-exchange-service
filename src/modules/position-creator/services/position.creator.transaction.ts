@@ -123,21 +123,15 @@ export class PositionCreatorTransactionService {
         tolerance: number,
         lockEpochs?: number,
     ): Promise<TransactionModel[]> {
-        const [pairAddress, farmTokenID, uniqueTokensIDs] = await Promise.all([
-            this.farmAbiV2.pairContractAddress(farmAddress),
-            this.farmAbiV2.farmTokenID(farmAddress),
-            this.tokenService.getUniqueTokenIDs(false),
-        ]);
+        const [pairAddress, farmTokenID, uniqueTokensIDs, wrappedEgldTokenID] =
+            await Promise.all([
+                this.farmAbiV2.pairContractAddress(farmAddress),
+                this.farmAbiV2.farmTokenID(farmAddress),
+                this.tokenService.getUniqueTokenIDs(false),
+                this.wrapAbi.wrappedEgldTokenID(),
+            ]);
 
-        const transactions = [];
         if (
-            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
-            payments.length > 1
-        ) {
-            transactions.push(
-                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
-            );
-        } else if (
             !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
             payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
@@ -148,6 +142,16 @@ export class PositionCreatorTransactionService {
             if (payment.tokenIdentifier !== farmTokenID) {
                 throw new Error('Invalid farm token payment');
             }
+        }
+
+        const transactions = [];
+        if (
+            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
+            payments.length > 1
+        ) {
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
+            );
         }
 
         const singleTokenPairInput =
@@ -181,11 +185,18 @@ export class PositionCreatorTransactionService {
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID);
 
-        if (payments[0].tokenIdentifier === mxConfig.EGLDIdentifier) {
+        if (
+            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
+            payments.length === 1
+        ) {
             interaction = interaction.withValue(
                 new BigNumber(payments[0].amount),
             );
         } else {
+            payments[0].tokenIdentifier =
+                payments[0].tokenIdentifier === mxConfig.EGLDIdentifier
+                    ? wrappedEgldTokenID
+                    : payments[0].tokenIdentifier;
             interaction = interaction.withMultiESDTNFTTransfer(
                 payments.map((payment) =>
                     TokenTransfer.metaEsdtFromBigInteger(
@@ -207,22 +218,19 @@ export class PositionCreatorTransactionService {
         payments: EsdtTokenPayment[],
         tolerance: number,
     ): Promise<TransactionModel[]> {
-        const [pairAddress, dualYieldTokenID, uniqueTokensIDs] =
-            await Promise.all([
-                this.stakingProxyAbi.pairAddress(stakingProxyAddress),
-                this.stakingProxyAbi.dualYieldTokenID(stakingProxyAddress),
-                this.tokenService.getUniqueTokenIDs(false),
-            ]);
+        const [
+            pairAddress,
+            dualYieldTokenID,
+            uniqueTokensIDs,
+            wrappedEgldTokenID,
+        ] = await Promise.all([
+            this.stakingProxyAbi.pairAddress(stakingProxyAddress),
+            this.stakingProxyAbi.dualYieldTokenID(stakingProxyAddress),
+            this.tokenService.getUniqueTokenIDs(false),
+            this.wrapAbi.wrappedEgldTokenID(),
+        ]);
 
-        const transactions = [];
         if (
-            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
-            payments.length > 1
-        ) {
-            transactions.push(
-                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
-            );
-        } else if (
             !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
             payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
@@ -235,6 +243,16 @@ export class PositionCreatorTransactionService {
             }
         }
 
+        const transactions = [];
+        if (
+            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
+            payments.length > 1
+        ) {
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
+            );
+        }
+
         const singleTokenPairInput =
             await this.posCreatorCompute.computeSingleTokenPairInput(
                 pairAddress,
@@ -244,14 +262,31 @@ export class PositionCreatorTransactionService {
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
-        const transaction = contract.methodsExplicit
+        let interaction = contract.methodsExplicit
             .createMetastakingPosFromSingleToken([
                 new AddressValue(Address.fromBech32(stakingProxyAddress)),
                 new BigUIntValue(singleTokenPairInput.amount0Min),
                 new BigUIntValue(singleTokenPairInput.amount1Min),
                 ...singleTokenPairInput.swapRouteArgs,
             ])
-            .withMultiESDTNFTTransfer(
+
+            .withSender(Address.fromBech32(sender))
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID);
+
+        if (
+            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
+            payments.length === 1
+        ) {
+            interaction = interaction.withValue(
+                new BigNumber(payments[0].amount),
+            );
+        } else {
+            payments[0].tokenIdentifier =
+                payments[0].tokenIdentifier === mxConfig.EGLDIdentifier
+                    ? wrappedEgldTokenID
+                    : payments[0].tokenIdentifier;
+            interaction = interaction.withMultiESDTNFTTransfer(
                 payments.map((payment) =>
                     TokenTransfer.metaEsdtFromBigInteger(
                         payment.tokenIdentifier,
@@ -259,14 +294,10 @@ export class PositionCreatorTransactionService {
                         new BigNumber(payment.amount),
                     ),
                 ),
-            )
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+            );
+        }
 
-        transactions.push(transaction);
+        transactions.push(interaction.buildTransaction().toPlainObject());
         return transactions;
     }
 
@@ -276,23 +307,19 @@ export class PositionCreatorTransactionService {
         payments: EsdtTokenPayment[],
         tolerance: number,
     ): Promise<TransactionModel[]> {
-        const [farmingTokenID, farmTokenID, uniqueTokensIDs] =
-            await Promise.all([
-                this.stakingAbi.farmingTokenID(stakingAddress),
-                this.stakingAbi.farmTokenID(stakingAddress),
-                this.tokenService.getUniqueTokenIDs(false),
-            ]);
-
-        const transactions = [];
+        const [
+            farmingTokenID,
+            farmTokenID,
+            uniqueTokensIDs,
+            wrappedEgldTokenID,
+        ] = await Promise.all([
+            this.stakingAbi.farmingTokenID(stakingAddress),
+            this.stakingAbi.farmTokenID(stakingAddress),
+            this.tokenService.getUniqueTokenIDs(false),
+            this.wrapAbi.wrappedEgldTokenID(),
+        ]);
 
         if (
-            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
-            payments.length > 1
-        ) {
-            transactions.push(
-                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
-            );
-        } else if (
             !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
             payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
@@ -305,14 +332,22 @@ export class PositionCreatorTransactionService {
             }
         }
 
+        const transactions = [];
+        if (
+            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
+            payments.length > 1
+        ) {
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
+            );
+        }
+
         const swapRoute = await this.autoRouterService.swap({
             tokenInID: payments[0].tokenIdentifier,
             amountIn: payments[0].amount,
             tokenOutID: farmingTokenID,
             tolerance,
         });
-
-        const contract = await this.mxProxy.getPostitionCreatorContract();
 
         const multiSwapArgs =
             this.autoRouterTransaction.multiPairFixedInputSwaps({
@@ -325,7 +360,8 @@ export class PositionCreatorTransactionService {
                 tokenRoute: swapRoute.tokenRoute,
             });
 
-        const transaction = contract.methodsExplicit
+        const contract = await this.mxProxy.getPostitionCreatorContract();
+        let interaction = contract.methodsExplicit
             .createFarmStakingPosFromSingleToken([
                 new AddressValue(Address.fromBech32(stakingAddress)),
                 new BigUIntValue(
@@ -337,7 +373,23 @@ export class PositionCreatorTransactionService {
                 ),
                 ...multiSwapArgs,
             ])
-            .withMultiESDTNFTTransfer(
+            .withSender(Address.fromBech32(sender))
+            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withChainID(mxConfig.chainID);
+
+        if (
+            payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
+            payments.length === 1
+        ) {
+            interaction = interaction.withValue(
+                new BigNumber(payments[0].amount),
+            );
+        } else {
+            payments[0].tokenIdentifier =
+                payments[0].tokenIdentifier === mxConfig.EGLDIdentifier
+                    ? wrappedEgldTokenID
+                    : payments[0].tokenIdentifier;
+            interaction = interaction.withMultiESDTNFTTransfer(
                 payments.map((payment) =>
                     TokenTransfer.metaEsdtFromBigInteger(
                         payment.tokenIdentifier,
@@ -345,14 +397,10 @@ export class PositionCreatorTransactionService {
                         new BigNumber(payment.amount),
                     ),
                 ),
-            )
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+            );
+        }
 
-        transactions.push(transaction);
+        transactions.push(interaction.buildTransaction().toPlainObject());
         return transactions;
     }
 
