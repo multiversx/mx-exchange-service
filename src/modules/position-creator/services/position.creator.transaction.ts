@@ -230,8 +230,11 @@ export class PositionCreatorTransactionService {
             this.wrapAbi.wrappedEgldTokenID(),
         ]);
 
+        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
+
         if (
             !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
+            payments[0].tokenIdentifier !== lpTokenID &&
             payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
             throw new Error('Invalid ESDT token payment');
@@ -269,7 +272,6 @@ export class PositionCreatorTransactionService {
                 new BigUIntValue(singleTokenPairInput.amount1Min),
                 ...singleTokenPairInput.swapRouteArgs,
             ])
-
             .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.singleToken)
             .withChainID(mxConfig.chainID);

@@ -834,6 +834,60 @@ describe('PositionCreatorTransaction', () => {
                 },
             ]);
         });
+
+        it('should return transaction with LP token and merge dual farm tokens', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const stakingProxyAbi = module.get<StakingProxyAbiService>(
+                StakingProxyAbiService,
+            );
+            jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
+            );
+
+            const transaction = await service.createDualFarmPositionSingleToken(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLDMEXLP-abcdef',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'METASTAKE-1234',
+                        tokenNonce: 1,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+            );
+
+            expect(transaction).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 50000000,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@EGLDMEXLP-abcdef@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@@',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
     });
 
     describe('Create staking position single token', () => {
