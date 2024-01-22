@@ -60,6 +60,18 @@ export class BoostedRewardsModel {
 }
 
 @ObjectType()
+export class UserTotalBoostedPosition {
+    @Field()
+    address: string;
+    @Field()
+    boostedTokensAmount: string;
+
+    constructor(init?: Partial<UserTotalBoostedPosition>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class ExitFarmTokensModel {
     @Field()
     farmingTokens: string;
