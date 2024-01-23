@@ -59,10 +59,19 @@ export class PositionCreatorComputeService {
         const acceptedPairedTokensIDs =
             await this.routerAbi.commonTokensForUserPairs();
 
-        const [firstTokenID, secondTokenID] = await Promise.all([
+        const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
             this.pairAbi.firstTokenID(pairAddress),
             this.pairAbi.secondTokenID(pairAddress),
+            this.pairAbi.lpTokenID(pairAddress),
         ]);
+
+        if (payment.tokenIdentifier === lpTokenID) {
+            return {
+                swapRouteArgs: [],
+                amount0Min: new BigNumber(0),
+                amount1Min: new BigNumber(0),
+            };
+        }
 
         const swapToTokenID = acceptedPairedTokensIDs.includes(firstTokenID)
             ? firstTokenID
