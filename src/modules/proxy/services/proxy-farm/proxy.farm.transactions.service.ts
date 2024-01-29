@@ -4,6 +4,7 @@ import {
     BigUIntValue,
     BytesValue,
     TypedValue,
+    U64Value,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { Address, Interaction, TokenTransfer } from '@multiversx/sdk-core';
 import { TransactionModel } from '../../../../models/transaction.model';
@@ -328,6 +329,33 @@ export class ProxyFarmTransactionsService {
         }
 
         return Promise.all(promises);
+    }
+
+    async increaseProxyFarmTokenEnergy(
+        sender: string,
+        proxyAddress: string,
+        payment: InputTokenModel,
+        lockEpochs: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
+        return contract.methodsExplicit
+            .increaseProxyFarmTokenEnergy([
+                new U64Value(new BigNumber(lockEpochs)),
+            ])
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    payment.tokenID,
+                    payment.nonce,
+                    new BigNumber(payment.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.proxy.pairs.increaseEnergy)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async getExitFarmProxyGasLimit(
