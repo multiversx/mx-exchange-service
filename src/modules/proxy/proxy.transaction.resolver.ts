@@ -216,6 +216,7 @@ export class ProxyTransactionResolver {
         );
     }
 
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async increaseProxyPairTokenEnergy(
         @Args('payment') payment: InputTokenModel,
@@ -224,22 +225,10 @@ export class ProxyTransactionResolver {
     ): Promise<TransactionModel> {
         let proxyAddress: string;
         try {
-            proxyAddress = await this.proxyService.getProxyAddressByToken(
-                payment.tokenID,
+            proxyAddress = await this.validateProxyIncreaseEnergy(
+                payment,
+                lockEpochs,
             );
-
-            if (proxyAddress !== scAddress.proxyDexAddress.v2) {
-                throw new Error('Wrapped lp token is not supported');
-            }
-
-            const lockOptions = await this.energyAbi.lockOptions();
-            if (
-                lockOptions.find(
-                    (option) => option.lockEpochs === lockEpochs,
-                ) === undefined
-            ) {
-                throw new Error('Invalid lock epochs!');
-            }
         } catch (error) {
             throw new GraphQLError(error.message, {
                 extensions: {
@@ -253,5 +242,57 @@ export class ProxyTransactionResolver {
             payment,
             lockEpochs,
         );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => TransactionModel)
+    async increaseProxyFarmTokenEnergy(
+        @Args('payment') payment: InputTokenModel,
+        @Args('lockEpochs') lockEpochs: number,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        let proxyAddress: string;
+        try {
+            proxyAddress = await this.validateProxyIncreaseEnergy(
+                payment,
+                lockEpochs,
+            );
+        } catch (error) {
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.BAD_USER_INPUT,
+                },
+            });
+        }
+
+        return this.transactionsProxyPairService.increaseProxyPairTokenEnergy(
+            user.address,
+            proxyAddress,
+            payment,
+            lockEpochs,
+        );
+    }
+
+    private async validateProxyIncreaseEnergy(
+        payment: InputTokenModel,
+        lockEpochs: number,
+    ): Promise<string> {
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            payment.tokenID,
+        );
+
+        if (proxyAddress !== scAddress.proxyDexAddress.v2) {
+            throw new Error('Wrapped lp token is not supported');
+        }
+
+        const lockOptions = await this.energyAbi.lockOptions();
+        if (
+            lockOptions.find((option) => option.lockEpochs === lockEpochs) ===
+            undefined
+        ) {
+            throw new Error('Invalid lock epochs!');
+        }
+
+        return proxyAddress;
     }
 }
