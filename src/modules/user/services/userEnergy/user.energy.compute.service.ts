@@ -2,18 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../../../config';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import {
-    ContractType,
-    OutdatedContract,
-    UserDualYiledToken,
-    UserLockedFarmTokenV2,
-} from '../../models/user.model';
+import { ContractType, OutdatedContract } from '../../models/user.model';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
 import { PaginationArgs } from '../../../dex.model';
 import { ProxyService } from '../../../proxy/services/proxy.service';
 import { StakingProxyService } from '../../../staking-proxy/services/staking.proxy.service';
 import { FarmVersion } from '../../../farm/models/farm.model';
-import { farmVersion } from '../../../../utils/farm.utils';
+import { farmVersion, farmsAddresses } from '../../../../utils/farm.utils';
 import { BigNumber } from 'bignumber.js';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
@@ -24,6 +19,8 @@ import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -32,11 +29,11 @@ export class UserEnergyComputeService {
         private readonly farmService: FarmFactoryService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
-        private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly energyAbi: EnergyAbiService,
         private readonly proxyService: ProxyService,
+        private readonly apiService: MXApiService,
     ) {}
 
     async getUserOutdatedContracts(
@@ -169,55 +166,64 @@ export class UserEnergyComputeService {
     }
 
     async computeActiveFarmsV2ForUser(userAddress: string): Promise<string[]> {
-        const maxPagination = new PaginationArgs({
-            limit: 100,
-            offset: 0,
-        });
-        const [farmTokens, farmLockedTokens, dualYieldTokens] =
-            await Promise.all([
-                this.userMetaEsdtService.getUserFarmTokens(
-                    userAddress,
-                    maxPagination,
-                    false,
-                ),
-                this.userMetaEsdtService.getUserLockedFarmTokensV2(
-                    userAddress,
-                    maxPagination,
-                    false,
-                ),
-                this.userMetaEsdtService.getUserDualYieldTokens(
-                    userAddress,
-                    maxPagination,
-                    false,
-                ),
-            ]);
+        const userNfts = await this.apiService.getNftsForUser(
+            userAddress,
+            0,
+            100,
+            'MetaESDT',
+        );
+        const stakingProxies = await this.stakeProxyService.getStakingProxies();
+        const filterAddresses = [
+            ...farmsAddresses([FarmVersion.V2]),
+            stakingProxies.map((proxy) => proxy.address),
+            scAddress.proxyDexAddress.v2,
+        ];
+        const filteredNfts = userNfts.filter((nft) =>
+            filterAddresses.includes(nft.creator),
+        );
+        const userActiveFarmAddresses = filteredNfts
+            .filter((nft) =>
+                farmsAddresses([FarmVersion.V2]).includes(nft.creator),
+            )
+            .map((nft) => nft.creator);
 
-        let userActiveFarmAddresses = farmTokens.map((token) => token.creator);
-        const promisesFarmLockedTokens = farmLockedTokens.map((token) => {
-            return this.decodeAndGetFarmAddressFarmLockedTokens(token);
-        });
-        const promisesDualYieldTokens = dualYieldTokens.map((token) => {
-            return this.getFarmAddressForDualYieldToken(token);
-        });
+        const proxyNfts = filteredNfts.filter(
+            (nft) => nft.creator === scAddress.proxyDexAddress.v2,
+        );
+        const promisesFarmLockedTokens = proxyNfts.map((token) =>
+            this.decodeAndGetFarmAddressFarmLockedTokens(
+                token.identifier,
+                token.attributes,
+            ),
+        );
+        userActiveFarmAddresses.push(
+            ...(await Promise.all(promisesFarmLockedTokens)),
+        );
 
-        userActiveFarmAddresses = userActiveFarmAddresses.concat(
-            await Promise.all([
-                ...promisesFarmLockedTokens,
-                ...promisesDualYieldTokens,
-            ]),
+        const stakingProxyNfts = filteredNfts.filter((nft) =>
+            stakingProxies.map((proxy) => proxy.address).includes(nft.creator),
+        );
+        const promisesDualYieldTokens = stakingProxyNfts.map((token) =>
+            this.getFarmAddressForDualYieldToken(token.identifier),
+        );
+        userActiveFarmAddresses.push(
+            ...(await Promise.all(promisesDualYieldTokens)),
         );
         return [...new Set(userActiveFarmAddresses)].filter(
             (address) => farmVersion(address) === FarmVersion.V2,
         );
     }
 
-    decodeAndGetFarmAddressFarmLockedTokens(token: UserLockedFarmTokenV2) {
+    decodeAndGetFarmAddressFarmLockedTokens(
+        identifier: string,
+        attributes: string,
+    ): Promise<string> {
         const decodedWFMTAttributes =
             this.proxyService.getWrappedFarmTokenAttributesV2({
                 batchAttributes: [
                     {
-                        identifier: token.identifier,
-                        attributes: token.attributes,
+                        identifier,
+                        attributes,
                     },
                 ],
             });
@@ -227,14 +233,10 @@ export class UserEnergyComputeService {
         );
     }
 
-    async getFarmAddressForDualYieldToken(token: UserDualYiledToken) {
-        if (!token || token === undefined) {
-            return undefined;
-        }
-
+    async getFarmAddressForDualYieldToken(collection: string): Promise<string> {
         const stakingProxyAddress =
             await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(
-                token.collection,
+                collection,
             );
         return this.stakeProxyAbi.lpFarmAddress(stakingProxyAddress);
     }
