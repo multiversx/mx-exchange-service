@@ -3,8 +3,6 @@ import { scAddress } from '../../../../config';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { ContractType, OutdatedContract } from '../../models/user.model';
-import { UserMetaEsdtService } from '../user.metaEsdt.service';
-import { PaginationArgs } from '../../../dex.model';
 import { ProxyService } from '../../../proxy/services/proxy.service';
 import { StakingProxyService } from '../../../staking-proxy/services/staking.proxy.service';
 import { FarmVersion } from '../../../farm/models/farm.model';
@@ -19,8 +17,8 @@ import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
-import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -34,6 +32,7 @@ export class UserEnergyComputeService {
         private readonly energyAbi: EnergyAbiService,
         private readonly proxyService: ProxyService,
         private readonly apiService: MXApiService,
+        private readonly contextGetter: ContextGetterService,
     ) {}
 
     async getUserOutdatedContracts(
@@ -166,11 +165,14 @@ export class UserEnergyComputeService {
     }
 
     async computeActiveFarmsV2ForUser(userAddress: string): Promise<string[]> {
-        const userNfts = await this.apiService.getNftsForUser(
+        const userNftsCount = await this.contextGetter.getNftsCountForUser(
+            userAddress,
+        );
+
+        const userNfts = await this.contextGetter.getNftsForUser(
             userAddress,
             0,
-            100,
-            'MetaESDT',
+            userNftsCount,
         );
         const stakingProxies = await this.stakeProxyService.getStakingProxies();
         const filterAddresses = [
