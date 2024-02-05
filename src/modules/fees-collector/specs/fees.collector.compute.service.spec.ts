@@ -32,6 +32,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('FeesCollectorComputeService', () => {
     let module: TestingModule;
@@ -70,6 +71,7 @@ describe('FeesCollectorComputeService', () => {
                 },
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                MXApiServiceProvider,
             ],
         }).compile();
     });

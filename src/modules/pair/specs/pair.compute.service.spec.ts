@@ -17,6 +17,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -42,6 +43,7 @@ describe('PairService', () => {
                 AnalyticsQueryServiceProvider,
                 ContextGetterServiceProvider,
                 ApiConfigService,
+                MXApiServiceProvider,
             ],
         }).compile();
     });
