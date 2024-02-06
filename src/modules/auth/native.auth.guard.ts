@@ -68,7 +68,6 @@ export class NativeAuthGuard implements CanActivate {
 
         try {
             const userInfo = await this.authServer.validate(jwt);
-            console.log(userInfo);
             if (
                 !UrlUtils.isLocalhost(origin) &&
                 origin !== userInfo.origin &&
