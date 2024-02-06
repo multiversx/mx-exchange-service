@@ -29,6 +29,7 @@ export class NativeAuthGuard implements CanActivate {
                 this.apiConfigService.getNativeAuthMaxExpirySeconds(),
             acceptedOrigins:
                 this.apiConfigService.getNativeAuthAcceptedOrigins(),
+            validateImpersonateUrl: this.apiConfigService.getImpersonateUrl(),
             cache: {
                 getValue: async <T>(key: string): Promise<T | undefined> => {
                     if (key === 'block:timestamp:latest') {
@@ -67,6 +68,7 @@ export class NativeAuthGuard implements CanActivate {
 
         try {
             const userInfo = await this.authServer.validate(jwt);
+            console.log(userInfo);
             if (
                 !UrlUtils.isLocalhost(origin) &&
                 origin !== userInfo.origin &&
