@@ -1,4 +1,7 @@
-import { NativeAuthServer } from '@multiversx/sdk-native-auth-server';
+import {
+    NativeAuthError,
+    NativeAuthServer,
+} from '@multiversx/sdk-native-auth-server';
 import {
     Injectable,
     CanActivate,
@@ -16,7 +19,6 @@ import { Logger } from 'winston';
 @Injectable()
 export class NativeAuthGuard implements CanActivate {
     private readonly authServer: NativeAuthServer;
-    private impersonateAddress: string;
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
@@ -29,6 +31,7 @@ export class NativeAuthGuard implements CanActivate {
                 this.apiConfigService.getNativeAuthMaxExpirySeconds(),
             acceptedOrigins:
                 this.apiConfigService.getNativeAuthAcceptedOrigins(),
+            validateImpersonateUrl: this.apiConfigService.getImpersonateUrl(),
             cache: {
                 getValue: async <T>(key: string): Promise<T | undefined> => {
                     if (key === 'block:timestamp:latest') {
@@ -52,10 +55,6 @@ export class NativeAuthGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const ctx = GqlExecutionContext.create(context);
         const { req } = ctx.getContext();
-
-        if (req.headers !== undefined) {
-            this.impersonateAddress = req.headers['impersonate-address'];
-        }
 
         const authorization: string = req.headers['authorization'];
         const origin = req.headers['origin'];
@@ -89,14 +88,16 @@ export class NativeAuthGuard implements CanActivate {
             req.auth = userInfo;
             req.jwt = userInfo;
 
-            if (this.impersonateAddress) {
+            if (
+                userInfo.extraInfo.impersonate &&
+                userInfo.extraInfo.impersonate !== undefined
+            ) {
                 const admins = process.env.SECURITY_ADMINS.split(',');
-                if (admins.find((admin) => admin === userInfo.address)) {
-                    req.res.set(
-                        'X-Native-Auth-Address',
-                        this.impersonateAddress,
-                    );
-                    req.auth.address = this.impersonateAddress;
+                if (
+                    admins.find((admin) => admin === userInfo.signerAddress) ===
+                    undefined
+                ) {
+                    throw new NativeAuthError('Impersonation not allowed');
                 }
             }
 
