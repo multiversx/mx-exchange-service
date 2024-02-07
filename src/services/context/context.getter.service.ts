@@ -54,23 +54,6 @@ export class ContextGetterService extends GenericGetterService {
         );
     }
 
-    async getNftsCountForUser(address: string): Promise<number> {
-        const cacheKey = this.getCacheKey('nftsCountForUser', address);
-        const cachedData = await this.cachingService.getRemote<number>(
-            cacheKey,
-        );
-        if (cachedData) {
-            return cachedData;
-        }
-        const count = await this.apiService.getNftsCountForUser(address);
-        await this.cachingService.setRemote(
-            cacheKey,
-            count,
-            Constants.oneSecond() * 6,
-        );
-        return count;
-    }
-
     async getNftsForUser(
         address: string,
         from = 0,

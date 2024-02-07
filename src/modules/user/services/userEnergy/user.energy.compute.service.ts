@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { scAddress } from '../../../../config';
+import { constantsConfig, scAddress } from '../../../../config';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { ContractType, OutdatedContract } from '../../models/user.model';
@@ -165,14 +165,10 @@ export class UserEnergyComputeService {
     }
 
     async computeActiveFarmsV2ForUser(userAddress: string): Promise<string[]> {
-        const userNftsCount = await this.contextGetter.getNftsCountForUser(
-            userAddress,
-        );
-
         const userNfts = await this.contextGetter.getNftsForUser(
             userAddress,
             0,
-            userNftsCount,
+            constantsConfig.MAX_USER_NFTS,
         );
         const stakingProxies = await this.stakeProxyService.getStakingProxies();
         const filterAddresses = [
