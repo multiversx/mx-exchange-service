@@ -34,7 +34,7 @@ export class JwtOrNativeAuthGuard implements CanActivate {
                 try {
                     return guard.canActivate(context);
                 } catch (error) {
-                    this.logger.error(
+                    this.logger.warn(
                         `${JwtOrNativeAuthGuard.name}: ${error.message}`,
                     );
                     return false;

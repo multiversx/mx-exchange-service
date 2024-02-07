@@ -19,6 +19,7 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('TransactionPairService', () => {
     let module: TestingModule;
@@ -46,6 +47,7 @@ describe('TransactionPairService', () => {
                 WrapService,
                 TokenServiceProvider,
                 PairTransactionService,
+                MXApiServiceProvider,
             ],
         }).compile();
     });
