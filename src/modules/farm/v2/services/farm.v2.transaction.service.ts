@@ -18,6 +18,7 @@ import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class FarmTransactionServiceV2 extends TransactionsFarmService {
@@ -27,6 +28,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         protected readonly pairService: PairService,
         protected readonly pairAbi: PairAbiService,
         private readonly mxApi: MXApiService,
+        private readonly contextGetter: ContextGetterService,
     ) {
         super(mxProxy, farmAbi, pairService, pairAbi);
     }
@@ -168,7 +170,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             return [];
         }
 
-        const userNfts = await this.mxApi.getNftsForUser(
+        const userNfts = await this.contextGetter.getNftsForUser(
             userAddress,
             0,
             userNftsCount,
