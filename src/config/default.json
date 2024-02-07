@@ -100,9 +100,9 @@
         "router": {
             "createPair": 30000000,
             "issueToken": 270000000,
-            "setLocalRoles": 150000000,
+            "setLocalRoles": 270000000,
             "multiPairSwapMultiplier": 100000000,
-            "swapEnableByUser": 170000000,
+            "swapEnableByUser": 180000000,
             "admin": {
                 "setState": 200000000,
                 "setFee": 200000000,
@@ -439,14 +439,14 @@
         },
         "simpleLock": {
             "lockTokens": 10000000,
-            "unlockTokens": 5000000,
+            "unlockTokens": 6000000,
             "addLiquidityLockedToken": 20000000,
-            "removeLiquidityLockedToken": 15000000,
+            "removeLiquidityLockedToken": 18000000,
             "enterFarmLockedToken": {
-                "default": 25000000,
-                "withTokenMerge": 30000000
+                "default": 30000000,
+                "withTokenMerge": 35000000
             },
-            "exitFarmLockedToken": 50000000,
+            "exitFarmLockedToken": 60000000,
             "claimRewardsFarmLockedToken": 35000000
         },
         "simpleLockEnergy": {
