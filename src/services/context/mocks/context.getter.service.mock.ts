@@ -15,10 +15,6 @@ export class ContextGetterServiceMock {
         return 111;
     }
 
-    async getNftsCountForUser(address: string): Promise<number> {
-        return (await this.getNftsForUser(address)).length;
-    }
-
     async getNftsForUser(
         address: string,
         from = 0,
