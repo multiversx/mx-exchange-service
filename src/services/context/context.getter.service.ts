@@ -61,23 +61,7 @@ export class ContextGetterService extends GenericGetterService {
         type = 'MetaESDT',
         collections?: string[],
     ): Promise<NftToken[]> {
-        const cacheKey = this.getCacheKey('nftsForUser', address, from, size);
-        let nfts = await this.cachingService.getRemote<NftToken[]>(cacheKey);
-        if (nfts) {
-            const userNfts = collections
-                ? nfts
-                      .filter((nft) => collections.includes(nft.collection))
-                      .slice(from, size)
-                : nfts.slice(from, size);
-            return userNfts;
-        }
-
-        nfts = await this.apiService.getNftsForUser(address, type);
-        await this.cachingService.setRemote(
-            cacheKey,
-            nfts,
-            Constants.oneSecond() * 6,
-        );
+        const nfts = await this.apiService.getNftsForUser(address, type);
 
         const userNfts = collections
             ? nfts
