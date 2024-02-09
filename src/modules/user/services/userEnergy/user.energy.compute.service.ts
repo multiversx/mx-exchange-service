@@ -19,6 +19,8 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { PaginationArgs } from 'src/modules/dex.model';
+import { UserMetaEsdtService } from '../user.metaEsdt.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -33,6 +35,7 @@ export class UserEnergyComputeService {
         private readonly proxyService: ProxyService,
         private readonly apiService: MXApiService,
         private readonly contextGetter: ContextGetterService,
+        private readonly userMetaEsdtService: UserMetaEsdtService,
     ) {}
 
     async getUserOutdatedContracts(
@@ -156,56 +159,54 @@ export class UserEnergyComputeService {
         return new OutdatedContract();
     }
 
-    @GetOrSetCache({
-        baseKey: 'userEnergy',
-        remoteTtl: Constants.oneMinute(),
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'userEnergy',
+    //     remoteTtl: Constants.oneMinute(),
+    // })
     async userActiveFarmsV2(userAddress: string): Promise<string[]> {
         return await this.computeActiveFarmsV2ForUser(userAddress);
     }
 
     async computeActiveFarmsV2ForUser(userAddress: string): Promise<string[]> {
-        const userNfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            0,
-            constantsConfig.MAX_USER_NFTS,
-        );
-        const stakingProxies = await this.stakeProxyService.getStakingProxies();
-        const filterAddresses = [
-            ...farmsAddresses([FarmVersion.V2]),
-            stakingProxies.map((proxy) => proxy.address),
-            scAddress.proxyDexAddress.v2,
-        ];
-        const filteredNfts = userNfts.filter((nft) =>
-            filterAddresses.includes(nft.creator),
-        );
-        const userActiveFarmAddresses = filteredNfts
-            .filter((nft) =>
-                farmsAddresses([FarmVersion.V2]).includes(nft.creator),
-            )
-            .map((nft) => nft.creator);
+        const maxPagination = new PaginationArgs({
+            limit: 100,
+            offset: 0,
+        });
+        const [farmTokens, farmLockedTokens, dualYieldTokens] =
+            await Promise.all([
+                this.userMetaEsdtService.getUserFarmTokens(
+                    userAddress,
+                    maxPagination,
+                    false,
+                ),
+                this.userMetaEsdtService.getUserLockedFarmTokensV2(
+                    userAddress,
+                    maxPagination,
+                    false,
+                ),
+                this.userMetaEsdtService.getUserDualYieldTokens(
+                    userAddress,
+                    maxPagination,
+                    false,
+                ),
+            ]);
 
-        const proxyNfts = filteredNfts.filter(
-            (nft) => nft.creator === scAddress.proxyDexAddress.v2,
-        );
-        const promisesFarmLockedTokens = proxyNfts.map((token) =>
-            this.decodeAndGetFarmAddressFarmLockedTokens(
+        let userActiveFarmAddresses = farmTokens.map((token) => token.creator);
+        const promisesFarmLockedTokens = farmLockedTokens.map((token) => {
+            return this.decodeAndGetFarmAddressFarmLockedTokens(
                 token.identifier,
                 token.attributes,
-            ),
-        );
-        userActiveFarmAddresses.push(
-            ...(await Promise.all(promisesFarmLockedTokens)),
-        );
+            );
+        });
+        const promisesDualYieldTokens = dualYieldTokens.map((token) => {
+            return this.getFarmAddressForDualYieldToken(token.collection);
+        });
 
-        const stakingProxyNfts = filteredNfts.filter((nft) =>
-            stakingProxies.map((proxy) => proxy.address).includes(nft.creator),
-        );
-        const promisesDualYieldTokens = stakingProxyNfts.map((token) =>
-            this.getFarmAddressForDualYieldToken(token.identifier),
-        );
-        userActiveFarmAddresses.push(
-            ...(await Promise.all(promisesDualYieldTokens)),
+        userActiveFarmAddresses = userActiveFarmAddresses.concat(
+            await Promise.all([
+                ...promisesFarmLockedTokens,
+                ...promisesDualYieldTokens,
+            ]),
         );
         return [...new Set(userActiveFarmAddresses)].filter(
             (address) => farmVersion(address) === FarmVersion.V2,
@@ -232,6 +233,10 @@ export class UserEnergyComputeService {
     }
 
     async getFarmAddressForDualYieldToken(collection: string): Promise<string> {
+        if (!collection || collection === undefined) {
+            return undefined;
+        }
+
         const stakingProxyAddress =
             await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(
                 collection,
