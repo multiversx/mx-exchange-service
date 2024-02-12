@@ -34,6 +34,7 @@ import { ProxyFarmAbiServiceProvider } from 'src/modules/proxy/mocks/proxy.abi.s
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { scAddress } from 'src/config';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -74,6 +75,7 @@ describe('PositionCreatorTransaction', () => {
                 ConfigService,
                 ApiConfigService,
                 ContextGetterServiceProvider,
+                MXApiServiceProvider,
             ],
         }).compile();
     });

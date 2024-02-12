@@ -37,6 +37,7 @@ describe('StakingTransactionService', () => {
                 MXGatewayService,
                 MXApiServiceProvider,
                 ApiConfigService,
+                MXApiServiceProvider,
             ],
         }).compile();
     });

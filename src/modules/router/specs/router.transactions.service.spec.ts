@@ -22,6 +22,7 @@ import { WinstonModule } from 'nest-winston';
 import { ConfigModule } from '@nestjs/config';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -54,6 +55,7 @@ describe('RouterService', () => {
                 RouterTransactionService,
                 TokenServiceProvider,
                 RouterService,
+                MXApiServiceProvider,
             ],
         }).compile();
     });

@@ -16,6 +16,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { StakingAbiService } from './staking.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class StakingTransactionService {
@@ -23,6 +24,7 @@ export class StakingTransactionService {
         private readonly stakingAbi: StakingAbiService,
         private readonly mxProxy: MXProxyService,
         private readonly mxApi: MXApiService,
+        private readonly contextGetter: ContextGetterService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -210,7 +212,7 @@ export class StakingTransactionService {
             ],
         );
 
-        const userNfts = await this.mxApi.getNftsForUser(
+        const userNfts = await this.contextGetter.getNftsForUser(
             userAddress,
             0,
             userNftsCount,

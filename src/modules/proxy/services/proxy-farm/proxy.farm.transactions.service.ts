@@ -34,6 +34,7 @@ import {
     WrappedFarmTokenAttributesV2,
 } from '@multiversx/sdk-exchange';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class ProxyFarmTransactionsService {
@@ -45,6 +46,7 @@ export class ProxyFarmTransactionsService {
         private readonly pairService: PairService,
         private readonly pairAbi: PairAbiService,
         private readonly proxyFarmAbi: ProxyFarmAbiService,
+        private readonly contextGetter: ContextGetterService,
     ) {}
 
     async enterFarmProxy(
@@ -283,7 +285,7 @@ export class ProxyFarmTransactionsService {
             proxyAddress,
         );
         const userNftsCount = await this.mxApi.getNftsCountForUser(sender);
-        const userNfts = await this.mxApi.getNftsForUser(
+        const userNfts = await this.contextGetter.getNftsForUser(
             sender,
             0,
             userNftsCount,

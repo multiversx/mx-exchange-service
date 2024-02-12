@@ -226,6 +226,16 @@ export class ApiConfigService {
         return origins.split(',');
     }
 
+    getImpersonateUrl(): string {
+        const impersonateUrl =
+            this.configService.get<string>('IMPERSONATE_URL');
+        if (!impersonateUrl) {
+            throw new Error('No impersonate url present');
+        }
+
+        return impersonateUrl;
+    }
+
     getMXDataApiURL(): string {
         const url = this.configService.get<string>('MX_DATA_API_URL');
         if (!url) {

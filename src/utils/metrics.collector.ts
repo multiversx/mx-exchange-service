@@ -121,6 +121,21 @@ export class MetricsCollector {
         MetricsCollector.baseMetrics.setRedisDuration(action, duration);
     }
 
+    static setApiCall(
+        endpoint: string,
+        origin: string,
+        status: number,
+        duration: number,
+    ) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.baseMetrics.setApiCall(
+            endpoint,
+            origin,
+            status,
+            duration,
+        );
+    }
+
     static setExternalCall(system: string, func: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
         MetricsCollector.baseMetrics.setExternalCall(system, duration);

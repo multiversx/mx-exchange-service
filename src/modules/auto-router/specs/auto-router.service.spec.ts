@@ -32,6 +32,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -80,6 +81,7 @@ describe('AutoRouterService', () => {
                 AutoRouterTransactionService,
                 ComposableTasksTransactionService,
                 ApiConfigService,
+                MXApiServiceProvider,
             ],
             exports: [],
         }).compile();
