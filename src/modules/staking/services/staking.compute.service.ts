@@ -214,6 +214,26 @@ export class StakingComputeService {
                   .toFixed();
     }
 
+    async computeRewardsRemainingDays(stakeAddress: string): Promise<number> {
+        const [perBlockRewardAmount, accumulatedRewards, rewardsCapacity] =
+            await Promise.all([
+                this.stakingAbi.perBlockRewardsAmount(stakeAddress),
+                this.stakingAbi.accumulatedRewards(stakeAddress),
+                this.stakingAbi.rewardCapacity(stakeAddress),
+            ]);
+
+        // 10 blocks per minute * 60 minutes per hour * 24 hours per day
+        const blocksInDay = 10 * 60 * 24;
+
+        return parseFloat(
+            new BigNumber(rewardsCapacity)
+                .minus(accumulatedRewards)
+                .dividedBy(perBlockRewardAmount)
+                .dividedBy(blocksInDay)
+                .toFixed(2),
+        );
+    }
+
     async computeOptimalCompoundFrequency(
         stakeAddress: string,
         positionAmount: string,
