@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { constantsConfig, scAddress } from '../../../../config';
+import { scAddress } from '../../../../config';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { ContractType, OutdatedContract } from '../../models/user.model';
 import { ProxyService } from '../../../proxy/services/proxy.service';
 import { StakingProxyService } from '../../../staking-proxy/services/staking.proxy.service';
 import { FarmVersion } from '../../../farm/models/farm.model';
-import { farmVersion, farmsAddresses } from '../../../../utils/farm.utils';
+import { farmVersion } from '../../../../utils/farm.utils';
 import { BigNumber } from 'bignumber.js';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
@@ -17,8 +17,6 @@ import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
-import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
 
@@ -33,8 +31,6 @@ export class UserEnergyComputeService {
         private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly energyAbi: EnergyAbiService,
         private readonly proxyService: ProxyService,
-        private readonly apiService: MXApiService,
-        private readonly contextGetter: ContextGetterService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
     ) {}
 
@@ -159,10 +155,10 @@ export class UserEnergyComputeService {
         return new OutdatedContract();
     }
 
-    // @GetOrSetCache({
-    //     baseKey: 'userEnergy',
-    //     remoteTtl: Constants.oneMinute(),
-    // })
+    @GetOrSetCache({
+        baseKey: 'userEnergy',
+        remoteTtl: Constants.oneMinute(),
+    })
     async userActiveFarmsV2(userAddress: string): Promise<string[]> {
         return await this.computeActiveFarmsV2ForUser(userAddress);
     }
