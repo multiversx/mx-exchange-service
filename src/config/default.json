@@ -272,7 +272,7 @@
                     "compoundRewards": 21600000,
                     "unlockedRewards": {
                         "exitFarm": {
-                            "default": 18600000,
+                            "default": 20000000,
                             "withPenalty": {
                                 "localBurn": 19000000,
                                 "pairBurn": 24500000,
