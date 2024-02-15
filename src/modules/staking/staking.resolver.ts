@@ -1,12 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import {
-    Args,
-    Int,
-    Parent,
-    Query,
-    ResolveField,
-    Resolver,
-} from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -100,6 +93,11 @@ export class StakingResolver {
     @ResolveField()
     async lastRewardBlockNonce(@Parent() parent: StakingModel) {
         return this.stakingAbi.lastRewardBlockNonce(parent.address);
+    }
+
+    @ResolveField()
+    async rewardsRemainingDays(@Parent() parent: StakingModel) {
+        return this.stakingCompute.computeRewardsRemainingDays(parent.address);
     }
 
     @ResolveField()
