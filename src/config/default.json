@@ -385,8 +385,8 @@
         },
         "stake": {
             "stakeFarm": {
-                "default": 9000000,
-                "withTokenMerge": 12000000
+                "default": 20000000,
+                "withTokenMerge": 23000000
             },
             "unstakeFarm": 9500000,
             "unbondFarm": 8000000,
@@ -413,7 +413,7 @@
         },
         "stakeProxy": {
             "stakeFarmTokens": {
-                "default": 26000000,
+                "default": 27000000,
                 "withTokenMerge": 36000000
             },
             "claimDualYield": 55000000,
