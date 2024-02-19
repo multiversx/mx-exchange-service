@@ -58,7 +58,12 @@ export class SftFarmInteractionArgs {
 export class ExitFarmArgs extends SftFarmInteractionArgs {
     @Field(() => Boolean, { nullable: true })
     withPenalty = false;
-    @Field({ nullable: true })
+    @Field({
+        nullable: true,
+        deprecationReason:
+            'Exit farm no longer require this value;' +
+            'field is deprecated and will be removed on next release;',
+    })
     exitAmount?: string;
 }
 
