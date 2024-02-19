@@ -1,4 +1,4 @@
-import { Address, BigUIntValue, TokenTransfer } from '@multiversx/sdk-core';
+import { Address, TokenTransfer } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
@@ -86,7 +86,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         );
 
         return contract.methodsExplicit
-            .exitFarm([new BigUIntValue(new BigNumber(args.exitAmount))])
+            .exitFarm()
             .withSingleESDTNFTTransfer(
                 TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
