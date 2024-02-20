@@ -49,6 +49,7 @@ export class NativeAuthGuard implements CanActivate {
                     await this.cachingService.set(key, value, ttl);
                 },
             },
+            validateImpersonateCallback: this.validateImpersonateAddress,
         });
     }
 
@@ -88,23 +89,22 @@ export class NativeAuthGuard implements CanActivate {
             req.auth = userInfo;
             req.jwt = userInfo;
 
-            if (
-                userInfo.extraInfo.impersonate &&
-                userInfo.extraInfo.impersonate !== undefined
-            ) {
-                const admins = process.env.SECURITY_ADMINS.split(',');
-                if (
-                    admins.find((admin) => admin === userInfo.signerAddress) ===
-                    undefined
-                ) {
-                    throw new NativeAuthError('Impersonation not allowed');
-                }
-            }
-
             return true;
         } catch (error: any) {
             this.logger.error(`${NativeAuthGuard.name}: ${error.message}`);
             return false;
         }
+    }
+
+    private async validateImpersonateAddress(
+        signerAddress: string,
+        _impersonateAddress: string,
+    ): Promise<boolean> {
+        const admins = process.env.SECURITY_ADMINS.split(',');
+        if (admins.find((admin) => admin === signerAddress) === undefined) {
+            throw new NativeAuthError('Impersonation not allowed');
+        }
+
+        return true;
     }
 }
