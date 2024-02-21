@@ -5,6 +5,7 @@ import {
 import { PerformanceProfiler } from '../utils/performance.profiler';
 import { MetricsCollector } from '../utils/metrics.collector';
 import { IContractQuery } from '@multiversx/sdk-network-providers/out/interface';
+import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 
 export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
     async queryContract(query: IContractQuery): Promise<ContractQueryResponse> {
@@ -21,5 +22,14 @@ export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
         );
 
         return result;
+    }
+
+    async doPostGeneric(resourceUrl: string, payload: any): Promise<any> {
+        const context = ContextTracker.get();
+        if (context && context.deepHistoryTimestamp) {
+            resourceUrl = `${resourceUrl}?timestamp=${context.deepHistoryTimestamp}`;
+        }
+        const response = await super.doPostGeneric(resourceUrl, payload);
+        return response;
     }
 }
