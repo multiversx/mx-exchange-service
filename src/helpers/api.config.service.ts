@@ -93,6 +93,16 @@ export class ApiConfigService {
         return tracerFlag === 'true';
     }
 
+    isDeephistoryActive(): boolean {
+        const deepHistoryFlag = this.configService.get<string>(
+            'ENABLE_DEEP_HISTORY',
+        );
+        if (!deepHistoryFlag) {
+            return false;
+        }
+        return deepHistoryFlag === 'true';
+    }
+
     getRedisUrl(): string {
         const redisUrl = this.configService.get<string>('REDIS_URL');
         if (!redisUrl) {

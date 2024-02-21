@@ -84,7 +84,11 @@ export class MXApiService {
         const profiler = new PerformanceProfiler(`${name} ${resourceUrl}`);
         try {
             const context = ContextTracker.get();
-            if (context && context.deepHistoryTimestamp) {
+            if (
+                this.apiConfigService.isDeephistoryActive() &&
+                context &&
+                context.deepHistoryTimestamp
+            ) {
                 resourceUrl = `${resourceUrl}&timestamp=${context.deepHistoryTimestamp}`;
             }
 
