@@ -500,7 +500,7 @@
             "vote": 50000000
         },
         "positionCreator": {
-            "singleToken": 50000000,
+            "singleToken": 70000000,
             "energyPosition": 20000000
         },
         "composableTasks": {
