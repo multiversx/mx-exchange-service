@@ -388,7 +388,7 @@
                 "default": 20000000,
                 "withTokenMerge": 23000000
             },
-            "unstakeFarm": 9500000,
+            "unstakeFarm": 18500000,
             "unbondFarm": 8000000,
             "claimRewards": 10000000,
             "claimBoostedRewards": 20000000,
