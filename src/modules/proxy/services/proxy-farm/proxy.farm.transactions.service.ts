@@ -96,14 +96,6 @@ export class ProxyFarmTransactionsService {
         proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const version = proxyVersion(proxyAddress);
-        if (
-            version === 'v2' &&
-            !args.exitAmount &&
-            !new BigNumber(args.exitAmount).isPositive()
-        ) {
-            throw new Error('Invalid exit amount');
-        }
         const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
@@ -111,9 +103,6 @@ export class ProxyFarmTransactionsService {
         const endpointArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
-        if (version === 'v2') {
-            endpointArgs.push(new BigUIntValue(new BigNumber(args.exitAmount)));
-        }
 
         const gasLimit = await this.getExitFarmProxyGasLimit(args);
 
