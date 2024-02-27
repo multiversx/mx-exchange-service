@@ -7,11 +7,9 @@ import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
-import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
-import { farmVersion } from 'src/utils/farm.utils';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
@@ -180,10 +178,6 @@ export class StakingProxyTransactionService {
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
         ];
-
-        if (farmVersion(farmAddress) === FarmVersion.V2) {
-            endpointArgs.push(new BigUIntValue(liquidityPositionAmount));
-        }
 
         return contract.methodsExplicit
             .unstakeFarmTokens(endpointArgs)
