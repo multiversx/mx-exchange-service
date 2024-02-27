@@ -265,7 +265,7 @@ export class ProxyTransactionResolver {
             });
         }
 
-        return this.transactionsProxyPairService.increaseProxyPairTokenEnergy(
+        return this.transactionsProxyFarmService.increaseProxyFarmTokenEnergy(
             user.address,
             proxyAddress,
             payment,
@@ -282,7 +282,7 @@ export class ProxyTransactionResolver {
         );
 
         if (proxyAddress !== scAddress.proxyDexAddress.v2) {
-            throw new Error('Wrapped lp token is not supported');
+            throw new Error('Wrapped token is not supported');
         }
 
         const lockOptions = await this.energyAbi.lockOptions();
