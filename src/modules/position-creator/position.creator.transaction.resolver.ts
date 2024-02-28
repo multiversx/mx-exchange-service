@@ -130,14 +130,14 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
-    @Query(() => TransactionModel)
+    @Query(() => [TransactionModel])
     async createDualFarmPositionDualTokens(
         @AuthUser() user: UserAuthResult,
         @Args('dualFarmAddress') dualFarmAddress: string,
         @Args('payments', { type: () => [InputTokenModel] })
         payments: InputTokenModel[],
         @Args('tolerance') tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return this.posCreatorTransaction.createDualFarmPositionDualTokens(
             user.address,
             dualFarmAddress,

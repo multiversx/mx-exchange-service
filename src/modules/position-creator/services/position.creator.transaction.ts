@@ -551,10 +551,29 @@ export class PositionCreatorTransactionService {
         stakingProxyAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         const pairAddress = await this.stakingProxyAbi.pairAddress(
             stakingProxyAddress,
         );
+
+        const transactions = [];
+
+        if (payments[0].tokenIdentifier === mxConfig.EGLDIdentifier) {
+            payments[0].tokenIdentifier =
+                await this.wrapAbi.wrappedEgldTokenID();
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
+            );
+        }
+
+        if (payments[1].tokenIdentifier === mxConfig.EGLDIdentifier) {
+            payments[1].tokenIdentifier =
+                await this.wrapAbi.wrappedEgldTokenID();
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(sender, payments[1].amount),
+            );
+        }
+
         const [firstTokenID, secondTokenID, dualYieldTokenID] =
             await Promise.all([
                 this.pairAbi.firstTokenID(pairAddress),
@@ -586,7 +605,7 @@ export class PositionCreatorTransactionService {
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
-        return contract.methodsExplicit
+        const interaction = contract.methodsExplicit
             .createMetastakingPosFromTwoTokens([
                 new AddressValue(Address.fromBech32(stakingProxyAddress)),
                 new BigUIntValue(amount0Min),
@@ -617,6 +636,9 @@ export class PositionCreatorTransactionService {
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+
+        transactions.push(interaction);
+        return transactions;
     }
 
     async exitFarmPositionDualTokens(
