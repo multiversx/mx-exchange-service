@@ -1678,7 +1678,7 @@ describe('PositionCreatorTransaction', () => {
                 ).bech32(),
             );
 
-            const transaction = await service.createDualFarmPositionDualTokens(
+            const transactions = await service.createDualFarmPositionDualTokens(
                 Address.Zero().bech32(),
                 Address.Zero().bech32(),
                 [
@@ -1696,25 +1696,106 @@ describe('PositionCreatorTransaction', () => {
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.positionCreator.dualTokens.dualFarmPosition,
-                data: encodeTransactionData(
-                    'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@MEX-123456@@100000000000000000000@createMetastakingPosFromTwoTokens@0000000000000000000000000000000000000000000000000000000000000000@99000000000000000000@99000000000000000000',
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transactions).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit:
+                        gasConfig.positionCreator.dualTokens.dualFarmPosition,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@MEX-123456@@100000000000000000000@createMetastakingPosFromTwoTokens@0000000000000000000000000000000000000000000000000000000000000000@99000000000000000000@99000000000000000000',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
+        });
+
+        it('should return transaction with egld wrap', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const stakingProxyAbi = module.get<StakingProxyAbiService>(
+                StakingProxyAbiService,
+            );
+            jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
+                Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
+            );
+
+            const transactions = await service.createDualFarmPositionDualTokens(
+                Address.Zero().bech32(),
+                Address.Zero().bech32(),
+                [
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'MEX-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'METASTAKE-1234',
+                        tokenNonce: 1,
+                        amount: '100000000000000000000',
+                    }),
+                ],
+                0.01,
+            );
+
+            expect(transactions).toEqual([
+                {
+                    nonce: 0,
+                    value: '100000000000000000000',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
+                    sender: '',
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit: 4200000,
+                    data: encodeTransactionData('wrapEgld'),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit:
+                        gasConfig.positionCreator.dualTokens.dualFarmPosition,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@03@WEGLD-123456@@100000000000000000000@MEX-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromTwoTokens@0000000000000000000000000000000000000000000000000000000000000000@99000000000000000000@99000000000000000000',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
 
         it('should return transaction no merge farm tokens', async () => {
@@ -1730,7 +1811,7 @@ describe('PositionCreatorTransaction', () => {
                 ).bech32(),
             );
 
-            const transaction = await service.createDualFarmPositionDualTokens(
+            const transactions = await service.createDualFarmPositionDualTokens(
                 Address.Zero().bech32(),
                 Address.Zero().bech32(),
                 [
@@ -1753,25 +1834,28 @@ describe('PositionCreatorTransaction', () => {
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.positionCreator.dualTokens.dualFarmPosition,
-                data: encodeTransactionData(
-                    'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@03@WEGLD-123456@@100000000000000000000@MEX-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromTwoTokens@0000000000000000000000000000000000000000000000000000000000000000@99000000000000000000@99000000000000000000',
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transactions).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver: Address.Zero().bech32(),
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit:
+                        gasConfig.positionCreator.dualTokens.dualFarmPosition,
+                    data: encodeTransactionData(
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@03@WEGLD-123456@@100000000000000000000@MEX-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromTwoTokens@0000000000000000000000000000000000000000000000000000000000000000@99000000000000000000@99000000000000000000',
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
     });
 
