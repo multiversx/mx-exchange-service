@@ -500,7 +500,17 @@
             "vote": 50000000
         },
         "positionCreator": {
-            "singleToken": 85000000,
+            "singleToken": {
+                "liquidityPosition": 57500000,
+                "farmPosition": 73000000,
+                "dualFarmPosition": 115000000,
+                "stakingPosition": 55000000
+            },
+            "dualTokens": {
+                "farmPosition": 30000000,
+                "dualFarmPosition": 67000000,
+                "exitFarm": 50000000
+            },
             "energyPosition": 20000000
         },
         "composableTasks": {

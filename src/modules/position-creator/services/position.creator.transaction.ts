@@ -78,28 +78,28 @@ export class PositionCreatorTransactionService {
         let interaction: Interaction;
 
         if (lockEpochs) {
-            interaction = contract.methodsExplicit
-                .createPairPosFromSingleToken([
+            interaction = contract.methodsExplicit.createPairPosFromSingleToken(
+                [
                     new U64Value(new BigNumber(lockEpochs)),
                     new BigUIntValue(singleTokenPairInput.amount0Min),
                     new BigUIntValue(singleTokenPairInput.amount1Min),
                     ...singleTokenPairInput.swapRouteArgs,
-                ])
-                .withGasLimit(gasConfig.positionCreator.singleToken);
+                ],
+            );
         } else {
-            interaction = contract.methodsExplicit
-                .createLpPosFromSingleToken([
-                    new AddressValue(Address.fromBech32(pairAddress)),
-                    new BigUIntValue(singleTokenPairInput.amount0Min),
-                    new BigUIntValue(singleTokenPairInput.amount1Min),
-                    ...singleTokenPairInput.swapRouteArgs,
-                ])
-                .withGasLimit(gasConfig.positionCreator.singleToken);
+            interaction = contract.methodsExplicit.createLpPosFromSingleToken([
+                new AddressValue(Address.fromBech32(pairAddress)),
+                new BigUIntValue(singleTokenPairInput.amount0Min),
+                new BigUIntValue(singleTokenPairInput.amount1Min),
+                ...singleTokenPairInput.swapRouteArgs,
+            ]);
         }
 
         interaction = interaction
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withGasLimit(
+                gasConfig.positionCreator.singleToken.liquidityPosition,
+            )
             .withChainID(mxConfig.chainID);
 
         if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
@@ -182,8 +182,8 @@ export class PositionCreatorTransactionService {
         let interaction = contract.methodsExplicit
             .createFarmPosFromSingleToken(endpointArgs)
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
-            .withChainID(mxConfig.chainID);
+            .withChainID(mxConfig.chainID)
+            .withGasLimit(gasConfig.positionCreator.singleToken.farmPosition);
 
         if (
             payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
@@ -273,7 +273,9 @@ export class PositionCreatorTransactionService {
                 ...singleTokenPairInput.swapRouteArgs,
             ])
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withGasLimit(
+                gasConfig.positionCreator.singleToken.dualFarmPosition,
+            )
             .withChainID(mxConfig.chainID);
 
         if (
@@ -376,7 +378,7 @@ export class PositionCreatorTransactionService {
                 ...multiSwapArgs,
             ])
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withGasLimit(gasConfig.positionCreator.singleToken.stakingPosition)
             .withChainID(mxConfig.chainID);
 
         if (
@@ -534,7 +536,7 @@ export class PositionCreatorTransactionService {
                     ),
             ])
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withGasLimit(gasConfig.positionCreator.dualTokens.farmPosition)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
@@ -611,7 +613,7 @@ export class PositionCreatorTransactionService {
                     ),
             ])
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withGasLimit(gasConfig.positionCreator.dualTokens.dualFarmPosition)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
@@ -659,7 +661,7 @@ export class PositionCreatorTransactionService {
                 ),
             )
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withGasLimit(gasConfig.positionCreator.dualTokens.exitFarm)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
@@ -698,7 +700,7 @@ export class PositionCreatorTransactionService {
                 ...singleTokenInput.swapRouteArgs,
             ])
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken)
+            .withGasLimit(gasConfig.positionCreator.energyPosition)
             .withChainID(mxConfig.chainID);
 
         if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
