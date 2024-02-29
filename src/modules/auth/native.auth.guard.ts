@@ -19,6 +19,7 @@ import { Logger } from 'winston';
 @Injectable()
 export class NativeAuthGuard implements CanActivate {
     private readonly authServer: NativeAuthServer;
+    private impersonateAddress: string;
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
@@ -57,6 +58,10 @@ export class NativeAuthGuard implements CanActivate {
         const ctx = GqlExecutionContext.create(context);
         const { req } = ctx.getContext();
 
+        if (req.headers !== undefined) {
+            this.impersonateAddress = req.headers['impersonate-address'];
+        }
+
         const authorization: string = req.headers['authorization'];
         const origin = req.headers['origin'];
 
@@ -88,6 +93,17 @@ export class NativeAuthGuard implements CanActivate {
             );
             req.auth = userInfo;
             req.jwt = userInfo;
+
+            if (this.impersonateAddress) {
+                const admins = process.env.SECURITY_ADMINS.split(',');
+                if (admins.find((admin) => admin === userInfo.signerAddress)) {
+                    req.res.set(
+                        'X-Native-Auth-Address',
+                        this.impersonateAddress,
+                    );
+                    req.auth.address = this.impersonateAddress;
+                }
+            }
 
             return true;
         } catch (error: any) {
