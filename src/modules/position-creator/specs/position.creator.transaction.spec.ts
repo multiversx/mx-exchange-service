@@ -1524,7 +1524,8 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit: gasConfig.positionCreator.dualTokens.farmPosition,
+                    gasLimit:
+                        gasConfig.positionCreator.dualTokens.farmPositionProxy,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@ELKMEX-123456@01@100000000000000000000@createFarmPosFromTwoTokens@99000000000000000000@99000000000000000000',
                     ),
@@ -1576,7 +1577,8 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit: gasConfig.positionCreator.dualTokens.farmPosition,
+                    gasLimit:
+                        gasConfig.positionCreator.dualTokens.farmPositionProxy,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@03@WEGLD-123456@@100000000000000000000@ELKMEX-123456@01@100000000000000000000@LKFARM-123456@01@100000000000000000000@createFarmPosFromTwoTokens@99000000000000000000@99000000000000000000',
                     ),

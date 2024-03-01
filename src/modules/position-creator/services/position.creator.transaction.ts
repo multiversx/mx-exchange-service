@@ -509,6 +509,10 @@ export class PositionCreatorTransactionService {
                   new BigUIntValue(amount1Min),
               ];
 
+        const gasLimit = isLockedToken
+            ? gasConfig.positionCreator.dualTokens.farmPositionProxy
+            : gasConfig.positionCreator.dualTokens.farmPosition;
+
         const contract = isLockedToken
             ? await this.mxProxy.getLockedTokenPositionCreatorContract()
             : await this.mxProxy.getPostitionCreatorContract();
@@ -536,7 +540,7 @@ export class PositionCreatorTransactionService {
                     ),
             ])
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.dualTokens.farmPosition)
+            .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();
