@@ -10,6 +10,7 @@ import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { ComposableTaskType } from '../models/composable.tasks.model';
 import { Address } from '@multiversx/sdk-core/out';
+import { gasConfig } from 'src/config';
 
 describe('Composable Tasks Transaction', () => {
     let module: TestingModule;
@@ -68,7 +69,7 @@ describe('Composable Tasks Transaction', () => {
         expect(transaction).toEqual({
             chainID: 'T',
             data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBjNTc0NTQ3NGM0NDJkMzEzMjMzMzQzNTM2MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA4MGRlMGI2YjNhNzY0MDAwMEBA',
-            gasLimit: 30000000,
+            gasLimit: gasConfig.composableTasks.default,
             gasPrice: 1000000000,
             guardian: undefined,
             guardianSignature: undefined,
@@ -98,7 +99,7 @@ describe('Composable Tasks Transaction', () => {
         expect(transaction).toEqual({
             chainID: 'T',
             data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNDAxMzEyZDAwQEBAMDJAMDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDQwMTMxMmQwMA==',
-            gasLimit: 30000000,
+            gasLimit: gasConfig.composableTasks.default,
             gasPrice: 1000000000,
             guardian: undefined,
             guardianSignature: undefined,
@@ -132,7 +133,7 @@ describe('Composable Tasks Transaction', () => {
         expect(transaction).toEqual({
             chainID: 'T',
             data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDEzMTJkMDBANjM2ZjZkNzA2ZjczNjU1NDYxNzM2YjczQDAwMDAwMDA0NDU0NzRjNDQwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDgwZGUwYjZiM2E3NjQwMDAwQDAyQDAwMDAwMDBjNTc0NTQ3NGM0NDJkMzEzMjMzMzQzNTM2MDAwMDAwMDgwZGUwYjZiM2E3NjQwMDAwQDAxQA==',
-            gasLimit: 30000000,
+            gasLimit: gasConfig.composableTasks.default,
             gasPrice: 1000000000,
             guardian: undefined,
             guardianSignature: undefined,

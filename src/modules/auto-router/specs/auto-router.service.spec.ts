@@ -280,7 +280,7 @@ describe('AutoRouterService', () => {
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
-                gasLimit: 30000000,
+                gasLimit: gasConfig.composableTasks.default,
                 data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNzExNzJhY2UwMjZiMGM0QEBAMDJAMDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDcxMTcyYWNlMDI2YjBjNA==',
                 chainID: 'T',
                 version: 1,
