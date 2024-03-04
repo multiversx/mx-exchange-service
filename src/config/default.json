@@ -515,7 +515,7 @@
             "energyPosition": 45000000
         },
         "composableTasks": {
-            "default": 30000000
+            "default": 35000000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
