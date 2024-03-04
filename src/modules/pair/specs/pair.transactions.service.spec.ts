@@ -461,7 +461,7 @@ describe('TransactionPairService', () => {
         expect(transactions).toEqual({
             chainID: 'T',
             data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwNEBAQDAyQDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMTA0',
-            gasLimit: 30000000,
+            gasLimit: gasConfig.composableTasks.default,
             gasPrice: 1000000000,
             guardian: undefined,
             guardianSignature: undefined,
