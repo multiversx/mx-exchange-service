@@ -24,12 +24,12 @@ export class LoggingInterceptor implements NestInterceptor {
             const { req } = gqlContext.getContext();
 
             let origin = 'Unknown';
-            let timesamp: number = undefined;
+            let timestamp: number = undefined;
             if (req !== undefined) {
                 origin = req?.headers?.['origin'] ?? 'Unknown';
-                timesamp = req?.headers?.['timestamp'];
+                timestamp = req?.headers?.['timestamp'];
                 ContextTracker.assign({
-                    deepHistoryTimestamp: timesamp,
+                    deepHistoryTimestamp: timestamp,
                 });
             }
 

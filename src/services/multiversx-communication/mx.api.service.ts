@@ -89,7 +89,9 @@ export class MXApiService {
                 context &&
                 context.deepHistoryTimestamp
             ) {
-                resourceUrl = `${resourceUrl}&timestamp=${context.deepHistoryTimestamp}`;
+                resourceUrl = resourceUrl.includes('?')
+                    ? `${resourceUrl}&timestamp=${context.deepHistoryTimestamp}`
+                    : `${resourceUrl}?timestamp=${context.deepHistoryTimestamp}`;
             }
 
             const response = await this.getService().doGetGeneric(resourceUrl);
