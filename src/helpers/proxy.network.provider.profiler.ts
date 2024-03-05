@@ -41,7 +41,9 @@ export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
             context &&
             context.deepHistoryTimestamp
         ) {
-            resourceUrl = `${resourceUrl}?timestamp=${context.deepHistoryTimestamp}`;
+            resourceUrl = resourceUrl.includes('?')
+                ? `${resourceUrl}&timestamp=${context.deepHistoryTimestamp}`
+                : `${resourceUrl}?timestamp=${context.deepHistoryTimestamp}`;
         }
         const response = await super.doPostGeneric(resourceUrl, payload);
         return response;
