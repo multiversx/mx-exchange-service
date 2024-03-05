@@ -19,6 +19,7 @@ import {
 } from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { MXProxyService } from './mx.proxy.service';
+import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 
 type GenericGetArgs = {
     methodName: string;
@@ -82,6 +83,17 @@ export class MXApiService {
     ): Promise<T> {
         const profiler = new PerformanceProfiler(`${name} ${resourceUrl}`);
         try {
+            const context = ContextTracker.get();
+            if (
+                this.apiConfigService.isDeephistoryActive() &&
+                context &&
+                context.deepHistoryTimestamp
+            ) {
+                resourceUrl = resourceUrl.includes('?')
+                    ? `${resourceUrl}&timestamp=${context.deepHistoryTimestamp}`
+                    : `${resourceUrl}?timestamp=${context.deepHistoryTimestamp}`;
+            }
+
             const response = await this.getService().doGetGeneric(resourceUrl);
             profiler.stop();
             MetricsCollector.setApiCall(
