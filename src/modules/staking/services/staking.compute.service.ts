@@ -619,6 +619,67 @@ export class StakingComputeService {
         return payments;
     }
 
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async optimalEnergyPerStaking(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
+        return await this.computeOptimalEnergyPerStaking(scAddress, week);
+    }
+
+    //
+    // The boosted rewards is min(MAX_REWARDS, COMPUTED_REWARDS)
+    //
+    //                    USER_FARM_AMOUNT
+    // MAX_REWARDS = u * ------------------
+    //                      FARM_SUPPLY
+    //
+    //                       A        USER_FARM_AMOUNT        B        USER_ENERGY_AMOUNT
+    //  COMPUTED_REWARDS = -----  *  ------------------  +  -----  *  --------------------
+    //                     A + B        FARM_SUPPLY         A + B         TOTAL_ENERGY
+    //
+    //
+    // the optimal ratio is the ration when MAX_REWARDS = COMPUTED_REWARDS, which gives the following formula:
+    //
+    //     USER_ENERGY        u * (A + B) - A      TOTAL_ENERGY
+    // ------------------ =  ----------------- *  --------------
+    //  USER_FARM_AMOUNT             B             FARM_SUPPLY
+    //
+    async computeOptimalEnergyPerStaking(
+        stakingAddress: string,
+        week: number,
+    ): Promise<string> {
+        const [factors, farmSupply, energySupply] = await Promise.all([
+            this.stakingAbi.boostedYieldsFactors(stakingAddress),
+            this.stakingAbi.farmTokenSupply(stakingAddress),
+            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+                stakingAddress,
+                week,
+            ),
+        ]);
+
+        const u = factors.maxRewardsFactor;
+        const A = factors.userRewardsFarm;
+        const B = factors.userRewardsEnergy;
+
+        const optimisationConstant = new BigNumber(u)
+            .multipliedBy(new BigNumber(A).plus(B))
+            .minus(A)
+            .dividedBy(B);
+        return optimisationConstant
+            .multipliedBy(energySupply)
+            .dividedBy(farmSupply)
+            .integerValue()
+            .toFixed();
+    }
+
     async computeBlocksInWeek(
         scAddress: string,
         week: number,

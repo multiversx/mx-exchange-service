@@ -196,6 +196,19 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async optimalEnergyPerStaking(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return this.stakingCompute.optimalEnergyPerStaking(
+            parent.address,
+            currentWeek,
+        );
+    }
+
+    @ResolveField()
     async accumulatedRewardsForWeek(
         @Parent() parent: StakingModel,
         @Args('week', { nullable: true }) week: number,
