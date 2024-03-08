@@ -97,7 +97,7 @@ export class PositionCreatorComputeService {
             .minus(halfPayment)
             .toFixed();
 
-        const [amount0, amount1] = await Promise.all([
+        let [amount0, amount1] = await Promise.all([
             await this.computeSwap(
                 pairAddress,
                 swapRoute.tokenOutID,
@@ -112,12 +112,25 @@ export class PositionCreatorComputeService {
             ),
         ]);
 
-        const amount0Min = new BigNumber(amount0)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(amount1)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
+        amount0 =
+            swapToTokenID === firstTokenID
+                ? await this.pairService.getEquivalentForLiquidity(
+                      pairAddress,
+                      secondTokenID,
+                      amount1.toFixed(),
+                  )
+                : amount0;
+        amount1 =
+            swapToTokenID === secondTokenID
+                ? await this.pairService.getEquivalentForLiquidity(
+                      pairAddress,
+                      firstTokenID,
+                      amount0.toFixed(),
+                  )
+                : amount1;
+
+        const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
+        const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
 
         const swapRouteArgs =
             this.autoRouterTransaction.multiPairFixedInputSwaps({
