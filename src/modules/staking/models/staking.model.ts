@@ -52,6 +52,8 @@ export class StakingModel {
         description: 'Factors used to compute boosted rewards',
     })
     boostedYieldsFactors: BoostedYieldsFactors;
+    @Field({ description: 'Optimal energy for staking position' })
+    optimalEnergyPerStaking: string;
     @Field({ description: 'Timekeeping for boosted rewards' })
     time: WeekTimekeepingModel;
     @Field(() => [GlobalInfoByWeekModel], {
