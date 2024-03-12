@@ -20,20 +20,26 @@ export class FarmTransactionResolverV2 {
             'Generate transactions to initialize the total farm positions for a user',
     })
     async migrateTotalFarmPositions(
-        @Args('farmAddress') farmAddress: string,
+        @Args('farmsAddresses', { type: () => [String] })
+        farmsAddresses: string[],
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
-        if (farmVersion(farmAddress) !== FarmVersion.V2) {
-            throw new GraphQLError('Farm version is not supported', {
-                extensions: {
-                    code: ApolloServerErrorCode.BAD_USER_INPUT,
-                },
-            });
+        for (const farmAddress of farmsAddresses) {
+            if (farmVersion(farmAddress) !== FarmVersion.V2) {
+                throw new GraphQLError('Farm version is not supported', {
+                    extensions: {
+                        code: ApolloServerErrorCode.BAD_USER_INPUT,
+                    },
+                });
+            }
         }
-        return this.farmTransaction.migrateTotalFarmPosition(
-            farmAddress,
-            user.address,
+        const promises = farmsAddresses.map((farmAddress) =>
+            this.farmTransaction.migrateTotalFarmPosition(
+                farmAddress,
+                user.address,
+            ),
         );
+        return (await Promise.all(promises)).flat();
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
