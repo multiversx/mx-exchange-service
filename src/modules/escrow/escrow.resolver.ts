@@ -128,10 +128,9 @@ export class EscrowResolver {
         description: 'Generate transaction to receive escrowed tokens',
     })
     async escrowReceive(
-        @AuthUser() user: UserAuthResult,
         @Args('senderAddress') senderAddress: string,
     ): Promise<TransactionModel> {
-        return this.escrowTransaction.withdraw(user.address, senderAddress);
+        return this.escrowTransaction.withdraw(senderAddress);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
