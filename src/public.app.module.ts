@@ -68,7 +68,7 @@ import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
                         },
                     };
                 },
-                fieldResolverEnhancers: ['guards'],
+                fieldResolverEnhancers: ['guards', 'interceptors'],
             }),
             inject: [WINSTON_MODULE_NEST_PROVIDER],
         }),
