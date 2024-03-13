@@ -18,8 +18,13 @@ export class ExitFarmProxyArgs {
     @Field(() => Int)
     wrappedFarmTokenNonce: number;
     @Field() amount: string;
-    @Field({ nullable: true })
-    exitAmount: string;
+    @Field({
+        nullable: true,
+        deprecationReason:
+            'Exit farm no longer require this value;' +
+            'field is deprecated and will be removed on next release;',
+    })
+    exitAmount?: string;
     @Field(() => Boolean, { nullable: true })
     lockRewards = false;
     @Field(() => Boolean, { nullable: true })

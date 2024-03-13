@@ -16,6 +16,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { StakingAbiService } from './staking.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class StakingTransactionService {
@@ -23,6 +24,7 @@ export class StakingTransactionService {
         private readonly stakingAbi: StakingAbiService,
         private readonly mxProxy: MXProxyService,
         private readonly mxApi: MXApiService,
+        private readonly contextGetter: ContextGetterService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -182,6 +184,22 @@ export class StakingTransactionService {
             .toPlainObject();
     }
 
+    async claimBoostedRewards(
+        sender: string,
+        stakeAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .claimBoostedRewards()
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.stake.claimBoostedRewards)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
     async migrateTotalStakingPosition(
         stakingAddress: string,
         userAddress: string,
@@ -194,7 +212,7 @@ export class StakingTransactionService {
             ],
         );
 
-        const userNfts = await this.mxApi.getNftsForUser(
+        const userNfts = await this.contextGetter.getNftsForUser(
             userAddress,
             0,
             userNftsCount,

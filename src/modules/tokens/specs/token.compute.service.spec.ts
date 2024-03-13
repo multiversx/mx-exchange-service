@@ -14,6 +14,8 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('TokenComputeService', () => {
     let module: TestingModule;
@@ -38,6 +40,8 @@ describe('TokenComputeService', () => {
                 ContextGetterServiceProvider,
                 TokenComputeService,
                 ApiConfigService,
+                AnalyticsQueryServiceProvider,
+                MXApiServiceProvider,
             ],
         }).compile();
     });
@@ -53,6 +57,7 @@ describe('TokenComputeService', () => {
             module.get<TokenComputeService>(TokenComputeService);
         const price = await service.computeTokenPriceDerivedEGLD(
             tokenProviderUSD,
+            [],
         );
         expect(price).toEqual('1');
     });
@@ -60,14 +65,40 @@ describe('TokenComputeService', () => {
     it('should compute token price derived EGLD for MEX-123456', async () => {
         const service: TokenComputeService =
             module.get<TokenComputeService>(TokenComputeService);
-        const price = await service.computeTokenPriceDerivedEGLD('MEX-123456');
+        const price = await service.computeTokenPriceDerivedEGLD(
+            'MEX-123456',
+            [],
+        );
         expect(price).toEqual('0.001');
     });
 
     it('should compute token price derived EGLD for TOK4-123456', async () => {
         const service: TokenComputeService =
             module.get<TokenComputeService>(TokenComputeService);
-        const price = await service.computeTokenPriceDerivedEGLD('TOK4-123456');
+        const price = await service.computeTokenPriceDerivedEGLD(
+            'TOK4-123456',
+            [],
+        );
         expect(price).toEqual('0.01');
+    });
+
+    it('should compute token price derived EGLD for TOK5-123456', async () => {
+        const service: TokenComputeService =
+            module.get<TokenComputeService>(TokenComputeService);
+        const price = await service.computeTokenPriceDerivedEGLD(
+            'TOK5-123456',
+            [],
+        );
+        expect(price).toEqual('0.01010101010101010101010101');
+    });
+
+    it('should compute token price derived EGLD for TOK6-123456', async () => {
+        const service: TokenComputeService =
+            module.get<TokenComputeService>(TokenComputeService);
+        const price = await service.computeTokenPriceDerivedEGLD(
+            'TOK6-123456',
+            [],
+        );
+        expect(price).toEqual('0.01010101010101010101010101');
     });
 });

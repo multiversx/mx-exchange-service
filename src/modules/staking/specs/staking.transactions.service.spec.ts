@@ -37,6 +37,7 @@ describe('StakingTransactionService', () => {
                 MXGatewayService,
                 MXApiServiceProvider,
                 ApiConfigService,
+                MXApiServiceProvider,
             ],
         }).compile();
     });
@@ -210,6 +211,33 @@ describe('StakingTransactionService', () => {
         });
     });
 
+    it('should get claim boosted rewards transaction', async () => {
+        const service = module.get<StakingTransactionService>(
+            StakingTransactionService,
+        );
+        const transaction = await service.claimBoostedRewards(
+            Address.Zero().bech32(),
+            Address.Zero().bech32(),
+        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver: Address.Zero().bech32(),
+            sender: Address.Zero().bech32(),
+            senderUsername: undefined,
+            receiverUsername: undefined,
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.claimBoostedRewards,
+            data: encodeTransactionData('claimBoostedRewards'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
+        });
+    });
+
     it('should get total staking migrate transaction', async () => {
         const service = module.get<StakingTransactionService>(
             StakingTransactionService,
@@ -246,7 +274,7 @@ describe('StakingTransactionService', () => {
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
-                gasLimit: 17000000,
+                gasLimit: gasConfig.stake.claimRewards,
                 data: encodeTransactionData(
                     'ESDTNFTTransfer@STAKETOK-1111@01@1000000000000000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
                 ),

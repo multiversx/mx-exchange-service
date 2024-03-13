@@ -42,6 +42,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { FarmAbiServiceProviderV2 } from 'src/modules/farm/mocks/farm.v2.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
+import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -91,6 +92,7 @@ describe('StakingProxyTransactionService', () => {
                 MXApiServiceProvider,
                 MXDataApiServiceProvider,
                 RemoteConfigGetterServiceProvider,
+                AnalyticsQueryServiceProvider,
                 ApiConfigService,
             ],
         }).compile();

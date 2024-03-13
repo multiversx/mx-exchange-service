@@ -35,4 +35,18 @@ export class FarmTransactionResolverV2 {
             user.address,
         );
     }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => TransactionModel, {
+        description: 'Generate transaction to claim only boosted rewards',
+    })
+    async claimFarmBoostedRewards(
+        @Args('farmAddress') farmAddress: string,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        return this.farmTransaction.claimBoostedRewards(
+            user.address,
+            farmAddress,
+        );
+    }
 }

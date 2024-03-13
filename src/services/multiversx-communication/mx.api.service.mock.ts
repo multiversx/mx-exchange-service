@@ -60,6 +60,13 @@ export class MXApiServiceMock {
             },
         ];
     }
+
+    getNftAttributesByTokenIdentifier(
+        address: string,
+        nftIdentifier: string,
+    ): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
 }
 
 export const MXApiServiceProvider = {

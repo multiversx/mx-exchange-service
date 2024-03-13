@@ -20,6 +20,8 @@ import { UserEnergyComputeService } from 'src/modules/user/services/userEnergy/u
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { WeeklyRewardsSplittingSetterService } from 'src/submodules/weekly-rewards-splitting/services/weekly.rewarrds.splitting.setter.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { StakingService } from 'src/modules/staking/services/staking.service';
+import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
@@ -31,6 +33,8 @@ export class WeeklyRewardsSplittingHandlerService {
         private readonly userEnergySetter: UserEnergySetterService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingSetter: WeeklyRewardsSplittingSetterService,
+        private readonly stakingService: StakingService,
+        private readonly stakingSetter: StakingSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -134,8 +138,10 @@ export class WeeklyRewardsSplittingHandlerService {
             }
             return token;
         });
+        const setter = await this.getSetter(event.address);
+
         const keys = await Promise.all([
-            this.getSetter(event.address).userRewardsForWeek(
+            setter.userRewardsForWeek(
                 event.address,
                 topics.caller.bech32(),
                 topics.currentWeek,
@@ -154,10 +160,20 @@ export class WeeklyRewardsSplittingHandlerService {
         });
     }
 
-    private getSetter(address: string) {
+    private async getSetter(address: string) {
         if (address === scAddress.feesCollector) {
             return this.feesCollectorSetter;
         }
+
+        const stakingAddresses = await this.stakingService.getFarmsStaking();
+
+        if (
+            stakingAddresses.find((staking) => staking.address === address) !==
+            undefined
+        ) {
+            return this.stakingSetter;
+        }
+
         return this.farmSetter.useSetter(address) as FarmSetterServiceV2;
     }
 

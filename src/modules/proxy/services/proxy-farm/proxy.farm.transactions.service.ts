@@ -4,6 +4,7 @@ import {
     BigUIntValue,
     BytesValue,
     TypedValue,
+    U64Value,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { Address, Interaction, TokenTransfer } from '@multiversx/sdk-core';
 import { TransactionModel } from '../../../../models/transaction.model';
@@ -33,6 +34,7 @@ import {
     WrappedFarmTokenAttributesV2,
 } from '@multiversx/sdk-exchange';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class ProxyFarmTransactionsService {
@@ -44,6 +46,7 @@ export class ProxyFarmTransactionsService {
         private readonly pairService: PairService,
         private readonly pairAbi: PairAbiService,
         private readonly proxyFarmAbi: ProxyFarmAbiService,
+        private readonly contextGetter: ContextGetterService,
     ) {}
 
     async enterFarmProxy(
@@ -93,14 +96,6 @@ export class ProxyFarmTransactionsService {
         proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const version = proxyVersion(proxyAddress);
-        if (
-            version === 'v2' &&
-            !args.exitAmount &&
-            !new BigNumber(args.exitAmount).isPositive()
-        ) {
-            throw new Error('Invalid exit amount');
-        }
         const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
@@ -108,9 +103,6 @@ export class ProxyFarmTransactionsService {
         const endpointArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
-        if (version === 'v2') {
-            endpointArgs.push(new BigUIntValue(new BigNumber(args.exitAmount)));
-        }
 
         const gasLimit = await this.getExitFarmProxyGasLimit(args);
 
@@ -282,7 +274,7 @@ export class ProxyFarmTransactionsService {
             proxyAddress,
         );
         const userNftsCount = await this.mxApi.getNftsCountForUser(sender);
-        const userNfts = await this.mxApi.getNftsForUser(
+        const userNfts = await this.contextGetter.getNftsForUser(
             sender,
             0,
             userNftsCount,
@@ -328,6 +320,33 @@ export class ProxyFarmTransactionsService {
         }
 
         return Promise.all(promises);
+    }
+
+    async increaseProxyFarmTokenEnergy(
+        sender: string,
+        proxyAddress: string,
+        payment: InputTokenModel,
+        lockEpochs: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
+        return contract.methodsExplicit
+            .increaseProxyFarmTokenEnergy([
+                new U64Value(new BigNumber(lockEpochs)),
+            ])
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    payment.tokenID,
+                    payment.nonce,
+                    new BigNumber(payment.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.proxy.pairs.increaseEnergy)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async getExitFarmProxyGasLimit(

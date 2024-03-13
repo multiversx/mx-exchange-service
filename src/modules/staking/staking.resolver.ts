@@ -32,6 +32,10 @@ import { constantsConfig } from 'src/config';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakeAddressValidationPipe } from './validators/stake.address.validator';
 import { BoostedYieldsFactors } from '../farm/models/farm.v2.model';
+import {
+    BoostedRewardsModel,
+    UserTotalBoostedPosition,
+} from '../farm/models/farm.model';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -192,6 +196,19 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async optimalEnergyPerStaking(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return this.stakingCompute.optimalEnergyPerStaking(
+            parent.address,
+            currentWeek,
+        );
+    }
+
+    @ResolveField()
     async accumulatedRewardsForWeek(
         @Parent() parent: StakingModel,
         @Args('week', { nullable: true }) week: number,
@@ -268,6 +285,21 @@ export class StakingResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [BoostedRewardsModel], {
+        description: 'Returns staking boosted rewards for the user',
+    })
+    async getStakingBoostedRewardsBatch(
+        @Args('stakingAddresses', { type: () => [String] })
+        stakingAddresses: string[],
+        @AuthUser() user: UserAuthResult,
+    ): Promise<BoostedRewardsModel[]> {
+        return this.stakingService.getStakingBoostedRewardsBatch(
+            stakingAddresses,
+            user.address,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => OptimalCompoundModel)
     async getOptimalCompoundFrequency(
         @Args('stakeAddress') stakeAddress: string,
@@ -282,18 +314,34 @@ export class StakingResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => String, {
+    @Query(() => [UserTotalBoostedPosition], {
         description:
             'Returns the total staked position of the user in the staking contract',
     })
     async userTotalStakePosition(
-        @Args('stakeAddress', StakeAddressValidationPipe) stakeAddress: string,
+        @Args(
+            'stakeAddresses',
+            { type: () => [String] },
+            StakeAddressValidationPipe,
+        )
+        stakeAddresses: string[],
         @AuthUser() user: UserAuthResult,
-    ): Promise<string> {
-        return this.stakingAbi.userTotalStakePosition(
-            stakeAddress,
-            user.address,
+    ): Promise<UserTotalBoostedPosition[]> {
+        const positions = await Promise.all(
+            stakeAddresses.map((stakeAddress) =>
+                this.stakingAbi.userTotalStakePosition(
+                    stakeAddress,
+                    user.address,
+                ),
+            ),
         );
+
+        return stakeAddresses.map((stakeAddress, index) => {
+            return new UserTotalBoostedPosition({
+                address: stakeAddress,
+                boostedTokensAmount: positions[index],
+            });
+        });
     }
 
     @Query(() => [StakingModel])
@@ -540,6 +588,18 @@ export class StakingResolver {
             user.address,
             args.farmStakeAddress,
             args.payment,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => TransactionModel)
+    async claimStakingBoostedRewards(
+        @Args('stakeAddress') stakeAddress: string,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        return this.stakingTransactionService.claimBoostedRewards(
+            user.address,
+            stakeAddress,
         );
     }
 

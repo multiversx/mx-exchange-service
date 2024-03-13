@@ -4,6 +4,7 @@ import {
     BigUIntValue,
     BytesValue,
     TypedValue,
+    U64Value,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { Address, TokenTransfer } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -231,6 +232,33 @@ export class ProxyPairTransactionsService {
             .withMultiESDTNFTTransfer(mappedPayments)
             .withSender(Address.fromString(sender))
             .withGasLimit(gasLimit)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async increaseProxyPairTokenEnergy(
+        sender: string,
+        proxyAddress: string,
+        payment: InputTokenModel,
+        lockEpochs: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
+        return contract.methodsExplicit
+            .increaseProxyPairTokenEnergy([
+                new U64Value(new BigNumber(lockEpochs)),
+            ])
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    payment.tokenID,
+                    payment.nonce,
+                    new BigNumber(payment.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.proxy.pairs.increaseEnergy)
             .withChainID(mxConfig.chainID)
             .buildTransaction()
             .toPlainObject();

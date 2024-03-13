@@ -42,7 +42,10 @@
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqnysvq99c2t4a9pvvv22elnl6p73el8vw0n4spyfv7p",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
-        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a"
+        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a",
+        "positionCreator": "erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6",
+        "lockedTokenPositionCreator": "erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6",
+        "composableTasks": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh"
     },
     "tokenProviderUSD": "WEGLD-71e90a",
     "tokensSupply": ["MEX-27f4cd"],
@@ -96,10 +99,10 @@
     "gasLimits": {
         "router": {
             "createPair": 30000000,
-            "issueToken": 150000000,
-            "setLocalRoles": 150000000,
-            "multiPairSwapMultiplier": 50000000,
-            "swapEnableByUser": 50000000,
+            "issueToken": 270000000,
+            "setLocalRoles": 270000000,
+            "multiPairSwapMultiplier": 110000000,
+            "swapEnableByUser": 180000000,
             "admin": {
                 "setState": 200000000,
                 "setFee": 200000000,
@@ -113,16 +116,16 @@
             }
         },
         "pairs": {
-            "addLiquidity": 9500000,
-            "removeLiquidity": 8500000,
+            "addLiquidity": 10000000,
+            "removeLiquidity": 10000000,
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
-                "default": 13000000,
-                "withFeeSwap": 25500000
+                "default": 17500000,
+                "withFeeSwap": 30000000
             },
             "swapTokensFixedOutput": {
-                "default": 13000000,
-                "withFeeSwap": 25500000
+                "default": 18000000,
+                "withFeeSwap": 35000000
             },
             "swapNoFeeAndForward": 25500000,
             "setLpTokenIdentifier": 200000000,
@@ -213,8 +216,8 @@
             },
             "v2": {
                 "enterFarm": {
-                    "default": 13000000,
-                    "withTokenMerge": 15000000
+                    "default": 16500000,
+                    "withTokenMerge": 18000000
                 },
                 "unlockedRewards": {
                     "exitFarm": {
@@ -229,15 +232,16 @@
                 },
                 "lockedRewards": {
                     "exitFarm": {
-                        "default": 20300000,
+                        "default": 30300000,
                         "withPenalty": {
-                            "localBurn": 16000000,
-                            "pairBurn": 23000000,
-                            "buybackAndBurn": 37300000
+                            "localBurn": 36000000,
+                            "pairBurn": 33000000,
+                            "buybackAndBurn": 48300000
                         }
                     },
-                    "claimRewards": 17000000
-                }
+                    "claimRewards": 30000000
+                },
+                "claimBoostedRewards": 20000000
             },
             "admin": {
                 "end_produce_rewards": 200000000,
@@ -257,11 +261,12 @@
         "proxy": {
             "pairs": {
                 "addLiquidity": {
-                    "default": 19500000,
+                    "default": 20000000,
                     "withTokenMerge": 40000000
                 },
                 "removeLiquidity": 30000000,
-                "defaultMergeWLPT": 20000000
+                "defaultMergeWLPT": 20000000,
+                "increaseEnergy": 20000000
             },
             "farms": {
                 "v1.2": {
@@ -353,14 +358,14 @@
                     },
                     "lockedRewards": {
                         "exitFarm": {
-                            "default": 24000000,
+                            "default": 30000000,
                             "withPenalty": {
-                                "localBurn": 26000000,
-                                "pairBurn": 45000000,
-                                "buybackAndBurn": 48000000
+                                "localBurn": 32000000,
+                                "pairBurn": 51000000,
+                                "buybackAndBurn": 56000000
                             }
                         },
-                        "claimRewards": 27500000
+                        "claimRewards": 41500000
                     },
                     "customRewards": {
                         "exitFarm": {
@@ -372,21 +377,23 @@
                             }
                         },
                         "claimRewards": 20700000
-                    }
+                    },
+                    "increaseEnergy": 20000000
                 },
                 "defaultMergeWFMT": 20000000
             }
         },
         "stake": {
             "stakeFarm": {
-                "default": 17500000,
-                "withTokenMerge": 20000000
+                "default": 20000000,
+                "withTokenMerge": 23000000
             },
-            "unstakeFarm": 20000000,
-            "unbondFarm": 7500000,
-            "claimRewards": 17000000,
-            "claimRewardsWithNewValue": 17000000,
-            "compoundRewards": 17000000,
+            "unstakeFarm": 18500000,
+            "unbondFarm": 8000000,
+            "claimRewards": 10000000,
+            "claimBoostedRewards": 20000000,
+            "claimRewardsWithNewValue": 7500000,
+            "compoundRewards": 10000000,
             "mergeTokens": 20000000,
             "admin": {
                 "setState": 20000000,
@@ -406,11 +413,11 @@
         },
         "stakeProxy": {
             "stakeFarmTokens": {
-                "default": 23000000,
-                "withTokenMerge": 33000000
+                "default": 27000000,
+                "withTokenMerge": 36000000
             },
-            "claimDualYield": 50000000,
-            "unstakeFarmTokens": 62000000
+            "claimDualYield": 55000000,
+            "unstakeFarmTokens": 75000000
         },
         "metabonding": {
             "stakeLockedAsset": {
@@ -432,14 +439,14 @@
         },
         "simpleLock": {
             "lockTokens": 10000000,
-            "unlockTokens": 5000000,
+            "unlockTokens": 6000000,
             "addLiquidityLockedToken": 20000000,
-            "removeLiquidityLockedToken": 15000000,
+            "removeLiquidityLockedToken": 18000000,
             "enterFarmLockedToken": {
-                "default": 25000000,
-                "withTokenMerge": 30000000
+                "default": 30000000,
+                "withTokenMerge": 35000000
             },
-            "exitFarmLockedToken": 50000000,
+            "exitFarmLockedToken": 60000000,
             "claimRewardsFarmLockedToken": 35000000
         },
         "simpleLockEnergy": {
@@ -492,6 +499,24 @@
         "governance": {
             "vote": 50000000
         },
+        "positionCreator": {
+            "singleToken": {
+                "liquidityPosition": 57500000,
+                "farmPosition": 87000000,
+                "dualFarmPosition": 115000000,
+                "stakingPosition": 55000000
+            },
+            "dualTokens": {
+                "farmPosition": 30000000,
+                "farmPositionProxy": 50000000,
+                "dualFarmPosition": 67000000,
+                "exitFarm": 50000000
+            },
+            "energyPosition": 45000000
+        },
+        "composableTasks": {
+            "default": 35000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
@@ -532,7 +557,10 @@
         "governance": {
             "energy": "./src/abis/governance-v2.abi.json",
             "tokenSnapshot": "./src/abis/governance-v2-merkle-proof.abi.json"
-        }
+        },
+        "positionCreator": "./src/abis/auto-pos-creator.abi.json",
+        "lockedTokenPositionCreator": "./src/abis/locked-token-pos-creator.abi.json",
+        "composableTasks": "./src/abis/composable-tasks.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,

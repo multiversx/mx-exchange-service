@@ -16,6 +16,7 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -27,6 +28,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly dataApi: MXDataApiService,
+        private readonly analyticsQuery: AnalyticsQueryService,
     ) {}
 
     async getEgldPriceInUSD(): Promise<string> {
@@ -42,10 +44,13 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async tokenPriceDerivedEGLD(tokenID: string): Promise<string> {
-        return await this.computeTokenPriceDerivedEGLD(tokenID);
+        return await this.computeTokenPriceDerivedEGLD(tokenID, []);
     }
 
-    async computeTokenPriceDerivedEGLD(tokenID: string): Promise<string> {
+    async computeTokenPriceDerivedEGLD(
+        tokenID: string,
+        pairsNotToVisit: PairMetadata[],
+    ): Promise<string> {
         if (tokenID === tokenProviderUSD) {
             return new BigNumber('1').toFixed();
         }
@@ -72,6 +77,15 @@ export class TokenComputeService implements ITokenComputeService {
             }
         }
 
+        tokenPairs = tokenPairs.filter(
+            (pair) =>
+                pairsNotToVisit.find(
+                    (pairNotToVisit) => pairNotToVisit.address === pair.address,
+                ) === undefined,
+        );
+
+        pairsNotToVisit.push(...tokenPairs);
+
         let largestLiquidityEGLD = new BigNumber(0);
         let priceSoFar = '0';
 
@@ -91,6 +105,7 @@ export class TokenComputeService implements ITokenComputeService {
                         ] = await Promise.all([
                             this.computeTokenPriceDerivedEGLD(
                                 pair.secondTokenID,
+                                pairsNotToVisit,
                             ),
                             this.pairAbi.secondTokenReserve(pair.address),
                             this.pairCompute.firstTokenPrice(pair.address),
@@ -118,6 +133,7 @@ export class TokenComputeService implements ITokenComputeService {
                         ] = await Promise.all([
                             this.computeTokenPriceDerivedEGLD(
                                 pair.firstTokenID,
+                                pairsNotToVisit,
                             ),
                             this.pairAbi.firstTokenReserve(pair.address),
                             this.pairCompute.secondTokenPrice(pair.address),
@@ -156,7 +172,7 @@ export class TokenComputeService implements ITokenComputeService {
     async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
         const [egldPriceUSD, derivedEGLD, usdcPrice] = await Promise.all([
             this.getEgldPriceInUSD(),
-            this.computeTokenPriceDerivedEGLD(tokenID),
+            this.computeTokenPriceDerivedEGLD(tokenID, []),
             this.dataApi.getTokenPrice('USDC'),
         ]);
 
@@ -164,5 +180,26 @@ export class TokenComputeService implements ITokenComputeService {
             .times(egldPriceUSD)
             .times(usdcPrice)
             .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async tokenPrevious24hPrice(tokenID: string): Promise<string> {
+        return await this.computeTokenPrevious24hPrice(tokenID);
+    }
+
+    async computeTokenPrevious24hPrice(tokenID: string): Promise<string> {
+        const values24h = await this.analyticsQuery.getValues24h({
+            series: tokenID,
+            metric: 'priceUSD',
+        });
+
+        return values24h[0]?.value ?? undefined;
     }
 }

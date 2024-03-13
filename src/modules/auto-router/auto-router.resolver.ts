@@ -19,6 +19,13 @@ export class AutoRouterResolver {
         try {
             return await this.autoRouterService.swap(args);
         } catch (error) {
+            if (error.status === 400) {
+                throw new GraphQLError(error.message, {
+                    extensions: {
+                        code: ApolloServerErrorCode.BAD_USER_INPUT,
+                    },
+                });
+            }
             throw new GraphQLError(error.message, {
                 extensions: {
                     code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
@@ -50,7 +57,7 @@ export class AutoRouterResolver {
     async transactions(
         @Parent() parent: AutoRouteModel,
         @AuthUser() user: UserAuthResult,
-    ) {
+    ): Promise<TransactionModel[]> {
         try {
             return await this.autoRouterService.getTransactions(
                 user.address,

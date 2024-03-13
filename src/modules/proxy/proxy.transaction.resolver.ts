@@ -25,11 +25,15 @@ import { LiquidityTokensValidationPipe } from './validators/add.liquidity.input.
 import { ProxyService } from './services/proxy.service';
 import { scAddress } from 'src/config';
 import { ProxyAddressValidationPipe } from './validators/proxy.address.validator';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { EnergyAbiService } from '../energy/services/energy.abi.service';
 
 @Resolver()
 export class ProxyTransactionResolver {
     constructor(
         private readonly proxyService: ProxyService,
+        private readonly energyAbi: EnergyAbiService,
         private readonly transactionsProxyPairService: ProxyPairTransactionsService,
         private readonly transactionsProxyFarmService: ProxyFarmTransactionsService,
     ) {}
@@ -210,5 +214,85 @@ export class ProxyTransactionResolver {
             user.address,
             proxyAddress,
         );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => TransactionModel)
+    async increaseProxyPairTokenEnergy(
+        @Args('payment') payment: InputTokenModel,
+        @Args('lockEpochs') lockEpochs: number,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        let proxyAddress: string;
+        try {
+            proxyAddress = await this.validateProxyIncreaseEnergy(
+                payment,
+                lockEpochs,
+            );
+        } catch (error) {
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.BAD_USER_INPUT,
+                },
+            });
+        }
+        return this.transactionsProxyPairService.increaseProxyPairTokenEnergy(
+            user.address,
+            proxyAddress,
+            payment,
+            lockEpochs,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => TransactionModel)
+    async increaseProxyFarmTokenEnergy(
+        @Args('payment') payment: InputTokenModel,
+        @Args('lockEpochs') lockEpochs: number,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        let proxyAddress: string;
+        try {
+            proxyAddress = await this.validateProxyIncreaseEnergy(
+                payment,
+                lockEpochs,
+            );
+        } catch (error) {
+            throw new GraphQLError(error.message, {
+                extensions: {
+                    code: ApolloServerErrorCode.BAD_USER_INPUT,
+                },
+            });
+        }
+
+        return this.transactionsProxyFarmService.increaseProxyFarmTokenEnergy(
+            user.address,
+            proxyAddress,
+            payment,
+            lockEpochs,
+        );
+    }
+
+    private async validateProxyIncreaseEnergy(
+        payment: InputTokenModel,
+        lockEpochs: number,
+    ): Promise<string> {
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            payment.tokenID,
+        );
+
+        if (proxyAddress !== scAddress.proxyDexAddress.v2) {
+            throw new Error('Wrapped token is not supported');
+        }
+
+        const lockOptions = await this.energyAbi.lockOptions();
+        if (
+            lockOptions.find((option) => option.lockEpochs === lockEpochs) ===
+            undefined
+        ) {
+            throw new Error('Invalid lock epochs!');
+        }
+
+        return proxyAddress;
     }
 }

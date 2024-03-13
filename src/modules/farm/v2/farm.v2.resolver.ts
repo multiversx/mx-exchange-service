@@ -14,7 +14,11 @@ import { JwtOrNativeAuthGuard } from 'src/modules/auth/jwt.or.native.auth.guard'
 import { UserAuthResult } from 'src/modules/auth/user.auth.result';
 import { AuthUser } from 'src/modules/auth/auth.user';
 import { farmVersion } from 'src/utils/farm.utils';
-import { FarmVersion } from '../models/farm.model';
+import {
+    BoostedRewardsModel,
+    FarmVersion,
+    UserTotalBoostedPosition,
+} from '../models/farm.model';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 
@@ -151,20 +155,48 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => String, {
+    @Query(() => [UserTotalBoostedPosition], {
         description: 'Returns the total farm position of the user in the farm',
     })
     async userTotalFarmPosition(
-        @Args('farmAddress') farmAddress: string,
+        @Args('farmsAddresses', { type: () => [String] })
+        farmsAddresses: string[],
         @AuthUser() user: UserAuthResult,
-    ): Promise<string> {
-        if (farmVersion(farmAddress) !== FarmVersion.V2) {
-            throw new GraphQLError('Farm version is not supported', {
-                extensions: {
-                    code: ApolloServerErrorCode.BAD_USER_INPUT,
-                },
+    ): Promise<UserTotalBoostedPosition[]> {
+        farmsAddresses.forEach((farmAddress) => {
+            if (farmVersion(farmAddress) !== FarmVersion.V2) {
+                throw new GraphQLError('Farm version is not supported', {
+                    extensions: {
+                        code: ApolloServerErrorCode.BAD_USER_INPUT,
+                    },
+                });
+            }
+        });
+
+        const positions = await Promise.all(
+            farmsAddresses.map((farmAddress) =>
+                this.farmAbi.userTotalFarmPosition(farmAddress, user.address),
+            ),
+        );
+
+        return farmsAddresses.map((farmAddress, index) => {
+            return new UserTotalBoostedPosition({
+                address: farmAddress,
+                boostedTokensAmount: positions[index],
             });
-        }
-        return this.farmAbi.userTotalFarmPosition(farmAddress, user.address);
+        });
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [BoostedRewardsModel], { nullable: true })
+    async getFarmBoostedRewardsBatch(
+        @Args('farmsAddresses', { type: () => [String] })
+        farmsAddresses: string[],
+        @AuthUser() user: UserAuthResult,
+    ): Promise<BoostedRewardsModel[]> {
+        return this.farmService.getFarmBoostedRewardsBatch(
+            farmsAddresses,
+            user.address,
+        );
     }
 }
