@@ -146,14 +146,22 @@ export class StakingProxyResolver {
         description:
             'Update staking / farm positions for total farm position from dual yield token',
     })
-    async migrateDualYieldTokens(
-        @Args('proxyStakingAddress', StakingProxyAddressValidationPipe)
-        proxyStakingAddress: string,
+    async migrateTotalDualFarmTokenPosition(
+        @Args(
+            'dualFarmsAddresses',
+            { type: () => [String] },
+            StakingProxyAddressValidationPipe,
+        )
+        dualFarmsAddresses: string[],
         @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        return this.stakingProxyTransaction.migrateDualYieldTokens(
-            proxyStakingAddress,
-            user.address,
+    ): Promise<TransactionModel[]> {
+        const promises = dualFarmsAddresses.map((address) =>
+            this.stakingProxyTransaction.migrateTotalDualFarmTokenPosition(
+                address,
+                user.address,
+            ),
         );
+
+        return (await Promise.all(promises)).flat();
     }
 }

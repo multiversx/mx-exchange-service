@@ -22,6 +22,7 @@ import { StakingProxyService } from './staking.proxy.service';
 import { StakingProxyAbiService } from './staking.proxy.abi.service';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class StakingProxyTransactionService {
@@ -34,6 +35,7 @@ export class StakingProxyTransactionService {
         private readonly stakingAbi: StakingAbiService,
         private readonly mxProxy: MXProxyService,
         private readonly apiService: MXApiService,
+        private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -199,10 +201,10 @@ export class StakingProxyTransactionService {
             .toPlainObject();
     }
 
-    async migrateDualYieldTokens(
+    async migrateTotalDualFarmTokenPosition(
         proxyStakeAddress: string,
         userAddress: string,
-    ): Promise<TransactionModel | undefined> {
+    ): Promise<TransactionModel[]> {
         const [dualYieldTokenID, farmAddress, stakingAddress, userNftsCount] =
             await Promise.all([
                 this.stakeProxyAbi.dualYieldTokenID(proxyStakeAddress),
@@ -211,7 +213,7 @@ export class StakingProxyTransactionService {
                 this.apiService.getNftsCountForUser(userAddress),
             ]);
 
-        const userNfts = await this.apiService.getNftsForUser(
+        const userNfts = await this.contextGetter.getNftsForUser(
             userAddress,
             0,
             userNftsCount,
@@ -220,7 +222,7 @@ export class StakingProxyTransactionService {
         );
 
         if (userNfts.length === 0) {
-            return undefined;
+            return [];
         }
 
         const [farmMigrationNonce, stakingMigrationNonce] = await Promise.all([
@@ -255,14 +257,14 @@ export class StakingProxyTransactionService {
             },
         );
 
-        if (payments.length > 0) {
-            return this.claimDualYield(userAddress, {
-                proxyStakingAddress: proxyStakeAddress,
-                payments: payments,
-            });
-        }
-
-        return undefined;
+        return Promise.all(
+            payments.map((payment) =>
+                this.claimDualYield(userAddress, {
+                    proxyStakingAddress: proxyStakeAddress,
+                    payments: [payment],
+                }),
+            ),
+        );
     }
 
     private async validateInputTokens(

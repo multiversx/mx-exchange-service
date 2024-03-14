@@ -248,7 +248,7 @@ describe('StakingProxyTransactionService', () => {
             senderUsername: undefined,
             receiverUsername: undefined,
             gasPrice: 1000000000,
-            gasLimit: 50000000,
+            gasLimit: gasConfig.stakeProxy.claimDualYield,
             data: encodeTransactionData(
                 `MultiESDTNFTTransfer@0000000000000000000000000000000000000000000000000000000000000000@01@METASTAKE-123456@01@1000000000000000000@claimDualYield`,
             ),
@@ -281,12 +281,13 @@ describe('StakingProxyTransactionService', () => {
                 },
             ]);
 
-            const transaction = await service.migrateDualYieldTokens(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
-            );
+            const transactions =
+                await service.migrateTotalDualFarmTokenPosition(
+                    Address.Zero().bech32(),
+                    Address.Zero().bech32(),
+                );
 
-            expect(transaction).toEqual(expectedTransactionStub);
+            expect(transactions).toEqual([expectedTransactionStub]);
         });
 
         it('migrate on lp farm token', async () => {
@@ -310,12 +311,13 @@ describe('StakingProxyTransactionService', () => {
                 },
             ]);
 
-            const transaction = await service.migrateDualYieldTokens(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
-            );
+            const transactions =
+                await service.migrateTotalDualFarmTokenPosition(
+                    Address.Zero().bech32(),
+                    Address.Zero().bech32(),
+                );
 
-            expect(transaction).toEqual(expectedTransactionStub);
+            expect(transactions).toEqual([expectedTransactionStub]);
         });
 
         it('migrate on both tokens', async () => {
@@ -339,12 +341,13 @@ describe('StakingProxyTransactionService', () => {
                 },
             ]);
 
-            const transaction = await service.migrateDualYieldTokens(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
-            );
+            const transactions =
+                await service.migrateTotalDualFarmTokenPosition(
+                    Address.Zero().bech32(),
+                    Address.Zero().bech32(),
+                );
 
-            expect(transaction).toEqual(expectedTransactionStub);
+            expect(transactions).toEqual([expectedTransactionStub]);
         });
     });
 });
