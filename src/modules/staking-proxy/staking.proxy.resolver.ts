@@ -25,6 +25,7 @@ import {
 import { StakingProxyService } from './services/staking.proxy.service';
 import { StakingProxyTransactionService } from './services/staking.proxy.transactions.service';
 import { StakingProxyAbiService } from './services/staking.proxy.abi.service';
+import { StakingProxyAddressValidationPipe } from './validators/staking.proxy.address.validator';
 
 @Resolver(() => StakingProxyModel)
 export class StakingProxyResolver {
@@ -137,5 +138,30 @@ export class StakingProxyResolver {
         @Args('position') position: CalculateRewardsArgs,
     ): Promise<UnstakeFarmTokensReceiveModel> {
         return this.stakingProxyService.getUnstakeTokensReceived(position);
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => TransactionModel, {
+        nullable: true,
+        description:
+            'Update staking / farm positions for total farm position from dual yield token',
+    })
+    async migrateTotalDualFarmTokenPosition(
+        @Args(
+            'dualFarmsAddresses',
+            { type: () => [String] },
+            StakingProxyAddressValidationPipe,
+        )
+        dualFarmsAddresses: string[],
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel[]> {
+        const promises = dualFarmsAddresses.map((address) =>
+            this.stakingProxyTransaction.migrateTotalDualFarmTokenPosition(
+                address,
+                user.address,
+            ),
+        );
+
+        return (await Promise.all(promises)).flat();
     }
 }

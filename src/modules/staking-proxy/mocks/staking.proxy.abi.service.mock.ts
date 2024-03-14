@@ -19,7 +19,7 @@ export class StakingProxyAbiServiceMock implements IStakingProxyAbiService {
         return 'STAKETOK-1111';
     }
     async dualYieldTokenID(stakingProxyAddress: string): Promise<string> {
-        return 'METASTAKE-1234';
+        return 'METASTAKE-123456';
     }
     async lpFarmTokenID(stakingProxyAddress: string): Promise<string> {
         return 'EGLDTOK4FL-abcdef';

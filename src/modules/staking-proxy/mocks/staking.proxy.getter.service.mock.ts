@@ -22,7 +22,7 @@ export class StakingProxyGetterServiceMock {
     }
 
     async getDualYieldTokenID(stakingProxyAddress: string): Promise<string> {
-        return 'METASTAKE-1234';
+        return 'METASTAKE-123456';
     }
 
     async getLpFarmTokenID(stakingProxyAddress: string): Promise<string> {
