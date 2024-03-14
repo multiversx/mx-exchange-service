@@ -745,7 +745,7 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                     new EsdtTokenPayment({
-                        tokenIdentifier: 'METASTAKE-1234',
+                        tokenIdentifier: 'METASTAKE-123456',
                         tokenNonce: 1,
                         amount: '100000000000000000000',
                     }),
@@ -783,7 +783,7 @@ describe('PositionCreatorTransaction', () => {
                     gasLimit:
                         gasConfig.positionCreator.singleToken.dualFarmPosition,
                     data: encodeTransactionData(
-                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@47008144020574367766@47008144020574367766823',
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@47008144020574367766@47008144020574367766823',
                     ),
                     chainID: 'T',
                     version: 1,
@@ -818,7 +818,7 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                     new EsdtTokenPayment({
-                        tokenIdentifier: 'METASTAKE-1234',
+                        tokenIdentifier: 'METASTAKE-123456',
                         tokenNonce: 1,
                         amount: '100000000000000000000',
                     }),
@@ -838,7 +838,7 @@ describe('PositionCreatorTransaction', () => {
                     gasLimit:
                         gasConfig.positionCreator.singleToken.dualFarmPosition,
                     data: encodeTransactionData(
-                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
                     ),
                     chainID: 'T',
                     version: 1,
@@ -873,7 +873,7 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                     new EsdtTokenPayment({
-                        tokenIdentifier: 'METASTAKE-1234',
+                        tokenIdentifier: 'METASTAKE-123456',
                         tokenNonce: 1,
                         amount: '100000000000000000000',
                     }),
@@ -893,7 +893,7 @@ describe('PositionCreatorTransaction', () => {
                     gasLimit:
                         gasConfig.positionCreator.singleToken.dualFarmPosition,
                     data: encodeTransactionData(
-                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@EGLDMEXLP-abcdef@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@@',
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@EGLDMEXLP-abcdef@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@@',
                     ),
                     chainID: 'T',
                     version: 1,
@@ -1750,7 +1750,7 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                     new EsdtTokenPayment({
-                        tokenIdentifier: 'METASTAKE-1234',
+                        tokenIdentifier: 'METASTAKE-123456',
                         tokenNonce: 1,
                         amount: '100000000000000000000',
                     }),
@@ -1788,7 +1788,7 @@ describe('PositionCreatorTransaction', () => {
                     gasLimit:
                         gasConfig.positionCreator.dualTokens.dualFarmPosition,
                     data: encodeTransactionData(
-                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@03@WEGLD-123456@@100000000000000000000@MEX-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromTwoTokens@0000000000000000000000000000000000000000000000000000000000000000@99000000000000000000@99000000000000000000',
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@03@WEGLD-123456@@100000000000000000000@MEX-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromTwoTokens@0000000000000000000000000000000000000000000000000000000000000000@99000000000000000000@99000000000000000000',
                     ),
                     chainID: 'T',
                     version: 1,
@@ -1828,7 +1828,7 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                     new EsdtTokenPayment({
-                        tokenIdentifier: 'METASTAKE-1234',
+                        tokenIdentifier: 'METASTAKE-123456',
                         tokenNonce: 1,
                         amount: '100000000000000000000',
                     }),
@@ -1848,7 +1848,7 @@ describe('PositionCreatorTransaction', () => {
                     gasLimit:
                         gasConfig.positionCreator.dualTokens.dualFarmPosition,
                     data: encodeTransactionData(
-                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@03@WEGLD-123456@@100000000000000000000@MEX-123456@@100000000000000000000@METASTAKE-1234@01@100000000000000000000@createMetastakingPosFromTwoTokens@0000000000000000000000000000000000000000000000000000000000000000@99000000000000000000@99000000000000000000',
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@03@WEGLD-123456@@100000000000000000000@MEX-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromTwoTokens@0000000000000000000000000000000000000000000000000000000000000000@99000000000000000000@99000000000000000000',
                     ),
                     chainID: 'T',
                     version: 1,
