@@ -378,13 +378,17 @@ export class StakingResolver {
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async migrateTotalStakingPosition(
-        @Args('stakeAddress') stakeAddress: string,
+        @Args('stakeAddresses', { type: () => [String] })
+        stakeAddresses: string[],
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
-        return this.stakingTransactionService.migrateTotalStakingPosition(
-            stakeAddress,
-            user.address,
+        const promises = stakeAddresses.map((stakeAddress) =>
+            this.stakingTransactionService.migrateTotalStakingPosition(
+                stakeAddress,
+                user.address,
+            ),
         );
+        return (await Promise.all(promises)).flat();
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
