@@ -118,7 +118,7 @@ export class NativeAuthGuard implements CanActivate {
     ): Promise<boolean> {
         const admins = process.env.SECURITY_ADMINS.split(',');
         if (admins.find((admin) => admin === signerAddress) === undefined) {
-            throw new NativeAuthError('Impersonation not allowed');
+            return false;
         }
 
         return true;
