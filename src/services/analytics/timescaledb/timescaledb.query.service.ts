@@ -181,69 +181,40 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        let latestTimestamp;
         try {
-            latestTimestamp = await this.closeDaily
+            const query = await this.closeHourly
                 .createQueryBuilder()
-                .select('time')
-                .addSelect('last')
+                .select("time_bucket_gapfill('1 hour', time) as hour")
+                .addSelect('locf(last(last, time)) as last')
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
-                .orderBy('time', 'DESC')
-                .limit(1)
-                .getRawOne();
+                .andWhere("time between now() - INTERVAL '1 day' and now()")
+                .groupBy('hour')
+                .getRawMany();
 
-            if (!latestTimestamp) {
-                return [];
-            }
+            let results =
+                query?.map(
+                    (row) =>
+                        new HistoricDataModel({
+                            timestamp: moment
+                                .utc(row.hour)
+                                .format('yyyy-MM-DD HH:mm:ss'),
+                            value: row.last ?? '0',
+                        }),
+                ) ?? [];
+
+            results =
+                results.length > 24
+                    ? results.slice(results.length - 24)
+                    : results;
+
+            return results;
         } catch (error) {
             this.logger.error(
-                `getValues24h: Error getting latest timestamp for ${series} ${metric}`,
+                `getValues24h: Error getting query for ${series} ${metric}`,
             );
             return [];
         }
-
-        const startDate = moment
-            .utc(latestTimestamp.time)
-            .isBefore(moment.utc().subtract(1, 'day'))
-            ? moment.utc(latestTimestamp.time)
-            : moment.utc().subtract(1, 'day');
-
-        const query = await this.closeHourly
-            .createQueryBuilder()
-            .select("time_bucket_gapfill('1 hour', time) as hour")
-            .addSelect('locf(last(last, time)) as last')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .andWhere('time between :start and now()', {
-                start: startDate.toDate(),
-            })
-            .groupBy('hour')
-            .getRawMany();
-
-        const dayBefore = moment.utc().subtract(1, 'day');
-        const results = query.filter((row) =>
-            moment.utc(row.hour).isSameOrAfter(dayBefore),
-        );
-
-        for (const result of results) {
-            if (result.last) {
-                break;
-            }
-            result.last = latestTimestamp.last;
-        }
-
-        return (
-            results.map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row.hour)
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.last ?? '0',
-                    }),
-            ) ?? []
-        );
     }
 
     @TimescaleDBQuery()
