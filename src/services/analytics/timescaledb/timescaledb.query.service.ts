@@ -17,11 +17,14 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+        private readonly cacheService: CacheService,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
@@ -80,16 +83,9 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            const firstRow = await this.dexAnalytics
-                .createQueryBuilder()
-                .select('timestamp')
-                .where('series = :series', { series })
-                .andWhere('key = :metric', { metric })
-                .orderBy('timestamp', 'ASC')
-                .limit(1)
-                .getRawOne();
+            const startDate = await this.getStartDate(series);
 
-            if (!firstRow) {
+            if (!startDate) {
                 return [];
             }
 
@@ -100,7 +96,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :start and now()', {
-                    start: firstRow.timestamp,
+                    start: startDate,
                 })
                 .groupBy('day')
                 .getRawMany();
@@ -131,16 +127,9 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            const firstRow = await this.dexAnalytics
-                .createQueryBuilder()
-                .select('timestamp')
-                .where('series = :series', { series })
-                .andWhere('key = :metric', { metric })
-                .orderBy('timestamp', 'ASC')
-                .limit(1)
-                .getRawOne();
+            const startDate = await this.getStartDate(series);
 
-            if (!firstRow) {
+            if (!startDate) {
                 return [];
             }
 
@@ -151,7 +140,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :start and now()', {
-                    start: firstRow.timestamp,
+                    start: startDate,
                 })
                 .groupBy('day')
                 .getRawMany();
@@ -308,5 +297,39 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                     value: row.last,
                 }),
         );
+    }
+
+    private async getStartDate(series: string): Promise<string | undefined> {
+        const cacheKey = `startDate.${series}`;
+        const cachedValue = await this.cacheService.get<string>(cacheKey);
+        if (cachedValue !== undefined) {
+            return cachedValue;
+        }
+
+        const firstRow = await this.dexAnalytics
+            .createQueryBuilder()
+            .select('timestamp')
+            .where('series = :series', { series })
+            .orderBy('timestamp', 'ASC')
+            .limit(1)
+            .getRawOne();
+
+        if (firstRow) {
+            await this.cacheService.set(
+                cacheKey,
+                firstRow.timestamp,
+                Constants.oneMinute() * 30,
+                Constants.oneMinute() * 20,
+            );
+        } else {
+            await this.cacheService.set(
+                cacheKey,
+                null,
+                Constants.oneMinute() * 10,
+                Constants.oneMinute() * 7,
+            );
+        }
+
+        return firstRow?.timestamp;
     }
 }
