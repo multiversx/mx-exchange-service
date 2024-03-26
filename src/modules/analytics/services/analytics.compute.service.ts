@@ -21,6 +21,8 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -270,5 +272,54 @@ export class AnalyticsComputeService {
         return unfilteredPairAddresses
             .filter((pair) => pair.lpTokenId !== undefined)
             .map((pair) => pair.pairAddress);
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneMinute() * 30,
+        localTtl: Constants.oneMinute() * 10,
+    })
+    async pairsWithoutBuybackAndBurn(minVolume: number): Promise<PairModel[]> {
+        return await this.computePairsWithoutBuybackAndBurn(minVolume);
+    }
+
+    async computePairsWithoutBuybackAndBurn(minVolume: number): Promise<PairModel[]> {
+      let pairsMetadata = await this.routerAbi.pairsMetadata();
+      
+      pairsMetadata = await this.filterPairsByState(pairsMetadata, 'Active');
+      pairsMetadata = await this.filterPairsByFeeState(pairsMetadata, false);
+      pairsMetadata = await this.filterPairsByVolume(pairsMetadata, minVolume);
+
+      return pairsMetadata.map((pairMetadata) => new PairModel({
+        address: pairMetadata.address
+      }))
+    }
+
+    private async filterPairsByState(pairsMetadata: PairMetadata[], state: string) {
+      const pairStates = await Promise.all(
+        pairsMetadata.map(pairMetadata => this.pairAbi.state(pairMetadata.address))
+      )
+
+      return pairsMetadata.filter((pair, index) => pairStates[index] === state)
+    }
+
+    private async filterPairsByFeeState(pairsMetadata: PairMetadata[], feeState: boolean) {
+      const pairFeeStates = await Promise.all(
+        pairsMetadata.map(pairMetadata => this.pairAbi.feeState(pairMetadata.address))
+      )
+
+      return pairsMetadata.filter((pair, index) => pairFeeStates[index] === feeState)
+    }
+
+    private async filterPairsByVolume(pairsMetadata: PairMetadata[], minVolume: number) {
+      const pairVolumes = await Promise.all(
+        pairsMetadata.map(pairMetadata => this.pairCompute.volumeUSD(pairMetadata.address, '24h'))
+      )
+
+      return pairsMetadata.filter((pair, index) => {
+        const volume = new BigNumber(pairVolumes[index])
+        return volume.gte(minVolume)
+      })
     }
 }

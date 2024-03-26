@@ -1,5 +1,5 @@
 import { UsePipes, ValidationPipe } from '@nestjs/common';
-import { Int, Query } from '@nestjs/graphql';
+import { Float, Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from './models/query.args';
@@ -7,6 +7,7 @@ import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.servi
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { TokenService } from '../tokens/services/token.service';
+import { PairModel } from '../pair/models/pair.model';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -167,5 +168,12 @@ export class AnalyticsResolver {
         @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return [];
+    }
+
+    @Query(() => [PairModel])
+    async pairsWithoutBuybackAndBurn(
+      @Args('minVolume', { type: () => Float }) minVolume: number,
+    ): Promise<PairModel[]> {
+        return this.analyticsCompute.pairsWithoutBuybackAndBurn(minVolume);
     }
 }
