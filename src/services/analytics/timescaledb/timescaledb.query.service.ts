@@ -182,17 +182,28 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
+            const previousValue = this.closeHourly
+                .createQueryBuilder()
+                .select('last')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere("time < now() - INTERVAL '1 day'")
+                .orderBy('time', 'DESC')
+                .limit(1);
+
             const query = await this.closeHourly
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 hour', time) as hour")
-                .addSelect('locf(last(last, time)) as last')
+                .addSelect(
+                    `locf(last(last, time), (${previousValue.getQuery()})) as last`,
+                )
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere("time between now() - INTERVAL '1 day' and now()")
                 .groupBy('hour')
                 .getRawMany();
 
-            let results =
+            return (
                 query?.map(
                     (row) =>
                         new HistoricDataModel({
@@ -201,14 +212,8 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                                 .format('yyyy-MM-DD HH:mm:ss'),
                             value: row.last ?? '0',
                         }),
-                ) ?? [];
-
-            results =
-                results.length > 24
-                    ? results.slice(results.length - 24)
-                    : results;
-
-            return results;
+                ) ?? []
+            );
         } catch (error) {
             this.logger.error(
                 `getValues24h: Error getting query for ${series} ${metric}`,
