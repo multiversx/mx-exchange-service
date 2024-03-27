@@ -45,6 +45,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { RouterService } from 'src/modules/router/services/router.service';
 
 describe('AnalyticsService', () => {
     let module: TestingModule;
@@ -103,6 +104,7 @@ describe('AnalyticsService', () => {
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                RouterService
             ],
         }).compile();
     });
