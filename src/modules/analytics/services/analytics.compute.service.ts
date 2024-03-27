@@ -21,8 +21,10 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
-import { PairModel } from 'src/modules/pair/models/pair.model';
-import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { GetPairsArgs, PairModel } from 'src/modules/pair/models/pair.model';
+// import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { RouterService } from 'src/modules/router/services/router.service';
+import { PairFilterArgs } from 'src/modules/router/models/filter.args';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -39,6 +41,7 @@ export class AnalyticsComputeService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly routerService: RouterService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -275,49 +278,31 @@ export class AnalyticsComputeService {
     }
 
     @ErrorLoggerAsync()
-    @GetOrSetCache({
-        baseKey: 'analytics',
-        remoteTtl: Constants.oneMinute() * 30,
-        localTtl: Constants.oneMinute() * 10,
-    })
-    async pairsWithoutBuybackAndBurn(minVolume: number): Promise<PairModel[]> {
-        return await this.computePairsWithoutBuybackAndBurn(minVolume);
+    async computePairsWithoutBuybackAndBurn(
+      page: GetPairsArgs, 
+      filter: PairFilterArgs, 
+      minVolume: number
+    ): Promise<PairModel[]> {
+      let pairs = await this.routerService.getAllPairs(page.offset, page.limit, filter);
+      pairs = await this.filterPairsByFeeState(pairs, false);
+
+      return await this.filterPairsByVolume(pairs, minVolume);
     }
 
-    async computePairsWithoutBuybackAndBurn(minVolume: number): Promise<PairModel[]> {
-      let pairsMetadata = await this.routerAbi.pairsMetadata();
-      
-      pairsMetadata = await this.filterPairsByState(pairsMetadata, 'Active');
-      pairsMetadata = await this.filterPairsByFeeState(pairsMetadata, false);
-      pairsMetadata = await this.filterPairsByVolume(pairsMetadata, minVolume);
-
-      return pairsMetadata.map((pairMetadata) => new PairModel({
-        address: pairMetadata.address
-      }))
-    }
-
-    private async filterPairsByState(pairsMetadata: PairMetadata[], state: string) {
-      const pairStates = await Promise.all(
-        pairsMetadata.map(pairMetadata => this.pairAbi.state(pairMetadata.address))
-      )
-
-      return pairsMetadata.filter((pair, index) => pairStates[index] === state)
-    }
-
-    private async filterPairsByFeeState(pairsMetadata: PairMetadata[], feeState: boolean) {
+    private async filterPairsByFeeState(pairs: PairModel[], feeState: boolean) {
       const pairFeeStates = await Promise.all(
-        pairsMetadata.map(pairMetadata => this.pairAbi.feeState(pairMetadata.address))
+        pairs.map(pair => this.pairAbi.feeState(pair.address))
       )
 
-      return pairsMetadata.filter((pair, index) => pairFeeStates[index] === feeState)
+      return pairs.filter((pair, index) => pairFeeStates[index] === feeState)
     }
 
-    private async filterPairsByVolume(pairsMetadata: PairMetadata[], minVolume: number) {
+    private async filterPairsByVolume(pairs: PairModel[], minVolume: number) {
       const pairVolumes = await Promise.all(
-        pairsMetadata.map(pairMetadata => this.pairCompute.volumeUSD(pairMetadata.address, '24h'))
+        pairs.map(pair => this.pairCompute.volumeUSD(pair.address, '24h'))
       )
 
-      return pairsMetadata.filter((pair, index) => {
+      return pairs.filter((pair, index) => {
         const volume = new BigNumber(pairVolumes[index])
         return volume.gte(minVolume)
       })

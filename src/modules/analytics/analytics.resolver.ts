@@ -7,7 +7,8 @@ import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.servi
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { TokenService } from '../tokens/services/token.service';
-import { PairModel } from '../pair/models/pair.model';
+import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
+import { PairFilterArgs } from '../router/models/filter.args';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -172,8 +173,10 @@ export class AnalyticsResolver {
 
     @Query(() => [PairModel])
     async pairsWithoutBuybackAndBurn(
+      @Args() page: GetPairsArgs,
+      @Args() filter: PairFilterArgs,
       @Args('minVolume', { type: () => Float }) minVolume: number,
     ): Promise<PairModel[]> {
-        return this.analyticsCompute.pairsWithoutBuybackAndBurn(minVolume);
+        return this.analyticsCompute.computePairsWithoutBuybackAndBurn(page, filter, minVolume);
     }
 }
