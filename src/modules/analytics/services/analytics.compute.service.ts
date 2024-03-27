@@ -22,7 +22,6 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetPairsArgs, PairModel } from 'src/modules/pair/models/pair.model';
-// import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { RouterService } from 'src/modules/router/services/router.service';
 import { PairFilterArgs } from 'src/modules/router/models/filter.args';
 
