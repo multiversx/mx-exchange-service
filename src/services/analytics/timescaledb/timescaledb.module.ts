@@ -13,10 +13,12 @@ import {
     TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
 } from './entities/timescaledb.entities';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
     imports: [
         CommonAppModule,
+        DynamicModuleUtils.getCacheModule(),
         TypeOrmModule.forRootAsync({
             imports: [CommonAppModule],
             useFactory: (apiConfig: ApiConfigService) => ({
