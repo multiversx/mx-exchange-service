@@ -1,4 +1,4 @@
-import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import { CandleDataModel, HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 
 export interface AnalyticsQueryInterface {
@@ -28,4 +28,11 @@ export interface AnalyticsQueryInterface {
         startDate,
         endDate,
     }): Promise<HistoricDataModel[]>;
+
+    getPairCandles({
+        series,
+        key,
+        startDate,
+        endDate,
+    }): Promise<CandleDataModel[]>;
 }

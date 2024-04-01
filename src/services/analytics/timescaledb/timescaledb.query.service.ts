@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import moment from 'moment';
-import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import { CandleDataModel, HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { computeTimeInterval } from 'src/utils/analytics.utils';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -8,6 +8,7 @@ import {
     CloseDaily,
     CloseHourly,
     PDCloseMinute,
+    PairCandleMinute,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -17,11 +18,13 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+        private readonly cacheService: CacheService,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
@@ -36,6 +39,8 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
         @InjectRepository(PDCloseMinute)
         private readonly pdCloseMinute: Repository<PDCloseMinute>,
+        @InjectRepository(PairCandleMinute)
+        private readonly pairCandleMinute: Repository<PairCandleMinute>
     ) {}
 
     @TimescaleDBQuery()
@@ -331,6 +336,92 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                     timestamp: row.bucket,
                     value: row.last,
                 }),
+        );
+    }
+
+    @TimescaleDBQuery()
+    async getPairCandles({
+        series,
+        key,
+        // resolution,
+        startDate,
+        endDate,
+    }): Promise<CandleDataModel[]> {
+        const gapFill = '60 minutes';
+        // todo choose repo based on resolution
+        const candleRepository = this.pairCandleMinute;
+      
+        const query = await candleRepository
+            .createQueryBuilder()
+            .select(`time_bucket_gapfill('${gapFill}', time) as bucket`)
+            .addSelect('locf(first(open, time)) as open')
+            .addSelect('locf(last(close, time)) as close')
+            .addSelect('locf(min(low)) as low')
+            .addSelect('locf(max(high)) as high')
+            .where('series = :series', { series })
+            .andWhere('key = :key', { key })
+            .andWhere('time between :start and :end', {
+                start: startDate,
+                end: endDate,
+            })
+            .groupBy('bucket')
+            .getRawMany();
+
+        if (!query) {
+            return [];
+        }
+
+        const needsGapFilling = query.some((row) => !row.open)
+
+        if (!needsGapFilling) {
+          return query.map(
+              (row) =>
+                  new CandleDataModel({
+                      time: row.bucket,
+                      series: series,
+                      open: row.open,
+                      close: row.close,
+                      high: row.high,
+                      low: row.low
+                  })
+          );
+        }
+
+        const previousCandle = await candleRepository
+            .createQueryBuilder()
+            .select('open, close, high, low')
+            .where('series = :series', { series })
+            .andWhere('key = :key', { key })
+            .andWhere("time < :start", { start : startDate })
+            .orderBy('time', 'DESC')
+            .limit(1)
+            .getRawOne();
+
+        if (!previousCandle) {
+            return query.filter(
+                (row) => row.open
+            ).map(
+                (row) =>
+                    new CandleDataModel({
+                        time: row.bucket,
+                        series: series,
+                        open: row.open,
+                        close: row.close,
+                        high: row.high,
+                        low: row.low
+                    })
+            );
+        }
+
+        return query.map(
+            (row) => new CandleDataModel({
+                time: row.bucket,
+                series: series,
+                open: row.open ?? previousCandle.open,
+                close: row.close ?? previousCandle.close,
+                high: row.high ?? previousCandle.high,
+                low: row.low ?? previousCandle.low
+            })
         );
     }
 }

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
+import { HistoricDataModel, PairCandleModel, PairDayDataModel } from '../models/analytics.model';
 import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 
 @Injectable()
 export class AnalyticsPairService {
@@ -11,6 +12,7 @@ export class AnalyticsPairService {
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
+        private readonly analyticsQueryService: AnalyticsQueryService
     ) {}
 
     async getClosingLockedValueUSD(
@@ -119,5 +121,23 @@ export class AnalyticsPairService {
         );
 
         return pairsDayDatas;
+    }
+
+    async getPairCandles(pairAddress: string): Promise<PairCandleModel[]> {
+        // const [firstTokenID, secondTokenID] = await Promise.all([
+        //     this.pairAbi.firstTokenID(pairAddress),
+        //     this.pairAbi.secondTokenID(pairAddress),
+        // ]);
+
+        const candles = await this.analyticsQueryService.getPairCandles({
+            series: pairAddress,
+            key: 'secondTokenPrice',
+            startDate: '02/28/2024',
+            endDate: '03/01/2024'
+        });
+
+        console.log(candles);
+
+        return [];
     }
 }

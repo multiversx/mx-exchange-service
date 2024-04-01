@@ -64,3 +64,75 @@ export class PairDayDataModel {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class CandleDataModel {
+    @Field()
+    time: string;
+
+    @Field()
+    series: string;
+
+    @Field()
+    key: EsdtToken;
+
+    @Field()
+    open: EsdtToken;
+
+    @Field()
+    low: string;
+
+    @Field()
+    high: string;
+
+    @Field()
+    close: string;
+
+    constructor(init?: Partial<CandleDataModel>) {
+      Object.assign(this, init);
+  }
+}
+
+
+@ObjectType()
+export class PairCandleModel {
+    @Field()
+    time: string;
+
+    @Field()
+    address: string;
+
+    @Field()
+    firstToken: EsdtToken;
+
+    @Field()
+    secondToken: EsdtToken;
+
+    @Field()
+    firstTokenOpen: string;
+
+    @Field()
+    firstTokenClose: string;
+
+    @Field()
+    firstTokenLow: string;
+
+    @Field()
+    firstTokenHigh: string;
+
+    @Field()
+    secondTokenOpen: string;
+
+    @Field()
+    secondTokenClose: string;
+
+    @Field()
+    secondTokenLow: string;
+
+    @Field()
+    secondTokenHigh: string;
+
+    constructor(init?: Partial<PairCandleModel>) {
+      Object.assign(this, init);
+  }
+}
