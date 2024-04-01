@@ -18,13 +18,11 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-        private readonly cacheService: CacheService,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
@@ -343,12 +341,12 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     async getPairCandles({
         series,
         key,
-        // resolution,
+        resolution,
         startDate,
         endDate,
     }): Promise<CandleDataModel[]> {
-        const gapFill = '60 minutes';
-        // todo choose repo based on resolution
+        const gapFill = '30 minutes';
+        // todo choose model based on resolution
         const candleRepository = this.pairCandleMinute;
       
         const query = await candleRepository
@@ -378,11 +376,12 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
               (row) =>
                   new CandleDataModel({
                       time: row.bucket,
-                      series: series,
-                      open: row.open,
-                      close: row.close,
-                      high: row.high,
-                      low: row.low
+                      ohlc: [
+                        row.open,
+                        row.high,
+                        row.low,
+                        row.close
+                      ]
                   })
           );
         }
@@ -404,11 +403,12 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 (row) =>
                     new CandleDataModel({
                         time: row.bucket,
-                        series: series,
-                        open: row.open,
-                        close: row.close,
-                        high: row.high,
-                        low: row.low
+                        ohlc: [
+                          row.open,
+                          row.high,
+                          row.low,
+                          row.close
+                        ]
                     })
             );
         }
@@ -416,11 +416,12 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         return query.map(
             (row) => new CandleDataModel({
                 time: row.bucket,
-                series: series,
-                open: row.open ?? previousCandle.open,
-                close: row.close ?? previousCandle.close,
-                high: row.high ?? previousCandle.high,
-                low: row.low ?? previousCandle.low
+                ohlc: [
+                  row.open ?? previousCandle.open,
+                  row.high ?? previousCandle.high,
+                  row.low ?? previousCandle.low,
+                  row.close ?? previousCandle.close
+                ]
             })
         );
     }

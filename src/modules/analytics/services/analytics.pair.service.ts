@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { HistoricDataModel, PairCandleModel, PairDayDataModel } from '../models/analytics.model';
+import { HistoricDataModel, PairCandlesModel, PairDayDataModel } from '../models/analytics.model';
 import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class AnalyticsPairService {
@@ -12,7 +13,8 @@ export class AnalyticsPairService {
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
-        private readonly analyticsQueryService: AnalyticsQueryService
+        private readonly analyticsQueryService: AnalyticsQueryService,
+        private readonly cacheService: CacheService,
     ) {}
 
     async getClosingLockedValueUSD(
@@ -123,21 +125,41 @@ export class AnalyticsPairService {
         return pairsDayDatas;
     }
 
-    async getPairCandles(pairAddress: string): Promise<PairCandleModel[]> {
-        // const [firstTokenID, secondTokenID] = await Promise.all([
-        //     this.pairAbi.firstTokenID(pairAddress),
-        //     this.pairAbi.secondTokenID(pairAddress),
-        // ]);
+    async getPairCandles(
+        pairAddress: string,
+        startDate: string,
+        endDate: string,
+        resolution: string,
+    ): Promise<PairCandlesModel> {
+        const [firstTokenID, secondTokenID] = await Promise.all([
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
+        ]);
+        
+        const [firstTokencandles, secondTokencandles] = await Promise.all([
+            this.analyticsQueryService.getPairCandles({
+                series: pairAddress,
+                key: 'firstTokenPrice',
+                resolution: resolution,
+                startDate: startDate,
+                endDate: endDate
+            }),
+            this.analyticsQueryService.getPairCandles({
+                series: pairAddress,
+                key: 'secondTokenPrice',
+                resolution: resolution,
+                startDate: startDate,
+                endDate: endDate
+            }),
 
-        const candles = await this.analyticsQueryService.getPairCandles({
-            series: pairAddress,
-            key: 'secondTokenPrice',
-            startDate: '02/28/2024',
-            endDate: '03/01/2024'
+        ])
+
+        return new PairCandlesModel({
+          address: pairAddress,
+          firstTokenID: firstTokenID,
+          firstTokenCandles: firstTokencandles,
+          secondTokenID: secondTokenID,
+          secondTokenCandles: secondTokencandles
         });
-
-        console.log(candles);
-
-        return [];
     }
 }

@@ -77,6 +77,7 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     async getPairCandles({
         series,
         key,
+        resolution,
         startDate,
         endDate,
     }): Promise<CandleDataModel[]> {
@@ -84,6 +85,7 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
       return await service.getPairCandles({
           series,
           key,
+          resolution,
           startDate,
           endDate
       });
