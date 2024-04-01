@@ -10,7 +10,7 @@ import {
     PDCloseMinute,
     PairCandleHourly,
     PairCandleMinute,
-    PairCandledaily,
+    PairCandleDaily,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -50,7 +50,7 @@ import {
             PDCloseMinute,
             PairCandleMinute,
             PairCandleHourly,
-            PairCandledaily
+            PairCandleDaily
         ]),
     ],
     providers: [TimescaleDBQueryService, TimescaleDBWriteService],

@@ -345,7 +345,7 @@ export class PairCandleHourly {
   name: 'pair_candle_daily',
   dependsOn: ['pair_candle_hourly'],
 })
-export class PairCandledaily {
+export class PairCandleDaily {
   @ViewColumn()
   @PrimaryColumn()
   time: Date = new Date();

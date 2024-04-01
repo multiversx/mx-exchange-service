@@ -8,7 +8,9 @@ import {
     CloseDaily,
     CloseHourly,
     PDCloseMinute,
+    PairCandleHourly,
     PairCandleMinute,
+    PairCandleDaily,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -18,6 +20,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { PairCandlesResolutions } from 'src/modules/analytics/models/query.args';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
@@ -38,7 +41,11 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         @InjectRepository(PDCloseMinute)
         private readonly pdCloseMinute: Repository<PDCloseMinute>,
         @InjectRepository(PairCandleMinute)
-        private readonly pairCandleMinute: Repository<PairCandleMinute>
+        private readonly pairCandleMinute: Repository<PairCandleMinute>,
+        @InjectRepository(PairCandleHourly)
+        private readonly pairCandleHourly: Repository<PairCandleHourly>,
+        @InjectRepository(PairCandleDaily)
+        private readonly pairCandleDaily: Repository<PairCandleDaily>,
     ) {}
 
     @TimescaleDBQuery()
@@ -345,13 +352,11 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         startDate,
         endDate,
     }): Promise<CandleDataModel[]> {
-        const gapFill = '30 minutes';
-        // todo choose model based on resolution
-        const candleRepository = this.pairCandleMinute;
+        const candleRepository = this.getCandleModelByResolution(resolution);
       
         const query = await candleRepository
             .createQueryBuilder()
-            .select(`time_bucket_gapfill('${gapFill}', time) as bucket`)
+            .select(`time_bucket_gapfill('${resolution}', time) as bucket`)
             .addSelect('locf(first(open, time)) as open')
             .addSelect('locf(last(close, time)) as close')
             .addSelect('locf(min(low)) as low')
@@ -424,5 +429,18 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 ]
             })
         );
+    }
+
+    private getCandleModelByResolution(resolution: PairCandlesResolutions): 
+        Repository<PairCandleMinute | PairCandleHourly | PairCandleDaily> {
+        if (resolution.includes('minute')) {
+            return this.pairCandleMinute;
+        }
+
+        if (resolution.includes('hour')) {
+            return this.pairCandleHourly;
+        }
+
+        return this.pairCandleDaily;
     }
 }
