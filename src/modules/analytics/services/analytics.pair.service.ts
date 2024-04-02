@@ -132,11 +132,7 @@ export class AnalyticsPairService {
         endDate: string,
         resolution: PairCandlesResolutions,
     ): Promise<PairCandlesModel> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairAbi.firstTokenID(pairAddress),
-            this.pairAbi.secondTokenID(pairAddress),
-        ]);
-        
+       
         const [firstTokencandles, secondTokencandles] = await Promise.all([
             this.analyticsQueryService.getPairCandles({
                 series: pairAddress,
@@ -157,9 +153,7 @@ export class AnalyticsPairService {
 
         return new PairCandlesModel({
           address: pairAddress,
-          firstTokenID: firstTokenID,
           firstTokenCandles: firstTokencandles,
-          secondTokenID: secondTokenID,
           secondTokenCandles: secondTokencandles
         });
     }

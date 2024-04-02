@@ -85,10 +85,10 @@ export class PairCandlesModel {
     address: string;
 
     @Field()
-    firstTokenID: string;
+    firstToken: EsdtToken;
 
     @Field()
-    secondTokenID: string;
+    secondToken: EsdtToken;
 
     @Field(() => [CandleDataModel])
     firstTokenCandles: CandleDataModel[];

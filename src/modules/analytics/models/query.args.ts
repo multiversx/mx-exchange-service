@@ -31,7 +31,7 @@ export enum PairCandlesResolutions {
     HOUR_1 = '1 hour',
     HOUR_4 = '4 hours',
     DAY_1 = '1 day',
-    DAY_6 = '6 days',
+    DAY_7 = '7 days',
     MONTH_1 = '1 month'
 }
 
