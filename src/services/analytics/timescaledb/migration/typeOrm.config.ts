@@ -6,7 +6,7 @@ import {
     CloseHourly,
     PairCandleHourly,
     PairCandleMinute,
-    PairCandledaily,
+    PairCandleDaily,
     SumDaily,
     SumHourly,
     XExchangeAnalyticsEntity,
@@ -31,7 +31,7 @@ export default new DataSource({
         CloseHourly,
         PairCandleMinute,
         PairCandleHourly,
-        PairCandledaily
+        PairCandleDaily
     ],
     migrations: ['src/services/analytics/timescaledb/migration/*-xExchange.ts'],
 });

@@ -6,6 +6,7 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { PairCandlesResolutions } from '../models/query.args';
 
 @Injectable()
 export class AnalyticsPairService {
@@ -129,7 +130,7 @@ export class AnalyticsPairService {
         pairAddress: string,
         startDate: string,
         endDate: string,
-        resolution: string,
+        resolution: PairCandlesResolutions,
     ): Promise<PairCandlesModel> {
         const [firstTokenID, secondTokenID] = await Promise.all([
             this.pairAbi.firstTokenID(pairAddress),

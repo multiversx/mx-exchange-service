@@ -10,7 +10,7 @@ import {
     PDCloseMinute,
     PairCandleHourly,
     PairCandleMinute,
-    PairCandledaily,
+    PairCandleDaily,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -52,7 +52,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
             PDCloseMinute,
             PairCandleMinute,
             PairCandleHourly,
-            PairCandledaily
+            PairCandleDaily
         ]),
     ],
     providers: [TimescaleDBQueryService, TimescaleDBWriteService],
