@@ -261,13 +261,13 @@ export class TokenBurnedWeekly {
           max(value) AS high,
           last(value, timestamp) AS close
       FROM "hyper_dex_analytics"
-      WHERE key in ('firstTokenPrice','secondTokenPrice')
+      WHERE key in ('firstTokenPrice','secondTokenPrice', 'priceUSD')
       GROUP BY time, series, key ORDER BY time ASC;
   `,
   materialized: true,
-  name: 'pair_candle_minute',
+  name: 'price_candle_minute',
 })
-export class PairCandleMinute {
+export class PriceCandleMinute {
   @ViewColumn()
   @PrimaryColumn()
   time: Date = new Date();
@@ -299,14 +299,14 @@ export class PairCandleMinute {
           min(low) AS low,
           max(high) AS high,
           last(close, time) AS close
-      FROM "pair_candle_minute"
+      FROM "price_candle_minute"
       GROUP BY time_bucket('1 hour', time), series, key ORDER BY time ASC;
   `,
   materialized: true,
-  name: 'pair_candle_hourly',
-  dependsOn: ['pair_candle_minute'],
+  name: 'price_candle_hourly',
+  dependsOn: ['price_candle_minute'],
 })
-export class PairCandleHourly {
+export class PriceCandleHourly {
   @ViewColumn()
   @PrimaryColumn()
   time: Date = new Date();
@@ -338,14 +338,14 @@ export class PairCandleHourly {
           min(low) AS low,
           max(high) AS high,
           last(close, time) AS close
-      FROM "pair_candle_hourly"
+      FROM "price_candle_hourly"
       GROUP BY time_bucket('1 day', time), series, key ORDER BY time ASC;
   `,
   materialized: true,
-  name: 'pair_candle_daily',
+  name: 'price_candle_daily',
   dependsOn: ['pair_candle_hourly'],
 })
-export class PairCandleDaily {
+export class PriceCandleDaily {
   @ViewColumn()
   @PrimaryColumn()
   time: Date = new Date();

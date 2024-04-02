@@ -8,9 +8,9 @@ import {
     CloseDaily,
     CloseHourly,
     PDCloseMinute,
-    PairCandleHourly,
-    PairCandleMinute,
-    PairCandleDaily,
+    PriceCandleHourly,
+    PriceCandleMinute,
+    PriceCandleDaily,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -28,6 +28,7 @@ import { PairCandlesResolutions } from 'src/modules/analytics/models/query.args'
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+        private readonly cacheService: CacheService,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
@@ -42,12 +43,12 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
         @InjectRepository(PDCloseMinute)
         private readonly pdCloseMinute: Repository<PDCloseMinute>,
-        @InjectRepository(PairCandleMinute)
-        private readonly pairCandleMinute: Repository<PairCandleMinute>,
-        @InjectRepository(PairCandleHourly)
-        private readonly pairCandleHourly: Repository<PairCandleHourly>,
-        @InjectRepository(PairCandleDaily)
-        private readonly pairCandleDaily: Repository<PairCandleDaily>,
+        @InjectRepository(PriceCandleMinute)
+        private readonly pairCandleMinute: Repository<PriceCandleMinute>,
+        @InjectRepository(PriceCandleHourly)
+        private readonly pairCandleHourly: Repository<PriceCandleHourly>,
+        @InjectRepository(PriceCandleDaily)
+        private readonly pairCandleDaily: Repository<PriceCandleDaily>,
     ) {}
 
     @TimescaleDBQuery()
@@ -430,7 +431,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     private getCandleModelByResolution(resolution: PairCandlesResolutions): 
-        Repository<PairCandleMinute | PairCandleHourly | PairCandleDaily> {
+        Repository<PriceCandleMinute | PriceCandleHourly | PriceCandleDaily> {
         if (resolution.includes('minute')) {
             return this.pairCandleMinute;
         }
