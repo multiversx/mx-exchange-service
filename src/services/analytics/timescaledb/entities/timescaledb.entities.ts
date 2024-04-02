@@ -251,3 +251,120 @@ export class TokenBurnedWeekly {
         Object.assign(this, init);
     }
 }
+
+@ViewEntity({
+  expression: `
+      SELECT
+          time_bucket('1 minute', timestamp) AS time, series, key,
+          first(value, timestamp) AS open,
+          min(value) AS low,
+          max(value) AS high,
+          last(value, timestamp) AS close
+      FROM "hyper_dex_analytics"
+      WHERE key in ('firstTokenPrice','secondTokenPrice')
+      GROUP BY time, series, key ORDER BY time ASC;
+  `,
+  materialized: true,
+  name: 'pair_candle_minute',
+})
+export class PairCandleMinute {
+  @ViewColumn()
+  @PrimaryColumn()
+  time: Date = new Date();
+
+  @ViewColumn()
+  series: string;
+
+  @ViewColumn()
+  key: string;
+
+  @ViewColumn()
+  open = '0';
+
+  @ViewColumn()
+  close = '0';
+
+  @ViewColumn()
+  low = '0';
+
+  @ViewColumn()
+  high = '0';
+}
+
+@ViewEntity({
+  expression: `
+      SELECT
+          time_bucket('1 hour', time) AS time, series, key,
+          first(open, time) AS open,
+          min(low) AS low,
+          max(high) AS high,
+          last(close, time) AS close
+      FROM "pair_candle_minute"
+      GROUP BY time_bucket('1 hour', time), series, key ORDER BY time ASC;
+  `,
+  materialized: true,
+  name: 'pair_candle_hourly',
+  dependsOn: ['pair_candle_minute'],
+})
+export class PairCandleHourly {
+  @ViewColumn()
+  @PrimaryColumn()
+  time: Date = new Date();
+
+  @ViewColumn()
+  series: string;
+
+  @ViewColumn()
+  key: string;
+
+  @ViewColumn()
+  open = '0';
+
+  @ViewColumn()
+  close = '0';
+
+  @ViewColumn()
+  low = '0';
+
+  @ViewColumn()
+  high = '0';
+}
+
+@ViewEntity({
+  expression: `
+      SELECT
+          time_bucket('1 day', time) AS time, series, key,
+          first(open, time) AS open,
+          min(low) AS low,
+          max(high) AS high,
+          last(close, time) AS close
+      FROM "pair_candle_hourly"
+      GROUP BY time_bucket('1 day', time), series, key ORDER BY time ASC;
+  `,
+  materialized: true,
+  name: 'pair_candle_daily',
+  dependsOn: ['pair_candle_hourly'],
+})
+export class PairCandledaily {
+  @ViewColumn()
+  @PrimaryColumn()
+  time: Date = new Date();
+
+  @ViewColumn()
+  series: string;
+
+  @ViewColumn()
+  key: string;
+
+  @ViewColumn()
+  open = '0';
+
+  @ViewColumn()
+  close = '0';
+
+  @ViewColumn()
+  low = '0';
+
+  @ViewColumn()
+  high = '0';
+}
