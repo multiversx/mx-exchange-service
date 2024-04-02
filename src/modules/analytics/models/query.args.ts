@@ -23,7 +23,7 @@ export class AnalyticsQueryArgs {
     bin: string;
 }
 
-export enum PairCandlesResolutions {
+export enum PriceCandlesResolutions {
     MINUTE_1 = '1 minute',
     MINUTE_5 = '5 minutes',
     MINUTE_15 = '15 minutes',
@@ -35,16 +35,22 @@ export enum PairCandlesResolutions {
     MONTH_1 = '1 month'
 }
 
-registerEnumType(PairCandlesResolutions, { name: 'PairCandlesResolutions' })
+registerEnumType(PriceCandlesResolutions, { name: 'PriceCandlesResolutions' })
 
 @ArgsType()
-export class PairsCandlesQueryArgs {
+export class PriceCandlesQueryArgs {
     @Field()
-    pairAddress: string;
+    @IsValidSeries()
+    series: string;
     @Field()
+    @IsValidMetric()
+    metric: string;
+    @Field()
+    @IsValidUnixTime()
     startDate: string;
     @Field({ nullable: true })
+    @IsValidUnixTime()
     endDate: string;
-    @Field(() => PairCandlesResolutions)  // todo add validation
-    resolution: PairCandlesResolutions;
+    @Field(() => PriceCandlesResolutions)  // todo add validation
+    resolution: PriceCandlesResolutions;
 }

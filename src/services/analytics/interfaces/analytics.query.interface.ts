@@ -29,7 +29,7 @@ export interface AnalyticsQueryInterface {
         endDate,
     }): Promise<HistoricDataModel[]>;
 
-    getPairCandles({
+    getPriceCandles({
         series,
         key,
         resolution,

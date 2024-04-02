@@ -1,12 +1,13 @@
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
-import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { AnalyticsQueryArgs } from './models/query.args';
+import { CandleDataModel, HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import { AnalyticsQueryArgs, PriceCandlesQueryArgs } from './models/query.args';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { TokenService } from '../tokens/services/token.service';
+import { AnalyticsPairService } from './services/analytics.pair.service';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -15,6 +16,7 @@ export class AnalyticsResolver {
         private readonly analyticsCompute: AnalyticsComputeService,
         private readonly tokenService: TokenService,
         private readonly pairCompute: PairComputeService,
+        private readonly analyticsPairService: AnalyticsPairService,
     ) {}
 
     @Query(() => String)
@@ -168,4 +170,17 @@ export class AnalyticsResolver {
     ): Promise<HistoricDataModel[]> {
         return [];
     }
+
+    @Query(() => [CandleDataModel])
+    async priceCandles(
+        @Args() args: PriceCandlesQueryArgs,
+    ): Promise<CandleDataModel[]> {
+          return this.analyticsPairService.getPriceCandles(
+              args.series,
+              args.metric,
+              args.startDate, 
+              args.endDate, 
+              args.resolution
+          );
+      }
 }

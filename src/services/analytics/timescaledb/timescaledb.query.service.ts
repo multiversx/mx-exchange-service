@@ -22,7 +22,7 @@ import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decor
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { PairCandlesResolutions } from 'src/modules/analytics/models/query.args';
+import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
@@ -44,11 +44,11 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         @InjectRepository(PDCloseMinute)
         private readonly pdCloseMinute: Repository<PDCloseMinute>,
         @InjectRepository(PriceCandleMinute)
-        private readonly pairCandleMinute: Repository<PriceCandleMinute>,
+        private readonly priceCandleMinute: Repository<PriceCandleMinute>,
         @InjectRepository(PriceCandleHourly)
-        private readonly pairCandleHourly: Repository<PriceCandleHourly>,
+        private readonly priceCandleHourly: Repository<PriceCandleHourly>,
         @InjectRepository(PriceCandleDaily)
-        private readonly pairCandleDaily: Repository<PriceCandleDaily>,
+        private readonly priceCandleDaily: Repository<PriceCandleDaily>,
     ) {}
 
     @TimescaleDBQuery()
@@ -344,7 +344,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
-    async getPairCandles({
+    async getPriceCandles({
         series,
         key,
         resolution,
@@ -430,16 +430,16 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    private getCandleModelByResolution(resolution: PairCandlesResolutions): 
+    private getCandleModelByResolution(resolution: PriceCandlesResolutions): 
         Repository<PriceCandleMinute | PriceCandleHourly | PriceCandleDaily> {
         if (resolution.includes('minute')) {
-            return this.pairCandleMinute;
+            return this.priceCandleMinute;
         }
 
         if (resolution.includes('hour')) {
-            return this.pairCandleHourly;
+            return this.priceCandleHourly;
         }
 
-        return this.pairCandleDaily;
+        return this.priceCandleDaily;
     }
 }

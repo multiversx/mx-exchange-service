@@ -74,7 +74,7 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         });
     }
 
-    async getPairCandles({
+    async getPriceCandles({
         series,
         key,
         resolution,
@@ -82,7 +82,7 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         endDate,
     }): Promise<CandleDataModel[]> {
       const service = await this.getService();
-      return await service.getPairCandles({
+      return await service.getPriceCandles({
           series,
           key,
           resolution,

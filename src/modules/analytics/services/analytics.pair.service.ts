@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { HistoricDataModel, PairCandlesModel, PairDayDataModel } from '../models/analytics.model';
+import { CandleDataModel, HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
 import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
-import { PairCandlesResolutions } from '../models/query.args';
+import { PriceCandlesResolutions } from '../models/query.args';
 
 @Injectable()
 export class AnalyticsPairService {
@@ -15,7 +14,6 @@ export class AnalyticsPairService {
         private readonly routerAbi: RouterAbiService,
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
         private readonly analyticsQueryService: AnalyticsQueryService,
-        private readonly cacheService: CacheService,
     ) {}
 
     async getClosingLockedValueUSD(
@@ -126,35 +124,19 @@ export class AnalyticsPairService {
         return pairsDayDatas;
     }
 
-    async getPairCandles(
-        pairAddress: string,
+    async getPriceCandles(
+        series: string,
+        metric: string,
         startDate: string,
         endDate: string,
-        resolution: PairCandlesResolutions,
-    ): Promise<PairCandlesModel> {
-       
-        const [firstTokencandles, secondTokencandles] = await Promise.all([
-            this.analyticsQueryService.getPairCandles({
-                series: pairAddress,
-                key: 'firstTokenPrice',
-                resolution: resolution,
-                startDate: startDate,
-                endDate: endDate
-            }),
-            this.analyticsQueryService.getPairCandles({
-                series: pairAddress,
-                key: 'secondTokenPrice',
-                resolution: resolution,
-                startDate: startDate,
-                endDate: endDate
-            }),
-
-        ])
-
-        return new PairCandlesModel({
-          address: pairAddress,
-          firstTokenCandles: firstTokencandles,
-          secondTokenCandles: secondTokencandles
-        });
+        resolution: PriceCandlesResolutions,
+    ): Promise<CandleDataModel[]> {
+        return await this.analyticsQueryService.getPriceCandles({
+            series: series,
+            key: metric,
+            resolution: resolution,
+            startDate: startDate,
+            endDate: endDate
+        })
     }
 }

@@ -77,27 +77,3 @@ export class CandleDataModel {
       Object.assign(this, init);
   }
 }
-
-
-@ObjectType()
-export class PairCandlesModel {
-    @Field()
-    address: string;
-
-    @Field()
-    firstToken: EsdtToken;
-
-    @Field()
-    secondToken: EsdtToken;
-
-    @Field(() => [CandleDataModel])
-    firstTokenCandles: CandleDataModel[];
-
-    @Field(() => [CandleDataModel])
-    secondTokenCandles: CandleDataModel[];
-
-  
-    constructor(init?: Partial<PairCandlesModel>) {
-      Object.assign(this, init);
-  }
-}
