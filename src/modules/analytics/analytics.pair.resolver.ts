@@ -1,5 +1,5 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { PairCandleModel, PairDayDataModel } from './models/analytics.model';
+import { PairCandlesModel, PairDayDataModel } from './models/analytics.model';
 import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairService } from '../pair/services/pair.service';
 
@@ -30,10 +30,18 @@ export class PairDayDataResolver {
         return this.analyticsPairService.getPairsDayDatas();
     }
 
-    @Query(() => [PairCandleModel])
+    @Query(() => PairCandlesModel)
     async pairsCandles(
         @Args('pairAddress') pairAddress: string,
-    ): Promise<PairCandleModel[]> {
-        return this.analyticsPairService.getPairCandles(pairAddress);
+        @Args('startDate') startDate: string,
+        @Args('endDate') endDate: string,
+        @Args('resolution') resolution: string,
+    ): Promise<PairCandlesModel> {
+        return this.analyticsPairService.getPairCandles(
+            pairAddress, 
+            startDate, 
+            endDate, 
+            resolution
+        );
     }
 }

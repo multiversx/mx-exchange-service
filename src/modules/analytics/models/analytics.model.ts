@@ -70,23 +70,8 @@ export class CandleDataModel {
     @Field()
     time: string;
 
-    @Field()
-    series: string;
-
-    @Field()
-    key: EsdtToken;
-
-    @Field()
-    open: EsdtToken;
-
-    @Field()
-    low: string;
-
-    @Field()
-    high: string;
-
-    @Field()
-    close: string;
+    @Field(() => [Number])
+    ohlc: number[];
 
     constructor(init?: Partial<CandleDataModel>) {
       Object.assign(this, init);
@@ -95,44 +80,24 @@ export class CandleDataModel {
 
 
 @ObjectType()
-export class PairCandleModel {
-    @Field()
-    time: string;
-
+export class PairCandlesModel {
     @Field()
     address: string;
 
     @Field()
-    firstToken: EsdtToken;
+    firstTokenID: string;
 
     @Field()
-    secondToken: EsdtToken;
+    secondTokenID: string;
 
-    @Field()
-    firstTokenOpen: string;
+    @Field(() => [CandleDataModel])
+    firstTokenCandles: CandleDataModel[];
 
-    @Field()
-    firstTokenClose: string;
+    @Field(() => [CandleDataModel])
+    secondTokenCandles: CandleDataModel[];
 
-    @Field()
-    firstTokenLow: string;
-
-    @Field()
-    firstTokenHigh: string;
-
-    @Field()
-    secondTokenOpen: string;
-
-    @Field()
-    secondTokenClose: string;
-
-    @Field()
-    secondTokenLow: string;
-
-    @Field()
-    secondTokenHigh: string;
-
-    constructor(init?: Partial<PairCandleModel>) {
+  
+    constructor(init?: Partial<PairCandlesModel>) {
       Object.assign(this, init);
   }
 }
