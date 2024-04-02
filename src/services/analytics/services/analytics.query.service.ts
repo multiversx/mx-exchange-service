@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import { CandleDataModel, HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { TimescaleDBQueryService } from '../timescaledb/timescaledb.query.service';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
@@ -72,6 +72,21 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
             startDate,
             endDate,
         });
+    }
+
+    async getPairCandles({
+        series,
+        key,
+        startDate,
+        endDate,
+    }): Promise<CandleDataModel[]> {
+      const service = await this.getService();
+      return await service.getPairCandles({
+          series,
+          key,
+          startDate,
+          endDate
+      });
     }
 
     private async getService(): Promise<AnalyticsQueryInterface> {
