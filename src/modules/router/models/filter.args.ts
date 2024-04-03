@@ -12,4 +12,8 @@ export class PairFilterArgs {
     issuedLpToken = true;
     @Field({ nullable: true })
     state: string;
+    @Field({ nullable: true })
+    minVolume: number;
+    @Field({ nullable: true })
+    feeState: boolean;
 }
