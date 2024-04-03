@@ -21,6 +21,7 @@ export default new DataSource({
     username: configService.get('TIMESCALEDB_USERNAME'),
     password: configService.get('TIMESCALEDB_PASSWORD'),
     database: configService.get('TIMESCALEDB_DATABASE'),
+    migrationsTransactionMode: "each",
     entities: [
         XExchangeAnalyticsEntity,
         SumMinute,
