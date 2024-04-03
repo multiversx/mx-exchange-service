@@ -21,7 +21,6 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
-import { RouterService } from 'src/modules/router/services/router.service';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -38,7 +37,6 @@ export class AnalyticsComputeService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
-        private readonly routerService: RouterService,
     ) {}
 
     @ErrorLoggerAsync()
