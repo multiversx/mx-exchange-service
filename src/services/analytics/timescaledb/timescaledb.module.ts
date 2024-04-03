@@ -10,6 +10,7 @@ import {
     PDCloseMinute,
     SumDaily,
     SumHourly,
+    SumMinute,
     TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
 } from './entities/timescaledb.entities';
@@ -47,6 +48,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
             CloseHourly,
             TokenBurnedWeekly,
             PDCloseMinute,
+            SumMinute
         ]),
     ],
     providers: [TimescaleDBQueryService, TimescaleDBWriteService],

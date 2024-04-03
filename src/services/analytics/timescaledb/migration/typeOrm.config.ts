@@ -6,6 +6,7 @@ import {
     CloseHourly,
     SumDaily,
     SumHourly,
+    SumMinute,
     XExchangeAnalyticsEntity,
 } from '../entities/timescaledb.entities';
 
@@ -22,6 +23,7 @@ export default new DataSource({
     database: configService.get('TIMESCALEDB_DATABASE'),
     entities: [
         XExchangeAnalyticsEntity,
+        SumMinute,
         SumDaily,
         SumHourly,
         CloseDaily,
