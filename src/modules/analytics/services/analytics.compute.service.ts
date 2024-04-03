@@ -21,9 +21,7 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
-import { GetPairsArgs, PairModel } from 'src/modules/pair/models/pair.model';
 import { RouterService } from 'src/modules/router/services/router.service';
-import { PairFilterArgs } from 'src/modules/router/models/filter.args';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -274,36 +272,5 @@ export class AnalyticsComputeService {
         return unfilteredPairAddresses
             .filter((pair) => pair.lpTokenId !== undefined)
             .map((pair) => pair.pairAddress);
-    }
-
-    @ErrorLoggerAsync()
-    async computePairsWithoutBuybackAndBurn(
-      page: GetPairsArgs, 
-      filter: PairFilterArgs, 
-      minVolume: number
-    ): Promise<PairModel[]> {
-      let pairs = await this.routerService.getAllPairs(page.offset, page.limit, filter);
-      pairs = await this.filterPairsByFeeState(pairs, false);
-
-      return await this.filterPairsByVolume(pairs, minVolume);
-    }
-
-    private async filterPairsByFeeState(pairs: PairModel[], feeState: boolean) {
-      const pairFeeStates = await Promise.all(
-        pairs.map(pair => this.pairAbi.feeState(pair.address))
-      )
-
-      return pairs.filter((pair, index) => pairFeeStates[index] === feeState)
-    }
-
-    private async filterPairsByVolume(pairs: PairModel[], minVolume: number) {
-      const pairVolumes = await Promise.all(
-        pairs.map(pair => this.pairCompute.volumeUSD(pair.address, '24h'))
-      )
-
-      return pairs.filter((pair, index) => {
-        const volume = new BigNumber(pairVolumes[index])
-        return volume.gte(minVolume)
-      })
     }
 }
