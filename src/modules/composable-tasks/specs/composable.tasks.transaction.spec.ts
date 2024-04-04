@@ -11,6 +11,7 @@ import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { ComposableTaskType } from '../models/composable.tasks.model';
 import { Address } from '@multiversx/sdk-core/out';
 import { gasConfig } from 'src/config';
+import { encodeTransactionData } from 'src/helpers/helpers';
 
 describe('Composable Tasks Transaction', () => {
     let module: TestingModule;
@@ -90,15 +91,17 @@ describe('Composable Tasks Transaction', () => {
             ComposableTasksTransactionService,
         );
 
-        const transaction = await service.wrapEgldAndSwapFixedInputTransaction(
+        const transaction = await service.wrapEgldAndSwapTransaction(
             '1000000000000000000',
             'USDC-123456',
             '20000000',
+            'swapTokensFixedInput',
         );
 
         expect(transaction).toEqual({
             chainID: 'T',
-            data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNDAxMzEyZDAwQEBAMDJAMDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDQwMTMxMmQwMA==',
+            data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNDAxMzEyZDAwQEBAMDJAMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDQwMTMxMmQwMA==',
+
             gasLimit: gasConfig.composableTasks.default,
             gasPrice: 1000000000,
             guardian: undefined,
@@ -120,19 +123,19 @@ describe('Composable Tasks Transaction', () => {
             ComposableTasksTransactionService,
         );
 
-        const transaction =
-            await service.swapFixedInputAndUnwrapEgldTransaction(
-                new EsdtTokenPayment({
-                    tokenIdentifier: 'USDC-123456',
-                    tokenNonce: 0,
-                    amount: '20000000',
-                }),
-                '1000000000000000000',
-            );
+        const transaction = await service.swapAndUnwrapEgldTransaction(
+            new EsdtTokenPayment({
+                tokenIdentifier: 'USDC-123456',
+                tokenNonce: 0,
+                amount: '20000000',
+            }),
+            '1000000000000000000',
+            'swapTokensFixedInput',
+        );
 
         expect(transaction).toEqual({
             chainID: 'T',
-            data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDEzMTJkMDBANjM2ZjZkNzA2ZjczNjU1NDYxNzM2YjczQDAwMDAwMDA0NDU0NzRjNDQwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDgwZGUwYjZiM2E3NjQwMDAwQDAyQDAwMDAwMDBjNTc0NTQ3NGM0NDJkMzEzMjMzMzQzNTM2MDAwMDAwMDgwZGUwYjZiM2E3NjQwMDAwQDAxQA==',
+            data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDEzMTJkMDBANjM2ZjZkNzA2ZjczNjU1NDYxNzM2YjczQDAwMDAwMDA0NDU0NzRjNDQwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDgwZGUwYjZiM2E3NjQwMDAwQDAyQDAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBjNTc0NTQ3NGM0NDJkMzEzMjMzMzQzNTM2MDAwMDAwMDgwZGUwYjZiM2E3NjQwMDAwQDAxQA==',
             gasLimit: gasConfig.composableTasks.default,
             gasPrice: 1000000000,
             guardian: undefined,
