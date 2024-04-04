@@ -342,7 +342,7 @@ export class PairTransactionService {
     async swapTokensFixedOutput(
         sender: string,
         args: SwapTokensFixedOutputArgs,
-    ): Promise<TransactionModel[]> {
+    ): Promise<TransactionModel> {
         await this.validateTokens(args.pairAddress, [
             new InputTokenModel({
                 tokenID: args.tokenInID,
@@ -354,100 +354,55 @@ export class PairTransactionService {
             }),
         ]);
 
-        const transactions: TransactionModel[] = [];
-        let endpointArgs: TypedValue[];
-        const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
-            this.wrapAbi.wrappedEgldTokenID(),
+        const amountIn = new BigNumber(args.amountIn);
+        const amountOut = new BigNumber(args.amountOut);
+
+        if (args.tokenInID === mxConfig.EGLDIdentifier) {
+            return this.composableTasksTransaction.wrapEgldAndSwapTransaction(
+                args.amountIn,
+                args.tokenOutID,
+                args.amountOut,
+                'swapTokensFixedOutput',
+            );
+        }
+
+        if (args.tokenOutID === mxConfig.EGLDIdentifier) {
+            return this.composableTasksTransaction.swapAndUnwrapEgldTransaction(
+                new EsdtTokenPayment({
+                    tokenIdentifier: args.tokenInID,
+                    tokenNonce: 0,
+                    amount: args.amountIn,
+                }),
+                args.amountOut,
+                'swapTokensFixedOutput',
+            );
+        }
+
+        const [contract, trustedSwapPairs] = await Promise.all([
             this.mxProxy.getPairSmartContract(args.pairAddress),
             this.pairAbi.trustedSwapPairs(args.pairAddress),
         ]);
-
-        const amountIn = new BigNumber(args.amountIn);
-        const amountOut = new BigNumber(args.amountOut);
 
         const gasLimit =
             trustedSwapPairs.length === 0
                 ? gasConfig.pairs.swapTokensFixedOutput.default
                 : gasConfig.pairs.swapTokensFixedOutput.withFeeSwap;
 
-        switch (mxConfig.EGLDIdentifier) {
-            case args.tokenInID:
-                transactions.push(
-                    await this.wrapTransaction.wrapEgld(
-                        sender,
-                        amountIn.toString(),
-                    ),
-                );
-
-                endpointArgs = [
-                    BytesValue.fromUTF8(args.tokenOutID),
-                    new BigUIntValue(amountOut),
-                ];
-
-                transactions.push(
-                    contract.methodsExplicit
-                        .swapTokensFixedOutput(endpointArgs)
-                        .withSingleESDTTransfer(
-                            TokenTransfer.fungibleFromBigInteger(
-                                wrappedTokenID,
-                                new BigNumber(amountIn),
-                            ),
-                        )
-                        .withGasLimit(gasLimit)
-                        .withChainID(mxConfig.chainID)
-                        .buildTransaction()
-                        .toPlainObject(),
-                );
-                break;
-            case args.tokenOutID:
-                endpointArgs = [
-                    BytesValue.fromUTF8(wrappedTokenID),
-                    new BigUIntValue(amountOut),
-                ];
-                transactions.push(
-                    contract.methodsExplicit
-                        .swapTokensFixedOutput(endpointArgs)
-                        .withSingleESDTTransfer(
-                            TokenTransfer.fungibleFromBigInteger(
-                                args.tokenInID,
-                                new BigNumber(amountIn),
-                            ),
-                        )
-                        .withGasLimit(gasLimit)
-                        .withChainID(mxConfig.chainID)
-                        .buildTransaction()
-                        .toPlainObject(),
-                );
-                transactions.push(
-                    await this.wrapTransaction.unwrapEgld(
-                        sender,
-                        args.amountOut,
-                    ),
-                );
-                break;
-            default:
-                endpointArgs = [
-                    BytesValue.fromUTF8(args.tokenOutID),
-                    new BigUIntValue(amountOut),
-                ];
-
-                transactions.push(
-                    contract.methodsExplicit
-                        .swapTokensFixedOutput(endpointArgs)
-                        .withSingleESDTTransfer(
-                            TokenTransfer.fungibleFromBigInteger(
-                                args.tokenInID,
-                                new BigNumber(amountIn),
-                            ),
-                        )
-                        .withGasLimit(gasLimit)
-                        .withChainID(mxConfig.chainID)
-                        .buildTransaction()
-                        .toPlainObject(),
-                );
-                break;
-        }
-        return transactions;
+        return contract.methodsExplicit
+            .swapTokensFixedOutput([
+                BytesValue.fromUTF8(args.tokenOutID),
+                new BigUIntValue(amountOut),
+            ])
+            .withSingleESDTTransfer(
+                TokenTransfer.fungibleFromBigInteger(
+                    args.tokenInID,
+                    new BigNumber(amountIn),
+                ),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async validateTokens(

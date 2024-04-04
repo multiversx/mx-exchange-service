@@ -469,16 +469,19 @@ export class AutoRouterService {
                 return [transaction];
             }
 
-            return await this.pairTransactionService.swapTokensFixedOutput(
-                sender,
-                {
-                    pairAddress: parent.pairs[0].address,
-                    tokenInID: parent.tokenInID,
-                    tokenOutID: parent.tokenOutID,
-                    amountIn: parent.amountIn,
-                    amountOut: parent.amountOut,
-                },
-            );
+            const transaction =
+                await this.pairTransactionService.swapTokensFixedOutput(
+                    sender,
+                    {
+                        pairAddress: parent.pairs[0].address,
+                        tokenInID: parent.tokenInID,
+                        tokenOutID: parent.tokenOutID,
+                        amountIn: parent.amountIn,
+                        amountOut: parent.amountOut,
+                    },
+                );
+
+            return [transaction];
         }
 
         if (
