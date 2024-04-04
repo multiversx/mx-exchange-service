@@ -54,16 +54,49 @@ export class XExchangeAnalyticsEntity {
 }
 
 @ViewEntity({
+  expression: `
+      SELECT
+          time_bucket('1 minute', timestamp) AS time, series, key,
+          last(value, timestamp) AS last,
+          sum(value) AS sum
+      FROM "hyper_dex_analytics"
+      WHERE key = 'feesUSD' OR key = 'volumeUSD'
+      GROUP BY time, series, key;
+`,
+  materialized: true,
+  name: 'sum_minute',
+})
+export class SumMinute {
+  @ViewColumn()
+  @PrimaryColumn()
+  time: Date = new Date();
+
+  @ViewColumn()
+  sum = '0';
+
+  @ViewColumn()
+  series?: string;
+
+  @ViewColumn()
+  key?: string;
+
+  constructor(init?: Partial<SumMinute>) {
+      Object.assign(this, init);
+  }
+}
+
+@ViewEntity({
     expression: `
-    SELECT
-      time_bucket('1 day', timestamp) AS time, series, key,
-      last(value, timestamp) AS last,sum(value) AS sum
-    FROM "hyper_dex_analytics"
-    WHERE key = 'feesUSD' OR key = 'volumeUSD'
-    GROUP BY time, series, key;
+        SELECT
+            time_bucket('1 day', time) AS time, series, key,
+            last(last, time) AS last,
+            sum(sum) AS sum
+        FROM "sum_hourly"
+        GROUP BY time_bucket('1 day', time), series, key;
   `,
     materialized: true,
     name: 'sum_daily',
+    dependsOn: ['sum_hourly']
 })
 export class SumDaily {
     @ViewColumn()
@@ -86,16 +119,16 @@ export class SumDaily {
 
 @ViewEntity({
     expression: `
-    SELECT
-      time_bucket('1 hour', timestamp) AS time, series, key,
-      last(value, timestamp) AS last,sum(value) AS sum
-    FROM "hyper_dex_analytics"
-    WHERE key = 'feesUSD' OR key = 'volumeUSD'
-    AND timestamp >= NOW() - INTERVAL '1 day'
-    GROUP BY time, series, key;
+        SELECT
+            time_bucket('1 hour', time) AS time, series, key,
+            last(last, time) AS last,
+            sum(sum) AS sum
+        FROM "sum_minute"
+        GROUP BY time_bucket('1 hour', time), series, key;
   `,
     materialized: true,
     name: 'sum_hourly',
+    dependsOn: ['sum_minute']
 })
 export class SumHourly {
     @ViewColumn()
