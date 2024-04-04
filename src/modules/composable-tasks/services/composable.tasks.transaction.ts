@@ -83,10 +83,11 @@ export class ComposableTasksTransactionService {
         return interaction.buildTransaction().toPlainObject();
     }
 
-    async wrapEgldAndSwapFixedInputTransaction(
+    async wrapEgldAndSwapTransaction(
         value: string,
         tokenOutID: string,
         tokenOutAmountMin: string,
+        swapEndpoint: string,
     ): Promise<TransactionModel> {
         const wrapTask: ComposableTask = {
             type: ComposableTaskType.WRAP_EGLD,
@@ -96,6 +97,7 @@ export class ComposableTasksTransactionService {
         const swapTask: ComposableTask = {
             type: ComposableTaskType.SWAP,
             arguments: [
+                new BytesValue(Buffer.from(swapEndpoint, 'utf-8')),
                 new BytesValue(Buffer.from(tokenOutID, 'utf-8')),
                 new BytesValue(
                     Buffer.from(
@@ -120,15 +122,17 @@ export class ComposableTasksTransactionService {
         );
     }
 
-    async swapFixedInputAndUnwrapEgldTransaction(
+    async swapAndUnwrapEgldTransaction(
         payment: EsdtTokenPayment,
         minimumValue: string,
+        swapEndpoint: string,
     ): Promise<TransactionModel> {
         const wrappedEgldTokenID = await this.wrapAbi.wrappedEgldTokenID();
 
         const swapTask: ComposableTask = {
             type: ComposableTaskType.SWAP,
             arguments: [
+                new BytesValue(Buffer.from(swapEndpoint, 'utf-8')),
                 new BytesValue(Buffer.from(wrappedEgldTokenID, 'utf-8')),
                 new BytesValue(
                     Buffer.from(

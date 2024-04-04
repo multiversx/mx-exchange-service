@@ -289,21 +289,23 @@ export class PairTransactionService {
             .integerValue();
 
         if (args.tokenInID === mxConfig.EGLDIdentifier) {
-            return this.composableTasksTransaction.wrapEgldAndSwapFixedInputTransaction(
+            return this.composableTasksTransaction.wrapEgldAndSwapTransaction(
                 args.amountIn,
                 args.tokenOutID,
                 amountOutMin.toFixed(),
+                'swapTokensFixedInput',
             );
         }
 
         if (args.tokenOutID === mxConfig.EGLDIdentifier) {
-            return this.composableTasksTransaction.swapFixedInputAndUnwrapEgldTransaction(
+            return this.composableTasksTransaction.swapAndUnwrapEgldTransaction(
                 new EsdtTokenPayment({
                     tokenIdentifier: args.tokenInID,
                     tokenNonce: 0,
                     amount: args.amountIn,
                 }),
                 amountOutMin.toFixed(),
+                'swapTokensFixedInput',
             );
         }
 
