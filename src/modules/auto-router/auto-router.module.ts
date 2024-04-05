@@ -9,7 +9,7 @@ import { AutoRouterComputeService } from './services/auto-router.compute.service
 import { WrappingModule } from '../wrapping/wrap.module';
 import { RouterModule } from '../router/router.module';
 import { AutoRouterTransactionService } from './services/auto-router.transactions.service';
-import { AutoRouterResolver } from './auto-router.resolver';
+import { AutoRouterResolver, SwapRouteResolver } from './auto-router.resolver';
 import { PairTransactionService } from '../pair/services/pair.transactions.service';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { TokenModule } from '../tokens/token.module';
@@ -29,6 +29,7 @@ import { ComposableTasksModule } from '../composable-tasks/composable.tasks.modu
         RemoteConfigModule,
     ],
     providers: [
+        SwapRouteResolver,
         AutoRouterResolver,
         AutoRouterService,
         AutoRouterComputeService,
