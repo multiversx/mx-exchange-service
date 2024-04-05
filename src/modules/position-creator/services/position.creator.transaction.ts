@@ -26,6 +26,7 @@ import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.tran
 import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PositionCreatorTransactionModel } from '../models/position.creator.model';
 
 @Injectable()
 export class PositionCreatorTransactionService {
@@ -52,7 +53,7 @@ export class PositionCreatorTransactionService {
         payment: EsdtTokenPayment,
         tolerance: number,
         lockEpochs?: number,
-    ): Promise<TransactionModel> {
+    ): Promise<PositionCreatorTransactionModel> {
         const uniqueTokensIDs = await this.tokenService.getUniqueTokenIDs(
             false,
         );
@@ -71,6 +72,20 @@ export class PositionCreatorTransactionService {
                 tolerance,
             );
 
+        const swapRouteArgs =
+            this.autoRouterTransaction.multiPairFixedInputSwaps({
+                tokenInID: singleTokenPairInput.swapRoutes[0].tokenInID,
+                tokenOutID: singleTokenPairInput.swapRoutes[0].tokenOutID,
+                swapType: SWAP_TYPE.fixedInput,
+                tolerance,
+                addressRoute: singleTokenPairInput.swapRoutes[0].pairs.map(
+                    (pair) => pair.address,
+                ),
+                intermediaryAmounts:
+                    singleTokenPairInput.swapRoutes[0].intermediaryAmounts,
+                tokenRoute: singleTokenPairInput.swapRoutes[0].tokenRoute,
+            });
+
         const contract = lockEpochs
             ? await this.mxProxy.getLockedTokenPositionCreatorContract()
             : await this.mxProxy.getPostitionCreatorContract();
@@ -83,7 +98,7 @@ export class PositionCreatorTransactionService {
                     new U64Value(new BigNumber(lockEpochs)),
                     new BigUIntValue(singleTokenPairInput.amount0Min),
                     new BigUIntValue(singleTokenPairInput.amount1Min),
-                    ...singleTokenPairInput.swapRouteArgs,
+                    ...swapRouteArgs,
                 ],
             );
         } else {
@@ -91,7 +106,7 @@ export class PositionCreatorTransactionService {
                 new AddressValue(Address.fromBech32(pairAddress)),
                 new BigUIntValue(singleTokenPairInput.amount0Min),
                 new BigUIntValue(singleTokenPairInput.amount1Min),
-                ...singleTokenPairInput.swapRouteArgs,
+                ...swapRouteArgs,
             ]);
         }
 
@@ -113,7 +128,12 @@ export class PositionCreatorTransactionService {
             );
         }
 
-        return interaction.buildTransaction().toPlainObject();
+        const transaction = interaction.buildTransaction().toPlainObject();
+
+        return {
+            swaps: singleTokenPairInput.swapRoutes,
+            transactions: [transaction],
+        };
     }
 
     async createFarmPositionSingleToken(
@@ -122,7 +142,7 @@ export class PositionCreatorTransactionService {
         payments: EsdtTokenPayment[],
         tolerance: number,
         lockEpochs?: number,
-    ): Promise<TransactionModel[]> {
+    ): Promise<PositionCreatorTransactionModel> {
         const [pairAddress, farmTokenID, uniqueTokensIDs, wrappedEgldTokenID] =
             await Promise.all([
                 this.farmAbiV2.pairContractAddress(farmAddress),
@@ -161,6 +181,20 @@ export class PositionCreatorTransactionService {
                 tolerance,
             );
 
+        const swapRouteArgs =
+            this.autoRouterTransaction.multiPairFixedInputSwaps({
+                tokenInID: singleTokenPairInput[0].tokenInID,
+                tokenOutID: singleTokenPairInput[0].tokenOutID,
+                swapType: SWAP_TYPE.fixedInput,
+                tolerance,
+                addressRoute: singleTokenPairInput[0].pairs.map(
+                    (pair) => pair.address,
+                ),
+                intermediaryAmounts:
+                    singleTokenPairInput[0].intermediaryAmounts,
+                tokenRoute: singleTokenPairInput[0].tokenRoute,
+            });
+
         const contract = lockEpochs
             ? await this.mxProxy.getLockedTokenPositionCreatorContract()
             : await this.mxProxy.getPostitionCreatorContract();
@@ -170,13 +204,13 @@ export class PositionCreatorTransactionService {
                   new U64Value(new BigNumber(lockEpochs)),
                   new BigUIntValue(singleTokenPairInput.amount0Min),
                   new BigUIntValue(singleTokenPairInput.amount1Min),
-                  ...singleTokenPairInput.swapRouteArgs,
+                  ...swapRouteArgs,
               ]
             : [
                   new AddressValue(Address.fromBech32(farmAddress)),
                   new BigUIntValue(singleTokenPairInput.amount0Min),
                   new BigUIntValue(singleTokenPairInput.amount1Min),
-                  ...singleTokenPairInput.swapRouteArgs,
+                  ...swapRouteArgs,
               ];
 
         let interaction = contract.methodsExplicit
@@ -209,7 +243,10 @@ export class PositionCreatorTransactionService {
         }
 
         transactions.push(interaction.buildTransaction().toPlainObject());
-        return transactions;
+        return {
+            swaps: singleTokenPairInput.swapRoutes,
+            transactions,
+        };
     }
 
     async createDualFarmPositionSingleToken(
@@ -217,7 +254,7 @@ export class PositionCreatorTransactionService {
         stakingProxyAddress: string,
         payments: EsdtTokenPayment[],
         tolerance: number,
-    ): Promise<TransactionModel[]> {
+    ): Promise<PositionCreatorTransactionModel> {
         const [
             pairAddress,
             dualYieldTokenID,
@@ -263,6 +300,20 @@ export class PositionCreatorTransactionService {
                 tolerance,
             );
 
+        const swapRouteArgs =
+            this.autoRouterTransaction.multiPairFixedInputSwaps({
+                tokenInID: singleTokenPairInput[0].tokenInID,
+                tokenOutID: singleTokenPairInput[0].tokenOutID,
+                swapType: SWAP_TYPE.fixedInput,
+                tolerance,
+                addressRoute: singleTokenPairInput[0].pairs.map(
+                    (pair) => pair.address,
+                ),
+                intermediaryAmounts:
+                    singleTokenPairInput[0].intermediaryAmounts,
+                tokenRoute: singleTokenPairInput[0].tokenRoute,
+            });
+
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
         let interaction = contract.methodsExplicit
@@ -270,7 +321,7 @@ export class PositionCreatorTransactionService {
                 new AddressValue(Address.fromBech32(stakingProxyAddress)),
                 new BigUIntValue(singleTokenPairInput.amount0Min),
                 new BigUIntValue(singleTokenPairInput.amount1Min),
-                ...singleTokenPairInput.swapRouteArgs,
+                ...swapRouteArgs,
             ])
             .withSender(Address.fromBech32(sender))
             .withGasLimit(
@@ -302,7 +353,10 @@ export class PositionCreatorTransactionService {
         }
 
         transactions.push(interaction.buildTransaction().toPlainObject());
-        return transactions;
+        return {
+            swaps: singleTokenPairInput.swapRoutes,
+            transactions,
+        };
     }
 
     async createStakingPositionSingleToken(

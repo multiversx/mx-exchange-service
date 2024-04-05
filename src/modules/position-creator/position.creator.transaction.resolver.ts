@@ -7,6 +7,7 @@ import { PositionCreatorTransactionService } from './services/position.creator.t
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { AuthUser } from '../auth/auth.user';
+import { PositionCreatorTransactionModel } from './models/position.creator.model';
 
 @Resolver()
 @UseGuards(JwtOrNativeAuthGuard)
@@ -15,14 +16,14 @@ export class PositionCreatorTransactionResolver {
         private readonly posCreatorTransaction: PositionCreatorTransactionService,
     ) {}
 
-    @Query(() => TransactionModel)
+    @Query(() => PositionCreatorTransactionModel)
     async createPositionSingleToken(
         @AuthUser() user: UserAuthResult,
         @Args('pairAddress') pairAddress: string,
         @Args('payment') payment: InputTokenModel,
         @Args('tolerance') tolerance: number,
         @Args('lockEpochs', { nullable: true }) lockEpochs: number,
-    ): Promise<TransactionModel> {
+    ): Promise<PositionCreatorTransactionModel> {
         return this.posCreatorTransaction.createLiquidityPositionSingleToken(
             user.address,
             pairAddress,
@@ -36,7 +37,7 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
-    @Query(() => [TransactionModel])
+    @Query(() => PositionCreatorTransactionModel)
     async createFarmPositionSingleToken(
         @AuthUser() user: UserAuthResult,
         @Args('farmAddress') farmAddress: string,
@@ -44,7 +45,7 @@ export class PositionCreatorTransactionResolver {
         payments: InputTokenModel[],
         @Args('tolerance') tolerance: number,
         @Args('lockEpochs', { nullable: true }) lockEpochs: number,
-    ): Promise<TransactionModel[]> {
+    ): Promise<PositionCreatorTransactionModel> {
         return this.posCreatorTransaction.createFarmPositionSingleToken(
             user.address,
             farmAddress,
@@ -61,14 +62,14 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
-    @Query(() => [TransactionModel])
+    @Query(() => PositionCreatorTransactionModel)
     async createDualFarmPositionSingleToken(
         @AuthUser() user: UserAuthResult,
         @Args('dualFarmAddress') dualFarmAddress: string,
         @Args('payments', { type: () => [InputTokenModel] })
         payments: InputTokenModel[],
         @Args('tolerance') tolerance: number,
-    ): Promise<TransactionModel[]> {
+    ): Promise<PositionCreatorTransactionModel> {
         return this.posCreatorTransaction.createDualFarmPositionSingleToken(
             user.address,
             dualFarmAddress,
