@@ -3,18 +3,18 @@ import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { constantsConfig } from 'src/config';
 import {
     SWAP_TYPE,
     SwapRouteModel,
 } from 'src/modules/auto-router/models/auto-route.model';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
-import { AutoRouterTransactionService } from 'src/modules/auto-router/services/auto-router.transactions.service';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { StakingPositionSingleTokenModel } from '../models/position.creator.model';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 
 export type PositionCreatorSingleTokenInput = {
     swapRouteArgs: TypedValue[];
@@ -28,8 +28,8 @@ export class PositionCreatorComputeService {
         private readonly pairService: PairService,
         private readonly pairCompute: PairComputeService,
         private readonly routerAbi: RouterAbiService,
+        private readonly stakingAbi: StakingAbiService,
         private readonly autoRouterService: AutoRouterService,
-        private readonly autoRouterTransaction: AutoRouterTransactionService,
     ) {}
 
     async computeSwap(
@@ -181,35 +181,34 @@ export class PositionCreatorComputeService {
         return swapRoutes;
     }
 
-    async computeSingleTokenInput(
+    async computeStakingPositionSingleToken(
+        stakingAddress: string,
         payment: EsdtTokenPayment,
         tolerance: number,
-    ): Promise<PositionCreatorSingleTokenInput> {
-        const swapRoute = await this.autoRouterService.swap({
+    ): Promise<StakingPositionSingleTokenModel> {
+        const farmingTokenID = await this.stakingAbi.farmingTokenID(
+            stakingAddress,
+        );
+        const swapRoute = await this.computeSingleTokenInput(
+            payment,
+            farmingTokenID,
+            tolerance,
+        );
+        return new StakingPositionSingleTokenModel({
+            swaps: [swapRoute],
+        });
+    }
+
+    async computeSingleTokenInput(
+        payment: EsdtTokenPayment,
+        tokenOutID: string,
+        tolerance: number,
+    ): Promise<SwapRouteModel> {
+        return this.autoRouterService.swap({
             tokenInID: payment.tokenIdentifier,
             amountIn: payment.amount,
-            tokenOutID: constantsConfig.MEX_TOKEN_ID,
+            tokenOutID: tokenOutID,
             tolerance,
         });
-
-        const amountOutMin = new BigNumber(swapRoute.amountOut)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-
-        const swapRouteArgs =
-            this.autoRouterTransaction.multiPairFixedInputSwaps({
-                tokenInID: swapRoute.tokenInID,
-                tokenOutID: swapRoute.tokenOutID,
-                swapType: SWAP_TYPE.fixedInput,
-                tolerance,
-                addressRoute: swapRoute.pairs.map((pair) => pair.address),
-                intermediaryAmounts: swapRoute.intermediaryAmounts,
-                tokenRoute: swapRoute.tokenRoute,
-            });
-
-        return {
-            swapRouteArgs,
-            amountOutMin,
-        };
     }
 }

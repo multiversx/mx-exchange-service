@@ -50,3 +50,29 @@ export class DualFarmPositionSingleTokenModel {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class StakingPositionSingleTokenModel {
+    @Field(() => [SwapRouteModel])
+    swaps: SwapRouteModel[];
+
+    @Field(() => [TransactionModel], { nullable: true })
+    transactions?: TransactionModel[];
+
+    constructor(init: Partial<StakingPositionSingleTokenModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class EnergyPositionSingleTokenModel {
+    @Field(() => [SwapRouteModel])
+    swaps: SwapRouteModel[];
+
+    @Field(() => [TransactionModel], { nullable: true })
+    transactions?: TransactionModel[];
+
+    constructor(init: Partial<EnergyPositionSingleTokenModel>) {
+        Object.assign(this, init);
+    }
+}

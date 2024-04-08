@@ -9,14 +9,18 @@ import { UserAuthResult } from '../auth/user.auth.result';
 import { AuthUser } from '../auth/auth.user';
 import {
     DualFarmPositionSingleTokenModel,
+    EnergyPositionSingleTokenModel,
     FarmPositionSingleTokenModel,
     LiquidityPositionSingleTokenModel,
+    StakingPositionSingleTokenModel,
 } from './models/position.creator.model';
 import { PositionCreatorComputeService } from './services/position.creator.compute';
 import { FarmAbiServiceV2 } from '../farm/v2/services/farm.v2.abi.service';
 import { StakingProxyAbiService } from '../staking-proxy/services/staking.proxy.abi.service';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { constantsConfig } from 'src/config';
+import { StakingAbiService } from '../staking/services/staking.abi.service';
 
 @Resolver(() => LiquidityPositionSingleTokenModel)
 export class LiquidityPositionSingleTokenResolver {
@@ -68,7 +72,7 @@ export class FarmPositionSingleTokenResolver {
         @Args('farmAddress') farmAddress: string,
         @Args('additionalPayments', {
             type: () => [InputTokenModel],
-            nullable: true,
+            defaultValue: [],
         })
         additionalPayments: InputTokenModel[],
         @Args('lockEpochs', { nullable: true }) lockEpochs: number,
@@ -128,7 +132,7 @@ export class DualFarmPositionSingleTokenResolver {
         @Args('dualFarmAddress') dualFarmAddress: string,
         @Args('additionalPayments', {
             type: () => [InputTokenModel],
-            nullable: true,
+            defaultValue: [],
         })
         additionalPayments: InputTokenModel[],
     ): Promise<TransactionModel[]> {
@@ -168,6 +172,93 @@ export class DualFarmPositionSingleTokenResolver {
             ],
             parent.swaps[length - 1].tolerance,
             parent.swaps,
+        );
+    }
+}
+
+@Resolver(() => StakingPositionSingleTokenModel)
+export class StakingPositionSingleTokenResolver {
+    constructor(
+        private readonly posCreatorTransaction: PositionCreatorTransactionService,
+        private readonly stakingAbi: StakingAbiService,
+    ) {}
+
+    @ResolveField(() => [TransactionModel])
+    @UseGuards(JwtOrNativeAuthGuard)
+    async transactions(
+        @AuthUser() user: UserAuthResult,
+        @Parent() parent: StakingPositionSingleTokenModel,
+        @Args('stakingAddress') stakingAddress: string,
+        @Args('additionalPayments', {
+            type: () => [InputTokenModel],
+            defaultValue: [],
+        })
+        additionalPayments: InputTokenModel[],
+    ): Promise<TransactionModel[]> {
+        const farmingTokenID = await this.stakingAbi.farmingTokenID(
+            stakingAddress,
+        );
+        if (
+            farmingTokenID !== parent.swaps[parent.swaps.length - 1].tokenOutID
+        ) {
+            throw new GraphQLError('Invalid staking address', {
+                extensions: {
+                    code: ApolloServerErrorCode.BAD_USER_INPUT,
+                },
+            });
+        }
+
+        const firstPayment = new EsdtTokenPayment({
+            tokenIdentifier: parent.swaps[0].tokenInID,
+            tokenNonce: 0,
+            amount: parent.swaps[0].amountIn,
+        });
+
+        return this.posCreatorTransaction.createStakingPositionSingleToken(
+            user.address,
+            stakingAddress,
+            parent.swaps[0],
+            [
+                firstPayment,
+                ...additionalPayments.map(
+                    (payment) =>
+                        new EsdtTokenPayment({
+                            tokenIdentifier: payment.tokenID,
+                            tokenNonce: payment.nonce,
+                            amount: payment.amount,
+                        }),
+                ),
+            ],
+            parent.swaps[0].tolerance,
+        );
+    }
+}
+
+@Resolver(() => EnergyPositionSingleTokenModel)
+export class EnergyPositionSingleTokenResolver {
+    constructor(
+        private readonly posCreatorTransaction: PositionCreatorTransactionService,
+    ) {}
+
+    @ResolveField(() => [TransactionModel])
+    @UseGuards(JwtOrNativeAuthGuard)
+    async transactions(
+        @AuthUser() user: UserAuthResult,
+        @Parent() parent: EnergyPositionSingleTokenModel,
+        @Args('lockEpochs') lockEpochs: number,
+    ): Promise<TransactionModel[]> {
+        const firstPayment = new EsdtTokenPayment({
+            tokenIdentifier: parent.swaps[0].tokenInID,
+            tokenNonce: 0,
+            amount: parent.swaps[0].amountIn,
+        });
+
+        return this.posCreatorTransaction.createEnergyPosition(
+            user.address,
+            firstPayment,
+            parent.swaps[0],
+            lockEpochs,
+            parent.swaps[0].tolerance,
         );
     }
 }
@@ -253,25 +344,20 @@ export class PositionCreatorTransactionResolver {
         });
     }
 
-    @Query(() => [TransactionModel])
+    @Query(() => StakingPositionSingleTokenModel)
     async createStakingPositionSingleToken(
-        @AuthUser() user: UserAuthResult,
         @Args('stakingAddress') stakingAddress: string,
-        @Args('payments', { type: () => [InputTokenModel] })
-        payments: InputTokenModel[],
+        @Args('payment', { type: () => InputTokenModel })
+        payment: InputTokenModel,
         @Args('tolerance') tolerance: number,
-    ): Promise<TransactionModel[]> {
-        return this.posCreatorTransaction.createStakingPositionSingleToken(
-            user.address,
+    ): Promise<StakingPositionSingleTokenModel> {
+        return this.posCreatorCompute.computeStakingPositionSingleToken(
             stakingAddress,
-            payments.map(
-                (payment) =>
-                    new EsdtTokenPayment({
-                        tokenIdentifier: payment.tokenID,
-                        tokenNonce: payment.nonce,
-                        amount: payment.amount,
-                    }),
-            ),
+            new EsdtTokenPayment({
+                tokenIdentifier: payment.tokenID,
+                tokenNonce: payment.nonce,
+                amount: payment.amount,
+            }),
             tolerance,
         );
     }
@@ -341,22 +427,23 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
-    @Query(() => TransactionModel)
+    @Query(() => EnergyPositionSingleTokenModel)
     async createEnergyPosition(
-        @AuthUser() user: UserAuthResult,
         @Args('payment') payment: InputTokenModel,
-        @Args('lockEpochs') lockEpochs: number,
         @Args('tolerance') tolerance: number,
-    ): Promise<TransactionModel> {
-        return this.posCreatorTransaction.createEnergyPosition(
-            user.address,
+    ): Promise<EnergyPositionSingleTokenModel> {
+        const swapRoute = await this.posCreatorCompute.computeSingleTokenInput(
             new EsdtTokenPayment({
                 tokenIdentifier: payment.tokenID,
                 tokenNonce: payment.nonce,
                 amount: payment.amount,
             }),
-            lockEpochs,
+            constantsConfig.MEX_TOKEN_ID,
             tolerance,
         );
+
+        return new EnergyPositionSingleTokenModel({
+            swaps: [swapRoute],
+        });
     }
 }

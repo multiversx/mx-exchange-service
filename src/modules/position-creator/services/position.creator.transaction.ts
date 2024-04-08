@@ -354,20 +354,16 @@ export class PositionCreatorTransactionService {
     async createStakingPositionSingleToken(
         sender: string,
         stakingAddress: string,
+        swapRoute: SwapRouteModel,
         payments: EsdtTokenPayment[],
         tolerance: number,
     ): Promise<TransactionModel[]> {
-        const [
-            farmingTokenID,
-            farmTokenID,
-            uniqueTokensIDs,
-            wrappedEgldTokenID,
-        ] = await Promise.all([
-            this.stakingAbi.farmingTokenID(stakingAddress),
-            this.stakingAbi.farmTokenID(stakingAddress),
-            this.tokenService.getUniqueTokenIDs(false),
-            this.wrapAbi.wrappedEgldTokenID(),
-        ]);
+        const [farmTokenID, uniqueTokensIDs, wrappedEgldTokenID] =
+            await Promise.all([
+                this.stakingAbi.farmTokenID(stakingAddress),
+                this.tokenService.getUniqueTokenIDs(false),
+                this.wrapAbi.wrappedEgldTokenID(),
+            ]);
 
         if (
             !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
@@ -391,13 +387,6 @@ export class PositionCreatorTransactionService {
                 await this.wrapTransaction.wrapEgld(sender, payments[0].amount),
             );
         }
-
-        const swapRoute = await this.autoRouterService.swap({
-            tokenInID: payments[0].tokenIdentifier,
-            amountIn: payments[0].amount,
-            tokenOutID: farmingTokenID,
-            tolerance,
-        });
 
         const multiSwapArgs =
             this.autoRouterTransaction.multiPairFixedInputSwaps({
@@ -742,9 +731,10 @@ export class PositionCreatorTransactionService {
     async createEnergyPosition(
         sender: string,
         payment: EsdtTokenPayment,
+        swapRoute: SwapRouteModel,
         lockEpochs: number,
         tolerance: number,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         const uniqueTokensIDs = await this.tokenService.getUniqueTokenIDs(
             false,
         );
@@ -756,11 +746,20 @@ export class PositionCreatorTransactionService {
             throw new Error('Invalid ESDT token payment');
         }
 
-        const singleTokenInput =
-            await this.posCreatorCompute.computeSingleTokenInput(
-                payment,
+        const amountOutMin = new BigNumber(swapRoute.amountOut)
+            .multipliedBy(1 - tolerance)
+            .integerValue();
+
+        const swapRouteArgs =
+            this.autoRouterTransaction.multiPairFixedInputSwaps({
+                tokenInID: swapRoute.tokenInID,
+                tokenOutID: swapRoute.tokenOutID,
+                swapType: SWAP_TYPE.fixedInput,
                 tolerance,
-            );
+                addressRoute: swapRoute.pairs.map((pair) => pair.address),
+                intermediaryAmounts: swapRoute.intermediaryAmounts,
+                tokenRoute: swapRoute.tokenRoute,
+            });
 
         const contract =
             await this.mxProxy.getLockedTokenPositionCreatorContract();
@@ -768,8 +767,8 @@ export class PositionCreatorTransactionService {
         let interaction = contract.methodsExplicit
             .createEnergyPosition([
                 new U64Value(new BigNumber(lockEpochs)),
-                new BigUIntValue(singleTokenInput.amountOutMin),
-                ...singleTokenInput.swapRouteArgs,
+                new BigUIntValue(amountOutMin),
+                ...swapRouteArgs,
             ])
             .withSender(Address.fromBech32(sender))
             .withGasLimit(gasConfig.positionCreator.energyPosition)
@@ -786,7 +785,7 @@ export class PositionCreatorTransactionService {
             );
         }
 
-        return interaction.buildTransaction().toPlainObject();
+        return [interaction.buildTransaction().toPlainObject()];
     }
 
     private async getMinimumAmountsForLiquidity(

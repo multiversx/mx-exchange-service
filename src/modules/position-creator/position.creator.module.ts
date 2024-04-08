@@ -12,9 +12,11 @@ import { StakingModule } from '../staking/staking.module';
 import { TokenModule } from '../tokens/token.module';
 import {
     DualFarmPositionSingleTokenResolver,
+    EnergyPositionSingleTokenResolver,
     FarmPositionSingleTokenResolver,
     LiquidityPositionSingleTokenResolver,
     PositionCreatorTransactionResolver,
+    StakingPositionSingleTokenResolver,
 } from './position.creator.transaction.resolver';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { ProxyFarmModule } from '../proxy/services/proxy-farm/proxy.farm.module';
@@ -42,6 +44,8 @@ import { EnergyModule } from '../energy/energy.module';
         FarmPositionSingleTokenResolver,
         LiquidityPositionSingleTokenResolver,
         DualFarmPositionSingleTokenResolver,
+        StakingPositionSingleTokenResolver,
+        EnergyPositionSingleTokenResolver,
     ],
     exports: [],
 })
