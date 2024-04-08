@@ -13,10 +13,40 @@ export class PositionCreatorModel {
 }
 
 @ObjectType()
-export class PositionCreatorTransactionModel {
+export class LiquidityPositionSingleTokenModel {
     @Field(() => [SwapRouteModel])
     swaps: SwapRouteModel[];
 
     @Field(() => [TransactionModel], { nullable: true })
-    transactions: TransactionModel[];
+    transactions?: TransactionModel[];
+
+    constructor(init: Partial<LiquidityPositionSingleTokenModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class FarmPositionSingleTokenModel {
+    @Field(() => [SwapRouteModel])
+    swaps: SwapRouteModel[];
+
+    @Field(() => [TransactionModel], { nullable: true })
+    transactions?: TransactionModel[];
+
+    constructor(init: Partial<FarmPositionSingleTokenModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class DualFarmPositionSingleTokenModel {
+    @Field(() => [SwapRouteModel])
+    swaps: SwapRouteModel[];
+
+    @Field(() => [TransactionModel], { nullable: true })
+    transactions?: TransactionModel[];
+
+    constructor(init: Partial<DualFarmPositionSingleTokenModel>) {
+        Object.assign(this, init);
+    }
 }

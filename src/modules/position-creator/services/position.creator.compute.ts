@@ -16,12 +16,6 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
-export type PositionCreatorSingleTokenPairInput = {
-    swapRoutes: SwapRouteModel[];
-    amount0Min: BigNumber;
-    amount1Min: BigNumber;
-};
-
 export type PositionCreatorSingleTokenInput = {
     swapRouteArgs: TypedValue[];
     amountOutMin: BigNumber;
@@ -61,7 +55,7 @@ export class PositionCreatorComputeService {
         pairAddress: string,
         payment: EsdtTokenPayment,
         tolerance: number,
-    ): Promise<PositionCreatorSingleTokenPairInput> {
+    ): Promise<SwapRouteModel[]> {
         const acceptedPairedTokensIDs =
             await this.routerAbi.commonTokensForUserPairs();
 
@@ -84,11 +78,7 @@ export class PositionCreatorComputeService {
         ]);
 
         if (payment.tokenIdentifier === lpTokenID) {
-            return {
-                swapRoutes: [],
-                amount0Min: new BigNumber(0),
-                amount1Min: new BigNumber(0),
-            };
+            return [];
         }
 
         const [tokenInID, tokenOutID] = acceptedPairedTokensIDs.includes(
@@ -121,7 +111,7 @@ export class PositionCreatorComputeService {
             .minus(halfPayment)
             .toFixed();
 
-        let [amount0, amount1] = await Promise.all([
+        const [amount0, amount1] = await Promise.all([
             await this.computeSwap(
                 pairAddress,
                 tokenInID,
@@ -172,31 +162,7 @@ export class PositionCreatorComputeService {
             }),
         );
 
-        amount0 =
-            tokenInID === firstToken.identifier
-                ? await this.pairService.getEquivalentForLiquidity(
-                      pairAddress,
-                      secondToken.identifier,
-                      amount1.toFixed(),
-                  )
-                : amount0;
-        amount1 =
-            tokenInID === secondToken.identifier
-                ? await this.pairService.getEquivalentForLiquidity(
-                      pairAddress,
-                      firstToken.identifier,
-                      amount0.toFixed(),
-                  )
-                : amount1;
-
-        const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
-        const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
-
-        return {
-            swapRoutes,
-            amount0Min,
-            amount1Min,
-        };
+        return swapRoutes;
     }
 
     async computeSingleTokenInput(

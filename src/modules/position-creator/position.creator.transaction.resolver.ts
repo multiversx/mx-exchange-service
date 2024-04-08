@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { TransactionModel } from 'src/models/transaction.model';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
@@ -7,82 +7,209 @@ import { PositionCreatorTransactionService } from './services/position.creator.t
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { AuthUser } from '../auth/auth.user';
-import { PositionCreatorTransactionModel } from './models/position.creator.model';
+import {
+    DualFarmPositionSingleTokenModel,
+    FarmPositionSingleTokenModel,
+    LiquidityPositionSingleTokenModel,
+} from './models/position.creator.model';
+import { PositionCreatorComputeService } from './services/position.creator.compute';
 
-@Resolver()
-@UseGuards(JwtOrNativeAuthGuard)
-export class PositionCreatorTransactionResolver {
+@Resolver(() => LiquidityPositionSingleTokenModel)
+export class LiquidityPositionSingleTokenResolver {
     constructor(
         private readonly posCreatorTransaction: PositionCreatorTransactionService,
     ) {}
 
-    @Query(() => PositionCreatorTransactionModel)
-    async createPositionSingleToken(
+    @ResolveField(() => [TransactionModel])
+    @UseGuards(JwtOrNativeAuthGuard)
+    async transactions(
         @AuthUser() user: UserAuthResult,
-        @Args('pairAddress') pairAddress: string,
-        @Args('payment') payment: InputTokenModel,
-        @Args('tolerance') tolerance: number,
+        @Parent() parent: LiquidityPositionSingleTokenModel,
         @Args('lockEpochs', { nullable: true }) lockEpochs: number,
-    ): Promise<PositionCreatorTransactionModel> {
-        return this.posCreatorTransaction.createLiquidityPositionSingleToken(
-            user.address,
-            pairAddress,
-            new EsdtTokenPayment({
-                tokenIdentifier: payment.tokenID,
-                tokenNonce: payment.nonce,
-                amount: payment.amount,
-            }),
-            tolerance,
-            lockEpochs,
-        );
-    }
+    ): Promise<TransactionModel[]> {
+        const pairAddress =
+            parent.swaps[parent.swaps.length - 1].pairs[0].address;
+        const payment = new EsdtTokenPayment({
+            tokenIdentifier: parent.swaps[0].tokenInID,
+            tokenNonce: 0,
+            amount: parent.swaps[0].amountIn,
+        });
 
-    @Query(() => PositionCreatorTransactionModel)
-    async createFarmPositionSingleToken(
+        const transactions =
+            await this.posCreatorTransaction.createLiquidityPositionSingleToken(
+                user.address,
+                pairAddress,
+                payment,
+                parent.swaps[parent.swaps.length - 1].tolerance,
+                parent.swaps,
+                lockEpochs,
+            );
+
+        return transactions;
+    }
+}
+
+@Resolver(() => FarmPositionSingleTokenModel)
+export class FarmPositionSingleTokenResolver {
+    constructor(
+        private readonly posCreatorTransaction: PositionCreatorTransactionService,
+    ) {}
+
+    @ResolveField(() => [TransactionModel])
+    @UseGuards(JwtOrNativeAuthGuard)
+    async transactions(
         @AuthUser() user: UserAuthResult,
+        @Parent() parent: FarmPositionSingleTokenModel,
         @Args('farmAddress') farmAddress: string,
-        @Args('payments', { type: () => [InputTokenModel] })
-        payments: InputTokenModel[],
-        @Args('tolerance') tolerance: number,
+        @Args('additionalPayments', {
+            type: () => [InputTokenModel],
+            nullable: true,
+        })
+        additionalPayments: InputTokenModel[],
         @Args('lockEpochs', { nullable: true }) lockEpochs: number,
-    ): Promise<PositionCreatorTransactionModel> {
+    ): Promise<TransactionModel[]> {
+        const firstPayment = new EsdtTokenPayment({
+            tokenIdentifier: parent.swaps[0].tokenInID,
+            tokenNonce: 0,
+            amount: parent.swaps[0].amountIn,
+        });
+
         return this.posCreatorTransaction.createFarmPositionSingleToken(
             user.address,
             farmAddress,
-            payments.map(
-                (payment) =>
-                    new EsdtTokenPayment({
-                        tokenIdentifier: payment.tokenID,
-                        tokenNonce: payment.nonce,
-                        amount: payment.amount,
-                    }),
-            ),
-            tolerance,
+            [
+                firstPayment,
+                ...additionalPayments.map(
+                    (payment) =>
+                        new EsdtTokenPayment({
+                            tokenIdentifier: payment.tokenID,
+                            tokenNonce: payment.nonce,
+                            amount: payment.amount,
+                        }),
+                ),
+            ],
+            parent.swaps[length - 1].tolerance,
+            parent.swaps,
             lockEpochs,
         );
     }
+}
 
-    @Query(() => PositionCreatorTransactionModel)
-    async createDualFarmPositionSingleToken(
+@Resolver(() => DualFarmPositionSingleTokenModel)
+export class DualFarmPositionSingleTokenResolver {
+    constructor(
+        private readonly posCreatorTransaction: PositionCreatorTransactionService,
+    ) {}
+
+    @ResolveField(() => [TransactionModel])
+    @UseGuards(JwtOrNativeAuthGuard)
+    async transactions(
         @AuthUser() user: UserAuthResult,
+        @Parent() parent: DualFarmPositionSingleTokenModel,
         @Args('dualFarmAddress') dualFarmAddress: string,
-        @Args('payments', { type: () => [InputTokenModel] })
-        payments: InputTokenModel[],
-        @Args('tolerance') tolerance: number,
-    ): Promise<PositionCreatorTransactionModel> {
+        @Args('additionalPayments', {
+            type: () => [InputTokenModel],
+            nullable: true,
+        })
+        additionalPayments: InputTokenModel[],
+    ): Promise<TransactionModel[]> {
+        const firstPayment = new EsdtTokenPayment({
+            tokenIdentifier: parent.swaps[0].tokenInID,
+            tokenNonce: 0,
+            amount: parent.swaps[0].amountIn,
+        });
+
         return this.posCreatorTransaction.createDualFarmPositionSingleToken(
             user.address,
             dualFarmAddress,
-            payments.map(
-                (payment) =>
-                    new EsdtTokenPayment({
-                        tokenIdentifier: payment.tokenID,
-                        tokenNonce: payment.nonce,
-                        amount: payment.amount,
-                    }),
-            ),
-            tolerance,
+            [
+                firstPayment,
+                ...additionalPayments.map(
+                    (payment) =>
+                        new EsdtTokenPayment({
+                            tokenIdentifier: payment.tokenID,
+                            tokenNonce: payment.nonce,
+                            amount: payment.amount,
+                        }),
+                ),
+            ],
+            parent.swaps[length - 1].tolerance,
+            parent.swaps,
         );
+    }
+}
+
+@Resolver()
+export class PositionCreatorTransactionResolver {
+    constructor(
+        private readonly posCreatorTransaction: PositionCreatorTransactionService,
+        private readonly posCreatorCompute: PositionCreatorComputeService,
+    ) {}
+
+    @Query(() => LiquidityPositionSingleTokenModel)
+    async createPositionSingleToken(
+        @Args('pairAddress') pairAddress: string,
+        @Args('payment') payment: InputTokenModel,
+        @Args('tolerance') tolerance: number,
+    ): Promise<LiquidityPositionSingleTokenModel> {
+        const swapRoutes =
+            await this.posCreatorCompute.computeSingleTokenPairInput(
+                pairAddress,
+                new EsdtTokenPayment({
+                    tokenIdentifier: payment.tokenID,
+                    tokenNonce: payment.nonce,
+                    amount: payment.amount,
+                }),
+                tolerance,
+            );
+
+        return new LiquidityPositionSingleTokenModel({
+            swaps: swapRoutes,
+        });
+    }
+
+    @Query(() => FarmPositionSingleTokenModel)
+    async createFarmPositionSingleToken(
+        @Args('pairAddress') pairAddress: string,
+        @Args('payment') payment: InputTokenModel,
+        @Args('tolerance') tolerance: number,
+    ): Promise<FarmPositionSingleTokenModel> {
+        const swapRoutes =
+            await this.posCreatorCompute.computeSingleTokenPairInput(
+                pairAddress,
+                new EsdtTokenPayment({
+                    tokenIdentifier: payment.tokenID,
+                    tokenNonce: payment.nonce,
+                    amount: payment.amount,
+                }),
+                tolerance,
+            );
+
+        return new FarmPositionSingleTokenModel({
+            swaps: swapRoutes,
+        });
+    }
+
+    @Query(() => DualFarmPositionSingleTokenModel)
+    async createDualFarmPositionSingleToken(
+        @Args('pairAddress') pairAddress: string,
+        @Args('payment') payment: InputTokenModel,
+        @Args('tolerance') tolerance: number,
+    ): Promise<DualFarmPositionSingleTokenModel> {
+        const swapRoutes =
+            await this.posCreatorCompute.computeSingleTokenPairInput(
+                pairAddress,
+                new EsdtTokenPayment({
+                    tokenIdentifier: payment.tokenID,
+                    tokenNonce: payment.nonce,
+                    amount: payment.amount,
+                }),
+                tolerance,
+            );
+
+        return new DualFarmPositionSingleTokenModel({
+            swaps: swapRoutes,
+        });
     }
 
     @Query(() => [TransactionModel])
