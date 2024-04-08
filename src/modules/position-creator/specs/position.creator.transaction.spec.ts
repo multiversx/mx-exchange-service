@@ -32,9 +32,10 @@ import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staki
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { ProxyFarmAbiServiceProvider } from 'src/modules/proxy/mocks/proxy.abi.service.mock';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
-import { gasConfig, scAddress } from 'src/config';
+import { constantsConfig, gasConfig, scAddress } from 'src/config';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -101,6 +102,7 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                     0.01,
+                    [],
                 ),
             ).rejects.toThrowError('Invalid ESDT token payment');
         });
@@ -109,9 +111,12 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
-            const transaction =
-                await service.createLiquidityPositionSingleToken(
-                    Address.Zero().bech32(),
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
                     Address.fromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
@@ -123,27 +128,44 @@ describe('PositionCreatorTransaction', () => {
                     0.01,
                 );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit:
-                    gasConfig.positionCreator.singleToken.liquidityPosition,
-                data: encodeTransactionData(
-                    `ESDTTransfer@USDC-123456@100000000000000000000@createLpPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000012@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            const transactions =
+                await service.createLiquidityPositionSingleToken(
+                    Address.Zero().bech32(),
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                    swapRoutes,
+                );
+
+            expect(transactions).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit:
+                        gasConfig.positionCreator.singleToken.liquidityPosition,
+                    data: encodeTransactionData(
+                        `ESDTTransfer@USDC-123456@100000000000000000000@createLpPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000012@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
     });
 
@@ -152,7 +174,24 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
-            const transaction =
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
+            const transactions =
                 await service.createLiquidityPositionSingleToken(
                     Address.Zero().bech32(),
                     Address.fromHex(
@@ -164,37 +203,57 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                     0.01,
+                    swapRoutes,
                     1440,
                 );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit:
-                    gasConfig.positionCreator.singleToken.liquidityPosition,
-                data: encodeTransactionData(
-                    `ESDTTransfer@USDC-123456@100000000000000000000@createPairPosFromSingleToken@1440@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transactions).toEqual([
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit:
+                        gasConfig.positionCreator.singleToken.liquidityPosition,
+                    data: encodeTransactionData(
+                        `ESDTTransfer@USDC-123456@100000000000000000000@createPairPosFromSingleToken@1440@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
 
         it('should return transaction with EGLD payment', async () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
-            const transaction =
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
+            const transactions =
                 await service.createLiquidityPositionSingleToken(
                     Address.Zero().bech32(),
                     Address.fromHex(
@@ -206,30 +265,33 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                     0.01,
+                    swapRoutes,
                     1440,
                 );
 
-            expect(transaction).toEqual({
-                nonce: 0,
-                value: '100000000000000000000',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                sender: Address.Zero().bech32(),
-                senderUsername: undefined,
-                receiverUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit:
-                    gasConfig.positionCreator.singleToken.liquidityPosition,
-                data: encodeTransactionData(
-                    `createPairPosFromSingleToken@1440@47008144020574367766@47008144020574367766823`,
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                guardian: undefined,
-                signature: undefined,
-                guardianSignature: undefined,
-            });
+            expect(transactions).toEqual([
+                {
+                    nonce: 0,
+                    value: '100000000000000000000',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                    sender: Address.Zero().bech32(),
+                    senderUsername: undefined,
+                    receiverUsername: undefined,
+                    gasPrice: 1000000000,
+                    gasLimit:
+                        gasConfig.positionCreator.singleToken.liquidityPosition,
+                    data: encodeTransactionData(
+                        `createPairPosFromSingleToken@1440@47008144020574367766@47008144020574367766823`,
+                    ),
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    guardian: undefined,
+                    signature: undefined,
+                    guardianSignature: undefined,
+                },
+            ]);
         });
     });
 
@@ -238,6 +300,7 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
+
             expect(
                 service.createFarmPositionSingleToken(
                     Address.Zero().bech32(),
@@ -252,6 +315,7 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                     0.01,
+                    [],
                 ),
             ).rejects.toThrowError('Invalid ESDT token payment');
         });
@@ -260,6 +324,7 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
+
             expect(
                 service.createFarmPositionSingleToken(
                     Address.Zero().bech32(),
@@ -279,6 +344,7 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                     0.01,
+                    [],
                 ),
             ).rejects.toThrowError('Invalid farm token payment');
         });
@@ -287,7 +353,24 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
-            const transaction = await service.createFarmPositionSingleToken(
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
+            const transactions = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
@@ -300,9 +383,10 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
             );
 
-            expect(transaction).toEqual([
+            expect(transactions).toEqual([
                 {
                     nonce: 0,
                     value: '100000000000000000000',
@@ -331,7 +415,24 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
-            const transaction = await service.createFarmPositionSingleToken(
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
+            const transactions = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
@@ -344,9 +445,10 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
             );
 
-            expect(transaction).toEqual([
+            expect(transactions).toEqual([
                 {
                     nonce: 0,
                     value: '0',
@@ -374,7 +476,24 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
-            const transaction = await service.createFarmPositionSingleToken(
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
+            const transactions = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
@@ -392,9 +511,10 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
             );
 
-            expect(transaction).toEqual([
+            expect(transactions).toEqual([
                 {
                     nonce: 0,
                     value: '100000000000000000000',
@@ -440,7 +560,24 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
-            const transaction = await service.createFarmPositionSingleToken(
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
+            const transactions = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
@@ -458,9 +595,10 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
             );
 
-            expect(transaction).toEqual([
+            expect(transactions).toEqual([
                 {
                     nonce: 0,
                     value: '0',
@@ -490,7 +628,24 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
-            const transaction = await service.createFarmPositionSingleToken(
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
+            const transactions = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
@@ -503,10 +658,11 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
                 1440,
             );
 
-            expect(transaction).toEqual([
+            expect(transactions).toEqual([
                 {
                     nonce: 0,
                     value: '0',
@@ -534,6 +690,23 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
             const transaction = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.fromHex(
@@ -547,6 +720,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
                 1440,
             );
 
@@ -581,6 +755,7 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
+
             expect(
                 service.createDualFarmPositionSingleToken(
                     Address.Zero().bech32(),
@@ -593,6 +768,7 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                     0.01,
+                    [],
                 ),
             ).rejects.toThrowError('Invalid ESDT token payment');
         });
@@ -618,6 +794,7 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                     0.01,
+                    [],
                 ),
             ).rejects.toThrowError('Invalid dual yield token payment');
         });
@@ -629,11 +806,28 @@ describe('PositionCreatorTransaction', () => {
             const stakingProxyAbi = module.get<StakingProxyAbiService>(
                 StakingProxyAbiService,
             );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
 
             const transaction = await service.createDualFarmPositionSingleToken(
                 Address.Zero().bech32(),
@@ -646,6 +840,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
             );
 
             expect(transaction).toEqual([
@@ -679,6 +874,23 @@ describe('PositionCreatorTransaction', () => {
             const stakingProxyAbi = module.get<StakingProxyAbiService>(
                 StakingProxyAbiService,
             );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
@@ -696,6 +908,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
             );
 
             expect(transaction).toEqual([
@@ -729,6 +942,23 @@ describe('PositionCreatorTransaction', () => {
             const stakingProxyAbi = module.get<StakingProxyAbiService>(
                 StakingProxyAbiService,
             );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
@@ -751,6 +981,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
             );
 
             expect(transaction).toEqual([
@@ -802,6 +1033,23 @@ describe('PositionCreatorTransaction', () => {
             const stakingProxyAbi = module.get<StakingProxyAbiService>(
                 StakingProxyAbiService,
             );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    Address.fromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
@@ -824,6 +1072,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                swapRoutes,
             );
 
             expect(transaction).toEqual([
@@ -879,6 +1128,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                 ],
                 0.01,
+                [],
             );
 
             expect(transaction).toEqual([
@@ -915,6 +1165,7 @@ describe('PositionCreatorTransaction', () => {
                 service.createStakingPositionSingleToken(
                     Address.Zero().bech32(),
                     Address.Zero().bech32(),
+                    new SwapRouteModel(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'USDC-abcdef',
@@ -935,6 +1186,7 @@ describe('PositionCreatorTransaction', () => {
                 service.createStakingPositionSingleToken(
                     Address.Zero().bech32(),
                     Address.Zero().bech32(),
+                    new SwapRouteModel(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'USDC-123456',
@@ -957,13 +1209,29 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const stakingAbi = module.get<StakingAbiService>(StakingAbiService);
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
             jest.spyOn(stakingAbi, 'farmingTokenID').mockResolvedValue(
                 'MEX-123456',
             );
 
+            const swapRoutes =
+                await posCreatorCompute.computeStakingPositionSingleToken(
+                    Address.Zero().bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
             const transaction = await service.createStakingPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.Zero().bech32(),
+                swapRoutes.swaps[0],
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
@@ -1002,9 +1270,24 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+            const swapRoutes =
+                await posCreatorCompute.computeStakingPositionSingleToken(
+                    Address.Zero().bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
             const transaction = await service.createStakingPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.Zero().bech32(),
+                swapRoutes.swaps[0],
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -1044,13 +1327,29 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const stakingAbi = module.get<StakingAbiService>(StakingAbiService);
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
             jest.spyOn(stakingAbi, 'farmingTokenID').mockResolvedValue(
                 'MEX-123456',
             );
 
+            const swapRoutes =
+                await posCreatorCompute.computeStakingPositionSingleToken(
+                    Address.Zero().bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'EGLD',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
             const transaction = await service.createStakingPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.Zero().bech32(),
+                swapRoutes.swaps[0],
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
@@ -1112,9 +1411,25 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+
+            const swapRoutes =
+                await posCreatorCompute.computeStakingPositionSingleToken(
+                    Address.Zero().bech32(),
+                    new EsdtTokenPayment({
+                        tokenIdentifier: 'USDC-123456',
+                        tokenNonce: 0,
+                        amount: '100000000000000000000',
+                    }),
+                    0.01,
+                );
+
             const transaction = await service.createStakingPositionSingleToken(
                 Address.Zero().bech32(),
                 Address.Zero().bech32(),
+                swapRoutes.swaps[0],
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -1935,6 +2250,7 @@ describe('PositionCreatorTransaction', () => {
                         tokenNonce: 0,
                         amount: '1000000000000000000',
                     }),
+                    new SwapRouteModel(),
                     1440,
                     0.01,
                 ),
@@ -1945,76 +2261,107 @@ describe('PositionCreatorTransaction', () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
 
-            const transaction = await service.createEnergyPosition(
+            const swapRoute = await posCreatorCompute.computeSingleTokenInput(
+                new EsdtTokenPayment({
+                    tokenIdentifier: 'WEGLD-123456',
+                    tokenNonce: 0,
+                    amount: '1000000000000000000',
+                }),
+                constantsConfig.MEX_TOKEN_ID,
+                0.01,
+            );
+
+            const transactions = await service.createEnergyPosition(
                 Address.Zero().bech32(),
                 new EsdtTokenPayment({
                     tokenIdentifier: 'WEGLD-123456',
                     tokenNonce: 0,
                     amount: '1000000000000000000',
                 }),
+                swapRoute,
                 1440,
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                chainID: 'T',
-                data: encodeTransactionData(
-                    'ESDTTransfer@WEGLD-123456@1000000000000000000@createEnergyPosition@1440@986046911229504184328@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@986046911229504184328',
-                ),
-                gasLimit: gasConfig.positionCreator.energyPosition,
-                gasPrice: 1000000000,
-                guardian: undefined,
-                guardianSignature: undefined,
-                nonce: 0,
-                options: undefined,
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                receiverUsername: undefined,
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-                senderUsername: undefined,
-                signature: undefined,
-                value: '0',
-                version: 1,
-            });
+            expect(transactions).toEqual([
+                {
+                    chainID: 'T',
+                    data: encodeTransactionData(
+                        'ESDTTransfer@WEGLD-123456@1000000000000000000@createEnergyPosition@1440@986046911229504184328@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@986046911229504184328',
+                    ),
+                    gasLimit: gasConfig.positionCreator.energyPosition,
+                    gasPrice: 1000000000,
+                    guardian: undefined,
+                    guardianSignature: undefined,
+                    nonce: 0,
+                    options: undefined,
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                    receiverUsername: undefined,
+                    sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                    senderUsername: undefined,
+                    signature: undefined,
+                    value: '0',
+                    version: 1,
+                },
+            ]);
         });
 
         it('should return transaction with EGLD payment', async () => {
             const service = module.get<PositionCreatorTransactionService>(
                 PositionCreatorTransactionService,
             );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+            const swapRoute = await posCreatorCompute.computeSingleTokenInput(
+                new EsdtTokenPayment({
+                    tokenIdentifier: 'EGLD',
+                    tokenNonce: 0,
+                    amount: '1000000000000000000',
+                }),
+                constantsConfig.MEX_TOKEN_ID,
+                0.01,
+            );
 
-            const transaction = await service.createEnergyPosition(
+            const transactions = await service.createEnergyPosition(
                 Address.Zero().bech32(),
                 new EsdtTokenPayment({
                     tokenIdentifier: 'EGLD',
                     tokenNonce: 0,
                     amount: '1000000000000000000',
                 }),
+                swapRoute,
                 1440,
                 0.01,
             );
 
-            expect(transaction).toEqual({
-                chainID: 'T',
-                data: encodeTransactionData(
-                    'createEnergyPosition@1440@986046911229504184328@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@986046911229504184328',
-                ),
-                gasLimit: gasConfig.positionCreator.energyPosition,
-                gasPrice: 1000000000,
-                guardian: undefined,
-                guardianSignature: undefined,
-                nonce: 0,
-                options: undefined,
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                receiverUsername: undefined,
-                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-                senderUsername: undefined,
-                signature: undefined,
-                value: '1000000000000000000',
-                version: 1,
-            });
+            expect(transactions).toEqual([
+                {
+                    chainID: 'T',
+                    data: encodeTransactionData(
+                        'createEnergyPosition@1440@986046911229504184328@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@986046911229504184328',
+                    ),
+                    gasLimit: gasConfig.positionCreator.energyPosition,
+                    gasPrice: 1000000000,
+                    guardian: undefined,
+                    guardianSignature: undefined,
+                    nonce: 0,
+                    options: undefined,
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
+                    receiverUsername: undefined,
+                    sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                    senderUsername: undefined,
+                    signature: undefined,
+                    value: '1000000000000000000',
+                    version: 1,
+                },
+            ]);
         });
     });
 });
