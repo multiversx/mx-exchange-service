@@ -16,7 +16,7 @@ import { PositionCreatorComputeService } from './services/position.creator.compu
 import { FarmAbiServiceV2 } from '../farm/v2/services/farm.v2.abi.service';
 import { StakingProxyAbiService } from '../staking-proxy/services/staking.proxy.abi.service';
 import { GraphQLError } from 'graphql';
-import { ApolloServerErrorCode } from '@apollo/server/dist/esm/errors';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => LiquidityPositionSingleTokenModel)
 export class LiquidityPositionSingleTokenResolver {

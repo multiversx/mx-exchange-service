@@ -81,33 +81,49 @@ export class PositionCreatorComputeService {
             return [];
         }
 
-        const [tokenInID, tokenOutID] = acceptedPairedTokensIDs.includes(
-            firstToken.identifier,
-        )
-            ? [firstToken.identifier, secondToken.identifier]
-            : [secondToken.identifier, firstToken.identifier];
-
         const profiler = new PerformanceProfiler();
 
         const swapRoutes = [];
 
-        const swapRoute = await this.autoRouterService.swap({
-            tokenInID: payment.tokenIdentifier,
-            amountIn: payment.amount,
-            tokenOutID: tokenInID,
-            tolerance,
-        });
+        let amountOut: BigNumber;
+        let tokenInID: string;
+        let tokenOutID: string;
 
-        swapRoutes.push(swapRoute);
+        if (
+            payment.tokenIdentifier !== firstToken.identifier &&
+            payment.tokenIdentifier !== secondToken.identifier
+        ) {
+            [tokenInID, tokenOutID] = acceptedPairedTokensIDs.includes(
+                firstToken.identifier,
+            )
+                ? [firstToken.identifier, secondToken.identifier]
+                : [secondToken.identifier, firstToken.identifier];
+
+            const swapRoute = await this.autoRouterService.swap({
+                tokenInID: payment.tokenIdentifier,
+                amountIn: payment.amount,
+                tokenOutID: tokenInID,
+                tolerance,
+            });
+
+            swapRoutes.push(swapRoute);
+            amountOut = new BigNumber(swapRoute.amountOut);
+        } else {
+            amountOut = new BigNumber(payment.amount);
+            [tokenInID, tokenOutID] =
+                payment.tokenIdentifier === firstToken.identifier
+                    ? [firstToken.identifier, secondToken.identifier]
+                    : [secondToken.identifier, firstToken.identifier];
+        }
 
         profiler.stop('swap route', true);
 
-        const halfPayment = new BigNumber(swapRoute.amountOut)
+        const halfPayment = new BigNumber(amountOut)
             .dividedBy(2)
             .integerValue()
             .toFixed();
 
-        const remainingPayment = new BigNumber(swapRoute.amountOut)
+        const remainingPayment = new BigNumber(amountOut)
             .minus(halfPayment)
             .toFixed();
 
