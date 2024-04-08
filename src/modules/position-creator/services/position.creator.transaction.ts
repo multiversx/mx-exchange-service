@@ -305,9 +305,11 @@ export class PositionCreatorTransactionService {
                   });
 
         const [amount0Min, amount1Min] =
-            await this.getMinimumAmountsForLiquidity(
-                swapRoutes[swapRoutes.length - 1],
-            );
+            payments[0].tokenIdentifier === lpTokenID
+                ? [new BigNumber(0), new BigNumber(0)]
+                : await this.getMinimumAmountsForLiquidity(
+                      swapRoutes[swapRoutes.length - 1],
+                  );
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
@@ -792,22 +794,33 @@ export class PositionCreatorTransactionService {
         swapRoute: SwapRouteModel,
     ): Promise<BigNumber[]> {
         const pair = swapRoute.pairs[0];
-        const amount0 =
+        let [amount0, amount1] =
+            swapRoute.tokenInID === pair.firstToken.identifier
+                ? [
+                      new BigNumber(swapRoute.amountIn),
+                      new BigNumber(swapRoute.amountOut),
+                  ]
+                : [
+                      new BigNumber(swapRoute.amountOut),
+                      new BigNumber(swapRoute.amountIn),
+                  ];
+
+        amount0 =
             swapRoute.tokenInID === swapRoute.pairs[0].firstToken.identifier
                 ? await this.pairService.getEquivalentForLiquidity(
                       pair.address,
                       pair.secondToken.identifier,
-                      swapRoute.amountIn,
+                      amount1.toFixed(),
                   )
-                : new BigNumber(swapRoute.amountOut);
-        const amount1 =
+                : amount0;
+        amount1 =
             swapRoute.tokenInID === pair.secondToken.identifier
                 ? await this.pairService.getEquivalentForLiquidity(
                       pair.address,
                       pair.firstToken.identifier,
-                      swapRoute.amountOut,
+                      amount0.toFixed(),
                   )
-                : new BigNumber(swapRoute.amountIn);
+                : amount1;
 
         const amount0Min = amount0
             .multipliedBy(1 - swapRoute.tolerance)
