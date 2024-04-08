@@ -79,29 +79,10 @@ export class PositionCreatorTransactionService {
                 tokenRoute: swapRoutes[0].tokenRoute,
             });
 
-        const amount0 =
-            swapRoutes[swapRoutes.length - 1].tokenInID ===
-            swapRoutes[swapRoutes.length - 1].pairs[0].firstToken.identifier
-                ? await this.pairService.getEquivalentForLiquidity(
-                      pairAddress,
-                      swapRoutes[swapRoutes.length - 1].pairs[0].secondToken
-                          .identifier,
-                      swapRoutes[swapRoutes.length - 1].amountIn,
-                  )
-                : new BigNumber(swapRoutes[swapRoutes.length - 1].amountOut);
-        const amount1 =
-            swapRoutes[swapRoutes.length - 1].tokenInID ===
-            swapRoutes[swapRoutes.length - 1].pairs[0].secondToken.identifier
-                ? await this.pairService.getEquivalentForLiquidity(
-                      pairAddress,
-                      swapRoutes[swapRoutes.length - 1].pairs[0].firstToken
-                          .identifier,
-                      swapRoutes[swapRoutes.length - 1].amountOut,
-                  )
-                : new BigNumber(swapRoutes[swapRoutes.length - 1].amountIn);
-
-        const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
-        const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
+        const [amount0Min, amount1Min] =
+            await this.getMinimumAmountsForLiquidity(
+                swapRoutes[swapRoutes.length - 1],
+            );
 
         const contract = lockEpochs
             ? await this.mxProxy.getLockedTokenPositionCreatorContract()
@@ -158,9 +139,8 @@ export class PositionCreatorTransactionService {
         swapRoutes: SwapRouteModel[],
         lockEpochs?: number,
     ): Promise<TransactionModel[]> {
-        const [pairAddress, farmTokenID, uniqueTokensIDs, wrappedEgldTokenID] =
+        const [farmTokenID, uniqueTokensIDs, wrappedEgldTokenID] =
             await Promise.all([
-                this.farmAbiV2.pairContractAddress(farmAddress),
                 this.farmAbiV2.farmTokenID(farmAddress),
                 this.tokenService.getUniqueTokenIDs(false),
                 this.wrapAbi.wrappedEgldTokenID(),
@@ -200,29 +180,10 @@ export class PositionCreatorTransactionService {
                 tokenRoute: swapRoutes[0].tokenRoute,
             });
 
-        const amount0 =
-            swapRoutes[swapRoutes.length - 1].tokenInID ===
-            swapRoutes[swapRoutes.length - 1].pairs[0].firstToken.identifier
-                ? await this.pairService.getEquivalentForLiquidity(
-                      pairAddress,
-                      swapRoutes[swapRoutes.length - 1].pairs[0].secondToken
-                          .identifier,
-                      swapRoutes[swapRoutes.length - 1].amountIn,
-                  )
-                : new BigNumber(swapRoutes[swapRoutes.length - 1].amountOut);
-        const amount1 =
-            swapRoutes[swapRoutes.length - 1].tokenInID ===
-            swapRoutes[swapRoutes.length - 1].pairs[0].secondToken.identifier
-                ? await this.pairService.getEquivalentForLiquidity(
-                      pairAddress,
-                      swapRoutes[swapRoutes.length - 1].pairs[0].firstToken
-                          .identifier,
-                      swapRoutes[swapRoutes.length - 1].amountOut,
-                  )
-                : new BigNumber(swapRoutes[swapRoutes.length - 1].amountIn);
-
-        const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
-        const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
+        const [amount0Min, amount1Min] =
+            await this.getMinimumAmountsForLiquidity(
+                swapRoutes[swapRoutes.length - 1],
+            );
 
         const contract = lockEpochs
             ? await this.mxProxy.getLockedTokenPositionCreatorContract()
@@ -331,29 +292,10 @@ export class PositionCreatorTransactionService {
                 tokenRoute: swapRoutes[0].tokenRoute,
             });
 
-        const amount0 =
-            swapRoutes[swapRoutes.length - 1].tokenInID ===
-            swapRoutes[swapRoutes.length - 1].pairs[0].firstToken.identifier
-                ? await this.pairService.getEquivalentForLiquidity(
-                      pairAddress,
-                      swapRoutes[swapRoutes.length - 1].pairs[0].secondToken
-                          .identifier,
-                      swapRoutes[swapRoutes.length - 1].amountIn,
-                  )
-                : new BigNumber(swapRoutes[swapRoutes.length - 1].amountOut);
-        const amount1 =
-            swapRoutes[swapRoutes.length - 1].tokenInID ===
-            swapRoutes[swapRoutes.length - 1].pairs[0].secondToken.identifier
-                ? await this.pairService.getEquivalentForLiquidity(
-                      pairAddress,
-                      swapRoutes[swapRoutes.length - 1].pairs[0].firstToken
-                          .identifier,
-                      swapRoutes[swapRoutes.length - 1].amountOut,
-                  )
-                : new BigNumber(swapRoutes[swapRoutes.length - 1].amountIn);
-
-        const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
-        const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
+        const [amount0Min, amount1Min] =
+            await this.getMinimumAmountsForLiquidity(
+                swapRoutes[swapRoutes.length - 1],
+            );
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
@@ -833,6 +775,37 @@ export class PositionCreatorTransactionService {
         }
 
         return interaction.buildTransaction().toPlainObject();
+    }
+
+    private async getMinimumAmountsForLiquidity(
+        swapRoute: SwapRouteModel,
+    ): Promise<BigNumber[]> {
+        const pair = swapRoute.pairs[0];
+        const amount0 =
+            swapRoute.tokenInID === swapRoute.pairs[0].firstToken.identifier
+                ? await this.pairService.getEquivalentForLiquidity(
+                      pair.address,
+                      pair.secondToken.identifier,
+                      swapRoute.amountIn,
+                  )
+                : new BigNumber(swapRoute.amountOut);
+        const amount1 =
+            swapRoute.tokenInID === pair.secondToken.identifier
+                ? await this.pairService.getEquivalentForLiquidity(
+                      pair.address,
+                      pair.firstToken.identifier,
+                      swapRoute.amountOut,
+                  )
+                : new BigNumber(swapRoute.amountIn);
+
+        const amount0Min = amount0
+            .multipliedBy(1 - swapRoute.tolerance)
+            .integerValue();
+        const amount1Min = amount1
+            .multipliedBy(1 - swapRoute.tolerance)
+            .integerValue();
+
+        return [amount0Min, amount1Min];
     }
 
     private checkTokensPayments(
