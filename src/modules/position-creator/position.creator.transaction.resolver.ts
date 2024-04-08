@@ -13,6 +13,10 @@ import {
     LiquidityPositionSingleTokenModel,
 } from './models/position.creator.model';
 import { PositionCreatorComputeService } from './services/position.creator.compute';
+import { FarmAbiServiceV2 } from '../farm/v2/services/farm.v2.abi.service';
+import { StakingProxyAbiService } from '../staking-proxy/services/staking.proxy.abi.service';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/dist/esm/errors';
 
 @Resolver(() => LiquidityPositionSingleTokenModel)
 export class LiquidityPositionSingleTokenResolver {
@@ -53,6 +57,7 @@ export class LiquidityPositionSingleTokenResolver {
 export class FarmPositionSingleTokenResolver {
     constructor(
         private readonly posCreatorTransaction: PositionCreatorTransactionService,
+        private readonly farmAbi: FarmAbiServiceV2,
     ) {}
 
     @ResolveField(() => [TransactionModel])
@@ -68,6 +73,19 @@ export class FarmPositionSingleTokenResolver {
         additionalPayments: InputTokenModel[],
         @Args('lockEpochs', { nullable: true }) lockEpochs: number,
     ): Promise<TransactionModel[]> {
+        const pairAddress = await this.farmAbi.pairContractAddress(farmAddress);
+
+        if (
+            pairAddress !==
+            parent.swaps[parent.swaps.length - 1].pairs[0].address
+        ) {
+            throw new GraphQLError('Invalid farm address', {
+                extensions: {
+                    code: ApolloServerErrorCode.BAD_USER_INPUT,
+                },
+            });
+        }
+
         const firstPayment = new EsdtTokenPayment({
             tokenIdentifier: parent.swaps[0].tokenInID,
             tokenNonce: 0,
@@ -99,6 +117,7 @@ export class FarmPositionSingleTokenResolver {
 export class DualFarmPositionSingleTokenResolver {
     constructor(
         private readonly posCreatorTransaction: PositionCreatorTransactionService,
+        private readonly stakingProxyAbi: StakingProxyAbiService,
     ) {}
 
     @ResolveField(() => [TransactionModel])
@@ -113,6 +132,20 @@ export class DualFarmPositionSingleTokenResolver {
         })
         additionalPayments: InputTokenModel[],
     ): Promise<TransactionModel[]> {
+        const pairAddress = await this.stakingProxyAbi.pairAddress(
+            dualFarmAddress,
+        );
+        if (
+            pairAddress !==
+            parent.swaps[parent.swaps.length - 1].pairs[0].address
+        ) {
+            throw new GraphQLError('Invalid farm address', {
+                extensions: {
+                    code: ApolloServerErrorCode.BAD_USER_INPUT,
+                },
+            });
+        }
+
         const firstPayment = new EsdtTokenPayment({
             tokenIdentifier: parent.swaps[0].tokenInID,
             tokenNonce: 0,
@@ -144,6 +177,8 @@ export class PositionCreatorTransactionResolver {
     constructor(
         private readonly posCreatorTransaction: PositionCreatorTransactionService,
         private readonly posCreatorCompute: PositionCreatorComputeService,
+        private readonly farmAbi: FarmAbiServiceV2,
+        private readonly stakingProxyAbi: StakingProxyAbiService,
     ) {}
 
     @Query(() => LiquidityPositionSingleTokenModel)
@@ -170,10 +205,12 @@ export class PositionCreatorTransactionResolver {
 
     @Query(() => FarmPositionSingleTokenModel)
     async createFarmPositionSingleToken(
-        @Args('pairAddress') pairAddress: string,
+        @Args('farmAddress') farmAddress: string,
         @Args('payment') payment: InputTokenModel,
         @Args('tolerance') tolerance: number,
     ): Promise<FarmPositionSingleTokenModel> {
+        const pairAddress = await this.farmAbi.pairContractAddress(farmAddress);
+
         const swapRoutes =
             await this.posCreatorCompute.computeSingleTokenPairInput(
                 pairAddress,
@@ -192,10 +229,14 @@ export class PositionCreatorTransactionResolver {
 
     @Query(() => DualFarmPositionSingleTokenModel)
     async createDualFarmPositionSingleToken(
-        @Args('pairAddress') pairAddress: string,
+        @Args('dualFarmAddress') dualFarmAddress: string,
         @Args('payment') payment: InputTokenModel,
         @Args('tolerance') tolerance: number,
     ): Promise<DualFarmPositionSingleTokenModel> {
+        const pairAddress = await this.stakingProxyAbi.pairAddress(
+            dualFarmAddress,
+        );
+
         const swapRoutes =
             await this.posCreatorCompute.computeSingleTokenPairInput(
                 pairAddress,
