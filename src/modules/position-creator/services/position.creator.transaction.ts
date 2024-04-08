@@ -69,15 +69,19 @@ export class PositionCreatorTransactionService {
         }
 
         const swapRouteArgs =
-            this.autoRouterTransaction.multiPairFixedInputSwaps({
-                tokenInID: swapRoutes[0].tokenInID,
-                tokenOutID: swapRoutes[0].tokenOutID,
-                swapType: SWAP_TYPE.fixedInput,
-                tolerance,
-                addressRoute: swapRoutes[0].pairs.map((pair) => pair.address),
-                intermediaryAmounts: swapRoutes[0].intermediaryAmounts,
-                tokenRoute: swapRoutes[0].tokenRoute,
-            });
+            swapRoutes.length < 2
+                ? []
+                : this.autoRouterTransaction.multiPairFixedInputSwaps({
+                      tokenInID: swapRoutes[0].tokenInID,
+                      tokenOutID: swapRoutes[0].tokenOutID,
+                      swapType: SWAP_TYPE.fixedInput,
+                      tolerance,
+                      addressRoute: swapRoutes[0].pairs.map(
+                          (pair) => pair.address,
+                      ),
+                      intermediaryAmounts: swapRoutes[0].intermediaryAmounts,
+                      tokenRoute: swapRoutes[0].tokenRoute,
+                  });
 
         const [amount0Min, amount1Min] =
             await this.getMinimumAmountsForLiquidity(
@@ -170,15 +174,19 @@ export class PositionCreatorTransactionService {
         }
 
         const swapRouteArgs =
-            this.autoRouterTransaction.multiPairFixedInputSwaps({
-                tokenInID: swapRoutes[0].tokenInID,
-                tokenOutID: swapRoutes[0].tokenOutID,
-                swapType: SWAP_TYPE.fixedInput,
-                tolerance,
-                addressRoute: swapRoutes[0].pairs.map((pair) => pair.address),
-                intermediaryAmounts: swapRoutes[0].intermediaryAmounts,
-                tokenRoute: swapRoutes[0].tokenRoute,
-            });
+            swapRoutes.length < 2
+                ? []
+                : this.autoRouterTransaction.multiPairFixedInputSwaps({
+                      tokenInID: swapRoutes[0].tokenInID,
+                      tokenOutID: swapRoutes[0].tokenOutID,
+                      swapType: SWAP_TYPE.fixedInput,
+                      tolerance,
+                      addressRoute: swapRoutes[0].pairs.map(
+                          (pair) => pair.address,
+                      ),
+                      intermediaryAmounts: swapRoutes[0].intermediaryAmounts,
+                      tokenRoute: swapRoutes[0].tokenRoute,
+                  });
 
         const [amount0Min, amount1Min] =
             await this.getMinimumAmountsForLiquidity(
@@ -282,15 +290,19 @@ export class PositionCreatorTransactionService {
         }
 
         const swapRouteArgs =
-            this.autoRouterTransaction.multiPairFixedInputSwaps({
-                tokenInID: swapRoutes[0].tokenInID,
-                tokenOutID: swapRoutes[0].tokenOutID,
-                swapType: SWAP_TYPE.fixedInput,
-                tolerance,
-                addressRoute: swapRoutes[0].pairs.map((pair) => pair.address),
-                intermediaryAmounts: swapRoutes[0].intermediaryAmounts,
-                tokenRoute: swapRoutes[0].tokenRoute,
-            });
+            swapRoutes.length < 2
+                ? []
+                : this.autoRouterTransaction.multiPairFixedInputSwaps({
+                      tokenInID: swapRoutes[0].tokenInID,
+                      tokenOutID: swapRoutes[0].tokenOutID,
+                      swapType: SWAP_TYPE.fixedInput,
+                      tolerance,
+                      addressRoute: swapRoutes[0].pairs.map(
+                          (pair) => pair.address,
+                      ),
+                      intermediaryAmounts: swapRoutes[0].intermediaryAmounts,
+                      tokenRoute: swapRoutes[0].tokenRoute,
+                  });
 
         const [amount0Min, amount1Min] =
             await this.getMinimumAmountsForLiquidity(
