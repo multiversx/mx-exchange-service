@@ -170,7 +170,7 @@ export class DualFarmPositionSingleTokenResolver {
                         }),
                 ),
             ],
-            parent.swaps[length - 1].tolerance,
+            parent.swaps[parent.swaps.length - 1].tolerance,
             parent.swaps,
         );
     }
