@@ -1,24 +1,24 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingProxySetterService } from 'src/modules/staking-proxy/services/staking.proxy.setter.service';
 import { PUB_SUB } from '../redis.pubSub.module';
+import { StakingProxyService } from 'src/modules/staking-proxy/services/staking.proxy.service';
 
 @Injectable()
 export class StakingProxyCacheWarmerService {
     constructor(
         private readonly abiService: StakingProxyAbiService,
         private readonly stakingProxySetter: StakingProxySetterService,
-        private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly stakingProxyService: StakingProxyService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_HOUR)
     async cacheFarmsStaking(): Promise<void> {
         const stakingProxiesAddress: string[] =
-            await this.remoteConfigGetterService.getStakingProxyAddresses();
+            await this.stakingProxyService.getStakingProxyAddresses();
         for (const address of stakingProxiesAddress) {
             const [
                 lpFarmAddress,

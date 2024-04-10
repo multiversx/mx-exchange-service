@@ -19,6 +19,7 @@ import { StakingComputeService } from './staking.compute.service';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class StakingService {
@@ -32,10 +33,30 @@ export class StakingService {
         private readonly remoteConfigGetter: RemoteConfigGetterService,
     ) {}
 
-    async getFarmsStaking(): Promise<StakingModel[]> {
-        const farmsStakingAddresses =
+    async getStakingAddresses(): Promise<string[]> {
+        let farmsStakingAddresses =
             await this.remoteConfigGetter.getStakingAddresses();
 
+        const context = ContextTracker.get();
+        if (context && context.deepHistoryTimestamp) {
+            const timestamps = await Promise.all(
+                farmsStakingAddresses.map((address) =>
+                    this.stakingAbi.stakingDeployedTimestamp(address),
+                ),
+            );
+            farmsStakingAddresses = farmsStakingAddresses.filter((_, index) => {
+                return (
+                    timestamps[index] !== undefined &&
+                    timestamps[index] <= context.deepHistoryTimestamp
+                );
+            });
+        }
+
+        return farmsStakingAddresses;
+    }
+
+    async getFarmsStaking(): Promise<StakingModel[]> {
+        const farmsStakingAddresses = await this.getStakingAddresses();
         const farmsStaking: StakingModel[] = [];
         for (const address of farmsStakingAddresses) {
             farmsStaking.push(
