@@ -24,6 +24,7 @@ export interface IFarmAbiService {
     lastErrorMessage(farmAddress: string): Promise<string>;
     ownerAddress(farmAddress: string): Promise<string>;
     farmShard(farmAddress: string): Promise<number>;
+    farmDeployedTimestamp(farmAddress: string): Promise<number>;
 }
 
 export interface IFarmComputeService {

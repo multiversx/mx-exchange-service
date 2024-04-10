@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
-import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { UserNftTokens } from '../models/nfttokens.union';
 import { UserMetaEsdtComputeService } from './metaEsdt.compute.service';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
@@ -16,7 +15,6 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
-import { farmsAddresses } from 'src/utils/farm.utils';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryService } from '../../price-discovery/services/price.discovery.service';
@@ -53,6 +51,7 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -74,10 +73,10 @@ enum NftTokenType {
 export class UserMetaEsdtService {
     constructor(
         private readonly userComputeService: UserMetaEsdtComputeService,
-        private readonly apiService: MXApiService,
         private readonly proxyPairAbi: ProxyPairAbiService,
         private readonly proxyFarmAbi: ProxyFarmAbiService,
         private readonly farmAbi: FarmAbiFactory,
+        private readonly farmFactory: FarmFactoryService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly stakingAbi: StakingAbiService,
         private readonly proxyStakeAbi: StakingProxyAbiService,
@@ -118,8 +117,9 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
         calculateUSD = true,
     ): Promise<UserFarmToken[]> {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
         const farmTokenIDs = await Promise.all(
-            farmsAddresses().map((address) =>
+            farmsAddresses.map((address) =>
                 this.farmAbi.useAbi(address).farmTokenID(address),
             ),
         );
@@ -677,7 +677,8 @@ export class UserMetaEsdtService {
         }
 
         let promises: Promise<string>[] = [];
-        for (const farmAddress of farmsAddresses()) {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+        for (const farmAddress of farmsAddresses) {
             promises.push(
                 this.farmAbi.useAbi(farmAddress).farmTokenID(farmAddress),
             );

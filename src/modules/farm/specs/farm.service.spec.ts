@@ -135,7 +135,7 @@ describe('FarmService', () => {
 
     it('should get farms', async () => {
         const factory = module.get<FarmFactoryService>(FarmFactoryService);
-        const farms = factory.getFarms();
+        const farms = await factory.getFarms();
         expect(farms).toEqual([
             {
                 address:
