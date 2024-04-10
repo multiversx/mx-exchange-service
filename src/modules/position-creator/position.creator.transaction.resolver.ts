@@ -48,7 +48,6 @@ export class LiquidityPositionSingleTokenResolver {
                 user.address,
                 pairAddress,
                 payment,
-                parent.swaps[parent.swaps.length - 1].tolerance,
                 parent.swaps,
                 lockEpochs,
             );
@@ -110,7 +109,6 @@ export class FarmPositionSingleTokenResolver {
                         }),
                 ),
             ],
-            parent.swaps[length - 1].tolerance,
             parent.swaps,
             lockEpochs,
         );
@@ -170,7 +168,6 @@ export class DualFarmPositionSingleTokenResolver {
                         }),
                 ),
             ],
-            parent.swaps[parent.swaps.length - 1].tolerance,
             parent.swaps,
         );
     }
@@ -229,7 +226,6 @@ export class StakingPositionSingleTokenResolver {
                         }),
                 ),
             ],
-            parent.swaps[0].tolerance,
         );
     }
 }
@@ -258,7 +254,6 @@ export class EnergyPositionSingleTokenResolver {
             firstPayment,
             parent.swaps[0],
             lockEpochs,
-            parent.swaps[0].tolerance,
         );
     }
 }

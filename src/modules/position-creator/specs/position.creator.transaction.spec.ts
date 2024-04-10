@@ -101,7 +101,6 @@ describe('PositionCreatorTransaction', () => {
                         tokenNonce: 0,
                         amount: '100000000000000000000',
                     }),
-                    0.01,
                     [],
                 ),
             ).rejects.toThrowError('Invalid ESDT token payment');
@@ -139,7 +138,6 @@ describe('PositionCreatorTransaction', () => {
                         tokenNonce: 0,
                         amount: '100000000000000000000',
                     }),
-                    0.01,
                     swapRoutes,
                 );
 
@@ -202,7 +200,6 @@ describe('PositionCreatorTransaction', () => {
                         tokenNonce: 0,
                         amount: '100000000000000000000',
                     }),
-                    0.01,
                     swapRoutes,
                     1440,
                 );
@@ -264,7 +261,6 @@ describe('PositionCreatorTransaction', () => {
                         tokenNonce: 0,
                         amount: '100000000000000000000',
                     }),
-                    0.01,
                     swapRoutes,
                     1440,
                 );
@@ -314,7 +310,6 @@ describe('PositionCreatorTransaction', () => {
                             amount: '100000000000000000000',
                         }),
                     ],
-                    0.01,
                     [],
                 ),
             ).rejects.toThrowError('Invalid ESDT token payment');
@@ -343,7 +338,6 @@ describe('PositionCreatorTransaction', () => {
                             amount: '100000000000000000000',
                         }),
                     ],
-                    0.01,
                     [],
                 ),
             ).rejects.toThrowError('Invalid farm token payment');
@@ -382,7 +376,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
             );
 
@@ -444,7 +437,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
             );
 
@@ -510,7 +502,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
             );
 
@@ -594,7 +585,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
             );
 
@@ -657,7 +647,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
                 1440,
             );
@@ -719,7 +708,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
                 1440,
             );
@@ -767,7 +755,6 @@ describe('PositionCreatorTransaction', () => {
                             amount: '100000000000000000000',
                         }),
                     ],
-                    0.01,
                     [],
                 ),
             ).rejects.toThrowError('Invalid ESDT token payment');
@@ -793,7 +780,6 @@ describe('PositionCreatorTransaction', () => {
                             amount: '100000000000000000000',
                         }),
                     ],
-                    0.01,
                     [],
                 ),
             ).rejects.toThrowError('Invalid dual yield token payment');
@@ -839,7 +825,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
             );
 
@@ -907,7 +892,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
             );
 
@@ -980,7 +964,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
             );
 
@@ -1071,7 +1054,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 swapRoutes,
             );
 
@@ -1127,7 +1109,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
                 [],
             );
 
@@ -1173,7 +1154,6 @@ describe('PositionCreatorTransaction', () => {
                             amount: '100000000000000000000',
                         }),
                     ],
-                    0.01,
                 ),
             ).rejects.toThrowError('Invalid ESDT token payment');
         });
@@ -1199,7 +1179,6 @@ describe('PositionCreatorTransaction', () => {
                             amount: '100000000000000000000',
                         }),
                     ],
-                    0.01,
                 ),
             ).rejects.toThrowError('Invalid staking token payment');
         });
@@ -1239,7 +1218,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
             );
 
             expect(transaction).toEqual([
@@ -1295,7 +1273,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
             );
 
             expect(transaction).toEqual([
@@ -1362,7 +1339,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
             );
 
             expect(transaction).toEqual([
@@ -1442,7 +1418,6 @@ describe('PositionCreatorTransaction', () => {
                         amount: '100000000000000000000',
                     }),
                 ],
-                0.01,
             );
 
             expect(transaction).toEqual([
@@ -2252,7 +2227,6 @@ describe('PositionCreatorTransaction', () => {
                     }),
                     new SwapRouteModel(),
                     1440,
-                    0.01,
                 ),
             ).rejects.toThrowError('Invalid ESDT token payment');
         });
@@ -2284,7 +2258,6 @@ describe('PositionCreatorTransaction', () => {
                 }),
                 swapRoute,
                 1440,
-                0.01,
             );
 
             expect(transactions).toEqual([
@@ -2337,7 +2310,6 @@ describe('PositionCreatorTransaction', () => {
                 }),
                 swapRoute,
                 1440,
-                0.01,
             );
 
             expect(transactions).toEqual([
