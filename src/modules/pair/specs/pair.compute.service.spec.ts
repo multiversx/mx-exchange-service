@@ -10,7 +10,7 @@ import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/anal
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
-import { PairsData } from '../mocks/pair.constants';
+import { PairsData, Tokens } from '../mocks/pair.constants';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
@@ -18,6 +18,11 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import BigNumber from 'bignumber.js';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { AssetsModel } from 'src/modules/tokens/models/assets.model';
+import { RolesModel } from 'src/modules/tokens/models/roles.model';
+import { PairAbiService } from '../services/pair.abi.service';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -176,5 +181,64 @@ describe('PairService', () => {
             ).bech32(),
         );
         expect(type).toEqual('Ecosystem');
+    });
+
+    it('should compute permanent locked value USD with 0 decimals', async () => {
+        const service = module.get<PairComputeService>(PairComputeService);
+        const pairService = module.get<PairService>(PairService);
+        const pairAbi = module.get<PairAbiService>(PairAbiService);
+
+        jest.spyOn(pairAbi, 'firstTokenID').mockResolvedValue('TOK7-123456');
+        jest.spyOn(pairAbi, 'secondTokenID').mockResolvedValue('USDC-123456');
+        jest.spyOn(pairAbi, 'pairInfoMetadata').mockResolvedValue({
+            reserves0: '0',
+            reserves1: '0',
+            totalSupply: '0',
+        });
+        jest.spyOn(pairService, 'getFirstToken').mockResolvedValue(
+            new EsdtToken({
+                identifier: 'TOK7-123456',
+                decimals: 0,
+            }),
+        );
+        jest.spyOn(pairService, 'getSecondToken').mockResolvedValue(
+            Tokens('USDC-123456'),
+        );
+
+        const lockedValueUSD = await service.computePermanentLockedValueUSD(
+            Address.Zero().bech32(),
+            new BigNumber('1000'),
+            new BigNumber('500000000'),
+        );
+
+        expect(lockedValueUSD.toFixed()).toEqual('500');
+    });
+
+    it('should compute permanent locked value USD with decimals', async () => {
+        const service = module.get<PairComputeService>(PairComputeService);
+        const pairService = module.get<PairService>(PairService);
+        const pairAbi = module.get<PairAbiService>(PairAbiService);
+
+        jest.spyOn(pairAbi, 'firstTokenID').mockResolvedValue('MEX-123456');
+        jest.spyOn(pairAbi, 'secondTokenID').mockResolvedValue('USDC-123456');
+        jest.spyOn(pairAbi, 'pairInfoMetadata').mockResolvedValue({
+            reserves0: '0',
+            reserves1: '0',
+            totalSupply: '0',
+        });
+        jest.spyOn(pairService, 'getFirstToken').mockResolvedValue(
+            Tokens('MEX-123456'),
+        );
+        jest.spyOn(pairService, 'getSecondToken').mockResolvedValue(
+            Tokens('USDC-123456'),
+        );
+
+        const lockedValueUSD = await service.computePermanentLockedValueUSD(
+            Address.Zero().bech32(),
+            new BigNumber('50000000000000000000000'),
+            new BigNumber('500000000'),
+        );
+
+        expect(lockedValueUSD.toFixed()).toEqual('0.001');
     });
 });
