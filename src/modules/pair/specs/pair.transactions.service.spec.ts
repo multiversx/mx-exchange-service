@@ -460,7 +460,7 @@ describe('TransactionPairService', () => {
 
         expect(transactions).toEqual({
             chainID: 'T',
-            data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwNEBAQDAyQDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMTA0',
+            data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwNEBAQDAyQDAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMTA0',
             gasLimit: gasConfig.composableTasks.default,
             gasPrice: 1000000000,
             guardian: undefined,
@@ -482,7 +482,7 @@ describe('TransactionPairService', () => {
             PairTransactionService,
         );
 
-        const transactions = await service.swapTokensFixedOutput(
+        const transaction = await service.swapTokensFixedOutput(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress: Address.fromHex(
@@ -495,49 +495,23 @@ describe('TransactionPairService', () => {
             },
         );
 
-        expect(transactions).toEqual([
-            {
-                nonce: 0,
-                value: '0',
-                receiver: Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
-                sender: '',
-                receiverUsername: undefined,
-                senderUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.pairs.swapTokensFixedOutput.default,
-                data: encodeTransactionData(
-                    'ESDTTransfer@MEX-123456@05@swapTokensFixedOutput@WEGLD-123456@05',
-                ),
-                chainID: mxConfig.chainID,
-                version: 1,
-                options: undefined,
-                signature: undefined,
-                guardian: undefined,
-                guardianSignature: undefined,
-            },
-            {
-                nonce: 0,
-                value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: '',
-                receiverUsername: undefined,
-                senderUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.wrapeGLD,
-                data: encodeTransactionData(
-                    'ESDTTransfer@WEGLD-123456@05@unwrapEgld',
-                ),
-                chainID: mxConfig.chainID,
-                version: 1,
-                options: undefined,
-                signature: undefined,
-                guardian: undefined,
-                guardianSignature: undefined,
-            },
-        ]);
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver: Address.Zero().bech32(),
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.composableTasks.default,
+            data: 'RVNEVFRyYW5zZmVyQDRkNDU1ODJkMzEzMjMzMzQzNTM2QDA1QDYzNmY2ZDcwNmY3MzY1NTQ2MTczNmI3M0AwMDAwMDAwNDQ1NDc0YzQ0MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDVAMDJAMDAwMDAwMTU3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzQwMDAwMDAwYzU3NDU0NzRjNDQyZDMxMzIzMzM0MzUzNjAwMDAwMDAxMDVAMDFA',
+            chainID: mxConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
+        });
     });
 
     it('should validate tokens', async () => {
