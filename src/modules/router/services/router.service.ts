@@ -8,12 +8,15 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from './router.abi.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class RouterService {
     constructor(
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
+        private readonly pairCompute: PairComputeService,
     ) {}
 
     async getFactory(): Promise<FactoryModel> {
@@ -40,6 +43,14 @@ export class RouterService {
         pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
         pairsMetadata = this.filterPairsByTokens(pairFilter, pairsMetadata);
         pairsMetadata = await this.filterPairsByState(
+            pairFilter,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByFeeState(
+            pairFilter,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByVolume(
             pairFilter,
             pairsMetadata,
         );
@@ -147,6 +158,46 @@ export class RouterService {
         }
 
         return filteredPairsMetadata;
+    }
+
+    private async filterPairsByFeeState(
+        pairFilter: PairFilterArgs, 
+        pairsMetadata: PairMetadata[]
+    ): Promise<PairMetadata[]> {
+        if (typeof pairFilter.feeState === 'undefined' || pairFilter.feeState === null) {
+            return pairsMetadata;
+        }
+
+        const pairsFeeStates = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairAbi.feeState(pairMetadata.address),
+            )  
+        );
+
+        return pairsMetadata.filter(
+            (pairMetadata, index) => pairsFeeStates[index] === pairFilter.feeState
+        );
+    }
+
+    private async filterPairsByVolume(
+        pairFilter: PairFilterArgs, 
+        pairsMetadata: PairMetadata[]
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.minVolume) {
+            return pairsMetadata;
+        }
+
+        const pairsVolumes = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairCompute.volumeUSD(pairMetadata.address, '24h')
+            )
+        );
+      
+      
+        return pairsMetadata.filter((pairMetadata, index) => {
+            const volume = new BigNumber(pairsVolumes[index])
+            return volume.gte(pairFilter.minVolume)
+        });
     }
 
     async requireOwner(sender: string) {
