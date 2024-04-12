@@ -99,15 +99,15 @@
     "gasLimits": {
         "router": {
             "createPair": 30000000,
-            "issueToken": 270000000,
-            "setLocalRoles": 270000000,
-            "multiPairSwapMultiplier": 110000000,
-            "swapEnableByUser": 180000000,
+            "issueToken": 300000000,
+            "setLocalRoles": 300000000,
+            "multiPairSwapMultiplier": 130000000,
+            "swapEnableByUser": 300000000,
             "admin": {
-                "setState": 200000000,
-                "setFee": 200000000,
+                "setState": 220000000,
+                "setFee": 220000000,
                 "upgradePair": 30000000,
-                "removePair": 200000000,
+                "removePair": 220000000,
                 "setLocalRolesOwner": 100000000,
                 "setPairCreationEnabled": 200000000,
                 "clearPairTemporaryOwnerStorage": 200000000,
@@ -158,7 +158,7 @@
                 "compoundRewards": 11600000,
                 "unlockedRewards": {
                     "exitFarm": {
-                        "default": 12000000,
+                        "default": 15000000,
                         "withPenalty": {
                             "localBurn": 10500000,
                             "pairBurn": 17000000,
@@ -169,7 +169,7 @@
                 },
                 "lockedRewards": {
                     "exitFarm": {
-                        "default": 17000000,
+                        "default": 20000000,
                         "withPenalty": {
                             "localBurn": 17000000,
                             "pairBurn": 23700000,
@@ -277,7 +277,7 @@
                     "compoundRewards": 21600000,
                     "unlockedRewards": {
                         "exitFarm": {
-                            "default": 18600000,
+                            "default": 20000000,
                             "withPenalty": {
                                 "localBurn": 19000000,
                                 "pairBurn": 24500000,

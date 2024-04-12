@@ -109,6 +109,11 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async rewardsRemainingDays(@Parent() parent: StakingModel) {
+        return this.stakingCompute.computeRewardsRemainingDays(parent.address);
+    }
+
+    @ResolveField()
     async divisionSafetyConstant(@Parent() parent: StakingModel) {
         return this.stakingAbi.divisionSafetyConstant(parent.address);
     }

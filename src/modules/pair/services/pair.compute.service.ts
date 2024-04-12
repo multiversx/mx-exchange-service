@@ -13,7 +13,7 @@ import { AnalyticsQueryService } from 'src/services/analytics/services/analytics
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { computeValueUSD } from 'src/utils/token.converters';
+import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -477,5 +477,70 @@ export class PairComputeService implements IPairComputeService {
         ]);
 
         return leastType(firstTokenType, secondTokenType);
+    }
+
+    async computePermanentLockedValueUSD(
+        pairAddress: string,
+        firstTokenAmount: BigNumber,
+        secondTokenAmount: BigNumber,
+    ): Promise<BigNumber> {
+        const [
+            firstToken,
+            secondToken,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+        ] = await Promise.all([
+            this.pairService.getFirstToken(pairAddress),
+            this.pairService.getSecondToken(pairAddress),
+            this.firstTokenPriceUSD(pairAddress),
+            this.secondTokenPriceUSD(pairAddress),
+        ]);
+
+        const minimumAmount = firstTokenAmount.isLessThan(secondTokenAmount)
+            ? firstTokenAmount
+            : secondTokenAmount;
+        const minimumLiquidity = new BigNumber(10 ** 3);
+
+        const firstTokenAmountDenom = denominateAmount(
+            firstTokenAmount.toFixed(),
+            firstToken.decimals,
+        );
+        const secondTokenAmountDenom = denominateAmount(
+            secondTokenAmount.toFixed(),
+            secondToken.decimals,
+        );
+
+        if (minimumAmount.isEqualTo(firstTokenAmount)) {
+            const minimumLiquidityDenom = denominateAmount(
+                minimumLiquidity.toFixed(),
+                firstToken.decimals,
+            );
+            if (new BigNumber(firstTokenPriceUSD).isGreaterThan(0)) {
+                return minimumLiquidityDenom.multipliedBy(firstTokenPriceUSD);
+            }
+
+            const firstTokenPrice = secondTokenAmountDenom.dividedBy(
+                firstTokenAmountDenom,
+            );
+            return minimumLiquidityDenom
+                .multipliedBy(firstTokenPrice)
+                .multipliedBy(secondTokenPriceUSD);
+        } else {
+            const minimumLiquidityDenom = denominateAmount(
+                minimumLiquidity.toFixed(),
+                secondToken.decimals,
+            );
+
+            if (new BigNumber(secondTokenPriceUSD).isGreaterThan(0)) {
+                return minimumLiquidityDenom.multipliedBy(secondTokenPriceUSD);
+            }
+            const secondTokenPrice = firstTokenAmountDenom.dividedBy(
+                secondTokenAmountDenom,
+            );
+
+            return minimumLiquidityDenom
+                .multipliedBy(secondTokenPrice)
+                .multipliedBy(firstTokenPriceUSD);
+        }
     }
 }

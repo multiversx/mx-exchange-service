@@ -31,6 +31,7 @@ export class MXProxyService {
         const httpsAgent = new HttpsAgent(keepAliveOptions);
 
         this.proxy = new ProxyNetworkProviderProfiler(
+            this.apiConfigService,
             this.apiConfigService.getApiUrl(),
             {
                 timeout: mxConfig.proxyTimeout,
