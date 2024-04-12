@@ -17,6 +17,7 @@ import { StakingPositionSingleTokenModel } from '../models/position.creator.mode
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { denominateAmount } from 'src/utils/token.converters';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { constantsConfig } from 'src/config';
 
 export type PositionCreatorSingleTokenInput = {
     swapRouteArgs: TypedValue[];
@@ -151,6 +152,12 @@ export class PositionCreatorComputeService {
             .dividedBy(amount1)
             .toFixed();
 
+        const priceDeviationPercent =
+            await this.autoRouterService.getTokenPriceDeviationPercent(
+                [tokenIn.identifier, tokenOut.identifier],
+                [amount0.toFixed(), amount1.toFixed()],
+            );
+
         swapRoutes.push(
             new SwapRouteModel({
                 swapType: SWAP_TYPE.fixedInput,
@@ -188,6 +195,8 @@ export class PositionCreatorComputeService {
                     tokenOut.identifier === firstToken.identifier
                         ? firstTokenPriceUSD
                         : secondTokenPriceUSD,
+                maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
+                tokensPriceDeviationPercent: priceDeviationPercent,
             }),
         );
 
