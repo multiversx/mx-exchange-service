@@ -19,6 +19,7 @@ import { Logger } from 'winston';
 @Injectable()
 export class NativeAuthGuard implements CanActivate {
     private readonly authServer: NativeAuthServer;
+    private impersonateAddress: string;
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
@@ -49,12 +50,17 @@ export class NativeAuthGuard implements CanActivate {
                     await this.cachingService.set(key, value, ttl);
                 },
             },
+            validateImpersonateCallback: this.validateImpersonateAddress,
         });
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const ctx = GqlExecutionContext.create(context);
         const { req } = ctx.getContext();
+
+        if (req.headers !== undefined) {
+            this.impersonateAddress = req.headers['impersonate-address'];
+        }
 
         const authorization: string = req.headers['authorization'];
         const origin = req.headers['origin'];
@@ -88,16 +94,14 @@ export class NativeAuthGuard implements CanActivate {
             req.auth = userInfo;
             req.jwt = userInfo;
 
-            if (
-                userInfo.extraInfo.impersonate &&
-                userInfo.extraInfo.impersonate !== undefined
-            ) {
+            if (this.impersonateAddress) {
                 const admins = process.env.SECURITY_ADMINS.split(',');
-                if (
-                    admins.find((admin) => admin === userInfo.signerAddress) ===
-                    undefined
-                ) {
-                    throw new NativeAuthError('Impersonation not allowed');
+                if (admins.find((admin) => admin === userInfo.signerAddress)) {
+                    req.res.set(
+                        'X-Native-Auth-Address',
+                        this.impersonateAddress,
+                    );
+                    req.auth.address = this.impersonateAddress;
                 }
             }
 
@@ -106,5 +110,17 @@ export class NativeAuthGuard implements CanActivate {
             this.logger.error(`${NativeAuthGuard.name}: ${error.message}`);
             return false;
         }
+    }
+
+    private async validateImpersonateAddress(
+        signerAddress: string,
+        _impersonateAddress: string,
+    ): Promise<boolean> {
+        const admins = process.env.SECURITY_ADMINS.split(',');
+        if (admins.find((admin) => admin === signerAddress) === undefined) {
+            throw new NativeAuthError('Impersonation not allowed');
+        }
+
+        return true;
     }
 }
