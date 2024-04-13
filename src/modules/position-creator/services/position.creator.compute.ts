@@ -17,7 +17,8 @@ import { StakingPositionSingleTokenModel } from '../models/position.creator.mode
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { denominateAmount } from 'src/utils/token.converters';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { constantsConfig } from 'src/config';
+import { constantsConfig, mxConfig } from 'src/config';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 export type PositionCreatorSingleTokenInput = {
     swapRouteArgs: TypedValue[];
@@ -33,6 +34,7 @@ export class PositionCreatorComputeService {
         private readonly routerAbi: RouterAbiService,
         private readonly stakingAbi: StakingAbiService,
         private readonly autoRouterService: AutoRouterService,
+        private readonly wrapAbi: WrapAbiService,
     ) {}
 
     async computeSwap(
@@ -63,6 +65,7 @@ export class PositionCreatorComputeService {
             await this.routerAbi.commonTokensForUserPairs();
 
         const [
+            wrappedTokenID,
             firstToken,
             secondToken,
             lpTokenID,
@@ -71,6 +74,7 @@ export class PositionCreatorComputeService {
             reserves,
             totalFeePercent,
         ] = await Promise.all([
+            this.wrapAbi.wrappedEgldTokenID(),
             this.pairService.getFirstToken(pairAddress),
             this.pairService.getSecondToken(pairAddress),
             this.pairAbi.lpTokenID(pairAddress),
@@ -86,6 +90,11 @@ export class PositionCreatorComputeService {
 
         const profiler = new PerformanceProfiler();
 
+        const paymentTokenID =
+            payment.tokenIdentifier === mxConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : payment.tokenIdentifier;
+
         const swapRoutes = [];
 
         let amountOut: BigNumber;
@@ -93,8 +102,8 @@ export class PositionCreatorComputeService {
         let tokenOut: EsdtToken;
 
         if (
-            payment.tokenIdentifier !== firstToken.identifier &&
-            payment.tokenIdentifier !== secondToken.identifier
+            paymentTokenID !== firstToken.identifier &&
+            paymentTokenID !== secondToken.identifier
         ) {
             [tokenIn, tokenOut] = acceptedPairedTokensIDs.includes(
                 firstToken.identifier,
@@ -103,7 +112,7 @@ export class PositionCreatorComputeService {
                 : [secondToken, firstToken];
 
             const swapRoute = await this.autoRouterService.swap({
-                tokenInID: payment.tokenIdentifier,
+                tokenInID: paymentTokenID,
                 amountIn: payment.amount,
                 tokenOutID: tokenIn.identifier,
                 tolerance,
@@ -114,7 +123,7 @@ export class PositionCreatorComputeService {
         } else {
             amountOut = new BigNumber(payment.amount);
             [tokenIn, tokenOut] =
-                payment.tokenIdentifier === firstToken.identifier
+                paymentTokenID === firstToken.identifier
                     ? [firstToken, secondToken]
                     : [secondToken, firstToken];
         }
@@ -223,6 +232,7 @@ export class PositionCreatorComputeService {
             tolerance,
         );
         return new StakingPositionSingleTokenModel({
+            payment,
             swaps: [swapRoute],
         });
     }
