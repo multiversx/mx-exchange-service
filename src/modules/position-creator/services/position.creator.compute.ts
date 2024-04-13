@@ -145,11 +145,17 @@ export class PositionCreatorComputeService {
             ),
         ]);
 
-        const tokenInExchangeRate = new BigNumber(amount1)
+        const tokenInExchangeRate = new BigNumber(10)
+            .pow(tokenOut.decimals)
+            .multipliedBy(amount1)
             .dividedBy(amount0)
+            .integerValue()
             .toFixed();
-        const tokenOutExchangeRate = new BigNumber(amount0)
+        const tokenOutExchangeRate = new BigNumber(10)
+            .pow(tokenIn.decimals)
+            .multipliedBy(amount0)
             .dividedBy(amount1)
+            .integerValue()
             .toFixed();
 
         const priceDeviationPercent =
