@@ -1,6 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { TransactionModel } from 'src/models/transaction.model';
 import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model';
+import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 
 @ObjectType()
 export class PositionCreatorModel {
@@ -14,6 +15,9 @@ export class PositionCreatorModel {
 
 @ObjectType()
 export class LiquidityPositionSingleTokenModel {
+    @Field(() => EsdtTokenPaymentModel)
+    payment: EsdtTokenPaymentModel;
+
     @Field(() => [SwapRouteModel])
     swaps: SwapRouteModel[];
 
@@ -27,6 +31,9 @@ export class LiquidityPositionSingleTokenModel {
 
 @ObjectType()
 export class FarmPositionSingleTokenModel {
+    @Field(() => EsdtTokenPaymentModel)
+    payment: EsdtTokenPaymentModel;
+
     @Field(() => [SwapRouteModel])
     swaps: SwapRouteModel[];
 
@@ -40,6 +47,9 @@ export class FarmPositionSingleTokenModel {
 
 @ObjectType()
 export class DualFarmPositionSingleTokenModel {
+    @Field(() => EsdtTokenPaymentModel)
+    payment: EsdtTokenPaymentModel;
+
     @Field(() => [SwapRouteModel])
     swaps: SwapRouteModel[];
 
@@ -53,6 +63,9 @@ export class DualFarmPositionSingleTokenModel {
 
 @ObjectType()
 export class StakingPositionSingleTokenModel {
+    @Field(() => EsdtTokenPaymentModel)
+    payment: EsdtTokenPaymentModel;
+
     @Field(() => [SwapRouteModel])
     swaps: SwapRouteModel[];
 
@@ -66,6 +79,9 @@ export class StakingPositionSingleTokenModel {
 
 @ObjectType()
 export class EnergyPositionSingleTokenModel {
+    @Field(() => EsdtTokenPaymentModel)
+    payment: EsdtTokenPaymentModel;
+
     @Field(() => [SwapRouteModel])
     swaps: SwapRouteModel[];
 
