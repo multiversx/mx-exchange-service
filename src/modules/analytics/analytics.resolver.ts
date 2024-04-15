@@ -172,6 +172,13 @@ export class AnalyticsResolver {
     }
 
     @Query(() => [CandleDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async priceCandles(
         @Args() args: PriceCandlesQueryArgs,
     ): Promise<CandleDataModel[]> {

@@ -1,5 +1,5 @@
 import { ArgsType, Field, registerEnumType } from '@nestjs/graphql';
-import { Matches } from 'class-validator';
+import { IsDateString, Matches } from 'class-validator';
 import { IsValidMetric } from 'src/helpers/validators/metric.validator';
 import { IsValidSeries } from 'src/helpers/validators/series.validator';
 import { IsValidUnixTime } from 'src/helpers/validators/unix.time.validator';
@@ -46,11 +46,11 @@ export class PriceCandlesQueryArgs {
     @IsValidMetric()
     metric: string;
     @Field()
-    @IsValidUnixTime()
+    @IsDateString()
     startDate: string;
     @Field({ nullable: true })
-    @IsValidUnixTime()
+    @IsDateString()
     endDate: string;
-    @Field(() => PriceCandlesResolutions)  // todo add validation
+    @Field(() => PriceCandlesResolutions)
     resolution: PriceCandlesResolutions;
 }
