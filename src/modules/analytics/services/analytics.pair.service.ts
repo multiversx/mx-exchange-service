@@ -127,16 +127,16 @@ export class AnalyticsPairService {
     async getPriceCandles(
         series: string,
         metric: string,
-        startDate: string,
-        endDate: string,
+        start: string,
+        end: string,
         resolution: PriceCandlesResolutions,
     ): Promise<CandleDataModel[]> {
         return await this.analyticsQueryService.getPriceCandles({
-            series: series,
-            key: metric,
-            resolution: resolution,
-            startDate: startDate,
-            endDate: endDate
+            series,
+            metric,
+            resolution,
+            start,
+            end
         })
     }
 }

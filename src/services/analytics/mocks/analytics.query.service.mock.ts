@@ -42,9 +42,9 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
     }
     getPriceCandles({
         series,
-        key,
-        startDate,
-        endDate,
+        metric,
+        start,
+        end,
     }): Promise<CandleDataModel[]> {
         throw new Error('Method not implemented.');
     }

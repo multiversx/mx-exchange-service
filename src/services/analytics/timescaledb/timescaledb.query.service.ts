@@ -346,13 +346,16 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     @TimescaleDBQuery()
     async getPriceCandles({
         series,
-        key,
+        metric,
         resolution,
-        startDate,
-        endDate,
+        start,
+        end,
     }): Promise<CandleDataModel[]> {
         const candleRepository = this.getCandleModelByResolution(resolution);
       
+        const startDate = moment.unix(start).utc().toString()
+        const endDate = moment.unix(end).utc().toString()
+        
         const query = await candleRepository
             .createQueryBuilder()
             .select(`time_bucket_gapfill('${resolution}', time) as bucket`)
@@ -361,10 +364,10 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             .addSelect('locf(min(low)) as low')
             .addSelect('locf(max(high)) as high')
             .where('series = :series', { series })
-            .andWhere('key = :key', { key })
-            .andWhere('time between :start and :end', {
-                start: startDate,
-                end: endDate,
+            .andWhere('key = :metric', { metric })
+            .andWhere('time between :startDate and :endDate', {
+                startDate,
+                endDate,
             })
             .groupBy('bucket')
             .getRawMany();
@@ -394,8 +397,8 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             .createQueryBuilder()
             .select('open, close, high, low')
             .where('series = :series', { series })
-            .andWhere('key = :key', { key })
-            .andWhere("time < :start", { start : startDate })
+            .andWhere('key = :metric', { metric })
+            .andWhere("time < :startDate", { startDate })
             .orderBy('time', 'DESC')
             .limit(1)
             .getRawOne();

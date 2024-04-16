@@ -185,8 +185,8 @@ export class AnalyticsResolver {
           return this.analyticsPairService.getPriceCandles(
               args.series,
               args.metric,
-              args.startDate, 
-              args.endDate, 
+              args.start, 
+              args.end, 
               args.resolution
           );
       }

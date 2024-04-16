@@ -31,9 +31,9 @@ export interface AnalyticsQueryInterface {
 
     getPriceCandles({
         series,
-        key,
+        metric,
         resolution,
-        startDate,
-        endDate,
+        start,
+        end,
     }): Promise<CandleDataModel[]>;
 }
