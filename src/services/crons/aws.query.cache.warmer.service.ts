@@ -25,8 +25,7 @@ export class AWSQueryCacheWarmerService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
-    // @Cron(CronExpression.EVERY_5_MINUTES)
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     @Lock({ name: 'updateHistoricTokensData', verbose: true })
     async updateHistoricTokensData(): Promise<void> {
         if (!this.apiConfig.isAWSTimestreamRead()) {
