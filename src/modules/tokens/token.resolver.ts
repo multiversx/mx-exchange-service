@@ -56,6 +56,13 @@ export class TokensResolver extends GenericResolver {
         return new RolesModel(parent.roles);
     }
 
+    @ResolveField(() => String, { nullable: true })
+    async previous7dPrice(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenPrevious7dPrice(parent.identifier),
+        );
+    }
+
     @Query(() => [EsdtToken])
     async tokens(@Args() filters: TokensFiltersArgs): Promise<EsdtToken[]> {
         try {

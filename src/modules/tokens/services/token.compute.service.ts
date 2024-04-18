@@ -17,6 +17,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import moment from 'moment';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -201,5 +202,26 @@ export class TokenComputeService implements ITokenComputeService {
         });
 
         return values24h[0]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async tokenPrevious7dPrice(tokenID: string): Promise<string> {
+        return await this.computeTokenPrevious7dPrice(tokenID);
+    }
+
+    async computeTokenPrevious7dPrice(tokenID: string): Promise<string> {
+        const values7d = await this.analyticsQuery.getValues7d({
+            series: tokenID,
+            metric: 'priceUSD',
+        });
+
+        return values7d[0]?.value ?? undefined;
     }
 }
