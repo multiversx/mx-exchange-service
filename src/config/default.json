@@ -95,11 +95,11 @@
     },
     "gasLimits": {
         "router": {
-            "createPair": 30000000,
-            "issueToken": 300000000,
-            "setLocalRoles": 300000000,
-            "multiPairSwapMultiplier": 130000000,
-            "swapEnableByUser": 300000000,
+            "createPair": 35000000,
+            "issueToken": 350000000,
+            "setLocalRoles": 350000000,
+            "multiPairSwapMultiplier": 150000000,
+            "swapEnableByUser": 350000000,
             "admin": {
                 "setState": 220000000,
                 "setFee": 220000000,

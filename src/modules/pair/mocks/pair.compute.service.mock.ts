@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { IPairComputeService } from '../interfaces';
 import { PairAbiService } from '../services/pair.abi.service';
 import { PairComputeService } from '../services/pair.compute.service';
@@ -69,8 +70,8 @@ export class PairComputeServiceMock implements IPairComputeService {
     secondTokenVolume(pairAddress: string, time: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    volumeUSD(pairAddress: string, time: string): Promise<string> {
-        throw new Error('Method not implemented.');
+    async volumeUSD(pairAddress: string, time: string): Promise<string> {
+        return PairsData(pairAddress).volumeUSD;
     }
     feesUSD(pairAddress: string, time: string): Promise<string> {
         throw new Error('Method not implemented.');
@@ -84,6 +85,12 @@ export class PairComputeServiceMock implements IPairComputeService {
 
     async computeLpTokenPriceUSD(pairAddress: string): Promise<string> {
         return await this.lpTokenPriceUSD(pairAddress);
+    }
+
+    async computePermanentLockedValueUSD(
+        pairAddress: string,
+    ): Promise<BigNumber> {
+        return new BigNumber('0.000001');
     }
 }
 
