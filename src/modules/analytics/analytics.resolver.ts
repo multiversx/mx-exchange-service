@@ -8,6 +8,7 @@ import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { TokenService } from '../tokens/services/token.service';
 import { AnalyticsPairService } from './services/analytics.pair.service';
+import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.validator';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -180,7 +181,8 @@ export class AnalyticsResolver {
         }),
     )
     async priceCandles(
-        @Args() args: PriceCandlesQueryArgs,
+        @Args(PriceCandlesArgsValidationPipe) 
+        args: PriceCandlesQueryArgs,
     ): Promise<CandleDataModel[]> {
           return this.analyticsPairService.getPriceCandles(
               args.series,
