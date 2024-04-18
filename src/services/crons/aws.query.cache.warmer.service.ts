@@ -25,7 +25,8 @@ export class AWSQueryCacheWarmerService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    // @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'updateHistoricTokensData', verbose: true })
     async updateHistoricTokensData(): Promise<void> {
         if (!this.apiConfig.isAWSTimestreamRead()) {
@@ -104,6 +105,31 @@ export class AWSQueryCacheWarmerService {
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        const allTokensVolumeUSDCompleteValuesSum = await this.analyticsQuery.getSumCompleteValues({
+            series: '%-%',
+            metric: 'volumeUSD',
+        });
+        await delay(1000);
+        const allTokensVolumeUSD24hSum = await this.analyticsQuery.getValues24hSum({
+            series: '%-%',
+            metric: 'volumeUSD',
+        });
+
+        const allTokensVolumesKeys = await Promise.all([
+            this.analyticsAWSSetter.setSumCompleteValues(
+              'factory',
+              'volumeUSD',
+              allTokensVolumeUSDCompleteValuesSum,
+            ),
+            this.analyticsAWSSetter.setValues24hSum(
+              'factory',
+              'volumeUSD',
+              allTokensVolumeUSD24hSum,
+            ),
+        ]) 
+        await this.deleteCacheKeys(allTokensVolumesKeys);
+
         profiler.stop();
         this.logger.info(
             `Finish refresh tokens analytics in ${profiler.duration}`,
