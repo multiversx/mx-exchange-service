@@ -133,11 +133,13 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 return [];
             }
 
+            const seriesWhere = series.includes('%') ? 'series LIKE :series' : 'series = :series';
+
             const query = await this.sumDaily
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 day', time) as day")
                 .addSelect('sum(sum) as sum')
-                .where('series = :series', { series })
+                .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :start and now()', {
                     start: startDate,
@@ -217,11 +219,13 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
+            const seriesWhere = series.includes('%') ? 'series LIKE :series' : 'series = :series';
+
             const query = await this.sumHourly
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 hour', time) as hour")
                 .addSelect('sum(sum) as sum')
-                .where('series = :series', { series })
+                .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere("time between now() - INTERVAL '1 day' and now()")
                 .groupBy('hour')
@@ -299,17 +303,19 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    private async getStartDate(series: string): Promise<string | undefined> {
+    private async getStartDate(series: string,): Promise<string | undefined> {
         const cacheKey = `startDate.${series}`;
         const cachedValue = await this.cacheService.get<string>(cacheKey);
         if (cachedValue !== undefined) {
             return cachedValue;
         }
 
+        const seriesWhere = series.includes('%') ? 'series LIKE :series' : 'series = :series';
+
         const firstRow = await this.dexAnalytics
             .createQueryBuilder()
             .select('timestamp')
-            .where('series = :series', { series })
+            .where(seriesWhere, { series })
             .orderBy('timestamp', 'ASC')
             .limit(1)
             .getRawOne();
