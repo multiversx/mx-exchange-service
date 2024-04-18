@@ -28,4 +28,6 @@ export interface AnalyticsQueryInterface {
         startDate,
         endDate,
     }): Promise<HistoricDataModel[]>;
+
+    getValues7d(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 }

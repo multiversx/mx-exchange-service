@@ -212,6 +212,52 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
+    async getValues7d({
+        series,
+        metric,
+    }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+        try {
+            const previousValue = this.closeDaily
+                .createQueryBuilder()
+                .select('last')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere("time < now() - INTERVAL '7 days'")
+                .orderBy('time', 'DESC')
+                .limit(1);
+
+            const query = await this.closeDaily
+                .createQueryBuilder()
+                .select("time_bucket_gapfill('1 day', time) as day")
+                .addSelect(
+                    `locf(last(last, time), (${previousValue.getQuery()})) as last`,
+                )
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere("time between now() - INTERVAL '7 days' and now()")
+                .groupBy('day')
+                .getRawMany();
+
+            return (
+                query?.map(
+                    (row) =>
+                        new HistoricDataModel({
+                            timestamp: moment
+                                .utc(row.day)
+                                .format('yyyy-MM-DD HH:mm:ss'),
+                            value: row.last ?? '0',
+                        }),
+                ) ?? []
+            );
+        } catch (error) {
+            this.logger.error(
+                `getValues7d: Error getting query for ${series} ${metric}`,
+            );
+            return [];
+        }
+    }
+
+    @TimescaleDBQuery()
     async getValues24hSum({
         series,
         metric,

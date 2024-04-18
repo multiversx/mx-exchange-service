@@ -74,6 +74,14 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         });
     }
 
+    async getValues7d(args: {
+        series: any;
+        metric: any;
+    }): Promise<HistoricDataModel[]> {
+        const service = await this.getService();
+        return await service.getValues7d(args);
+    }
+
     private async getService(): Promise<AnalyticsQueryInterface> {
         return this.timescaleDBQuery;
     }
