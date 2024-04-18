@@ -16,4 +16,6 @@ export class PairFilterArgs {
     minVolume: number;
     @Field({ nullable: true })
     feeState: boolean;
+    @Field({ nullable: true })
+    minLockedValueUSD: number;
 }
