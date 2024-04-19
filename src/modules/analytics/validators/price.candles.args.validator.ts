@@ -18,12 +18,60 @@ enum MaxMinutesPerResolution {
     MONTH_1 = 1036800, // 2 years
 }
 
+const resolutionToMaxDuration = {
+    [PriceCandlesResolutions.MINUTE_1]: MaxMinutesPerResolution.MINUTE_1,
+    [PriceCandlesResolutions.MINUTE_5]: MaxMinutesPerResolution.MINUTE_5,
+    [PriceCandlesResolutions.MINUTE_15]: MaxMinutesPerResolution.MINUTE_15,
+    [PriceCandlesResolutions.MINUTE_30]: MaxMinutesPerResolution.MINUTE_30,
+    [PriceCandlesResolutions.HOUR_1]: MaxMinutesPerResolution.HOUR_1,
+    [PriceCandlesResolutions.HOUR_4]: MaxMinutesPerResolution.HOUR_4,
+    [PriceCandlesResolutions.DAY_1]: MaxMinutesPerResolution.DAY_1,
+    [PriceCandlesResolutions.DAY_7]: MaxMinutesPerResolution.DAY_7,
+    [PriceCandlesResolutions.MONTH_1]: MaxMinutesPerResolution.MONTH_1,
+};
+
 @Injectable()
 export class PriceCandlesArgsValidationPipe implements PipeTransform {
     async transform(value: PriceCandlesQueryArgs, metadata: ArgumentMetadata) {
         const { start, end, resolution } = value;
 
+        if (!this.isValidTimestamp(start)) {
+            throw new UserInputError('Invalid timestamp format for start.');
+        }
+
         const startDate = moment.unix(parseInt(start));
+        const maxDuration = resolutionToMaxDuration[resolution];
+
+        if (!end) {
+            const currentTime = moment.utc();
+
+            if (currentTime.isBefore(startDate)) {
+                throw new UserInputError(
+                    'Invalid interval - start date cannot be in the future',
+                );
+            }
+
+            const durationInMinutes = this.computeDurationInMinutes(
+                startDate,
+                currentTime,
+            );
+
+            value.end = currentTime.unix().toString();
+
+            if (durationInMinutes > maxDuration) {
+                value.end = startDate
+                    .add(maxDuration, 'minutes')
+                    .unix()
+                    .toString();
+            }
+
+            return value;
+        }
+
+        if (!this.isValidTimestamp(end)) {
+            throw new UserInputError('Invalid timestamp format for end.');
+        }
+
         const endDate = moment.unix(parseInt(end));
 
         if (endDate.isBefore(startDate)) {
@@ -32,41 +80,10 @@ export class PriceCandlesArgsValidationPipe implements PipeTransform {
             );
         }
 
-        const duration = moment.duration(endDate.diff(startDate));
-        const durationInMinutes = duration.asMinutes();
-
-        let maxDuration = 0;
-        switch (resolution) {
-            case PriceCandlesResolutions.MINUTE_1:
-                maxDuration = MaxMinutesPerResolution.MINUTE_1;
-                break;
-            case PriceCandlesResolutions.MINUTE_5:
-                maxDuration = MaxMinutesPerResolution.MINUTE_5;
-                break;
-            case PriceCandlesResolutions.MINUTE_15:
-                maxDuration = MaxMinutesPerResolution.MINUTE_15;
-                break;
-            case PriceCandlesResolutions.MINUTE_30:
-                maxDuration = MaxMinutesPerResolution.MINUTE_30;
-                break;
-            case PriceCandlesResolutions.HOUR_1:
-                maxDuration = MaxMinutesPerResolution.HOUR_1;
-                break;
-            case PriceCandlesResolutions.HOUR_4:
-                maxDuration = MaxMinutesPerResolution.HOUR_4;
-                break;
-            case PriceCandlesResolutions.DAY_1:
-                maxDuration = MaxMinutesPerResolution.DAY_1;
-                break;
-            case PriceCandlesResolutions.DAY_7:
-                maxDuration = MaxMinutesPerResolution.DAY_7;
-                break;
-            case PriceCandlesResolutions.MONTH_1:
-                maxDuration = MaxMinutesPerResolution.MONTH_1;
-                break;
-            default:
-                break;
-        }
+        const durationInMinutes = this.computeDurationInMinutes(
+            startDate,
+            endDate,
+        );
 
         if (durationInMinutes > maxDuration) {
             throw new UserInputError(
@@ -75,5 +92,18 @@ export class PriceCandlesArgsValidationPipe implements PipeTransform {
         }
 
         return value;
+    }
+
+    private computeDurationInMinutes(
+        start: moment.Moment,
+        end: moment.Moment,
+    ): number {
+        const duration = moment.duration(end.diff(start));
+        return duration.asMinutes();
+    }
+
+    private isValidTimestamp(timestamp: string): boolean {
+        const unixTime = parseInt(timestamp);
+        return moment.unix(unixTime).isValid();
     }
 }
