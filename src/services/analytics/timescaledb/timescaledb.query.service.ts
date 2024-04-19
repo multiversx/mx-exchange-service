@@ -1,6 +1,9 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import moment from 'moment';
-import { CandleDataModel, HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import {
+    CandleDataModel,
+    HistoricDataModel,
+} from 'src/modules/analytics/models/analytics.model';
 import { computeTimeInterval } from 'src/utils/analytics.utils';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -352,10 +355,10 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         end,
     }): Promise<CandleDataModel[]> {
         const candleRepository = this.getCandleModelByResolution(resolution);
-      
-        const startDate = moment.unix(start).utc().toString()
-        const endDate = moment.unix(end).utc().toString()
-        
+
+        const startDate = moment.unix(start).utc().toString();
+        const endDate = moment.unix(end).utc().toString();
+
         const query = await candleRepository
             .createQueryBuilder()
             .select(`time_bucket_gapfill('${resolution}', time) as bucket`)
@@ -376,21 +379,16 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             return [];
         }
 
-        const needsGapFilling = query.some((row) => !row.open)
+        const needsGapFilling = query.some((row) => !row.open);
 
         if (!needsGapFilling) {
-          return query.map(
-              (row) =>
-                  new CandleDataModel({
-                      time: row.bucket,
-                      ohlc: [
-                        row.open,
-                        row.high,
-                        row.low,
-                        row.close
-                      ]
-                  })
-          );
+            return query.map(
+                (row) =>
+                    new CandleDataModel({
+                        time: row.bucket,
+                        ohlc: [row.open, row.high, row.low, row.close],
+                    }),
+            );
         }
 
         const previousCandle = await candleRepository
@@ -398,43 +396,40 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             .select('open, close, high, low')
             .where('series = :series', { series })
             .andWhere('key = :metric', { metric })
-            .andWhere("time < :startDate", { startDate })
+            .andWhere('time < :startDate', { startDate })
             .orderBy('time', 'DESC')
             .limit(1)
             .getRawOne();
 
         if (!previousCandle) {
-            return query.filter(
-                (row) => row.open
-            ).map(
-                (row) =>
-                    new CandleDataModel({
-                        time: row.bucket,
-                        ohlc: [
-                          row.open,
-                          row.high,
-                          row.low,
-                          row.close
-                        ]
-                    })
-            );
+            return query
+                .filter((row) => row.open)
+                .map(
+                    (row) =>
+                        new CandleDataModel({
+                            time: row.bucket,
+                            ohlc: [row.open, row.high, row.low, row.close],
+                        }),
+                );
         }
 
         return query.map(
-            (row) => new CandleDataModel({
-                time: row.bucket,
-                ohlc: [
-                  row.open ?? previousCandle.open,
-                  row.high ?? previousCandle.high,
-                  row.low ?? previousCandle.low,
-                  row.close ?? previousCandle.close
-                ]
-            })
+            (row) =>
+                new CandleDataModel({
+                    time: row.bucket,
+                    ohlc: [
+                        row.open ?? previousCandle.open,
+                        row.high ?? previousCandle.high,
+                        row.low ?? previousCandle.low,
+                        row.close ?? previousCandle.close,
+                    ],
+                }),
         );
     }
 
-    private getCandleModelByResolution(resolution: PriceCandlesResolutions): 
-        Repository<PriceCandleMinute | PriceCandleHourly | PriceCandleDaily> {
+    private getCandleModelByResolution(
+        resolution: PriceCandlesResolutions,
+    ): Repository<PriceCandleMinute | PriceCandleHourly | PriceCandleDaily> {
         if (resolution.includes('minute')) {
             return this.priceCandleMinute;
         }

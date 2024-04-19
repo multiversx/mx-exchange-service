@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { CandleDataModel, HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
+import {
+    CandleDataModel,
+    HistoricDataModel,
+    PairDayDataModel,
+} from '../models/analytics.model';
 import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
@@ -136,7 +140,7 @@ export class AnalyticsPairService {
             metric,
             resolution,
             start,
-            end
-        })
+            end,
+        });
     }
 }
