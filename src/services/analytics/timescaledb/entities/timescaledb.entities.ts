@@ -158,6 +158,7 @@ export class CloseDaily {
       last(value, timestamp) as last
     FROM "hyper_dex_analytics"
     WHERE key IN ('priceUSD', 'liquidityUSD', 'lockedValueUSD', 'totalLockedValueUSD')
+    AND timestamp >= NOW() - INTERVAL '1 day'
     GROUP BY time, series, key;
   `,
     materialized: true,
