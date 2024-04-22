@@ -17,7 +17,6 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
-import moment from 'moment';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
