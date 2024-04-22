@@ -2,7 +2,10 @@ import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AssetsModel } from './models/assets.model';
 import { EsdtToken } from './models/esdtToken.model';
 import { RolesModel } from './models/roles.model';
-import { TokensFiltersArgs } from './models/tokens.filter.args';
+import {
+    TokensFiltersArgs,
+    TokensPaginationArgs,
+} from './models/tokens.filter.args';
 import { TokenService } from './services/token.service';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import { GraphQLError } from 'graphql';
@@ -57,9 +60,16 @@ export class TokensResolver extends GenericResolver {
     }
 
     @Query(() => [EsdtToken])
-    async tokens(@Args() filters: TokensFiltersArgs): Promise<EsdtToken[]> {
+    async tokens(
+        @Args() page: TokensPaginationArgs,
+        @Args() filters: TokensFiltersArgs,
+    ): Promise<EsdtToken[]> {
         try {
-            return await this.tokenService.getTokens(filters);
+            return await this.tokenService.getTokens(
+                page.offset,
+                page.limit,
+                filters,
+            );
         } catch (error) {
             throw new GraphQLError(error.message, {
                 extensions: {

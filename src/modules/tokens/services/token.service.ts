@@ -21,7 +21,11 @@ export class TokenService {
         protected readonly cachingService: CacheService,
     ) {}
 
-    async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
+    async getTokens(
+        offset: number,
+        limit: number,
+        filters: TokensFiltersArgs,
+    ): Promise<EsdtToken[]> {
         let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
         if (filters.identifiers && filters.identifiers.length > 0) {
             tokenIDs = tokenIDs.filter((tokenID) =>
@@ -41,7 +45,7 @@ export class TokenService {
             tokens = tokens.filter((token) => token.type === filters.type);
         }
 
-        return tokens;
+        return tokens.slice(offset, offset + limit);
     }
 
     @ErrorLoggerAsync({

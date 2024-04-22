@@ -1,4 +1,5 @@
 import { ArgsType, Field } from '@nestjs/graphql';
+import { PaginationArgs } from 'src/modules/dex.model';
 
 @ArgsType()
 export class TokensFiltersArgs {
@@ -9,3 +10,6 @@ export class TokensFiltersArgs {
     @Field({ defaultValue: false })
     enabledSwaps: boolean;
 }
+
+@ArgsType()
+export class TokensPaginationArgs extends PaginationArgs {}
