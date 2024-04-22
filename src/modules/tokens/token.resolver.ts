@@ -61,15 +61,11 @@ export class TokensResolver extends GenericResolver {
 
     @Query(() => [EsdtToken])
     async tokens(
-        @Args() page: TokensPaginationArgs,
+        @Args() pagination: TokensPaginationArgs,
         @Args() filters: TokensFiltersArgs,
     ): Promise<EsdtToken[]> {
         try {
-            return await this.tokenService.getTokens(
-                page.offset,
-                page.limit,
-                filters,
-            );
+            return await this.tokenService.getTokens(pagination, filters);
         } catch (error) {
             throw new GraphQLError(error.message, {
                 extensions: {
