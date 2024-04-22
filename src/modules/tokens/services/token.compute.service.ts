@@ -209,8 +209,8 @@ export class TokenComputeService implements ITokenComputeService {
     })
     @GetOrSetCache({
         baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Price.remoteTtl,
-        localTtl: CacheTtlInfo.Price.localTtl,
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenPrevious7dPrice(tokenID: string): Promise<string> {
         return await this.computeTokenPrevious7dPrice(tokenID);
@@ -223,5 +223,51 @@ export class TokenComputeService implements ITokenComputeService {
         });
 
         return values7d[0]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenPrevious24hVolume(tokenID: string): Promise<string> {
+        return await this.computeTokenPrevious24hVolume(tokenID);
+    }
+
+    async computeTokenPrevious24hVolume(tokenID: string): Promise<string> {
+        const values7d = await this.analyticsQuery.getValues24hSum({
+            series: tokenID,
+            metric: 'volumeUSD',
+        });
+
+        return values7d[0]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenLiquidityUSD(tokenID: string): Promise<string> {
+        return await this.computeTokenLiquidityUSD(tokenID);
+    }
+
+    async computeTokenLiquidityUSD(tokenID: string): Promise<string> {
+        const values24h = await this.analyticsQuery.getLatestCompleteValues({
+            series: tokenID,
+            metric: 'lockedValueUSD',
+        });
+
+        if (!values24h || values24h.length === 0) {
+            return undefined;
+        }
+
+        return values24h[values24h.length - 1]?.value ?? undefined;
     }
 }

@@ -40,6 +40,8 @@ export class EsdtToken implements IEsdtToken {
     type?: string;
     balance?: string;
     previous7dPrice?: string;
+    previous24hVolume?: string;
+    liquidityUSD?: string;
 
     constructor(init?: Partial<EsdtToken>) {
         Object.assign(this, init);
