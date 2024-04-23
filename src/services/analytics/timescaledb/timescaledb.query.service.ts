@@ -94,11 +94,20 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     async getLatestCompleteValues({
         series,
         metric,
+        start,
+        time,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            const startDate = await this.getStartDate(series);
+            let startDate, endDate;
 
-            if (!startDate) {
+            if (time) {
+                [startDate, endDate] = computeTimeInterval(time, start);
+            } else {
+                endDate = moment().utc().toDate();
+                startDate = await this.getStartDate(series);
+            }
+
+            if (!time && !startDate) {
                 return [];
             }
 
@@ -108,30 +117,69 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .addSelect('locf(last(last, time)) as last')
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
-                .andWhere('time between :start and now()', {
+                .andWhere('time between :start and :end', {
                     start: startDate,
+                    end: endDate,
                 })
                 .groupBy('day')
                 .getRawMany();
-            const results =
-                query?.map(
-                    (row) =>
-                        new HistoricDataModel({
-                            timestamp: moment
-                                .utc(row.day)
-                                .format('yyyy-MM-DD HH:mm:ss'),
-                            value: row.last ?? '0',
-                        }),
-                ) ?? [];
-            return results;
+
+            if (!time) {
+                return (
+                    query?.map((row) =>
+                        this.createDayHistoricDataModel(row, '0'),
+                    ) ?? []
+                );
+            }
+
+            const needsGapFilling = query.some((row) => !row.last);
+            if (!needsGapFilling) {
+                return query.map((row) =>
+                    this.createDayHistoricDataModel(row, '0'),
+                );
+            }
+
+            const previousData = await this.closeDaily
+                .createQueryBuilder()
+                .select('last')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere('time < :startDate', { startDate })
+                .orderBy('time', 'DESC')
+                .limit(1)
+                .getRawOne();
+
+            if (!previousData) {
+                return query
+                    .filter((row) => row.last)
+                    .map((row) => this.createDayHistoricDataModel(row, '0'));
+            }
+
+            return (
+                query?.map((row) =>
+                    this.createDayHistoricDataModel(row, previousData.last),
+                ) ?? []
+            );
         } catch (error) {
             this.logger.error('getLatestCompleteValues', {
                 series,
                 metric,
+                start,
+                time,
                 error,
             });
             return [];
         }
+    }
+
+    private createDayHistoricDataModel(
+        row: any,
+        fallbackValue: string,
+    ): HistoricDataModel {
+        return new HistoricDataModel({
+            timestamp: moment.utc(row.day).format('yyyy-MM-DD HH:mm:ss'),
+            value: row.last ?? fallbackValue,
+        });
     }
 
     @TimescaleDBQuery()
@@ -219,52 +267,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         } catch (error) {
             this.logger.error(
                 `getValues24h: Error getting query for ${series} ${metric}`,
-            );
-            return [];
-        }
-    }
-
-    @TimescaleDBQuery()
-    async getValues7d({
-        series,
-        metric,
-    }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        try {
-            const previousValue = this.closeDaily
-                .createQueryBuilder()
-                .select('last')
-                .where('series = :series', { series })
-                .andWhere('key = :metric', { metric })
-                .andWhere("time < now() - INTERVAL '7 days'")
-                .orderBy('time', 'DESC')
-                .limit(1);
-
-            const query = await this.closeDaily
-                .createQueryBuilder()
-                .select("time_bucket_gapfill('1 day', time) as day")
-                .addSelect(
-                    `locf(last(last, time), (${previousValue.getQuery()})) as last`,
-                )
-                .where('series = :series', { series })
-                .andWhere('key = :metric', { metric })
-                .andWhere("time between now() - INTERVAL '7 days' and now()")
-                .groupBy('day')
-                .getRawMany();
-
-            return (
-                query?.map(
-                    (row) =>
-                        new HistoricDataModel({
-                            timestamp: moment
-                                .utc(row.day)
-                                .format('yyyy-MM-DD HH:mm:ss'),
-                            value: row.last ?? '0',
-                        }),
-                ) ?? []
-            );
-        } catch (error) {
-            this.logger.error(
-                `getValues7d: Error getting query for ${series} ${metric}`,
             );
             return [];
         }

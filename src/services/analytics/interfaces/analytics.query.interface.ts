@@ -1,4 +1,7 @@
-import { CandleDataModel, HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import {
+    CandleDataModel,
+    HistoricDataModel,
+} from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 
 export interface AnalyticsQueryInterface {
@@ -36,6 +39,4 @@ export interface AnalyticsQueryInterface {
         start,
         end,
     }): Promise<CandleDataModel[]>;
-
-    getValues7d(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 }
