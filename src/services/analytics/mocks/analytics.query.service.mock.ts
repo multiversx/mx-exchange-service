@@ -1,4 +1,4 @@
-import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import { CandleDataModel, HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 import { AnalyticsQueryService } from '../services/analytics.query.service';
@@ -38,6 +38,14 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
         throw new Error('Method not implemented.');
     }
     getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+        throw new Error('Method not implemented.');
+    }
+    getPriceCandles({
+        series,
+        metric,
+        start,
+        end,
+    }): Promise<CandleDataModel[]> {
         throw new Error('Method not implemented.');
     }
     getValues7d(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
