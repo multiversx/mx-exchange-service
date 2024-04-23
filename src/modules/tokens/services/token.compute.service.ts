@@ -216,9 +216,10 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeTokenPrevious7dPrice(tokenID: string): Promise<string> {
-        const values7d = await this.analyticsQuery.getValues7d({
+        const values7d = await this.analyticsQuery.getLatestCompleteValues({
             series: tokenID,
             metric: 'priceUSD',
+            time: '7 days',
         });
 
         return values7d[0]?.value ?? undefined;
@@ -261,6 +262,7 @@ export class TokenComputeService implements ITokenComputeService {
         const values24h = await this.analyticsQuery.getLatestCompleteValues({
             series: tokenID,
             metric: 'lockedValueUSD',
+            time: '1 day',
         });
 
         if (!values24h || values24h.length === 0) {
