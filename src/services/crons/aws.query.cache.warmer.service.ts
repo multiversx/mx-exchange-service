@@ -104,31 +104,6 @@ export class AWSQueryCacheWarmerService {
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
-
-        const allTokensVolumeUSDCompleteValuesSum = await this.analyticsQuery.getSumCompleteValues({
-            series: '%-%',
-            metric: 'volumeUSD',
-        });
-        await delay(1000);
-        const allTokensVolumeUSD24hSum = await this.analyticsQuery.getValues24hSum({
-            series: '%-%',
-            metric: 'volumeUSD',
-        });
-
-        const allTokensVolumesKeys = await Promise.all([
-            this.analyticsAWSSetter.setSumCompleteValues(
-              'factory',
-              'volumeUSD',
-              allTokensVolumeUSDCompleteValuesSum,
-            ),
-            this.analyticsAWSSetter.setValues24hSum(
-              'factory',
-              'volumeUSD',
-              allTokensVolumeUSD24hSum,
-            ),
-        ]) 
-        await this.deleteCacheKeys(allTokensVolumesKeys);
-
         profiler.stop();
         this.logger.info(
             `Finish refresh tokens analytics in ${profiler.duration}`,
@@ -214,6 +189,33 @@ export class AWSQueryCacheWarmerService {
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        const allPairsVolumeUSDCompleteValuesSum =
+            await this.analyticsQuery.getSumCompleteValues({
+                series: 'erd1%',
+                metric: 'volumeUSD',
+            });
+        await delay(1000);
+        const allPairsVolumeUSD24hSum =
+            await this.analyticsQuery.getValues24hSum({
+                series: 'erd1%',
+                metric: 'volumeUSD',
+            });
+
+        const allPairsVolumesKeys = await Promise.all([
+            this.analyticsAWSSetter.setSumCompleteValues(
+                'factory',
+                'volumeUSD',
+                allPairsVolumeUSDCompleteValuesSum,
+            ),
+            this.analyticsAWSSetter.setValues24hSum(
+                'factory',
+                'volumeUSD',
+                allPairsVolumeUSD24hSum,
+            ),
+        ]);
+        await this.deleteCacheKeys(allPairsVolumesKeys);
+
         profiler.stop();
         this.logger.info(
             `Finish refresh pairs analytics in ${profiler.duration}`,
