@@ -104,7 +104,9 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 [startDate, endDate] = computeTimeInterval(time, start);
             } else {
                 endDate = moment().utc().toDate();
-                startDate = await this.getStartDate(series);
+                startDate = start
+                    ? moment.unix(parseInt(start)).utc().toDate()
+                    : await this.getStartDate(series);
             }
 
             if (!time && !startDate) {
