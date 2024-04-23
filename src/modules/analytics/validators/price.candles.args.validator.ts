@@ -43,28 +43,7 @@ export class PriceCandlesArgsValidationPipe implements PipeTransform {
         const maxDuration = resolutionToMaxDuration[resolution];
 
         if (!end) {
-            const currentTime = moment.utc();
-
-            if (currentTime.isBefore(startDate)) {
-                throw new UserInputError(
-                    'Invalid interval - start date cannot be in the future',
-                );
-            }
-
-            const durationInMinutes = this.computeDurationInMinutes(
-                startDate,
-                currentTime,
-            );
-
-            value.end = currentTime.unix().toString();
-
-            if (durationInMinutes > maxDuration) {
-                value.end = startDate
-                    .add(maxDuration, 'minutes')
-                    .unix()
-                    .toString();
-            }
-
+            value.end = this.computeEndTime(startDate, maxDuration);
             return value;
         }
 
@@ -94,6 +73,30 @@ export class PriceCandlesArgsValidationPipe implements PipeTransform {
         return value;
     }
 
+    private computeEndTime(
+        startDate: moment.Moment,
+        maxDuration: number,
+    ): string {
+        const currentTime = moment.utc();
+
+        if (currentTime.isBefore(startDate)) {
+            throw new UserInputError(
+                'Invalid interval - start date cannot be in the future',
+            );
+        }
+
+        const durationInMinutes = this.computeDurationInMinutes(
+            startDate,
+            currentTime,
+        );
+
+        if (durationInMinutes > maxDuration) {
+            return startDate.add(maxDuration, 'minutes').unix().toString();
+        }
+
+        return currentTime.unix().toString();
+    }
+
     private computeDurationInMinutes(
         start: moment.Moment,
         end: moment.Moment,
@@ -103,7 +106,11 @@ export class PriceCandlesArgsValidationPipe implements PipeTransform {
     }
 
     private isValidTimestamp(timestamp: string): boolean {
-        const unixTime = parseInt(timestamp);
-        return moment.unix(unixTime).isValid();
+        try {
+            const unixTime = parseInt(timestamp);
+            return moment.unix(unixTime).isValid();
+        } catch (error) {
+            return false;
+        }
     }
 }

@@ -46,7 +46,6 @@ export class PriceCandlesQueryArgs {
     @IsValidMetric()
     metric: string;
     @Field()
-    @IsValidUnixTime()
     @IsNotEmpty()
     start: string;
     @Field({ nullable: true })
