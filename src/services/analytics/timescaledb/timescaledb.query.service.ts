@@ -117,9 +117,9 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .addSelect('locf(last(last, time)) as last')
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
-                .andWhere('time between :start and :end', {
-                    start: startDate,
-                    end: endDate,
+                .andWhere('time between :startDate and :endDate', {
+                    startDate,
+                    endDate,
                 })
                 .groupBy('day')
                 .getRawMany();
@@ -194,7 +194,9 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 return [];
             }
 
-            const seriesWhere = series.includes('%') ? 'series LIKE :series' : 'series = :series';
+            const seriesWhere = series.includes('%')
+                ? 'series LIKE :series'
+                : 'series = :series';
 
             const query = await this.sumDaily
                 .createQueryBuilder()
@@ -280,7 +282,9 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            const seriesWhere = series.includes('%') ? 'series LIKE :series' : 'series = :series';
+            const seriesWhere = series.includes('%')
+                ? 'series LIKE :series'
+                : 'series = :series';
 
             const query = await this.sumHourly
                 .createQueryBuilder()
@@ -364,14 +368,16 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    private async getStartDate(series: string,): Promise<string | undefined> {
+    private async getStartDate(series: string): Promise<string | undefined> {
         const cacheKey = `startDate.${series}`;
         const cachedValue = await this.cacheService.get<string>(cacheKey);
         if (cachedValue !== undefined) {
             return cachedValue;
         }
 
-        const seriesWhere = series.includes('%') ? 'series LIKE :series' : 'series = :series';
+        const seriesWhere = series.includes('%')
+            ? 'series LIKE :series'
+            : 'series = :series';
 
         const firstRow = await this.dexAnalytics
             .createQueryBuilder()
