@@ -29,7 +29,4 @@ export abstract class IEsdtToken {
     @Field(() => IRoles, { nullable: true }) roles?: IRoles;
     @Field({ nullable: true }) type?: string;
     @Field({ nullable: true }) balance?: string;
-    @Field({ nullable: true }) previous7dPrice?: string;
-    @Field({ nullable: true }) previous24hVolume?: string;
-    @Field({ nullable: true }) liquidityUSD?: string;
 }
