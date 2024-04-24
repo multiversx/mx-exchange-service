@@ -4,6 +4,9 @@ import { config } from 'dotenv';
 import {
     CloseDaily,
     CloseHourly,
+    PriceCandleHourly,
+    PriceCandleMinute,
+    PriceCandleDaily,
     SumDaily,
     SumHourly,
     XExchangeAnalyticsEntity,
@@ -27,6 +30,9 @@ export default new DataSource({
         SumHourly,
         CloseDaily,
         CloseHourly,
+        PriceCandleMinute,
+        PriceCandleHourly,
+        PriceCandleDaily
     ],
     migrations: ['src/services/analytics/timescaledb/migration/*-xExchange.ts'],
 });
