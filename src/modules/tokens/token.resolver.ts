@@ -77,6 +77,13 @@ export class TokensResolver extends GenericResolver {
         );
     }
 
+    @ResolveField(() => String, { nullable: true })
+    async createdAt(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenCreatedAt(parent.identifier),
+        );
+    }
+
     @Query(() => [EsdtToken])
     async tokens(@Args() filters: TokensFiltersArgs): Promise<EsdtToken[]> {
         try {

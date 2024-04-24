@@ -42,6 +42,7 @@ export class EsdtToken implements IEsdtToken {
     roles?: RolesModel;
     type?: string;
     balance?: string;
+    createdAt?: string;
 
     constructor(init?: Partial<EsdtToken>) {
         Object.assign(this, init);

@@ -17,6 +17,8 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -29,6 +31,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly routerAbi: RouterAbiService,
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly elasticService: ElasticService,
     ) {}
 
     async getEgldPriceInUSD(): Promise<string> {
@@ -270,5 +273,35 @@ export class TokenComputeService implements ITokenComputeService {
         }
 
         return values24h[values24h.length - 1]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenCreatedAt(tokenID: string): Promise<string> {
+        return await this.computeTokenCreatedAtTimestamp(tokenID);
+    }
+
+    async computeTokenCreatedAtTimestamp(tokenID: string): Promise<string> {
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapter.condition.must = [QueryType.Match('_id', tokenID)];
+
+        const tokens = await this.elasticService.getList(
+            'tokens',
+            '',
+            elasticQueryAdapter,
+        );
+
+        if (tokens.length > 0) {
+            const createdAtTimestamp = tokens[0]._source.timestamp;
+            return createdAtTimestamp.toString();
+        }
+
+        return undefined;
     }
 }
