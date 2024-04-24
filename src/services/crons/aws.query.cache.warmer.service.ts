@@ -201,8 +201,14 @@ export class AWSQueryCacheWarmerService {
                 series: 'erd1%',
                 metric: 'volumeUSD',
             });
+        await delay(1000);
+        const totalLockedValueUSD =
+            await this.analyticsQuery.getLatestCompleteValues({
+                series: 'factory',
+                metric: 'totalLockedValueUSD',
+            });
 
-        const allPairsVolumesKeys = await Promise.all([
+        const factoryKeys = await Promise.all([
             this.analyticsAWSSetter.setSumCompleteValues(
                 'factory',
                 'volumeUSD',
@@ -213,8 +219,14 @@ export class AWSQueryCacheWarmerService {
                 'volumeUSD',
                 allPairsVolumeUSD24hSum,
             ),
+            this.analyticsAWSSetter.setLatestCompleteValues(
+                'factory',
+                'totalLockedValueUSD',
+                totalLockedValueUSD,
+            ),
         ]);
-        await this.deleteCacheKeys(allPairsVolumesKeys);
+
+        await this.deleteCacheKeys(factoryKeys);
 
         profiler.stop();
         this.logger.info(
