@@ -96,20 +96,20 @@
     "gasLimits": {
         "router": {
             "createPair": 35000000,
-            "issueToken": 350000000,
-            "setLocalRoles": 350000000,
-            "multiPairSwapMultiplier": 150000000,
-            "swapEnableByUser": 350000000,
+            "issueToken": 75000000,
+            "setLocalRoles": 75000000,
+            "multiPairSwapMultiplier": 25000000,
+            "swapEnableByUser": 35000000,
             "admin": {
-                "setState": 220000000,
-                "setFee": 220000000,
+                "setState": 22000000,
+                "setFee": 22000000,
                 "upgradePair": 30000000,
-                "removePair": 220000000,
+                "removePair": 22000000,
                 "setLocalRolesOwner": 100000000,
-                "setPairCreationEnabled": 200000000,
-                "clearPairTemporaryOwnerStorage": 200000000,
-                "setTemporaryOwnerPeriod": 200000000,
-                "setPairTemplateAddress": 200000000
+                "setPairCreationEnabled": 22000000,
+                "clearPairTemporaryOwnerStorage": 20000000,
+                "setTemporaryOwnerPeriod": 20000000,
+                "setPairTemplateAddress": 20000000
             }
         },
         "pairs": {
