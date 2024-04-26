@@ -236,17 +236,54 @@ export class TokenComputeService implements ITokenComputeService {
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
         localTtl: CacheTtlInfo.Token.localTtl,
     })
+    async tokenPriceChange24h(tokenID: string): Promise<string> {
+        return await this.computePriceChange24h(tokenID);
+    }
+
+    async computePriceChange24h(tokenID: string): Promise<string> {
+        const [currentPrice, previous24hPrice] = await Promise.all([
+            this.tokenPriceDerivedUSD(tokenID),
+            this.tokenPrevious24hPrice(tokenID),
+        ]);
+
+        const currentPriceBN = new BigNumber(currentPrice);
+        const previous24hPriceBN = new BigNumber(previous24hPrice);
+
+        if (previous24hPriceBN.isZero()) {
+            if (currentPriceBN.isZero()) {
+                return '0';
+            }
+
+            return '10000';
+        }
+
+        const difference = currentPriceBN.minus(previous24hPriceBN);
+
+        return difference
+            .dividedBy(previous24hPriceBN)
+            .multipliedBy(100)
+            .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
     async tokenPrevious24hVolume(tokenID: string): Promise<string> {
         return await this.computeTokenPrevious24hVolume(tokenID);
     }
 
     async computeTokenPrevious24hVolume(tokenID: string): Promise<string> {
-        const values7d = await this.analyticsQuery.getValues24hSum({
+        const values24h = await this.analyticsQuery.getValues24hSum({
             series: tokenID,
             metric: 'volumeUSD',
         });
 
-        return values7d[0]?.value ?? undefined;
+        return values24h[0]?.value ?? undefined;
     }
 
     @ErrorLoggerAsync({
