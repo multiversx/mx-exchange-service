@@ -464,7 +464,7 @@ describe('RouterService', () => {
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
-            gasLimit: 200000000,
+            gasLimit: gasConfig.router.admin.clearPairTemporaryOwnerStorage,
             data: 'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
             chainID: mxConfig.chainID,
             version: 1,
@@ -493,7 +493,7 @@ describe('RouterService', () => {
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
-            gasLimit: 200000000,
+            gasLimit: gasConfig.router.admin.setTemporaryOwnerPeriod,
             data: encodeTransactionData(
                 'setTemporaryOwnerPeriod@1000000000000000000000000000000000',
             ),
@@ -524,7 +524,7 @@ describe('RouterService', () => {
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
-            gasLimit: 200000000,
+            gasLimit: gasConfig.router.admin.setPairTemplateAddress,
             data: encodeTransactionData(
                 'setPairTemplateAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
