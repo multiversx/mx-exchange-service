@@ -11,9 +11,15 @@ import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
-import { isEsdtToken, isEsdtTokenValid, isNftCollection, isNftCollectionValid } from 'src/utils/token.type.compare';
+import {
+    isEsdtToken,
+    isEsdtTokenValid,
+    isNftCollection,
+    isNftCollectionValid,
+} from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { MXProxyService } from './mx.proxy.service';
+import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 
 type GenericGetArgs = {
     methodName: string;
@@ -77,7 +83,26 @@ export class MXApiService {
     ): Promise<T> {
         const profiler = new PerformanceProfiler(`${name} ${resourceUrl}`);
         try {
-            return await this.getService().doGetGeneric(resourceUrl);
+            const context = ContextTracker.get();
+            if (
+                this.apiConfigService.isDeephistoryActive() &&
+                context &&
+                context.deepHistoryTimestamp
+            ) {
+                resourceUrl = resourceUrl.includes('?')
+                    ? `${resourceUrl}&timestamp=${context.deepHistoryTimestamp}`
+                    : `${resourceUrl}?timestamp=${context.deepHistoryTimestamp}`;
+            }
+
+            const response = await this.getService().doGetGeneric(resourceUrl);
+            profiler.stop();
+            MetricsCollector.setApiCall(
+                name,
+                'dex-service',
+                200,
+                profiler.duration,
+            );
+            return response;
         } catch (error) {
             if (
                 error.inner.isAxiosError &&
@@ -194,9 +219,17 @@ export class MXApiService {
         from = 0,
         size = 100,
     ): Promise<EsdtToken[]> {
+        const profiler = new PerformanceProfiler('user_tokens');
         const userTokens = await this.doGetGeneric<EsdtToken[]>(
             this.getTokensForUser.name,
             `accounts/${address}/tokens?from=${from}&size=${size}`,
+        );
+        profiler.stop();
+        MetricsCollector.setApiCall(
+            this.getTokensForUser.name,
+            'dex-service',
+            200,
+            profiler.duration,
         );
 
         for (const token of userTokens) {
@@ -235,23 +268,14 @@ export class MXApiService {
 
     async getNftsForUser(
         address: string,
-        from = 0,
-        size = 100,
         type = 'MetaESDT',
-        collections?: string[],
     ): Promise<NftToken[]> {
         const nfts: NftToken[] = await this.genericGetExecutor.execute({
             methodName: this.getNftsForUser.name,
             resourceUrl: `accounts/${address}/nfts?type=${type}&size=${constantsConfig.MAX_USER_NFTS}&fields=identifier,collection,ticker,decimals,timestamp,attributes,nonce,type,name,creator,royalties,uris,url,tags,balance,assets`,
         });
 
-        const userNfts = collections
-            ? nfts
-                  .filter((nft) => collections.includes(nft.collection))
-                  .slice(from, size)
-            : nfts.slice(from, size);
-
-        for (const nft of userNfts) {
+        for (const nft of nfts) {
             if (!isNftCollectionValid(nft)) {
                 const gatewayCollection = await this.mxProxy
                     .getService()
@@ -260,7 +284,7 @@ export class MXApiService {
             }
         }
 
-        return userNfts;
+        return nfts;
     }
 
     async getNftByTokenIdentifier(
@@ -327,13 +351,11 @@ export class MXApiService {
         );
     }
 
-    async getTransactionsWithOptions(
-        {
-            sender,
-            receiver,
-            functionName,
-        },
-    ): Promise<any> {
+    async getTransactionsWithOptions({
+        sender,
+        receiver,
+        functionName,
+    }): Promise<any> {
         return await this.doGetGeneric(
             this.getTransactions.name,
             `transactions?sender=${sender}&receiver=${receiver}&function=${functionName}`,

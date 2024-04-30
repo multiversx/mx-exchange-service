@@ -22,6 +22,7 @@ export class EsdtToken implements IEsdtToken {
     decimals: number;
     derivedEGLD: string;
     price?: string;
+    previous24hPrice?: string;
     supply?: string;
     circulatingSupply?: string;
     assets?: AssetsModel;

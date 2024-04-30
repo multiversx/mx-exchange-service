@@ -9,6 +9,10 @@ import { WinstonModule } from 'nest-winston';
 import { ConfigModule } from '@nestjs/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 describe('LockedTokenWrapperTransactionService', () => {
     let module: TestingModule;
@@ -23,7 +27,10 @@ describe('LockedTokenWrapperTransactionService', () => {
             ],
             providers: [
                 LockedTokenWrapperTransactionService,
+                EnergyAbiServiceProvider,
                 MXProxyServiceProvider,
+                MXApiServiceProvider,
+                ContextGetterServiceProvider,
                 ApiConfigService,
             ],
         }).compile();
@@ -36,10 +43,51 @@ describe('LockedTokenWrapperTransactionService', () => {
         expect(service).toBeDefined();
     });
 
+    it('should get error when unwrapLockedToken transaction', async () => {
+        const service = module.get<LockedTokenWrapperTransactionService>(
+            LockedTokenWrapperTransactionService,
+        );
+        const mxApi = module.get<MXApiService>(MXApiService);
+        jest.spyOn(
+            mxApi,
+            'getNftAttributesByTokenIdentifier',
+        ).mockImplementation(async (address: string, nftIdentifier: string) => {
+            if (nftIdentifier === 'WXMEX-123456-01') {
+                return 'AAAAAAAAAAE=';
+            }
+
+            if (nftIdentifier === 'ELKMEX-123456-01') {
+                return 'AAAACk1FWC00NTVjNTcAAAAAAAAAAAAAAAAAAAAB';
+            }
+        });
+
+        await expect(
+            service.unwrapLockedToken(Address.Zero().bech32(), {
+                tokenID: 'WXMEX-123456',
+                nonce: 1,
+                amount: '1',
+            }),
+        ).rejects.toThrowError('Cannot unwrap token after unlock epoch');
+    });
+
     it('should get unwrapLockedToken transaction', async () => {
         const service = module.get<LockedTokenWrapperTransactionService>(
             LockedTokenWrapperTransactionService,
         );
+        const mxApi = module.get<MXApiService>(MXApiService);
+        jest.spyOn(
+            mxApi,
+            'getNftAttributesByTokenIdentifier',
+        ).mockImplementation(async (address: string, nftIdentifier: string) => {
+            if (nftIdentifier === 'WXMEX-123456-01') {
+                return 'AAAAAAAAAAE=';
+            }
+
+            if (nftIdentifier === 'ELKMEX-123456-01') {
+                return 'AAAACk1FWC00NTVjNTcAAAAAAAAAAAAAAAAAAAAC';
+            }
+        });
+
         const transaction = await service.unwrapLockedToken(
             Address.Zero().bech32(),
             {

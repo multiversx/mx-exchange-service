@@ -22,6 +22,7 @@ import { WinstonModule } from 'nest-winston';
 import { ConfigModule } from '@nestjs/config';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -54,6 +55,7 @@ describe('RouterService', () => {
                 RouterTransactionService,
                 TokenServiceProvider,
                 RouterService,
+                MXApiServiceProvider,
             ],
         }).compile();
     });
@@ -462,7 +464,7 @@ describe('RouterService', () => {
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
-            gasLimit: 200000000,
+            gasLimit: gasConfig.router.admin.clearPairTemporaryOwnerStorage,
             data: 'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
             chainID: mxConfig.chainID,
             version: 1,
@@ -491,7 +493,7 @@ describe('RouterService', () => {
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
-            gasLimit: 200000000,
+            gasLimit: gasConfig.router.admin.setTemporaryOwnerPeriod,
             data: encodeTransactionData(
                 'setTemporaryOwnerPeriod@1000000000000000000000000000000000',
             ),
@@ -522,7 +524,7 @@ describe('RouterService', () => {
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
-            gasLimit: 200000000,
+            gasLimit: gasConfig.router.admin.setPairTemplateAddress,
             data: encodeTransactionData(
                 'setPairTemplateAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
@@ -557,7 +559,7 @@ describe('RouterService', () => {
             receiver: Address.Zero().bech32(),
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: 75000000,
+            gasLimit: gasConfig.router.swapEnableByUser,
             data: encodeTransactionData(
                 `ESDTNFTTransfer@LKESDT-1234@01@10000000000@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000011',

@@ -5,6 +5,7 @@ import { Logger } from 'winston';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { GenericGetterService } from '../generics/generic.getter.service';
+import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 
 @Injectable()
 export class ContextGetterService extends GenericGetterService {
@@ -51,5 +52,23 @@ export class ContextGetterService extends GenericGetterService {
             () => this.apiService.getCurrentBlockNonce(shardID),
             Constants.oneMinute(),
         );
+    }
+
+    async getNftsForUser(
+        address: string,
+        from = 0,
+        size = 100,
+        type = 'MetaESDT',
+        collections?: string[],
+    ): Promise<NftToken[]> {
+        const nfts = await this.apiService.getNftsForUser(address, type);
+
+        const userNfts = collections
+            ? nfts
+                  .filter((nft) => collections.includes(nft.collection))
+                  .slice(from, size)
+            : nfts.slice(from, size);
+
+        return userNfts;
     }
 }

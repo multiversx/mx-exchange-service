@@ -52,6 +52,7 @@ import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/p
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -86,6 +87,7 @@ export class UserMetaEsdtService {
         private readonly energyAbi: EnergyAbiService,
         private readonly lockedTokenWrapperAbi: LockedTokenWrapperAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -95,7 +97,7 @@ export class UserMetaEsdtService {
     ): Promise<UserLockedAssetToken[]> {
         const lockedMEXTokenID =
             await this.lockedAssetGetter.getLockedTokenID();
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -121,7 +123,7 @@ export class UserMetaEsdtService {
                 this.farmAbi.useAbi(address).farmTokenID(address),
             ),
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -148,7 +150,7 @@ export class UserMetaEsdtService {
         const lockedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             scAddress.proxyDexAddress.v1,
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -172,7 +174,7 @@ export class UserMetaEsdtService {
         const lockedFarmTokenID = await this.proxyFarmAbi.wrappedFarmTokenID(
             scAddress.proxyDexAddress.v1,
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -197,7 +199,7 @@ export class UserMetaEsdtService {
         const lockedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             scAddress.proxyDexAddress.v2,
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -223,7 +225,7 @@ export class UserMetaEsdtService {
                 await this.proxyFarmAbi.wrappedFarmTokenID(
                     scAddress.proxyDexAddress.v2,
                 );
-            const nfts = await this.apiService.getNftsForUser(
+            const nfts = await this.contextGetter.getNftsForUser(
                 userAddress,
                 pagination.offset,
                 pagination.limit,
@@ -257,7 +259,7 @@ export class UserMetaEsdtService {
                 this.stakingAbi.farmTokenID(address),
             ),
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -292,7 +294,7 @@ export class UserMetaEsdtService {
                 this.stakingAbi.farmTokenID(address),
             ),
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -327,7 +329,7 @@ export class UserMetaEsdtService {
                 this.proxyStakeAbi.dualYieldTokenID(address),
             ),
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -355,7 +357,7 @@ export class UserMetaEsdtService {
                 this.priceDiscoveryAbi.redeemTokenID(address),
             ),
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -376,7 +378,7 @@ export class UserMetaEsdtService {
                 this.simpleLockAbi.lockedTokenID(address),
             ),
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -397,7 +399,7 @@ export class UserMetaEsdtService {
                 this.simpleLockAbi.lpProxyTokenID(address),
             ),
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -420,7 +422,7 @@ export class UserMetaEsdtService {
                 this.simpleLockAbi.farmProxyTokenID(address),
             ),
         );
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -440,7 +442,7 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
     ): Promise<UserLockedTokenEnergy[]> {
         const lockedTokenEnergyID = await this.energyAbi.lockedTokenID();
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -460,7 +462,7 @@ export class UserMetaEsdtService {
     ): Promise<UserWrappedLockedToken[]> {
         const lockedTokenEnergyID =
             await this.lockedTokenWrapperAbi.wrappedTokenId();
-        const nfts = await this.apiService.getNftsForUser(
+        const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
             pagination.limit,
@@ -485,7 +487,7 @@ export class UserMetaEsdtService {
         if (nfts) {
             userNFTs = nfts;
         } else {
-            userNFTs = await this.apiService.getNftsForUser(
+            userNFTs = await this.contextGetter.getNftsForUser(
                 userAddress,
                 pagination.offset,
                 pagination.limit,

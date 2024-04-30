@@ -47,8 +47,8 @@ export class PairAbiServiceMock implements IPairAbiService {
     async state(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).state;
     }
-    feeState(pairAddress: string): Promise<boolean> {
-        throw new Error('Method not implemented.');
+    async feeState(pairAddress: string): Promise<boolean> {
+        return PairsData(pairAddress).feeState;
     }
     async lockingScAddress(pairAddress: string): Promise<string> {
         return Address.Zero().bech32();

@@ -34,6 +34,8 @@ export class StakingModel {
     @Field(() => Int)
     lastRewardBlockNonce: number;
     @Field()
+    rewardsRemainingDays: number;
+    @Field()
     divisionSafetyConstant: string;
     @Field()
     produceRewardsEnabled: boolean;

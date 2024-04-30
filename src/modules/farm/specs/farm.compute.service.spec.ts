@@ -20,6 +20,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -48,6 +49,7 @@ describe('FarmService', () => {
                 FarmAbiServiceProviderV1_2,
                 FarmServiceV1_2,
                 ApiConfigService,
+                AnalyticsQueryServiceProvider,
             ],
         }).compile();
     });

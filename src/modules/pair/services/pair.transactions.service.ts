@@ -24,6 +24,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { PairComputeService } from './pair.compute.service';
 
 @Injectable()
 export class PairTransactionService {
@@ -31,6 +32,7 @@ export class PairTransactionService {
         private readonly mxProxy: MXProxyService,
         private readonly pairService: PairService,
         private readonly pairAbi: PairAbiService,
+        private readonly pairCompute: PairComputeService,
         private readonly wrapAbi: WrapAbiService,
         private readonly wrapTransaction: WrapTransactionsService,
     ) {}
@@ -117,6 +119,29 @@ export class PairTransactionService {
             args.pairAddress,
             args.tokens,
         );
+
+        const minimumAmount = new BigNumber(firstTokenInput.amount).isLessThan(
+            secondTokenInput.amount,
+        )
+            ? new BigNumber(firstTokenInput.amount)
+            : new BigNumber(secondTokenInput.amount);
+
+        if (minimumAmount.isLessThan(10 ** 3)) {
+            throw new Error(
+                'First tokens needs to be greater than minimum liquidity',
+            );
+        }
+
+        const permanentLockedAmountUSD =
+            await this.pairCompute.computePermanentLockedValueUSD(
+                args.pairAddress,
+                new BigNumber(firstTokenInput.amount),
+                new BigNumber(secondTokenInput.amount),
+            );
+
+        if (permanentLockedAmountUSD.isGreaterThan(1)) {
+            throw new Error('Permanent locked amount must be less than 1 USD');
+        }
 
         const contract = await this.mxProxy.getPairSmartContract(
             args.pairAddress,

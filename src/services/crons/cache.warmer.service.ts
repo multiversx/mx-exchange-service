@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -8,11 +8,12 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import axios from 'axios';
 import moment from 'moment';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { MXDataApiService } from '../multiversx-communication/mx.data.api.service';
 import { Locker } from '@multiversx/sdk-nestjs-common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class CacheWarmerService {
@@ -85,14 +86,14 @@ export class CacheWarmerService {
                         return Promise.resolve();
                     }
 
-                    console.log(
+                    this.logger.info(
                         `Started warming up query '${JSON.stringify(
                             keyValue,
                         )}' for url '${process.env.MX_DEX_URL}'`,
+                        { context: 'GuestCache' },
                     );
                     const profiler = new PerformanceProfiler();
 
-                    let data;
                     try {
                         // Get new data without cache and update it
                         const response = await axios.post(
@@ -100,39 +101,42 @@ export class CacheWarmerService {
                             keyValue,
                             {
                                 headers: {
+                                    'Content-Type': 'application/json',
                                     'no-cache': true,
                                 },
                             },
                         );
 
-                        data = response.data;
+                        profiler.stop();
+                        const data = response.data;
+
+                        this.logger.info(
+                            `Finished warming up query '${JSON.stringify(
+                                keyValue,
+                            )}' for url '${
+                                process.env.MX_DEX_URL
+                            }'. Response size: ${
+                                JSON.stringify(data).length
+                            }. Duration: ${profiler.duration}`,
+                            { context: 'GuestCache' },
+                        );
+
+                        await this.cachingService.set(
+                            `${prefix}.${key}.response`,
+                            data,
+                            Constants.oneSecond() * 30,
+                        );
+                        return data;
                     } catch (error) {
-                        console.error(
+                        this.logger.error(
                             `An error occurred while warming up query '${JSON.stringify(
                                 keyValue,
                             )}' for url '${process.env.MX_DEX_URL}'`,
+                            { context: 'GuestCache', trace: error.stack },
                         );
-                        console.error(error);
+                    } finally {
+                        profiler.stop();
                     }
-
-                    profiler.stop();
-
-                    console.log(
-                        `Finished warming up query '${JSON.stringify(
-                            keyValue,
-                        )}' for url '${
-                            process.env.MX_DEX_URL
-                        }'. Response size: ${
-                            JSON.stringify(data).length
-                        }. Duration: ${profiler.duration}`,
-                    );
-
-                    await this.cachingService.set(
-                        `${prefix}.${key}.response`,
-                        data,
-                        Constants.oneSecond() * 30,
-                    );
-                    return data;
                 });
             }),
         );

@@ -2,14 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../../../config';
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import {
-    ContractType,
-    OutdatedContract,
-    UserDualYiledToken,
-    UserLockedFarmTokenV2,
-} from '../../models/user.model';
-import { UserMetaEsdtService } from '../user.metaEsdt.service';
-import { PaginationArgs } from '../../../dex.model';
+import { ContractType, OutdatedContract } from '../../models/user.model';
 import { ProxyService } from '../../../proxy/services/proxy.service';
 import { StakingProxyService } from '../../../staking-proxy/services/staking.proxy.service';
 import { FarmVersion } from '../../../farm/models/farm.model';
@@ -24,6 +17,8 @@ import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { PaginationArgs } from 'src/modules/dex.model';
+import { UserMetaEsdtService } from '../user.metaEsdt.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -32,11 +27,11 @@ export class UserEnergyComputeService {
         private readonly farmService: FarmFactoryService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
-        private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly energyAbi: EnergyAbiService,
         private readonly proxyService: ProxyService,
+        private readonly userMetaEsdtService: UserMetaEsdtService,
     ) {}
 
     async getUserOutdatedContracts(
@@ -194,10 +189,13 @@ export class UserEnergyComputeService {
 
         let userActiveFarmAddresses = farmTokens.map((token) => token.creator);
         const promisesFarmLockedTokens = farmLockedTokens.map((token) => {
-            return this.decodeAndGetFarmAddressFarmLockedTokens(token);
+            return this.decodeAndGetFarmAddressFarmLockedTokens(
+                token.identifier,
+                token.attributes,
+            );
         });
         const promisesDualYieldTokens = dualYieldTokens.map((token) => {
-            return this.getFarmAddressForDualYieldToken(token);
+            return this.getFarmAddressForDualYieldToken(token.collection);
         });
 
         userActiveFarmAddresses = userActiveFarmAddresses.concat(
@@ -211,13 +209,16 @@ export class UserEnergyComputeService {
         );
     }
 
-    decodeAndGetFarmAddressFarmLockedTokens(token: UserLockedFarmTokenV2) {
+    decodeAndGetFarmAddressFarmLockedTokens(
+        identifier: string,
+        attributes: string,
+    ): Promise<string> {
         const decodedWFMTAttributes =
             this.proxyService.getWrappedFarmTokenAttributesV2({
                 batchAttributes: [
                     {
-                        identifier: token.identifier,
-                        attributes: token.attributes,
+                        identifier,
+                        attributes,
                     },
                 ],
             });
@@ -227,14 +228,14 @@ export class UserEnergyComputeService {
         );
     }
 
-    async getFarmAddressForDualYieldToken(token: UserDualYiledToken) {
-        if (!token || token === undefined) {
+    async getFarmAddressForDualYieldToken(collection: string): Promise<string> {
+        if (!collection || collection === undefined) {
             return undefined;
         }
 
         const stakingProxyAddress =
             await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(
-                token.collection,
+                collection,
             );
         return this.stakeProxyAbi.lpFarmAddress(stakingProxyAddress);
     }

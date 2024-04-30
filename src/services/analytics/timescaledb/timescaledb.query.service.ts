@@ -1,6 +1,9 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import moment from 'moment';
-import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import {
+    CandleDataModel,
+    HistoricDataModel,
+} from 'src/modules/analytics/models/analytics.model';
 import { computeTimeInterval } from 'src/utils/analytics.utils';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -8,6 +11,9 @@ import {
     CloseDaily,
     CloseHourly,
     PDCloseMinute,
+    PriceCandleHourly,
+    PriceCandleMinute,
+    PriceCandleDaily,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -17,11 +23,15 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { Constants } from '@multiversx/sdk-nestjs-common';
+import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+        private readonly cacheService: CacheService,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
@@ -36,6 +46,12 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
         @InjectRepository(PDCloseMinute)
         private readonly pdCloseMinute: Repository<PDCloseMinute>,
+        @InjectRepository(PriceCandleMinute)
+        private readonly priceCandleMinute: Repository<PriceCandleMinute>,
+        @InjectRepository(PriceCandleHourly)
+        private readonly priceCandleHourly: Repository<PriceCandleHourly>,
+        @InjectRepository(PriceCandleDaily)
+        private readonly priceCandleDaily: Repository<PriceCandleDaily>,
     ) {}
 
     @TimescaleDBQuery()
@@ -80,16 +96,9 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            const firstRow = await this.dexAnalytics
-                .createQueryBuilder()
-                .select('timestamp')
-                .where('series = :series', { series })
-                .andWhere('key = :metric', { metric })
-                .orderBy('timestamp', 'ASC')
-                .limit(1)
-                .getRawOne();
+            const startDate = await this.getStartDate(series);
 
-            if (!firstRow) {
+            if (!startDate) {
                 return [];
             }
 
@@ -100,7 +109,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :start and now()', {
-                    start: firstRow.timestamp,
+                    start: startDate,
                 })
                 .groupBy('day')
                 .getRawMany();
@@ -131,27 +140,22 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            const firstRow = await this.dexAnalytics
-                .createQueryBuilder()
-                .select('timestamp')
-                .where('series = :series', { series })
-                .andWhere('key = :metric', { metric })
-                .orderBy('timestamp', 'ASC')
-                .limit(1)
-                .getRawOne();
+            const startDate = await this.getStartDate(series);
 
-            if (!firstRow) {
+            if (!startDate) {
                 return [];
             }
+
+            const seriesWhere = series.includes('%') ? 'series LIKE :series' : 'series = :series';
 
             const query = await this.sumDaily
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 day', time) as day")
                 .addSelect('sum(sum) as sum')
-                .where('series = :series', { series })
+                .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :start and now()', {
-                    start: firstRow.timestamp,
+                    start: startDate,
                 })
                 .groupBy('day')
                 .getRawMany();
@@ -181,69 +185,45 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         series,
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-        let latestTimestamp;
         try {
-            latestTimestamp = await this.closeDaily
+            const previousValue = this.closeHourly
                 .createQueryBuilder()
-                .select('time')
-                .addSelect('last')
+                .select('last')
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
+                .andWhere("time < now() - INTERVAL '1 day'")
                 .orderBy('time', 'DESC')
-                .limit(1)
-                .getRawOne();
+                .limit(1);
 
-            if (!latestTimestamp) {
-                return [];
-            }
+            const query = await this.closeHourly
+                .createQueryBuilder()
+                .select("time_bucket_gapfill('1 hour', time) as hour")
+                .addSelect(
+                    `locf(last(last, time), (${previousValue.getQuery()})) as last`,
+                )
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere("time between now() - INTERVAL '1 day' and now()")
+                .groupBy('hour')
+                .getRawMany();
+
+            return (
+                query?.map(
+                    (row) =>
+                        new HistoricDataModel({
+                            timestamp: moment
+                                .utc(row.hour)
+                                .format('yyyy-MM-DD HH:mm:ss'),
+                            value: row.last ?? '0',
+                        }),
+                ) ?? []
+            );
         } catch (error) {
             this.logger.error(
-                `getValues24h: Error getting latest timestamp for ${series} ${metric}`,
+                `getValues24h: Error getting query for ${series} ${metric}`,
             );
             return [];
         }
-
-        const startDate = moment
-            .utc(latestTimestamp.time)
-            .isBefore(moment.utc().subtract(1, 'day'))
-            ? moment.utc(latestTimestamp.time)
-            : moment.utc().subtract(1, 'day');
-
-        const query = await this.closeHourly
-            .createQueryBuilder()
-            .select("time_bucket_gapfill('1 hour', time) as hour")
-            .addSelect('locf(last(last, time)) as last')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .andWhere('time between :start and now()', {
-                start: startDate.toDate(),
-            })
-            .groupBy('hour')
-            .getRawMany();
-
-        const dayBefore = moment.utc().subtract(1, 'day');
-        const results = query.filter((row) =>
-            moment.utc(row.hour).isSameOrAfter(dayBefore),
-        );
-
-        for (const result of results) {
-            if (result.last) {
-                break;
-            }
-            result.last = latestTimestamp.last;
-        }
-
-        return (
-            results.map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row.hour)
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.last ?? '0',
-                    }),
-            ) ?? []
-        );
     }
 
     @TimescaleDBQuery()
@@ -252,11 +232,13 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
+            const seriesWhere = series.includes('%') ? 'series LIKE :series' : 'series = :series';
+
             const query = await this.sumHourly
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 hour', time) as hour")
                 .addSelect('sum(sum) as sum')
-                .where('series = :series', { series })
+                .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere("time between now() - INTERVAL '1 day' and now()")
                 .groupBy('hour')
@@ -332,5 +314,136 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                     value: row.last,
                 }),
         );
+    }
+
+    private async getStartDate(series: string,): Promise<string | undefined> {
+        const cacheKey = `startDate.${series}`;
+        const cachedValue = await this.cacheService.get<string>(cacheKey);
+        if (cachedValue !== undefined) {
+            return cachedValue;
+        }
+
+        const seriesWhere = series.includes('%') ? 'series LIKE :series' : 'series = :series';
+
+        const firstRow = await this.dexAnalytics
+            .createQueryBuilder()
+            .select('timestamp')
+            .where(seriesWhere, { series })
+            .orderBy('timestamp', 'ASC')
+            .limit(1)
+            .getRawOne();
+
+        if (firstRow) {
+            await this.cacheService.set(
+                cacheKey,
+                firstRow.timestamp,
+                Constants.oneMinute() * 30,
+                Constants.oneMinute() * 20,
+            );
+        } else {
+            await this.cacheService.set(
+                cacheKey,
+                null,
+                Constants.oneMinute() * 10,
+                Constants.oneMinute() * 7,
+            );
+        }
+
+        return firstRow?.timestamp;
+    }
+
+    @TimescaleDBQuery()
+    async getPriceCandles({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<CandleDataModel[]> {
+        const candleRepository = this.getCandleModelByResolution(resolution);
+
+        const startDate = moment.unix(start).utc().toString();
+        const endDate = moment.unix(end).utc().toString();
+
+        const query = await candleRepository
+            .createQueryBuilder()
+            .select(`time_bucket_gapfill('${resolution}', time) as bucket`)
+            .addSelect('locf(first(open, time)) as open')
+            .addSelect('locf(last(close, time)) as close')
+            .addSelect('locf(min(low)) as low')
+            .addSelect('locf(max(high)) as high')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere('time between :startDate and :endDate', {
+                startDate,
+                endDate,
+            })
+            .groupBy('bucket')
+            .getRawMany();
+
+        if (!query) {
+            return [];
+        }
+
+        const needsGapFilling = query.some((row) => !row.open);
+
+        if (!needsGapFilling) {
+            return query.map(
+                (row) =>
+                    new CandleDataModel({
+                        time: row.bucket,
+                        ohlc: [row.open, row.high, row.low, row.close],
+                    }),
+            );
+        }
+
+        const previousCandle = await candleRepository
+            .createQueryBuilder()
+            .select('open, close, high, low')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere('time < :startDate', { startDate })
+            .orderBy('time', 'DESC')
+            .limit(1)
+            .getRawOne();
+
+        if (!previousCandle) {
+            return query
+                .filter((row) => row.open)
+                .map(
+                    (row) =>
+                        new CandleDataModel({
+                            time: row.bucket,
+                            ohlc: [row.open, row.high, row.low, row.close],
+                        }),
+                );
+        }
+
+        return query.map(
+            (row) =>
+                new CandleDataModel({
+                    time: row.bucket,
+                    ohlc: [
+                        row.open ?? previousCandle.open,
+                        row.high ?? previousCandle.high,
+                        row.low ?? previousCandle.low,
+                        row.close ?? previousCandle.close,
+                    ],
+                }),
+        );
+    }
+
+    private getCandleModelByResolution(
+        resolution: PriceCandlesResolutions,
+    ): Repository<PriceCandleMinute | PriceCandleHourly | PriceCandleDaily> {
+        if (resolution.includes('minute')) {
+            return this.priceCandleMinute;
+        }
+
+        if (resolution.includes('hour')) {
+            return this.priceCandleHourly;
+        }
+
+        return this.priceCandleDaily;
     }
 }

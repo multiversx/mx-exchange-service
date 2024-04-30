@@ -8,15 +8,20 @@ import {
     CloseDaily,
     CloseHourly,
     PDCloseMinute,
+    PriceCandleHourly,
+    PriceCandleMinute,
+    PriceCandleDaily,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
 } from './entities/timescaledb.entities';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
     imports: [
         CommonAppModule,
+        DynamicModuleUtils.getCacheModule(),
         TypeOrmModule.forRootAsync({
             imports: [CommonAppModule],
             useFactory: (apiConfig: ApiConfigService) => ({
@@ -45,6 +50,9 @@ import {
             CloseHourly,
             TokenBurnedWeekly,
             PDCloseMinute,
+            PriceCandleMinute,
+            PriceCandleHourly,
+            PriceCandleDaily
         ]),
     ],
     providers: [TimescaleDBQueryService, TimescaleDBWriteService],

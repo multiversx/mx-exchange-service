@@ -19,6 +19,7 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('TransactionPairService', () => {
     let module: TestingModule;
@@ -46,6 +47,7 @@ describe('TransactionPairService', () => {
                 WrapService,
                 TokenServiceProvider,
                 PairTransactionService,
+                MXApiServiceProvider,
             ],
         }).compile();
     });
@@ -59,8 +61,8 @@ describe('TransactionPairService', () => {
     });
 
     it('should get add initial liquidity batch transaction', async () => {
-        const firstTokenAmount = '10';
-        const secondTokenAmount = '9';
+        const firstTokenAmount = '10000000000000000000';
+        const secondTokenAmount = '9000000000000000000';
 
         const service = module.get<PairTransactionService>(
             PairTransactionService,
@@ -118,7 +120,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 `MultiESDTNFTTransfer@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32()}@2@WEGLD-123456@@9@MEX-123456@@10@addInitialLiquidity`,
+                ).bech32()}@2@WEGLD-123456@@9000000000000000000@MEX-123456@@10000000000000000000@addInitialLiquidity`,
             ),
             chainID: mxConfig.chainID,
             version: 1,
@@ -128,8 +130,8 @@ describe('TransactionPairService', () => {
     });
 
     it('should get add initial liquidity transaction', async () => {
-        const firstTokenAmount = '10';
-        const secondTokenAmount = '9';
+        const firstTokenAmount = '10000000000000000000';
+        const secondTokenAmount = '9000000000000000000';
 
         const service = module.get<PairTransactionService>(
             PairTransactionService,
@@ -167,7 +169,7 @@ describe('TransactionPairService', () => {
             data: encodeTransactionData(
                 `MultiESDTNFTTransfer@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32()}@02@WEGLD-123456@@10@MEX-123456@@09@addInitialLiquidity`,
+                ).bech32()}@02@WEGLD-123456@@10000000000000000000@MEX-123456@@9000000000000000000@addInitialLiquidity`,
             ),
             chainID: mxConfig.chainID,
             version: 1,

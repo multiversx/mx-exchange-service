@@ -12,7 +12,7 @@ export class AnalyticsAWSGetterService {
     private async getCachedData<T>(cacheKey: string): Promise<T> {
         const data = await this.cachingService.get<T>(cacheKey);
         if (!data || data === undefined) {
-            throw new Error(`Unavailable cached key ${cacheKey}`);
+            return undefined;
         }
         return data;
     }
@@ -30,6 +30,10 @@ export class AnalyticsAWSGetterService {
             metric,
         );
         let data = await this.getCachedData<HistoricDataModel[]>(cacheKey);
+        if (data === undefined) {
+            return [];
+        }
+
         if (start) {
             const formattedStart = moment.unix(parseInt(start)).utc();
 
@@ -66,7 +70,8 @@ export class AnalyticsAWSGetterService {
             series,
             metric,
         );
-        return await this.getCachedData(cacheKey);
+        const data = await this.getCachedData<HistoricDataModel[]>(cacheKey);
+        return data !== undefined ? data : [];
     }
 
     @ErrorLoggerAsync()
@@ -79,7 +84,8 @@ export class AnalyticsAWSGetterService {
             series,
             metric,
         );
-        return await this.getCachedData(cacheKey);
+        const data = await this.getCachedData<HistoricDataModel[]>(cacheKey);
+        return data !== undefined ? data : [];
     }
 
     @ErrorLoggerAsync()
@@ -88,7 +94,8 @@ export class AnalyticsAWSGetterService {
         metric: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey('values24h', series, metric);
-        return await this.getCachedData(cacheKey);
+        const data = await this.getCachedData<HistoricDataModel[]>(cacheKey);
+        return data !== undefined ? data : [];
     }
 
     private getAnalyticsCacheKey(...args: any) {

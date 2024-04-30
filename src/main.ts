@@ -12,14 +12,19 @@ import { RabbitMqConsumer } from './modules/rabbitmq/rabbitmq.consumer';
 import cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
 
-    const app = await NestFactory.create(PublicAppModule, {
-        bufferLogs: true,
-    });
+    const app = await NestFactory.create<NestExpressApplication>(
+        PublicAppModule,
+        {
+            bufferLogs: true,
+        },
+    );
     app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
+    app.useBodyParser('json', { limit: '1mb' });
 
     const httpAdapterHostService = app.get<HttpAdapterHost>(HttpAdapterHost);
 
