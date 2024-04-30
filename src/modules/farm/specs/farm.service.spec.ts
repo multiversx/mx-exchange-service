@@ -40,6 +40,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -97,6 +98,7 @@ describe('FarmService', () => {
                 MXDataApiServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                ElasticService,
             ],
         }).compile();
     });
