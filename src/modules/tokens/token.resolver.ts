@@ -39,13 +39,6 @@ export class TokensResolver extends GenericResolver {
         );
     }
 
-    @ResolveField(() => String, { nullable: true })
-    async priceChange24h(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenPriceChange24h(parent.identifier),
-        );
-    }
-
     @ResolveField(() => String)
     async type(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResolver(() =>
@@ -71,9 +64,9 @@ export class TokensResolver extends GenericResolver {
     }
 
     @ResolveField(() => String, { nullable: true })
-    async previous24hVolume(@Parent() parent: EsdtToken): Promise<string> {
+    async volumeUSD24h(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenPrevious24hVolume(parent.identifier),
+            this.tokenCompute.tokenVolumeUSD24h(parent.identifier),
         );
     }
 

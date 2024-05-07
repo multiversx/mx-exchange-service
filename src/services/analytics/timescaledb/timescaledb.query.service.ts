@@ -113,10 +113,21 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 return [];
             }
 
+            const previousValue = this.closeDaily
+                .createQueryBuilder()
+                .select('last')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere('time < :startDate', { startDate })
+                .orderBy('time', 'DESC')
+                .limit(1);
+
             const query = await this.closeDaily
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 day', time) as day")
-                .addSelect('locf(last(last, time)) as last')
+                .addSelect(
+                    `locf(last(last, time), (${previousValue.getQuery()})) as last`,
+                )
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :startDate and :endDate', {
@@ -126,40 +137,15 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .groupBy('day')
                 .getRawMany();
 
-            if (!time) {
-                return (
-                    query?.map((row) =>
-                        this.createDayHistoricDataModel(row, '0'),
-                    ) ?? []
-                );
-            }
-
-            const needsGapFilling = query.some((row) => !row.last);
-            if (!needsGapFilling) {
-                return query.map((row) =>
-                    this.createDayHistoricDataModel(row, '0'),
-                );
-            }
-
-            const previousData = await this.closeDaily
-                .createQueryBuilder()
-                .select('last')
-                .where('series = :series', { series })
-                .andWhere('key = :metric', { metric })
-                .andWhere('time < :startDate', { startDate })
-                .orderBy('time', 'DESC')
-                .limit(1)
-                .getRawOne();
-
-            if (!previousData) {
-                return query
-                    .filter((row) => row.last)
-                    .map((row) => this.createDayHistoricDataModel(row, '0'));
-            }
-
             return (
-                query?.map((row) =>
-                    this.createDayHistoricDataModel(row, previousData.last),
+                query?.map(
+                    (row) =>
+                        new HistoricDataModel({
+                            timestamp: moment
+                                .utc(row.hour)
+                                .format('yyyy-MM-DD HH:mm:ss'),
+                            value: row.last ?? '0',
+                        }),
                 ) ?? []
             );
         } catch (error) {

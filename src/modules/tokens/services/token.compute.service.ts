@@ -273,17 +273,25 @@ export class TokenComputeService implements ITokenComputeService {
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
         localTtl: CacheTtlInfo.Token.localTtl,
     })
-    async tokenPrevious24hVolume(tokenID: string): Promise<string> {
-        return await this.computeTokenPrevious24hVolume(tokenID);
+    async tokenVolumeUSD24h(tokenID: string): Promise<string> {
+        return await this.computeTokenVolumeUSD24h(tokenID);
     }
 
-    async computeTokenPrevious24hVolume(tokenID: string): Promise<string> {
+    async computeTokenVolumeUSD24h(tokenID: string): Promise<string> {
         const values24h = await this.analyticsQuery.getValues24hSum({
             series: tokenID,
             metric: 'volumeUSD',
         });
 
-        return values24h[0]?.value ?? undefined;
+        if (!values24h || !Array.isArray(values24h)) {
+            return '0';
+        }
+
+        const total = values24h.reduce(
+            (acc, item) => acc.plus(new BigNumber(item.value)),
+            new BigNumber(0),
+        );
+        return total.toString();
     }
 
     @ErrorLoggerAsync({
