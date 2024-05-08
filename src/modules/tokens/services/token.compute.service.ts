@@ -19,6 +19,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { ElasticService } from 'src/helpers/elastic.service';
+import moment from 'moment';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -273,25 +274,86 @@ export class TokenComputeService implements ITokenComputeService {
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
         localTtl: CacheTtlInfo.Token.localTtl,
     })
-    async tokenVolumeUSD24h(tokenID: string): Promise<string> {
-        return await this.computeTokenVolumeUSD24h(tokenID);
+    async tokenVolumeUSD(tokenID: string): Promise<string> {
+        return await this.computeTokenVolumeUSD(tokenID);
     }
 
-    async computeTokenVolumeUSD24h(tokenID: string): Promise<string> {
-        const values24h = await this.analyticsQuery.getValues24hSum({
+    async computeTokenVolumeUSD(tokenID: string): Promise<string> {
+        const valuesLast2Days = await this.tokenLast2DaysVolumeUSD(tokenID);
+        return valuesLast2Days.current;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenPrevious24hVolumeUSD(tokenID: string): Promise<string> {
+        return await this.computeTokenPrevious24hVolumeUSD(tokenID);
+    }
+
+    async computeTokenPrevious24hVolumeUSD(tokenID: string): Promise<string> {
+        const valuesLast2Days = await this.tokenLast2DaysVolumeUSD(tokenID);
+        return valuesLast2Days.previous;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenLast2DaysVolumeUSD(
+        tokenID: string,
+    ): Promise<{ previous: string; current: string }> {
+        return await this.computeTokenLast2DaysVolumeUSD(tokenID);
+    }
+
+    async computeTokenLast2DaysVolumeUSD(
+        tokenID: string,
+    ): Promise<{ previous: string; current: string }> {
+        const values48h = await this.analyticsQuery.getHourlySumValues({
             series: tokenID,
             metric: 'volumeUSD',
+            time: '2 days',
         });
 
-        if (!values24h || !Array.isArray(values24h)) {
-            return '0';
+        if (!values48h || !Array.isArray(values48h)) {
+            return {
+                previous: '0',
+                current: '0',
+            };
         }
 
-        const total = values24h.reduce(
-            (acc, item) => acc.plus(new BigNumber(item.value)),
-            new BigNumber(0),
+        const splitTime = moment().utc().subtract(1, 'day').startOf('hour');
+
+        const previousDayValues = values48h.filter((item) =>
+            moment.utc(item.timestamp).isSameOrBefore(splitTime),
         );
-        return total.toFixed();
+
+        const currentDayValues = values48h.filter((item) =>
+            moment.utc(item.timestamp).isAfter(splitTime),
+        );
+
+        return {
+            previous: previousDayValues
+                .reduce(
+                    (acc, item) => acc.plus(new BigNumber(item.value)),
+                    new BigNumber(0),
+                )
+                .toFixed(),
+            current: currentDayValues
+                .reduce(
+                    (acc, item) => acc.plus(new BigNumber(item.value)),
+                    new BigNumber(0),
+                )
+                .toFixed(),
+        };
     }
 
     @ErrorLoggerAsync({
