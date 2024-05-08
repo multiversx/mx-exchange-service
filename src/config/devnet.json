@@ -4,7 +4,7 @@
     },
     "scAddress": {
         "routerAddress": "erd1qqqqqqqqqqqqqpgqa7hv0nahgsl8tz0psat46x0tchm0wuyc0n4s6q28ad",
-        "MEX-dc289c": "erd1qqqqqqqqqqqqqpgqzw0d0tj25qme9e4ukverjjjqle6xamay0n4s5r0v9g",
+        "MEX-a659d0": "erd1qqqqqqqqqqqqqpgqzw0d0tj25qme9e4ukverjjjqle6xamay0n4s5r0v9g",
         "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqtqfhy99su9xzjjrq59kpzpp25udtc9eq0n4sr90ax6",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
         "proxyDexAddress": {
@@ -80,8 +80,9 @@
         "MAINTENANCE": false,
         "EPOCHS_IN_WEEK": 7,
         "roundedSwapEnable": {
-            "WEGLD-a28c59": "5000000",
-            "USDC-350c4e": "100000000000000000"
+            "USDC-350c4e": "5000000",
+            "WEGLD-a28c59": "100000000000000000",
+            "MEX-a659d0": "10000000000000000000000"
         }
     }
 }
