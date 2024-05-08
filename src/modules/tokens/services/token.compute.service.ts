@@ -291,7 +291,7 @@ export class TokenComputeService implements ITokenComputeService {
             (acc, item) => acc.plus(new BigNumber(item.value)),
             new BigNumber(0),
         );
-        return total.toString();
+        return total.toFixed();
     }
 
     @ErrorLoggerAsync({
