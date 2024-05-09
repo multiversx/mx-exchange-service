@@ -189,6 +189,45 @@ export class AWSQueryCacheWarmerService {
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        const allPairsVolumeUSDCompleteValuesSum =
+            await this.analyticsQuery.getSumCompleteValues({
+                series: 'erd1%',
+                metric: 'volumeUSD',
+            });
+        await delay(1000);
+        const allPairsVolumeUSD24hSum =
+            await this.analyticsQuery.getValues24hSum({
+                series: 'erd1%',
+                metric: 'volumeUSD',
+            });
+        await delay(1000);
+        const totalLockedValueUSD =
+            await this.analyticsQuery.getLatestCompleteValues({
+                series: 'factory',
+                metric: 'totalLockedValueUSD',
+            });
+
+        const factoryKeys = await Promise.all([
+            this.analyticsAWSSetter.setSumCompleteValues(
+                'factory',
+                'volumeUSD',
+                allPairsVolumeUSDCompleteValuesSum,
+            ),
+            this.analyticsAWSSetter.setValues24hSum(
+                'factory',
+                'volumeUSD',
+                allPairsVolumeUSD24hSum,
+            ),
+            this.analyticsAWSSetter.setLatestCompleteValues(
+                'factory',
+                'totalLockedValueUSD',
+                totalLockedValueUSD,
+            ),
+        ]);
+
+        await this.deleteCacheKeys(factoryKeys);
+
         profiler.stop();
         this.logger.info(
             `Finish refresh pairs analytics in ${profiler.duration}`,

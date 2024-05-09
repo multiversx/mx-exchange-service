@@ -17,6 +17,7 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -30,6 +31,7 @@ export class SwapEventHandler {
         private readonly pairService: PairService,
         private readonly pairSetter: PairSetterService,
         private readonly pairCompute: PairComputeService,
+        private readonly routerAbi: RouterAbiService,
         private readonly routerCompute: RouterComputeService,
         private readonly tokenCompute: TokenComputeService,
         private readonly tokenSetter: TokenSetterService,
@@ -39,9 +41,10 @@ export class SwapEventHandler {
     ) {}
 
     async handleSwapEvents(event: SwapEvent): Promise<[any[], number]> {
-        const [firstToken, secondToken] = await Promise.all([
+        const [firstToken, secondToken, commonTokensIDs] = await Promise.all([
             this.pairService.getFirstToken(event.address),
             this.pairService.getSecondToken(event.address),
+            this.routerAbi.commonTokensForUserPairs(),
         ]);
 
         const [
@@ -131,9 +134,29 @@ export class SwapEventHandler {
             secondToken.decimals,
             secondTokenPriceUSD,
         ).dividedBy(usdcPrice);
-        const volumeUSD = firstTokenVolumeUSD
-            .plus(secondTokenVolumeUSD)
-            .dividedBy(2);
+
+        let volumeUSD: BigNumber;
+
+        if (
+            commonTokensIDs.includes(firstToken.identifier) &&
+            commonTokensIDs.includes(secondToken.identifier)
+        ) {
+            volumeUSD = firstTokenVolumeUSD
+                .plus(secondTokenVolumeUSD)
+                .dividedBy(2);
+        } else if (
+            commonTokensIDs.includes(firstToken.identifier) &&
+            !commonTokensIDs.includes(secondToken.identifier)
+        ) {
+            volumeUSD = firstTokenVolumeUSD;
+        } else if (
+            !commonTokensIDs.includes(firstToken.identifier) &&
+            commonTokensIDs.includes(secondToken.identifier)
+        ) {
+            volumeUSD = secondTokenVolumeUSD;
+        } else {
+            volumeUSD = new BigNumber(0);
+        }
 
         const feesUSD =
             event.getTokenIn().tokenID === firstToken.identifier

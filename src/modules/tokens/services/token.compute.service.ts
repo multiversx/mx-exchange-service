@@ -17,6 +17,8 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -29,6 +31,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly routerAbi: RouterAbiService,
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly elasticService: ElasticService,
     ) {}
 
     async getEgldPriceInUSD(): Promise<string> {
@@ -201,5 +204,149 @@ export class TokenComputeService implements ITokenComputeService {
         });
 
         return values24h[0]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenPrevious7dPrice(tokenID: string): Promise<string> {
+        return await this.computeTokenPrevious7dPrice(tokenID);
+    }
+
+    async computeTokenPrevious7dPrice(tokenID: string): Promise<string> {
+        const values7d = await this.analyticsQuery.getLatestCompleteValues({
+            series: tokenID,
+            metric: 'priceUSD',
+            time: '7 days',
+        });
+
+        return values7d[0]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenPriceChange24h(tokenID: string): Promise<string> {
+        return await this.computePriceChange24h(tokenID);
+    }
+
+    async computePriceChange24h(tokenID: string): Promise<string> {
+        const [currentPrice, previous24hPrice] = await Promise.all([
+            this.tokenPriceDerivedUSD(tokenID),
+            this.tokenPrevious24hPrice(tokenID),
+        ]);
+
+        const currentPriceBN = new BigNumber(currentPrice);
+        const previous24hPriceBN = new BigNumber(previous24hPrice);
+
+        if (previous24hPriceBN.isZero()) {
+            if (currentPriceBN.isZero()) {
+                return '0';
+            }
+
+            return '10000';
+        }
+
+        const difference = currentPriceBN.minus(previous24hPriceBN);
+
+        return difference
+            .dividedBy(previous24hPriceBN)
+            .multipliedBy(100)
+            .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenVolumeUSD24h(tokenID: string): Promise<string> {
+        return await this.computeTokenVolumeUSD24h(tokenID);
+    }
+
+    async computeTokenVolumeUSD24h(tokenID: string): Promise<string> {
+        const values24h = await this.analyticsQuery.getValues24hSum({
+            series: tokenID,
+            metric: 'volumeUSD',
+        });
+
+        if (!values24h || !Array.isArray(values24h)) {
+            return '0';
+        }
+
+        const total = values24h.reduce(
+            (acc, item) => acc.plus(new BigNumber(item.value)),
+            new BigNumber(0),
+        );
+        return total.toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenLiquidityUSD(tokenID: string): Promise<string> {
+        return await this.computeTokenLiquidityUSD(tokenID);
+    }
+
+    async computeTokenLiquidityUSD(tokenID: string): Promise<string> {
+        const values24h = await this.analyticsQuery.getLatestCompleteValues({
+            series: tokenID,
+            metric: 'lockedValueUSD',
+            time: '1 day',
+        });
+
+        if (!values24h || values24h.length === 0) {
+            return undefined;
+        }
+
+        return values24h[values24h.length - 1]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenCreatedAt(tokenID: string): Promise<string> {
+        return await this.computeTokenCreatedAtTimestamp(tokenID);
+    }
+
+    async computeTokenCreatedAtTimestamp(tokenID: string): Promise<string> {
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapter.condition.must = [QueryType.Match('_id', tokenID)];
+
+        const tokens = await this.elasticService.getList(
+            'tokens',
+            '',
+            elasticQueryAdapter,
+        );
+
+        if (tokens.length > 0) {
+            const createdAtTimestamp = tokens[0]._source.timestamp;
+            return createdAtTimestamp.toString();
+        }
+
+        return undefined;
     }
 }

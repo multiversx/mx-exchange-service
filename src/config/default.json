@@ -98,21 +98,21 @@
     },
     "gasLimits": {
         "router": {
-            "createPair": 30000000,
-            "issueToken": 300000000,
-            "setLocalRoles": 300000000,
-            "multiPairSwapMultiplier": 130000000,
-            "swapEnableByUser": 300000000,
+            "createPair": 35000000,
+            "issueToken": 75000000,
+            "setLocalRoles": 75000000,
+            "multiPairSwapMultiplier": 35000000,
+            "swapEnableByUser": 35000000,
             "admin": {
-                "setState": 220000000,
-                "setFee": 220000000,
+                "setState": 22000000,
+                "setFee": 22000000,
                 "upgradePair": 30000000,
-                "removePair": 220000000,
+                "removePair": 22000000,
                 "setLocalRolesOwner": 100000000,
-                "setPairCreationEnabled": 200000000,
-                "clearPairTemporaryOwnerStorage": 200000000,
-                "setTemporaryOwnerPeriod": 200000000,
-                "setPairTemplateAddress": 200000000
+                "setPairCreationEnabled": 22000000,
+                "clearPairTemporaryOwnerStorage": 20000000,
+                "setTemporaryOwnerPeriod": 20000000,
+                "setPairTemplateAddress": 20000000
             }
         },
         "pairs": {
@@ -614,7 +614,8 @@
         "MIN_SWAP_AMOUNT": 0.0005,
         "roundedSwapEnable": {
             "USDC-8d4068": "5000000",
-            "WEGLD-d7c6bb": "100000000000000000"
+            "WEGLD-d7c6bb": "100000000000000000",
+            "MEX-a659d0": "1000000000000000000000000"
         },
         "COMPOUND_TRANSACTION_FEE": 0.000365144
     },

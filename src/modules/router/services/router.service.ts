@@ -54,6 +54,10 @@ export class RouterService {
             pairFilter,
             pairsMetadata,
         );
+        pairsMetadata = await this.filterPairsByLockedValueUSD(
+            pairFilter,
+            pairsMetadata,
+        );
 
         return pairsMetadata
             .map(
@@ -161,27 +165,30 @@ export class RouterService {
     }
 
     private async filterPairsByFeeState(
-        pairFilter: PairFilterArgs, 
-        pairsMetadata: PairMetadata[]
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        if (typeof pairFilter.feeState === 'undefined' || pairFilter.feeState === null) {
+        if (
+            typeof pairFilter.feeState === 'undefined' ||
+            pairFilter.feeState === null
+        ) {
             return pairsMetadata;
         }
 
         const pairsFeeStates = await Promise.all(
             pairsMetadata.map((pairMetadata) =>
                 this.pairAbi.feeState(pairMetadata.address),
-            )  
+            ),
         );
 
         return pairsMetadata.filter(
-            (pairMetadata, index) => pairsFeeStates[index] === pairFilter.feeState
+            (_, index) => pairsFeeStates[index] === pairFilter.feeState,
         );
     }
 
     private async filterPairsByVolume(
-        pairFilter: PairFilterArgs, 
-        pairsMetadata: PairMetadata[]
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
         if (!pairFilter.minVolume) {
             return pairsMetadata;
@@ -189,14 +196,33 @@ export class RouterService {
 
         const pairsVolumes = await Promise.all(
             pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.volumeUSD(pairMetadata.address, '24h')
-            )
+                this.pairCompute.volumeUSD(pairMetadata.address, '24h'),
+            ),
         );
-      
-      
-        return pairsMetadata.filter((pairMetadata, index) => {
-            const volume = new BigNumber(pairsVolumes[index])
-            return volume.gte(pairFilter.minVolume)
+
+        return pairsMetadata.filter((_, index) => {
+            const volume = new BigNumber(pairsVolumes[index]);
+            return volume.gte(pairFilter.minVolume);
+        });
+    }
+
+    private async filterPairsByLockedValueUSD(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.minLockedValueUSD) {
+            return pairsMetadata;
+        }
+
+        const pairsLiquidityUSD = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairCompute.lockedValueUSD(pairMetadata.address),
+            ),
+        );
+
+        return pairsMetadata.filter((_, index) => {
+            const lockedValueUSD = new BigNumber(pairsLiquidityUSD[index]);
+            return lockedValueUSD.gte(pairFilter.minLockedValueUSD);
         });
     }
 
