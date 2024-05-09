@@ -94,44 +94,80 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     async getLatestCompleteValues({
         series,
         metric,
+        start,
+        time,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            const startDate = await this.getStartDate(series);
+            let startDate, endDate;
 
-            if (!startDate) {
+            if (time) {
+                [startDate, endDate] = computeTimeInterval(time, start);
+            } else {
+                endDate = moment().utc().toDate();
+                startDate = start
+                    ? moment.unix(parseInt(start)).utc().toDate()
+                    : await this.getStartDate(series);
+            }
+
+            if (!time && !startDate) {
                 return [];
             }
+
+            const previousValue = this.closeDaily
+                .createQueryBuilder()
+                .select('last')
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere('time < :startDate', { startDate })
+                .orderBy('time', 'DESC')
+                .limit(1);
 
             const query = await this.closeDaily
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 day', time) as day")
-                .addSelect('locf(last(last, time)) as last')
+                .addSelect(
+                    `locf(last(last, time), (${previousValue.getQuery()})) as last`,
+                )
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
-                .andWhere('time between :start and now()', {
-                    start: startDate,
+                .andWhere('time between :startDate and :endDate', {
+                    startDate,
+                    endDate,
                 })
                 .groupBy('day')
                 .getRawMany();
-            const results =
+
+            return (
                 query?.map(
                     (row) =>
                         new HistoricDataModel({
                             timestamp: moment
-                                .utc(row.day)
+                                .utc(row.hour)
                                 .format('yyyy-MM-DD HH:mm:ss'),
                             value: row.last ?? '0',
                         }),
-                ) ?? [];
-            return results;
+                ) ?? []
+            );
         } catch (error) {
             this.logger.error('getLatestCompleteValues', {
                 series,
                 metric,
+                start,
+                time,
                 error,
             });
             return [];
         }
+    }
+
+    private createDayHistoricDataModel(
+        row: any,
+        fallbackValue: string,
+    ): HistoricDataModel {
+        return new HistoricDataModel({
+            timestamp: moment.utc(row.day).format('yyyy-MM-DD HH:mm:ss'),
+            value: row.last ?? fallbackValue,
+        });
     }
 
     @TimescaleDBQuery()
@@ -146,11 +182,15 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 return [];
             }
 
+            const seriesWhere = series.includes('%')
+                ? 'series LIKE :series'
+                : 'series = :series';
+
             const query = await this.sumDaily
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 day', time) as day")
                 .addSelect('sum(sum) as sum')
-                .where('series = :series', { series })
+                .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :start and now()', {
                     start: startDate,
@@ -230,11 +270,15 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
+            const seriesWhere = series.includes('%')
+                ? 'series LIKE :series'
+                : 'series = :series';
+
             const query = await this.sumHourly
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 hour', time) as hour")
                 .addSelect('sum(sum) as sum')
-                .where('series = :series', { series })
+                .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere("time between now() - INTERVAL '1 day' and now()")
                 .groupBy('hour')
@@ -319,10 +363,14 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             return cachedValue;
         }
 
+        const seriesWhere = series.includes('%')
+            ? 'series LIKE :series'
+            : 'series = :series';
+
         const firstRow = await this.dexAnalytics
             .createQueryBuilder()
             .select('timestamp')
-            .where('series = :series', { series })
+            .where(seriesWhere, { series })
             .orderBy('timestamp', 'ASC')
             .limit(1)
             .getRawOne();

@@ -28,6 +28,7 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
 import { Address } from '@multiversx/sdk-core/out';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 describe('FarmServiceV2', () => {
     let module: TestingModule;
@@ -62,6 +63,7 @@ describe('FarmServiceV2', () => {
                 FarmServiceV2,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                ElasticService,
             ],
         }).compile();
     });

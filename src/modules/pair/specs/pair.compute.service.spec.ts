@@ -23,6 +23,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { PairAbiService } from '../services/pair.abi.service';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -49,6 +50,7 @@ describe('PairService', () => {
                 ContextGetterServiceProvider,
                 ApiConfigService,
                 MXApiServiceProvider,
+                ElasticService,
             ],
         }).compile();
     });

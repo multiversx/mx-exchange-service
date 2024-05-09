@@ -13,6 +13,7 @@ import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.
 import { NftCollectionResolver } from './nftCollection.resolver';
 import { NftTokenResolver } from './nftToken.resolver';
 import { AnalyticsModule } from 'src/services/analytics/analytics.module';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { AnalyticsModule } from 'src/services/analytics/analytics.module';
         TokensResolver,
         NftCollectionResolver,
         NftTokenResolver,
+        ElasticService,
     ],
     exports: [
         TokenRepositoryService,

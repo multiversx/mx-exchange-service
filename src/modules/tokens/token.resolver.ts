@@ -56,6 +56,34 @@ export class TokensResolver extends GenericResolver {
         return new RolesModel(parent.roles);
     }
 
+    @ResolveField(() => String, { nullable: true })
+    async previous7dPrice(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenPrevious7dPrice(parent.identifier),
+        );
+    }
+
+    @ResolveField(() => String, { nullable: true })
+    async volumeUSD24h(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenVolumeUSD24h(parent.identifier),
+        );
+    }
+
+    @ResolveField(() => String, { nullable: true })
+    async liquidityUSD(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenLiquidityUSD(parent.identifier),
+        );
+    }
+
+    @ResolveField(() => String, { nullable: true })
+    async createdAt(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenCreatedAt(parent.identifier),
+        );
+    }
+
     @Query(() => [EsdtToken])
     async tokens(@Args() filters: TokensFiltersArgs): Promise<EsdtToken[]> {
         try {
