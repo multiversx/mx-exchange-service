@@ -67,6 +67,45 @@ export class TokenSetterService extends GenericSetterService {
         );
     }
 
+    async setVolumeLast2D(
+        tokenID: string,
+        value: { current: string; previous: string },
+    ): Promise<string> {
+        return await this.setData(
+            `token.tokenLast2DaysVolumeUSD.${tokenID}`,
+            value,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+    }
+
+    async setPricePrevious24h(tokenID: string, value: string): Promise<string> {
+        return await this.setData(
+            `token.tokenPrevious24hPrice.${tokenID}`,
+            value,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
+        );
+    }
+
+    async setPricePrevious7d(tokenID: string, value: string): Promise<string> {
+        return await this.setData(
+            `token.tokenPrevious7dPrice.${tokenID}`,
+            value,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
+        );
+    }
+
+    async setLiquidityUSD(tokenID: string, value: string): Promise<string> {
+        return await this.setData(
+            `token.tokenLiquidityUSD.${tokenID}`,
+            value,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
+        );
+    }
+
     private getTokenCacheKey(tokenID: string, ...args: any): string {
         return generateCacheKeyFromParams('token', tokenID, args);
     }
