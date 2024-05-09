@@ -23,6 +23,8 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     async getLatestCompleteValues(args: {
         series: any;
         metric: any;
+        time?: any;
+        start?: any;
     }): Promise<HistoricDataModel[]> {
         const service = await this.getService();
         return await service.getLatestCompleteValues(args);

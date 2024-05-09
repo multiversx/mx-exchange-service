@@ -46,6 +46,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 describe('AnalyticsService', () => {
     let module: TestingModule;
@@ -105,6 +106,7 @@ describe('AnalyticsService', () => {
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                ElasticService,
             ],
         }).compile();
     });

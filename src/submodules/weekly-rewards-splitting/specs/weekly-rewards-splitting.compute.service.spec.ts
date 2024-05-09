@@ -23,6 +23,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     let module: TestingModule;
@@ -52,6 +53,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
                 MXApiServiceProvider,
+                ElasticService,
             ],
         }).compile();
     });
