@@ -52,7 +52,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
             PDCloseMinute,
             PriceCandleMinute,
             PriceCandleHourly,
-            PriceCandleDaily
+            PriceCandleDaily,
         ]),
     ],
     providers: [TimescaleDBQueryService, TimescaleDBWriteService],

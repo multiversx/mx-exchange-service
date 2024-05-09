@@ -42,6 +42,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -95,6 +96,7 @@ describe('StakingProxyTransactionService', () => {
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                ElasticService,
             ],
         }).compile();
     });
