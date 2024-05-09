@@ -15,6 +15,10 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { StakingPositionSingleTokenModel } from '../models/position.creator.model';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
+import { denominateAmount } from 'src/utils/token.converters';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { constantsConfig, mxConfig } from 'src/config';
+import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 
 export type PositionCreatorSingleTokenInput = {
     swapRouteArgs: TypedValue[];
@@ -30,6 +34,7 @@ export class PositionCreatorComputeService {
         private readonly routerAbi: RouterAbiService,
         private readonly stakingAbi: StakingAbiService,
         private readonly autoRouterService: AutoRouterService,
+        private readonly wrapAbi: WrapAbiService,
     ) {}
 
     async computeSwap(
@@ -60,6 +65,7 @@ export class PositionCreatorComputeService {
             await this.routerAbi.commonTokensForUserPairs();
 
         const [
+            wrappedTokenID,
             firstToken,
             secondToken,
             lpTokenID,
@@ -68,6 +74,7 @@ export class PositionCreatorComputeService {
             reserves,
             totalFeePercent,
         ] = await Promise.all([
+            this.wrapAbi.wrappedEgldTokenID(),
             this.pairService.getFirstToken(pairAddress),
             this.pairService.getSecondToken(pairAddress),
             this.pairAbi.lpTokenID(pairAddress),
@@ -83,26 +90,31 @@ export class PositionCreatorComputeService {
 
         const profiler = new PerformanceProfiler();
 
+        const paymentTokenID =
+            payment.tokenIdentifier === mxConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : payment.tokenIdentifier;
+
         const swapRoutes = [];
 
         let amountOut: BigNumber;
-        let tokenInID: string;
-        let tokenOutID: string;
+        let tokenIn: EsdtToken;
+        let tokenOut: EsdtToken;
 
         if (
-            payment.tokenIdentifier !== firstToken.identifier &&
-            payment.tokenIdentifier !== secondToken.identifier
+            paymentTokenID !== firstToken.identifier &&
+            paymentTokenID !== secondToken.identifier
         ) {
-            [tokenInID, tokenOutID] = acceptedPairedTokensIDs.includes(
+            [tokenIn, tokenOut] = acceptedPairedTokensIDs.includes(
                 firstToken.identifier,
             )
-                ? [firstToken.identifier, secondToken.identifier]
-                : [secondToken.identifier, firstToken.identifier];
+                ? [firstToken, secondToken]
+                : [secondToken, firstToken];
 
             const swapRoute = await this.autoRouterService.swap({
-                tokenInID: payment.tokenIdentifier,
+                tokenInID: paymentTokenID,
                 amountIn: payment.amount,
-                tokenOutID: tokenInID,
+                tokenOutID: tokenIn.identifier,
                 tolerance,
             });
 
@@ -110,10 +122,10 @@ export class PositionCreatorComputeService {
             amountOut = new BigNumber(swapRoute.amountOut);
         } else {
             amountOut = new BigNumber(payment.amount);
-            [tokenInID, tokenOutID] =
-                payment.tokenIdentifier === firstToken.identifier
-                    ? [firstToken.identifier, secondToken.identifier]
-                    : [secondToken.identifier, firstToken.identifier];
+            [tokenIn, tokenOut] =
+                paymentTokenID === firstToken.identifier
+                    ? [firstToken, secondToken]
+                    : [secondToken, firstToken];
         }
 
         profiler.stop('swap route', true);
@@ -130,26 +142,45 @@ export class PositionCreatorComputeService {
         const [amount0, amount1] = await Promise.all([
             await this.computeSwap(
                 pairAddress,
-                tokenInID,
-                tokenInID,
+                tokenIn.identifier,
+                tokenIn.identifier,
                 halfPayment,
             ),
             await this.computeSwap(
                 pairAddress,
-                tokenInID,
-                tokenOutID,
+                tokenIn.identifier,
+                tokenOut.identifier,
                 remainingPayment,
             ),
         ]);
 
+        const tokenInExchangeRate = new BigNumber(10)
+            .pow(tokenOut.decimals)
+            .multipliedBy(amount1)
+            .dividedBy(amount0)
+            .integerValue()
+            .toFixed();
+        const tokenOutExchangeRate = new BigNumber(10)
+            .pow(tokenIn.decimals)
+            .multipliedBy(amount0)
+            .dividedBy(amount1)
+            .integerValue()
+            .toFixed();
+
+        const priceDeviationPercent =
+            await this.autoRouterService.getTokenPriceDeviationPercent(
+                [tokenIn.identifier, tokenOut.identifier],
+                [amount0.toFixed(), amount1.toFixed()],
+            );
+
         swapRoutes.push(
             new SwapRouteModel({
                 swapType: SWAP_TYPE.fixedInput,
-                tokenInID,
-                tokenOutID,
+                tokenInID: tokenIn.identifier,
+                tokenOutID: tokenOut.identifier,
                 amountIn: amount0.toFixed(),
                 amountOut: amount1.toFixed(),
-                tokenRoute: [tokenInID, tokenOutID],
+                tokenRoute: [tokenIn.identifier, tokenOut.identifier],
                 pairs: [
                     new PairModel({
                         address: pairAddress,
@@ -161,20 +192,26 @@ export class PositionCreatorComputeService {
                 ],
                 intermediaryAmounts: [amount0.toFixed(), amount1.toFixed()],
                 tolerance: tolerance,
-                tokenInExchangeRate: new BigNumber(amount1)
-                    .dividedBy(amount0)
-                    .toFixed(),
-                tokenOutExchangeRate: new BigNumber(amount0)
-                    .dividedBy(amount1)
-                    .toFixed(),
+                tokenInExchangeRate: tokenInExchangeRate,
+                tokenOutExchangeRate: tokenOutExchangeRate,
+                tokenInExchangeRateDenom: denominateAmount(
+                    tokenInExchangeRate,
+                    tokenOut.decimals,
+                ).toFixed(),
+                tokenOutExchangeRateDenom: denominateAmount(
+                    tokenOutExchangeRate,
+                    tokenIn.decimals,
+                ).toFixed(),
                 tokenInPriceUSD:
-                    tokenInID === firstToken.identifier
+                    tokenIn.identifier === firstToken.identifier
                         ? firstTokenPriceUSD
                         : secondTokenPriceUSD,
                 tokenOutPriceUSD:
-                    tokenOutID === firstToken.identifier
+                    tokenOut.identifier === firstToken.identifier
                         ? firstTokenPriceUSD
                         : secondTokenPriceUSD,
+                maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
+                tokensPriceDeviationPercent: priceDeviationPercent,
             }),
         );
 
@@ -195,6 +232,7 @@ export class PositionCreatorComputeService {
             tolerance,
         );
         return new StakingPositionSingleTokenModel({
+            payment,
             swaps: [swapRoute],
         });
     }

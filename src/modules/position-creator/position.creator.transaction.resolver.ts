@@ -37,11 +37,7 @@ export class LiquidityPositionSingleTokenResolver {
     ): Promise<TransactionModel[]> {
         const pairAddress =
             parent.swaps[parent.swaps.length - 1].pairs[0].address;
-        const payment = new EsdtTokenPayment({
-            tokenIdentifier: parent.swaps[0].tokenInID,
-            tokenNonce: 0,
-            amount: parent.swaps[0].amountIn,
-        });
+        const payment = new EsdtTokenPayment(parent.payment);
 
         const transactions =
             await this.posCreatorTransaction.createLiquidityPositionSingleToken(
@@ -89,17 +85,11 @@ export class FarmPositionSingleTokenResolver {
             });
         }
 
-        const firstPayment = new EsdtTokenPayment({
-            tokenIdentifier: parent.swaps[0].tokenInID,
-            tokenNonce: 0,
-            amount: parent.swaps[0].amountIn,
-        });
-
         return this.posCreatorTransaction.createFarmPositionSingleToken(
             user.address,
             farmAddress,
             [
-                firstPayment,
+                new EsdtTokenPayment(parent.payment),
                 ...additionalPayments.map(
                     (payment) =>
                         new EsdtTokenPayment({
@@ -148,17 +138,11 @@ export class DualFarmPositionSingleTokenResolver {
             });
         }
 
-        const firstPayment = new EsdtTokenPayment({
-            tokenIdentifier: parent.swaps[0].tokenInID,
-            tokenNonce: 0,
-            amount: parent.swaps[0].amountIn,
-        });
-
         return this.posCreatorTransaction.createDualFarmPositionSingleToken(
             user.address,
             dualFarmAddress,
             [
-                firstPayment,
+                new EsdtTokenPayment(parent.payment),
                 ...additionalPayments.map(
                     (payment) =>
                         new EsdtTokenPayment({
@@ -205,18 +189,12 @@ export class StakingPositionSingleTokenResolver {
             });
         }
 
-        const firstPayment = new EsdtTokenPayment({
-            tokenIdentifier: parent.swaps[0].tokenInID,
-            tokenNonce: 0,
-            amount: parent.swaps[0].amountIn,
-        });
-
         return this.posCreatorTransaction.createStakingPositionSingleToken(
             user.address,
             stakingAddress,
             parent.swaps[0],
             [
-                firstPayment,
+                new EsdtTokenPayment(parent.payment),
                 ...additionalPayments.map(
                     (payment) =>
                         new EsdtTokenPayment({
@@ -243,15 +221,9 @@ export class EnergyPositionSingleTokenResolver {
         @Parent() parent: EnergyPositionSingleTokenModel,
         @Args('lockEpochs') lockEpochs: number,
     ): Promise<TransactionModel[]> {
-        const firstPayment = new EsdtTokenPayment({
-            tokenIdentifier: parent.swaps[0].tokenInID,
-            tokenNonce: 0,
-            amount: parent.swaps[0].amountIn,
-        });
-
         return this.posCreatorTransaction.createEnergyPosition(
             user.address,
-            firstPayment,
+            new EsdtTokenPayment(parent.payment),
             parent.swaps[0],
             lockEpochs,
         );
@@ -273,18 +245,20 @@ export class PositionCreatorTransactionResolver {
         @Args('payment') payment: InputTokenModel,
         @Args('tolerance') tolerance: number,
     ): Promise<LiquidityPositionSingleTokenModel> {
+        const esdtTokenPayment = new EsdtTokenPayment({
+            tokenIdentifier: payment.tokenID,
+            tokenNonce: payment.nonce,
+            amount: payment.amount,
+        });
         const swapRoutes =
             await this.posCreatorCompute.computeSingleTokenPairInput(
                 pairAddress,
-                new EsdtTokenPayment({
-                    tokenIdentifier: payment.tokenID,
-                    tokenNonce: payment.nonce,
-                    amount: payment.amount,
-                }),
+                esdtTokenPayment,
                 tolerance,
             );
 
         return new LiquidityPositionSingleTokenModel({
+            payment: esdtTokenPayment,
             swaps: swapRoutes,
         });
     }
@@ -296,19 +270,21 @@ export class PositionCreatorTransactionResolver {
         @Args('tolerance') tolerance: number,
     ): Promise<FarmPositionSingleTokenModel> {
         const pairAddress = await this.farmAbi.pairContractAddress(farmAddress);
+        const esdtTokenPayment = new EsdtTokenPayment({
+            tokenIdentifier: payment.tokenID,
+            tokenNonce: payment.nonce,
+            amount: payment.amount,
+        });
 
         const swapRoutes =
             await this.posCreatorCompute.computeSingleTokenPairInput(
                 pairAddress,
-                new EsdtTokenPayment({
-                    tokenIdentifier: payment.tokenID,
-                    tokenNonce: payment.nonce,
-                    amount: payment.amount,
-                }),
+                esdtTokenPayment,
                 tolerance,
             );
 
         return new FarmPositionSingleTokenModel({
+            payment: esdtTokenPayment,
             swaps: swapRoutes,
         });
     }
@@ -322,19 +298,21 @@ export class PositionCreatorTransactionResolver {
         const pairAddress = await this.stakingProxyAbi.pairAddress(
             dualFarmAddress,
         );
+        const esdtTokenPayment = new EsdtTokenPayment({
+            tokenIdentifier: payment.tokenID,
+            tokenNonce: payment.nonce,
+            amount: payment.amount,
+        });
 
         const swapRoutes =
             await this.posCreatorCompute.computeSingleTokenPairInput(
                 pairAddress,
-                new EsdtTokenPayment({
-                    tokenIdentifier: payment.tokenID,
-                    tokenNonce: payment.nonce,
-                    amount: payment.amount,
-                }),
+                esdtTokenPayment,
                 tolerance,
             );
 
         return new DualFarmPositionSingleTokenModel({
+            payment: esdtTokenPayment,
             swaps: swapRoutes,
         });
     }
@@ -427,17 +405,20 @@ export class PositionCreatorTransactionResolver {
         @Args('payment') payment: InputTokenModel,
         @Args('tolerance') tolerance: number,
     ): Promise<EnergyPositionSingleTokenModel> {
+        const esdtTokenPayment = new EsdtTokenPayment({
+            tokenIdentifier: payment.tokenID,
+            tokenNonce: payment.nonce,
+            amount: payment.amount,
+        });
+
         const swapRoute = await this.posCreatorCompute.computeSingleTokenInput(
-            new EsdtTokenPayment({
-                tokenIdentifier: payment.tokenID,
-                tokenNonce: payment.nonce,
-                amount: payment.amount,
-            }),
+            esdtTokenPayment,
             constantsConfig.MEX_TOKEN_ID,
             tolerance,
         );
 
         return new EnergyPositionSingleTokenModel({
+            payment: esdtTokenPayment,
             swaps: [swapRoute],
         });
     }
