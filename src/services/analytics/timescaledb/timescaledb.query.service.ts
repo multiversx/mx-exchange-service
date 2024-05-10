@@ -126,7 +126,9 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 day', time) as day")
                 .addSelect(
-                    `locf(last(last, time), (${previousValue.getQuery()})) as last`,
+                    `locf(last(last, time) ${
+                        start ? `, (${previousValue.getQuery()})` : ''
+                    }) as last`,
                 )
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
