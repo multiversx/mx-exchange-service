@@ -144,7 +144,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                     (row) =>
                         new HistoricDataModel({
                             timestamp: moment
-                                .utc(row.hour)
+                                .utc(row.day)
                                 .format('yyyy-MM-DD HH:mm:ss'),
                             value: row.last ?? '0',
                         }),
