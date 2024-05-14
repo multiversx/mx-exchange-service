@@ -565,7 +565,7 @@ export class PairComputeService implements IPairComputeService {
 
     async computeHasFarms(pairAddress: string): Promise<boolean> {
         const addresses: string[] = farmsAddresses(['v2']);
-        const lpToken = await this.pairService.getLpToken(pairAddress);
+        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
 
         const farmingTokenIDs = await Promise.all(
             addresses.map((address) =>
@@ -573,7 +573,7 @@ export class PairComputeService implements IPairComputeService {
             ),
         );
 
-        return farmingTokenIDs.includes(lpToken.identifier);
+        return farmingTokenIDs.includes(lpTokenID);
     }
 
     @ErrorLoggerAsync({
