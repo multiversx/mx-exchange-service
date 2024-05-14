@@ -363,4 +363,25 @@ export class PairSetterService extends GenericSetterService {
             CacheTtlInfo.ContractState.localTtl,
         );
     }
+
+    async setHasFarms(pairAddress: string, value: boolean): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('hasFarms', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async setHasDualFarms(
+        pairAddress: string,
+        value: boolean,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('hasDualFarms', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
 }

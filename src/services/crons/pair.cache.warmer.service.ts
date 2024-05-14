@@ -144,6 +144,8 @@ export class PairCacheWarmerService {
                 specialFeePercent,
                 feesCollectorAddress,
                 feesCollectorCutPercentage,
+                hasFarms,
+                hasDualFarms,
             ] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.pairAbi.getStateRaw(pairAddress),
@@ -153,6 +155,8 @@ export class PairCacheWarmerService {
                 this.pairAbi.getSpecialFeePercentRaw(pairAddress),
                 this.pairAbi.getFeesCollectorAddressRaw(pairAddress),
                 this.pairAbi.getFeesCollectorCutPercentageRaw(pairAddress),
+                this.pairComputeService.computeHasFarms(pairAddress),
+                this.pairComputeService.computeHasDualFarms(pairAddress),
             ]);
 
             const cachedKeys = await Promise.all([
@@ -179,6 +183,11 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setFeesCollectorCutPercentage(
                     pairAddress,
                     feesCollectorCutPercentage,
+                ),
+                this.pairSetterService.setHasFarms(pairAddress, hasFarms),
+                this.pairSetterService.setHasDualFarms(
+                    pairAddress,
+                    hasDualFarms,
                 ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
