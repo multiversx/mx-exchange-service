@@ -13,6 +13,9 @@ import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
 import { CommonAppModule } from 'src/common.app.module';
+import { FarmModule } from '../farm/farm.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
+import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -23,6 +26,9 @@ import { CommonAppModule } from 'src/common.app.module';
         DatabaseModule,
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
+        RemoteConfigModule,
+        FarmModule,
+        StakingProxyModule,
     ],
     providers: [
         PairService,

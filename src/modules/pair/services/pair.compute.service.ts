@@ -14,6 +14,10 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
+import { farmsAddresses } from 'src/utils/farm.utils';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
+import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -28,6 +32,9 @@ export class PairComputeService implements IPairComputeService {
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
+        private readonly farmAbi: FarmAbiFactory,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly stakingProxyAbiService: StakingProxyAbiService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -542,5 +549,55 @@ export class PairComputeService implements IPairComputeService {
                 .multipliedBy(secondTokenPrice)
                 .multipliedBy(firstTokenPriceUSD);
         }
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async hasFarms(pairAddress: string): Promise<boolean> {
+        return await this.computeHasFarms(pairAddress);
+    }
+
+    async computeHasFarms(pairAddress: string): Promise<boolean> {
+        const addresses: string[] = farmsAddresses(['v2']);
+        const lpToken = await this.pairService.getLpToken(pairAddress);
+
+        const farmingTokenIDs = await Promise.all(
+            addresses.map((address) =>
+                this.farmAbi.useAbi(address).farmingTokenID(address),
+            ),
+        );
+
+        return farmingTokenIDs.includes(lpToken.identifier);
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async hasDualFarms(pairAddress: string): Promise<boolean> {
+        return await this.computeHasDualFarms(pairAddress);
+    }
+
+    async computeHasDualFarms(pairAddress: string): Promise<boolean> {
+        const stakingAddresses =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
+
+        const pairAddresses = await Promise.all(
+            stakingAddresses.map((address) =>
+                this.stakingProxyAbiService.pairAddress(address),
+            ),
+        );
+
+        return pairAddresses.includes(pairAddress);
     }
 }
