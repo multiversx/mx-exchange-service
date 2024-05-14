@@ -17,7 +17,7 @@ import { EnergyModule } from '../../energy/energy.module';
     imports: [
         ContextModule,
         MXCommunicationModule,
-        PairModule,
+        forwardRef(() => PairModule),
         TokenModule,
         EnergyModule,
         forwardRef(() => WeekTimekeepingModule),
