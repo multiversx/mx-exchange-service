@@ -6,11 +6,11 @@ import {
     Param,
 } from '@nestjs/common';
 import { MetricsCollector } from 'src/utils/metrics.collector';
-import { MetricsService } from './metrics.service';
+import { ESTransactionsService } from 'src/services/elastic-search/services/es.transactions.service';
 
 @Controller()
 export class MetricsController {
-    constructor(private readonly metricsService: MetricsService) {}
+    constructor(private readonly metricsService: ESTransactionsService) {}
 
     @Get('/metrics')
     async getMetrics(): Promise<string> {

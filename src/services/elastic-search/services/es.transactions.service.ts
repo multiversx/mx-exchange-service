@@ -6,7 +6,7 @@ import { ElasticQuery } from '@multiversx/sdk-nestjs-elastic';
 import { ElasticService } from 'src/helpers/elastic.service';
 
 @Injectable()
-export class MetricsService {
+export class ESTransactionsService {
     constructor(
         private readonly elasticService: ElasticService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
