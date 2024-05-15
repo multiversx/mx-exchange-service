@@ -384,4 +384,13 @@ export class PairSetterService extends GenericSetterService {
             CacheTtlInfo.ContractState.localTtl,
         );
     }
+
+    async setTradesCount(pairAddress: string, value: number): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('tradesCount', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
 }

@@ -129,7 +129,7 @@ export class PairCacheWarmerService {
         }
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     @Lock({ name: 'cachePairsInfo', verbose: true })
     async cachePairsInfo(): Promise<void> {
         const pairsAddresses = await this.routerAbi.pairsAddress();
@@ -146,6 +146,7 @@ export class PairCacheWarmerService {
                 feesCollectorCutPercentage,
                 hasFarms,
                 hasDualFarms,
+                tradesCount,
             ] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.pairAbi.getStateRaw(pairAddress),
@@ -157,6 +158,7 @@ export class PairCacheWarmerService {
                 this.pairAbi.getFeesCollectorCutPercentageRaw(pairAddress),
                 this.pairComputeService.computeHasFarms(pairAddress),
                 this.pairComputeService.computeHasDualFarms(pairAddress),
+                this.pairComputeService.computeTradesCount(pairAddress),
             ]);
 
             const cachedKeys = await Promise.all([
@@ -189,6 +191,7 @@ export class PairCacheWarmerService {
                     pairAddress,
                     hasDualFarms,
                 ),
+                this.pairSetterService.setTradesCount(pairAddress, tradesCount),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
