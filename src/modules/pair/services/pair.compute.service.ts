@@ -619,38 +619,20 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeTradesCount(pairAddress: string): Promise<number> {
-        let swapTxCount = 0;
         const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
 
         elasticQueryAdapter.condition.must = [
             QueryType.Match('receiver', pairAddress),
-            QueryType.Wildcard(
-                'data',
-                '*QDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzR*',
-            ),
+            QueryType.Should([
+                QueryType.Match('function', 'swapTokensFixedInput'),
+                QueryType.Match('function', 'swapTokensFixedOutput'),
+            ]),
         ];
 
-        let txCount = await this.elasticService.getCount(
+        return await this.elasticService.getCount(
             'transactions',
             elasticQueryAdapter,
         );
-        swapTxCount += txCount;
-
-        elasticQueryAdapter.condition.must = [
-            QueryType.Match('receiver', pairAddress),
-            QueryType.Wildcard(
-                'data',
-                '*QDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDRmNzU3NDcwNzU3NE*',
-            ),
-        ];
-
-        txCount = await this.elasticService.getCount(
-            'transactions',
-            elasticQueryAdapter,
-        );
-        swapTxCount += txCount;
-
-        return swapTxCount;
     }
 
     @ErrorLoggerAsync({
