@@ -18,6 +18,8 @@ import { farmsAddresses } from 'src/utils/farm.utils';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { ElasticService } from 'src/helpers/elastic.service';
+import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -35,6 +37,7 @@ export class PairComputeService implements IPairComputeService {
         private readonly farmAbi: FarmAbiFactory,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly stakingProxyAbiService: StakingProxyAbiService,
+        private readonly elasticService: ElasticService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -599,5 +602,52 @@ export class PairComputeService implements IPairComputeService {
         );
 
         return pairAddresses.includes(pairAddress);
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async tradesCount(pairAddress: string): Promise<number> {
+        return await this.computeTradesCount(pairAddress);
+    }
+
+    async computeTradesCount(pairAddress: string): Promise<number> {
+        let swapTxCount = 0;
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match('receiver', pairAddress),
+            QueryType.Wildcard(
+                'data',
+                '*QDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzR*',
+            ),
+        ];
+
+        let txCount = await this.elasticService.getCount(
+            'transactions',
+            elasticQueryAdapter,
+        );
+        swapTxCount += txCount;
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match('receiver', pairAddress),
+            QueryType.Wildcard(
+                'data',
+                '*QDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDRmNzU3NDcwNzU3NE*',
+            ),
+        ];
+
+        txCount = await this.elasticService.getCount(
+            'transactions',
+            elasticQueryAdapter,
+        );
+        swapTxCount += txCount;
+
+        return swapTxCount;
     }
 }

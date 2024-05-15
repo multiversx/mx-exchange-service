@@ -144,6 +144,9 @@ export class PairModel {
     @Field()
     hasDualFarms: boolean;
 
+    @Field()
+    tradesCount: number;
+
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);
     }

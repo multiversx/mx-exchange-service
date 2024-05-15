@@ -219,6 +219,11 @@ export class PairResolver {
         return this.pairCompute.hasDualFarms(parent.address);
     }
 
+    @ResolveField()
+    async tradesCount(@Parent() parent: PairModel): Promise<number> {
+        return this.pairCompute.tradesCount(parent.address);
+    }
+
     @Query(() => String)
     async getAmountOut(
         @Args('pairAddress') pairAddress: string,
