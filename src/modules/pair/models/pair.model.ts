@@ -147,6 +147,9 @@ export class PairModel {
     @Field()
     tradesCount: number;
 
+    @Field()
+    deployedAt: number;
+
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);
     }

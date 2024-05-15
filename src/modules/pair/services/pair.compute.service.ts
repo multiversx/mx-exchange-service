@@ -20,6 +20,7 @@ import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-conf
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -38,6 +39,7 @@ export class PairComputeService implements IPairComputeService {
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly stakingProxyAbiService: StakingProxyAbiService,
         private readonly elasticService: ElasticService,
+        private readonly apiService: MXApiService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -649,5 +651,24 @@ export class PairComputeService implements IPairComputeService {
         swapTxCount += txCount;
 
         return swapTxCount;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async deployedAt(pairAddress: string): Promise<number> {
+        return await this.computeDeployedAt(pairAddress);
+    }
+
+    async computeDeployedAt(pairAddress: string): Promise<number> {
+        const { deployedAt } = await this.apiService.getAccountStats(
+            pairAddress,
+        );
+        return deployedAt ?? undefined;
     }
 }

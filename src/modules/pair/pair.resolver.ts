@@ -224,6 +224,11 @@ export class PairResolver {
         return this.pairCompute.tradesCount(parent.address);
     }
 
+    @ResolveField()
+    async deployedAt(@Parent() parent: PairModel): Promise<number> {
+        return this.pairCompute.deployedAt(parent.address);
+    }
+
     @Query(() => String)
     async getAmountOut(
         @Args('pairAddress') pairAddress: string,
