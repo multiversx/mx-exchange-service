@@ -19,7 +19,7 @@ import { UserAuthResult } from '../auth/user.auth.result';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { SetLocalRoleOwnerArgs } from './models/router.args';
-import { PairFilterArgs } from './models/filter.args';
+import { PairFilterArgs, PairPaginationArgs } from './models/filter.args';
 import { RouterAbiService } from './services/router.abi.service';
 import { RouterComputeService } from './services/router.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
@@ -148,10 +148,10 @@ export class RouterResolver {
 
     @Query(() => [PairModel])
     async pairs(
-        @Args() page: GetPairsArgs,
+        @Args() page: PairPaginationArgs,
         @Args() filter: PairFilterArgs,
     ): Promise<PairModel[]> {
-        return this.routerService.getAllPairs(page.offset, page.limit, filter);
+        return this.routerService.getAllPairs(page, filter);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

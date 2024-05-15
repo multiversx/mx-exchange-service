@@ -3,7 +3,12 @@ import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../../config';
 import { PairModel } from '../../pair/models/pair.model';
 import { PairMetadata } from '../models/pair.metadata.model';
-import { PairFilterArgs } from '../models/filter.args';
+import {
+    PairFilterArgs,
+    PairPaginationArgs,
+    PairSortOrder,
+    PairSortableFields,
+} from '../models/filter.args';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from './router.abi.service';
@@ -31,8 +36,7 @@ export class RouterService {
     }
 
     async getAllPairs(
-        offset: number,
-        limit: number,
+        pagination: PairPaginationArgs,
         pairFilter: PairFilterArgs,
     ): Promise<PairModel[]> {
         let pairsMetadata = await this.routerAbi.pairsMetadata();
@@ -58,6 +62,30 @@ export class RouterService {
             pairFilter,
             pairsMetadata,
         );
+        pairsMetadata = await this.filterPairsByTradesCount(
+            pairFilter,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByHasFarms(
+            pairFilter,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByHasDualFarms(
+            pairFilter,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByDeployedAt(
+            pairFilter,
+            pairsMetadata,
+        );
+
+        if (pagination.sortField) {
+            pairsMetadata = await this.sortPairs(
+                pairsMetadata,
+                pagination.sortField,
+                pagination.sortOrder,
+            );
+        }
 
         return pairsMetadata
             .map(
@@ -66,7 +94,7 @@ export class RouterService {
                         address: pairMetadata.address,
                     }),
             )
-            .slice(offset, limit);
+            .slice(pagination.offset, pagination.offset + pagination.limit);
     }
 
     private filterPairsByAddress(
@@ -226,8 +254,153 @@ export class RouterService {
         });
     }
 
+    private async filterPairsByTradesCount(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.minTradesCount) {
+            return pairsMetadata;
+        }
+
+        const pairsTradesCount = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairCompute.tradesCount(pairMetadata.address),
+            ),
+        );
+
+        return pairsMetadata.filter(
+            (_, index) => pairsTradesCount[index] >= pairFilter.minTradesCount,
+        );
+    }
+
+    private async filterPairsByHasFarms(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (
+            typeof pairFilter.hasFarms === 'undefined' ||
+            pairFilter.hasFarms === null
+        ) {
+            return pairsMetadata;
+        }
+
+        const pairsHasFarms = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairCompute.hasFarms(pairMetadata.address),
+            ),
+        );
+
+        return pairsMetadata.filter(
+            (_, index) => pairsHasFarms[index] === pairFilter.hasFarms,
+        );
+    }
+
+    private async filterPairsByHasDualFarms(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (
+            typeof pairFilter.hasDualFarms === 'undefined' ||
+            pairFilter.hasDualFarms === null
+        ) {
+            return pairsMetadata;
+        }
+
+        const pairsHasDualFarms = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairCompute.hasDualFarms(pairMetadata.address),
+            ),
+        );
+
+        return pairsMetadata.filter(
+            (_, index) => pairsHasDualFarms[index] === pairFilter.hasDualFarms,
+        );
+    }
+
+    private async filterPairsByDeployedAt(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.minDeployedAt) {
+            return pairsMetadata;
+        }
+
+        const pairsDeployedAt = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairCompute.deployedAt(pairMetadata.address),
+            ),
+        );
+
+        return pairsMetadata.filter(
+            (_, index) => pairsDeployedAt[index] >= pairFilter.minDeployedAt,
+        );
+    }
+
     async requireOwner(sender: string) {
         if ((await this.routerAbi.owner()) !== sender)
             throw new Error('You are not the owner.');
+    }
+
+    private async sortPairs(
+        pairsMetadata: PairMetadata[],
+        sortField: string,
+        sortOrder: string,
+    ): Promise<PairMetadata[]> {
+        let sortFieldData = [];
+
+        switch (sortField) {
+            case PairSortableFields.DEPLOYED_AT:
+                sortFieldData = await Promise.all(
+                    pairsMetadata.map((pair) =>
+                        this.pairCompute.deployedAt(pair.address),
+                    ),
+                );
+                break;
+            case PairSortableFields.FEES_24:
+                sortFieldData = await Promise.all(
+                    pairsMetadata.map((pair) =>
+                        this.pairCompute.feesUSD(pair.address, '24h'),
+                    ),
+                );
+                break;
+            case PairSortableFields.TRADES_COUNT:
+                sortFieldData = await Promise.all(
+                    pairsMetadata.map((pair) =>
+                        this.pairCompute.tradesCount(pair.address),
+                    ),
+                );
+                break;
+            case PairSortableFields.TVL:
+                sortFieldData = await Promise.all(
+                    pairsMetadata.map((pair) =>
+                        this.pairCompute.lockedValueUSD(pair.address),
+                    ),
+                );
+                break;
+            case PairSortableFields.VOLUME_24:
+                sortFieldData = await Promise.all(
+                    pairsMetadata.map((pair) =>
+                        this.pairCompute.volumeUSD(pair.address, '24h'),
+                    ),
+                );
+                break;
+            default:
+                break;
+        }
+
+        const combined = pairsMetadata.map((pair, index) => ({
+            pair,
+            sortValue: new BigNumber(sortFieldData[index]),
+        }));
+
+        combined.sort((a, b) => {
+            if (sortOrder === PairSortOrder.ASC) {
+                return a.sortValue.comparedTo(b.sortValue);
+            }
+
+            return b.sortValue.comparedTo(a.sortValue);
+        });
+
+        return combined.map((item) => item.pair);
     }
 }
