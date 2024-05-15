@@ -393,4 +393,13 @@ export class PairSetterService extends GenericSetterService {
             CacheTtlInfo.ContractState.localTtl,
         );
     }
+
+    async setDeployedAt(pairAddress: string, value: number): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('deployedAt', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
 }
