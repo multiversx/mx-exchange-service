@@ -24,6 +24,9 @@ import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { PairAbiService } from '../services/pair.abi.service';
 import { ElasticService } from 'src/helpers/elastic.service';
+import { FarmAbiFactoryServiceProvider } from 'src/modules/farm/mocks/farm.abi.factory.mock';
+import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
+import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -51,6 +54,9 @@ describe('PairService', () => {
                 ApiConfigService,
                 MXApiServiceProvider,
                 ElasticService,
+                FarmAbiFactoryServiceProvider,
+                RemoteConfigGetterServiceProvider,
+                StakingProxyAbiServiceProvider,
             ],
         }).compile();
     });
