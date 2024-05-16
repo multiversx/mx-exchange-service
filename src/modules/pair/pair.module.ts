@@ -13,11 +13,10 @@ import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
 import { CommonAppModule } from 'src/common.app.module';
-import { FarmModule } from '../farm/farm.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { ElasticService } from 'src/helpers/elastic.service';
-import { FarmAbiServiceV2 } from '../farm/v2/services/farm.v2.abi.service';
+import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -29,7 +28,7 @@ import { FarmAbiServiceV2 } from '../farm/v2/services/farm.v2.abi.service';
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
         RemoteConfigModule,
-        FarmModule,
+        FarmModuleV2,
         StakingProxyModule,
     ],
     providers: [
@@ -40,7 +39,6 @@ import { FarmAbiServiceV2 } from '../farm/v2/services/farm.v2.abi.service';
         PairTransactionService,
         PairResolver,
         ElasticService,
-        FarmAbiServiceV2,
     ],
     exports: [
         PairService,
