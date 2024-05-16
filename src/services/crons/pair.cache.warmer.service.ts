@@ -129,7 +129,7 @@ export class PairCacheWarmerService {
         }
     }
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cachePairsInfo', verbose: true })
     async cachePairsInfo(): Promise<void> {
         const pairsAddresses = await this.routerAbi.pairsAddress();

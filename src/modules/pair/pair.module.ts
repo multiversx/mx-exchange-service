@@ -17,6 +17,7 @@ import { FarmModule } from '../farm/farm.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { ElasticService } from 'src/helpers/elastic.service';
+import { FarmAbiServiceV2 } from '../farm/v2/services/farm.v2.abi.service';
 @Module({
     imports: [
         CommonAppModule,
@@ -39,6 +40,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
         PairTransactionService,
         PairResolver,
         ElasticService,
+        FarmAbiServiceV2,
     ],
     exports: [
         PairService,
