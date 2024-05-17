@@ -20,7 +20,7 @@ import { WeeklyRewardsSplittingSetterService } from './services/weekly.rewarrds.
         MXCommunicationModule,
         EnergyModule,
         forwardRef(() => RouterModule),
-        PairModule,
+        forwardRef(() => PairModule),
         TokenModule,
         forwardRef(() => FarmModuleV2),
         forwardRef(() => FeesCollectorModule),
