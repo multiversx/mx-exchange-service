@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PairModule } from 'src/modules/pair/pair.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
@@ -10,7 +10,12 @@ import { ContextModule } from 'src/services/context/context.module';
 import { FarmCustomService } from './services/farm.custom.service';
 
 @Module({
-    imports: [MXCommunicationModule, ContextModule, TokenModule, PairModule],
+    imports: [
+        MXCommunicationModule,
+        ContextModule,
+        TokenModule,
+        forwardRef(() => PairModule),
+    ],
     providers: [
         FarmCustomService,
         FarmCustomAbiService,

@@ -14,6 +14,15 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
+import { farmsAddresses } from 'src/utils/farm.utils';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
+import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { ElasticService } from 'src/helpers/elastic.service';
+import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { TransactionStatus } from 'src/utils/transaction.utils';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -28,6 +37,11 @@ export class PairComputeService implements IPairComputeService {
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
+        private readonly farmAbi: FarmAbiServiceV2,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly stakingProxyAbiService: StakingProxyAbiService,
+        private readonly elasticService: ElasticService,
+        private readonly apiService: MXApiService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -542,5 +556,102 @@ export class PairComputeService implements IPairComputeService {
                 .multipliedBy(secondTokenPrice)
                 .multipliedBy(firstTokenPriceUSD);
         }
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async hasFarms(pairAddress: string): Promise<boolean> {
+        return await this.computeHasFarms(pairAddress);
+    }
+
+    async computeHasFarms(pairAddress: string): Promise<boolean> {
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
+        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
+
+        const farmingTokenIDs = await Promise.all(
+            addresses.map((address) => this.farmAbi.farmingTokenID(address)),
+        );
+
+        return farmingTokenIDs.includes(lpTokenID);
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async hasDualFarms(pairAddress: string): Promise<boolean> {
+        return await this.computeHasDualFarms(pairAddress);
+    }
+
+    async computeHasDualFarms(pairAddress: string): Promise<boolean> {
+        const stakingProxyAddresses =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
+
+        const pairAddresses = await Promise.all(
+            stakingProxyAddresses.map((address) =>
+                this.stakingProxyAbiService.pairAddress(address),
+            ),
+        );
+
+        return pairAddresses.includes(pairAddress);
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async tradesCount(pairAddress: string): Promise<number> {
+        return await this.computeTradesCount(pairAddress);
+    }
+
+    async computeTradesCount(pairAddress: string): Promise<number> {
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match('receiver', pairAddress),
+            QueryType.Match('status', TransactionStatus.success),
+            QueryType.Should([
+                QueryType.Match('function', 'swapTokensFixedInput'),
+                QueryType.Match('function', 'swapTokensFixedOutput'),
+            ]),
+        ];
+
+        return await this.elasticService.getCount(
+            'transactions',
+            elasticQueryAdapter,
+        );
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async deployedAt(pairAddress: string): Promise<number> {
+        return await this.computeDeployedAt(pairAddress);
+    }
+
+    async computeDeployedAt(pairAddress: string): Promise<number> {
+        const { deployedAt } = await this.apiService.getAccountStats(
+            pairAddress,
+        );
+        return deployedAt ?? undefined;
     }
 }
