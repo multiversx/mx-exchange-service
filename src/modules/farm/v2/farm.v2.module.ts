@@ -18,7 +18,7 @@ import { FarmTransactionResolverV2 } from './farm.v2.transaction.resolver';
     imports: [
         ContextModule,
         MXCommunicationModule,
-        PairModule,
+        forwardRef(() => PairModule),
         TokenModule,
         EnergyModule,
         forwardRef(() => WeekTimekeepingModule),

@@ -21,7 +21,7 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         MXCommunicationModule,
         EnergyModule,
         forwardRef(() => RouterModule),
-        PairModule,
+        forwardRef(() => PairModule),
         TokenModule,
         forwardRef(() => FarmModuleV2),
         forwardRef(() => FeesCollectorModule),

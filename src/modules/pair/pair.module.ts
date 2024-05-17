@@ -14,6 +14,10 @@ import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
 import { CommonAppModule } from 'src/common.app.module';
 import { ComposableTasksModule } from '../composable-tasks/composable.tasks.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
+import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
+import { ElasticService } from 'src/helpers/elastic.service';
+import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -25,6 +29,9 @@ import { ComposableTasksModule } from '../composable-tasks/composable.tasks.modu
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
         ComposableTasksModule,
+        RemoteConfigModule,
+        FarmModuleV2,
+        StakingProxyModule,
     ],
     providers: [
         PairService,
@@ -33,6 +40,7 @@ import { ComposableTasksModule } from '../composable-tasks/composable.tasks.modu
         PairAbiService,
         PairTransactionService,
         PairResolver,
+        ElasticService,
     ],
     exports: [
         PairService,
