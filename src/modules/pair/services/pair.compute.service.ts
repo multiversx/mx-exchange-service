@@ -15,12 +15,14 @@ import { IPairComputeService } from '../interfaces';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { farmsAddresses } from 'src/utils/farm.utils';
-import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { TransactionStatus } from 'src/utils/transaction.utils';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -35,7 +37,7 @@ export class PairComputeService implements IPairComputeService {
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
-        private readonly farmAbi: FarmAbiFactory,
+        private readonly farmAbi: FarmAbiServiceV2,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly stakingProxyAbiService: StakingProxyAbiService,
         private readonly elasticService: ElasticService,
@@ -569,13 +571,11 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeHasFarms(pairAddress: string): Promise<boolean> {
-        const addresses: string[] = farmsAddresses(['v2']);
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
         const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
 
         const farmingTokenIDs = await Promise.all(
-            addresses.map((address) =>
-                this.farmAbi.useAbi(address).farmingTokenID(address),
-            ),
+            addresses.map((address) => this.farmAbi.farmingTokenID(address)),
         );
 
         return farmingTokenIDs.includes(lpTokenID);
@@ -594,11 +594,11 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeHasDualFarms(pairAddress: string): Promise<boolean> {
-        const stakingAddresses =
+        const stakingProxyAddresses =
             await this.remoteConfigGetterService.getStakingProxyAddresses();
 
         const pairAddresses = await Promise.all(
-            stakingAddresses.map((address) =>
+            stakingProxyAddresses.map((address) =>
                 this.stakingProxyAbiService.pairAddress(address),
             ),
         );
@@ -623,6 +623,7 @@ export class PairComputeService implements IPairComputeService {
 
         elasticQueryAdapter.condition.must = [
             QueryType.Match('receiver', pairAddress),
+            QueryType.Match('status', TransactionStatus.success),
             QueryType.Should([
                 QueryType.Match('function', 'swapTokensFixedInput'),
                 QueryType.Match('function', 'swapTokensFixedOutput'),
