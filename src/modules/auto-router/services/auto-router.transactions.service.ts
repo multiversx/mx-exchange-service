@@ -43,8 +43,17 @@ export class AutoRouterTransactionService {
 
         if (args.tokenInID === mxConfig.EGLDIdentifier) {
             return [
-                await this.wrapEgldAndMultiSwapFixedInputTransaction(
-                    args.intermediaryAmounts[0],
+                await this.wrapEgldAndMultiSwapTransaction(
+                    amountIn.integerValue().toFixed(),
+                    args,
+                ),
+            ];
+        }
+
+        if (args.tokenOutID === mxConfig.EGLDIdentifier) {
+            return [
+                await this.multiSwapAndUnwrapEgldTransaction(
+                    amountIn.integerValue().toFixed(),
                     args,
                 ),
             ];
@@ -199,45 +208,15 @@ export class AutoRouterTransactionService {
         return swaps;
     }
 
-    async wrapEgldAndMultiSwapFixedInputTransaction(
+    async wrapEgldAndMultiSwapTransaction(
         value: string,
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel> {
-        const swaps: BytesValue[] = [];
-
-        const intermediaryTolerance = args.tolerance / args.addressRoute.length;
-
-        for (const [index, address] of args.addressRoute.entries()) {
-            const intermediaryToleranceMultiplier =
-                args.addressRoute.length - index;
-
-            const toleranceAmount = new BigNumber(
-                args.intermediaryAmounts[index + 1],
-            ).multipliedBy(
-                intermediaryToleranceMultiplier * intermediaryTolerance,
-            );
-
-            const amountOutMin = new BigNumber(
-                args.intermediaryAmounts[index + 1],
-            )
-                .minus(toleranceAmount)
-                .integerValue();
-
-            swaps.push(
-                ...[
-                    new BytesValue(
-                        Buffer.from(Address.fromString(address).hex(), 'hex'),
-                    ),
-                    BytesValue.fromUTF8(args.tokenRoute[index + 1]),
-                    new BytesValue(
-                        Buffer.from(
-                            decimalToHex(new BigNumber(amountOutMin)),
-                            'hex',
-                        ),
-                    ),
-                ],
-            );
-        }
+        const typedArgs =
+            args.swapType === SWAP_TYPE.fixedInput
+                ? this.multiPairFixedInputSwaps(args)
+                : this.multiPairFixedOutputSwaps(args);
+        const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
 
         return this.composeTasksTransactionService.getComposeTasksTransaction(
             new EsdtTokenPayment({
@@ -263,5 +242,73 @@ export class AutoRouterTransactionService {
                 },
             ],
         );
+    }
+
+    async multiSwapAndUnwrapEgldTransaction(
+        value: string,
+        args: MultiSwapTokensArgs,
+    ): Promise<TransactionModel> {
+        const typedArgs =
+            args.swapType === SWAP_TYPE.fixedInput
+                ? this.multiPairFixedInputSwaps(args)
+                : this.multiPairFixedOutputSwaps(args);
+        const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
+
+        return this.composeTasksTransactionService.getComposeTasksTransaction(
+            new EsdtTokenPayment({
+                tokenIdentifier: args.tokenRoute[0],
+                tokenNonce: 0,
+                amount: value,
+            }),
+            new EgldOrEsdtTokenPayment({
+                tokenIdentifier: 'EGLD',
+                nonce: 0,
+                amount: args.intermediaryAmounts[
+                    args.intermediaryAmounts.length - 1
+                ],
+            }),
+            [
+                {
+                    type: ComposableTaskType.ROUTER_SWAP,
+                    arguments: swaps,
+                },
+                {
+                    type: ComposableTaskType.UNWRAP_EGLD,
+                    arguments: [],
+                },
+            ],
+        );
+    }
+
+    private convertMultiPairSwapsToBytesValues(
+        args: TypedValue[],
+    ): BytesValue[] {
+        if (args.length % 4 !== 0) {
+            throw new Error('Invalid number of router swap arguments');
+        }
+
+        const swaps: BytesValue[] = [];
+
+        for (let index = 0; index <= args.length - 4; index += 4) {
+            const pairAddress = args[index];
+            const functionName = args[index + 1];
+            const tokenOutID = args[index + 2];
+            const amountOutMin = args[index + 3];
+
+            swaps.push(
+                new BytesValue(Buffer.from(pairAddress.valueOf().hex(), 'hex')),
+            );
+            swaps.push(BytesValue.fromUTF8(functionName.valueOf()));
+            swaps.push(BytesValue.fromUTF8(tokenOutID.valueOf()));
+            swaps.push(
+                new BytesValue(
+                    Buffer.from(
+                        decimalToHex(new BigNumber(amountOutMin.valueOf())),
+                        'hex',
+                    ),
+                ),
+            );
+        }
+        return swaps;
     }
 }
