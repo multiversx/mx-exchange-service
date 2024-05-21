@@ -19,10 +19,19 @@ import { UserAuthResult } from '../auth/user.auth.result';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { SetLocalRoleOwnerArgs } from './models/router.args';
-import { PairFilterArgs, PairPaginationArgs } from './models/filter.args';
+import {
+    PairFilterArgs,
+    PairPaginationArgs,
+    PairSortableFields,
+} from './models/filter.args';
 import { RouterAbiService } from './services/router.abi.service';
 import { RouterComputeService } from './services/router.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { PairsResponse } from '../pair/models/pairs.response';
+import ConnectionArgs, {
+    getPagingParameters,
+} from '../common/filters/connection.args';
+import PageResponse from '../common/page.response';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -152,6 +161,41 @@ export class RouterResolver {
         @Args() filter: PairFilterArgs,
     ): Promise<PairModel[]> {
         return this.routerService.getAllPairs(page, filter);
+    }
+
+    @Query(() => PairsResponse)
+    async filterablePairs(
+        @Args({ name: 'filters', type: () => PairFilterArgs, nullable: true })
+        filters: PairFilterArgs,
+        @Args({
+            name: 'pagination',
+            type: () => ConnectionArgs,
+            nullable: true,
+        })
+        pagination: ConnectionArgs,
+        @Args({
+            name: 'sorting',
+            type: () => PairSortableFields,
+            nullable: true,
+        })
+        sorting: PairSortableFields,
+    ): Promise<PairsResponse> {
+        const { limit, offset } = getPagingParameters(pagination);
+
+        const response = await this.routerService.getFilteredPairs(
+            offset,
+            limit,
+            filters,
+            sorting,
+        );
+
+        return PageResponse.mapResponse<PairModel>(
+            response?.items || [],
+            pagination,
+            response?.count || 0,
+            offset,
+            limit,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

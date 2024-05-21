@@ -15,6 +15,7 @@ import { RouterAbiService } from './router.abi.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import BigNumber from 'bignumber.js';
+import { CollectionType } from 'src/modules/common/collection.type';
 
 @Injectable()
 export class RouterService {
@@ -33,6 +34,68 @@ export class RouterService {
     async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
         const pairs = await this.routerAbi.pairsMetadata();
         return pairs.find((pair) => pair.address === pairAddress);
+    }
+
+    async getFilteredPairs(
+        // offset: number = 0,
+        // limit: number = 10,
+        offset = 0,
+        limit = 10,
+        filters: PairFilterArgs,
+        sorting: PairSortableFields,
+    ): Promise<CollectionType<PairModel>> {
+        let pairsMetadata = await this.routerAbi.pairsMetadata();
+        if (filters.issuedLpToken) {
+            pairsMetadata = await this.pairsByIssuedLpToken(pairsMetadata);
+        }
+
+        pairsMetadata = this.filterPairsByAddress(filters, pairsMetadata);
+        pairsMetadata = this.filterPairsByTokens(filters, pairsMetadata);
+        pairsMetadata = await this.filterPairsByState(filters, pairsMetadata);
+        pairsMetadata = await this.filterPairsByFeeState(
+            filters,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByVolume(filters, pairsMetadata);
+        pairsMetadata = await this.filterPairsByLockedValueUSD(
+            filters,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByTradesCount(
+            filters,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByHasFarms(
+            filters,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByHasDualFarms(
+            filters,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByDeployedAt(
+            filters,
+            pairsMetadata,
+        );
+
+        // if (sorting) {
+        //     pairsMetadata = await this.sortPairs(
+        //         pairsMetadata,
+        //         sorting,
+        //     );
+        // }
+
+        const pairs = pairsMetadata.map(
+            (pairMetadata) =>
+                new PairModel({
+                    address: pairMetadata.address,
+                }),
+        );
+
+        return new CollectionType({
+            count: pairs.length,
+            items: pairs.slice(offset, offset + limit),
+        });
     }
 
     async getAllPairs(
