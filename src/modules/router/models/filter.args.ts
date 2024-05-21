@@ -1,4 +1,4 @@
-import { ArgsType, Field, registerEnumType } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
 import { PaginationArgs } from 'src/modules/dex.model';
 
 export enum PairSortableFields {
@@ -17,7 +17,7 @@ export enum PairSortOrder {
 registerEnumType(PairSortableFields, { name: 'PairSortableFields' });
 registerEnumType(PairSortOrder, { name: 'PairSortOrder' });
 
-@ArgsType()
+@InputType()
 export class PairFilterArgs {
     @Field({ nullable: true })
     address: string;
@@ -45,7 +45,7 @@ export class PairFilterArgs {
     minDeployedAt: number;
 }
 
-@ArgsType()
+@InputType()
 export class PairPaginationArgs extends PaginationArgs {
     @Field(() => PairSortableFields, { nullable: true })
     sortField?: string;

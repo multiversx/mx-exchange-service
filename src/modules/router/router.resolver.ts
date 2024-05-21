@@ -157,8 +157,8 @@ export class RouterResolver {
 
     @Query(() => [PairModel])
     async pairs(
-        @Args() page: PairPaginationArgs,
-        @Args() filter: PairFilterArgs,
+        @Args('page') page: PairPaginationArgs,
+        @Args('filter') filter: PairFilterArgs,
     ): Promise<PairModel[]> {
         return this.routerService.getAllPairs(page, filter);
     }
