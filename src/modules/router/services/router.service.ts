@@ -5,7 +5,6 @@ import { PairModel } from '../../pair/models/pair.model';
 import { PairMetadata } from '../models/pair.metadata.model';
 import {
     PairFilterArgs,
-    PairPaginationArgs,
     PairSortOrder,
     PairSortableFields,
     PairSortingArgs,
@@ -81,7 +80,8 @@ export class RouterService {
     }
 
     async getAllPairs(
-        pagination: PairPaginationArgs,
+        offset: number,
+        limit: number,
         pairFilter: PairFilterArgs,
     ): Promise<PairModel[]> {
         let pairsMetadata = await this.routerAbi.pairsMetadata();
@@ -107,30 +107,6 @@ export class RouterService {
             pairFilter,
             pairsMetadata,
         );
-        pairsMetadata = await this.filterPairsByTradesCount(
-            pairFilter,
-            pairsMetadata,
-        );
-        pairsMetadata = await this.filterPairsByHasFarms(
-            pairFilter,
-            pairsMetadata,
-        );
-        pairsMetadata = await this.filterPairsByHasDualFarms(
-            pairFilter,
-            pairsMetadata,
-        );
-        pairsMetadata = await this.filterPairsByDeployedAt(
-            pairFilter,
-            pairsMetadata,
-        );
-
-        if (pagination.sortField) {
-            pairsMetadata = await this.sortPairs(
-                pairsMetadata,
-                pagination.sortField,
-                pagination.sortOrder,
-            );
-        }
 
         return pairsMetadata
             .map(
@@ -139,7 +115,7 @@ export class RouterService {
                         address: pairMetadata.address,
                     }),
             )
-            .slice(pagination.offset, pagination.offset + pagination.limit);
+            .slice(offset, offset + limit);
     }
 
     private filterPairsByAddress(
@@ -297,88 +273,6 @@ export class RouterService {
             const lockedValueUSD = new BigNumber(pairsLiquidityUSD[index]);
             return lockedValueUSD.gte(pairFilter.minLockedValueUSD);
         });
-    }
-
-    private async filterPairsByTradesCount(
-        pairFilter: PairFilterArgs,
-        pairsMetadata: PairMetadata[],
-    ): Promise<PairMetadata[]> {
-        if (!pairFilter.minTradesCount) {
-            return pairsMetadata;
-        }
-
-        const pairsTradesCount = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.tradesCount(pairMetadata.address),
-            ),
-        );
-
-        return pairsMetadata.filter(
-            (_, index) => pairsTradesCount[index] >= pairFilter.minTradesCount,
-        );
-    }
-
-    private async filterPairsByHasFarms(
-        pairFilter: PairFilterArgs,
-        pairsMetadata: PairMetadata[],
-    ): Promise<PairMetadata[]> {
-        if (
-            typeof pairFilter.hasFarms === 'undefined' ||
-            pairFilter.hasFarms === null
-        ) {
-            return pairsMetadata;
-        }
-
-        const pairsHasFarms = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.hasFarms(pairMetadata.address),
-            ),
-        );
-
-        return pairsMetadata.filter(
-            (_, index) => pairsHasFarms[index] === pairFilter.hasFarms,
-        );
-    }
-
-    private async filterPairsByHasDualFarms(
-        pairFilter: PairFilterArgs,
-        pairsMetadata: PairMetadata[],
-    ): Promise<PairMetadata[]> {
-        if (
-            typeof pairFilter.hasDualFarms === 'undefined' ||
-            pairFilter.hasDualFarms === null
-        ) {
-            return pairsMetadata;
-        }
-
-        const pairsHasDualFarms = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.hasDualFarms(pairMetadata.address),
-            ),
-        );
-
-        return pairsMetadata.filter(
-            (_, index) => pairsHasDualFarms[index] === pairFilter.hasDualFarms,
-        );
-    }
-
-    private async filterPairsByDeployedAt(
-        pairFilter: PairFilterArgs,
-        pairsMetadata: PairMetadata[],
-    ): Promise<PairMetadata[]> {
-        if (!pairFilter.minDeployedAt) {
-            return pairsMetadata;
-        }
-
-        const pairsDeployedAt = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.deployedAt(pairMetadata.address),
-            ),
-        );
-
-        return pairsMetadata.filter(
-            (_, index) => pairsDeployedAt[index] >= pairFilter.minDeployedAt,
-        );
     }
 
     async requireOwner(sender: string) {

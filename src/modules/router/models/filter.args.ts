@@ -35,23 +35,6 @@ export class PairFilterArgs {
     feeState: boolean;
     @Field({ nullable: true })
     minLockedValueUSD: number;
-    @Field({ nullable: true })
-    minTradesCount: number;
-    @Field({ nullable: true })
-    hasFarms: boolean;
-    @Field({ nullable: true })
-    hasDualFarms: boolean;
-    @Field({ nullable: true })
-    minDeployedAt: number;
-}
-
-@ArgsType()
-export class PairPaginationArgs extends PaginationArgs {
-    @Field(() => PairSortableFields, { nullable: true })
-    sortField?: string;
-
-    @Field(() => PairSortOrder, { defaultValue: PairSortOrder.ASC })
-    sortOrder: string;
 }
 
 @InputType()

@@ -21,8 +21,6 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { SetLocalRoleOwnerArgs } from './models/router.args';
 import {
     PairFilterArgs,
-    PairPaginationArgs,
-    PairSortableFields,
     PairSortingArgs,
     PairsFilter,
 } from './models/filter.args';
@@ -159,10 +157,10 @@ export class RouterResolver {
 
     @Query(() => [PairModel])
     async pairs(
-        @Args() page: PairPaginationArgs,
+        @Args() page: GetPairsArgs,
         @Args() filter: PairFilterArgs,
     ): Promise<PairModel[]> {
-        return this.routerService.getAllPairs(page, filter);
+        return this.routerService.getAllPairs(page.offset, page.limit, filter);
     }
 
     @Query(() => PairsResponse)
