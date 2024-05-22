@@ -1,5 +1,4 @@
 import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
-import { PaginationArgs } from 'src/modules/dex.model';
 
 export enum PairSortableFields {
     TRADES_COUNT = 'trades_count',

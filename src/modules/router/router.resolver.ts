@@ -155,7 +155,10 @@ export class RouterResolver {
         return this.routerabi.pairsAddress();
     }
 
-    @Query(() => [PairModel])
+    @Query(() => [PairModel], {
+        deprecationReason:
+            'New query (filterablePairs) following GraphQL "Connection" standard for pagination will be available soon.',
+    })
     async pairs(
         @Args() page: GetPairsArgs,
         @Args() filter: PairFilterArgs,
