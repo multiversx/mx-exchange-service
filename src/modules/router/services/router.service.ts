@@ -9,6 +9,7 @@ import {
     PairSortOrder,
     PairSortableFields,
     PairSortingArgs,
+    PairsFilter,
 } from '../models/filter.args';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
@@ -17,6 +18,8 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import BigNumber from 'bignumber.js';
 import { CollectionType } from 'src/modules/common/collection.type';
+import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
+import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 
 @Injectable()
 export class RouterService {
@@ -24,6 +27,7 @@ export class RouterService {
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly pairCompute: PairComputeService,
+        private readonly pairFilteringService: PairFilteringService,
     ) {}
 
     async getFactory(): Promise<FactoryModel> {
@@ -38,53 +42,30 @@ export class RouterService {
     }
 
     async getFilteredPairs(
-        // offset: number = 0,
-        // limit: number = 10,
-        offset = 0,
-        limit = 10,
-        filters: PairFilterArgs,
+        offset: number,
+        limit: number,
+        filters: PairsFilter,
         sorting: PairSortingArgs,
     ): Promise<CollectionType<PairModel>> {
         let pairsMetadata = await this.routerAbi.pairsMetadata();
-        if (filters.issuedLpToken) {
-            pairsMetadata = await this.pairsByIssuedLpToken(pairsMetadata);
+
+        const builder = new PairsMetadataBuilder(
+            pairsMetadata,
+            filters,
+            this.pairFilteringService,
+        );
+
+        await builder.applyAllFilters();
+
+        pairsMetadata = await builder.build();
+
+        if (sorting) {
+            pairsMetadata = await this.sortPairs(
+                pairsMetadata,
+                sorting.sortField,
+                sorting.sortOrder,
+            );
         }
-
-        pairsMetadata = this.filterPairsByAddress(filters, pairsMetadata);
-        pairsMetadata = this.filterPairsByTokens(filters, pairsMetadata);
-        pairsMetadata = await this.filterPairsByState(filters, pairsMetadata);
-        pairsMetadata = await this.filterPairsByFeeState(
-            filters,
-            pairsMetadata,
-        );
-        pairsMetadata = await this.filterPairsByVolume(filters, pairsMetadata);
-        pairsMetadata = await this.filterPairsByLockedValueUSD(
-            filters,
-            pairsMetadata,
-        );
-        pairsMetadata = await this.filterPairsByTradesCount(
-            filters,
-            pairsMetadata,
-        );
-        pairsMetadata = await this.filterPairsByHasFarms(
-            filters,
-            pairsMetadata,
-        );
-        pairsMetadata = await this.filterPairsByHasDualFarms(
-            filters,
-            pairsMetadata,
-        );
-        pairsMetadata = await this.filterPairsByDeployedAt(
-            filters,
-            pairsMetadata,
-        );
-
-        // if (sorting) {
-        //     pairsMetadata = await this.sortPairs(
-        //         pairsMetadata,
-        //         sorting,
-        //     );
-        // }
 
         const pairs = pairsMetadata.map(
             (pairMetadata) =>
