@@ -13,6 +13,9 @@ type PagingMeta =
     | { pagingType: 'none' };
 
 function checkPagingSanity(args: ConnectionArgs): PagingMeta {
+    if (!args) {
+        return { pagingType: 'none' };
+    }
     const { first = 0, last = 0, after, before } = args;
 
     const isForwardPaging = !!first || !!after;
@@ -46,6 +49,10 @@ const nextId = (cursor: ConnectionCursor) => getId(cursor) + 1;
 
 export function getPagingParameters(args: ConnectionArgs) {
     const meta = checkPagingSanity(args);
+
+    if (!args) {
+        args = new ConnectionArgs();
+    }
 
     switch (meta.pagingType) {
         case 'forward': {
@@ -89,25 +96,4 @@ export default class ConnectionArgs implements ConnectionArguments {
     @Max(100)
     @Field(() => Int, { nullable: true, description: 'Paginate last' })
     public last?: number;
-}
-
-@InputType()
-export class HistoryPagination {
-    @Field(() => Int, { nullable: true, description: 'Paginate first' })
-    public first?: number = 10;
-
-    @Field(() => Int, {
-        nullable: true,
-        description: 'Timestamp from where to start',
-    })
-    public timestamp?: number;
-}
-
-export class HistoryEdge<T> implements Edge<T> {
-    node: T;
-    cursor: string;
-
-    constructor(init?: Partial<HistoryEdge<T>>) {
-        Object.assign(this, init);
-    }
 }

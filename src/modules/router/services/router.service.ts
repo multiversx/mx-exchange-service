@@ -8,6 +8,7 @@ import {
     PairPaginationArgs,
     PairSortOrder,
     PairSortableFields,
+    PairSortingArgs,
 } from '../models/filter.args';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
@@ -42,7 +43,7 @@ export class RouterService {
         offset = 0,
         limit = 10,
         filters: PairFilterArgs,
-        sorting: PairSortableFields,
+        sorting: PairSortingArgs,
     ): Promise<CollectionType<PairModel>> {
         let pairsMetadata = await this.routerAbi.pairsMetadata();
         if (filters.issuedLpToken) {

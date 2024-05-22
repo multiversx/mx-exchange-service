@@ -23,6 +23,8 @@ import {
     PairFilterArgs,
     PairPaginationArgs,
     PairSortableFields,
+    PairSortingArgs,
+    PairsFilter,
 } from './models/filter.args';
 import { RouterAbiService } from './services/router.abi.service';
 import { RouterComputeService } from './services/router.compute.service';
@@ -157,16 +159,16 @@ export class RouterResolver {
 
     @Query(() => [PairModel])
     async pairs(
-        @Args('page') page: PairPaginationArgs,
-        @Args('filter') filter: PairFilterArgs,
+        @Args() page: PairPaginationArgs,
+        @Args() filter: PairFilterArgs,
     ): Promise<PairModel[]> {
         return this.routerService.getAllPairs(page, filter);
     }
 
     @Query(() => PairsResponse)
     async filterablePairs(
-        @Args({ name: 'filters', type: () => PairFilterArgs, nullable: true })
-        filters: PairFilterArgs,
+        @Args({ name: 'filters', type: () => PairsFilter, nullable: true })
+        filters: PairsFilter,
         @Args({
             name: 'pagination',
             type: () => ConnectionArgs,
@@ -175,10 +177,10 @@ export class RouterResolver {
         pagination: ConnectionArgs,
         @Args({
             name: 'sorting',
-            type: () => PairSortableFields,
+            type: () => PairSortingArgs,
             nullable: true,
         })
-        sorting: PairSortableFields,
+        sorting: PairSortingArgs,
     ): Promise<PairsResponse> {
         const { limit, offset } = getPagingParameters(pagination);
 
@@ -191,7 +193,7 @@ export class RouterResolver {
 
         return PageResponse.mapResponse<PairModel>(
             response?.items || [],
-            pagination,
+            pagination ?? new ConnectionArgs(),
             response?.count || 0,
             offset,
             limit,
