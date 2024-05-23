@@ -1,4 +1,4 @@
-import { ArgsType, Field, InputType } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
 import { SortingOrder } from 'src/modules/common/page.data';
 
 export enum TokensSortableFields {
@@ -8,6 +8,8 @@ export enum TokensSortableFields {
     PREVIOUS_24_VOLUME = 'previous_24h_volume',
     LIQUIDITY = 'liquidity',
 }
+
+registerEnumType(TokensSortableFields, { name: 'TokensSortableFields' });
 
 @ArgsType()
 export class TokensFiltersArgs {
