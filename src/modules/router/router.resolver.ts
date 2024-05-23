@@ -157,7 +157,7 @@ export class RouterResolver {
 
     @Query(() => [PairModel], {
         deprecationReason:
-            'New query (filterablePairs) following GraphQL "Connection" standard for pagination will be available soon.',
+            'New query (filteredPairs) following GraphQL "Connection" standard for pagination will be available soon.',
     })
     async pairs(
         @Args() page: GetPairsArgs,
@@ -167,7 +167,7 @@ export class RouterResolver {
     }
 
     @Query(() => PairsResponse)
-    async filterablePairs(
+    async filteredPairs(
         @Args({ name: 'filters', type: () => PairsFilter, nullable: true })
         filters: PairsFilter,
         @Args({

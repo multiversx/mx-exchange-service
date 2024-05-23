@@ -1,7 +1,7 @@
 import * as Relay from 'graphql-relay';
 import { ObjectType, Field } from '@nestjs/graphql';
 import { Type } from '@nestjs/common';
-import PageData from './page.data';
+import PageData from '../modules/common/page.data';
 
 const typeMap = {};
 export default function relayTypes<T>(type: Type<T>): any {

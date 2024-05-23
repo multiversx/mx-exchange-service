@@ -1,7 +1,6 @@
 import {
     ConnectionArguments,
     ConnectionCursor,
-    Edge,
     fromGlobalId,
 } from 'graphql-relay';
 import { Field, Int, InputType } from '@nestjs/graphql';

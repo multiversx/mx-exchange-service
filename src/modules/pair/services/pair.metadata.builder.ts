@@ -44,19 +44,19 @@ export class PairsMetadataBuilder {
     }
 
     async filterByAddress(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = this.filteringService.pairsByAddress(
+        this.pairsMetadata = await this.filteringService.pairsByAddress(
             this.filters,
             this.pairsMetadata,
         );
-        return await Promise.resolve(this);
+        return this;
     }
 
     async filterByTokens(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = this.filteringService.pairsByTokens(
+        this.pairsMetadata = await this.filteringService.pairsByTokens(
             this.filters,
             this.pairsMetadata,
         );
-        return await Promise.resolve(this);
+        return this;
     }
 
     async filterByState(): Promise<PairsMetadataBuilder> {

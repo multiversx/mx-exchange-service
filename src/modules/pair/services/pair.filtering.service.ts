@@ -44,22 +44,22 @@ export class PairFilteringService {
         return filteredPairsMetadata;
     }
 
-    pairsByAddress(
+    async pairsByAddress(
         pairFilter: PairFilterArgs | PairsFilter,
         pairsMetadata: PairMetadata[],
-    ): PairMetadata[] {
+    ): Promise<PairMetadata[]> {
         if (pairFilter.address) {
             pairsMetadata = pairsMetadata.filter(
                 (pair) => pairFilter.address === pair.address,
             );
         }
-        return pairsMetadata;
+        return await Promise.resolve(pairsMetadata);
     }
 
-    pairsByTokens(
+    async pairsByTokens(
         pairFilter: PairFilterArgs | PairsFilter,
         pairsMetadata: PairMetadata[],
-    ): PairMetadata[] {
+    ): Promise<PairMetadata[]> {
         if (pairFilter.firstTokenID) {
             if (pairFilter.secondTokenID) {
                 pairsMetadata = pairsMetadata.filter(
@@ -79,7 +79,7 @@ export class PairFilteringService {
                 (pair) => pairFilter.secondTokenID === pair.secondTokenID,
             );
         }
-        return pairsMetadata;
+        return await Promise.resolve(pairsMetadata);
     }
 
     async pairsByState(
