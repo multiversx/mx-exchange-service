@@ -1,6 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { EsdtToken } from '../models/esdtToken.model';
-import { TokensFiltersArgs } from '../models/tokens.filter.args';
+import {
+    TokenSortingArgs,
+    TokensFilter,
+    TokensFiltersArgs,
+    TokensSortableFields,
+} from '../models/tokens.filter.args';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenRepositoryService } from './token.repository.service';
@@ -10,6 +15,10 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { NftCollection } from '../models/nftCollection.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CollectionType } from 'src/modules/common/collection.type';
+import { TokenComputeService } from './token.compute.service';
+import BigNumber from 'bignumber.js';
+import { SortingOrder } from 'src/modules/common/page.data';
 
 @Injectable()
 export class TokenService {
@@ -19,6 +28,8 @@ export class TokenService {
         private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
         protected readonly cachingService: CacheService,
+        @Inject(forwardRef(() => TokenComputeService))
+        private readonly tokenCompute: TokenComputeService,
     ) {}
 
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
@@ -42,6 +53,45 @@ export class TokenService {
         }
 
         return tokens;
+    }
+
+    async getFilteredTokens(
+        offset: number,
+        limit: number,
+        filters: TokensFilter,
+        sorting: TokenSortingArgs,
+    ): Promise<CollectionType<EsdtToken>> {
+        let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
+
+        if (filters.identifiers && filters.identifiers.length > 0) {
+            tokenIDs = tokenIDs.filter((tokenID) =>
+                filters.identifiers.includes(tokenID),
+            );
+        }
+
+        let tokens = await Promise.all(
+            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
+        );
+
+        if (filters.type) {
+            for (const token of tokens) {
+                token.type = await this.getEsdtTokenType(token.identifier);
+            }
+            tokens = tokens.filter((token) => token.type === filters.type);
+        }
+
+        if (sorting) {
+            tokens = await this.sortTokens(
+                tokens,
+                sorting.sortField,
+                sorting.sortOrder,
+            );
+        }
+
+        return new CollectionType({
+            count: tokens.length,
+            items: tokens.slice(offset, offset + limit),
+        });
     }
 
     @ErrorLoggerAsync({
@@ -139,5 +189,52 @@ export class TokenService {
             }),
         );
         return [...new Set(tokenIDs)];
+    }
+
+    private async sortTokens(
+        tokens: EsdtToken[],
+        sortField: string,
+        sortOrder: string,
+    ): Promise<EsdtToken[]> {
+        let sortFieldData = [];
+
+        switch (sortField) {
+            case TokensSortableFields.PRICE:
+                sortFieldData = await Promise.all(
+                    tokens.map((token) =>
+                        this.tokenCompute.tokenPriceDerivedUSD(
+                            token.identifier,
+                        ),
+                    ),
+                );
+                break;
+            case TokensSortableFields.PREVIOUS_24H_PRICE:
+                sortFieldData = await Promise.all(
+                    tokens.map((token) =>
+                        this.tokenCompute.tokenPrevious24hPrice(
+                            token.identifier,
+                        ),
+                    ),
+                );
+                break;
+
+            default:
+                break;
+        }
+
+        const combined = tokens.map((token, index) => ({
+            token,
+            sortValue: new BigNumber(sortFieldData[index]),
+        }));
+
+        combined.sort((a, b) => {
+            if (sortOrder === SortingOrder.ASC) {
+                return a.sortValue.comparedTo(b.sortValue);
+            }
+
+            return b.sortValue.comparedTo(a.sortValue);
+        });
+
+        return combined.map((item) => item.token);
     }
 }
