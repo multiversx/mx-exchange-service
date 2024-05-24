@@ -44,6 +44,28 @@ export class ComposableTasksTransactionService {
         tokenOut: EgldOrEsdtTokenPayment,
         tasks: ComposableTask[],
     ): Promise<TransactionModel> {
+        let gasLimit: number = gasConfig.composableTasks.default;
+
+        for (const task of tasks) {
+            switch (task.type) {
+                case ComposableTaskType.WRAP_EGLD:
+                    gasLimit += gasConfig.wrapeGLD;
+                    break;
+                case ComposableTaskType.UNWRAP_EGLD:
+                    gasLimit += gasConfig.wrapeGLD;
+                    break;
+                case ComposableTaskType.SWAP:
+                    gasLimit +=
+                        gasConfig.pairs.swapTokensFixedOutput.withFeeSwap;
+                case ComposableTaskType.ROUTER_SWAP:
+                    const routes = Math.trunc(task.arguments.length / 4);
+                    gasLimit +=
+                        routes * gasConfig.router.multiPairSwapMultiplier;
+                default:
+                    break;
+            }
+        }
+
         const contract = await this.mxProxy.getComposableTasksSmartContract();
 
         let interaction = contract.methodsExplicit
@@ -61,7 +83,7 @@ export class ComposableTasksTransactionService {
                 ]),
                 ...this.getRawTasks(tasks),
             ])
-            .withGasLimit(gasConfig.composableTasks.default)
+            .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID);
 
         switch (payment.tokenIdentifier) {
