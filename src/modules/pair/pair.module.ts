@@ -18,6 +18,7 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
+import { PairFilteringService } from './services/pair.filtering.service';
 @Module({
     imports: [
         CommonAppModule,
@@ -41,12 +42,14 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
         PairTransactionService,
         PairResolver,
         ElasticService,
+        PairFilteringService,
     ],
     exports: [
         PairService,
         PairSetterService,
         PairComputeService,
         PairAbiService,
+        PairFilteringService,
     ],
 })
 export class PairModule {}
