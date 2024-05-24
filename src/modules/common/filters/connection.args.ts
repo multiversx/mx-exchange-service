@@ -20,7 +20,9 @@ function checkPagingSanity(args: ConnectionArgs): PagingMeta {
     const isForwardPaging = !!first || !!after;
     const isBackwardPaging = !!last || !!before;
     if (isForwardPaging && isBackwardPaging) {
-        throw new Error('Relay pagination cannot be forwards AND backwards!');
+        throw new Error(
+            'Relay pagination cannot be both forward and backward!',
+        );
     }
     if ((isForwardPaging && before) || (isBackwardPaging && after)) {
         throw new Error('Paging must use either first/after or last/before!');
