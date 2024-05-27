@@ -3,9 +3,10 @@ import { SortingOrder } from 'src/modules/common/page.data';
 
 export enum TokensSortableFields {
     PRICE = 'price',
+    VOLUME = 'volume',
     PREVIOUS_24H_PRICE = 'previous_24h_price',
     PREVIOUS_7D_PRICE = 'previous_7d_price',
-    PREVIOUS_24_VOLUME = 'previous_24h_volume',
+    PREVIOUS_24H_VOLUME = 'previous_24h_volume',
     LIQUIDITY = 'liquidity',
 }
 
