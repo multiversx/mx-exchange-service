@@ -20,6 +20,7 @@ import { AnalyticsQueryService } from 'src/services/analytics/services/analytics
 import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { ElasticService } from 'src/helpers/elastic.service';
 import moment from 'moment';
+import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -33,6 +34,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly elasticService: ElasticService,
+        private readonly logsElasticService: ESLogsService,
     ) {}
 
     async getEgldPriceInUSD(): Promise<string> {
@@ -410,5 +412,104 @@ export class TokenComputeService implements ITokenComputeService {
         }
 
         return undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenSwapCount(tokenID: string): Promise<number> {
+        return await this.computeTokenSwapCount(tokenID);
+    }
+
+    async computeTokenSwapCount(tokenID: string): Promise<number> {
+        const allSwapsCount = await this.allTokensSwapsCount();
+
+        const currentTokenSwapCount = allSwapsCount.find(
+            (elem) => elem.tokenID === tokenID,
+        );
+
+        return currentTokenSwapCount ? currentTokenSwapCount.swapsCount : 0;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenPrevious24hSwapCount(tokenID: string): Promise<number> {
+        return await this.computeTokenPrevious24hSwapCount(tokenID);
+    }
+
+    async computeTokenPrevious24hSwapCount(tokenID: string): Promise<number> {
+        const allSwapsCount = await this.allTokensSwapsCountPrevious24h();
+
+        const currentTokenSwapCount = allSwapsCount.find(
+            (elem) => elem.tokenID === tokenID,
+        );
+
+        return currentTokenSwapCount ? currentTokenSwapCount.swapsCount : 0;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async allTokensSwapsCount(): Promise<
+        { tokenID: string; swapsCount: number }[]
+    > {
+        const end = moment.utc().unix();
+        const start = moment.unix(end).subtract(1, 'day').unix();
+
+        return await this.computeAllTokensSwapsCount(start, end);
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async allTokensSwapsCountPrevious24h(): Promise<
+        { tokenID: string; swapsCount: number }[]
+    > {
+        const end = moment.utc().subtract(1, 'day').unix();
+        const start = moment.utc().subtract(2, 'days').unix();
+
+        return await this.computeAllTokensSwapsCount(start, end);
+    }
+
+    async computeAllTokensSwapsCount(
+        start: number,
+        end: number,
+    ): Promise<{ tokenID: string; swapsCount: number }[]> {
+        const allSwapsCount = await this.logsElasticService.getTokenSwapsCount(
+            start,
+            end,
+        );
+
+        const result = [];
+
+        for (const entry of allSwapsCount.entries()) {
+            result.push({
+                tokenID: entry[0],
+                swapsCount: entry[1],
+            });
+        }
+
+        return result;
     }
 }

@@ -100,6 +100,20 @@ export class TokensResolver extends GenericResolver {
         );
     }
 
+    @ResolveField(() => Number, { nullable: true })
+    async swapCount(@Parent() parent: EsdtToken): Promise<number> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenSwapCount(parent.identifier),
+        );
+    }
+
+    @ResolveField(() => Number, { nullable: true })
+    async previous24hSwapCount(@Parent() parent: EsdtToken): Promise<number> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenPrevious24hSwapCount(parent.identifier),
+        );
+    }
+
     @Query(() => [EsdtToken])
     async tokens(@Args() filters: TokensFiltersArgs): Promise<EsdtToken[]> {
         try {
