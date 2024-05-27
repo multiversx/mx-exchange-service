@@ -220,6 +220,13 @@ export class TokenService {
                     ),
                 );
                 break;
+            case TokensSortableFields.LIQUIDITY:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenLiquidityUSD(tokenID),
+                    ),
+                );
+                break;
 
             default:
                 break;
