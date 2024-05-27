@@ -257,7 +257,7 @@ export class TokenComputeService implements ITokenComputeService {
                 return '0';
             }
 
-            return '10000';
+            return undefined;
         }
 
         const difference = currentPriceBN.minus(previous24hPriceBN);
@@ -294,7 +294,7 @@ export class TokenComputeService implements ITokenComputeService {
                 return '0';
             }
 
-            return '10000';
+            return undefined;
         }
 
         const difference = currentVolumeBN.minus(previous24hVolumeBN);
@@ -331,7 +331,7 @@ export class TokenComputeService implements ITokenComputeService {
                 return '0';
             }
 
-            return '10000';
+            return undefined;
         }
 
         const difference = currentSwapsBN.minus(previous24hSwapsBN);
@@ -610,7 +610,12 @@ export class TokenComputeService implements ITokenComputeService {
         const priceScore = new BigNumber(0.3).multipliedBy(priceChange);
         const tradeScore = new BigNumber(0.3).multipliedBy(tradeChange);
 
+        if (volumeScore.isNaN() || priceScore.isNaN() || tradeScore.isNaN()) {
+            return new BigNumber('-Infinity').toFixed();
+        }
+
         const trendingScore = volumeScore.plus(priceScore).plus(tradeScore);
+
         return trendingScore.toFixed();
     }
 }
