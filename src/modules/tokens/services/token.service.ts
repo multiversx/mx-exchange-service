@@ -253,6 +253,13 @@ export class TokenService {
                     ),
                 );
                 break;
+            case TokensSortableFields.TRENDING_SCORE:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenTrendingScore(tokenID),
+                    ),
+                );
+                break;
 
             default:
                 break;
