@@ -31,6 +31,8 @@ export class TokensFilter {
     type: string;
     @Field({ defaultValue: false })
     enabledSwaps: boolean;
+    @Field({ nullable: true })
+    minLiquidity: number;
 }
 
 @InputType()

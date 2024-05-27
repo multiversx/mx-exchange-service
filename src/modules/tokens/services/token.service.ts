@@ -76,6 +76,11 @@ export class TokenService {
             tokenIDs,
         );
 
+        tokenIDs = await this.tokenFilteringService.tokensByLiquidity(
+            filters,
+            tokenIDs,
+        );
+
         if (sorting) {
             tokenIDs = await this.sortTokens(
                 tokenIDs,
