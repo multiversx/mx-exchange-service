@@ -64,6 +64,18 @@ export class ESLogsService {
             } else {
                 tokensSwapCountMap.set(eventTopics.firstTokenID, 1);
             }
+
+            if (tokensSwapCountMap.has(eventTopics.secondTokenID)) {
+                const currentCount = tokensSwapCountMap.get(
+                    eventTopics.secondTokenID,
+                );
+                tokensSwapCountMap.set(
+                    eventTopics.secondTokenID,
+                    currentCount + 1,
+                );
+            } else {
+                tokensSwapCountMap.set(eventTopics.secondTokenID, 1);
+            }
         }
 
         return tokensSwapCountMap;
@@ -110,15 +122,11 @@ export class ESLogsService {
         const esdtSwapEvents: SwapEvent[] = [];
 
         for (const event of events) {
-            switch (event.identifier) {
-                case 'swapTokensFixedInput':
-                    esdtSwapEvents.push(new SwapEvent(event));
-                    break;
-                case 'swapTokensFixedOutput':
-                    esdtSwapEvents.push(new SwapEvent(event));
-                    break;
-                default:
-                    break;
+            if (
+                event.identifier === 'swapTokensFixedInput' ||
+                event.identifier === 'swapTokensFixedOutput'
+            ) {
+                esdtSwapEvents.push(new SwapEvent(event));
             }
         }
 
