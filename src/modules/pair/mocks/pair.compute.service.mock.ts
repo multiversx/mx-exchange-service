@@ -92,6 +92,18 @@ export class PairComputeServiceMock implements IPairComputeService {
     ): Promise<BigNumber> {
         return new BigNumber('0.000001');
     }
+
+    async tradesCount(pairAddress: string): Promise<number> {
+        return PairsData(pairAddress).tradesCount;
+    }
+
+    async hasFarms(pairAddress: string): Promise<boolean> {
+        return PairsData(pairAddress).hasFarms;
+    }
+
+    async hasDualFarms(pairAddress: string): Promise<boolean> {
+        return PairsData(pairAddress).hasDualFarms;
+    }
 }
 
 export const PairComputeServiceProvider = {
