@@ -13,6 +13,7 @@ import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenComputeServiceProvider } from '../mocks/token.compute.service.mock';
+import { TokenFilteringService } from '../services/token.filtering.service';
 
 describe('TokenService', () => {
     let module: TestingModule;
@@ -34,6 +35,7 @@ describe('TokenService', () => {
                 TokenService,
                 ApiConfigService,
                 TokenComputeServiceProvider,
+                TokenFilteringService,
             ],
         }).compile();
     });
