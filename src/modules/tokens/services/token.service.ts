@@ -19,6 +19,7 @@ import { CollectionType } from 'src/modules/common/collection.type';
 import { TokenComputeService } from './token.compute.service';
 import BigNumber from 'bignumber.js';
 import { SortingOrder } from 'src/modules/common/page.data';
+import { TokenFilteringService } from './token.filtering.service';
 
 @Injectable()
 export class TokenService {
@@ -30,6 +31,8 @@ export class TokenService {
         protected readonly cachingService: CacheService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
+        @Inject(forwardRef(() => TokenFilteringService))
+        private readonly tokenFilteringService: TokenFilteringService,
     ) {}
 
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
@@ -63,30 +66,27 @@ export class TokenService {
     ): Promise<CollectionType<EsdtToken>> {
         let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
 
-        if (filters.identifiers && filters.identifiers.length > 0) {
-            tokenIDs = tokenIDs.filter((tokenID) =>
-                filters.identifiers.includes(tokenID),
-            );
-        }
-
-        let tokens = await Promise.all(
-            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
+        tokenIDs = this.tokenFilteringService.tokensByIdentifier(
+            filters,
+            tokenIDs,
         );
 
-        if (filters.type) {
-            for (const token of tokens) {
-                token.type = await this.getEsdtTokenType(token.identifier);
-            }
-            tokens = tokens.filter((token) => token.type === filters.type);
-        }
+        tokenIDs = await this.tokenFilteringService.tokensByType(
+            filters,
+            tokenIDs,
+        );
 
         if (sorting) {
-            tokens = await this.sortTokens(
-                tokens,
+            tokenIDs = await this.sortTokens(
+                tokenIDs,
                 sorting.sortField,
                 sorting.sortOrder,
             );
         }
+
+        const tokens = await Promise.all(
+            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
+        );
 
         return new CollectionType({
             count: tokens.length,
@@ -192,28 +192,31 @@ export class TokenService {
     }
 
     private async sortTokens(
-        tokens: EsdtToken[],
+        tokenIDs: string[],
         sortField: string,
         sortOrder: string,
-    ): Promise<EsdtToken[]> {
+    ): Promise<string[]> {
         let sortFieldData = [];
 
         switch (sortField) {
             case TokensSortableFields.PRICE:
                 sortFieldData = await Promise.all(
-                    tokens.map((token) =>
-                        this.tokenCompute.tokenPriceDerivedUSD(
-                            token.identifier,
-                        ),
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPriceDerivedUSD(tokenID),
                     ),
                 );
                 break;
             case TokensSortableFields.PREVIOUS_24H_PRICE:
                 sortFieldData = await Promise.all(
-                    tokens.map((token) =>
-                        this.tokenCompute.tokenPrevious24hPrice(
-                            token.identifier,
-                        ),
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPrevious24hPrice(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.PREVIOUS_7D_PRICE:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPrevious7dPrice(tokenID),
                     ),
                 );
                 break;
@@ -222,8 +225,8 @@ export class TokenService {
                 break;
         }
 
-        const combined = tokens.map((token, index) => ({
-            token,
+        const combined = tokenIDs.map((tokenID, index) => ({
+            tokenID: tokenID,
             sortValue: new BigNumber(sortFieldData[index]),
         }));
 
@@ -235,6 +238,6 @@ export class TokenService {
             return b.sortValue.comparedTo(a.sortValue);
         });
 
-        return combined.map((item) => item.token);
+        return combined.map((item) => item.tokenID);
     }
 }
