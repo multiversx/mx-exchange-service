@@ -461,7 +461,7 @@ describe('TransactionPairService', () => {
         expect(transactions).toEqual({
             chainID: 'T',
             data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwNEBAQDAyQDAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMTA0',
-            gasLimit: gasConfig.composableTasks.default,
+            gasLimit: 40200000,
             gasPrice: 1000000000,
             guardian: undefined,
             guardianSignature: undefined,
@@ -503,7 +503,7 @@ describe('TransactionPairService', () => {
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
-            gasLimit: gasConfig.composableTasks.default,
+            gasLimit: 40200000,
             data: 'RVNEVFRyYW5zZmVyQDRkNDU1ODJkMzEzMjMzMzQzNTM2QDA1QDYzNmY2ZDcwNmY3MzY1NTQ2MTczNmI3M0AwMDAwMDAwNDQ1NDc0YzQ0MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDVAMDJAMDAwMDAwMTU3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzQwMDAwMDAwYzU3NDU0NzRjNDQyZDMxMzIzMzM0MzUzNjAwMDAwMDAxMDVAMDFA',
             chainID: mxConfig.chainID,
             version: 1,
