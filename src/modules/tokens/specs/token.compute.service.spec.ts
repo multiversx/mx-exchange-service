@@ -17,6 +17,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { ElasticService } from 'src/helpers/elastic.service';
+import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
 
 describe('TokenComputeService', () => {
     let module: TestingModule;
@@ -44,6 +45,7 @@ describe('TokenComputeService', () => {
                 AnalyticsQueryServiceProvider,
                 MXApiServiceProvider,
                 ElasticService,
+                ESLogsService,
             ],
         }).compile();
     });
