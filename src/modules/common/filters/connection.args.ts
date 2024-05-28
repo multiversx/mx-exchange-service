@@ -5,6 +5,7 @@ import {
 } from 'graphql-relay';
 import { Field, Int, InputType } from '@nestjs/graphql';
 import { IsOptional, Max } from 'class-validator';
+import { PaginationArgs } from 'src/modules/dex.model';
 
 type PagingMeta =
     | { pagingType: 'forward'; after?: string; first: number }
@@ -48,7 +49,7 @@ const getId = (cursor: ConnectionCursor) =>
     parseInt(fromGlobalId(cursor).id, 10);
 const nextId = (cursor: ConnectionCursor) => getId(cursor) + 1;
 
-export function getPagingParameters(args: ConnectionArgs) {
+export function getPagingParameters(args: ConnectionArgs): PaginationArgs {
     const meta = checkPagingSanity(args);
 
     if (!args) {
