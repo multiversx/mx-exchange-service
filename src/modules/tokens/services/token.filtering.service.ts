@@ -37,7 +37,9 @@ export class TokenFilteringService {
         for (const tokenID of tokenIDs) {
             const tokenType = await this.tokenService.getEsdtTokenType(tokenID);
 
-            if (tokenType === tokensFilter.type) filteredIDs.push(tokenID);
+            if (tokenType === tokensFilter.type) {
+                filteredIDs.push(tokenID);
+            }
         }
         return filteredIDs;
     }

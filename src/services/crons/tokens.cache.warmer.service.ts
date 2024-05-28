@@ -47,7 +47,10 @@ export class TokensCacheWarmerService {
             ]);
 
             const cachedKeys = await Promise.all([
-                this.tokenSetterService.setVolumeLast2D(tokenID, volumeLast2D),
+                this.tokenSetterService.setVolumeLast2Days(
+                    tokenID,
+                    volumeLast2D,
+                ),
                 this.tokenSetterService.setPricePrevious24h(
                     tokenID,
                     pricePrevious24h,

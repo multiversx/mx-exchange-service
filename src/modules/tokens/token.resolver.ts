@@ -73,9 +73,9 @@ export class TokensResolver extends GenericResolver {
     }
 
     @ResolveField(() => String, { nullable: true })
-    async volumeUSD(@Parent() parent: EsdtToken): Promise<string> {
+    async volumeUSD24h(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenVolumeUSD(parent.identifier),
+            this.tokenCompute.tokenVolumeUSD24h(parent.identifier),
         );
     }
 
@@ -144,11 +144,10 @@ export class TokensResolver extends GenericResolver {
         })
         sorting: TokenSortingArgs,
     ): Promise<TokensResponse> {
-        const { limit, offset } = getPagingParameters(pagination);
+        const pagingParams = getPagingParameters(pagination);
 
         const response = await this.tokenService.getFilteredTokens(
-            offset,
-            limit,
+            pagingParams,
             filters,
             sorting,
         );
@@ -157,8 +156,8 @@ export class TokensResolver extends GenericResolver {
             response?.items || [],
             pagination ?? new ConnectionArgs(),
             response?.count || 0,
-            offset,
-            limit,
+            pagingParams.offset,
+            pagingParams.limit,
         );
     }
 }
