@@ -30,6 +30,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticService } from 'src/helpers/elastic.service';
+import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
 
 describe('FeesCollectorService', () => {
     let module: TestingModule;
@@ -70,6 +71,7 @@ describe('FeesCollectorService', () => {
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
                 ElasticService,
+                ESLogsService,
             ],
         }).compile();
     });
