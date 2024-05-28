@@ -73,9 +73,9 @@ export class TokensResolver extends GenericResolver {
     }
 
     @ResolveField(() => String, { nullable: true })
-    async volumeUSD(@Parent() parent: EsdtToken): Promise<string> {
+    async volumeUSD24h(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenVolumeUSD(parent.identifier),
+            this.tokenCompute.tokenVolumeUSD24h(parent.identifier),
         );
     }
 

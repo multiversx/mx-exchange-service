@@ -67,7 +67,7 @@ export class TokenSetterService extends GenericSetterService {
         );
     }
 
-    async setVolumeLast2D(
+    async setVolumeLast2Days(
         tokenID: string,
         value: { current: string; previous: string },
     ): Promise<string> {

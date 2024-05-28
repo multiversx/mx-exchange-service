@@ -228,7 +228,7 @@ export class TokenService {
             case TokensSortableFields.VOLUME:
                 sortFieldData = await Promise.all(
                     tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenVolumeUSD(tokenID),
+                        this.tokenCompute.tokenVolumeUSD24h(tokenID),
                     ),
                 );
                 break;
