@@ -4,6 +4,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { PairCompoundedAPRModel } from './pair.compounded.apr.model';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -149,6 +150,9 @@ export class PairModel {
 
     @Field()
     deployedAt: number;
+
+    @Field(() => PairCompoundedAPRModel, { nullable: true })
+    compoundedAPR: PairCompoundedAPRModel;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);

@@ -27,6 +27,24 @@ import { PairComputeService } from './services/pair.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
 import { constantsConfig } from 'src/config';
+import { PairCompoundedAPRModel } from './models/pair.compounded.apr.model';
+import { GenericResolver } from 'src/services/generics/generic.resolver';
+
+@Resolver(() => PairCompoundedAPRModel)
+export class PairCompoundedAPRResolver extends GenericResolver {
+    constructor(private readonly pairCompute: PairComputeService) {
+        super();
+    }
+
+    @ResolveField(() => String)
+    async feesAPR(@Parent() parent: PairModel): Promise<string> {
+        console.log(parent);
+        return this.pairCompute.feesAPR(parent.address);
+        return await this.genericFieldResolver(() =>
+            this.pairCompute.feesAPR(parent.address),
+        );
+    }
+}
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -227,6 +245,13 @@ export class PairResolver {
     @ResolveField()
     async deployedAt(@Parent() parent: PairModel): Promise<number> {
         return this.pairCompute.deployedAt(parent.address);
+    }
+
+    @ResolveField(() => PairCompoundedAPRModel, { nullable: true })
+    async compoundedAPR(
+        @Parent() parent: PairModel,
+    ): Promise<PairCompoundedAPRModel> {
+        return this.pairCompute.computeCompoundedAPR(parent.address);
     }
 
     @Query(() => String)

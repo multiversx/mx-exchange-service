@@ -30,6 +30,7 @@ export class FarmComputeServiceV2
         @Inject(forwardRef(() => FarmServiceV2))
         protected readonly farmService: FarmServiceV2,
         protected readonly pairService: PairService,
+        @Inject(forwardRef(() => PairComputeService))
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
