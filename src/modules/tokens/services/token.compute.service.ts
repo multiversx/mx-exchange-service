@@ -352,9 +352,11 @@ export class TokenComputeService implements ITokenComputeService {
     })
     async tokenVolumeUSD(tokenID: string): Promise<string> {
         return await this.computeTokenVolumeUSD(tokenID);
+    async tokenVolumeUSD24h(tokenID: string): Promise<string> {
+        return await this.computeTokenVolumeUSD24h(tokenID);
     }
 
-    async computeTokenVolumeUSD(tokenID: string): Promise<string> {
+    async computeTokenVolumeUSD24h(tokenID: string): Promise<string> {
         const valuesLast2Days = await this.tokenLast2DaysVolumeUSD(tokenID);
         return valuesLast2Days.current;
     }

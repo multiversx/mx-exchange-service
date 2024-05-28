@@ -1,4 +1,5 @@
 import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
+import { SortingOrder } from 'src/modules/common/page.data';
 
 export enum PairSortableFields {
     TRADES_COUNT = 'trades_count',
@@ -8,13 +9,7 @@ export enum PairSortableFields {
     DEPLOYED_AT = 'deployed_at',
 }
 
-export enum PairSortOrder {
-    ASC = 'ascending',
-    DESC = 'descending',
-}
-
 registerEnumType(PairSortableFields, { name: 'PairSortableFields' });
-registerEnumType(PairSortOrder, { name: 'PairSortOrder' });
 
 @ArgsType()
 export class PairFilterArgs {
@@ -69,6 +64,6 @@ export class PairSortingArgs {
     @Field(() => PairSortableFields, { nullable: true })
     sortField?: string;
 
-    @Field(() => PairSortOrder, { defaultValue: PairSortOrder.ASC })
+    @Field(() => SortingOrder, { defaultValue: SortingOrder.ASC })
     sortOrder: string;
 }

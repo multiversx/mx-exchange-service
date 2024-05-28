@@ -27,10 +27,10 @@ export class TokensFiltersArgs {
 @InputType()
 export class TokensFilter {
     @Field(() => [String], { nullable: true })
-    identifiers: string[];
-    @Field({ nullable: true })
-    type: string;
-    @Field({ defaultValue: false })
+    identifiers?: string[];
+    @Field(() => String, { nullable: true })
+    type?: string;
+    @Field(() => Boolean, { defaultValue: false })
     enabledSwaps: boolean;
     @Field({ nullable: true })
     minLiquidity: number;
@@ -39,8 +39,8 @@ export class TokensFilter {
 @InputType()
 export class TokenSortingArgs {
     @Field(() => TokensSortableFields, { nullable: true })
-    sortField?: string;
+    sortField?: TokensSortableFields;
 
     @Field(() => SortingOrder, { defaultValue: SortingOrder.ASC })
-    sortOrder: string;
+    sortOrder: SortingOrder;
 }
