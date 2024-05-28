@@ -282,7 +282,7 @@ export class TokenComputeService implements ITokenComputeService {
 
     async computeVolumeChange24h(tokenID: string): Promise<string> {
         const [currentVolume, previous24hVolume] = await Promise.all([
-            this.tokenVolumeUSD(tokenID),
+            this.tokenVolumeUSD24h(tokenID),
             this.tokenPrevious24hVolumeUSD(tokenID),
         ]);
 
@@ -350,8 +350,6 @@ export class TokenComputeService implements ITokenComputeService {
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
         localTtl: CacheTtlInfo.Token.localTtl,
     })
-    async tokenVolumeUSD(tokenID: string): Promise<string> {
-        return await this.computeTokenVolumeUSD(tokenID);
     async tokenVolumeUSD24h(tokenID: string): Promise<string> {
         return await this.computeTokenVolumeUSD24h(tokenID);
     }
