@@ -130,11 +130,10 @@ export class TokensResolver extends GenericResolver {
         })
         sorting: TokenSortingArgs,
     ): Promise<TokensResponse> {
-        const { limit, offset } = getPagingParameters(pagination);
+        const pagingParams = getPagingParameters(pagination);
 
         const response = await this.tokenService.getFilteredTokens(
-            offset,
-            limit,
+            pagingParams,
             filters,
             sorting,
         );
@@ -143,8 +142,8 @@ export class TokensResolver extends GenericResolver {
             response?.items || [],
             pagination ?? new ConnectionArgs(),
             response?.count || 0,
-            offset,
-            limit,
+            pagingParams.offset,
+            pagingParams.limit,
         );
     }
 }

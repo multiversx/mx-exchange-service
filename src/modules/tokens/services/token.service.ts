@@ -20,6 +20,7 @@ import { TokenComputeService } from './token.compute.service';
 import BigNumber from 'bignumber.js';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { TokenFilteringService } from './token.filtering.service';
+import { PaginationArgs } from 'src/modules/dex.model';
 
 @Injectable()
 export class TokenService {
@@ -59,8 +60,7 @@ export class TokenService {
     }
 
     async getFilteredTokens(
-        offset: number,
-        limit: number,
+        pagination: PaginationArgs,
         filters: TokensFilter,
         sorting: TokenSortingArgs,
     ): Promise<CollectionType<EsdtToken>> {
@@ -77,11 +77,7 @@ export class TokenService {
         );
 
         if (sorting) {
-            tokenIDs = await this.sortTokens(
-                tokenIDs,
-                sorting.sortField,
-                sorting.sortOrder,
-            );
+            tokenIDs = await this.sortTokens(tokenIDs, sorting);
         }
 
         const tokens = await Promise.all(
@@ -90,7 +86,10 @@ export class TokenService {
 
         return new CollectionType({
             count: tokens.length,
-            items: tokens.slice(offset, offset + limit),
+            items: tokens.slice(
+                pagination.offset,
+                pagination.offset + pagination.limit,
+            ),
         });
     }
 
@@ -193,12 +192,11 @@ export class TokenService {
 
     private async sortTokens(
         tokenIDs: string[],
-        sortField: string,
-        sortOrder: string,
+        tokenSorting: TokenSortingArgs,
     ): Promise<string[]> {
         let sortFieldData = [];
 
-        switch (sortField) {
+        switch (tokenSorting.sortField) {
             case TokensSortableFields.PRICE:
                 sortFieldData = await Promise.all(
                     tokenIDs.map((tokenID) =>
@@ -252,7 +250,7 @@ export class TokenService {
         }));
 
         combined.sort((a, b) => {
-            if (sortOrder === SortingOrder.ASC) {
+            if (tokenSorting.sortOrder === SortingOrder.ASC) {
                 return a.sortValue.comparedTo(b.sortValue);
             }
 
