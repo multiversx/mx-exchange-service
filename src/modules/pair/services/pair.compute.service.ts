@@ -26,6 +26,7 @@ import { TransactionStatus } from 'src/utils/transaction.utils';
 import { PairCompoundedAPRModel } from '../models/pair.compounded.apr.model';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -48,6 +49,7 @@ export class PairComputeService implements IPairComputeService {
         @Inject(forwardRef(() => FarmComputeServiceV2))
         private readonly farmCompute: FarmComputeServiceV2,
         private readonly stakingCompute: StakingComputeService,
+        private readonly stakingAbi: StakingAbiService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -671,7 +673,7 @@ export class PairComputeService implements IPairComputeService {
         ]);
 
         return new PairCompoundedAPRModel({
-            feesAPR: feesAPR,
+            feesAPR: new BigNumber(feesAPR).multipliedBy(100).toFixed(),
             farmBaseAPR: farmAPRs.base,
             farmBoostedAPR: farmAPRs.boosted,
             dualFarmAPR: dualFarmAPRs.base,
@@ -722,12 +724,17 @@ export class PairComputeService implements IPairComputeService {
 
         const maxRewardsFactor = boostedYieldsFactors?.maxRewardsFactor ?? '0';
 
-        const bnRawMaxBoostedApr = new BigNumber(baseAPR)
+        const bnBaseApr = new BigNumber(baseAPR).multipliedBy(100);
+
+        const bnRawMaxBoostedApr = bnBaseApr
             .multipliedBy(maxRewardsFactor)
             .multipliedBy(boostedYieldsRewardsPercentage)
             .dividedBy(10000 - boostedYieldsRewardsPercentage);
 
-        return { base: baseAPR, boosted: bnRawMaxBoostedApr.toFixed() };
+        return {
+            base: bnBaseApr.toFixed(),
+            boosted: bnRawMaxBoostedApr.toFixed(),
+        };
     }
 
     async computeDualFarmAPRs(
@@ -756,26 +763,37 @@ export class PairComputeService implements IPairComputeService {
             return { base: '0', boosted: '0' };
         }
 
-        const [stakingFarmAddress, farmAddress] = await Promise.all([
-            this.stakingProxyAbiService.stakingFarmAddress(
+        const stakingFarmAddress =
+            await this.stakingProxyAbiService.stakingFarmAddress(
                 stakingProxyAddresses[stakingProxyIndex],
-            ),
-            this.computePairFarmAddress(pairAddress),
-        ]);
+            );
 
-        const boostedYieldsRewardsPercentage =
-            await this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress);
+        const [boostedYieldsRewardsPercentage, annualPercentageRewards] =
+            await Promise.all([
+                this.stakingAbi.boostedYieldsRewardsPercenatage(
+                    stakingFarmAddress,
+                ),
+                this.stakingAbi.annualPercentageRewards(stakingFarmAddress),
+            ]);
 
-        const baseAPR = await this.stakingCompute.stakeFarmAPR(
-            stakingFarmAddress,
+        const bnBoostedRewardsPercentage = new BigNumber(
+            boostedYieldsRewardsPercentage ?? 0,
+        )
+            .dividedBy(10000)
+            .multipliedBy(100);
+
+        const apr = await this.stakingCompute.stakeFarmAPR(stakingFarmAddress);
+
+        const bnApr = new BigNumber(apr).multipliedBy(100);
+
+        const rawBoostedApr = bnApr.multipliedBy(
+            bnBoostedRewardsPercentage.dividedBy(100),
         );
 
-        const rawBoostedApr = new BigNumber(baseAPR).multipliedBy(
-            new BigNumber(boostedYieldsRewardsPercentage).dividedBy(100),
-        );
+        const bnBaseApr = bnApr.minus(rawBoostedApr);
 
         return {
-            base: baseAPR,
+            base: bnBaseApr.toFixed(),
             boosted: rawBoostedApr.toFixed(),
         };
     }
