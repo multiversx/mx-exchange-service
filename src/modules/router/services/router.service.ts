@@ -5,7 +5,6 @@ import { PairModel } from '../../pair/models/pair.model';
 import { PairMetadata } from '../models/pair.metadata.model';
 import {
     PairFilterArgs,
-    PairSortOrder,
     PairSortableFields,
     PairSortingArgs,
     PairsFilter,
@@ -19,6 +18,7 @@ import BigNumber from 'bignumber.js';
 import { CollectionType } from 'src/modules/common/collection.type';
 import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
+import { SortingOrder } from 'src/modules/common/page.data';
 
 @Injectable()
 export class RouterService {
@@ -333,7 +333,7 @@ export class RouterService {
         }));
 
         combined.sort((a, b) => {
-            if (sortOrder === PairSortOrder.ASC) {
+            if (sortOrder === SortingOrder.ASC) {
                 return a.sortValue.comparedTo(b.sortValue);
             }
 

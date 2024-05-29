@@ -14,6 +14,7 @@ import { NftCollectionResolver } from './nftCollection.resolver';
 import { NftTokenResolver } from './nftToken.resolver';
 import { AnalyticsModule } from 'src/services/analytics/analytics.module';
 import { ElasticService } from 'src/helpers/elastic.service';
+import { TokenFilteringService } from './services/token.filtering.service';
 
 @Module({
     imports: [
@@ -36,12 +37,14 @@ import { ElasticService } from 'src/helpers/elastic.service';
         NftCollectionResolver,
         NftTokenResolver,
         ElasticService,
+        TokenFilteringService,
     ],
     exports: [
         TokenRepositoryService,
         TokenService,
         TokenSetterService,
         TokenComputeService,
+        TokenFilteringService,
     ],
 })
 export class TokenModule {}
