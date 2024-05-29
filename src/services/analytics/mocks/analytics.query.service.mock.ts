@@ -43,6 +43,9 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
     getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         throw new Error('Method not implemented.');
     }
+    getHourlySumValues(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+        throw new Error('Method not implemented.');
+    }
     getPriceCandles({
         series,
         metric,

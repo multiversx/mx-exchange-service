@@ -305,6 +305,64 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
+    async getHourlySumValues({
+        series,
+        metric,
+        start,
+        time,
+    }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+        try {
+            let startDate, endDate;
+
+            const seriesWhere = series.includes('%')
+                ? 'series LIKE :series'
+                : 'series = :series';
+
+            if (time) {
+                [startDate, endDate] = computeTimeInterval(time, start);
+            } else {
+                endDate = moment().utc().toDate();
+                startDate = start
+                    ? moment.unix(parseInt(start)).utc().toDate()
+                    : await this.getStartDate(series);
+            }
+
+            if (!time && !startDate) {
+                return [];
+            }
+
+            const query = await this.sumHourly
+                .createQueryBuilder()
+                .select("time_bucket_gapfill('1 hour', time) as hour")
+                .addSelect('sum(sum) as sum')
+                .where(seriesWhere, { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere('time between :start and :end', {
+                    start: startDate,
+                    end: endDate,
+                })
+                .groupBy('hour')
+                .getRawMany();
+            return (
+                query?.map(
+                    (row) =>
+                        new HistoricDataModel({
+                            timestamp: moment
+                                .utc(row.hour)
+                                .format('yyyy-MM-DD HH:mm:ss'),
+                            value: row.sum ?? '0',
+                        }),
+                ) ?? []
+            );
+        } catch (error) {
+            this.logger.error(
+                `getHourlySumValues: Error getting query for ${series} ${metric}`,
+            );
+            return [];
+        }
+    }
+
+    @TimescaleDBQuery()
     async getPDlatestValue({
         series,
         metric,

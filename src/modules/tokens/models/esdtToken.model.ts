@@ -25,6 +25,7 @@ export class EsdtToken implements IEsdtToken {
     previous24hPrice?: string;
     previous7dPrice?: string;
     volumeUSD24h?: string;
+    previous24hVolume?: string;
     liquidityUSD?: string;
     supply?: string;
     circulatingSupply?: string;
