@@ -54,6 +54,16 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         return await service.getValues24hSum(args);
     }
 
+    async getHourlySumValues(args: {
+        series: any;
+        metric: any;
+        time?: any;
+        start?: any;
+    }): Promise<HistoricDataModel[]> {
+        const service = await this.getService();
+        return await service.getHourlySumValues(args);
+    }
+
     async getPDlatestValue({
         series,
         metric,

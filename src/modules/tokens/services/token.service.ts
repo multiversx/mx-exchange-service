@@ -225,6 +225,20 @@ export class TokenService {
                     ),
                 );
                 break;
+            case TokensSortableFields.VOLUME:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenVolumeUSD24h(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.PREVIOUS_24H_VOLUME:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPrevious24hVolumeUSD(tokenID),
+                    ),
+                );
+                break;
 
             default:
                 break;

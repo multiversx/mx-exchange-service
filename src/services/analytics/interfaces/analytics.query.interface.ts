@@ -19,6 +19,8 @@ export interface AnalyticsQueryInterface {
 
     getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 
+    getHourlySumValues(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
+
     getPDlatestValue({
         series,
         metric,
