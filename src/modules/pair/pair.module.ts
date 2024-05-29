@@ -19,6 +19,7 @@ import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { PairFilteringService } from './services/pair.filtering.service';
+import { StakingModule } from '../staking/staking.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -33,6 +34,7 @@ import { PairFilteringService } from './services/pair.filtering.service';
         RemoteConfigModule,
         FarmModuleV2,
         StakingProxyModule,
+        StakingModule,
     ],
     providers: [
         PairService,

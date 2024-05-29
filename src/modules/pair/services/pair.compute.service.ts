@@ -25,6 +25,7 @@ import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.servi
 import { TransactionStatus } from 'src/utils/transaction.utils';
 import { PairCompoundedAPRModel } from '../models/pair.compounded.apr.model';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -46,6 +47,7 @@ export class PairComputeService implements IPairComputeService {
         private readonly apiService: MXApiService,
         @Inject(forwardRef(() => FarmComputeServiceV2))
         private readonly farmCompute: FarmComputeServiceV2,
+        private readonly stakingCompute: StakingComputeService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -677,13 +679,11 @@ export class PairComputeService implements IPairComputeService {
         });
     }
 
-    async computeFarmAPRs(
-        pairAddress: string,
-    ): Promise<{ base: string; boosted: string }> {
+    async computePairFarmAddress(pairAddress: string): Promise<string> {
         const hasFarms = await this.hasFarms(pairAddress);
 
         if (!hasFarms) {
-            return { base: '0', boosted: '0' };
+            return undefined;
         }
 
         const addresses: string[] = farmsAddresses([FarmVersion.V2]);
@@ -698,27 +698,34 @@ export class PairComputeService implements IPairComputeService {
         );
 
         if (farmAddressIndex === -1) {
-            return { base: '0', boosted: '0' };
+            return undefined;
         }
 
-        const baseAPR = await this.farmCompute.farmBaseAPR(
-            addresses[farmAddressIndex],
-        );
+        return addresses[farmAddressIndex];
+    }
 
-        const [boostedYieldsFactors, boostedYieldsRewardsPercenatage] =
+    async computeFarmAPRs(
+        pairAddress: string,
+    ): Promise<{ base: string; boosted: string }> {
+        const farmAddress = await this.computePairFarmAddress(pairAddress);
+
+        if (!farmAddress) {
+            return { base: '0', boosted: '0' };
+        }
+        const baseAPR = await this.farmCompute.farmBaseAPR(farmAddress);
+
+        const [boostedYieldsFactors, boostedYieldsRewardsPercentage] =
             await Promise.all([
-                this.farmAbi.boostedYieldsFactors(addresses[farmAddressIndex]),
-                this.farmAbi.boostedYieldsRewardsPercenatage(
-                    addresses[farmAddressIndex],
-                ),
+                this.farmAbi.boostedYieldsFactors(farmAddress),
+                this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
             ]);
 
         const maxRewardsFactor = boostedYieldsFactors?.maxRewardsFactor ?? '0';
 
         const bnRawMaxBoostedApr = new BigNumber(baseAPR)
             .multipliedBy(maxRewardsFactor)
-            .multipliedBy(boostedYieldsRewardsPercenatage)
-            .dividedBy(10000 - boostedYieldsRewardsPercenatage);
+            .multipliedBy(boostedYieldsRewardsPercentage)
+            .dividedBy(10000 - boostedYieldsRewardsPercentage);
 
         return { base: baseAPR, boosted: bnRawMaxBoostedApr.toFixed() };
     }
@@ -726,18 +733,50 @@ export class PairComputeService implements IPairComputeService {
     async computeDualFarmAPRs(
         pairAddress: string,
     ): Promise<{ base: string; boosted: string }> {
-        const hasFarms = await this.hasDualFarms(pairAddress);
+        const hasDualFarms = await this.hasDualFarms(pairAddress);
 
-        if (!hasFarms) {
-            return {
-                base: '0',
-                boosted: '0',
-            };
+        if (!hasDualFarms) {
+            return { base: '0', boosted: '0' };
         }
 
+        const stakingProxyAddresses =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
+
+        const pairAddresses = await Promise.all(
+            stakingProxyAddresses.map((address) =>
+                this.stakingProxyAbiService.pairAddress(address),
+            ),
+        );
+
+        const stakingProxyIndex = pairAddresses.findIndex(
+            (address) => address === pairAddress,
+        );
+
+        if (stakingProxyIndex === -1) {
+            return { base: '0', boosted: '0' };
+        }
+
+        const [stakingFarmAddress, farmAddress] = await Promise.all([
+            this.stakingProxyAbiService.stakingFarmAddress(
+                stakingProxyAddresses[stakingProxyIndex],
+            ),
+            this.computePairFarmAddress(pairAddress),
+        ]);
+
+        const boostedYieldsRewardsPercentage =
+            await this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress);
+
+        const baseAPR = await this.stakingCompute.stakeFarmAPR(
+            stakingFarmAddress,
+        );
+
+        const rawBoostedApr = new BigNumber(baseAPR).multipliedBy(
+            new BigNumber(boostedYieldsRewardsPercentage).dividedBy(100),
+        );
+
         return {
-            base: '11',
-            boosted: '11',
+            base: baseAPR,
+            boosted: rawBoostedApr.toFixed(),
         };
     }
 }
