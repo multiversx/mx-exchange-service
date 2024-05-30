@@ -2,6 +2,9 @@ import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
 export class PairCompoundedAPRModel {
+    @Field()
+    address: string;
+
     @Field({ nullable: true })
     feesAPR: string;
 

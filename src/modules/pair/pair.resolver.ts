@@ -37,35 +37,43 @@ export class PairCompoundedAPRResolver extends GenericResolver {
     }
 
     @ResolveField(() => String)
-    async feesAPR(@Parent() parent: PairModel): Promise<string> {
+    async feesAPR(@Parent() parent: PairCompoundedAPRModel): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.pairCompute.feesAPR(parent.address),
         );
     }
 
     @ResolveField(() => String)
-    async farmBaseAPR(@Parent() parent: PairModel): Promise<string> {
+    async farmBaseAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.pairCompute.farmBaseAPR(parent.address),
         );
     }
 
     @ResolveField(() => String)
-    async farmBoostedAPR(@Parent() parent: PairModel): Promise<string> {
+    async farmBoostedAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.pairCompute.farmBoostedAPR(parent.address),
         );
     }
 
     @ResolveField(() => String)
-    async dualFarmBaseAPR(@Parent() parent: PairModel): Promise<string> {
+    async dualFarmBaseAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.pairCompute.dualFarmBaseAPR(parent.address),
         );
     }
 
     @ResolveField(() => String)
-    async dualFarmBoostedAPR(@Parent() parent: PairModel): Promise<string> {
+    async dualFarmBoostedAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.pairCompute.dualFarmBoostedAPR(parent.address),
         );
@@ -277,7 +285,7 @@ export class PairResolver {
     async compoundedAPR(
         @Parent() parent: PairModel,
     ): Promise<PairCompoundedAPRModel> {
-        return this.pairCompute.compoundedAPR(parent.address);
+        return new PairCompoundedAPRModel({ address: parent.address });
     }
 
     @Query(() => String)
