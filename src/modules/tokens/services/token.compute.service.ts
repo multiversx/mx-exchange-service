@@ -17,8 +17,11 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
-import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
-import { ElasticService } from 'src/helpers/elastic.service';
+import {
+    ElasticQuery,
+    ElasticService,
+    QueryType,
+} from '@multiversx/sdk-nestjs-elastic';
 import moment from 'moment';
 import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
 
@@ -407,7 +410,7 @@ export class TokenComputeService implements ITokenComputeService {
         );
 
         if (tokens.length > 0) {
-            const createdAtTimestamp = tokens[0]._source.timestamp;
+            const createdAtTimestamp = tokens[0].timestamp;
             return createdAtTimestamp.toString();
         }
 
