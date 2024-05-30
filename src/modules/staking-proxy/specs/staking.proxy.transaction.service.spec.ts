@@ -42,8 +42,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
-import { ElasticService } from 'src/helpers/elastic.service';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -56,6 +55,7 @@ describe('StakingProxyTransactionService', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 StakingProxyTransactionService,
@@ -97,8 +97,6 @@ describe('StakingProxyTransactionService', () => {
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
-                ElasticService,
-                ESLogsService,
             ],
         }).compile();
     });

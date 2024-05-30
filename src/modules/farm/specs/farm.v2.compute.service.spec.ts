@@ -24,8 +24,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
-import { ElasticService } from 'src/helpers/elastic.service';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('FarmServiceV2', () => {
     let module: TestingModule;
@@ -38,6 +37,7 @@ describe('FarmServiceV2', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 MXApiServiceProvider,
@@ -60,8 +60,6 @@ describe('FarmServiceV2', () => {
                 FarmServiceV2,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
-                ElasticService,
-                ESLogsService,
             ],
         }).compile();
     });

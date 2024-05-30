@@ -101,7 +101,7 @@ export class TokensResolver extends GenericResolver {
     }
 
     @ResolveField(() => Number, { nullable: true })
-    async swapCount(@Parent() parent: EsdtToken): Promise<number> {
+    async swapCount24h(@Parent() parent: EsdtToken): Promise<number> {
         return await this.genericFieldResolver(() =>
             this.tokenCompute.tokenSwapCount(parent.identifier),
         );

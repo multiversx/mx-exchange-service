@@ -33,8 +33,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
-import { ElasticService } from 'src/helpers/elastic.service';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('FeesCollectorComputeService', () => {
     let module: TestingModule;
@@ -47,6 +46,7 @@ describe('FeesCollectorComputeService', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 FeesCollectorComputeService,
@@ -74,8 +74,6 @@ describe('FeesCollectorComputeService', () => {
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
                 MXApiServiceProvider,
-                ElasticService,
-                ESLogsService,
             ],
         }).compile();
     });

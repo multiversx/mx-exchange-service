@@ -45,8 +45,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
-import { ElasticService } from 'src/helpers/elastic.service';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('AnalyticsService', () => {
     let module: TestingModule;
@@ -59,6 +58,7 @@ describe('AnalyticsService', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 ContextGetterServiceProvider,
@@ -105,8 +105,6 @@ describe('AnalyticsService', () => {
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
-                ElasticService,
-                ESLogsService,
             ],
         }).compile();
     });

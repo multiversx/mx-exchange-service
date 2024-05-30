@@ -1,9 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { ElasticService, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { ElasticQuery } from '@multiversx/sdk-nestjs-elastic';
-import { ElasticService } from 'src/helpers/elastic.service';
 
 @Injectable()
 export class ESTransactionsService {
@@ -116,7 +115,7 @@ export class ESTransactionsService {
 
         const uniqueUsersMap = new Map<string, number>();
         for (const transaction of transactions) {
-            const sender = transaction._source.sender;
+            const sender = transaction.sender;
             if (!uniqueUsersMap.has(sender)) {
                 uniqueUsersMap.set(sender, 1);
             } else {
