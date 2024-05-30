@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PairModule } from '../pair/pair.module';
 import { ContextModule } from '../../services/context/context.module';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
@@ -21,7 +21,7 @@ import { FarmSetterFactory } from './farm.setter.factory';
         CommonAppModule,
         MXCommunicationModule,
         ContextModule,
-        PairModule,
+        forwardRef(() => PairModule),
         TokenModule,
         FarmModuleV1_2,
         FarmModuleV1_3,

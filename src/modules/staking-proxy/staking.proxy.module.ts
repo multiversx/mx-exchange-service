@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
@@ -18,7 +18,7 @@ import { StakingProxyResolver } from './staking.proxy.resolver';
         CommonAppModule,
         ContextModule,
         MXCommunicationModule,
-        PairModule,
+        forwardRef(() => PairModule),
         FarmModule,
         StakingModule,
         TokenModule,

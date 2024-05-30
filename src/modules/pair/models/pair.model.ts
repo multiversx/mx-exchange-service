@@ -138,6 +138,18 @@ export class PairModel {
     })
     feesCollector: FeesCollectorModel;
 
+    @Field()
+    hasFarms: boolean;
+
+    @Field()
+    hasDualFarms: boolean;
+
+    @Field()
+    tradesCount: number;
+
+    @Field()
+    deployedAt: number;
+
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);
     }
