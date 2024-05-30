@@ -819,7 +819,9 @@ export class PairComputeService implements IPairComputeService {
             return undefined;
         }
 
-        return stakingProxyAddresses[stakingProxyIndex];
+        return await this.stakingProxyAbiService.stakingFarmAddress(
+            stakingProxyAddresses[stakingProxyIndex],
+        );
     }
 
     async dualFarmBaseAPR(pairAddress: string): Promise<string> {
