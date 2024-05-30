@@ -38,10 +38,36 @@ export class PairCompoundedAPRResolver extends GenericResolver {
 
     @ResolveField(() => String)
     async feesAPR(@Parent() parent: PairModel): Promise<string> {
-        console.log(parent);
-        return this.pairCompute.feesAPR(parent.address);
         return await this.genericFieldResolver(() =>
             this.pairCompute.feesAPR(parent.address),
+        );
+    }
+
+    @ResolveField(() => String)
+    async farmBaseAPR(@Parent() parent: PairModel): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.pairCompute.farmBaseAPR(parent.address),
+        );
+    }
+
+    @ResolveField(() => String)
+    async farmBoostedAPR(@Parent() parent: PairModel): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.pairCompute.farmBoostedAPR(parent.address),
+        );
+    }
+
+    @ResolveField(() => String)
+    async dualFarmBaseAPR(@Parent() parent: PairModel): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.pairCompute.dualFarmBaseAPR(parent.address),
+        );
+    }
+
+    @ResolveField(() => String)
+    async dualFarmBoostedAPR(@Parent() parent: PairModel): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.pairCompute.dualFarmBoostedAPR(parent.address),
         );
     }
 }
@@ -251,7 +277,7 @@ export class PairResolver {
     async compoundedAPR(
         @Parent() parent: PairModel,
     ): Promise<PairCompoundedAPRModel> {
-        return this.pairCompute.computeCompoundedAPR(parent.address);
+        return this.pairCompute.compoundedAPR(parent.address);
     }
 
     @Query(() => String)

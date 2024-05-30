@@ -663,13 +663,25 @@ export class PairComputeService implements IPairComputeService {
         return deployedAt ?? undefined;
     }
 
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async compoundedAPR(pairAddress: string): Promise<PairCompoundedAPRModel> {
+        return await this.computeCompoundedAPR(pairAddress);
+    }
+
     async computeCompoundedAPR(
         pairAddress: string,
     ): Promise<PairCompoundedAPRModel> {
         const [feesAPR, farmAPRs, dualFarmAPRs] = await Promise.all([
             this.feesAPR(pairAddress),
-            this.computeFarmAPRs(pairAddress),
-            this.computeDualFarmAPRs(pairAddress),
+            this.farmAPRs(pairAddress),
+            this.dualFarmAPRs(pairAddress),
         ]);
 
         return new PairCompoundedAPRModel({
@@ -679,6 +691,18 @@ export class PairComputeService implements IPairComputeService {
             dualFarmAPR: dualFarmAPRs.base,
             dualFarmBoostedAPR: dualFarmAPRs.boosted,
         });
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async pairFarmAddress(pairAddress: string): Promise<string> {
+        return await this.computePairFarmAddress(pairAddress);
     }
 
     async computePairFarmAddress(pairAddress: string): Promise<string> {
@@ -706,26 +730,48 @@ export class PairComputeService implements IPairComputeService {
         return addresses[farmAddressIndex];
     }
 
+    async farmBaseAPR(pairAddress: string): Promise<string> {
+        const farmAPRs = await this.farmAPRs(pairAddress);
+        return farmAPRs.base;
+    }
+
+    async farmBoostedAPR(pairAddress: string): Promise<string> {
+        const farmAPRs = await this.farmAPRs(pairAddress);
+        return farmAPRs.boosted;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async farmAPRs(
+        pairAddress: string,
+    ): Promise<{ base: string; boosted: string }> {
+        return await this.computeFarmAPRs(pairAddress);
+    }
+
     async computeFarmAPRs(
         pairAddress: string,
     ): Promise<{ base: string; boosted: string }> {
-        const farmAddress = await this.computePairFarmAddress(pairAddress);
+        const farmAddress = await this.pairFarmAddress(pairAddress);
 
         if (!farmAddress) {
             return { base: '0', boosted: '0' };
         }
-        const baseAPR = await this.farmCompute.farmBaseAPR(farmAddress);
 
-        const [boostedYieldsFactors, boostedYieldsRewardsPercentage] =
+        const [baseAPR, boostedYieldsFactors, boostedYieldsRewardsPercentage] =
             await Promise.all([
+                this.farmCompute.farmBaseAPR(farmAddress),
                 this.farmAbi.boostedYieldsFactors(farmAddress),
                 this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
             ]);
 
         const maxRewardsFactor = boostedYieldsFactors?.maxRewardsFactor ?? '0';
-
         const bnBaseApr = new BigNumber(baseAPR).multipliedBy(100);
-
         const bnRawMaxBoostedApr = bnBaseApr
             .multipliedBy(maxRewardsFactor)
             .multipliedBy(boostedYieldsRewardsPercentage)
@@ -737,13 +783,23 @@ export class PairComputeService implements IPairComputeService {
         };
     }
 
-    async computeDualFarmAPRs(
-        pairAddress: string,
-    ): Promise<{ base: string; boosted: string }> {
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async pairStakingFarmAddress(pairAddress: string): Promise<string> {
+        return await this.computePairStakingFarmAddress(pairAddress);
+    }
+
+    async computePairStakingFarmAddress(pairAddress: string): Promise<string> {
         const hasDualFarms = await this.hasDualFarms(pairAddress);
 
         if (!hasDualFarms) {
-            return { base: '0', boosted: '0' };
+            return undefined;
         }
 
         const stakingProxyAddresses =
@@ -760,21 +816,51 @@ export class PairComputeService implements IPairComputeService {
         );
 
         if (stakingProxyIndex === -1) {
+            return undefined;
+        }
+
+        return stakingProxyAddresses[stakingProxyIndex];
+    }
+
+    async dualFarmBaseAPR(pairAddress: string): Promise<string> {
+        const dualFarmAPRs = await this.dualFarmAPRs(pairAddress);
+        return dualFarmAPRs.base;
+    }
+
+    async dualFarmBoostedAPR(pairAddress: string): Promise<string> {
+        const dualFarmAPRs = await this.dualFarmAPRs(pairAddress);
+        return dualFarmAPRs.boosted;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async dualFarmAPRs(
+        pairAddress: string,
+    ): Promise<{ base: string; boosted: string }> {
+        return await this.computeDualFarmAPRs(pairAddress);
+    }
+
+    async computeDualFarmAPRs(
+        pairAddress: string,
+    ): Promise<{ base: string; boosted: string }> {
+        const stakingFarmAddress = await this.pairStakingFarmAddress(
+            pairAddress,
+        );
+
+        if (!stakingFarmAddress) {
             return { base: '0', boosted: '0' };
         }
 
-        const stakingFarmAddress =
-            await this.stakingProxyAbiService.stakingFarmAddress(
-                stakingProxyAddresses[stakingProxyIndex],
-            );
-
-        const [boostedYieldsRewardsPercentage, annualPercentageRewards] =
-            await Promise.all([
-                this.stakingAbi.boostedYieldsRewardsPercenatage(
-                    stakingFarmAddress,
-                ),
-                this.stakingAbi.annualPercentageRewards(stakingFarmAddress),
-            ]);
+        const [boostedYieldsRewardsPercentage, apr] = await Promise.all([
+            this.stakingAbi.boostedYieldsRewardsPercenatage(stakingFarmAddress),
+            this.stakingCompute.stakeFarmAPR(stakingFarmAddress),
+        ]);
 
         const bnBoostedRewardsPercentage = new BigNumber(
             boostedYieldsRewardsPercentage ?? 0,
@@ -782,18 +868,14 @@ export class PairComputeService implements IPairComputeService {
             .dividedBy(10000)
             .multipliedBy(100);
 
-        const apr = await this.stakingCompute.stakeFarmAPR(stakingFarmAddress);
-
         const bnApr = new BigNumber(apr).multipliedBy(100);
 
         const rawBoostedApr = bnApr.multipliedBy(
             bnBoostedRewardsPercentage.dividedBy(100),
         );
 
-        const bnBaseApr = bnApr.minus(rawBoostedApr);
-
         return {
-            base: bnBaseApr.toFixed(),
+            base: bnApr.minus(rawBoostedApr).toFixed(),
             boosted: rawBoostedApr.toFixed(),
         };
     }
