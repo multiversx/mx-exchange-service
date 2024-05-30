@@ -23,28 +23,28 @@ export class ESLogsService {
         const swapEvents: SwapEvent[] = [];
         const tokensSwapCountMap: Map<string, number> = new Map();
 
-        const [txLogsSwapFixedInput, txLogsSwapFixedOutput] = await Promise.all(
-            [
-                this.getTransactionsLogs(
-                    'swapTokensFixedInput',
-                    startTimestamp,
-                    endTimestamp,
-                ),
-                this.getTransactionsLogs(
-                    'swapTokensFixedOutput',
-                    startTimestamp,
-                    endTimestamp,
-                ),
-            ],
-        );
+        const processLogsAction = async (items: any[]): Promise<void> => {
+            for (const transactionLogs of items) {
+                swapEvents.push(
+                    ...this.processSwapEvents(transactionLogs.events),
+                );
+            }
+        };
 
-        for (const transactionLogs of txLogsSwapFixedInput) {
-            swapEvents.push(...this.processSwapEvents(transactionLogs.events));
-        }
-
-        for (const transactionLogs of txLogsSwapFixedOutput) {
-            swapEvents.push(...this.processSwapEvents(transactionLogs.events));
-        }
+        await Promise.all([
+            this.getTransactionsLogs(
+                'swapTokensFixedInput',
+                startTimestamp,
+                endTimestamp,
+                processLogsAction,
+            ),
+            this.getTransactionsLogs(
+                'swapTokensFixedOutput',
+                startTimestamp,
+                endTimestamp,
+                processLogsAction,
+            ),
+        ]);
 
         for (const swapEvent of swapEvents) {
             const eventTopics = swapEvent.getTopics();
@@ -81,7 +81,8 @@ export class ESLogsService {
         eventName: string,
         startTimestamp: number,
         endTimestamp: number,
-    ): Promise<any[]> {
+        action: (items: any[]) => Promise<void>,
+    ): Promise<void> {
         const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
         elasticQueryAdapter.condition.must = [
             QueryType.Nested('events', [
@@ -107,10 +108,11 @@ export class ESLogsService {
             { name: 'timestamp', order: ElasticSortOrder.ascending },
         ];
 
-        return await this.elasticService.getList(
+        await this.elasticService.getScrollableList(
             'logs',
             '',
             elasticQueryAdapter,
+            action,
         );
     }
 
