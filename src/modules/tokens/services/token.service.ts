@@ -223,6 +223,34 @@ export class TokenService {
                     ),
                 );
                 break;
+            case TokensSortableFields.PRICE_CHANGE_24H:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPriceChange24h(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.VOLUME_CHANGE_24H:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenVolumeChange24h(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.TRADES_COUNT_CHANGE_24H:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenTradeChange24h(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.CREATED_AT:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenCreatedAt(tokenID),
+                    ),
+                );
+                break;
             case TokensSortableFields.LIQUIDITY:
                 sortFieldData = await Promise.all(
                     tokenIDs.map((tokenID) =>
