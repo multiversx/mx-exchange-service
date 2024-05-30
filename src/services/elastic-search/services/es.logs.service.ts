@@ -1,12 +1,12 @@
 import { SwapEvent } from '@multiversx/sdk-exchange';
 import {
     ElasticQuery,
+    ElasticService,
     ElasticSortOrder,
     QueryType,
 } from '@multiversx/sdk-nestjs-elastic';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { ElasticService } from 'src/helpers/elastic.service';
 import { Logger } from 'winston';
 
 @Injectable()
@@ -39,15 +39,11 @@ export class ESLogsService {
         );
 
         for (const transactionLogs of txLogsSwapFixedInput) {
-            swapEvents.push(
-                ...this.processSwapEvents(transactionLogs._source.events),
-            );
+            swapEvents.push(...this.processSwapEvents(transactionLogs.events));
         }
 
         for (const transactionLogs of txLogsSwapFixedOutput) {
-            swapEvents.push(
-                ...this.processSwapEvents(transactionLogs._source.events),
-            );
+            swapEvents.push(...this.processSwapEvents(transactionLogs.events));
         }
 
         for (const swapEvent of swapEvents) {
