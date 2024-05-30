@@ -66,8 +66,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
-import { ElasticService } from 'src/helpers/elastic.service';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -134,8 +133,6 @@ describe('UserEnergyComputeService', () => {
                 AbiLockedAssetServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
-                ElasticService,
-                ESLogsService,
             ],
             imports: [
                 WinstonModule.forRoot({
@@ -143,6 +140,7 @@ describe('UserEnergyComputeService', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
         }).compile();
     });

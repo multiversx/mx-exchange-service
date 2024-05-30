@@ -16,8 +16,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
-import { ElasticService } from 'src/helpers/elastic.service';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('TokenComputeService', () => {
     let module: TestingModule;
@@ -30,6 +29,7 @@ describe('TokenComputeService', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 PairAbiServiceProvider,
@@ -44,8 +44,6 @@ describe('TokenComputeService', () => {
                 ApiConfigService,
                 AnalyticsQueryServiceProvider,
                 MXApiServiceProvider,
-                ElasticService,
-                ESLogsService,
             ],
         }).compile();
     });

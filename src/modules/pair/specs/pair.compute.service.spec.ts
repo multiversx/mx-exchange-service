@@ -27,7 +27,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
 import { FarmAbiServiceProviderV2 } from 'src/modules/farm/mocks/farm.v2.abi.service.mock';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -40,6 +40,7 @@ describe('PairService', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 PairComputeService,
@@ -58,7 +59,6 @@ describe('PairService', () => {
                 FarmAbiServiceProviderV2,
                 RemoteConfigGetterServiceProvider,
                 StakingProxyAbiServiceProvider,
-                ESLogsService,
             ],
         }).compile();
     });

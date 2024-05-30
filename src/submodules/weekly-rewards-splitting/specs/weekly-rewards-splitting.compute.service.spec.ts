@@ -23,8 +23,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
-import { ElasticService } from 'src/helpers/elastic.service';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     let module: TestingModule;
@@ -37,6 +36,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 WeeklyRewardsSplittingComputeService,
@@ -54,8 +54,6 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
                 MXApiServiceProvider,
-                ElasticService,
-                ESLogsService,
             ],
         }).compile();
     });
