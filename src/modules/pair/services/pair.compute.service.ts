@@ -688,7 +688,7 @@ export class PairComputeService implements IPairComputeService {
             feesAPR: new BigNumber(feesAPR).multipliedBy(100).toFixed(),
             farmBaseAPR: farmAPRs.base,
             farmBoostedAPR: farmAPRs.boosted,
-            dualFarmAPR: dualFarmAPRs.base,
+            dualFarmBaseAPR: dualFarmAPRs.base,
             dualFarmBoostedAPR: dualFarmAPRs.boosted,
         });
     }

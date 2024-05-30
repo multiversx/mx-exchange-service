@@ -529,4 +529,34 @@ export class FarmComputeServiceV2
             return total + current;
         });
     }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async maxBoostedApr(farmAddress: string): Promise<string> {
+        return await this.computeMaxBoostedApr(farmAddress);
+    }
+
+    async computeMaxBoostedApr(farmAddress: string): Promise<string> {
+        const [baseAPR, boostedYieldsFactors, boostedYieldsRewardsPercentage] =
+            await Promise.all([
+                this.farmBaseAPR(farmAddress),
+                this.farmAbi.boostedYieldsFactors(farmAddress),
+                this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
+            ]);
+
+        const bnRawMaxBoostedApr = new BigNumber(baseAPR)
+            .multipliedBy(boostedYieldsFactors.maxRewardsFactor)
+            .multipliedBy(boostedYieldsRewardsPercentage)
+            .dividedBy(
+                constantsConfig.MAX_PERCENT - boostedYieldsRewardsPercentage,
+            );
+
+        return bnRawMaxBoostedApr.toFixed();
+    }
 }

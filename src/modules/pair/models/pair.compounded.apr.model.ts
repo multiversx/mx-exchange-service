@@ -15,7 +15,7 @@ export class PairCompoundedAPRModel {
     farmBoostedAPR: string;
 
     @Field({ nullable: true })
-    dualFarmAPR: string;
+    dualFarmBaseAPR: string;
 
     @Field({ nullable: true })
     dualFarmBoostedAPR: string;
