@@ -1,13 +1,30 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { AssetsModel } from './models/assets.model';
+import { AssetsModel, SocialModel } from './models/assets.model';
 import { EsdtToken } from './models/esdtToken.model';
 import { RolesModel } from './models/roles.model';
-import { TokensFiltersArgs } from './models/tokens.filter.args';
+import {
+    TokenSortingArgs,
+    TokensFilter,
+    TokensFiltersArgs,
+} from './models/tokens.filter.args';
 import { TokenService } from './services/token.service';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { TokenComputeService } from './services/token.compute.service';
+import { TokensResponse } from './models/tokens.response';
+import ConnectionArgs, {
+    getPagingParameters,
+} from '../common/filters/connection.args';
+import PageResponse from '../common/page.response';
+
+@Resolver(() => AssetsModel)
+export class AssetsResolver extends GenericResolver {
+    @ResolveField(() => SocialModel, { nullable: true })
+    async social(@Parent() parent: AssetsModel): Promise<SocialModel> {
+        return new SocialModel(parent.social);
+    }
+}
 
 @Resolver(() => EsdtToken)
 export class TokensResolver extends GenericResolver {
@@ -56,6 +73,41 @@ export class TokensResolver extends GenericResolver {
         return new RolesModel(parent.roles);
     }
 
+    @ResolveField(() => String, { nullable: true })
+    async previous7dPrice(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenPrevious7dPrice(parent.identifier),
+        );
+    }
+
+    @ResolveField(() => String, { nullable: true })
+    async volumeUSD24h(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenVolumeUSD24h(parent.identifier),
+        );
+    }
+
+    @ResolveField(() => String, { nullable: true })
+    async previous24hVolume(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenPrevious24hVolumeUSD(parent.identifier),
+        );
+    }
+
+    @ResolveField(() => String, { nullable: true })
+    async liquidityUSD(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenLiquidityUSD(parent.identifier),
+        );
+    }
+
+    @ResolveField(() => String, { nullable: true })
+    async createdAt(@Parent() parent: EsdtToken): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.tokenCompute.tokenCreatedAt(parent.identifier),
+        );
+    }
+
     @Query(() => [EsdtToken])
     async tokens(@Args() filters: TokensFiltersArgs): Promise<EsdtToken[]> {
         try {
@@ -67,5 +119,39 @@ export class TokensResolver extends GenericResolver {
                 },
             });
         }
+    }
+
+    @Query(() => TokensResponse)
+    async filteredTokens(
+        @Args({ name: 'filters', type: () => TokensFilter, nullable: true })
+        filters: TokensFilter,
+        @Args({
+            name: 'pagination',
+            type: () => ConnectionArgs,
+            nullable: true,
+        })
+        pagination: ConnectionArgs,
+        @Args({
+            name: 'sorting',
+            type: () => TokenSortingArgs,
+            nullable: true,
+        })
+        sorting: TokenSortingArgs,
+    ): Promise<TokensResponse> {
+        const pagingParams = getPagingParameters(pagination);
+
+        const response = await this.tokenService.getFilteredTokens(
+            pagingParams,
+            filters,
+            sorting,
+        );
+
+        return PageResponse.mapResponse<EsdtToken>(
+            response?.items || [],
+            pagination ?? new ConnectionArgs(),
+            response?.count || 0,
+            pagingParams.offset,
+            pagingParams.limit,
+        );
     }
 }

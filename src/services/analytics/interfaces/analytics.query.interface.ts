@@ -1,4 +1,7 @@
-import { CandleDataModel, HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import {
+    CandleDataModel,
+    HistoricDataModel,
+} from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 
 export interface AnalyticsQueryInterface {
@@ -15,6 +18,8 @@ export interface AnalyticsQueryInterface {
     getValues24h(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 
     getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
+
+    getHourlySumValues(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 
     getPDlatestValue({
         series,

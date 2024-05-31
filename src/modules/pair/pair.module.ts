@@ -13,6 +13,11 @@ import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
 import { CommonAppModule } from 'src/common.app.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
+import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
+import { ElasticService } from 'src/helpers/elastic.service';
+import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
+import { PairFilteringService } from './services/pair.filtering.service';
 @Module({
     imports: [
         CommonAppModule,
@@ -23,6 +28,9 @@ import { CommonAppModule } from 'src/common.app.module';
         DatabaseModule,
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
+        RemoteConfigModule,
+        FarmModuleV2,
+        StakingProxyModule,
     ],
     providers: [
         PairService,
@@ -31,12 +39,15 @@ import { CommonAppModule } from 'src/common.app.module';
         PairAbiService,
         PairTransactionService,
         PairResolver,
+        ElasticService,
+        PairFilteringService,
     ],
     exports: [
         PairService,
         PairSetterService,
         PairComputeService,
         PairAbiService,
+        PairFilteringService,
     ],
 })
 export class PairModule {}

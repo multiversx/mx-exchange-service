@@ -23,6 +23,10 @@ export class EsdtToken implements IEsdtToken {
     derivedEGLD: string;
     price?: string;
     previous24hPrice?: string;
+    previous7dPrice?: string;
+    volumeUSD24h?: string;
+    previous24hVolume?: string;
+    liquidityUSD?: string;
     supply?: string;
     circulatingSupply?: string;
     assets?: AssetsModel;
@@ -39,6 +43,7 @@ export class EsdtToken implements IEsdtToken {
     roles?: RolesModel;
     type?: string;
     balance?: string;
+    createdAt?: string;
 
     constructor(init?: Partial<EsdtToken>) {
         Object.assign(this, init);

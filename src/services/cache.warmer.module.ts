@@ -35,6 +35,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { GovernanceCacheWarmerService } from './crons/governance.cache.warmer.service';
 import { GovernanceModule } from '../modules/governance/governance.module';
+import { TokensCacheWarmerService } from './crons/tokens.cache.warmer.service';
 
 @Module({
     imports: [
@@ -77,6 +78,7 @@ import { GovernanceModule } from '../modules/governance/governance.module';
         TransactionProcessorService,
         LogsProcessorService,
         ElasticService,
+        TokensCacheWarmerService,
     ],
 })
 export class CacheWarmerModule {}

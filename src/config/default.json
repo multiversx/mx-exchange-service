@@ -586,7 +586,8 @@
         "MIN_SWAP_AMOUNT": 0.0005,
         "roundedSwapEnable": {
             "USDC-8d4068": "5000000",
-            "WEGLD-d7c6bb": "100000000000000000"
+            "WEGLD-d7c6bb": "100000000000000000",
+            "MEX-a659d0": "1000000000000000000000000"
         },
         "COMPOUND_TRANSACTION_FEE": 0.000365144
     },

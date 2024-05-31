@@ -19,10 +19,19 @@ import { UserAuthResult } from '../auth/user.auth.result';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { SetLocalRoleOwnerArgs } from './models/router.args';
-import { PairFilterArgs } from './models/filter.args';
+import {
+    PairFilterArgs,
+    PairSortingArgs,
+    PairsFilter,
+} from './models/filter.args';
 import { RouterAbiService } from './services/router.abi.service';
 import { RouterComputeService } from './services/router.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { PairsResponse } from '../pair/models/pairs.response';
+import ConnectionArgs, {
+    getPagingParameters,
+} from '../common/filters/connection.args';
+import PageResponse from '../common/page.response';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -146,12 +155,50 @@ export class RouterResolver {
         return this.routerabi.pairsAddress();
     }
 
-    @Query(() => [PairModel])
+    @Query(() => [PairModel], {
+        deprecationReason:
+            'New query (filteredPairs) following GraphQL "Connection" standard for pagination/sorting/filtering is now available.',
+    })
     async pairs(
         @Args() page: GetPairsArgs,
         @Args() filter: PairFilterArgs,
     ): Promise<PairModel[]> {
         return this.routerService.getAllPairs(page.offset, page.limit, filter);
+    }
+
+    @Query(() => PairsResponse)
+    async filteredPairs(
+        @Args({ name: 'filters', type: () => PairsFilter, nullable: true })
+        filters: PairsFilter,
+        @Args({
+            name: 'pagination',
+            type: () => ConnectionArgs,
+            nullable: true,
+        })
+        pagination: ConnectionArgs,
+        @Args({
+            name: 'sorting',
+            type: () => PairSortingArgs,
+            nullable: true,
+        })
+        sorting: PairSortingArgs,
+    ): Promise<PairsResponse> {
+        const { limit, offset } = getPagingParameters(pagination);
+
+        const response = await this.routerService.getFilteredPairs(
+            offset,
+            limit,
+            filters,
+            sorting,
+        );
+
+        return PageResponse.mapResponse<PairModel>(
+            response?.items || [],
+            pagination ?? new ConnectionArgs(),
+            response?.count || 0,
+            offset,
+            limit,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

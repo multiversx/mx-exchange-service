@@ -1,6 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { EsdtToken } from '../models/esdtToken.model';
-import { TokensFiltersArgs } from '../models/tokens.filter.args';
+import {
+    TokenSortingArgs,
+    TokensFilter,
+    TokensFiltersArgs,
+    TokensSortableFields,
+} from '../models/tokens.filter.args';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenRepositoryService } from './token.repository.service';
@@ -10,6 +15,12 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { NftCollection } from '../models/nftCollection.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CollectionType } from 'src/modules/common/collection.type';
+import { TokenComputeService } from './token.compute.service';
+import BigNumber from 'bignumber.js';
+import { SortingOrder } from 'src/modules/common/page.data';
+import { TokenFilteringService } from './token.filtering.service';
+import { PaginationArgs } from 'src/modules/dex.model';
 
 @Injectable()
 export class TokenService {
@@ -19,6 +30,10 @@ export class TokenService {
         private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
         protected readonly cachingService: CacheService,
+        @Inject(forwardRef(() => TokenComputeService))
+        private readonly tokenCompute: TokenComputeService,
+        @Inject(forwardRef(() => TokenFilteringService))
+        private readonly tokenFilteringService: TokenFilteringService,
     ) {}
 
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
@@ -42,6 +57,40 @@ export class TokenService {
         }
 
         return tokens;
+    }
+
+    async getFilteredTokens(
+        pagination: PaginationArgs,
+        filters: TokensFilter,
+        sorting: TokenSortingArgs,
+    ): Promise<CollectionType<EsdtToken>> {
+        let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
+
+        tokenIDs = this.tokenFilteringService.tokensByIdentifier(
+            filters,
+            tokenIDs,
+        );
+
+        tokenIDs = await this.tokenFilteringService.tokensByType(
+            filters,
+            tokenIDs,
+        );
+
+        if (sorting) {
+            tokenIDs = await this.sortTokens(tokenIDs, sorting);
+        }
+
+        const tokens = await Promise.all(
+            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
+        );
+
+        return new CollectionType({
+            count: tokens.length,
+            items: tokens.slice(
+                pagination.offset,
+                pagination.offset + pagination.limit,
+            ),
+        });
     }
 
     @ErrorLoggerAsync({
@@ -139,5 +188,75 @@ export class TokenService {
             }),
         );
         return [...new Set(tokenIDs)];
+    }
+
+    private async sortTokens(
+        tokenIDs: string[],
+        tokenSorting: TokenSortingArgs,
+    ): Promise<string[]> {
+        let sortFieldData = [];
+
+        switch (tokenSorting.sortField) {
+            case TokensSortableFields.PRICE:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPriceDerivedUSD(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.PREVIOUS_24H_PRICE:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPrevious24hPrice(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.PREVIOUS_7D_PRICE:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPrevious7dPrice(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.LIQUIDITY:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenLiquidityUSD(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.VOLUME:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenVolumeUSD24h(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.PREVIOUS_24H_VOLUME:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPrevious24hVolumeUSD(tokenID),
+                    ),
+                );
+                break;
+
+            default:
+                break;
+        }
+
+        const combined = tokenIDs.map((tokenID, index) => ({
+            tokenID: tokenID,
+            sortValue: new BigNumber(sortFieldData[index]),
+        }));
+
+        combined.sort((a, b) => {
+            if (tokenSorting.sortOrder === SortingOrder.ASC) {
+                return a.sortValue.comparedTo(b.sortValue);
+            }
+
+            return b.sortValue.comparedTo(a.sortValue);
+        });
+
+        return combined.map((item) => item.tokenID);
     }
 }
