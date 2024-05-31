@@ -94,6 +94,11 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async boostedApr(@Parent() parent: StakingModel) {
+        return this.stakingCompute.boostedApr(parent.address);
+    }
+
+    @ResolveField()
     async minUnboundEpochs(@Parent() parent: StakingModel) {
         return this.stakingAbi.minUnbondEpochs(parent.address);
     }
