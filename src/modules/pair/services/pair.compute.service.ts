@@ -23,10 +23,6 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { TransactionStatus } from 'src/utils/transaction.utils';
-import { PairCompoundedAPRModel } from '../models/pair.compounded.apr.model';
-import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
-import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
-import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -46,10 +42,6 @@ export class PairComputeService implements IPairComputeService {
         private readonly stakingProxyAbiService: StakingProxyAbiService,
         private readonly elasticService: ElasticService,
         private readonly apiService: MXApiService,
-        @Inject(forwardRef(() => FarmComputeServiceV2))
-        private readonly farmCompute: FarmComputeServiceV2,
-        private readonly stakingCompute: StakingComputeService,
-        private readonly stakingAbi: StakingAbiService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -671,36 +663,6 @@ export class PairComputeService implements IPairComputeService {
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async compoundedAPR(pairAddress: string): Promise<PairCompoundedAPRModel> {
-        return await this.computeCompoundedAPR(pairAddress);
-    }
-
-    async computeCompoundedAPR(
-        pairAddress: string,
-    ): Promise<PairCompoundedAPRModel> {
-        const [feesAPR, farmAPRs, dualFarmAPRs] = await Promise.all([
-            this.feesAPR(pairAddress),
-            this.farmAPRs(pairAddress),
-            this.dualFarmAPRs(pairAddress),
-        ]);
-
-        return new PairCompoundedAPRModel({
-            feesAPR: new BigNumber(feesAPR).multipliedBy(100).toFixed(),
-            farmBaseAPR: farmAPRs.base,
-            farmBoostedAPR: farmAPRs.boosted,
-            dualFarmBaseAPR: dualFarmAPRs.base,
-            dualFarmBoostedAPR: dualFarmAPRs.boosted,
-        });
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
     async pairFarmAddress(pairAddress: string): Promise<string> {
         return await this.computePairFarmAddress(pairAddress);
     }
@@ -728,59 +690,6 @@ export class PairComputeService implements IPairComputeService {
         }
 
         return addresses[farmAddressIndex];
-    }
-
-    async farmBaseAPR(pairAddress: string): Promise<string> {
-        const farmAPRs = await this.farmAPRs(pairAddress);
-        return farmAPRs.base;
-    }
-
-    async farmBoostedAPR(pairAddress: string): Promise<string> {
-        const farmAPRs = await this.farmAPRs(pairAddress);
-        return farmAPRs.boosted;
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async farmAPRs(
-        pairAddress: string,
-    ): Promise<{ base: string; boosted: string }> {
-        return await this.computeFarmAPRs(pairAddress);
-    }
-
-    async computeFarmAPRs(
-        pairAddress: string,
-    ): Promise<{ base: string; boosted: string }> {
-        const farmAddress = await this.pairFarmAddress(pairAddress);
-
-        if (!farmAddress) {
-            return { base: '0', boosted: '0' };
-        }
-
-        const [baseAPR, boostedYieldsFactors, boostedYieldsRewardsPercentage] =
-            await Promise.all([
-                this.farmCompute.farmBaseAPR(farmAddress),
-                this.farmAbi.boostedYieldsFactors(farmAddress),
-                this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
-            ]);
-
-        const maxRewardsFactor = boostedYieldsFactors?.maxRewardsFactor ?? '0';
-        const bnBaseApr = new BigNumber(baseAPR).multipliedBy(100);
-        const bnRawMaxBoostedApr = bnBaseApr
-            .multipliedBy(maxRewardsFactor)
-            .multipliedBy(boostedYieldsRewardsPercentage)
-            .dividedBy(10000 - boostedYieldsRewardsPercentage);
-
-        return {
-            base: bnBaseApr.toFixed(),
-            boosted: bnRawMaxBoostedApr.toFixed(),
-        };
     }
 
     @ErrorLoggerAsync({
@@ -822,63 +731,5 @@ export class PairComputeService implements IPairComputeService {
         return await this.stakingProxyAbiService.stakingFarmAddress(
             stakingProxyAddresses[stakingProxyIndex],
         );
-    }
-
-    async dualFarmBaseAPR(pairAddress: string): Promise<string> {
-        const dualFarmAPRs = await this.dualFarmAPRs(pairAddress);
-        return dualFarmAPRs.base;
-    }
-
-    async dualFarmBoostedAPR(pairAddress: string): Promise<string> {
-        const dualFarmAPRs = await this.dualFarmAPRs(pairAddress);
-        return dualFarmAPRs.boosted;
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async dualFarmAPRs(
-        pairAddress: string,
-    ): Promise<{ base: string; boosted: string }> {
-        return await this.computeDualFarmAPRs(pairAddress);
-    }
-
-    async computeDualFarmAPRs(
-        pairAddress: string,
-    ): Promise<{ base: string; boosted: string }> {
-        const stakingFarmAddress = await this.pairStakingFarmAddress(
-            pairAddress,
-        );
-
-        if (!stakingFarmAddress) {
-            return { base: '0', boosted: '0' };
-        }
-
-        const [boostedYieldsRewardsPercentage, apr] = await Promise.all([
-            this.stakingAbi.boostedYieldsRewardsPercenatage(stakingFarmAddress),
-            this.stakingCompute.stakeFarmAPR(stakingFarmAddress),
-        ]);
-
-        const bnBoostedRewardsPercentage = new BigNumber(
-            boostedYieldsRewardsPercentage ?? 0,
-        )
-            .dividedBy(10000)
-            .multipliedBy(100);
-
-        const bnApr = new BigNumber(apr).multipliedBy(100);
-
-        const rawBoostedApr = bnApr.multipliedBy(
-            bnBoostedRewardsPercentage.dividedBy(100),
-        );
-
-        return {
-            base: bnApr.minus(rawBoostedApr).toFixed(),
-            boosted: rawBoostedApr.toFixed(),
-        };
     }
 }

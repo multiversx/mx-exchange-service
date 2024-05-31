@@ -727,4 +727,35 @@ export class StakingComputeService {
             return total + current;
         });
     }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async boostedApr(stakeAddress: string): Promise<string> {
+        return await this.computeBoostedApr(stakeAddress);
+    }
+
+    async computeBoostedApr(stakeAddress: string): Promise<string> {
+        const [boostedYieldsRewardsPercentage, apr] = await Promise.all([
+            this.stakingAbi.boostedYieldsRewardsPercenatage(stakeAddress),
+            this.stakeFarmAPR(stakeAddress),
+        ]);
+
+        const bnBoostedRewardsPercentage = new BigNumber(
+            boostedYieldsRewardsPercentage,
+        )
+            .dividedBy(10000)
+            .multipliedBy(100);
+
+        const rawBoostedApr = new BigNumber(apr).multipliedBy(
+            bnBoostedRewardsPercentage.dividedBy(100),
+        );
+
+        return rawBoostedApr.toFixed();
+    }
 }

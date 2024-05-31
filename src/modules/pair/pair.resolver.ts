@@ -96,9 +96,15 @@ export class PairCompoundedAPRResolver extends GenericResolver {
     async dualFarmBoostedAPR(
         @Parent() parent: PairCompoundedAPRModel,
     ): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.pairCompute.dualFarmBoostedAPR(parent.address),
+        const stakingAddress = await this.pairCompute.pairStakingFarmAddress(
+            parent.address,
         );
+
+        if (!stakingAddress) {
+            return '0';
+        }
+
+        return await this.stakingCompute.boostedApr(stakingAddress);
     }
 }
 
