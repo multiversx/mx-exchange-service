@@ -335,6 +335,7 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async createFarmPositionDualTokens(
         @AuthUser() user: UserAuthResult,
@@ -358,6 +359,7 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async createDualFarmPositionDualTokens(
         @AuthUser() user: UserAuthResult,
@@ -381,6 +383,7 @@ export class PositionCreatorTransactionResolver {
         );
     }
 
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async exitFarmPositionDualTokens(
         @AuthUser() user: UserAuthResult,
