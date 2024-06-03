@@ -573,9 +573,15 @@ export class TokenComputeService implements ITokenComputeService {
         start: number,
         end: number,
     ): Promise<{ tokenID: string; swapsCount: number }[]> {
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const pairAddresses = pairsMetadata.map(
+            (pairMetadata) => pairMetadata.address,
+        );
+
         const allSwapsCount = await this.logsElasticService.getTokenSwapsCount(
             start,
             end,
+            pairAddresses,
         );
 
         const result = [];
