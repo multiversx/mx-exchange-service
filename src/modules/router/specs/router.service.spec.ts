@@ -12,6 +12,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
+import { PairServiceProvider } from 'src/modules/pair/mocks/pair.service.mock';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -32,6 +33,7 @@ describe('RouterService', () => {
                 RouterService,
                 ApiConfigService,
                 PairFilteringService,
+                PairServiceProvider,
             ],
         }).compile();
     });
