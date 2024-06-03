@@ -1,6 +1,7 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { TokensFilter } from '../models/tokens.filter.args';
+import { EsdtToken } from '../models/esdtToken.model';
 
 @Injectable()
 export class TokenFilteringService {
@@ -42,5 +43,32 @@ export class TokenFilteringService {
             }
         }
         return filteredIDs;
+    }
+
+    async tokensBySearchTerm(
+        tokensFilter: TokensFilter,
+        tokens: EsdtToken[],
+    ): Promise<EsdtToken[]> {
+        if (
+            !tokensFilter.searchToken ||
+            tokensFilter.searchToken.trim() === ''
+        ) {
+            return tokens;
+        }
+
+        const searchTerm = tokensFilter.searchToken.toUpperCase().trim();
+
+        const filteredTokens: EsdtToken[] = [];
+        for (const token of tokens) {
+            if (
+                token.name.toUpperCase().includes(searchTerm) ||
+                token.identifier.toUpperCase().includes(searchTerm) ||
+                token.ticker.toUpperCase().includes(searchTerm)
+            ) {
+                filteredTokens.push(token);
+            }
+        }
+
+        return filteredTokens;
     }
 }
