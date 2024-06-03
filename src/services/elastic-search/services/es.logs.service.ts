@@ -19,14 +19,19 @@ export class ESLogsService {
     async getTokenSwapsCount(
         startTimestamp: number,
         endTimestamp: number,
+        pairAddresses: string[],
     ): Promise<Map<string, number>> {
         const swapEvents: SwapEvent[] = [];
         const tokensSwapCountMap: Map<string, number> = new Map();
 
         const processLogsAction = async (items: any[]): Promise<void> => {
             for (const transactionLogs of items) {
+                // console.log(transactionLogs);
                 swapEvents.push(
-                    ...this.processSwapEvents(transactionLogs.events),
+                    ...this.processSwapEvents(
+                        transactionLogs.events,
+                        pairAddresses,
+                    ),
                 );
             }
         };
@@ -116,10 +121,16 @@ export class ESLogsService {
         );
     }
 
-    private processSwapEvents(events: any[]): SwapEvent[] {
+    private processSwapEvents(
+        events: any[],
+        pairAddresses: string[],
+    ): SwapEvent[] {
         const esdtSwapEvents: SwapEvent[] = [];
 
         for (const event of events) {
+            if (!pairAddresses.includes(event.address)) {
+                continue;
+            }
             if (
                 event.identifier === 'swapTokensFixedInput' ||
                 event.identifier === 'swapTokensFixedOutput'
