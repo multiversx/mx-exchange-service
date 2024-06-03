@@ -709,6 +709,10 @@ export class PositionCreatorTransactionService {
             .integerValue();
 
         const swapRouteArgs = this.serializeSwapRouteArgs(swapRoute);
+        const gasLimit =
+            gasConfig.positionCreator.energyPosition +
+            gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                swapRoute.pairs.length;
 
         const contract =
             await this.mxProxy.getLockedTokenPositionCreatorContract();
@@ -720,7 +724,7 @@ export class PositionCreatorTransactionService {
                 ...swapRouteArgs,
             ])
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.energyPosition)
+            .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID);
 
         if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
