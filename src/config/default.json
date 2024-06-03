@@ -390,7 +390,7 @@
             },
             "unstakeFarm": 18500000,
             "unbondFarm": 8000000,
-            "claimRewards": 10000000,
+            "claimRewards": 15000000,
             "claimBoostedRewards": 20000000,
             "claimRewardsWithNewValue": 7500000,
             "compoundRewards": 10000000,
@@ -512,7 +512,7 @@
                 "dualFarmPosition": 67000000,
                 "exitFarm": 50000000
             },
-            "energyPosition": 45000000
+            "energyPosition": 10000000
         },
         "composableTasks": {
             "default": 1000000
