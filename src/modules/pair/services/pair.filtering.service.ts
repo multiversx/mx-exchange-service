@@ -88,14 +88,11 @@ export class PairFilteringService {
         pairFilter: PairsFilter,
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        if (
-            !pairFilter.wildcardToken ||
-            pairFilter.wildcardToken.trim() === ''
-        ) {
+        if (!pairFilter.searchToken || pairFilter.searchToken.trim() === '') {
             return pairsMetadata;
         }
 
-        const searchTerm = pairFilter.wildcardToken.toUpperCase().trim();
+        const searchTerm = pairFilter.searchToken.toUpperCase().trim();
 
         const pairsFirstToken = await Promise.all(
             pairsMetadata.map((pairMetadata) =>

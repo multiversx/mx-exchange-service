@@ -52,7 +52,7 @@ export class PairsMetadataBuilder {
     }
 
     async filterByTokens(): Promise<PairsMetadataBuilder> {
-        if (this.filters.wildcardToken) {
+        if (this.filters.searchToken) {
             this.pairsMetadata =
                 await this.filteringService.pairsByWildcardToken(
                     this.filters,

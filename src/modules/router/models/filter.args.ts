@@ -58,7 +58,7 @@ export class PairsFilter {
     @Field({ nullable: true })
     minDeployedAt: number;
     @Field({ nullable: true })
-    wildcardToken: string;
+    searchToken: string;
 }
 
 @InputType()
