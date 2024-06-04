@@ -88,7 +88,10 @@ export class PairFilteringService {
         pairFilter: PairsFilter,
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        if (!pairFilter.searchToken || pairFilter.searchToken.trim() === '') {
+        if (
+            !pairFilter.searchToken ||
+            pairFilter.searchToken.trim().length < 3
+        ) {
             return pairsMetadata;
         }
 

@@ -51,7 +51,7 @@ export class TokenFilteringService {
     ): Promise<EsdtToken[]> {
         if (
             !tokensFilter.searchToken ||
-            tokensFilter.searchToken.trim() === ''
+            tokensFilter.searchToken.trim().length < 3
         ) {
             return tokens;
         }
