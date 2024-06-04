@@ -256,19 +256,16 @@ export class TokenComputeService implements ITokenComputeService {
         const previous24hPriceBN = new BigNumber(previous24hPrice);
 
         if (previous24hPriceBN.isZero()) {
-            if (currentPriceBN.isZero()) {
-                return '0';
-            }
-
-            return undefined;
+            return '0';
         }
 
-        const difference = currentPriceBN.minus(previous24hPriceBN);
+        return currentPriceBN.dividedBy(previous24hPrice).toFixed();
+        // const difference = currentPriceBN.minus(previous24hPriceBN);
 
-        return difference
-            .dividedBy(previous24hPriceBN)
-            .multipliedBy(100)
-            .toFixed();
+        // return difference
+        //     .dividedBy(previous24hPriceBN)
+        //     .multipliedBy(100)
+        //     .toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -284,6 +281,8 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeVolumeChange24h(tokenID: string): Promise<string> {
+        const min_24h_volume = 10000;
+
         const [currentVolume, previous24hVolume] = await Promise.all([
             this.tokenVolumeUSD24h(tokenID),
             this.tokenPrevious24hVolumeUSD(tokenID),
@@ -292,20 +291,23 @@ export class TokenComputeService implements ITokenComputeService {
         const currentVolumeBN = new BigNumber(currentVolume);
         const previous24hVolumeBN = new BigNumber(previous24hVolume);
 
-        if (previous24hVolumeBN.isZero()) {
-            if (currentVolumeBN.isZero()) {
-                return '0';
-            }
-
-            return undefined;
+        if (currentVolumeBN.isZero()) {
+            return '0';
         }
 
-        const difference = currentVolumeBN.minus(previous24hVolumeBN);
+        const maxPrevious24hVolume = BigNumber.maximum(
+            previous24hVolumeBN,
+            min_24h_volume,
+        );
 
-        return difference
-            .dividedBy(previous24hVolumeBN)
-            .multipliedBy(100)
-            .toFixed();
+        // const difference = currentVolumeBN.minus(previous24hVolumeBN);
+
+        return currentVolumeBN.dividedBy(maxPrevious24hVolume).toFixed();
+
+        // return difference
+        //     .dividedBy(previous24hVolumeBN)
+        //     .multipliedBy(100)
+        //     .toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -321,6 +323,8 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeTradeChange24h(tokenID: string): Promise<string> {
+        const min_24h_trade_count = new BigNumber(100);
+
         const [currentSwaps, previous24hSwaps] = await Promise.all([
             this.tokenSwapCount(tokenID),
             this.tokenPrevious24hSwapCount(tokenID),
@@ -329,20 +333,23 @@ export class TokenComputeService implements ITokenComputeService {
         const currentSwapsBN = new BigNumber(currentSwaps);
         const previous24hSwapsBN = new BigNumber(previous24hSwaps);
 
-        if (previous24hSwapsBN.isZero()) {
-            if (currentSwapsBN.isZero()) {
-                return '0';
-            }
-
-            return undefined;
+        if (currentSwapsBN.isZero()) {
+            return '0';
         }
 
-        const difference = currentSwapsBN.minus(previous24hSwapsBN);
+        const max_previous_24h_trade_count = BigNumber.maximum(
+            previous24hSwapsBN,
+            min_24h_trade_count,
+        );
 
-        return difference
-            .dividedBy(previous24hSwapsBN)
-            .multipliedBy(100)
-            .toFixed();
+        return currentSwapsBN.dividedBy(max_previous_24h_trade_count).toFixed();
+
+        // const difference = currentSwapsBN.minus(previous24hSwapsBN);
+
+        // return difference
+        //     .dividedBy(previous24hSwapsBN)
+        //     .multipliedBy(100)
+        //     .toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -599,11 +606,11 @@ export class TokenComputeService implements ITokenComputeService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    @GetOrSetCache({
-        baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'token',
+    //     remoteTtl: CacheTtlInfo.Token.remoteTtl,
+    //     localTtl: CacheTtlInfo.Token.localTtl,
+    // })
     async tokenTrendingScore(tokenID: string): Promise<string> {
         return await this.computeTokenTrendingScore(tokenID);
     }
@@ -615,13 +622,24 @@ export class TokenComputeService implements ITokenComputeService {
             this.tokenTradeChange24h(tokenID),
         ]);
 
-        const volumeScore = new BigNumber(0.4).multipliedBy(volumeChange);
+        const volumeChangeNumber = new BigNumber(volumeChange).toNumber();
+        const tradeChangeNumber = new BigNumber(tradeChange).toNumber();
+
+        const volumeScore = new BigNumber(0.4).multipliedBy(
+            Math.log(volumeChangeNumber),
+        );
         const priceScore = new BigNumber(0.3).multipliedBy(priceChange);
-        const tradeScore = new BigNumber(0.3).multipliedBy(tradeChange);
+        const tradeScore = new BigNumber(0.3).multipliedBy(
+            Math.log(tradeChangeNumber),
+        );
 
         if (volumeScore.isNaN() || priceScore.isNaN() || tradeScore.isNaN()) {
             return new BigNumber('-Infinity').toFixed();
         }
+
+        console.log(
+            `${tokenID} - volumeChange : ${volumeChangeNumber} | tradeChange : ${tradeChangeNumber}`,
+        );
 
         const trendingScore = volumeScore.plus(priceScore).plus(tradeScore);
 
