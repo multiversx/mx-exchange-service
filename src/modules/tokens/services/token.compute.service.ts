@@ -25,6 +25,7 @@ import {
 import moment from 'moment';
 import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
 import { PendingExecutor } from 'src/utils/pending.executor';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -48,6 +49,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly elasticService: ElasticService,
         private readonly logsElasticService: ESLogsService,
+        private readonly cachingService: CacheService,
     ) {
         this.swapCountExecutor = new PendingExecutor(
             async () => await this.allTokensSwapsCount(),
@@ -465,35 +467,55 @@ export class TokenComputeService implements ITokenComputeService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    @GetOrSetCache({
-        baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
-    })
     async allTokensSwapsCount(): Promise<
         { tokenID: string; swapsCount: number }[]
     > {
+        const cacheKey = 'token.allTokensSwapsCount';
+        const cachedValue = await this.cachingService.get<
+            { tokenID: string; swapsCount: number }[]
+        >(cacheKey);
+        if (cachedValue && cachedValue !== undefined) {
+            return cachedValue;
+        }
+
         const end = moment.utc().unix();
         const start = moment.unix(end).subtract(1, 'day').unix();
 
-        return await this.computeAllTokensSwapsCount(start, end);
+        const swapsCount = await this.computeAllTokensSwapsCount(start, end);
+        await this.cachingService.set(
+            cacheKey,
+            swapsCount,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+        return swapsCount;
     }
 
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    @GetOrSetCache({
-        baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
-    })
     async allTokensSwapsCountPrevious24h(): Promise<
         { tokenID: string; swapsCount: number }[]
     > {
+        const cacheKey = 'token.allTokensSwapsCountPrevious24h';
+        const cachedValue = await this.cachingService.get<
+            { tokenID: string; swapsCount: number }[]
+        >(cacheKey);
+        if (cachedValue && cachedValue !== undefined) {
+            return cachedValue;
+        }
+
         const end = moment.utc().subtract(1, 'day').unix();
         const start = moment.utc().subtract(2, 'days').unix();
 
-        return await this.computeAllTokensSwapsCount(start, end);
+        const swapsCount = await this.computeAllTokensSwapsCount(start, end);
+        await this.cachingService.set(
+            cacheKey,
+            swapsCount,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+        return swapsCount;
     }
 
     async computeAllTokensSwapsCount(
