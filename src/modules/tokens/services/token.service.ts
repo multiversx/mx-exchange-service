@@ -239,6 +239,13 @@ export class TokenService {
                     ),
                 );
                 break;
+            case TokensSortableFields.TRADES_COUNT:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenSwapCount(tokenID),
+                    ),
+                );
+                break;
 
             default:
                 break;
