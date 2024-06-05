@@ -21,7 +21,7 @@ import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
-import { ElasticService } from 'src/helpers/elastic.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -34,6 +34,7 @@ describe('FarmService', () => {
                     transports: [new winston.transports.Console({})],
                 }),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 ApiConfigService,
@@ -52,7 +53,6 @@ describe('FarmService', () => {
                 MXDataApiServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
-                ElasticService,
             ],
         }).compile();
     });
