@@ -8,6 +8,7 @@ export enum TokensSortableFields {
     PREVIOUS_7D_PRICE = 'previous_7d_price',
     PREVIOUS_24H_VOLUME = 'previous_24h_volume',
     LIQUIDITY = 'liquidity',
+    TRADES_COUNT = 'trades_count',
 }
 
 registerEnumType(TokensSortableFields, { name: 'TokensSortableFields' });
