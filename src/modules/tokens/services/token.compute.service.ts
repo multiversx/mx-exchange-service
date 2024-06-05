@@ -24,9 +24,19 @@ import {
 } from '@multiversx/sdk-nestjs-elastic';
 import moment from 'moment';
 import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { PendingExecutor } from 'src/utils/pending.executor';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
+    private swapCountExecutor: PendingExecutor<
+        null,
+        { tokenID: string; swapsCount: number }[]
+    >;
+    private swapCountPrevious24hExecutor: PendingExecutor<
+        null,
+        { tokenID: string; swapsCount: number }[]
+    >;
+
     constructor(
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
@@ -38,7 +48,14 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly elasticService: ElasticService,
         private readonly logsElasticService: ESLogsService,
-    ) {}
+    ) {
+        this.swapCountExecutor = new PendingExecutor(
+            async () => await this.allTokensSwapsCount(),
+        );
+        this.swapCountPrevious24hExecutor = new PendingExecutor(
+            async () => await this.allTokensSwapsCountPrevious24h(),
+        );
+    }
 
     async getEgldPriceInUSD(): Promise<string> {
         return await this.pairCompute.firstTokenPrice(scAddress.WEGLD_USDC);
@@ -420,17 +437,8 @@ export class TokenComputeService implements ITokenComputeService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    @GetOrSetCache({
-        baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
-    })
     async tokenSwapCount(tokenID: string): Promise<number> {
-        return await this.computeTokenSwapCount(tokenID);
-    }
-
-    async computeTokenSwapCount(tokenID: string): Promise<number> {
-        const allSwapsCount = await this.allTokensSwapsCount();
+        const allSwapsCount = await this.swapCountExecutor.execute(null);
 
         const currentTokenSwapCount = allSwapsCount.find(
             (elem) => elem.tokenID === tokenID,
@@ -442,17 +450,10 @@ export class TokenComputeService implements ITokenComputeService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    @GetOrSetCache({
-        baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
-    })
     async tokenPrevious24hSwapCount(tokenID: string): Promise<number> {
-        return await this.computeTokenPrevious24hSwapCount(tokenID);
-    }
-
-    async computeTokenPrevious24hSwapCount(tokenID: string): Promise<number> {
-        const allSwapsCount = await this.allTokensSwapsCountPrevious24h();
+        const allSwapsCount = await this.swapCountPrevious24hExecutor.execute(
+            null,
+        );
 
         const currentTokenSwapCount = allSwapsCount.find(
             (elem) => elem.tokenID === tokenID,
@@ -499,10 +500,7 @@ export class TokenComputeService implements ITokenComputeService {
         start: number,
         end: number,
     ): Promise<{ tokenID: string; swapsCount: number }[]> {
-        const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const pairAddresses = pairsMetadata.map(
-            (pairMetadata) => pairMetadata.address,
-        );
+        const pairAddresses = await this.routerAbi.pairsAddress();
 
         const allSwapsCount = await this.logsElasticService.getTokenSwapsCount(
             start,
