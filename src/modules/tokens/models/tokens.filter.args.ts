@@ -31,6 +31,8 @@ export class TokensFilter {
     type?: string;
     @Field(() => Boolean, { defaultValue: false })
     enabledSwaps: boolean;
+    @Field({ nullable: true })
+    searchToken?: string;
 }
 
 @InputType()

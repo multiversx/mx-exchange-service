@@ -76,13 +76,18 @@ export class TokenService {
             tokenIDs,
         );
 
+        let tokens = await Promise.all(
+            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
+        );
+
+        tokens = await this.tokenFilteringService.tokensBySearchTerm(
+            filters,
+            tokens,
+        );
+
         if (sorting) {
             tokenIDs = await this.sortTokens(tokenIDs, sorting);
         }
-
-        const tokens = await Promise.all(
-            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
-        );
 
         return new CollectionType({
             count: tokens.length,
