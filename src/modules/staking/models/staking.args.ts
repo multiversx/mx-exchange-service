@@ -1,5 +1,16 @@
-import { ArgsType, Field } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
 import { InputTokenModel } from 'src/models/inputToken.model';
+import { SortingOrder } from 'src/modules/common/page.data';
+
+export enum StakingFarmsSortableFields {
+    PRICE = 'price',
+    TVL = 'tvl',
+    APR = 'apr',
+}
+
+registerEnumType(StakingFarmsSortableFields, {
+    name: 'StakingFarmsSortableFields',
+});
 
 @ArgsType()
 export class StakeFarmArgs {
@@ -21,4 +32,21 @@ export class GenericStakeFarmArgs {
 export class ClaimRewardsWithNewValueArgs extends GenericStakeFarmArgs {
     @Field()
     newValue: string;
+}
+
+@InputType()
+export class StakingFarmsFilter {
+    @Field(() => String, { nullable: true })
+    state?: string;
+    @Field(() => String, { nullable: true })
+    searchToken?: string;
+}
+
+@InputType()
+export class StakingFarmsSortingArgs {
+    @Field(() => StakingFarmsSortableFields, { nullable: true })
+    sortField?: StakingFarmsSortableFields;
+
+    @Field(() => SortingOrder, { defaultValue: SortingOrder.ASC })
+    sortOrder: SortingOrder;
 }
