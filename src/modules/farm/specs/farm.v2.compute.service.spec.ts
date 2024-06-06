@@ -28,7 +28,7 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
 import { Address } from '@multiversx/sdk-core/out';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElasticService } from 'src/helpers/elastic.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('FarmServiceV2', () => {
     let module: TestingModule;
@@ -41,6 +41,7 @@ describe('FarmServiceV2', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 MXApiServiceProvider,
@@ -63,7 +64,6 @@ describe('FarmServiceV2', () => {
                 FarmServiceV2,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
-                ElasticService,
             ],
         }).compile();
     });

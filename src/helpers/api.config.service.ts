@@ -312,4 +312,18 @@ export class ApiConfigService {
         }
         return password;
     }
+
+    getElasticSearchUrl(): string {
+        const elasticSearchUrl =
+            this.configService.get<string>('ELASTICSEARCH_URL');
+        if (!elasticSearchUrl) {
+            throw new Error('No Elastic Search url present');
+        }
+
+        return elasticSearchUrl;
+    }
+
+    getRateLimiterSecret(): string | undefined {
+        return this.configService.get<string>('RATE_LIMITER_SECRET');
+    }
 }

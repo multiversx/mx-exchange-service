@@ -17,12 +17,27 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
-import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
-import { ElasticService } from 'src/helpers/elastic.service';
+import {
+    ElasticQuery,
+    ElasticService,
+    QueryType,
+} from '@multiversx/sdk-nestjs-elastic';
 import moment from 'moment';
+import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { PendingExecutor } from 'src/utils/pending.executor';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
+    private swapCountExecutor: PendingExecutor<
+        null,
+        { tokenID: string; swapsCount: number }[]
+    >;
+    private swapCountPrevious24hExecutor: PendingExecutor<
+        null,
+        { tokenID: string; swapsCount: number }[]
+    >;
+
     constructor(
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
@@ -33,7 +48,16 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly elasticService: ElasticService,
-    ) {}
+        private readonly logsElasticService: ESLogsService,
+        private readonly cachingService: CacheService,
+    ) {
+        this.swapCountExecutor = new PendingExecutor(
+            async () => await this.allTokensSwapsCount(),
+        );
+        this.swapCountPrevious24hExecutor = new PendingExecutor(
+            async () => await this.allTokensSwapsCountPrevious24h(),
+        );
+    }
 
     async getEgldPriceInUSD(): Promise<string> {
         return await this.pairCompute.firstTokenPrice(scAddress.WEGLD_USDC);
@@ -405,10 +429,116 @@ export class TokenComputeService implements ITokenComputeService {
         );
 
         if (tokens.length > 0) {
-            const createdAtTimestamp = tokens[0]._source.timestamp;
+            const createdAtTimestamp = tokens[0].timestamp;
             return createdAtTimestamp.toString();
         }
 
         return undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async tokenSwapCount(tokenID: string): Promise<number> {
+        const allSwapsCount = await this.swapCountExecutor.execute(null);
+
+        const currentTokenSwapCount = allSwapsCount.find(
+            (elem) => elem.tokenID === tokenID,
+        );
+
+        return currentTokenSwapCount ? currentTokenSwapCount.swapsCount : 0;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async tokenPrevious24hSwapCount(tokenID: string): Promise<number> {
+        const allSwapsCount = await this.swapCountPrevious24hExecutor.execute(
+            null,
+        );
+
+        const currentTokenSwapCount = allSwapsCount.find(
+            (elem) => elem.tokenID === tokenID,
+        );
+
+        return currentTokenSwapCount ? currentTokenSwapCount.swapsCount : 0;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async allTokensSwapsCount(): Promise<
+        { tokenID: string; swapsCount: number }[]
+    > {
+        const cacheKey = 'token.allTokensSwapsCount';
+        const cachedValue = await this.cachingService.get<
+            { tokenID: string; swapsCount: number }[]
+        >(cacheKey);
+        if (cachedValue && cachedValue !== undefined) {
+            return cachedValue;
+        }
+
+        const end = moment.utc().unix();
+        const start = moment.unix(end).subtract(1, 'day').unix();
+
+        const swapsCount = await this.computeAllTokensSwapsCount(start, end);
+        await this.cachingService.set(
+            cacheKey,
+            swapsCount,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+        return swapsCount;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async allTokensSwapsCountPrevious24h(): Promise<
+        { tokenID: string; swapsCount: number }[]
+    > {
+        const cacheKey = 'token.allTokensSwapsCountPrevious24h';
+        const cachedValue = await this.cachingService.get<
+            { tokenID: string; swapsCount: number }[]
+        >(cacheKey);
+        if (cachedValue && cachedValue !== undefined) {
+            return cachedValue;
+        }
+
+        const end = moment.utc().subtract(1, 'day').unix();
+        const start = moment.utc().subtract(2, 'days').unix();
+
+        const swapsCount = await this.computeAllTokensSwapsCount(start, end);
+        await this.cachingService.set(
+            cacheKey,
+            swapsCount,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+        return swapsCount;
+    }
+
+    async computeAllTokensSwapsCount(
+        start: number,
+        end: number,
+    ): Promise<{ tokenID: string; swapsCount: number }[]> {
+        const pairAddresses = await this.routerAbi.pairsAddress();
+
+        const allSwapsCount = await this.logsElasticService.getTokenSwapsCount(
+            start,
+            end,
+            pairAddresses,
+        );
+
+        const result = [];
+
+        for (const entry of allSwapsCount.entries()) {
+            result.push({
+                tokenID: entry[0],
+                swapsCount: entry[1],
+            });
+        }
+
+        return result;
     }
 }
