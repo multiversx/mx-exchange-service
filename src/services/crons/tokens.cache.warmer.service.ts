@@ -9,6 +9,7 @@ import { TokenService } from 'src/modules/tokens/services/token.service';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import moment from 'moment';
 
 @Injectable()
 export class TokensCacheWarmerService {
@@ -65,6 +66,50 @@ export class TokensCacheWarmerService {
 
         profiler.stop();
         this.logger.info(`Finish refresh tokens data in ${profiler.duration}`);
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    @Lock({ name: 'cacheTokensSwapsCount', verbose: true })
+    async cacheTokensSwapsCount(): Promise<void> {
+        this.logger.info('Start refresh cached tokens swaps count', {
+            context: 'CacheTokens',
+        });
+
+        const profiler = new PerformanceProfiler();
+
+        const nowTimestamp = moment.utc().unix();
+        const oneDayAgoTimestamp = moment
+            .unix(nowTimestamp)
+            .subtract(1, 'day')
+            .unix();
+        const twoDaysyAgoTimestamp = moment
+            .unix(nowTimestamp)
+            .subtract(2, 'days')
+            .unix();
+
+        const [swapsCount, previous24hSwapsCount] = await Promise.all([
+            this.tokenComputeService.computeAllTokensSwapsCount(
+                oneDayAgoTimestamp,
+                nowTimestamp,
+            ),
+            this.tokenComputeService.computeAllTokensSwapsCount(
+                twoDaysyAgoTimestamp,
+                oneDayAgoTimestamp,
+            ),
+        ]);
+
+        const cachedKeys = await Promise.all([
+            this.tokenSetterService.setAllTokensSwapsCount(swapsCount),
+            this.tokenSetterService.setAllTokensPrevious24hSwapsCount(
+                previous24hSwapsCount,
+            ),
+        ]);
+        await this.deleteCacheKeys(cachedKeys);
+
+        profiler.stop();
+        this.logger.info(
+            `Finish refresh tokens swaps count data in ${profiler.duration}`,
+        );
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

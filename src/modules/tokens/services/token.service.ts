@@ -76,13 +76,18 @@ export class TokenService {
             tokenIDs,
         );
 
+        let tokens = await Promise.all(
+            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
+        );
+
+        tokens = await this.tokenFilteringService.tokensBySearchTerm(
+            filters,
+            tokens,
+        );
+
         if (sorting) {
             tokenIDs = await this.sortTokens(tokenIDs, sorting);
         }
-
-        const tokens = await Promise.all(
-            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
-        );
 
         return new CollectionType({
             count: tokens.length,
@@ -236,6 +241,13 @@ export class TokenService {
                 sortFieldData = await Promise.all(
                     tokenIDs.map((tokenID) =>
                         this.tokenCompute.tokenPrevious24hVolumeUSD(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.TRADES_COUNT:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenSwapCount(tokenID),
                     ),
                 );
                 break;
