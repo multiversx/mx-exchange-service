@@ -258,6 +258,13 @@ export class StakingService {
                     ),
                 );
                 break;
+            case StakingFarmsSortableFields.DEPLOYED_AT:
+                sortFieldData = await Promise.all(
+                    stakeAddresses.map((address) =>
+                        this.stakingCompute.deployedAt(address),
+                    ),
+                );
+                break;
             default:
                 break;
         }

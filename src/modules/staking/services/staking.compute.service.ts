@@ -12,6 +12,7 @@ import { denominateAmount } from 'src/utils/token.converters';
 import { OptimalCompoundModel } from '../models/staking.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class StakingComputeService {
@@ -22,6 +23,7 @@ export class StakingComputeService {
         private readonly contextGetter: ContextGetterService,
         private readonly tokenService: TokenService,
         private readonly tokenCompute: TokenComputeService,
+        private readonly apiService: MXApiService,
     ) {}
 
     async computeStakeRewardsForPosition(
@@ -334,5 +336,24 @@ export class StakingComputeService {
             hours: Math.floor(frequencyHours),
             minutes: Math.floor(frequencyMinutes),
         });
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async deployedAt(stakeAddress: string): Promise<number> {
+        return await this.computeDeployedAt(stakeAddress);
+    }
+
+    async computeDeployedAt(stakeAddress: string): Promise<number> {
+        const { deployedAt } = await this.apiService.getAccountStats(
+            stakeAddress,
+        );
+        return deployedAt ?? undefined;
     }
 }

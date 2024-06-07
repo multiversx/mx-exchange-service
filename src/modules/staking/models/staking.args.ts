@@ -6,6 +6,7 @@ export enum StakingFarmsSortableFields {
     PRICE = 'price',
     TVL = 'tvl',
     APR = 'apr',
+    DEPLOYED_AT = 'deployedAt',
 }
 
 registerEnumType(StakingFarmsSortableFields, {
