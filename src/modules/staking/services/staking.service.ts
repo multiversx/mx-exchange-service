@@ -27,6 +27,7 @@ import {
     StakingFarmsSortingArgs,
 } from '../models/staking.args';
 import { SortingOrder } from 'src/modules/common/page.data';
+import { StakingFilteringService } from './staking.filtering.service';
 
 @Injectable()
 export class StakingService {
@@ -38,6 +39,8 @@ export class StakingService {
         private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetter: RemoteConfigGetterService,
+        @Inject(forwardRef(() => StakingFilteringService))
+        private readonly stakingFilteringService: StakingFilteringService,
     ) {}
 
     async getFarmsStaking(): Promise<StakingModel[]> {
@@ -64,12 +67,11 @@ export class StakingService {
         let farmsStakingAddresses =
             await this.remoteConfigGetter.getStakingAddresses();
 
-        const farmsStaking = farmsStakingAddresses.map(
-            (address) =>
-                new StakingModel({
-                    address,
-                }),
-        );
+        farmsStakingAddresses =
+            await this.stakingFilteringService.stakingFarmsByToken(
+                filters,
+                farmsStakingAddresses,
+            );
 
         if (sorting) {
             farmsStakingAddresses = await this.sortFarms(
@@ -77,6 +79,13 @@ export class StakingService {
                 sorting,
             );
         }
+
+        const farmsStaking = farmsStakingAddresses.map(
+            (address) =>
+                new StakingModel({
+                    address,
+                }),
+        );
 
         return new CollectionType({
             count: farmsStaking.length,
