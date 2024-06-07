@@ -57,6 +57,8 @@ export class PairsFilter {
     hasDualFarms: boolean;
     @Field({ nullable: true })
     minDeployedAt: number;
+    @Field({ nullable: true })
+    searchToken: string;
 }
 
 @InputType()

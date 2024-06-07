@@ -1,5 +1,5 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { AssetsModel } from './models/assets.model';
+import { AssetsModel, SocialModel } from './models/assets.model';
 import { EsdtToken } from './models/esdtToken.model';
 import { RolesModel } from './models/roles.model';
 import {
@@ -17,6 +17,14 @@ import ConnectionArgs, {
     getPagingParameters,
 } from '../common/filters/connection.args';
 import PageResponse from '../common/page.response';
+
+@Resolver(() => AssetsModel)
+export class AssetsResolver extends GenericResolver {
+    @ResolveField(() => SocialModel, { nullable: true })
+    async social(@Parent() parent: AssetsModel): Promise<SocialModel> {
+        return new SocialModel(parent.social);
+    }
+}
 
 @Resolver(() => EsdtToken)
 export class TokensResolver extends GenericResolver {

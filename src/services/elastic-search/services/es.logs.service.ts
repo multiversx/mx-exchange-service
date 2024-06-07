@@ -26,7 +26,6 @@ export class ESLogsService {
 
         const processLogsAction = async (items: any[]): Promise<void> => {
             for (const transactionLogs of items) {
-                // console.log(transactionLogs);
                 swapEvents.push(
                     ...this.processSwapEvents(
                         transactionLogs.events,

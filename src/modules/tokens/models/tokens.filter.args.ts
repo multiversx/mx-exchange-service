@@ -37,6 +37,8 @@ export class TokensFilter {
     @Field(() => Boolean, { defaultValue: false })
     enabledSwaps: boolean;
     @Field({ nullable: true })
+    searchToken?: string;
+    @Field({ nullable: true })
     minLiquidity: number;
 }
 

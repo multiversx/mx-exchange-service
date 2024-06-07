@@ -7,12 +7,14 @@ import {
     PairsFilter,
 } from 'src/modules/router/models/filter.args';
 import BigNumber from 'bignumber.js';
+import { PairService } from './pair.service';
 
 @Injectable()
 export class PairFilteringService {
     constructor(
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
+        private readonly pairService: PairService,
     ) {}
 
     async pairsByIssuedLpToken(
@@ -80,6 +82,50 @@ export class PairFilteringService {
             );
         }
         return await Promise.resolve(pairsMetadata);
+    }
+
+    async pairsByWildcardToken(
+        pairFilter: PairsFilter,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (
+            !pairFilter.searchToken ||
+            pairFilter.searchToken.trim().length < 3
+        ) {
+            return pairsMetadata;
+        }
+
+        const searchTerm = pairFilter.searchToken.toUpperCase().trim();
+
+        const pairsFirstToken = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairService.getFirstToken(pairMetadata.address),
+            ),
+        );
+        const pairsSecondToken = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairService.getSecondToken(pairMetadata.address),
+            ),
+        );
+
+        const filteredPairs: PairMetadata[] = [];
+        for (const [index, pair] of pairsMetadata.entries()) {
+            const firstToken = pairsFirstToken[index];
+            const secondToken = pairsSecondToken[index];
+
+            if (
+                firstToken.name.toUpperCase().includes(searchTerm) ||
+                firstToken.identifier.toUpperCase().includes(searchTerm) ||
+                firstToken.ticker.toUpperCase().includes(searchTerm) ||
+                secondToken.name.toUpperCase().includes(searchTerm) ||
+                secondToken.identifier.toUpperCase().includes(searchTerm) ||
+                secondToken.ticker.toUpperCase().includes(searchTerm)
+            ) {
+                filteredPairs.push(pair);
+            }
+        }
+
+        return filteredPairs;
     }
 
     async pairsByState(
