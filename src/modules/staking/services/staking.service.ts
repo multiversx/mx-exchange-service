@@ -247,9 +247,7 @@ export class StakingService {
             case StakingFarmsSortableFields.PRICE:
                 sortFieldData = await Promise.all(
                     stakeAddresses.map((address) =>
-                        this.stakingCompute.computeFarmingTokenPriceUSD(
-                            address,
-                        ),
+                        this.stakingCompute.farmingTokenPriceUSD(address),
                     ),
                 );
                 break;

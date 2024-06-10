@@ -146,7 +146,7 @@ export class StakingComputeService {
         return extraRewardsAPRBoundedPerBlock.multipliedBy(blockDifferenceBig);
     }
 
-    async computeFarmingTokenPriceUSD(stakeAddress: string): Promise<string> {
+    async farmingTokenPriceUSD(stakeAddress: string): Promise<string> {
         const farmingTokenID = await this.stakingAbi.farmingTokenID(
             stakeAddress,
         );

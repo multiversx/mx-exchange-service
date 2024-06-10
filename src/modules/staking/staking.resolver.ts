@@ -142,6 +142,11 @@ export class StakingResolver {
         return this.stakingAbi.state(parent.address);
     }
 
+    @ResolveField()
+    async deployedAt(@Parent() parent: StakingModel) {
+        return this.stakingCompute.deployedAt(parent.address);
+    }
+
     @Query(() => String)
     async getLastErrorMessage(
         @Args('stakeAddress') stakeAddress: string,

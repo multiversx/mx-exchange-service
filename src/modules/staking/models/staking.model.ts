@@ -47,6 +47,8 @@ export class StakingModel {
     transferExecGasLimit: string;
     @Field()
     state: string;
+    @Field(() => Int)
+    deployedAt: number;
 
     constructor(init?: Partial<StakingModel>) {
         Object.assign(this, init);

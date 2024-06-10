@@ -22,12 +22,6 @@ export class StakingFilteringService {
 
         const searchTerm = stakingFilter.searchToken.toUpperCase().trim();
 
-        const farmTokens = await Promise.all(
-            stakeAddresses.map((address) =>
-                this.stakingService.getFarmToken(address),
-            ),
-        );
-
         const farmingTokens = await Promise.all(
             stakeAddresses.map((address) =>
                 this.stakingService.getFarmingToken(address),
@@ -36,13 +30,9 @@ export class StakingFilteringService {
 
         const filteredAddresses: string[] = [];
         for (const [index, address] of stakeAddresses.entries()) {
-            const farmToken = farmTokens[index];
             const farmingToken = farmingTokens[index];
 
             if (
-                farmToken.name.toUpperCase().includes(searchTerm) ||
-                farmToken.collection.toUpperCase().includes(searchTerm) ||
-                farmToken.ticker.toUpperCase().includes(searchTerm) ||
                 farmingToken.name.toUpperCase().includes(searchTerm) ||
                 farmingToken.identifier.toUpperCase().includes(searchTerm) ||
                 farmingToken.ticker.toUpperCase().includes(searchTerm)
