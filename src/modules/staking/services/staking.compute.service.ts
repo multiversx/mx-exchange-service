@@ -146,18 +146,6 @@ export class StakingComputeService {
         return extraRewardsAPRBoundedPerBlock.multipliedBy(blockDifferenceBig);
     }
 
-    // @ErrorLoggerAsync({
-    //     logArgs: true,
-    // })
-    // @GetOrSetCache({
-    //     baseKey: 'stake',
-    //     remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-    //     localTtl: CacheTtlInfo.ContractState.localTtl,
-    // })
-    // async farmingTokenPriceUSD(stakeAddress: string): Promise<string> {
-    //     return this.computeFarmingTokenPriceUSD(stakeAddress);
-    // }
-
     async computeFarmingTokenPriceUSD(stakeAddress: string): Promise<string> {
         const farmingTokenID = await this.stakingAbi.farmingTokenID(
             stakeAddress,

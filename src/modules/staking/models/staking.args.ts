@@ -38,8 +38,6 @@ export class ClaimRewardsWithNewValueArgs extends GenericStakeFarmArgs {
 @InputType()
 export class StakingFarmsFilter {
     @Field(() => String, { nullable: true })
-    state?: string;
-    @Field(() => String, { nullable: true })
     searchToken?: string;
 }
 
