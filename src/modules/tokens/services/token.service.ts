@@ -76,7 +76,7 @@ export class TokenService {
             tokenIDs,
         );
 
-        tokenIDs = await this.tokenFilteringService.tokensByLiquidity(
+        tokenIDs = await this.tokenFilteringService.tokensByLiquidityUSD(
             filters,
             tokenIDs,
         );
@@ -238,7 +238,7 @@ export class TokenService {
             case TokensSortableFields.VOLUME_CHANGE_24H:
                 sortFieldData = await Promise.all(
                     tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenVolumeChange24h(tokenID),
+                        this.tokenCompute.tokenVolumeUSDChange24h(tokenID),
                     ),
                 );
                 break;

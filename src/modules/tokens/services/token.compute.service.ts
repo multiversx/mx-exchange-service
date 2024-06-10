@@ -261,11 +261,11 @@ export class TokenComputeService implements ITokenComputeService {
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
         localTtl: CacheTtlInfo.Token.localTtl,
     })
-    async tokenPriceChange24h(tokenID: string): Promise<string> {
-        return await this.computePriceChange24h(tokenID);
+    async tokenPriceChange24h(tokenID: string): Promise<number> {
+        return await this.computeTokenPriceChange24h(tokenID);
     }
 
-    async computePriceChange24h(tokenID: string): Promise<string> {
+    async computeTokenPriceChange24h(tokenID: string): Promise<number> {
         const [currentPrice, previous24hPrice] = await Promise.all([
             this.tokenPriceDerivedUSD(tokenID),
             this.tokenPrevious24hPrice(tokenID),
@@ -275,10 +275,10 @@ export class TokenComputeService implements ITokenComputeService {
         const previous24hPriceBN = new BigNumber(previous24hPrice);
 
         if (previous24hPriceBN.isZero()) {
-            return '0';
+            return 0;
         }
 
-        return currentPriceBN.dividedBy(previous24hPrice).toFixed();
+        return currentPriceBN.dividedBy(previous24hPrice).toNumber();
     }
 
     @ErrorLoggerAsync({
@@ -289,13 +289,11 @@ export class TokenComputeService implements ITokenComputeService {
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
         localTtl: CacheTtlInfo.Token.localTtl,
     })
-    async tokenVolumeChange24h(tokenID: string): Promise<string> {
-        return await this.computeVolumeChange24h(tokenID);
+    async tokenVolumeUSDChange24h(tokenID: string): Promise<number> {
+        return await this.computeTokenVolumeUSDChange24h(tokenID);
     }
 
-    async computeVolumeChange24h(tokenID: string): Promise<string> {
-        const min_24h_volume = 10000;
-
+    async computeTokenVolumeUSDChange24h(tokenID: string): Promise<number> {
         const [currentVolume, previous24hVolume] = await Promise.all([
             this.tokenVolumeUSD24h(tokenID),
             this.tokenPrevious24hVolumeUSD(tokenID),
@@ -305,15 +303,15 @@ export class TokenComputeService implements ITokenComputeService {
         const previous24hVolumeBN = new BigNumber(previous24hVolume);
 
         if (currentVolumeBN.isZero()) {
-            return '0';
+            return 0;
         }
 
         const maxPrevious24hVolume = BigNumber.maximum(
             previous24hVolumeBN,
-            min_24h_volume,
+            constantsConfig.trendingScore.MIN_24H_VOLUME,
         );
 
-        return currentVolumeBN.dividedBy(maxPrevious24hVolume).toFixed();
+        return currentVolumeBN.dividedBy(maxPrevious24hVolume).toNumber();
     }
 
     @ErrorLoggerAsync({
@@ -324,13 +322,11 @@ export class TokenComputeService implements ITokenComputeService {
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
         localTtl: CacheTtlInfo.Token.localTtl,
     })
-    async tokenTradeChange24h(tokenID: string): Promise<string> {
-        return await this.computeTradeChange24h(tokenID);
+    async tokenTradeChange24h(tokenID: string): Promise<number> {
+        return await this.computeTokenTradeChange24h(tokenID);
     }
 
-    async computeTradeChange24h(tokenID: string): Promise<string> {
-        const min_24h_trade_count = new BigNumber(100);
-
+    async computeTokenTradeChange24h(tokenID: string): Promise<number> {
         const [currentSwaps, previous24hSwaps] = await Promise.all([
             this.tokenSwapCount(tokenID),
             this.tokenPrevious24hSwapCount(tokenID),
@@ -340,15 +336,15 @@ export class TokenComputeService implements ITokenComputeService {
         const previous24hSwapsBN = new BigNumber(previous24hSwaps);
 
         if (currentSwapsBN.isZero()) {
-            return '0';
+            return 0;
         }
 
-        const max_previous_24h_trade_count = BigNumber.maximum(
+        const maxPrevious24hTradeCount = BigNumber.maximum(
             previous24hSwapsBN,
-            min_24h_trade_count,
+            constantsConfig.trendingScore.MIN_24H_TRADE_COUNT,
         );
 
-        return currentSwapsBN.dividedBy(max_previous_24h_trade_count).toFixed();
+        return currentSwapsBN.dividedBy(maxPrevious24hTradeCount).toNumber();
     }
 
     @ErrorLoggerAsync({
@@ -617,20 +613,17 @@ export class TokenComputeService implements ITokenComputeService {
 
     async computeTokenTrendingScore(tokenID: string): Promise<string> {
         const [volumeChange, priceChange, tradeChange] = await Promise.all([
-            this.tokenVolumeChange24h(tokenID),
+            this.tokenVolumeUSDChange24h(tokenID),
             this.tokenPriceChange24h(tokenID),
             this.tokenTradeChange24h(tokenID),
         ]);
 
-        const volumeChangeNumber = new BigNumber(volumeChange).toNumber();
-        const tradeChangeNumber = new BigNumber(tradeChange).toNumber();
-
         const volumeScore = new BigNumber(0.4).multipliedBy(
-            Math.log(volumeChangeNumber),
+            Math.log(volumeChange),
         );
         const priceScore = new BigNumber(0.3).multipliedBy(priceChange);
         const tradeScore = new BigNumber(0.3).multipliedBy(
-            Math.log(tradeChangeNumber),
+            Math.log(tradeChange),
         );
 
         if (volumeScore.isNaN() || priceScore.isNaN() || tradeScore.isNaN()) {

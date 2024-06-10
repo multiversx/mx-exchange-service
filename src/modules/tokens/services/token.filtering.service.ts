@@ -76,7 +76,7 @@ export class TokenFilteringService {
         return filteredTokens;
     }
 
-    async tokensByLiquidity(
+    async tokensByLiquidityUSD(
         tokensFilter: TokensFilter,
         tokenIDs: string[],
     ): Promise<string[]> {
