@@ -279,12 +279,6 @@ export class TokenComputeService implements ITokenComputeService {
         }
 
         return currentPriceBN.dividedBy(previous24hPrice).toFixed();
-        // const difference = currentPriceBN.minus(previous24hPriceBN);
-
-        // return difference
-        //     .dividedBy(previous24hPriceBN)
-        //     .multipliedBy(100)
-        //     .toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -319,14 +313,7 @@ export class TokenComputeService implements ITokenComputeService {
             min_24h_volume,
         );
 
-        // const difference = currentVolumeBN.minus(previous24hVolumeBN);
-
         return currentVolumeBN.dividedBy(maxPrevious24hVolume).toFixed();
-
-        // return difference
-        //     .dividedBy(previous24hVolumeBN)
-        //     .multipliedBy(100)
-        //     .toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -362,13 +349,6 @@ export class TokenComputeService implements ITokenComputeService {
         );
 
         return currentSwapsBN.dividedBy(max_previous_24h_trade_count).toFixed();
-
-        // const difference = currentSwapsBN.minus(previous24hSwapsBN);
-
-        // return difference
-        //     .dividedBy(previous24hSwapsBN)
-        //     .multipliedBy(100)
-        //     .toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -626,11 +606,11 @@ export class TokenComputeService implements ITokenComputeService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    // @GetOrSetCache({
-    //     baseKey: 'token',
-    //     remoteTtl: CacheTtlInfo.Token.remoteTtl,
-    //     localTtl: CacheTtlInfo.Token.localTtl,
-    // })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
     async tokenTrendingScore(tokenID: string): Promise<string> {
         return await this.computeTokenTrendingScore(tokenID);
     }
@@ -657,12 +637,6 @@ export class TokenComputeService implements ITokenComputeService {
             return new BigNumber('-Infinity').toFixed();
         }
 
-        console.log(
-            `${tokenID} - volumeChange : ${volumeChangeNumber} | tradeChange : ${tradeChangeNumber}`,
-        );
-
-        const trendingScore = volumeScore.plus(priceScore).plus(tradeScore);
-
-        return trendingScore.toFixed();
+        return volumeScore.plus(priceScore).plus(tradeScore).toFixed();
     }
 }
