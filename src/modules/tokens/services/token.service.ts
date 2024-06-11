@@ -76,6 +76,15 @@ export class TokenService {
             tokenIDs,
         );
 
+        tokenIDs = await this.tokenFilteringService.tokensByLiquidityUSD(
+            filters,
+            tokenIDs,
+        );
+
+        if (sorting) {
+            tokenIDs = await this.sortTokens(tokenIDs, sorting);
+        }
+
         let tokens = await Promise.all(
             tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
         );
@@ -84,10 +93,6 @@ export class TokenService {
             filters,
             tokens,
         );
-
-        if (sorting) {
-            tokenIDs = await this.sortTokens(tokenIDs, sorting);
-        }
 
         return new CollectionType({
             count: tokens.length,
@@ -223,6 +228,34 @@ export class TokenService {
                     ),
                 );
                 break;
+            case TokensSortableFields.PRICE_CHANGE_24H:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenPriceChange24h(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.VOLUME_CHANGE_24H:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenVolumeUSDChange24h(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.TRADES_COUNT_CHANGE_24H:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenTradeChange24h(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.CREATED_AT:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenCreatedAt(tokenID),
+                    ),
+                );
+                break;
             case TokensSortableFields.LIQUIDITY:
                 sortFieldData = await Promise.all(
                     tokenIDs.map((tokenID) =>
@@ -248,6 +281,13 @@ export class TokenService {
                 sortFieldData = await Promise.all(
                     tokenIDs.map((tokenID) =>
                         this.tokenCompute.tokenSwapCount(tokenID),
+                    ),
+                );
+                break;
+            case TokensSortableFields.TRENDING_SCORE:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.tokenTrendingScore(tokenID),
                     ),
                 );
                 break;
