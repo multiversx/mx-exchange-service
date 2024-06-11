@@ -1,15 +1,17 @@
 import {
     Controller,
-    DefaultValuePipe,
     Get,
-    ParseIntPipe,
     Query,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
+import { BarsQueryArgs, BarsResponse } from './dtos/bars.response';
+import { TradingViewService } from './services/trading.view.service';
 
 @Controller('trading-view')
 export class TradingViewController {
+    constructor(private readonly tradingViewService: TradingViewService) {}
+
     @Get('/config')
     async config() {
         return {
@@ -20,7 +22,7 @@ export class TradingViewController {
                 '30',
                 '60',
                 '240',
-                'D',
+                '1D',
                 '7D',
                 '1M',
             ],
@@ -28,31 +30,46 @@ export class TradingViewController {
             supports_timescale_marks: false,
             supports_group_request: false,
             supports_search: true,
+            supports_time: false,
+        };
+    }
+
+    @Get('/symbols')
+    async symbolResolve(@Query('symbol') symbol: string) {
+        return {
+            ticker: symbol,
+            name: symbol,
+            description: symbol,
+            type: 'crypto',
+            session: '24x7',
+            timezone: 'Etc/UTC',
+            exchange: 'xExchange',
+            minmov: 1,
+            pricescale: 100,
+            has_daily: true,
+            has_intraday: true,
+            visible_plots_set: 'ohlc',
+            has_weekly_and_monthly: true,
+            supported_resolutions: [
+                '1',
+                '5',
+                '15',
+                '30',
+                '60',
+                '240',
+                '1D',
+                '7D',
+                '1M',
+            ],
+            // volume_precision: 2,
+            data_status: 'streaming',
         };
     }
 
     @Get('/history')
-    @UsePipes(
-        new ValidationPipe({
-            // skipNullProperties: true,
-            // skipMissingProperties: true,
-            // skipUndefinedProperties: true,
-        }),
-    )
     async historyBars(
-        @Query('symbol') symbol: string,
-        @Query('from', new ParseIntPipe()) from: number,
-        @Query('to', new ParseIntPipe()) to: number,
-        @Query('resolution') resolution: string,
-        @Query('countback', new ParseIntPipe({ optional: true }))
-        countback?: number,
-    ) {
-        return {
-            symbol,
-            from,
-            to,
-            resolution,
-            countback,
-        };
+        @Query(new ValidationPipe()) queryArgs: BarsQueryArgs,
+    ): Promise<BarsResponse> {
+        return await this.tradingViewService.getBars(queryArgs);
     }
 }
