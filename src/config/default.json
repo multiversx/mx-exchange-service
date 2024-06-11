@@ -617,7 +617,11 @@
             "WEGLD-d7c6bb": "100000000000000000",
             "MEX-a659d0": "1000000000000000000000000"
         },
-        "COMPOUND_TRANSACTION_FEE": 0.000365144
+        "COMPOUND_TRANSACTION_FEE": 0.000365144,
+        "trendingScore": {
+          "MIN_24H_VOLUME": 10000,
+          "MIN_24H_TRADE_COUNT": 100
+        }
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"

@@ -128,6 +128,15 @@ export class TokenSetterService extends GenericSetterService {
         );
     }
 
+    async setTrendingScore(tokenID: string, value: string): Promise<string> {
+        return await this.setData(
+            `token.tokenTrendingScore.${tokenID}`,
+            value,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+    }
+
     private getTokenCacheKey(tokenID: string, ...args: any): string {
         return generateCacheKeyFromParams('token', tokenID, args);
     }
