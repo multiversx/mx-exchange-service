@@ -35,6 +35,17 @@ export class TradingViewService {
     }
 
     async getBars(queryArgs: BarsQueryArgs): Promise<BarsResponse> {
+        const tokenMetadata = await this.tokenService.getTokenMetadata(
+            queryArgs.symbol,
+        );
+
+        if (!tokenMetadata) {
+            return new BarsResponse({
+                s: 'error',
+                errmsg: `Could not resolve symbol ${queryArgs.symbol}`,
+            });
+        }
+
         const resolution = this.convertResolution(queryArgs.resolution);
 
         let start = queryArgs.from;
