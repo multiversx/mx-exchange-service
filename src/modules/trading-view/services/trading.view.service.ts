@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import {
     BarsQueryArgs,
     BarsResponse,
@@ -10,12 +10,29 @@ import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
 import { decodeTime } from 'src/utils/analytics.utils';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class TradingViewService {
     constructor(
         private readonly analyticsQueryService: AnalyticsQueryService,
+        private readonly tokenService: TokenService,
     ) {}
+
+    async resolveSymbol(
+        symbol: string,
+    ): Promise<{ name: string; ticker: string }> {
+        const tokenMetadata = await this.tokenService.getTokenMetadata(symbol);
+
+        if (!tokenMetadata) {
+            throw new NotFoundException(`Could not resolve symbol ${symbol}`);
+        }
+
+        return {
+            ticker: tokenMetadata.ticker,
+            name: tokenMetadata.name,
+        };
+    }
 
     async getBars(queryArgs: BarsQueryArgs): Promise<BarsResponse> {
         const resolution = this.convertResolution(queryArgs.resolution);
