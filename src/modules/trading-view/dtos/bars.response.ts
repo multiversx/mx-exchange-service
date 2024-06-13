@@ -2,6 +2,18 @@ import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
 
+export const supportedResolutions = [
+    '1',
+    '5',
+    '15',
+    '30',
+    '60',
+    '240',
+    '1D',
+    '7D',
+    '1M',
+];
+
 export enum TradingViewResolution {
     MINUTE_1 = '1',
     MINUTE_5 = '5',
