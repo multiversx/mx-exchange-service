@@ -54,6 +54,14 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
     }): Promise<CandleDataModel[]> {
         throw new Error('Method not implemented.');
     }
+    getPriceCandlesWithoutGapfilling({
+        series,
+        metric,
+        start,
+        end,
+    }): Promise<CandleDataModel[]> {
+        throw new Error('Method not implemented.');
+    }
 }
 
 export const AnalyticsQueryServiceProvider = {

@@ -535,6 +535,52 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
+    @TimescaleDBQuery()
+    async getPriceCandlesWithoutGapfilling({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<CandleDataModel[]> {
+        const candleRepository = this.getCandleModelByResolution(resolution);
+        const startDate = moment.unix(start).utc().toString();
+        const endDate = moment.unix(end).utc().toString();
+
+        const query = await candleRepository
+            .createQueryBuilder()
+            .select(`time_bucket('${resolution}', time) as bucket`)
+            .addSelect('first(open, time) as open')
+            .addSelect('last(close, time) as close')
+            .addSelect('min(low) as low')
+            .addSelect('max(high) as high')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere('time between :startDate and :endDate', {
+                startDate,
+                endDate,
+            })
+            .groupBy('bucket')
+            .getRawMany();
+
+        if (!query) {
+            return [];
+        }
+
+        return query.map(
+            (row) =>
+                new CandleDataModel({
+                    time: row.bucket,
+                    ohlc: [
+                        row.open ?? null,
+                        row.high ?? null,
+                        row.low ?? null,
+                        row.close ?? null,
+                    ],
+                }),
+        );
+    }
+
     private getCandleModelByResolution(
         resolution: PriceCandlesResolutions,
     ): Repository<PriceCandleMinute | PriceCandleHourly | PriceCandleDaily> {

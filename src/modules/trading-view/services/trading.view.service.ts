@@ -35,13 +35,14 @@ export class TradingViewService {
                 .unix();
         }
 
-        const priceCandles = await this.analyticsQueryService.getPriceCandles({
-            series: queryArgs.symbol,
-            metric: 'priceUSD',
-            start: start,
-            end: queryArgs.to,
-            resolution: resolution,
-        });
+        const priceCandles =
+            await this.analyticsQueryService.getPriceCandlesWithoutGapfilling({
+                series: queryArgs.symbol,
+                metric: 'priceUSD',
+                start: start,
+                end: queryArgs.to,
+                resolution: resolution,
+            });
 
         if (priceCandles.length === 0) {
             return new BarsResponse({
