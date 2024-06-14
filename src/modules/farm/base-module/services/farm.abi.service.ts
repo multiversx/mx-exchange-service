@@ -420,4 +420,32 @@ export class FarmAbiService
     async getFarmShardRaw(farmAddress: string): Promise<number> {
         return (await this.apiService.getAccountStats(farmAddress)).shard;
     }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmDeployedTimestamp(farmAddress: string): Promise<number> {
+        return await this.getFarmDeployedTimestampRaw(farmAddress);
+    }
+
+    async getFarmDeployedTimestampRaw(
+        farmAddress: string,
+    ): Promise<number | undefined> {
+        try {
+            const addressDetails = await this.apiService.getAccountStats(
+                farmAddress,
+            );
+            return addressDetails.deployedAt ?? undefined;
+        } catch (error) {
+            if (error.message.includes('Account not found')) {
+                return undefined;
+            }
+            throw error;
+        }
+    }
 }

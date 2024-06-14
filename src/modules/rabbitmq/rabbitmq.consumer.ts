@@ -6,7 +6,6 @@ import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
-import { farmsAddresses } from 'src/utils/farm.utils';
 import { RouterHandlerService } from './handlers/router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.service';
@@ -64,6 +63,7 @@ import { RouterAbiService } from '../router/services/router.abi.service';
 import { EscrowHandlerService } from './handlers/escrow.handler.service';
 import { governanceContractsAddresses } from '../../utils/governance';
 import { GovernanceHandlerService } from './handlers/governance.handler.service';
+import { FarmFactoryService } from '../farm/farm.factory';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -72,6 +72,7 @@ export class RabbitMqConsumer {
 
     constructor(
         private readonly routerAbi: RouterAbiService,
+        private readonly farmFactory: FarmFactoryService,
         private readonly liquidityHandler: LiquidityHandler,
         private readonly swapHandler: SwapEventHandler,
         private readonly wsFarmHandler: FarmHandlerService,
@@ -326,7 +327,8 @@ export class RabbitMqConsumer {
     async getFilterAddresses(): Promise<void> {
         this.filterAddresses = [];
         this.filterAddresses = await this.routerAbi.getAllPairsAddressRaw();
-        this.filterAddresses.push(...farmsAddresses());
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+        this.filterAddresses.push(...farmsAddresses);
         this.filterAddresses.push(scAddress.routerAddress);
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
         this.filterAddresses.push(...scAddress.priceDiscovery);

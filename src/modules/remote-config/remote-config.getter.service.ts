@@ -8,6 +8,7 @@ import { GenericGetterService } from 'src/services/generics/generic.getter.servi
 import { SCAddressType } from './models/sc-address.model';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()
 export class RemoteConfigGetterService extends GenericGetterService {
@@ -73,37 +74,31 @@ export class RemoteConfigGetterService extends GenericGetterService {
         );
     }
 
+    @GetOrSetCache({
+        baseKey: 'scAddress',
+        remoteTtl: Constants.oneHour(),
+    })
     async getStakingAddresses(): Promise<string[]> {
-        this.baseKey = 'scAddress';
-        const cacheKey = this.getCacheKey(SCAddressType.STAKING);
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.scAddressRepositoryService
-                    .find({
-                        category: SCAddressType.STAKING,
-                    })
-                    .then((res) => {
-                        return res.map((scAddress) => scAddress.address);
-                    }),
-            Constants.oneHour(),
-        );
+        return this.scAddressRepositoryService
+            .find({
+                category: SCAddressType.STAKING,
+            })
+            .then((res) => {
+                return res.map((scAddress) => scAddress.address);
+            });
     }
 
+    @GetOrSetCache({
+        baseKey: 'scAddress',
+        remoteTtl: Constants.oneHour(),
+    })
     async getStakingProxyAddresses(): Promise<string[]> {
-        this.baseKey = 'scAddress';
-        const cacheKey = this.getCacheKey(SCAddressType.STAKING_PROXY);
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.scAddressRepositoryService
-                    .find({
-                        category: SCAddressType.STAKING_PROXY,
-                    })
-                    .then((res) => {
-                        return res.map((scAddress) => scAddress.address);
-                    }),
-            Constants.oneHour(),
-        );
+        return this.scAddressRepositoryService
+            .find({
+                category: SCAddressType.STAKING_PROXY,
+            })
+            .then((res) => {
+                return res.map((scAddress) => scAddress.address);
+            });
     }
 }

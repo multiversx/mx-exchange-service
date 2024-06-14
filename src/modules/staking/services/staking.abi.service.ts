@@ -16,6 +16,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IStakingAbiService } from './interfaces';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class StakingAbiService
@@ -25,6 +26,7 @@ export class StakingAbiService
     constructor(
         protected readonly mxProxy: MXProxyService,
         private readonly gatewayService: MXGatewayService,
+        private readonly apiService: MXApiService,
     ) {
         super(mxProxy);
     }
@@ -497,5 +499,33 @@ export class StakingAbiService
             contract.methodsExplicit.getLastErrorMessage();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async stakingDeployedTimestamp(stakingAddress: string): Promise<number> {
+        return await this.getStakingDeployedTimestampRaw(stakingAddress);
+    }
+
+    async getStakingDeployedTimestampRaw(
+        stakingAddress: string,
+    ): Promise<number | undefined> {
+        try {
+            const addressDetails = await this.apiService.getAccountStats(
+                stakingAddress,
+            );
+            return addressDetails.deployedAt ?? undefined;
+        } catch (error) {
+            if (error.message.includes('Account not found')) {
+                return undefined;
+            }
+            throw error;
+        }
     }
 }

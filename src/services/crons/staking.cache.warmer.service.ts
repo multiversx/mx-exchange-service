@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
 import { PUB_SUB } from '../redis.pubSub.module';
+import { StakingService } from 'src/modules/staking/services/staking.service';
 
 @Injectable()
 export class StakingCacheWarmerService {
@@ -13,14 +13,14 @@ export class StakingCacheWarmerService {
         private readonly stakingAbi: StakingAbiService,
         private readonly stakeSetterService: StakingSetterService,
         private readonly stakeCompute: StakingComputeService,
-        private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly stakingService: StakingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_HOUR)
     async cacheFarmsStaking(): Promise<void> {
         const farmsStakingAddresses =
-            await this.remoteConfigGetterService.getStakingAddresses();
+            await this.stakingService.getStakingAddresses();
         for (const address of farmsStakingAddresses) {
             const [farmTokenID, farmingTokenID, rewardTokenID] =
                 await Promise.all([
@@ -48,7 +48,7 @@ export class StakingCacheWarmerService {
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheStakingInfo(): Promise<void> {
         const farmsStakingAddresses =
-            await this.remoteConfigGetterService.getStakingAddresses();
+            await this.stakingService.getStakingAddresses();
         for (const address of farmsStakingAddresses) {
             const [
                 annualPercentageRewards,
@@ -88,7 +88,7 @@ export class StakingCacheWarmerService {
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheStakingRewards(): Promise<void> {
         const farmsStakingAddresses =
-            await this.remoteConfigGetterService.getStakingAddresses();
+            await this.stakingService.getStakingAddresses();
         for (const address of farmsStakingAddresses) {
             const [
                 farmTokenSupply,

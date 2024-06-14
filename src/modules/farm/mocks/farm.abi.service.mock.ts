@@ -80,6 +80,10 @@ export class FarmAbiServiceMock implements IFarmAbiService {
     async farmShard(farmAddress: string): Promise<number> {
         return 1;
     }
+
+    async farmDeployedTimestamp(farmAddress: string): Promise<number> {
+        return 1636895880;
+    }
 }
 
 export const FarmAbiServiceProvider = {

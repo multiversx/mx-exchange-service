@@ -23,7 +23,6 @@ import { FarmSetterFactory } from './farm.setter.factory';
         ContextModule,
         forwardRef(() => PairModule),
         TokenModule,
-        FarmCustomModule,
         FarmModuleV1_2,
         FarmModuleV1_3,
         FarmModuleV2,
