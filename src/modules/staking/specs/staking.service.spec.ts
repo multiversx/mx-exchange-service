@@ -15,6 +15,7 @@ import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { StakingFilteringService } from '../services/staking.filtering.service';
 
 describe('StakingService', () => {
     let module: TestingModule;
@@ -41,6 +42,7 @@ describe('StakingService', () => {
                 TokenServiceProvider,
                 TokenComputeServiceProvider,
                 ApiConfigService,
+                StakingFilteringService,
             ],
         }).compile();
     });
