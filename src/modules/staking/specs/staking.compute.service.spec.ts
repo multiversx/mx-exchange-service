@@ -18,6 +18,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { StakingFilteringService } from '../services/staking.filtering.service';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -41,6 +42,7 @@ describe('StakingComputeService', () => {
                 MXApiServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 ApiConfigService,
+                StakingFilteringService,
             ],
         }).compile();
     });

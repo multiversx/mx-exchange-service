@@ -21,7 +21,7 @@ export class TokensCacheWarmerService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cacheTokens', verbose: true })
     async cacheTokens(): Promise<void> {
         this.logger.info('Start refresh cached tokens data', {
@@ -30,6 +30,8 @@ export class TokensCacheWarmerService {
 
         const tokens = await this.tokenService.getUniqueTokenIDs(false);
         const profiler = new PerformanceProfiler();
+
+        await this.cacheTokensSwapsCount();
 
         for (const tokenID of tokens) {
             const [
@@ -64,19 +66,13 @@ export class TokensCacheWarmerService {
             await this.deleteCacheKeys(cachedKeys);
         }
 
+        await this.cacheTokensTrendingScore(tokens);
+
         profiler.stop();
         this.logger.info(`Finish refresh tokens data in ${profiler.duration}`);
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
-    @Lock({ name: 'cacheTokensSwapsCount', verbose: true })
-    async cacheTokensSwapsCount(): Promise<void> {
-        this.logger.info('Start refresh cached tokens swaps count', {
-            context: 'CacheTokens',
-        });
-
-        const profiler = new PerformanceProfiler();
-
+    private async cacheTokensSwapsCount(): Promise<void> {
         const nowTimestamp = moment.utc().unix();
         const oneDayAgoTimestamp = moment
             .unix(nowTimestamp)
@@ -105,11 +101,24 @@ export class TokensCacheWarmerService {
             ),
         ]);
         await this.deleteCacheKeys(cachedKeys);
+    }
 
-        profiler.stop();
-        this.logger.info(
-            `Finish refresh tokens swaps count data in ${profiler.duration}`,
-        );
+    private async cacheTokensTrendingScore(tokens: string[]): Promise<void> {
+        const cachedKeys = [];
+        for (const tokenID of tokens) {
+            const trendingScore =
+                await this.tokenComputeService.computeTokenTrendingScore(
+                    tokenID,
+                );
+
+            const cachedKey = await this.tokenSetterService.setTrendingScore(
+                tokenID,
+                trendingScore,
+            );
+
+            cachedKeys.push(cachedKey);
+        }
+        await this.deleteCacheKeys(cachedKeys);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

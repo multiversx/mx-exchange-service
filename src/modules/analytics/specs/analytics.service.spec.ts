@@ -47,6 +47,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { StakingFilteringService } from 'src/modules/staking/services/staking.filtering.service';
 
 describe('AnalyticsService', () => {
     let module: TestingModule;
@@ -103,6 +104,7 @@ describe('AnalyticsService', () => {
                 StakingAbiServiceProvider,
                 StakingService,
                 StakingComputeService,
+                StakingFilteringService,
                 EnergyAbiServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,

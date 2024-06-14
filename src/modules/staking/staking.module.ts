@@ -10,6 +10,7 @@ import { StakingService } from './services/staking.service';
 import { StakingSetterService } from './services/staking.setter.service';
 import { StakingTransactionService } from './services/staking.transactions.service';
 import { StakingResolver } from './staking.resolver';
+import { StakingFilteringService } from './services/staking.filtering.service';
 
 @Module({
     imports: [
@@ -26,12 +27,14 @@ import { StakingResolver } from './staking.resolver';
         StakingComputeService,
         StakingTransactionService,
         StakingResolver,
+        StakingFilteringService,
     ],
     exports: [
         StakingAbiService,
         StakingService,
         StakingSetterService,
         StakingComputeService,
+        StakingFilteringService,
     ],
 })
 export class StakingModule {}

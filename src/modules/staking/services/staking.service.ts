@@ -20,6 +20,15 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ContextTracker } from '@multiversx/sdk-nestjs-common';
+import { CollectionType } from 'src/modules/common/collection.type';
+import { PaginationArgs } from 'src/modules/dex.model';
+import {
+    StakingFarmsFilter,
+    StakingFarmsSortableFields,
+    StakingFarmsSortingArgs,
+} from '../models/staking.args';
+import { SortingOrder } from 'src/modules/common/page.data';
+import { StakingFilteringService } from './staking.filtering.service';
 
 @Injectable()
 export class StakingService {
@@ -31,6 +40,8 @@ export class StakingService {
         private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetter: RemoteConfigGetterService,
+        @Inject(forwardRef(() => StakingFilteringService))
+        private readonly stakingFilteringService: StakingFilteringService,
     ) {}
 
     async getStakingAddresses(): Promise<string[]> {
@@ -67,6 +78,43 @@ export class StakingService {
         }
 
         return farmsStaking;
+    }
+
+    async getFilteredFarmsStaking(
+        pagination: PaginationArgs,
+        filters: StakingFarmsFilter,
+        sorting: StakingFarmsSortingArgs,
+    ): Promise<CollectionType<StakingModel>> {
+        let farmsStakingAddresses =
+            await this.remoteConfigGetter.getStakingAddresses();
+
+        farmsStakingAddresses =
+            await this.stakingFilteringService.stakingFarmsByToken(
+                filters,
+                farmsStakingAddresses,
+            );
+
+        if (sorting) {
+            farmsStakingAddresses = await this.sortFarms(
+                farmsStakingAddresses,
+                sorting,
+            );
+        }
+
+        const farmsStaking = farmsStakingAddresses.map(
+            (address) =>
+                new StakingModel({
+                    address,
+                }),
+        );
+
+        return new CollectionType({
+            count: farmsStaking.length,
+            items: farmsStaking.slice(
+                pagination.offset,
+                pagination.offset + pagination.limit,
+            ),
+        });
     }
 
     async getFarmToken(stakeAddress: string): Promise<NftCollection> {
@@ -208,5 +256,60 @@ export class StakingService {
         ) {
             throw new Error('Sender is not the owner of the contract.');
         }
+    }
+
+    private async sortFarms(
+        stakeAddresses: string[],
+        stakingFarmsSorting: StakingFarmsSortingArgs,
+    ): Promise<string[]> {
+        let sortFieldData = [];
+
+        switch (stakingFarmsSorting.sortField) {
+            case StakingFarmsSortableFields.PRICE:
+                sortFieldData = await Promise.all(
+                    stakeAddresses.map((address) =>
+                        this.stakingCompute.farmingTokenPriceUSD(address),
+                    ),
+                );
+                break;
+            case StakingFarmsSortableFields.APR:
+                sortFieldData = await Promise.all(
+                    stakeAddresses.map((address) =>
+                        this.stakingCompute.stakeFarmAPR(address),
+                    ),
+                );
+                break;
+            case StakingFarmsSortableFields.TVL:
+                sortFieldData = await Promise.all(
+                    stakeAddresses.map((address) =>
+                        this.stakingCompute.stakedValueUSD(address),
+                    ),
+                );
+                break;
+            case StakingFarmsSortableFields.DEPLOYED_AT:
+                sortFieldData = await Promise.all(
+                    stakeAddresses.map((address) =>
+                        this.stakingCompute.deployedAt(address),
+                    ),
+                );
+                break;
+            default:
+                break;
+        }
+
+        const combined = stakeAddresses.map((address, index) => ({
+            address: address,
+            sortValue: new BigNumber(sortFieldData[index]),
+        }));
+
+        combined.sort((a, b) => {
+            if (stakingFarmsSorting.sortOrder === SortingOrder.ASC) {
+                return a.sortValue.comparedTo(b.sortValue);
+            }
+
+            return b.sortValue.comparedTo(a.sortValue);
+        });
+
+        return combined.map((item) => item.address);
     }
 }
