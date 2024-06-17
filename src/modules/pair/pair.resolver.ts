@@ -5,6 +5,7 @@ import {
     FeeDestination,
     LiquidityPosition,
     LockedTokensInfo,
+    PairCompoundedAPRModel,
     PairModel,
 } from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
@@ -27,7 +28,6 @@ import { PairComputeService } from './services/pair.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
 import { constantsConfig } from 'src/config';
-import { PairCompoundedAPRModel } from './models/pair.compounded.apr.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { FarmComputeServiceV2 } from '../farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from '../staking/services/staking.compute.service';
@@ -51,7 +51,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
     async farmBaseAPR(
         @Parent() parent: PairCompoundedAPRModel,
     ): Promise<string> {
-        const farmAddress = await this.pairCompute.pairFarmAddress(
+        const farmAddress = await this.pairCompute.getPairFarmAddress(
             parent.address,
         );
 
@@ -66,7 +66,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
     async farmBoostedAPR(
         @Parent() parent: PairCompoundedAPRModel,
     ): Promise<string> {
-        const farmAddress = await this.pairCompute.pairFarmAddress(
+        const farmAddress = await this.pairCompute.getPairFarmAddress(
             parent.address,
         );
 
@@ -81,7 +81,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
     async dualFarmBaseAPR(
         @Parent() parent: PairCompoundedAPRModel,
     ): Promise<string> {
-        const stakingAddress = await this.pairCompute.pairStakingFarmAddress(
+        const stakingAddress = await this.pairCompute.getPairStakingFarmAddress(
             parent.address,
         );
 
@@ -96,7 +96,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
     async dualFarmBoostedAPR(
         @Parent() parent: PairCompoundedAPRModel,
     ): Promise<string> {
-        const stakingAddress = await this.pairCompute.pairStakingFarmAddress(
+        const stakingAddress = await this.pairCompute.getPairStakingFarmAddress(
             parent.address,
         );
 

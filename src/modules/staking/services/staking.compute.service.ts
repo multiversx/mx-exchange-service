@@ -777,7 +777,7 @@ export class StakingComputeService {
         const bnBoostedRewardsPercentage = new BigNumber(
             boostedYieldsRewardsPercentage,
         )
-            .dividedBy(10000)
+            .dividedBy(constantsConfig.MAX_PERCENT)
             .multipliedBy(100);
 
         const rawBoostedApr = new BigNumber(apr).multipliedBy(

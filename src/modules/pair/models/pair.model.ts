@@ -4,7 +4,6 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
-import { PairCompoundedAPRModel } from './pair.compounded.apr.model';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -38,6 +37,31 @@ export class LockedTokensInfo {
     lockingDeadlineEpoch: number;
 
     constructor(init?: Partial<LockedTokensInfo>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class PairCompoundedAPRModel {
+    @Field()
+    address: string;
+
+    @Field({ nullable: true })
+    feesAPR: string;
+
+    @Field({ nullable: true })
+    farmBaseAPR: string;
+
+    @Field({ nullable: true })
+    farmBoostedAPR: string;
+
+    @Field({ nullable: true })
+    dualFarmBaseAPR: string;
+
+    @Field({ nullable: true })
+    dualFarmBoostedAPR: string;
+
+    constructor(init?: Partial<PairCompoundedAPRModel>) {
         Object.assign(this, init);
     }
 }

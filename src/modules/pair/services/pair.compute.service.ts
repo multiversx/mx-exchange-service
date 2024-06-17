@@ -655,19 +655,7 @@ export class PairComputeService implements IPairComputeService {
         return deployedAt ?? undefined;
     }
 
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async pairFarmAddress(pairAddress: string): Promise<string> {
-        return await this.computePairFarmAddress(pairAddress);
-    }
-
-    async computePairFarmAddress(pairAddress: string): Promise<string> {
+    async getPairFarmAddress(pairAddress: string): Promise<string> {
         const hasFarms = await this.hasFarms(pairAddress);
 
         if (!hasFarms) {
@@ -692,19 +680,7 @@ export class PairComputeService implements IPairComputeService {
         return addresses[farmAddressIndex];
     }
 
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async pairStakingFarmAddress(pairAddress: string): Promise<string> {
-        return await this.computePairStakingFarmAddress(pairAddress);
-    }
-
-    async computePairStakingFarmAddress(pairAddress: string): Promise<string> {
+    async getPairStakingFarmAddress(pairAddress: string): Promise<string> {
         const hasDualFarms = await this.hasDualFarms(pairAddress);
 
         if (!hasDualFarms) {
