@@ -12,9 +12,6 @@ import BigNumber from 'bignumber.js';
 import { decodeTime } from 'src/utils/analytics.utils';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
-import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
-import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
