@@ -10,6 +10,8 @@ import {
     StakeFarmArgs,
     GenericStakeFarmArgs,
     ClaimRewardsWithNewValueArgs,
+    StakingFarmsFilter,
+    StakingFarmsSortingArgs,
 } from './models/staking.args';
 import {
     OptimalCompoundModel,
@@ -36,6 +38,11 @@ import {
     BoostedRewardsModel,
     UserTotalBoostedPosition,
 } from '../farm/models/farm.model';
+import { StakingFarmsResponse } from './models/staking.farms.response';
+import ConnectionArgs, {
+    getPagingParameters,
+} from '../common/filters/connection.args';
+import PageResponse from '../common/page.response';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -259,6 +266,11 @@ export class StakingResolver {
         return this.stakingAbi.farmPositionMigrationNonce(parent.address);
     }
 
+    @ResolveField()
+    async deployedAt(@Parent() parent: StakingModel) {
+        return this.stakingCompute.deployedAt(parent.address);
+    }
+
     @Query(() => String)
     async getLastErrorMessage(
         @Args('stakeAddress') stakeAddress: string,
@@ -357,6 +369,44 @@ export class StakingResolver {
     @Query(() => [StakingModel])
     async stakingFarms(): Promise<StakingModel[]> {
         return this.stakingService.getFarmsStaking();
+    }
+
+    @Query(() => StakingFarmsResponse)
+    async filteredStakingFarms(
+        @Args({
+            name: 'filters',
+            type: () => StakingFarmsFilter,
+            nullable: true,
+        })
+        filters: StakingFarmsFilter,
+        @Args({
+            name: 'pagination',
+            type: () => ConnectionArgs,
+            nullable: true,
+        })
+        pagination: ConnectionArgs,
+        @Args({
+            name: 'sorting',
+            type: () => StakingFarmsSortingArgs,
+            nullable: true,
+        })
+        sorting: StakingFarmsSortingArgs,
+    ): Promise<StakingFarmsResponse> {
+        const pagingParams = getPagingParameters(pagination);
+
+        const response = await this.stakingService.getFilteredFarmsStaking(
+            pagingParams,
+            filters,
+            sorting,
+        );
+
+        return PageResponse.mapResponse<StakingModel>(
+            response?.items || [],
+            pagination ?? new ConnectionArgs(),
+            response?.count || 0,
+            pagingParams.offset,
+            pagingParams.limit,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

@@ -390,7 +390,7 @@
             },
             "unstakeFarm": 18500000,
             "unbondFarm": 8000000,
-            "claimRewards": 10000000,
+            "claimRewards": 15000000,
             "claimBoostedRewards": 20000000,
             "claimRewardsWithNewValue": 7500000,
             "compoundRewards": 10000000,
@@ -512,7 +512,7 @@
                 "dualFarmPosition": 67000000,
                 "exitFarm": 50000000
             },
-            "energyPosition": 45000000
+            "energyPosition": 10000000
         },
         "composableTasks": {
             "default": 1000000
@@ -617,7 +617,11 @@
             "WEGLD-d7c6bb": "100000000000000000",
             "MEX-a659d0": "1000000000000000000000000"
         },
-        "COMPOUND_TRANSACTION_FEE": 0.000365144
+        "COMPOUND_TRANSACTION_FEE": 0.000365144,
+        "trendingScore": {
+          "MIN_24H_VOLUME": 10000,
+          "MIN_24H_TRADE_COUNT": 100
+        }
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"

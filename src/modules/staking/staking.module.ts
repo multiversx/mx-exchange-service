@@ -12,6 +12,7 @@ import { StakingTransactionService } from './services/staking.transactions.servi
 import { StakingResolver } from './staking.resolver';
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
+import { StakingFilteringService } from './services/staking.filtering.service';
 
 @Module({
     imports: [
@@ -30,12 +31,14 @@ import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-spli
         StakingComputeService,
         StakingTransactionService,
         StakingResolver,
+        StakingFilteringService,
     ],
     exports: [
         StakingAbiService,
         StakingService,
         StakingSetterService,
         StakingComputeService,
+        StakingFilteringService,
     ],
 })
 export class StakingModule {}

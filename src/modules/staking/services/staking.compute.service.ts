@@ -17,6 +17,7 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class StakingComputeService {
@@ -30,6 +31,7 @@ export class StakingComputeService {
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
+        private readonly apiService: MXApiService,
     ) {}
 
     async computeStakeRewardsForPosition(
@@ -150,6 +152,13 @@ export class StakingComputeService {
             .dividedBy(constantsConfig.BLOCKS_IN_YEAR);
 
         return extraRewardsAPRBoundedPerBlock.multipliedBy(blockDifferenceBig);
+    }
+
+    async farmingTokenPriceUSD(stakeAddress: string): Promise<string> {
+        const farmingTokenID = await this.stakingAbi.farmingTokenID(
+            stakeAddress,
+        );
+        return await this.tokenCompute.tokenPriceDerivedUSD(farmingTokenID);
     }
 
     @ErrorLoggerAsync({
@@ -726,6 +735,25 @@ export class StakingComputeService {
         return blocksInEpoch.reduce((total, current) => {
             return total + current;
         });
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async deployedAt(stakeAddress: string): Promise<number> {
+        return await this.computeDeployedAt(stakeAddress);
+    }
+
+    async computeDeployedAt(stakeAddress: string): Promise<number> {
+        const { deployedAt } = await this.apiService.getAccountStats(
+            stakeAddress,
+        );
+        return deployedAt ?? undefined;
     }
 
     @ErrorLoggerAsync({

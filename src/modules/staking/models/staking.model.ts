@@ -79,6 +79,8 @@ export class StakingModel {
             'The nonce of the first staking farm token with total farm position',
     })
     stakingPositionMigrationNonce: number;
+    @Field(() => Int)
+    deployedAt: number;
 
     constructor(init?: Partial<StakingModel>) {
         Object.assign(this, init);

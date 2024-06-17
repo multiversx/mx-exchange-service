@@ -9,6 +9,7 @@ import { TokenService } from 'src/modules/tokens/services/token.service';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import moment from 'moment';
 
 @Injectable()
 export class TokensCacheWarmerService {
@@ -20,7 +21,7 @@ export class TokensCacheWarmerService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cacheTokens', verbose: true })
     async cacheTokens(): Promise<void> {
         this.logger.info('Start refresh cached tokens data', {
@@ -29,6 +30,8 @@ export class TokensCacheWarmerService {
 
         const tokens = await this.tokenService.getUniqueTokenIDs(false);
         const profiler = new PerformanceProfiler();
+
+        await this.cacheTokensSwapsCount();
 
         for (const tokenID of tokens) {
             const [
@@ -63,8 +66,59 @@ export class TokensCacheWarmerService {
             await this.deleteCacheKeys(cachedKeys);
         }
 
+        await this.cacheTokensTrendingScore(tokens);
+
         profiler.stop();
         this.logger.info(`Finish refresh tokens data in ${profiler.duration}`);
+    }
+
+    private async cacheTokensSwapsCount(): Promise<void> {
+        const nowTimestamp = moment.utc().unix();
+        const oneDayAgoTimestamp = moment
+            .unix(nowTimestamp)
+            .subtract(1, 'day')
+            .unix();
+        const twoDaysyAgoTimestamp = moment
+            .unix(nowTimestamp)
+            .subtract(2, 'days')
+            .unix();
+
+        const [swapsCount, previous24hSwapsCount] = await Promise.all([
+            this.tokenComputeService.computeAllTokensSwapsCount(
+                oneDayAgoTimestamp,
+                nowTimestamp,
+            ),
+            this.tokenComputeService.computeAllTokensSwapsCount(
+                twoDaysyAgoTimestamp,
+                oneDayAgoTimestamp,
+            ),
+        ]);
+
+        const cachedKeys = await Promise.all([
+            this.tokenSetterService.setAllTokensSwapsCount(swapsCount),
+            this.tokenSetterService.setAllTokensPrevious24hSwapsCount(
+                previous24hSwapsCount,
+            ),
+        ]);
+        await this.deleteCacheKeys(cachedKeys);
+    }
+
+    private async cacheTokensTrendingScore(tokens: string[]): Promise<void> {
+        const cachedKeys = [];
+        for (const tokenID of tokens) {
+            const trendingScore =
+                await this.tokenComputeService.computeTokenTrendingScore(
+                    tokenID,
+                );
+
+            const cachedKey = await this.tokenSetterService.setTrendingScore(
+                tokenID,
+                trendingScore,
+            );
+
+            cachedKeys.push(cachedKey);
+        }
+        await this.deleteCacheKeys(cachedKeys);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

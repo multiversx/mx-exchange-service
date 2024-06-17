@@ -106,6 +106,37 @@ export class TokenSetterService extends GenericSetterService {
         );
     }
 
+    async setAllTokensSwapsCount(
+        value: { tokenID: string; swapsCount: number }[],
+    ): Promise<string> {
+        return await this.setData(
+            'token.allTokensSwapsCount',
+            value,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+    }
+
+    async setAllTokensPrevious24hSwapsCount(
+        value: { tokenID: string; swapsCount: number }[],
+    ): Promise<string> {
+        return await this.setData(
+            'token.allTokensSwapsCountPrevious24h',
+            value,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+    }
+
+    async setTrendingScore(tokenID: string, value: string): Promise<string> {
+        return await this.setData(
+            `token.tokenTrendingScore.${tokenID}`,
+            value,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+    }
+
     private getTokenCacheKey(tokenID: string, ...args: any): string {
         return generateCacheKeyFromParams('token', tokenID, args);
     }
