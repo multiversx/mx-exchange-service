@@ -15,6 +15,8 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 @Injectable()
 export class TradingViewService {
@@ -24,45 +26,111 @@ export class TradingViewService {
         private readonly routerAbi: RouterAbiService,
     ) {}
 
-    async resolveSymbol(symbol: string): Promise<string> {
-        const allSymbols = await this.getSymbolsDetails();
+    async resolveSymbol(
+        symbol: string,
+    ): Promise<{ ticker: string; name: string }> {
+        if (symbol.includes(':')) {
+            return await this.resolvePairSymbol(symbol);
+        }
 
-        const currentSymbolDetails = allSymbols.find((elem) => {
-            if (symbol.startsWith('erd1')) {
-                const [symbolSeries, symbolMetric] = symbol.split(':');
+        const token = await this.getTokenFromSymbol(symbol);
 
-                return (
-                    elem.series === symbolSeries && elem.metric === symbolMetric
-                );
-            }
-            return elem.series === symbol;
-        });
-
-        if (!currentSymbolDetails) {
+        if (!token) {
             throw new NotFoundException(`Could not resolve symbol ${symbol}`);
         }
 
-        return currentSymbolDetails.symbol;
+        return { ticker: symbol, name: token.name };
+    }
+
+    async resolvePairSymbol(
+        symbol: string,
+    ): Promise<{ ticker: string; name: string }> {
+        const resolvedPair = await this.getPairMetadataFromSymbol(symbol);
+
+        if (!resolvedPair) {
+            throw new NotFoundException(`Could not resolve symbol ${symbol}`);
+        }
+
+        const baseTokenID = symbol.split(':')[0];
+
+        const [firstToken, secondToken] = await Promise.all([
+            this.tokenService.getTokenMetadata(resolvedPair.firstTokenID),
+            this.tokenService.getTokenMetadata(resolvedPair.secondTokenID),
+        ]);
+
+        return {
+            ticker: symbol,
+            name:
+                resolvedPair.firstTokenID === baseTokenID
+                    ? `${firstToken.name} : ${secondToken.name}`
+                    : `${secondToken.name} : ${firstToken.name}`,
+        };
+    }
+
+    private async getTokenFromSymbol(symbol: string): Promise<EsdtToken> {
+        const allTokenIDs = await this.tokenService.getUniqueTokenIDs(false);
+
+        if (!allTokenIDs.includes(symbol)) {
+            return undefined;
+        }
+
+        return await this.tokenService.getTokenMetadata(symbol);
+    }
+
+    private async getPairMetadataFromSymbol(
+        symbol: string,
+    ): Promise<PairMetadata> {
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const [baseTokenID, quoteTokenID] = symbol.split(':');
+
+        const resolvedPair = pairsMetadata.find((pair) => {
+            return (
+                (pair.firstTokenID === baseTokenID &&
+                    pair.secondTokenID === quoteTokenID) ||
+                (pair.secondTokenID === baseTokenID &&
+                    pair.firstTokenID === quoteTokenID)
+            );
+        });
+
+        return resolvedPair;
     }
 
     async getBars(queryArgs: BarsQueryArgs): Promise<BarsResponse> {
-        const allSymbols = await this.getSymbolsDetails();
+        let metric: string;
+        let series: string;
 
-        const currentSymbolDetails = allSymbols.find(
-            (elem) => elem.symbol === queryArgs.symbol,
-        );
+        if (queryArgs.symbol.includes(':')) {
+            const pair = await this.getPairMetadataFromSymbol(queryArgs.symbol);
+            if (!pair) {
+                return new BarsResponse({
+                    s: 'error',
+                    errmsg: `Could not resolve symbol ${queryArgs.symbol}`,
+                });
+            }
+            const baseTokenID = queryArgs.symbol.split(':')[0];
+            series = pair.address;
+            metric =
+                pair.firstTokenID === baseTokenID
+                    ? 'firstTokenPrice'
+                    : 'secondTokenPrice';
+        } else {
+            const token = await this.getTokenFromSymbol(queryArgs.symbol);
+            if (!token) {
+                return new BarsResponse({
+                    s: 'error',
+                    errmsg: `Could not resolve symbol ${queryArgs.symbol}`,
+                });
+            }
 
-        if (!currentSymbolDetails) {
-            return new BarsResponse({
-                s: 'error',
-                errmsg: `Could not resolve symbol ${queryArgs.symbol}`,
-            });
+            series = token.identifier;
+            metric = 'priceUSD';
         }
 
         const resolution = this.convertResolution(queryArgs.resolution);
 
         let start = queryArgs.from;
 
+        // if 'countback' is set, 'from' should be ignored
         if (queryArgs.countback) {
             const decodedResolution = decodeTime(resolution);
             const resolutionInMinutes = moment
@@ -78,8 +146,8 @@ export class TradingViewService {
 
         const priceCandles =
             await this.analyticsQueryService.getPriceCandlesWithoutGapfilling({
-                series: currentSymbolDetails.series,
-                metric: currentSymbolDetails.metric,
+                series: series,
+                metric: metric,
                 start: start,
                 end: queryArgs.to,
                 resolution: resolution,
@@ -109,94 +177,6 @@ export class TradingViewService {
         }
 
         return result;
-    }
-
-    private async getSeriesAndMetricFromSymbol(symbol: string) {
-        const [base, quote] = symbol.split(':');
-
-        if (quote === 'USD') {
-            const tokens = await this.tokenService.getUniqueTokenIDs(false);
-            const currentTokenID = tokens.find((token) =>
-                token.startsWith(base),
-            );
-
-            if (!currentTokenID) {
-                throw new NotFoundException(
-                    `Could not resolve symbol ${symbol}`,
-                );
-            }
-
-            return {
-                series: currentTokenID,
-                metric: 'priceUSD',
-            };
-        }
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'tradingview',
-        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
-        localTtl: CacheTtlInfo.Analytics.localTtl,
-    })
-    private async getSymbolsDetails(): Promise<
-        { symbol: string; series: string; metric: string }[]
-    > {
-        const symbolsMap = await this.getSymbolsMap();
-
-        const result = [];
-        for (const entry of symbolsMap.entries()) {
-            const [series, metric] = entry[1].split(':');
-            result.push({
-                symbol: entry[0],
-                series,
-                metric,
-            });
-        }
-
-        return result;
-    }
-
-    private async getSymbolsMap(): Promise<Map<string, string>> {
-        const symbolsMap: Map<string, string> = new Map();
-        const [tokensIDs, pairsMetadata] = await Promise.all([
-            this.tokenService.getUniqueTokenIDs(false),
-            this.routerAbi.pairsMetadata(),
-        ]);
-
-        for (const tokenID of tokensIDs) {
-            const ticker = tokenID.split('-')[0];
-            const completeTickerBase = `${ticker}:USD`;
-            const seriesAndMetric = `${tokenID}:priceUSD`;
-
-            let completeTicker = completeTickerBase;
-            let uniqueCounter = 0;
-
-            while (symbolsMap.has(completeTicker)) {
-                uniqueCounter++;
-                completeTicker = `${ticker}${uniqueCounter}:USD`;
-            }
-
-            symbolsMap.set(completeTicker, seriesAndMetric);
-        }
-
-        for (const pair of pairsMetadata) {
-            const firstTokenTicker = pair.firstTokenID.split('-')[0];
-            const secondTokenTicker = pair.secondTokenID.split('-')[0];
-
-            const baseQuoteKey = `${firstTokenTicker}:${secondTokenTicker}`;
-            const baseQuoteSeriesAndMetric = `${pair.address}:firstTokenPrice`;
-
-            const quoteBaseKey = `${secondTokenTicker}:${firstTokenTicker}`;
-            const quoteBaseSeriesAndMetric = `${pair.address}:secondTokenPrice`;
-
-            symbolsMap.set(baseQuoteKey, baseQuoteSeriesAndMetric);
-            symbolsMap.set(quoteBaseKey, quoteBaseSeriesAndMetric);
-        }
-
-        return symbolsMap;
     }
 
     private convertResolution(
