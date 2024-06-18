@@ -7,6 +7,7 @@ export enum TokensSortableFields {
     PREVIOUS_24H_PRICE = 'previous_24h_price',
     PREVIOUS_7D_PRICE = 'previous_7d_price',
     PREVIOUS_24H_VOLUME = 'previous_24h_volume',
+    PRICE_CHANGE_7D = 'price_change_7d',
     PRICE_CHANGE_24H = 'price_change_24h',
     VOLUME_CHANGE_24H = 'volume_change_24h',
     TRADES_COUNT_CHANGE_24H = 'trades_count_change_24h',
