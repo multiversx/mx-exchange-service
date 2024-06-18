@@ -340,6 +340,29 @@ export class PairComputeService implements IPairComputeService {
     })
     @GetOrSetCache({
         baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async previous24hLockedValueUSD(pairAddress: string): Promise<string> {
+        return await this.computePrevious24hLockedValueUSD(pairAddress);
+    }
+
+    async computePrevious24hLockedValueUSD(
+        pairAddress: string,
+    ): Promise<string> {
+        const values24h = await this.analyticsQuery.getValues24h({
+            series: pairAddress,
+            metric: 'lockedValueUSD',
+        });
+
+        return values24h[0]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
         remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
@@ -421,6 +444,26 @@ export class PairComputeService implements IPairComputeService {
         remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
+    async previous24hVolumeUSD(pairAddress: string): Promise<string> {
+        return await this.computePrevious24hVolumeUSD(pairAddress);
+    }
+
+    async computePrevious24hVolumeUSD(pairAddress: string): Promise<string> {
+        const [volume24h, volume48h] = await Promise.all([
+            this.volumeUSD(pairAddress, '24h'),
+            this.volumeUSD(pairAddress, '48h'),
+        ]);
+        return new BigNumber(volume48h).minus(volume24h).toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
+    })
     async feesUSD(pairAddress: string, time: string): Promise<string> {
         return await this.computeFeesUSD(pairAddress, time);
     }
@@ -435,6 +478,26 @@ export class PairComputeService implements IPairComputeService {
             metric: 'feesUSD',
             time,
         });
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
+    })
+    async previous24hFeesUSD(pairAddress: string): Promise<string> {
+        return await this.computePrevious24hFeesUSD(pairAddress);
+    }
+
+    async computePrevious24hFeesUSD(pairAddress: string): Promise<string> {
+        const [fees24h, fees48h] = await Promise.all([
+            this.feesUSD(pairAddress, '24h'),
+            this.feesUSD(pairAddress, '48h'),
+        ]);
+        return new BigNumber(fees48h).minus(fees24h).toFixed();
     }
 
     @ErrorLoggerAsync({

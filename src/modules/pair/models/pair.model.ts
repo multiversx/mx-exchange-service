@@ -80,6 +80,9 @@ export class PairModel {
     lockedValueUSD: string;
 
     @Field()
+    previous24hLockedValueUSD: string;
+
+    @Field()
     firstTokenVolume24h: string;
 
     @Field()
@@ -89,7 +92,13 @@ export class PairModel {
     volumeUSD24h: string;
 
     @Field()
+    previous24hVolumeUSD: string;
+
+    @Field()
     feesUSD24h: string;
+
+    @Field()
+    previous24hFeesUSD: string;
 
     @Field()
     feesAPR: string;
