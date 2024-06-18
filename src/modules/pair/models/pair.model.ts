@@ -42,6 +42,31 @@ export class LockedTokensInfo {
 }
 
 @ObjectType()
+export class PairCompoundedAPRModel {
+    @Field()
+    address: string;
+
+    @Field({ nullable: true })
+    feesAPR: string;
+
+    @Field({ nullable: true })
+    farmBaseAPR: string;
+
+    @Field({ nullable: true })
+    farmBoostedAPR: string;
+
+    @Field({ nullable: true })
+    dualFarmBaseAPR: string;
+
+    @Field({ nullable: true })
+    dualFarmBoostedAPR: string;
+
+    constructor(init?: Partial<PairCompoundedAPRModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class PairModel {
     @Field()
     address: string;
@@ -149,6 +174,9 @@ export class PairModel {
 
     @Field()
     deployedAt: number;
+
+    @Field(() => PairCompoundedAPRModel, { nullable: true })
+    compoundedAPR: PairCompoundedAPRModel;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);

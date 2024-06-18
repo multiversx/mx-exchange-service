@@ -5,6 +5,7 @@ import {
     FeeDestination,
     LiquidityPosition,
     LockedTokensInfo,
+    PairCompoundedAPRModel,
     PairModel,
 } from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
@@ -27,6 +28,85 @@ import { PairComputeService } from './services/pair.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
 import { constantsConfig } from 'src/config';
+import { GenericResolver } from 'src/services/generics/generic.resolver';
+import { FarmComputeServiceV2 } from '../farm/v2/services/farm.v2.compute.service';
+import { StakingComputeService } from '../staking/services/staking.compute.service';
+
+@Resolver(() => PairCompoundedAPRModel)
+export class PairCompoundedAPRResolver extends GenericResolver {
+    constructor(
+        private readonly pairCompute: PairComputeService,
+        private readonly farmCompute: FarmComputeServiceV2,
+        private readonly stakingCompute: StakingComputeService,
+    ) {
+        super();
+    }
+
+    @ResolveField(() => String)
+    async feesAPR(@Parent() parent: PairCompoundedAPRModel): Promise<string> {
+        return await this.pairCompute.feesAPR(parent.address);
+    }
+
+    @ResolveField(() => String)
+    async farmBaseAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
+        const farmAddress = await this.pairCompute.getPairFarmAddress(
+            parent.address,
+        );
+
+        if (!farmAddress) {
+            return '0';
+        }
+
+        return await this.farmCompute.farmBaseAPR(farmAddress);
+    }
+
+    @ResolveField(() => String)
+    async farmBoostedAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
+        const farmAddress = await this.pairCompute.getPairFarmAddress(
+            parent.address,
+        );
+
+        if (!farmAddress) {
+            return '0';
+        }
+
+        return await this.farmCompute.maxBoostedApr(farmAddress);
+    }
+
+    @ResolveField(() => String)
+    async dualFarmBaseAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
+        const stakingAddress = await this.pairCompute.getPairStakingFarmAddress(
+            parent.address,
+        );
+
+        if (!stakingAddress) {
+            return '0';
+        }
+
+        return await this.stakingCompute.stakeFarmAPR(stakingAddress);
+    }
+
+    @ResolveField(() => String)
+    async dualFarmBoostedAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
+        const stakingAddress = await this.pairCompute.getPairStakingFarmAddress(
+            parent.address,
+        );
+
+        if (!stakingAddress) {
+            return '0';
+        }
+
+        return await this.stakingCompute.boostedApr(stakingAddress);
+    }
+}
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -227,6 +307,13 @@ export class PairResolver {
     @ResolveField()
     async deployedAt(@Parent() parent: PairModel): Promise<number> {
         return this.pairCompute.deployedAt(parent.address);
+    }
+
+    @ResolveField(() => PairCompoundedAPRModel, { nullable: true })
+    async compoundedAPR(
+        @Parent() parent: PairModel,
+    ): Promise<PairCompoundedAPRModel> {
+        return new PairCompoundedAPRModel({ address: parent.address });
     }
 
     @Query(() => String)

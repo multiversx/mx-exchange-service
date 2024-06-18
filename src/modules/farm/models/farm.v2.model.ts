@@ -50,6 +50,8 @@ export class FarmModelV2 extends BaseFarmModel {
     @Field()
     baseApr: string;
     @Field()
+    boostedApr: string;
+    @Field()
     optimalEnergyPerLp: string;
 
     constructor(init?: Partial<FarmModelV2>) {

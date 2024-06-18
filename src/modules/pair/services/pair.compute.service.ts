@@ -654,4 +654,58 @@ export class PairComputeService implements IPairComputeService {
         );
         return deployedAt ?? undefined;
     }
+
+    async getPairFarmAddress(pairAddress: string): Promise<string> {
+        const hasFarms = await this.hasFarms(pairAddress);
+
+        if (!hasFarms) {
+            return undefined;
+        }
+
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
+        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
+
+        const farmingTokenIDs = await Promise.all(
+            addresses.map((address) => this.farmAbi.farmingTokenID(address)),
+        );
+
+        const farmAddressIndex = farmingTokenIDs.findIndex(
+            (tokenID) => tokenID === lpTokenID,
+        );
+
+        if (farmAddressIndex === -1) {
+            return undefined;
+        }
+
+        return addresses[farmAddressIndex];
+    }
+
+    async getPairStakingFarmAddress(pairAddress: string): Promise<string> {
+        const hasDualFarms = await this.hasDualFarms(pairAddress);
+
+        if (!hasDualFarms) {
+            return undefined;
+        }
+
+        const stakingProxyAddresses =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
+
+        const pairAddresses = await Promise.all(
+            stakingProxyAddresses.map((address) =>
+                this.stakingProxyAbiService.pairAddress(address),
+            ),
+        );
+
+        const stakingProxyIndex = pairAddresses.findIndex(
+            (address) => address === pairAddress,
+        );
+
+        if (stakingProxyIndex === -1) {
+            return undefined;
+        }
+
+        return await this.stakingProxyAbiService.stakingFarmAddress(
+            stakingProxyAddresses[stakingProxyIndex],
+        );
+    }
 }

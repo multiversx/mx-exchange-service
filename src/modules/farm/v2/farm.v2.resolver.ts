@@ -62,6 +62,11 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
+    async boostedApr(@Parent() parent: FarmModelV2): Promise<string> {
+        return this.farmCompute.maxBoostedApr(parent.address);
+    }
+
+    @ResolveField()
     async boosterRewards(
         @Parent() parent: FarmModelV2,
     ): Promise<GlobalInfoByWeekModel[]> {
