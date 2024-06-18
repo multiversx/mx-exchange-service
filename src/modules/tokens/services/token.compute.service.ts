@@ -291,7 +291,6 @@ export class TokenComputeService implements ITokenComputeService {
         const previous7dPriceBN = new BigNumber(previous7dPrice);
 
         if (previous7dPriceBN.isZero()) {
-            console.log(tokenID, 0);
             return 0;
         }
 
