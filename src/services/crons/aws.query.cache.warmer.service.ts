@@ -12,6 +12,7 @@ import { AnalyticsQueryService } from '../analytics/services/analytics.query.ser
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
+import { constantsConfig } from 'src/config';
 
 @Injectable()
 export class AWSQueryCacheWarmerService {
@@ -40,35 +41,35 @@ export class AWSQueryCacheWarmerService {
                 series: tokenID,
                 metric: 'priceUSD',
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const priceUSDCompleteValues =
                 await this.analyticsQuery.getLatestCompleteValues({
                     series: tokenID,
                     metric: 'priceUSD',
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const lockedValueUSD24h = await this.analyticsQuery.getValues24h({
                 series: tokenID,
                 metric: 'lockedValueUSD',
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const lockedValueUSDCompleteValues =
                 await this.analyticsQuery.getLatestCompleteValues({
                     series: tokenID,
                     metric: 'lockedValueUSD',
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSD24hSum = await this.analyticsQuery.getValues24hSum({
                 series: tokenID,
                 metric: 'volumeUSD',
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSDCompleteValuesSum =
                 await this.analyticsQuery.getSumCompleteValues({
                     series: tokenID,
                     metric: 'volumeUSD',
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
 
             const cachedKeys = await Promise.all([
                 this.analyticsAWSSetter.setValues24h(
@@ -125,35 +126,57 @@ export class AWSQueryCacheWarmerService {
                 series: pairAddress,
                 metric: 'lockedValueUSD',
             });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const firstTokenPrice24h = await this.analyticsQuery.getValues24h({
+                series: pairAddress,
+                metric: 'firstTokenPrice',
+            });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const secondTokenPrice24h = await this.analyticsQuery.getValues24h({
+                series: pairAddress,
+                metric: 'secondTokenPrice',
+            });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const lockedValueUSDCompleteValues =
                 await this.analyticsQuery.getLatestCompleteValues({
                     series: pairAddress,
                     metric: 'lockedValueUSD',
                 });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const feesUSD = await this.analyticsQuery.getValues24hSum({
                 series: pairAddress,
                 metric: 'feesUSD',
             });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSD24hSum = await this.analyticsQuery.getValues24hSum({
                 series: pairAddress,
                 metric: 'volumeUSD',
             });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSDCompleteValuesSum =
                 await this.analyticsQuery.getSumCompleteValues({
                     series: pairAddress,
                     metric: 'volumeUSD',
                 });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const feesUSDCompleteValuesSum =
                 await this.analyticsQuery.getSumCompleteValues({
                     series: pairAddress,
                     metric: 'feesUSD',
                 });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const firstTokenPriceCompleteValues =
+                await this.analyticsQuery.getLatestCompleteValues({
+                    series: pairAddress,
+                    metric: 'firstTokenPrice',
+                });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const secondTokenPriceCompleteValues =
+                await this.analyticsQuery.getLatestCompleteValues({
+                    series: pairAddress,
+                    metric: 'secondTokenPrice',
+                });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
 
             const cachedKeys = await Promise.all([
                 this.analyticsAWSSetter.setValues24h(
@@ -186,6 +209,26 @@ export class AWSQueryCacheWarmerService {
                     'feesUSD',
                     feesUSDCompleteValuesSum,
                 ),
+                this.analyticsAWSSetter.setValues24h(
+                    pairAddress,
+                    'firstTokenPrice',
+                    firstTokenPrice24h,
+                ),
+                this.analyticsAWSSetter.setValues24h(
+                    pairAddress,
+                    'secondTokenPrice',
+                    secondTokenPrice24h,
+                ),
+                this.analyticsAWSSetter.setLatestCompleteValues(
+                    pairAddress,
+                    'firstTokenPrice',
+                    firstTokenPriceCompleteValues,
+                ),
+                this.analyticsAWSSetter.setLatestCompleteValues(
+                    pairAddress,
+                    'secondTokenPrice',
+                    secondTokenPriceCompleteValues,
+                ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
@@ -195,13 +238,13 @@ export class AWSQueryCacheWarmerService {
                 series: 'erd1%',
                 metric: 'volumeUSD',
             });
-        await delay(1000);
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
         const allPairsVolumeUSD24hSum =
             await this.analyticsQuery.getValues24hSum({
                 series: 'erd1%',
                 metric: 'volumeUSD',
             });
-        await delay(1000);
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
         const totalLockedValueUSD =
             await this.analyticsQuery.getLatestCompleteValues({
                 series: 'factory',
