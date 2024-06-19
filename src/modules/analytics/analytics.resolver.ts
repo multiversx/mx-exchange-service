@@ -109,6 +109,8 @@ export class AnalyticsResolver {
         return this.analyticsAWSGetter.getSumCompleteValues(
             args.series,
             args.metric,
+            args.start,
+            args.time,
         );
     }
 
