@@ -250,7 +250,11 @@ export class AWSQueryCacheWarmerService {
                 series: 'factory',
                 metric: 'totalLockedValueUSD',
             });
-
+        await delay(1000);
+        const totalLockedValueUSD24h = await this.analyticsQuery.getValues24h({
+            series: 'factory',
+            metric: 'totalLockedValueUSD',
+        });
         const factoryKeys = await Promise.all([
             this.analyticsAWSSetter.setSumCompleteValues(
                 'factory',
@@ -266,6 +270,11 @@ export class AWSQueryCacheWarmerService {
                 'factory',
                 'totalLockedValueUSD',
                 totalLockedValueUSD,
+            ),
+            this.analyticsAWSSetter.setValues24h(
+                'factory',
+                'totalLockedValueUSD',
+                totalLockedValueUSD24h,
             ),
         ]);
 

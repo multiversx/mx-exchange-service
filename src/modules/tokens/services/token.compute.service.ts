@@ -281,6 +281,22 @@ export class TokenComputeService implements ITokenComputeService {
         return currentPriceBN.dividedBy(previous24hPrice).toNumber();
     }
 
+    async computeTokenPriceChange7d(tokenID: string): Promise<number> {
+        const [currentPrice, previous7dPrice] = await Promise.all([
+            this.tokenPriceDerivedUSD(tokenID),
+            this.tokenPrevious7dPrice(tokenID),
+        ]);
+
+        const currentPriceBN = new BigNumber(currentPrice);
+        const previous7dPriceBN = new BigNumber(previous7dPrice);
+
+        if (previous7dPriceBN.isZero()) {
+            return 0;
+        }
+
+        return currentPriceBN.dividedBy(previous7dPriceBN).toNumber();
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
