@@ -323,6 +323,13 @@ export class RouterService {
                     ),
                 );
                 break;
+            case PairSortableFields.APR:
+                sortFieldData = await Promise.all(
+                    pairsMetadata.map((pair) =>
+                        this.pairCompute.computeCompoundedApr(pair.address),
+                    ),
+                );
+                break;
             default:
                 break;
         }
