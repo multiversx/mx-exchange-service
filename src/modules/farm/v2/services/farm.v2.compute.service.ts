@@ -29,6 +29,7 @@ export class FarmComputeServiceV2
         protected readonly farmAbi: FarmAbiServiceV2,
         @Inject(forwardRef(() => FarmServiceV2))
         protected readonly farmService: FarmServiceV2,
+        @Inject(forwardRef(() => PairService))
         protected readonly pairService: PairService,
         @Inject(forwardRef(() => PairComputeService))
         protected readonly pairCompute: PairComputeService,
