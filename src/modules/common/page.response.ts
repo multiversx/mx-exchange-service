@@ -13,6 +13,10 @@ export default class PageResponse {
             arrayLength: count,
             sliceStart: offset || 0,
         });
+
+        page.pageInfo.hasPreviousPage =
+            page.edges.length > 0 && offset > 0 && offset < count;
+        page.pageInfo.hasNextPage = page.edges.length + offset < count;
         return {
             edges: page.edges,
             pageInfo: page.pageInfo,
