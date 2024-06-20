@@ -250,7 +250,7 @@ export class AWSQueryCacheWarmerService {
                 series: 'factory',
                 metric: 'totalLockedValueUSD',
             });
-        await delay(1000);
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
         const totalLockedValueUSD24h = await this.analyticsQuery.getValues24h({
             series: 'factory',
             metric: 'totalLockedValueUSD',
