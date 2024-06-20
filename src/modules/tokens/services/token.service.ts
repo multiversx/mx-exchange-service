@@ -228,6 +228,13 @@ export class TokenService {
                     ),
                 );
                 break;
+            case TokensSortableFields.PRICE_CHANGE_7D:
+                sortFieldData = await Promise.all(
+                    tokenIDs.map((tokenID) =>
+                        this.tokenCompute.computeTokenPriceChange7d(tokenID),
+                    ),
+                );
+                break;
             case TokensSortableFields.PRICE_CHANGE_24H:
                 sortFieldData = await Promise.all(
                     tokenIDs.map((tokenID) =>
