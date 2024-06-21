@@ -99,6 +99,13 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async previous24hLockedValueUSD(
+        @Parent() parent: PairModel,
+    ): Promise<string> {
+        return this.pairCompute.previous24hLockedValueUSD(parent.address);
+    }
+
+    @ResolveField()
     async firstTokenVolume24h(@Parent() parent: PairModel): Promise<string> {
         return this.pairCompute.firstTokenVolume(parent.address, '24h');
     }
@@ -114,8 +121,18 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async previous24hVolumeUSD(@Parent() parent: PairModel): Promise<string> {
+        return this.pairCompute.previous24hVolumeUSD(parent.address);
+    }
+
+    @ResolveField()
     async feesUSD24h(@Parent() parent: PairModel): Promise<string> {
         return this.pairCompute.feesUSD(parent.address, '24h');
+    }
+
+    @ResolveField()
+    async previous24hFeesUSD(@Parent() parent: PairModel): Promise<string> {
+        return this.pairCompute.previous24hFeesUSD(parent.address);
     }
 
     @ResolveField()

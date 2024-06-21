@@ -127,7 +127,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .select("time_bucket_gapfill('1 day', time) as day")
                 .addSelect(
                     `locf(last(last, time) ${
-                        start ? `, (${previousValue.getQuery()})` : ''
+                        start || time ? `, (${previousValue.getQuery()})` : ''
                     }) as last`,
                 )
                 .where('series = :series', { series })
