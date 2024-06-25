@@ -621,7 +621,8 @@
         "trendingScore": {
           "MIN_24H_VOLUME": 10000,
           "MIN_24H_TRADE_COUNT": 100
-        }
+        },
+        "AWS_QUERY_CACHE_WARMER_DELAY": 100
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"
