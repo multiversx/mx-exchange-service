@@ -787,6 +787,7 @@ export class PairComputeService implements IPairComputeService {
         let farmBaseAprBN = new BigNumber('0');
         let farmBoostedAprBN = new BigNumber('0');
         let dualFarmBaseAprBN = new BigNumber('0');
+        let dualFarmBoostedAprBN = new BigNumber('0');
 
         if (farmAddress) {
             const [farmBaseAPR, farmBoostedAPR] = await Promise.all([
@@ -806,14 +807,22 @@ export class PairComputeService implements IPairComputeService {
         }
 
         if (stakingFarmAddress) {
-            const dualFarmBaseAPR = await this.stakingCompute.stakeFarmAPR(
-                stakingFarmAddress,
-            );
+            const [dualFarmBaseAPR, dualFarmBoostedAPR] = await Promise.all([
+                this.stakingCompute.stakeFarmAPR(stakingFarmAddress),
+                this.stakingCompute.boostedApr(stakingFarmAddress),
+            ]);
 
             dualFarmBaseAprBN = new BigNumber(dualFarmBaseAPR);
+            dualFarmBoostedAprBN = new BigNumber(dualFarmBoostedAPR);
 
             if (dualFarmBaseAprBN.isNaN() || !dualFarmBaseAprBN.isFinite()) {
                 dualFarmBaseAprBN = new BigNumber(0);
+            }
+            if (
+                dualFarmBoostedAprBN.isNaN() ||
+                !dualFarmBoostedAprBN.isFinite()
+            ) {
+                dualFarmBoostedAprBN = new BigNumber(0);
             }
         }
 
@@ -825,6 +834,7 @@ export class PairComputeService implements IPairComputeService {
             .plus(farmBaseAprBN)
             .plus(farmBoostedAprBN)
             .plus(dualFarmBaseAprBN)
+            .plus(dualFarmBoostedAprBN)
             .toFixed();
     }
 }
