@@ -123,6 +123,21 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         });
     }
 
+    async getCandleNextTime({
+        series,
+        metric,
+        resolution,
+        start,
+    }): Promise<string> {
+        const service = await this.getService();
+        return await service.getCandleNextTime({
+            series,
+            metric,
+            resolution,
+            start,
+        });
+    }
+
     private async getService(): Promise<AnalyticsQueryInterface> {
         return this.timescaleDBQuery;
     }

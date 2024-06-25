@@ -151,6 +151,22 @@ export class TradingViewService {
             });
 
         if (priceCandles.length === 0) {
+            const nextTime = await this.analyticsQueryService.getCandleNextTime(
+                {
+                    series,
+                    metric,
+                    resolution,
+                    start,
+                },
+            );
+
+            if (nextTime) {
+                return new BarsResponse({
+                    s: 'no_data',
+                    nextTime: moment(nextTime).unix(),
+                });
+            }
+
             return new BarsResponse({
                 s: 'no_data',
             });

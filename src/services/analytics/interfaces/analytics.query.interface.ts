@@ -49,4 +49,6 @@ export interface AnalyticsQueryInterface {
         start,
         end,
     }): Promise<CandleDataModel[]>;
+
+    getCandleNextTime({ series, metric, resolution, start }): Promise<string>;
 }

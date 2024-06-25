@@ -567,7 +567,19 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             return [];
         }
 
-        return query.map(
+        const alignedOpenCloseRows = query.map((row, index) => {
+            if (index === 0) {
+                return row;
+            }
+
+            if (row.open !== query[index - 1].close) {
+                row.open = query[index - 1].close;
+            }
+
+            return row;
+        });
+
+        return alignedOpenCloseRows.map(
             (row) =>
                 new CandleDataModel({
                     time: row.bucket,
@@ -579,6 +591,45 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                     ],
                 }),
         );
+    }
+
+    async getCandleNextTime({ series, metric, start, resolution }) {
+        const startDate = moment.unix(start).utc().toString();
+        const candleRepository = this.getCandleModelByResolution(resolution);
+        const cacheKey = `nextCandle.${series}.${metric}.${startDate}`;
+        const cachedValue = await this.cacheService.get<string>(cacheKey);
+
+        if (cachedValue !== undefined) {
+            return cachedValue;
+        }
+
+        const firstRow = await candleRepository
+            .createQueryBuilder()
+            .select('time')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere('time < :startDate', { startDate })
+            .orderBy('time', 'DESC')
+            .limit(1)
+            .getRawOne();
+
+        if (firstRow) {
+            await this.cacheService.set(
+                cacheKey,
+                firstRow.time,
+                Constants.oneMinute() * 30,
+                Constants.oneMinute() * 20,
+            );
+        } else {
+            await this.cacheService.set(
+                cacheKey,
+                null,
+                Constants.oneMinute() * 10,
+                Constants.oneMinute() * 7,
+            );
+        }
+
+        return firstRow?.time;
     }
 
     private getCandleModelByResolution(
