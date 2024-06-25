@@ -7,6 +7,7 @@ export enum PairSortableFields {
     VOLUME_24 = 'volume_24h',
     FEES_24 = 'fees_24h',
     DEPLOYED_AT = 'deployed_at',
+    APR = 'apr',
 }
 
 registerEnumType(PairSortableFields, { name: 'PairSortableFields' });
