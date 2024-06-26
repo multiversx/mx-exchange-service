@@ -77,10 +77,12 @@ describe('LockedAssetService', () => {
                     new UnlockMileStoneModel({
                         epochs: 0,
                         percent: 10,
+                        unlockEpoch: 1,
                     }),
                     new UnlockMileStoneModel({
                         epochs: 30,
                         percent: 90,
+                        unlockEpoch: 30,
                     }),
                 ],
             }),
@@ -110,10 +112,12 @@ describe('LockedAssetService', () => {
                     new UnlockMileStoneModel({
                         epochs: 0,
                         percent: 10,
+                        unlockEpoch: 1,
                     }),
                     new UnlockMileStoneModel({
                         epochs: 29,
                         percent: 90,
+                        unlockEpoch: 30,
                     }),
                 ],
             }),
@@ -143,10 +147,12 @@ describe('LockedAssetService', () => {
                     new UnlockMileStoneModel({
                         epochs: 21,
                         percent: 10,
+                        unlockEpoch: 2,
                     }),
                     new UnlockMileStoneModel({
                         epochs: 51,
                         percent: 90,
+                        unlockEpoch: 31,
                     }),
                 ],
             }),
