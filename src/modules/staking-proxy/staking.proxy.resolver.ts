@@ -15,6 +15,7 @@ import { DualYieldTokenAttributesModel } from './models/dualYieldTokenAttributes
 import {
     ClaimDualYieldArgs,
     ProxyStakeFarmArgs,
+    StakingProxiesFilter,
     UnstakeFarmTokensArgs,
 } from './models/staking.proxy.args.model';
 import {
@@ -25,6 +26,11 @@ import {
 import { StakingProxyService } from './services/staking.proxy.service';
 import { StakingProxyTransactionService } from './services/staking.proxy.transactions.service';
 import { StakingProxyAbiService } from './services/staking.proxy.abi.service';
+import { StakingProxiesResponse } from './models/staking.proxies.response';
+import ConnectionArgs, {
+    getPagingParameters,
+} from '../common/filters/connection.args';
+import PageResponse from '../common/page.response';
 
 @Resolver(() => StakingProxyModel)
 export class StakingProxyResolver {
@@ -90,6 +96,38 @@ export class StakingProxyResolver {
     @Query(() => [StakingProxyModel])
     async stakingProxies(): Promise<StakingProxyModel[]> {
         return this.stakingProxyService.getStakingProxies();
+    }
+
+    @Query(() => StakingProxiesResponse)
+    async filteredStakingProxies(
+        @Args({
+            name: 'filters',
+            type: () => StakingProxiesFilter,
+            nullable: true,
+        })
+        filters: StakingProxiesFilter,
+        @Args({
+            name: 'pagination',
+            type: () => ConnectionArgs,
+            nullable: true,
+        })
+        pagination: ConnectionArgs,
+    ): Promise<StakingProxiesResponse> {
+        const pagingParams = getPagingParameters(pagination);
+
+        const response =
+            await this.stakingProxyService.getFilteredStakingProxies(
+                pagingParams,
+                filters,
+            );
+
+        return PageResponse.mapResponse<StakingProxyModel>(
+            response?.items || [],
+            pagination ?? new ConnectionArgs(),
+            response?.count || 0,
+            pagingParams.offset,
+            pagingParams.limit,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
