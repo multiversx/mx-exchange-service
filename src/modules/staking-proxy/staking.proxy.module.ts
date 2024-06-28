@@ -37,6 +37,7 @@ import { StakingProxyFilteringService } from './services/staking.proxy.filtering
         StakingProxyAbiService,
         StakingProxyService,
         StakingProxySetterService,
+        StakingProxyFilteringService,
     ],
 })
 export class StakingProxyModule {}
