@@ -32,5 +32,13 @@ export class UnstakeFarmTokensArgs {
 @InputType()
 export class StakingProxiesFilter {
     @Field({ nullable: true })
+    address: string;
+    @Field({ nullable: true })
     pairAddress: string;
+    @Field({ nullable: true })
+    stakingFarmAddress: string;
+    @Field({ nullable: true })
+    lpFarmAddress: string;
+    @Field(() => String, { nullable: true })
+    searchToken?: string;
 }

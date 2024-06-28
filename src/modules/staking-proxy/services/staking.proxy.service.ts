@@ -1,5 +1,5 @@
 import { DualYieldTokenAttributes } from '@multiversx/sdk-exchange';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ruleOfThree } from 'src/helpers/helpers';
@@ -41,6 +41,7 @@ export class StakingProxyService {
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        @Inject(forwardRef(() => StakingProxyFilteringService))
         private readonly stakingProxyFilteringService: StakingProxyFilteringService,
     ) {}
 
@@ -67,19 +68,41 @@ export class StakingProxyService {
             await this.remoteConfigGetterService.getStakingProxyAddresses();
 
         stakingProxiesAddresses =
+            await this.stakingProxyFilteringService.stakingProxiesByAddress(
+                filters,
+                stakingProxiesAddresses,
+            );
+
+        stakingProxiesAddresses =
             await this.stakingProxyFilteringService.stakingProxiesByPairAdddress(
                 filters,
                 stakingProxiesAddresses,
             );
 
-        const stakingProxies: StakingProxyModel[] = [];
-        for (const address of stakingProxiesAddresses) {
-            stakingProxies.push(
+        stakingProxiesAddresses =
+            await this.stakingProxyFilteringService.stakingProxiesByLpFarmAdddress(
+                filters,
+                stakingProxiesAddresses,
+            );
+
+        stakingProxiesAddresses =
+            await this.stakingProxyFilteringService.stakingProxiesByStakingFarmAdddress(
+                filters,
+                stakingProxiesAddresses,
+            );
+
+        stakingProxiesAddresses =
+            await this.stakingProxyFilteringService.stakingProxiesByToken(
+                filters,
+                stakingProxiesAddresses,
+            );
+
+        const stakingProxies = stakingProxiesAddresses.map(
+            (address) =>
                 new StakingProxyModel({
                     address,
                 }),
-            );
-        }
+        );
 
         return new CollectionType({
             count: stakingProxies.length,
