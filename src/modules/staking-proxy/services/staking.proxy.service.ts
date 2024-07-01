@@ -68,7 +68,7 @@ export class StakingProxyService {
             await this.remoteConfigGetterService.getStakingProxyAddresses();
 
         stakingProxiesAddresses =
-            await this.stakingProxyFilteringService.stakingProxiesByAddress(
+            this.stakingProxyFilteringService.stakingProxiesByAddress(
                 filters,
                 stakingProxiesAddresses,
             );

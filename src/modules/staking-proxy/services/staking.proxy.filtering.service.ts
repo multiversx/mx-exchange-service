@@ -13,16 +13,16 @@ export class StakingProxyFilteringService {
         private readonly stakingProxyService: StakingProxyService,
     ) {}
 
-    async stakingProxiesByAddress(
+    stakingProxiesByAddress(
         filter: StakingProxiesFilter,
         stakingProxyAddresses: string[],
-    ): Promise<string[]> {
+    ): string[] {
         if (filter.address) {
             stakingProxyAddresses = stakingProxyAddresses.filter(
                 (address) => filter.address === address,
             );
         }
-        return await Promise.resolve(stakingProxyAddresses);
+        return stakingProxyAddresses;
     }
 
     async stakingProxiesByPairAdddress(
