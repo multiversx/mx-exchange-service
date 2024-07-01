@@ -44,9 +44,7 @@ export class TokenService {
             );
         }
 
-        const promises = tokenIDs.map((tokenID) =>
-            this.getTokenMetadata(tokenID),
-        );
+        const promises = tokenIDs.map((tokenID) => this.tokenMetadata(tokenID));
         let tokens = await Promise.all(promises);
 
         if (filters.type) {
@@ -86,7 +84,7 @@ export class TokenService {
         }
 
         let tokens = await Promise.all(
-            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
+            tokenIDs.map((tokenID) => this.tokenMetadata(tokenID)),
         );
 
         tokens = await this.tokenFilteringService.tokensBySearchTerm(
@@ -118,16 +116,16 @@ export class TokenService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
-        return await this.cachingService.getOrSet(
-            `token.${tokenID}`,
-            () => this.getTokenMetadataRaw(tokenID),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async tokenMetadata(tokenID: string): Promise<EsdtToken> {
+        return await this.tokenMetadataRaw(tokenID);
     }
 
-    async getTokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
+    async tokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
         return await this.apiService.getToken(tokenID);
     }
 

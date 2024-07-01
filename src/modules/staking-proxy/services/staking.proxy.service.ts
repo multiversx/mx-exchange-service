@@ -58,7 +58,7 @@ export class StakingProxyService {
         const stakingTokenID = await this.stakingProxyAbi.stakingTokenID(
             stakingProxyAddress,
         );
-        return await this.tokenService.getTokenMetadata(stakingTokenID);
+        return await this.tokenService.tokenMetadata(stakingTokenID);
     }
 
     async getFarmToken(stakingProxyAddress: string): Promise<NftCollection> {

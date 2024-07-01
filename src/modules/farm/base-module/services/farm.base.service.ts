@@ -29,7 +29,7 @@ export abstract class FarmServiceBase {
 
     async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
         const farmedTokenID = await this.farmAbi.farmedTokenID(farmAddress);
-        return this.tokenService.getTokenMetadata(farmedTokenID);
+        return this.tokenService.tokenMetadata(farmedTokenID);
     }
 
     async getFarmToken(farmAddress: string): Promise<NftCollection> {
@@ -39,7 +39,7 @@ export abstract class FarmServiceBase {
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
-        return this.tokenService.getTokenMetadata(farmingTokenID);
+        return this.tokenService.tokenMetadata(farmingTokenID);
     }
 
     protected async getRemainingFarmingEpochs(

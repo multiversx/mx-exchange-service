@@ -55,15 +55,15 @@ describe('TokenService', () => {
         const cacheKey = `token.${tokenID}`;
         await cachingService.deleteInCache(cacheKey);
 
-        let token = await service.getTokenMetadata(tokenID);
+        let token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(expectedToken);
 
         jest.spyOn(apiService, 'getToken').mockResolvedValueOnce(undefined);
         await cachingService.deleteInCache(cacheKey);
-        token = await service.getTokenMetadata(tokenID);
+        token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(undefined);
 
-        token = await service.getTokenMetadata(tokenID);
+        token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(expectedToken);
     });
 });

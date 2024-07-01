@@ -33,7 +33,7 @@ export class TokensCacheWarmerService {
         const cachedKeys = [];
 
         for (const tokenID of tokenIDs) {
-            const token = await this.tokenService.getTokenMetadataRaw(tokenID);
+            const token = await this.tokenService.tokenMetadataRaw(tokenID);
 
             const cachedKey = await this.tokenSetterService.setMetadata(
                 tokenID,
