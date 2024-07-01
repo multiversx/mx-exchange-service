@@ -21,7 +21,7 @@ export class TokensCacheWarmerService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     @Lock({ name: 'cacheTokensMetadata', verbose: true })
     async cacheTokensMetadata(): Promise<void> {
         this.logger.info('Start refresh cached tokens metadata', {
