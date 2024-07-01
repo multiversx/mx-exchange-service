@@ -52,7 +52,7 @@ describe('TokenService', () => {
 
         const tokenID = 'WEGLD-123456';
         const expectedToken = Tokens(tokenID);
-        const cacheKey = `token.${tokenID}`;
+        const cacheKey = `token.tokenMetadata.${tokenID}`;
         await cachingService.deleteInCache(cacheKey);
 
         let token = await service.tokenMetadata(tokenID);
