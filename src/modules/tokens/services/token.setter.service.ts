@@ -137,6 +137,15 @@ export class TokenSetterService extends GenericSetterService {
         );
     }
 
+    async setMetadata(tokenID: string, value: EsdtToken): Promise<string> {
+        return await this.setData(
+            `token.${tokenID}`,
+            value,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+    }
+
     private getTokenCacheKey(tokenID: string, ...args: any): string {
         return generateCacheKeyFromParams('token', tokenID, args);
     }

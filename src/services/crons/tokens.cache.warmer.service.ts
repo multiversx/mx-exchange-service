@@ -22,6 +22,36 @@ export class TokensCacheWarmerService {
     ) {}
 
     @Cron(CronExpression.EVERY_MINUTE)
+    @Lock({ name: 'cacheTokensMetadata', verbose: true })
+    async cacheTokensMetadata(): Promise<void> {
+        this.logger.info('Start refresh cached tokens metadata', {
+            context: 'CacheTokens',
+        });
+
+        const tokenIDs = await this.tokenService.getUniqueTokenIDs(false);
+        const profiler = new PerformanceProfiler();
+        const cachedKeys = [];
+
+        for (const tokenID of tokenIDs) {
+            const token = await this.tokenService.getTokenMetadataRaw(tokenID);
+
+            const cachedKey = await this.tokenSetterService.setMetadata(
+                tokenID,
+                token,
+            );
+
+            cachedKeys.push(cachedKey);
+        }
+
+        await this.deleteCacheKeys(cachedKeys);
+
+        profiler.stop();
+        this.logger.info(
+            `Finish refresh tokens metadata in ${profiler.duration}`,
+        );
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cacheTokens', verbose: true })
     async cacheTokens(): Promise<void> {
         this.logger.info('Start refresh cached tokens data', {

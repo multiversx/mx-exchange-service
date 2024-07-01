@@ -115,36 +115,20 @@ export class TokenService {
         return await this.tokenRepository.getTokenType(tokenID);
     }
 
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
     async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
-        if (tokenID === undefined) {
-            return undefined;
-        }
-        const cacheKey = `token.${tokenID}`;
-        const cachedToken = await this.cachingService.get<EsdtToken>(cacheKey);
-        if (cachedToken && cachedToken !== undefined) {
-            await this.cachingService.set<EsdtToken>(
-                cacheKey,
-                cachedToken,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            );
-            return cachedToken;
-        }
+        return await this.cachingService.getOrSet(
+            `token.${tokenID}`,
+            () => this.getTokenMetadataRaw(tokenID),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
 
-        const token = await this.apiService.getToken(tokenID);
-
-        if (token !== undefined) {
-            await this.cachingService.set<EsdtToken>(
-                cacheKey,
-                token,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            );
-
-            return token;
-        }
-
-        return undefined;
+    async getTokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
+        return await this.apiService.getToken(tokenID);
     }
 
     async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
