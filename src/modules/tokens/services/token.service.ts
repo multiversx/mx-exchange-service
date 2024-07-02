@@ -118,8 +118,8 @@ export class TokenService {
     })
     @GetOrSetCache({
         baseKey: 'token',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenMetadata(tokenID: string): Promise<EsdtToken> {
         return await this.tokenMetadataRaw(tokenID);
