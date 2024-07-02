@@ -183,7 +183,7 @@ export class WeeklyRewardsSplittingComputeService
                         ? baseAssetTokenID
                         : reward.tokenID;
                 const [token, rewardsPriceUSD] = await Promise.all([
-                    this.tokenService.getTokenMetadata(tokenID),
+                    this.tokenService.tokenMetadata(tokenID),
                     this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
                 ]);
                 return computeValueUSD(

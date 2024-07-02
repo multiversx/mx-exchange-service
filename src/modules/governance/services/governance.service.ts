@@ -9,7 +9,10 @@ import {
 import { GovernanceContractsFiltersArgs } from '../models/governance.contracts.filter.args';
 import { GovernanceUnion } from '../models/governance.union';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
-import { GovernanceEnergyContract, GovernanceTokenSnapshotContract } from '../models/governance.contract.model';
+import {
+    GovernanceEnergyContract,
+    GovernanceTokenSnapshotContract,
+} from '../models/governance.contract.model';
 import { VoteType } from '../models/governance.proposal.model';
 import { GovernanceComputeService } from './governance.compute.service';
 import { GovernanceQuorumService } from './governance.quorum.service';
@@ -28,13 +31,16 @@ export class GovernanceTokenSnapshotService {
         protected readonly governanceCompute: GovernanceComputeService,
         protected readonly governanceQuorum: GovernanceQuorumService,
         protected readonly tokenService: TokenService,
-    ) {
-    }
-    async getGovernanceContracts(filters: GovernanceContractsFiltersArgs): Promise<Array<typeof GovernanceUnion>> {
+    ) {}
+    async getGovernanceContracts(
+        filters: GovernanceContractsFiltersArgs,
+    ): Promise<Array<typeof GovernanceUnion>> {
         let governanceAddresses = governanceContractsAddresses();
 
         if (filters.contracts) {
-            governanceAddresses = governanceAddresses.filter((address) => filters.contracts.includes(address));
+            governanceAddresses = governanceAddresses.filter((address) =>
+                filters.contracts.includes(address),
+            );
         }
 
         const governance: Array<typeof GovernanceUnion> = [];
@@ -57,40 +63,55 @@ export class GovernanceTokenSnapshotService {
                             address,
                         }),
                     );
-                   break;
+                    break;
                 case GovernanceType.OLD_ENERGY:
-                    governance.push(new GovernanceEnergyContract({
-                        address,
-                    }));
+                    governance.push(
+                        new GovernanceEnergyContract({
+                            address,
+                        }),
+                    );
                     break;
             }
-
         }
 
         return governance;
     }
 
-    async hasUserVoted(contractAddress: string, proposalId: number, userAddress?: string): Promise<boolean> {
+    async hasUserVoted(
+        contractAddress: string,
+        proposalId: number,
+        userAddress?: string,
+    ): Promise<boolean> {
         if (!userAddress) {
             return false;
         }
 
-        const userVotedProposals = await this.governanceAbiFactory.useAbi(contractAddress).userVotedProposals(contractAddress, userAddress);
+        const userVotedProposals = await this.governanceAbiFactory
+            .useAbi(contractAddress)
+            .userVotedProposals(contractAddress, userAddress);
         return userVotedProposals.includes(proposalId);
     }
 
-    async userVote(contractAddress: string, proposalId: number, userAddress?: string): Promise<VoteType> {
+    async userVote(
+        contractAddress: string,
+        proposalId: number,
+        userAddress?: string,
+    ): Promise<VoteType> {
         if (!userAddress) {
-            return VoteType.NotVoted
+            return VoteType.NotVoted;
         }
         return this.governanceCompute.userVotedProposalsWithVoteType(
-            contractAddress, userAddress, proposalId
+            contractAddress,
+            userAddress,
+            proposalId,
         );
     }
 
     async feeToken(contractAddress: string): Promise<EsdtToken> {
-        const feeTokenId = await this.governanceAbiFactory.useAbi(contractAddress).feeTokenId(contractAddress);
-        return await this.tokenService.getTokenMetadata(feeTokenId);
+        const feeTokenId = await this.governanceAbiFactory
+            .useAbi(contractAddress)
+            .feeTokenId(contractAddress);
+        return await this.tokenService.tokenMetadata(feeTokenId);
     }
 
     @ErrorLoggerAsync()
@@ -102,7 +123,10 @@ export class GovernanceTokenSnapshotService {
     async votingPowerDecimals(scAddress: string): Promise<number> {
         const feeToken = await this.feeToken(scAddress);
         const oneUnit = new BigNumber(10).pow(feeToken.decimals);
-        const smoothedOneUnit = this.smoothingFunction(scAddress, oneUnit.toFixed());
+        const smoothedOneUnit = this.smoothingFunction(
+            scAddress,
+            oneUnit.toFixed(),
+        );
         return smoothedOneUnit.length - 1;
     }
 
@@ -112,14 +136,24 @@ export class GovernanceTokenSnapshotService {
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async userVotingPower(contractAddress: string, proposalId: number, userAddress: string): Promise<string> {
-        const rootHash = await this.governanceAbiFactory.useAbi(contractAddress).proposalRootHash(contractAddress, proposalId);
-        const userQuorum = await this.governanceQuorum.userQuorum(contractAddress, userAddress, rootHash);
+    async userVotingPower(
+        contractAddress: string,
+        proposalId: number,
+        userAddress: string,
+    ): Promise<string> {
+        const rootHash = await this.governanceAbiFactory
+            .useAbi(contractAddress)
+            .proposalRootHash(contractAddress, proposalId);
+        const userQuorum = await this.governanceQuorum.userQuorum(
+            contractAddress,
+            userAddress,
+            rootHash,
+        );
         return this.smoothingFunction(contractAddress, userQuorum);
     }
 
     smoothingFunction(scAddress: string, quorum: string): string {
-        switch (governanceSmoothingFunction(scAddress)){
+        switch (governanceSmoothingFunction(scAddress)) {
             case GovernanceSmoothingFunction.CVADRATIC:
                 return new BigNumber(quorum).sqrt().integerValue().toFixed();
             case GovernanceSmoothingFunction.LINEAR:
@@ -127,7 +161,6 @@ export class GovernanceTokenSnapshotService {
         }
     }
 }
-
 
 @Injectable()
 export class GovernanceEnergyService extends GovernanceTokenSnapshotService {
@@ -138,7 +171,12 @@ export class GovernanceEnergyService extends GovernanceTokenSnapshotService {
         protected readonly tokenService: TokenService,
         private readonly energyService: EnergyService,
     ) {
-        super(governanceAbiFactory, governanceCompute, governanceQuorum, tokenService);
+        super(
+            governanceAbiFactory,
+            governanceCompute,
+            governanceQuorum,
+            tokenService,
+        );
     }
 
     @ErrorLoggerAsync()
@@ -147,7 +185,11 @@ export class GovernanceEnergyService extends GovernanceTokenSnapshotService {
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async userVotingPower(contractAddress: string, proposalId: number, userAddress: string) {
+    async userVotingPower(
+        contractAddress: string,
+        proposalId: number,
+        userAddress: string,
+    ) {
         //TODO: retrieve energy from event in case the user already voted
         const userEnergy = await this.energyService.getUserEnergy(userAddress);
         return this.smoothingFunction(contractAddress, userEnergy.amount);

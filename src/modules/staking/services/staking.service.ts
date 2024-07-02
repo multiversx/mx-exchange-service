@@ -105,12 +105,12 @@ export class StakingService {
         const farmingTokenID = await this.stakingAbi.farmingTokenID(
             stakeAddress,
         );
-        return await this.tokenService.getTokenMetadata(farmingTokenID);
+        return await this.tokenService.tokenMetadata(farmingTokenID);
     }
 
     async getRewardToken(stakeAddress: string): Promise<EsdtToken> {
         const rewardTokenID = await this.stakingAbi.rewardTokenID(stakeAddress);
-        return await this.tokenService.getTokenMetadata(rewardTokenID);
+        return await this.tokenService.tokenMetadata(rewardTokenID);
     }
 
     decodeStakingTokenAttributes(

@@ -50,7 +50,7 @@ export class AnalyticsResolver {
 
     @Query(() => String)
     async totalTokenSupply(@Args('tokenID') tokenID: string): Promise<string> {
-        return (await this.tokenService.getTokenMetadata(tokenID)).supply;
+        return (await this.tokenService.tokenMetadata(tokenID)).supply;
     }
 
     @Query(() => String)
