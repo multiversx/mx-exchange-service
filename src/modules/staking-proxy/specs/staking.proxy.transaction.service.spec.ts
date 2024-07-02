@@ -44,6 +44,7 @@ import { FarmAbiServiceProviderV2 } from 'src/modules/farm/mocks/farm.v2.abi.ser
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { StakingProxyFilteringService } from '../services/staking.proxy.filtering.service';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -66,6 +67,7 @@ describe('StakingProxyTransactionService', () => {
                     provide: StakingService,
                     useClass: StakingServiceMock,
                 },
+                StakingProxyFilteringService,
                 PairService,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,

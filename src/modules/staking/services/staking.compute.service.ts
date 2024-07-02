@@ -176,7 +176,7 @@ export class StakingComputeService {
     async computeStakedValueUSD(stakeAddress: string): Promise<string> {
         const [farmTokenSupply, farmingToken] = await Promise.all([
             this.stakingAbi.farmTokenSupply(stakeAddress),
-            this.tokenService.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
+            this.tokenService.tokenMetadata(constantsConfig.MEX_TOKEN_ID),
             this.stakingService.getFarmingToken(stakeAddress),
         ]);
 
