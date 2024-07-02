@@ -1,5 +1,5 @@
 import { DualYieldTokenAttributes } from '@multiversx/sdk-exchange';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ruleOfThree } from 'src/helpers/helpers';
@@ -24,6 +24,10 @@ import { StakingProxyAbiService } from './staking.proxy.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { CollectionType } from 'src/modules/common/collection.type';
+import { PaginationArgs } from 'src/modules/dex.model';
+import { StakingProxiesFilter } from '../models/staking.proxy.args.model';
+import { StakingProxyFilteringService } from './staking.proxy.filtering.service';
 
 @Injectable()
 export class StakingProxyService {
@@ -37,6 +41,8 @@ export class StakingProxyService {
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cachingService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        @Inject(forwardRef(() => StakingProxyFilteringService))
+        private readonly stakingProxyFilteringService: StakingProxyFilteringService,
     ) {}
 
     async getStakingProxies(): Promise<StakingProxyModel[]> {
@@ -52,6 +58,59 @@ export class StakingProxyService {
             );
         }
         return stakingProxies;
+    }
+
+    async getFilteredStakingProxies(
+        pagination: PaginationArgs,
+        filters: StakingProxiesFilter,
+    ): Promise<CollectionType<StakingProxyModel>> {
+        let stakingProxiesAddresses: string[] =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
+
+        stakingProxiesAddresses =
+            this.stakingProxyFilteringService.stakingProxiesByAddress(
+                filters,
+                stakingProxiesAddresses,
+            );
+
+        stakingProxiesAddresses =
+            await this.stakingProxyFilteringService.stakingProxiesByPairAdddress(
+                filters,
+                stakingProxiesAddresses,
+            );
+
+        stakingProxiesAddresses =
+            await this.stakingProxyFilteringService.stakingProxiesByLpFarmAdddress(
+                filters,
+                stakingProxiesAddresses,
+            );
+
+        stakingProxiesAddresses =
+            await this.stakingProxyFilteringService.stakingProxiesByStakingFarmAdddress(
+                filters,
+                stakingProxiesAddresses,
+            );
+
+        stakingProxiesAddresses =
+            await this.stakingProxyFilteringService.stakingProxiesByToken(
+                filters,
+                stakingProxiesAddresses,
+            );
+
+        const stakingProxies = stakingProxiesAddresses.map(
+            (address) =>
+                new StakingProxyModel({
+                    address,
+                }),
+        );
+
+        return new CollectionType({
+            count: stakingProxies.length,
+            items: stakingProxies.slice(
+                pagination.offset,
+                pagination.offset + pagination.limit,
+            ),
+        });
     }
 
     async getStakingToken(stakingProxyAddress: string): Promise<EsdtToken> {
