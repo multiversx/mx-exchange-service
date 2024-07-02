@@ -36,6 +36,7 @@ import { EscrowModule } from './modules/escrow/escrow.module';
 import { GovernanceModule } from './modules/governance/governance.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
+import { TradingViewModule } from './modules/trading-view/trading.view.module';
 
 @Module({
     imports: [
@@ -96,6 +97,7 @@ import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
         EscrowModule,
         GovernanceModule,
         DynamicModuleUtils.getCacheModule(),
+        TradingViewModule,
     ],
 })
 export class PublicAppModule {

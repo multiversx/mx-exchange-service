@@ -41,4 +41,14 @@ export interface AnalyticsQueryInterface {
         start,
         end,
     }): Promise<CandleDataModel[]>;
+
+    getPriceCandlesWithoutGapfilling({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<CandleDataModel[]>;
+
+    getCandleNextTime({ series, metric, resolution, start }): Promise<string>;
 }

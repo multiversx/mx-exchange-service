@@ -106,6 +106,38 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         });
     }
 
+    async getPriceCandlesWithoutGapfilling({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<CandleDataModel[]> {
+        const service = await this.getService();
+        return await service.getPriceCandlesWithoutGapfilling({
+            series,
+            metric,
+            resolution,
+            start,
+            end,
+        });
+    }
+
+    async getCandleNextTime({
+        series,
+        metric,
+        resolution,
+        start,
+    }): Promise<string> {
+        const service = await this.getService();
+        return await service.getCandleNextTime({
+            series,
+            metric,
+            resolution,
+            start,
+        });
+    }
+
     private async getService(): Promise<AnalyticsQueryInterface> {
         return this.timescaleDBQuery;
     }
