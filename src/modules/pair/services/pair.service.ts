@@ -36,19 +36,19 @@ export class PairService {
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         const firstTokenID = await this.pairAbi.firstTokenID(pairAddress);
-        return await this.tokenService.getTokenMetadata(firstTokenID);
+        return await this.tokenService.tokenMetadata(firstTokenID);
     }
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.pairAbi.secondTokenID(pairAddress);
-        return await this.tokenService.getTokenMetadata(secondTokenID);
+        return await this.tokenService.tokenMetadata(secondTokenID);
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
         return lpTokenID === undefined
             ? undefined
-            : await this.tokenService.getTokenMetadata(lpTokenID);
+            : await this.tokenService.tokenMetadata(lpTokenID);
     }
 
     async getAmountOut(

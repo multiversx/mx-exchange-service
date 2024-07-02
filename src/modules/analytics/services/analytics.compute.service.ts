@@ -208,9 +208,7 @@ export class AnalyticsComputeService {
                 this.tokenCompute.tokenPriceDerivedUSD(
                     constantsConfig.MEX_TOKEN_ID,
                 ),
-                this.tokenService.getTokenMetadata(
-                    constantsConfig.MEX_TOKEN_ID,
-                ),
+                this.tokenService.tokenMetadata(constantsConfig.MEX_TOKEN_ID),
                 this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
                     scAddress.feesCollector,
                     currentWeek,

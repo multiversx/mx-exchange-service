@@ -80,8 +80,8 @@ export class AutoRouterService {
             await Promise.all([
                 this.remoteConfigGetterService.getMultiSwapStatus(),
                 this.getAllActivePairs(),
-                this.tokenService.getTokenMetadata(tokenInID),
-                this.tokenService.getTokenMetadata(tokenOutID),
+                this.tokenService.tokenMetadata(tokenInID),
+                this.tokenService.tokenMetadata(tokenOutID),
             ]);
 
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
@@ -521,9 +521,9 @@ export class AutoRouterService {
                 intermediaryTokenOut,
                 intermediaryTokenOutPriceUSD,
             ] = await Promise.all([
-                this.tokenService.getTokenMetadata(tokenInID),
+                this.tokenService.tokenMetadata(tokenInID),
                 this.pairCompute.tokenPriceUSD(tokenInID),
-                this.tokenService.getTokenMetadata(tokenOutID),
+                this.tokenService.tokenMetadata(tokenOutID),
                 this.pairCompute.tokenPriceUSD(tokenOutID),
             ]);
 
