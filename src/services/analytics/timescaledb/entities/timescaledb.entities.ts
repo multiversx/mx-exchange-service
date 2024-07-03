@@ -368,3 +368,126 @@ export class PriceCandleDaily {
     @ViewColumn()
     high = '0';
 }
+
+@ViewEntity({
+    expression: `
+    SELECT
+          time_bucket('1 minute', timestamp) AS time,
+          series,
+          first(value, timestamp) FILTER (WHERE key = 'priceUSD') AS open,
+          max(value) FILTER (WHERE key = 'priceUSD') AS high,
+          min(value) FILTER (WHERE key = 'priceUSD') AS low,
+          last(value, timestamp) FILTER (WHERE key = 'priceUSD') AS close,
+          sum(value) FILTER (WHERE key = 'volumeUSD') AS volume
+    FROM hyper_dex_analytics
+    WHERE key in ('priceUSD', 'volumeUSD') and  series like '%-%'
+    GROUP BY time, series
+    ORDER BY time ASC;
+`,
+    materialized: true,
+    name: 'token_candles_minute',
+})
+export class TokenCandlesMinute {
+    @ViewColumn()
+    time: Date = new Date();
+
+    @ViewColumn()
+    series: string;
+
+    @ViewColumn()
+    open: number;
+
+    @ViewColumn()
+    high: number;
+
+    @ViewColumn()
+    low: number;
+
+    @ViewColumn()
+    close: number;
+
+    @ViewColumn()
+    volume: number;
+}
+
+@ViewEntity({
+    expression: `
+    SELECT
+        time_bucket('1 hour', time) AS time, 
+        series,
+        open(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as open,
+        high(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as high,
+        low(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as low,
+        close(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as close,
+        volume(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as volume
+    FROM "token_candles_minute"
+    GROUP BY time_bucket('1 hour', time), series
+    ORDER BY time ASC;
+`,
+    materialized: true,
+    name: 'token_candles_hourly',
+    dependsOn: ['token_candles_minute'],
+})
+export class TokenCandlesHourly {
+    @ViewColumn()
+    time: Date = new Date();
+
+    @ViewColumn()
+    series: string;
+
+    @ViewColumn()
+    open: number;
+
+    @ViewColumn()
+    high: number;
+
+    @ViewColumn()
+    low: number;
+
+    @ViewColumn()
+    close: number;
+
+    @ViewColumn()
+    volume: number;
+}
+
+@ViewEntity({
+    expression: `
+    SELECT
+        time_bucket('1 day', time) AS time, 
+        series,
+        open(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as open,
+        high(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as high,
+        low(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as low,
+        close(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as close,
+        volume(rollup(candlestick(time AT TIME ZONE 'UTC', open, high, low, close, volume))) as volume
+    FROM "token_candles_hourly"
+    GROUP BY time_bucket('1 day', time), series
+    ORDER BY time ASC;
+`,
+    materialized: true,
+    name: 'token_candles_daily',
+    dependsOn: ['token_candles_hourly'],
+})
+export class TokenCandlesDaily {
+    @ViewColumn()
+    time: Date = new Date();
+
+    @ViewColumn()
+    series: string;
+
+    @ViewColumn()
+    open: number;
+
+    @ViewColumn()
+    high: number;
+
+    @ViewColumn()
+    low: number;
+
+    @ViewColumn()
+    close: number;
+
+    @ViewColumn()
+    volume: number;
+}

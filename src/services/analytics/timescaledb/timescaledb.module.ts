@@ -15,6 +15,9 @@ import {
     SumHourly,
     TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
+    TokenCandlesMinute,
+    TokenCandlesHourly,
+    TokenCandlesDaily,
 } from './entities/timescaledb.entities';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
@@ -53,6 +56,9 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
             PriceCandleMinute,
             PriceCandleHourly,
             PriceCandleDaily,
+            TokenCandlesMinute,
+            TokenCandlesHourly,
+            TokenCandlesDaily,
         ]),
     ],
     providers: [TimescaleDBQueryService, TimescaleDBWriteService],
