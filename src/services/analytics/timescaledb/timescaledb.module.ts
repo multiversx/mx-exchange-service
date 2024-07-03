@@ -21,6 +21,9 @@ import {
     PairFirstTokenCandlesMinute,
     PairFirstTokenCandlesHourly,
     PairFirstTokenCandlesDaily,
+    PairSecondTokenCandlesMinute,
+    PairSecondTokenCandlesHourly,
+    PairSecondTokenCandlesDaily,
 } from './entities/timescaledb.entities';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
@@ -65,6 +68,9 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
             PairFirstTokenCandlesMinute,
             PairFirstTokenCandlesHourly,
             PairFirstTokenCandlesDaily,
+            PairSecondTokenCandlesMinute,
+            PairSecondTokenCandlesHourly,
+            PairSecondTokenCandlesDaily,
         ]),
     ],
     providers: [TimescaleDBQueryService, TimescaleDBWriteService],

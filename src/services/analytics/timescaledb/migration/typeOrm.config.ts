@@ -16,6 +16,9 @@ import {
     PairFirstTokenCandlesMinute,
     PairFirstTokenCandlesHourly,
     PairFirstTokenCandlesDaily,
+    PairSecondTokenCandlesMinute,
+    PairSecondTokenCandlesHourly,
+    PairSecondTokenCandlesDaily,
 } from '../entities/timescaledb.entities';
 
 config();
@@ -45,6 +48,9 @@ export default new DataSource({
         PairFirstTokenCandlesMinute,
         PairFirstTokenCandlesHourly,
         PairFirstTokenCandlesDaily,
+        PairSecondTokenCandlesMinute,
+        PairSecondTokenCandlesHourly,
+        PairSecondTokenCandlesDaily,
     ],
     migrations: ['src/services/analytics/timescaledb/migration/*-xExchange.ts'],
 });
