@@ -748,6 +748,20 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async getPairStakingFarmAddress(pairAddress: string): Promise<string> {
+        const stakingProxyAddress = await this.getPairStakingProxyAddress(
+            pairAddress,
+        );
+
+        if (!stakingProxyAddress) {
+            return undefined;
+        }
+
+        return await this.stakingProxyAbiService.stakingFarmAddress(
+            stakingProxyAddress,
+        );
+    }
+
+    async getPairStakingProxyAddress(pairAddress: string): Promise<string> {
         const hasDualFarms = await this.hasDualFarms(pairAddress);
 
         if (!hasDualFarms) {
@@ -767,13 +781,9 @@ export class PairComputeService implements IPairComputeService {
             (address) => address === pairAddress,
         );
 
-        if (stakingProxyIndex === -1) {
-            return undefined;
-        }
-
-        return await this.stakingProxyAbiService.stakingFarmAddress(
-            stakingProxyAddresses[stakingProxyIndex],
-        );
+        return stakingProxyIndex === -1
+            ? undefined
+            : stakingProxyAddresses[stakingProxyIndex];
     }
 
     async computeCompoundedApr(pairAddress: string): Promise<string> {

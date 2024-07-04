@@ -7,6 +7,7 @@ import {
     LockedTokensInfo,
     PairCompoundedAPRModel,
     PairModel,
+    PairRewardTokensModel,
 } from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
 import {
@@ -31,6 +32,33 @@ import { constantsConfig } from 'src/config';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { FarmComputeServiceV2 } from '../farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from '../staking/services/staking.compute.service';
+import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
+
+@Resolver(() => PairRewardTokensModel)
+export class PairRewardTokensResolver extends GenericResolver {
+    constructor(
+        private readonly pairCompute: PairComputeService,
+        private readonly stakingProxyService: StakingProxyService,
+    ) {
+        super();
+    }
+
+    @ResolveField()
+    async dualFardRewardToken(
+        @Parent() parent: PairRewardTokensModel,
+    ): Promise<EsdtToken> {
+        const stakingProxyAddress =
+            await this.pairCompute.getPairStakingProxyAddress(parent.address);
+
+        if (!stakingProxyAddress) {
+            return undefined;
+        }
+
+        return await this.stakingProxyService.getStakingToken(
+            stakingProxyAddress,
+        );
+    }
+}
 
 @Resolver(() => PairCompoundedAPRModel)
 export class PairCompoundedAPRResolver extends GenericResolver {
@@ -331,6 +359,13 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<PairCompoundedAPRModel> {
         return new PairCompoundedAPRModel({ address: parent.address });
+    }
+
+    @ResolveField(() => PairRewardTokensModel, { nullable: true })
+    async rewardTokens(
+        @Parent() parent: PairModel,
+    ): Promise<PairRewardTokensModel> {
+        return new PairRewardTokensModel({ address: parent.address });
     }
 
     @Query(() => String)

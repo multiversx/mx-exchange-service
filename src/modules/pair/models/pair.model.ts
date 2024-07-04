@@ -67,6 +67,19 @@ export class PairCompoundedAPRModel {
 }
 
 @ObjectType()
+export class PairRewardTokensModel {
+    @Field()
+    address: string;
+
+    @Field({ nullable: true })
+    dualFardRewardToken: EsdtToken;
+
+    constructor(init?: Partial<PairRewardTokensModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class PairModel {
     @Field()
     address: string;
@@ -186,6 +199,9 @@ export class PairModel {
 
     @Field(() => PairCompoundedAPRModel, { nullable: true })
     compoundedAPR: PairCompoundedAPRModel;
+
+    @Field(() => PairRewardTokensModel, { nullable: true })
+    rewardTokens: PairRewardTokensModel;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);

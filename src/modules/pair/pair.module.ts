@@ -1,6 +1,10 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { PairService } from './services/pair.service';
-import { PairCompoundedAPRResolver, PairResolver } from './pair.resolver';
+import {
+    PairCompoundedAPRResolver,
+    PairResolver,
+    PairRewardTokensResolver,
+} from './pair.resolver';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairTransactionService } from './services/pair.transactions.service';
 import { ContextModule } from '../../services/context/context.module';
@@ -46,6 +50,7 @@ import { StakingModule } from '../staking/staking.module';
         ElasticService,
         PairFilteringService,
         PairCompoundedAPRResolver,
+        PairRewardTokensResolver,
     ],
     exports: [
         PairService,
