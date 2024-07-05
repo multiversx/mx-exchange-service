@@ -4,6 +4,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -71,8 +72,14 @@ export class PairRewardTokensModel {
     @Field()
     address: string;
 
+    @Field(() => [EsdtToken])
+    poolRewards: EsdtToken[];
+
     @Field({ nullable: true })
-    dualFardRewardToken: EsdtToken;
+    farmReward: NftCollection;
+
+    @Field({ nullable: true })
+    dualFarmReward: EsdtToken;
 
     constructor(init?: Partial<PairRewardTokensModel>) {
         Object.assign(this, init);

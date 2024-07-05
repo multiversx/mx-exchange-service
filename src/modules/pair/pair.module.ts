@@ -24,6 +24,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { PairFilteringService } from './services/pair.filtering.service';
 import { StakingModule } from '../staking/staking.module';
+import { EnergyModule } from '../energy/energy.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -39,6 +40,7 @@ import { StakingModule } from '../staking/staking.module';
         FarmModuleV2,
         StakingProxyModule,
         StakingModule,
+        EnergyModule,
     ],
     providers: [
         PairService,
