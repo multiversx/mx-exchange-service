@@ -248,3 +248,18 @@ export class OutdatedContract {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class UserNegativeEnergyCheck {
+    @Field() LKMEX: boolean;
+    @Field() XMEX: boolean;
+    @Field() lockedLPTokenV1: boolean;
+    @Field() lockedLPTokenV2: boolean;
+    @Field() lockedFarmTokenV2: boolean;
+    @Field() lockedFarmTokenV1: boolean;
+    @Field() metabonding: boolean;
+
+    constructor(init?: Partial<UserNegativeEnergyCheck>) {
+        Object.assign(this, init);
+    }
+}
