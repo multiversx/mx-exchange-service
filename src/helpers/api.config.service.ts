@@ -93,6 +93,16 @@ export class ApiConfigService {
         return tracerFlag === 'true';
     }
 
+    isDeephistoryActive(): boolean {
+        const deepHistoryFlag = this.configService.get<string>(
+            'ENABLE_DEEP_HISTORY',
+        );
+        if (!deepHistoryFlag) {
+            return false;
+        }
+        return deepHistoryFlag === 'true';
+    }
+
     getRedisUrl(): string {
         const redisUrl = this.configService.get<string>('REDIS_URL');
         if (!redisUrl) {
@@ -226,6 +236,16 @@ export class ApiConfigService {
         return origins.split(',');
     }
 
+    getImpersonateUrl(): string {
+        const impersonateUrl =
+            this.configService.get<string>('IMPERSONATE_URL');
+        if (!impersonateUrl) {
+            throw new Error('No impersonate url present');
+        }
+
+        return impersonateUrl;
+    }
+
     getMXDataApiURL(): string {
         const url = this.configService.get<string>('MX_DATA_API_URL');
         if (!url) {
@@ -291,5 +311,19 @@ export class ApiConfigService {
             throw new Error('No TIMESCALEDB_PASSWORD present');
         }
         return password;
+    }
+
+    getElasticSearchUrl(): string {
+        const elasticSearchUrl =
+            this.configService.get<string>('ELASTICSEARCH_URL');
+        if (!elasticSearchUrl) {
+            throw new Error('No Elastic Search url present');
+        }
+
+        return elasticSearchUrl;
+    }
+
+    getRateLimiterSecret(): string | undefined {
+        return this.configService.get<string>('RATE_LIMITER_SECRET');
     }
 }

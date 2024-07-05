@@ -9,11 +9,11 @@ import { delay } from 'src/helpers/helpers';
 import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { Lock } from '@multiversx/sdk-nestjs-common';
+import { Logger } from 'winston';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -31,7 +31,9 @@ export class PairCacheWarmerService {
     @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cachePairs', verbose: true })
     async cachePairs(): Promise<void> {
-        this.logger.info('Start refresh cached pairs');
+        this.logger.info('Start refresh cached pairs', {
+            context: 'CachePairs',
+        });
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         for (const pairMetadata of pairsMetadata) {
             const lpTokenID = await this.pairAbi.getLpTokenIDRaw(
@@ -59,7 +61,9 @@ export class PairCacheWarmerService {
 
             await this.deleteCacheKeys(cachedKeys);
         }
-        this.logger.info('Finished refresh cached pairs');
+        this.logger.info('Finished refresh cached pairs', {
+            context: 'CachePairs',
+        });
     }
 
     @Cron(CronExpression.EVERY_5_MINUTES)
@@ -140,6 +144,10 @@ export class PairCacheWarmerService {
                 specialFeePercent,
                 feesCollectorAddress,
                 feesCollectorCutPercentage,
+                hasFarms,
+                hasDualFarms,
+                tradesCount,
+                deployedAt,
             ] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.pairAbi.getStateRaw(pairAddress),
@@ -149,6 +157,10 @@ export class PairCacheWarmerService {
                 this.pairAbi.getSpecialFeePercentRaw(pairAddress),
                 this.pairAbi.getFeesCollectorAddressRaw(pairAddress),
                 this.pairAbi.getFeesCollectorCutPercentageRaw(pairAddress),
+                this.pairComputeService.computeHasFarms(pairAddress),
+                this.pairComputeService.computeHasDualFarms(pairAddress),
+                this.pairComputeService.computeTradesCount(pairAddress),
+                this.pairComputeService.computeDeployedAt(pairAddress),
             ]);
 
             const cachedKeys = await Promise.all([
@@ -176,6 +188,13 @@ export class PairCacheWarmerService {
                     pairAddress,
                     feesCollectorCutPercentage,
                 ),
+                this.pairSetterService.setHasFarms(pairAddress, hasFarms),
+                this.pairSetterService.setHasDualFarms(
+                    pairAddress,
+                    hasDualFarms,
+                ),
+                this.pairSetterService.setTradesCount(pairAddress, tradesCount),
+                this.pairSetterService.setDeployedAt(pairAddress, deployedAt),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }

@@ -31,6 +31,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -78,6 +80,8 @@ describe('AutoRouterService', () => {
                 AutoRouterComputeService,
                 AutoRouterTransactionService,
                 ApiConfigService,
+                MXApiServiceProvider,
+                PairFilteringService,
             ],
             exports: [],
         }).compile();

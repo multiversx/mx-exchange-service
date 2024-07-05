@@ -18,6 +18,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { StakingFilteringService } from '../services/staking.filtering.service';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -41,6 +42,7 @@ describe('StakingComputeService', () => {
                 MXApiServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 ApiConfigService,
+                StakingFilteringService,
             ],
         }).compile();
     });
@@ -196,5 +198,21 @@ describe('StakingComputeService', () => {
                 minutes: 0,
             }),
         );
+    });
+
+    it('should compute rewards remaining days', async () => {
+        const service = module.get<StakingComputeService>(
+            StakingComputeService,
+        );
+
+        const stakingAbi = module.get<StakingAbiService>(StakingAbiService);
+        jest.spyOn(stakingAbi, 'accumulatedRewards').mockResolvedValue('100');
+        jest.spyOn(stakingAbi, 'rewardCapacity').mockResolvedValue('14500');
+        jest.spyOn(stakingAbi, 'perBlockRewardsAmount').mockResolvedValue('1');
+
+        const rewardsRemainingDays = await service.computeRewardsRemainingDays(
+            Address.Zero().bech32(),
+        );
+        expect(rewardsRemainingDays).toEqual(1);
     });
 });

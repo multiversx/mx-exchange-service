@@ -13,7 +13,16 @@ import { AnalyticsQueryService } from 'src/services/analytics/services/analytics
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { computeValueUSD } from 'src/utils/token.converters';
+import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
+import { farmsAddresses } from 'src/utils/farm.utils';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
+import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
+import { ElasticService } from 'src/helpers/elastic.service';
+import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { TransactionStatus } from 'src/utils/transaction.utils';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -28,6 +37,11 @@ export class PairComputeService implements IPairComputeService {
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly apiConfig: ApiConfigService,
+        private readonly farmAbi: FarmAbiServiceV2,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly stakingProxyAbiService: StakingProxyAbiService,
+        private readonly elasticService: ElasticService,
+        private readonly apiService: MXApiService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -326,6 +340,29 @@ export class PairComputeService implements IPairComputeService {
     })
     @GetOrSetCache({
         baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async previous24hLockedValueUSD(pairAddress: string): Promise<string> {
+        return await this.computePrevious24hLockedValueUSD(pairAddress);
+    }
+
+    async computePrevious24hLockedValueUSD(
+        pairAddress: string,
+    ): Promise<string> {
+        const values24h = await this.analyticsQuery.getValues24h({
+            series: pairAddress,
+            metric: 'lockedValueUSD',
+        });
+
+        return values24h[0]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
         remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
@@ -407,6 +444,26 @@ export class PairComputeService implements IPairComputeService {
         remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
+    async previous24hVolumeUSD(pairAddress: string): Promise<string> {
+        return await this.computePrevious24hVolumeUSD(pairAddress);
+    }
+
+    async computePrevious24hVolumeUSD(pairAddress: string): Promise<string> {
+        const [volume24h, volume48h] = await Promise.all([
+            this.volumeUSD(pairAddress, '24h'),
+            this.volumeUSD(pairAddress, '48h'),
+        ]);
+        return new BigNumber(volume48h).minus(volume24h).toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
+    })
     async feesUSD(pairAddress: string, time: string): Promise<string> {
         return await this.computeFeesUSD(pairAddress, time);
     }
@@ -421,6 +478,26 @@ export class PairComputeService implements IPairComputeService {
             metric: 'feesUSD',
             time,
         });
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
+    })
+    async previous24hFeesUSD(pairAddress: string): Promise<string> {
+        return await this.computePrevious24hFeesUSD(pairAddress);
+    }
+
+    async computePrevious24hFeesUSD(pairAddress: string): Promise<string> {
+        const [fees24h, fees48h] = await Promise.all([
+            this.feesUSD(pairAddress, '24h'),
+            this.feesUSD(pairAddress, '48h'),
+        ]);
+        return new BigNumber(fees48h).minus(fees24h).toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -477,5 +554,167 @@ export class PairComputeService implements IPairComputeService {
         ]);
 
         return leastType(firstTokenType, secondTokenType);
+    }
+
+    async computePermanentLockedValueUSD(
+        pairAddress: string,
+        firstTokenAmount: BigNumber,
+        secondTokenAmount: BigNumber,
+    ): Promise<BigNumber> {
+        const [
+            firstToken,
+            secondToken,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+        ] = await Promise.all([
+            this.pairService.getFirstToken(pairAddress),
+            this.pairService.getSecondToken(pairAddress),
+            this.firstTokenPriceUSD(pairAddress),
+            this.secondTokenPriceUSD(pairAddress),
+        ]);
+
+        const minimumAmount = firstTokenAmount.isLessThan(secondTokenAmount)
+            ? firstTokenAmount
+            : secondTokenAmount;
+        const minimumLiquidity = new BigNumber(10 ** 3);
+
+        const firstTokenAmountDenom = denominateAmount(
+            firstTokenAmount.toFixed(),
+            firstToken.decimals,
+        );
+        const secondTokenAmountDenom = denominateAmount(
+            secondTokenAmount.toFixed(),
+            secondToken.decimals,
+        );
+
+        if (minimumAmount.isEqualTo(firstTokenAmount)) {
+            const minimumLiquidityDenom = denominateAmount(
+                minimumLiquidity.toFixed(),
+                firstToken.decimals,
+            );
+            if (new BigNumber(firstTokenPriceUSD).isGreaterThan(0)) {
+                return minimumLiquidityDenom.multipliedBy(firstTokenPriceUSD);
+            }
+
+            const firstTokenPrice = secondTokenAmountDenom.dividedBy(
+                firstTokenAmountDenom,
+            );
+            return minimumLiquidityDenom
+                .multipliedBy(firstTokenPrice)
+                .multipliedBy(secondTokenPriceUSD);
+        } else {
+            const minimumLiquidityDenom = denominateAmount(
+                minimumLiquidity.toFixed(),
+                secondToken.decimals,
+            );
+
+            if (new BigNumber(secondTokenPriceUSD).isGreaterThan(0)) {
+                return minimumLiquidityDenom.multipliedBy(secondTokenPriceUSD);
+            }
+            const secondTokenPrice = firstTokenAmountDenom.dividedBy(
+                secondTokenAmountDenom,
+            );
+
+            return minimumLiquidityDenom
+                .multipliedBy(secondTokenPrice)
+                .multipliedBy(firstTokenPriceUSD);
+        }
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async hasFarms(pairAddress: string): Promise<boolean> {
+        return await this.computeHasFarms(pairAddress);
+    }
+
+    async computeHasFarms(pairAddress: string): Promise<boolean> {
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
+        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
+
+        const farmingTokenIDs = await Promise.all(
+            addresses.map((address) => this.farmAbi.farmingTokenID(address)),
+        );
+
+        return farmingTokenIDs.includes(lpTokenID);
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async hasDualFarms(pairAddress: string): Promise<boolean> {
+        return await this.computeHasDualFarms(pairAddress);
+    }
+
+    async computeHasDualFarms(pairAddress: string): Promise<boolean> {
+        const stakingProxyAddresses =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
+
+        const pairAddresses = await Promise.all(
+            stakingProxyAddresses.map((address) =>
+                this.stakingProxyAbiService.pairAddress(address),
+            ),
+        );
+
+        return pairAddresses.includes(pairAddress);
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async tradesCount(pairAddress: string): Promise<number> {
+        return await this.computeTradesCount(pairAddress);
+    }
+
+    async computeTradesCount(pairAddress: string): Promise<number> {
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match('receiver', pairAddress),
+            QueryType.Match('status', TransactionStatus.success),
+            QueryType.Should([
+                QueryType.Match('function', 'swapTokensFixedInput'),
+                QueryType.Match('function', 'swapTokensFixedOutput'),
+            ]),
+        ];
+
+        return await this.elasticService.getCount(
+            'transactions',
+            elasticQueryAdapter,
+        );
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async deployedAt(pairAddress: string): Promise<number> {
+        return await this.computeDeployedAt(pairAddress);
+    }
+
+    async computeDeployedAt(pairAddress: string): Promise<number> {
+        const { deployedAt } = await this.apiService.getAccountStats(
+            pairAddress,
+        );
+        return deployedAt ?? undefined;
     }
 }

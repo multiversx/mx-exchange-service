@@ -64,3 +64,16 @@ export class PairDayDataModel {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class CandleDataModel {
+    @Field()
+    time: string;
+
+    @Field(() => [Number])
+    ohlc: number[];
+
+    constructor(init?: Partial<CandleDataModel>) {
+      Object.assign(this, init);
+  }
+}

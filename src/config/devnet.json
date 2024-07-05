@@ -3,70 +3,47 @@
         "chainID": "D"
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqg2esr6d6tfd250x4n3tkhfkw8cc4p2x50n4swatdz6",
-        "MEX-dc289c": "erd1qqqqqqqqqqqqqpgquu5rsa4ee6l4azz6vdu4hjp8z4p6tt8m0n4suht3dy",
-        "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqa7hv0nahgsl8tz0psat46x0tchm0wuyc0n4s6q28ad",
+        "MEX-a659d0": "erd1qqqqqqqqqqqqqpgqzw0d0tj25qme9e4ukverjjjqle6xamay0n4s5r0v9g",
+        "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqtqfhy99su9xzjjrq59kpzpp25udtc9eq0n4sr90ax6",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
         "proxyDexAddress": {
-            "v1": "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
-            "v2": "erd1qqqqqqqqqqqqqpgqp33v9y29x384573f8pucemynempfa5uu0n4sg5sfad"
+            "v1": "erd1qqqqqqqqqqqqqpgqj45ksc9zln3ss9r46qn0uxvmavyqxm2e0n4smptzsg",
+            "v2": "erd1qqqqqqqqqqqqqpgqxtujvf7w6rag29f39f7yrqsuv09m232r0n4sf7qs79"
         },
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqxsy4k8fkqvllcvyrwhf80t97kyd32qfx0n4stue7cn",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
         "simpleLockAddress": [
-            "erd1qqqqqqqqqqqqqpgqvcw9cxy5xlssc4em9l97pvhnvgtn5z6l0n4sc9glts",
-            "erd1qqqqqqqqqqqqqpgqxsyrdj38fclflak2mwtqdknqzqhuxy4s0n4sc3e0jy",
-            "erd1qqqqqqqqqqqqqpgqd7av8hy5ydnrlunr6pt40wc07pfj8qv90n4srdthut",
-            "erd1qqqqqqqqqqqqqpgqd92vaptf6kex2p74a8sgxpdtvnphdgkd0n4spt542g",
-            "erd1qqqqqqqqqqqqqpgqzpsgnl0pvgpths0vr926nql30maemcq00n4sqwpu74"
+            "erd1qqqqqqqqqqqqqpgq2l97gw2j4wnlem4y2rx7dudqlssjtwpu0n4sd0u3w2"
         ],
         "wrappingAddress": {
-            "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
-            "shardID-1": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh",
-            "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
+            "shardID-0": "erd1qqqqqqqqqqqqqpgqqkwzsxkjc83vlfex9dmznwm7tjvxlqqkpauqx0n782",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp",
+            "shardID-2": "erd1qqqqqqqqqqqqqpgqvn9ew0wwn7a3pk053ezex98497hd4exqdg0q8v2e0c"
         },
         "priceDiscovery": [
-            "erd1qqqqqqqqqqqqqpgqpzlhg54w5upaeweyc6kugqspunpywwvx0n4sa9spnk",
-            "erd1qqqqqqqqqqqqqpgq5daxqzyl8hxug8zyplweugxsh62vyqaw0n4sc69ndf",
-            "erd1qqqqqqqqqqqqqpgqzczn45apvnacfl6qhqnydz4gwxmtxj8k0n4synvktu",
-            "erd1qqqqqqqqqqqqqpgq7ycg0y45frcxupcpyvqlpvnuclkuscj30n4sgla0tf",
-            "erd1qqqqqqqqqqqqqpgq6dszt34rl3zffwvfce8meq8e63zss5v70n4srreusz"
         ],
-        "staking": [
-            "erd1qqqqqqqqqqqqqpgq8w0s682m88xae2ne3qkq7w2h26u5a5c00n4stt02d7",
-            "erd1qqqqqqqqqqqqqpgqus3sxn66s3sgkc424nsntplpnekj9p8c0n4s5akpf8",
-            "erd1qqqqqqqqqqqqqpgqxpshvxgesuntsq8fk0735s372w2jmmcy0n4s3q9qgr"
-        ],
-        "stakingProxy": [
-            "erd1qqqqqqqqqqqqqpgqy39dkpn6k3dh8ym88mte645wkkmtekku0n4sjhl0lv",
-            "erd1qqqqqqqqqqqqqpgqcav6tm7a76xkf78snv9aszscqs4ghnuz0n4stxwt09",
-            "erd1qqqqqqqqqqqqqpgq7zcf9dhvv48dg80zscayy56y7hh4rfne0n4sf4m7zj",
-            "erd1qqqqqqqqqqqqqpgq2x27wrtygh7ur6r0mazne44rreuhttcv0n4s6mv7kj"
-        ],
-        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgqp6qrf7yp4l25c08384vgdghz7wz0f60h0n4s0m88l4",
-        "feesCollector": "erd1qqqqqqqqqqqqqpgq82pd37ra5vqnsaq5cc50ll073gzm4ahx0n4s793d9d",
-        "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
-        "tokenUnstake": "erd1qqqqqqqqqqqqqpgqnysvq99c2t4a9pvvv22elnl6p73el8vw0n4spyfv7p",
-        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
-        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a"
+        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgqs7qnuvj2t0m40xmgrrh88wc7qdx286c60n4spvrzzk",
+        "feesCollector": "erd1qqqqqqqqqqqqqpgqw88ux2l44eufvwz2uhvduhq03g8pxc4j0n4s0frzjz",
+        "energyUpdate": "erd1qqqqqqqqqqqqqpgqz2ctz77j9we0r99mnhehv24he3pxmsmq0n4sntf4n7",
+        "tokenUnstake": "erd1qqqqqqqqqqqqqpgqu6s4e5mndgf37psxw9mdlmjavp2er3f00n4snwyk3q",
+        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqasr2asq07e6ur274eecx3vd0pnej2vxs0n4sqqyp52",
+        "escrow": "erd1qqqqqqqqqqqqqpgqnx4t9kwy5n9atuumvnrluv5yrwmpxzx60n4sj497ms"
     },
     "governance": {
         "oldEnergy": {
             "cvadratic": [
-                "erd1qqqqqqqqqqqqqpgqdt9aady5jp7av97m7rqxh6e5ywyqsplz2jps5mw02n"
             ]
         },
         "energy": {
             "cvadratic": [
-                "erd1qqqqqqqqqqqqqpgqzvcvh8ur47nlwxsa9wf7gvrlmf764aerczfsnsjudc"
+                "erd1qqqqqqqqqqqqqpgqzzcu2cgz48d4zh8czrrxzyc7c3x0ynx3czfs8n4ppn"
             ]
         },
         "tokenSnapshot": {
             "linear": [
-                "erd1qqqqqqqqqqqqqpgq2rkrhef99hhk3ynfcxevcj86axr3sgmcczfstkmdwr"
             ],
             "cvadratic": [
-                "erd1qqqqqqqqqqqqqpgq2rkrhef99hhk3ynfcxevcj86axr3sgmcczfstkmdwr"
             ]
         }
     },
@@ -74,28 +51,8 @@
         "v1.2": [],
         "v1.3": {
             "unlockedRewards": [
-                "erd1qqqqqqqqqqqqqpgqcppgtwafd6q59kz2zrk8h37nmcvgdrm00n4su9tmd4",
-                "erd1qqqqqqqqqqqqqpgqs7qnuvj2t0m40xmgrrh88wc7qdx286c60n4spvrzzk",
-                "erd1qqqqqqqqqqqqqpgq85gksw0sryuywg0x72zncql0vtfwndfg0n4sx9vfpy",
-                "erd1qqqqqqqqqqqqqpgqqlxk0qar7e5cqczk7lu7rj3r8pdptgs70n4shfyl5c",
-                "erd1qqqqqqqqqqqqqpgq4cjz5ht60lwy37ye25d6jn7hdl8cg48c0n4sgn0lzw",
-                "erd1qqqqqqqqqqqqqpgqwcxa43hpjq6qrvt878um0p7jmrhq4t9z0n4scdkqd3",
-                "erd1qqqqqqqqqqqqqpgq9ej0y7nzk3mzaykn7uu73dgmj27hnxtm0n4sj4sk3q",
-                "erd1qqqqqqqqqqqqqpgqhuy5unr4xr8w5tvzl865zaa4ey37p54x0n4st9t5x7",
-                "erd1qqqqqqqqqqqqqpgqslzadfd267cgfaxhn3fvpgz5zkqj9raf0n4s5ea9fj",
-                "erd1qqqqqqqqqqqqqpgqge3w0prvkcyzvfjzqeusunvum62fkluw0n4s8wq27g"
             ],
             "lockedRewards": [
-                "erd1qqqqqqqqqqqqqpgq6wrtdnv7d5uypnaw2k8mtujfdl0s66t40n4sag5e7n",
-                "erd1qqqqqqqqqqqqqpgqv6j2vr8tr9rc0fwhu0s2xef9w64qww2h0n4ssmxgq0",
-                "erd1qqqqqqqqqqqqqpgq5dzs6yf47tnsk5ays2aedzmu2ahsmcqv0n4s3rsljy",
-                "erd1qqqqqqqqqqqqqpgqw88ux2l44eufvwz2uhvduhq03g8pxc4j0n4s0frzjz",
-                "erd1qqqqqqqqqqqqqpgqp57tev59tltzqv3n0256drhmzv49w6g70n4sdrty6r",
-                "erd1qqqqqqqqqqqqqpgqcxq8g2zzx26qwlh0pkamwraeyemc5t230n4s8a24a7",
-                "erd1qqqqqqqqqqqqqpgqnl2cxmcrkzhvtgq660dzc8xu90jp7mhl0n4s4l2jlw",
-                "erd1qqqqqqqqqqqqqpgqh3nkxr7atnljvfmttumq8gf7zlq0cqkq0n4sustgqu",
-                "erd1qqqqqqqqqqqqqpgqxafjlvah06svpkv34hvq738t4zvt47wh0n4sudtc0p",
-                "erd1qqqqqqqqqqqqqpgqu2xtgl5y002vlepu7n5fcxyngvxd8en00n4sws0rtg"
             ],
             "customRewards": []
         },
@@ -103,23 +60,29 @@
                 "unlockedRewards": [
                 ],
                 "lockedRewards": [
-                    "erd1qqqqqqqqqqqqqpgqnqe5qhepftkxny7n8q2uaytlzjqww64p0n4sylm47u",
-                    "erd1qqqqqqqqqqqqqpgqzwvzevy2dg20fr5t5pfethsqr8zdc3ga0n4svh20vp"
+                    "erd1qqqqqqqqqqqqqpgq3chrzjdg3gu40zt6kes6w62cyz8tes6k0n4ssk3hj4",
+                    "erd1qqqqqqqqqqqqqpgqalcjd05y3uazuw79k4vdnheq825x8e400n4s09ymcr",
+                    "erd1qqqqqqqqqqqqqpgqyd7uaxe9sctfxsev0u3mntekxqlu6ntt0n4s8a6thz",
+                    "erd1qqqqqqqqqqqqqpgqtmg6xzef8k6z4885qhehgvu4zlf3g5zf0n4snencta",
+                    "erd1qqqqqqqqqqqqqpgq7mq58gjqzawtzy9y5v2rawpawx03a6ny0n4sv5mzr6",
+                    "erd1qqqqqqqqqqqqqpgqauyawadp2eex5kd30z5ehrrprgksjpyp0n4s00cy97",
+                    "erd1qqqqqqqqqqqqqpgqlsq7r58fn05emy66456hunfvlm03vzh00n4s5pqfqc"
                 ]
         }
     },
-    "tokenProviderUSD": "WEGLD-d7c6bb",
-    "tokensSupply": ["MEX-dc289c"],
-    "cachedTokensPrice": ["MEX-dc289c"],
+    "tokenProviderUSD": "WEGLD-a28c59",
+    "tokensSupply": ["MEX-a659d0"],
+    "cachedTokensPrice": ["MEX-a659d0"],
     "constants": {
         "MAX_SWAP_SPREAD": 0.9,
-        "MEX_TOKEN_ID": "MEX-dc289c",
-        "USDC_TOKEN_ID": "USDC-8d4068",
+        "MEX_TOKEN_ID": "MEX-a659d0",
+        "USDC_TOKEN_ID": "USDC-350c4e",
         "MAINTENANCE": false,
         "EPOCHS_IN_WEEK": 7,
         "roundedSwapEnable": {
-            "USDC-8d4068": "5000000",
-            "WEGLD-d7c6bb": "100000000000000000"
+            "USDC-350c4e": "5000000",
+            "WEGLD-a28c59": "100000000000000000",
+            "MEX-a659d0": "10000000000000000000000"
         }
     }
 }

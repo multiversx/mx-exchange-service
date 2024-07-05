@@ -41,8 +41,8 @@ export class LiquidityHandler {
             secondTokenPriceUSD,
             newTotalLockedValueUSD,
         ] = await Promise.all([
-            this.tokenService.getTokenMetadata(event.getFirstToken().tokenID),
-            this.tokenService.getTokenMetadata(event.getSecondToken().tokenID),
+            this.tokenService.tokenMetadata(event.getFirstToken().tokenID),
+            this.tokenService.tokenMetadata(event.getSecondToken().tokenID),
             this.tokenCompute.tokenPriceDerivedUSD(
                 event.getFirstToken().tokenID,
             ),

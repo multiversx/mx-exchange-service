@@ -13,8 +13,6 @@ import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/m
 import {
     ContractType,
     OutdatedContract,
-    UserDualYiledToken,
-    UserLockedFarmTokenV2,
     UserNegativeEnergyCheck,
 } from '../../models/user.model';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
@@ -48,7 +46,6 @@ export class UserEnergyComputeService {
         private readonly farmService: FarmFactoryService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
-        private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly energyAbi: EnergyAbiService,
@@ -59,6 +56,7 @@ export class UserEnergyComputeService {
         private readonly proxyFarmAbi: ProxyFarmAbiService,
         private readonly metabondingAbi: MetabondingAbiService,
         private readonly mxApi: MXApiService,
+        private readonly userMetaEsdtService: UserMetaEsdtService,
     ) {}
 
     async getUserOutdatedContracts(
@@ -216,10 +214,13 @@ export class UserEnergyComputeService {
 
         let userActiveFarmAddresses = farmTokens.map((token) => token.creator);
         const promisesFarmLockedTokens = farmLockedTokens.map((token) => {
-            return this.decodeAndGetFarmAddressFarmLockedTokens(token);
+            return this.decodeAndGetFarmAddressFarmLockedTokens(
+                token.identifier,
+                token.attributes,
+            );
         });
         const promisesDualYieldTokens = dualYieldTokens.map((token) => {
-            return this.getFarmAddressForDualYieldToken(token);
+            return this.getFarmAddressForDualYieldToken(token.collection);
         });
 
         userActiveFarmAddresses = userActiveFarmAddresses.concat(
@@ -275,17 +276,7 @@ export class UserEnergyComputeService {
 
         const userNfts = await this.mxApi.getNftsForUser(
             userAddress,
-            0,
-            userNftsCount,
             'MetaESDT',
-            [
-                lkmexTokenID,
-                xmexTokenID,
-                lockedLPTokenIDV1,
-                lockedLPTokenIDV2,
-                lockedFarmTokenIDV1,
-                lockedFarmTokenIDV2,
-            ],
         );
 
         const lkmexTokens = userNfts.filter((nft) =>
@@ -597,13 +588,16 @@ export class UserEnergyComputeService {
         );
     }
 
-    decodeAndGetFarmAddressFarmLockedTokens(token: UserLockedFarmTokenV2) {
+    decodeAndGetFarmAddressFarmLockedTokens(
+        identifier: string,
+        attributes: string,
+    ): Promise<string> {
         const decodedWFMTAttributes =
             this.proxyService.getWrappedFarmTokenAttributesV2({
                 batchAttributes: [
                     {
-                        identifier: token.identifier,
-                        attributes: token.attributes,
+                        identifier,
+                        attributes,
                     },
                 ],
             });
@@ -613,14 +607,14 @@ export class UserEnergyComputeService {
         );
     }
 
-    async getFarmAddressForDualYieldToken(token: UserDualYiledToken) {
-        if (!token || token === undefined) {
+    async getFarmAddressForDualYieldToken(collection: string): Promise<string> {
+        if (!collection || collection === undefined) {
             return undefined;
         }
 
         const stakingProxyAddress =
             await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(
-                token.collection,
+                collection,
             );
         return this.stakeProxyAbi.lpFarmAddress(stakingProxyAddress);
     }

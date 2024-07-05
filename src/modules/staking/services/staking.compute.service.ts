@@ -12,6 +12,7 @@ import { denominateAmount } from 'src/utils/token.converters';
 import { OptimalCompoundModel } from '../models/staking.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class StakingComputeService {
@@ -22,6 +23,7 @@ export class StakingComputeService {
         private readonly contextGetter: ContextGetterService,
         private readonly tokenService: TokenService,
         private readonly tokenCompute: TokenComputeService,
+        private readonly apiService: MXApiService,
     ) {}
 
     async computeStakeRewardsForPosition(
@@ -144,6 +146,13 @@ export class StakingComputeService {
         return extraRewardsAPRBoundedPerBlock.multipliedBy(blockDifferenceBig);
     }
 
+    async farmingTokenPriceUSD(stakeAddress: string): Promise<string> {
+        const farmingTokenID = await this.stakingAbi.farmingTokenID(
+            stakeAddress,
+        );
+        return await this.tokenCompute.tokenPriceDerivedUSD(farmingTokenID);
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -159,7 +168,7 @@ export class StakingComputeService {
     async computeStakedValueUSD(stakeAddress: string): Promise<string> {
         const [farmTokenSupply, farmingToken] = await Promise.all([
             this.stakingAbi.farmTokenSupply(stakeAddress),
-            this.tokenService.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
+            this.tokenService.tokenMetadata(constantsConfig.MEX_TOKEN_ID),
             this.stakingService.getFarmingToken(stakeAddress),
         ]);
 
@@ -212,6 +221,26 @@ export class StakingComputeService {
             : new BigNumber(annualPercentageRewards)
                   .dividedBy(constantsConfig.MAX_PERCENT)
                   .toFixed();
+    }
+
+    async computeRewardsRemainingDays(stakeAddress: string): Promise<number> {
+        const [perBlockRewardAmount, accumulatedRewards, rewardsCapacity] =
+            await Promise.all([
+                this.stakingAbi.perBlockRewardsAmount(stakeAddress),
+                this.stakingAbi.accumulatedRewards(stakeAddress),
+                this.stakingAbi.rewardCapacity(stakeAddress),
+            ]);
+
+        // 10 blocks per minute * 60 minutes per hour * 24 hours per day
+        const blocksInDay = 10 * 60 * 24;
+
+        return parseFloat(
+            new BigNumber(rewardsCapacity)
+                .minus(accumulatedRewards)
+                .dividedBy(perBlockRewardAmount)
+                .dividedBy(blocksInDay)
+                .toFixed(2),
+        );
     }
 
     async computeOptimalCompoundFrequency(
@@ -295,5 +324,24 @@ export class StakingComputeService {
             hours: Math.floor(frequencyHours),
             minutes: Math.floor(frequencyMinutes),
         });
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async deployedAt(stakeAddress: string): Promise<number> {
+        return await this.computeDeployedAt(stakeAddress);
+    }
+
+    async computeDeployedAt(stakeAddress: string): Promise<number> {
+        const { deployedAt } = await this.apiService.getAccountStats(
+            stakeAddress,
+        );
+        return deployedAt ?? undefined;
     }
 }

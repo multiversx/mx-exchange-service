@@ -10,6 +10,7 @@ import { tap } from 'rxjs/operators';
 import { CpuProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { MetricsCollector } from './metrics.collector';
 import { PerformanceProfiler } from './performance.profiler';
+import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -23,8 +24,13 @@ export class LoggingInterceptor implements NestInterceptor {
             const { req } = gqlContext.getContext();
 
             let origin = 'Unknown';
+            let timestamp: number = undefined;
             if (req !== undefined) {
                 origin = req?.headers?.['origin'] ?? 'Unknown';
+                timestamp = req?.headers?.['timestamp'];
+                ContextTracker.assign({
+                    deepHistoryTimestamp: timestamp,
+                });
             }
 
             const profiler = new PerformanceProfiler();

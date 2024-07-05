@@ -14,6 +14,7 @@ import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('StakingTransactionService', () => {
     let module: TestingModule;
@@ -34,6 +35,7 @@ describe('StakingTransactionService', () => {
                 MXProxyServiceProvider,
                 MXGatewayService,
                 ApiConfigService,
+                MXApiServiceProvider,
             ],
         }).compile();
     });

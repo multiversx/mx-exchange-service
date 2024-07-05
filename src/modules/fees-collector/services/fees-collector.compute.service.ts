@@ -187,7 +187,7 @@ export class FeesCollectorComputeService {
 
         const [baseToken, userEnergy, totalRewardsForWeekUSD] =
             await Promise.all([
-                this.tokenService.getTokenMetadata(baseAssetTokenID),
+                this.tokenService.tokenMetadata(baseAssetTokenID),
                 this.energyService.getUserEnergy(userAddress),
                 this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
                     scAddress,

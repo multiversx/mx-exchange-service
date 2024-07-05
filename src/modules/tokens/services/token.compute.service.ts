@@ -16,9 +16,28 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import {
+    ElasticQuery,
+    ElasticService,
+    QueryType,
+} from '@multiversx/sdk-nestjs-elastic';
+import moment from 'moment';
+import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { PendingExecutor } from 'src/utils/pending.executor';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
+    private swapCountExecutor: PendingExecutor<
+        null,
+        { tokenID: string; swapsCount: number }[]
+    >;
+    private swapCountPrevious24hExecutor: PendingExecutor<
+        null,
+        { tokenID: string; swapsCount: number }[]
+    >;
+
     constructor(
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
@@ -27,7 +46,18 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly dataApi: MXDataApiService,
-    ) {}
+        private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly elasticService: ElasticService,
+        private readonly logsElasticService: ESLogsService,
+        private readonly cachingService: CacheService,
+    ) {
+        this.swapCountExecutor = new PendingExecutor(
+            async () => await this.allTokensSwapsCount(),
+        );
+        this.swapCountPrevious24hExecutor = new PendingExecutor(
+            async () => await this.allTokensSwapsCountPrevious24h(),
+        );
+    }
 
     async getEgldPriceInUSD(): Promise<string> {
         return await this.pairCompute.firstTokenPrice(scAddress.WEGLD_USDC);
@@ -178,5 +208,444 @@ export class TokenComputeService implements ITokenComputeService {
             .times(egldPriceUSD)
             .times(usdcPrice)
             .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Price.remoteTtl,
+        localTtl: CacheTtlInfo.Price.localTtl,
+    })
+    async tokenPrevious24hPrice(tokenID: string): Promise<string> {
+        return await this.computeTokenPrevious24hPrice(tokenID);
+    }
+
+    async computeTokenPrevious24hPrice(tokenID: string): Promise<string> {
+        const values24h = await this.analyticsQuery.getValues24h({
+            series: tokenID,
+            metric: 'priceUSD',
+        });
+
+        return values24h[0]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenPrevious7dPrice(tokenID: string): Promise<string> {
+        return await this.computeTokenPrevious7dPrice(tokenID);
+    }
+
+    async computeTokenPrevious7dPrice(tokenID: string): Promise<string> {
+        const values7d = await this.analyticsQuery.getLatestCompleteValues({
+            series: tokenID,
+            metric: 'priceUSD',
+            time: '7 days',
+        });
+
+        return values7d[0]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenPriceChange24h(tokenID: string): Promise<number> {
+        return await this.computeTokenPriceChange24h(tokenID);
+    }
+
+    async computeTokenPriceChange24h(tokenID: string): Promise<number> {
+        const [currentPrice, previous24hPrice] = await Promise.all([
+            this.tokenPriceDerivedUSD(tokenID),
+            this.tokenPrevious24hPrice(tokenID),
+        ]);
+
+        const currentPriceBN = new BigNumber(currentPrice);
+        const previous24hPriceBN = new BigNumber(previous24hPrice);
+
+        if (previous24hPriceBN.isZero()) {
+            return 0;
+        }
+
+        return currentPriceBN.dividedBy(previous24hPrice).toNumber();
+    }
+
+    async computeTokenPriceChange7d(tokenID: string): Promise<number> {
+        const [currentPrice, previous7dPrice] = await Promise.all([
+            this.tokenPriceDerivedUSD(tokenID),
+            this.tokenPrevious7dPrice(tokenID),
+        ]);
+
+        const currentPriceBN = new BigNumber(currentPrice);
+        const previous7dPriceBN = new BigNumber(previous7dPrice);
+
+        if (previous7dPriceBN.isZero()) {
+            return 0;
+        }
+
+        return currentPriceBN.dividedBy(previous7dPriceBN).toNumber();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenVolumeUSDChange24h(tokenID: string): Promise<number> {
+        return await this.computeTokenVolumeUSDChange24h(tokenID);
+    }
+
+    async computeTokenVolumeUSDChange24h(tokenID: string): Promise<number> {
+        const [currentVolume, previous24hVolume] = await Promise.all([
+            this.tokenVolumeUSD24h(tokenID),
+            this.tokenPrevious24hVolumeUSD(tokenID),
+        ]);
+
+        const currentVolumeBN = new BigNumber(currentVolume);
+        const previous24hVolumeBN = new BigNumber(previous24hVolume);
+
+        if (currentVolumeBN.isZero()) {
+            return 0;
+        }
+
+        const maxPrevious24hVolume = BigNumber.maximum(
+            previous24hVolumeBN,
+            constantsConfig.trendingScore.MIN_24H_VOLUME,
+        );
+
+        return currentVolumeBN.dividedBy(maxPrevious24hVolume).toNumber();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenTradeChange24h(tokenID: string): Promise<number> {
+        return await this.computeTokenTradeChange24h(tokenID);
+    }
+
+    async computeTokenTradeChange24h(tokenID: string): Promise<number> {
+        const [currentSwaps, previous24hSwaps] = await Promise.all([
+            this.tokenSwapCount(tokenID),
+            this.tokenPrevious24hSwapCount(tokenID),
+        ]);
+
+        const currentSwapsBN = new BigNumber(currentSwaps);
+        const previous24hSwapsBN = new BigNumber(previous24hSwaps);
+
+        if (currentSwapsBN.isZero()) {
+            return 0;
+        }
+
+        const maxPrevious24hTradeCount = BigNumber.maximum(
+            previous24hSwapsBN,
+            constantsConfig.trendingScore.MIN_24H_TRADE_COUNT,
+        );
+
+        return currentSwapsBN.dividedBy(maxPrevious24hTradeCount).toNumber();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenVolumeUSD24h(tokenID: string): Promise<string> {
+        return await this.computeTokenVolumeUSD24h(tokenID);
+    }
+
+    async computeTokenVolumeUSD24h(tokenID: string): Promise<string> {
+        const valuesLast2Days = await this.tokenLast2DaysVolumeUSD(tokenID);
+        return valuesLast2Days.current;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenPrevious24hVolumeUSD(tokenID: string): Promise<string> {
+        return await this.computeTokenPrevious24hVolumeUSD(tokenID);
+    }
+
+    async computeTokenPrevious24hVolumeUSD(tokenID: string): Promise<string> {
+        const valuesLast2Days = await this.tokenLast2DaysVolumeUSD(tokenID);
+        return valuesLast2Days.previous;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenLast2DaysVolumeUSD(
+        tokenID: string,
+    ): Promise<{ previous: string; current: string }> {
+        return await this.computeTokenLast2DaysVolumeUSD(tokenID);
+    }
+
+    async computeTokenLast2DaysVolumeUSD(
+        tokenID: string,
+    ): Promise<{ previous: string; current: string }> {
+        const values48h = await this.analyticsQuery.getHourlySumValues({
+            series: tokenID,
+            metric: 'volumeUSD',
+            time: '2 days',
+        });
+
+        if (!values48h || !Array.isArray(values48h)) {
+            return {
+                previous: '0',
+                current: '0',
+            };
+        }
+
+        const splitTime = moment().utc().subtract(1, 'day').startOf('hour');
+
+        const previousDayValues = values48h.filter((item) =>
+            moment.utc(item.timestamp).isSameOrBefore(splitTime),
+        );
+
+        const currentDayValues = values48h.filter((item) =>
+            moment.utc(item.timestamp).isAfter(splitTime),
+        );
+
+        return {
+            previous: previousDayValues
+                .reduce(
+                    (acc, item) => acc.plus(new BigNumber(item.value)),
+                    new BigNumber(0),
+                )
+                .toFixed(),
+            current: currentDayValues
+                .reduce(
+                    (acc, item) => acc.plus(new BigNumber(item.value)),
+                    new BigNumber(0),
+                )
+                .toFixed(),
+        };
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenLiquidityUSD(tokenID: string): Promise<string> {
+        return await this.computeTokenLiquidityUSD(tokenID);
+    }
+
+    async computeTokenLiquidityUSD(tokenID: string): Promise<string> {
+        const values24h = await this.analyticsQuery.getLatestCompleteValues({
+            series: tokenID,
+            metric: 'lockedValueUSD',
+            time: '1 day',
+        });
+
+        if (!values24h || values24h.length === 0) {
+            return undefined;
+        }
+
+        return values24h[values24h.length - 1]?.value ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenCreatedAt(tokenID: string): Promise<string> {
+        return await this.computeTokenCreatedAtTimestamp(tokenID);
+    }
+
+    async computeTokenCreatedAtTimestamp(tokenID: string): Promise<string> {
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapter.condition.must = [QueryType.Match('_id', tokenID)];
+
+        const tokens = await this.elasticService.getList(
+            'tokens',
+            '',
+            elasticQueryAdapter,
+        );
+
+        if (tokens.length > 0) {
+            const createdAtTimestamp = tokens[0].timestamp;
+            return createdAtTimestamp.toString();
+        }
+
+        return undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async tokenSwapCount(tokenID: string): Promise<number> {
+        const allSwapsCount = await this.swapCountExecutor.execute(null);
+
+        const currentTokenSwapCount = allSwapsCount.find(
+            (elem) => elem.tokenID === tokenID,
+        );
+
+        return currentTokenSwapCount ? currentTokenSwapCount.swapsCount : 0;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async tokenPrevious24hSwapCount(tokenID: string): Promise<number> {
+        const allSwapsCount = await this.swapCountPrevious24hExecutor.execute(
+            null,
+        );
+
+        const currentTokenSwapCount = allSwapsCount.find(
+            (elem) => elem.tokenID === tokenID,
+        );
+
+        return currentTokenSwapCount ? currentTokenSwapCount.swapsCount : 0;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async allTokensSwapsCount(): Promise<
+        { tokenID: string; swapsCount: number }[]
+    > {
+        const cacheKey = 'token.allTokensSwapsCount';
+        const cachedValue = await this.cachingService.get<
+            { tokenID: string; swapsCount: number }[]
+        >(cacheKey);
+        if (cachedValue && cachedValue !== undefined) {
+            return cachedValue;
+        }
+
+        const end = moment.utc().unix();
+        const start = moment.unix(end).subtract(1, 'day').unix();
+
+        const swapsCount = await this.computeAllTokensSwapsCount(start, end);
+        await this.cachingService.set(
+            cacheKey,
+            swapsCount,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+        return swapsCount;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async allTokensSwapsCountPrevious24h(): Promise<
+        { tokenID: string; swapsCount: number }[]
+    > {
+        const cacheKey = 'token.allTokensSwapsCountPrevious24h';
+        const cachedValue = await this.cachingService.get<
+            { tokenID: string; swapsCount: number }[]
+        >(cacheKey);
+        if (cachedValue && cachedValue !== undefined) {
+            return cachedValue;
+        }
+
+        const end = moment.utc().subtract(1, 'day').unix();
+        const start = moment.utc().subtract(2, 'days').unix();
+
+        const swapsCount = await this.computeAllTokensSwapsCount(start, end);
+        await this.cachingService.set(
+            cacheKey,
+            swapsCount,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+        return swapsCount;
+    }
+
+    async computeAllTokensSwapsCount(
+        start: number,
+        end: number,
+    ): Promise<{ tokenID: string; swapsCount: number }[]> {
+        const pairAddresses = await this.routerAbi.pairsAddress();
+
+        const allSwapsCount = await this.logsElasticService.getTokenSwapsCount(
+            start,
+            end,
+            pairAddresses,
+        );
+
+        const result = [];
+
+        for (const entry of allSwapsCount.entries()) {
+            result.push({
+                tokenID: entry[0],
+                swapsCount: entry[1],
+            });
+        }
+
+        return result;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenTrendingScore(tokenID: string): Promise<string> {
+        return await this.computeTokenTrendingScore(tokenID);
+    }
+
+    async computeTokenTrendingScore(tokenID: string): Promise<string> {
+        const [volumeChange, priceChange, tradeChange] = await Promise.all([
+            this.tokenVolumeUSDChange24h(tokenID),
+            this.tokenPriceChange24h(tokenID),
+            this.tokenTradeChange24h(tokenID),
+        ]);
+
+        const volumeScore = new BigNumber(0.4).multipliedBy(
+            Math.log(volumeChange),
+        );
+        const priceScore = new BigNumber(0.3).multipliedBy(priceChange);
+        const tradeScore = new BigNumber(0.3).multipliedBy(
+            Math.log(tradeChange),
+        );
+
+        if (volumeScore.isNaN() || priceScore.isNaN() || tradeScore.isNaN()) {
+            return new BigNumber('-Infinity').toFixed();
+        }
+
+        return volumeScore.plus(priceScore).plus(tradeScore).toFixed();
     }
 }

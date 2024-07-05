@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import {
+    CandleDataModel,
+    HistoricDataModel,
+} from 'src/modules/analytics/models/analytics.model';
 import { TimescaleDBQueryService } from '../timescaledb/timescaledb.query.service';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
@@ -20,6 +23,8 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     async getLatestCompleteValues(args: {
         series: any;
         metric: any;
+        time?: any;
+        start?: any;
     }): Promise<HistoricDataModel[]> {
         const service = await this.getService();
         return await service.getLatestCompleteValues(args);
@@ -49,6 +54,16 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         return await service.getValues24hSum(args);
     }
 
+    async getHourlySumValues(args: {
+        series: any;
+        metric: any;
+        time?: any;
+        start?: any;
+    }): Promise<HistoricDataModel[]> {
+        const service = await this.getService();
+        return await service.getHourlySumValues(args);
+    }
+
     async getPDlatestValue({
         series,
         metric,
@@ -71,6 +86,23 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
             timeBucket,
             startDate,
             endDate,
+        });
+    }
+
+    async getPriceCandles({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<CandleDataModel[]> {
+        const service = await this.getService();
+        return await service.getPriceCandles({
+            series,
+            metric,
+            resolution,
+            start,
+            end,
         });
     }
 

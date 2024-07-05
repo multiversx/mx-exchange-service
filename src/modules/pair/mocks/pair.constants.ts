@@ -561,7 +561,12 @@ export const pairs = [
         secondTokenLockedValueUSD: '10000',
         lockedValueUSD: '20000',
         totalFeePercent: 0.003,
+        volumeUSD: '1000',
         state: 'Active',
+        feeState: true,
+        tradesCount: 1000,
+        hasFarms: false,
+        hasDualFarms: false,
     },
     {
         address: Address.fromHex(
@@ -584,7 +589,12 @@ export const pairs = [
         secondTokenLockedValueUSD: '10000',
         lockedValueUSD: '20000',
         totalFeePercent: 0.003,
+        volumeUSD: '1000',
         state: 'Active',
+        feeState: true,
+        tradesCount: 1010,
+        hasFarms: true,
+        hasDualFarms: false,
     },
     {
         address: Address.fromHex(
@@ -607,7 +617,12 @@ export const pairs = [
         secondTokenLockedValueUSD: '10000',
         lockedValueUSD: '20000',
         totalFeePercent: 0.003,
+        volumeUSD: '1000',
         state: 'Active',
+        feeState: true,
+        tradesCount: 0,
+        hasFarms: true,
+        hasDualFarms: false,
     },
     {
         address: Address.fromHex(
@@ -630,7 +645,12 @@ export const pairs = [
         secondTokenLockedValueUSD: '10000',
         lockedValueUSD: '20000',
         totalFeePercent: 0.003,
+        volumeUSD: '1000',
         state: 'Active',
+        feeState: false,
+        tradesCount: 30,
+        hasFarms: true,
+        hasDualFarms: true,
     },
     {
         address: Address.fromHex(
@@ -653,7 +673,12 @@ export const pairs = [
         secondTokenLockedValueUSD: '100',
         lockedValueUSD: '200',
         totalFeePercent: 0.003,
+        volumeUSD: '1000',
         state: 'Active',
+        feeState: true,
+        tradesCount: 0,
+        hasFarms: false,
+        hasDualFarms: false,
     },
     {
         address: Address.fromHex(
@@ -676,7 +701,12 @@ export const pairs = [
         secondTokenLockedValueUSD: '10000',
         lockedValueUSD: '20000',
         totalFeePercent: 0.003,
+        volumeUSD: '1000',
         state: 'Active',
+        feeState: false,
+        tradesCount: 0,
+        hasFarms: false,
+        hasDualFarms: false,
     },
     {
         address: Address.fromHex(
@@ -699,7 +729,12 @@ export const pairs = [
         secondTokenLockedValueUSD: '10000',
         lockedValueUSD: '20000',
         totalFeePercent: 0.003,
+        volumeUSD: '1000',
         state: 'Active',
+        feeState: false,
+        tradesCount: 0,
+        hasFarms: false,
+        hasDualFarms: true,
     },
     {
         address: Address.fromHex(
@@ -722,7 +757,12 @@ export const pairs = [
         secondTokenLockedValueUSD: '10000',
         lockedValueUSD: '20000',
         totalFeePercent: 0.003,
+        volumeUSD: '700',
         state: 'Active',
+        feeState: false,
+        tradesCount: 0,
+        hasFarms: false,
+        hasDualFarms: false,
     },
 ];
 

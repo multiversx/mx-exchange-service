@@ -1,11 +1,11 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { MetricsService } from 'src/endpoints/metrics/metrics.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { RouterAbiService } from './router.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
+import { ESTransactionsService } from 'src/services/elastic-search/services/es.transactions.service';
 
 @Injectable()
 export class RouterComputeService {
@@ -13,7 +13,7 @@ export class RouterComputeService {
         private readonly routerAbi: RouterAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
-        private readonly metrics: MetricsService,
+        private readonly metrics: ESTransactionsService,
     ) {}
 
     @ErrorLoggerAsync()

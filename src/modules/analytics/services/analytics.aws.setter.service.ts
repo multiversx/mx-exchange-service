@@ -24,8 +24,8 @@ export class AnalyticsAWSSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('latestCompleteValues', series, metric),
             values,
-            Constants.oneMinute() * 30,
-            Constants.oneMinute() * 10,
+            Constants.oneHour(),
+            Constants.oneMinute() * 45,
         );
     }
 
@@ -37,8 +37,8 @@ export class AnalyticsAWSSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('sumCompleteValues', series, metric),
             values,
-            Constants.oneMinute() * 30,
-            Constants.oneMinute() * 10,
+            Constants.oneHour(),
+            Constants.oneMinute() * 45,
         );
     }
 
@@ -50,8 +50,8 @@ export class AnalyticsAWSSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('values24hSum', series, metric),
             values,
-            Constants.oneMinute() * 30,
-            Constants.oneMinute() * 10,
+            Constants.oneHour(),
+            Constants.oneMinute() * 45,
         );
     }
 
@@ -63,8 +63,8 @@ export class AnalyticsAWSSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('values24h', series, metric),
             values,
-            Constants.oneMinute() * 30,
-            Constants.oneMinute() * 10,
+            Constants.oneHour(),
+            Constants.oneMinute() * 45,
         );
     }
 }

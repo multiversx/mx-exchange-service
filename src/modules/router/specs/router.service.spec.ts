@@ -10,6 +10,13 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -26,8 +33,15 @@ describe('RouterService', () => {
             providers: [
                 PairAbiServiceProvider,
                 RouterAbiServiceProvider,
+                PairComputeServiceProvider,
                 RouterService,
                 ApiConfigService,
+                PairFilteringService,
+                PairService,
+                WrapAbiServiceProvider,
+                TokenServiceProvider,
+                ContextGetterServiceProvider,
+                MXApiServiceProvider,
             ],
         }).compile();
     });
@@ -98,6 +112,9 @@ describe('RouterService', () => {
             address: null,
             secondTokenID: null,
             state: null,
+            feeState: null,
+            minVolume: null,
+            minLockedValueUSD: null,
         });
         expect(filteredPairs).toEqual([
             new PairModel({
@@ -113,6 +130,80 @@ describe('RouterService', () => {
             new PairModel({
                 address: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000015',
+                ).bech32(),
+            }),
+            new PairModel({
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000019',
+                ).bech32(),
+            }),
+        ]);
+    });
+
+    it('should get pairs filtered by fee state and volume', async () => {
+        const service = module.get<RouterService>(RouterService);
+
+        const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
+            firstTokenID: 'WEGLD-123456',
+            issuedLpToken: true,
+            address: null,
+            secondTokenID: null,
+            state: null,
+            feeState: false,
+            minVolume: 1000,
+            minLockedValueUSD: null,
+        });
+        expect(filteredPairs).toEqual([
+            new PairModel({
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000015',
+                ).bech32(),
+            }),
+        ]);
+    });
+
+    it('should get pairs filtered by minimum locked value USD', async () => {
+        const service = module.get<RouterService>(RouterService);
+
+        const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
+            firstTokenID: null,
+            issuedLpToken: true,
+            address: null,
+            secondTokenID: null,
+            state: null,
+            feeState: null,
+            minVolume: null,
+            minLockedValueUSD: 300,
+        });
+        expect(filteredPairs).toEqual([
+            new PairModel({
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
+            }),
+            new PairModel({
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000013',
+                ).bech32(),
+            }),
+            new PairModel({
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000014',
+                ).bech32(),
+            }),
+            new PairModel({
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000015',
+                ).bech32(),
+            }),
+            new PairModel({
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000017',
+                ).bech32(),
+            }),
+            new PairModel({
+                address: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000018',
                 ).bech32(),
             }),
             new PairModel({

@@ -14,6 +14,9 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
+import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 describe('TokenComputeService', () => {
     let module: TestingModule;
@@ -26,6 +29,7 @@ describe('TokenComputeService', () => {
                 }),
                 ConfigModule.forRoot({}),
                 DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
             ],
             providers: [
                 PairAbiServiceProvider,
@@ -38,6 +42,8 @@ describe('TokenComputeService', () => {
                 ContextGetterServiceProvider,
                 TokenComputeService,
                 ApiConfigService,
+                AnalyticsQueryServiceProvider,
+                MXApiServiceProvider,
             ],
         }).compile();
     });

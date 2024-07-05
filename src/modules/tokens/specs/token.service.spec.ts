@@ -12,6 +12,8 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { TokenComputeServiceProvider } from '../mocks/token.compute.service.mock';
+import { TokenFilteringService } from '../services/token.filtering.service';
 
 describe('TokenService', () => {
     let module: TestingModule;
@@ -32,6 +34,8 @@ describe('TokenService', () => {
                 MXApiServiceProvider,
                 TokenService,
                 ApiConfigService,
+                TokenComputeServiceProvider,
+                TokenFilteringService,
             ],
         }).compile();
     });
@@ -48,18 +52,18 @@ describe('TokenService', () => {
 
         const tokenID = 'WEGLD-123456';
         const expectedToken = Tokens(tokenID);
-        const cacheKey = `token.${tokenID}`;
+        const cacheKey = `token.tokenMetadata.${tokenID}`;
         await cachingService.deleteInCache(cacheKey);
 
-        let token = await service.getTokenMetadata(tokenID);
+        let token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(expectedToken);
 
         jest.spyOn(apiService, 'getToken').mockResolvedValueOnce(undefined);
         await cachingService.deleteInCache(cacheKey);
-        token = await service.getTokenMetadata(tokenID);
+        token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(undefined);
 
-        token = await service.getTokenMetadata(tokenID);
+        token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(expectedToken);
     });
 });

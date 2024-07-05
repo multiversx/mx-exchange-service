@@ -80,6 +80,9 @@ export class PairModel {
     lockedValueUSD: string;
 
     @Field()
+    previous24hLockedValueUSD: string;
+
+    @Field()
     firstTokenVolume24h: string;
 
     @Field()
@@ -89,7 +92,13 @@ export class PairModel {
     volumeUSD24h: string;
 
     @Field()
+    previous24hVolumeUSD: string;
+
+    @Field()
     feesUSD24h: string;
+
+    @Field()
+    previous24hFeesUSD: string;
 
     @Field()
     feesAPR: string;
@@ -137,6 +146,18 @@ export class PairModel {
         description: 'Fees collector set for this pair',
     })
     feesCollector: FeesCollectorModel;
+
+    @Field()
+    hasFarms: boolean;
+
+    @Field()
+    hasDualFarms: boolean;
+
+    @Field()
+    tradesCount: number;
+
+    @Field()
+    deployedAt: number;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);

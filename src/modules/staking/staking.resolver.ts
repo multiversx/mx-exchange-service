@@ -1,12 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import {
-    Args,
-    Int,
-    Parent,
-    Query,
-    ResolveField,
-    Resolver,
-} from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -17,6 +10,8 @@ import {
     StakeFarmArgs,
     GenericStakeFarmArgs,
     ClaimRewardsWithNewValueArgs,
+    StakingFarmsFilter,
+    StakingFarmsSortingArgs,
 } from './models/staking.args';
 import {
     OptimalCompoundModel,
@@ -32,6 +27,11 @@ import { StakingTransactionService } from './services/staking.transactions.servi
 import { StakingAbiService } from './services/staking.abi.service';
 import { StakingComputeService } from './services/staking.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { StakingFarmsResponse } from './models/staking.farms.response';
+import ConnectionArgs, {
+    getPagingParameters,
+} from '../common/filters/connection.args';
+import PageResponse from '../common/page.response';
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -103,6 +103,11 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async rewardsRemainingDays(@Parent() parent: StakingModel) {
+        return this.stakingCompute.computeRewardsRemainingDays(parent.address);
+    }
+
+    @ResolveField()
     async divisionSafetyConstant(@Parent() parent: StakingModel) {
         return this.stakingAbi.divisionSafetyConstant(parent.address);
     }
@@ -135,6 +140,11 @@ export class StakingResolver {
     @ResolveField()
     async state(@Parent() parent: StakingModel) {
         return this.stakingAbi.state(parent.address);
+    }
+
+    @ResolveField()
+    async deployedAt(@Parent() parent: StakingModel) {
+        return this.stakingCompute.deployedAt(parent.address);
     }
 
     @Query(() => String)
@@ -187,6 +197,44 @@ export class StakingResolver {
     @Query(() => [StakingModel])
     async stakingFarms(): Promise<StakingModel[]> {
         return this.stakingService.getFarmsStaking();
+    }
+
+    @Query(() => StakingFarmsResponse)
+    async filteredStakingFarms(
+        @Args({
+            name: 'filters',
+            type: () => StakingFarmsFilter,
+            nullable: true,
+        })
+        filters: StakingFarmsFilter,
+        @Args({
+            name: 'pagination',
+            type: () => ConnectionArgs,
+            nullable: true,
+        })
+        pagination: ConnectionArgs,
+        @Args({
+            name: 'sorting',
+            type: () => StakingFarmsSortingArgs,
+            nullable: true,
+        })
+        sorting: StakingFarmsSortingArgs,
+    ): Promise<StakingFarmsResponse> {
+        const pagingParams = getPagingParameters(pagination);
+
+        const response = await this.stakingService.getFilteredFarmsStaking(
+            pagingParams,
+            filters,
+            sorting,
+        );
+
+        return PageResponse.mapResponse<StakingModel>(
+            response?.items || [],
+            pagination ?? new ConnectionArgs(),
+            response?.count || 0,
+            pagingParams.offset,
+            pagingParams.limit,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
