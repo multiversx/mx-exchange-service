@@ -4,6 +4,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -62,6 +63,25 @@ export class PairCompoundedAPRModel {
     dualFarmBoostedAPR: string;
 
     constructor(init?: Partial<PairCompoundedAPRModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class PairRewardTokensModel {
+    @Field()
+    address: string;
+
+    @Field(() => [EsdtToken])
+    poolRewards: EsdtToken[];
+
+    @Field({ nullable: true })
+    farmReward: NftCollection;
+
+    @Field({ nullable: true })
+    dualFarmReward: EsdtToken;
+
+    constructor(init?: Partial<PairRewardTokensModel>) {
         Object.assign(this, init);
     }
 }
@@ -186,6 +206,9 @@ export class PairModel {
 
     @Field(() => PairCompoundedAPRModel, { nullable: true })
     compoundedAPR: PairCompoundedAPRModel;
+
+    @Field(() => PairRewardTokensModel, { nullable: true })
+    rewardTokens: PairRewardTokensModel;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);

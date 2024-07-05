@@ -7,6 +7,7 @@ import {
     LockedTokensInfo,
     PairCompoundedAPRModel,
     PairModel,
+    PairRewardTokensModel,
 } from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
 import {
@@ -31,6 +32,62 @@ import { constantsConfig } from 'src/config';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { FarmComputeServiceV2 } from '../farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from '../staking/services/staking.compute.service';
+import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
+import { NftCollection } from '../tokens/models/nftCollection.model';
+import { EnergyService } from '../energy/services/energy.service';
+
+@Resolver(() => PairRewardTokensModel)
+export class PairRewardTokensResolver extends GenericResolver {
+    constructor(
+        private readonly pairCompute: PairComputeService,
+        private readonly pairService: PairService,
+        private readonly stakingProxyService: StakingProxyService,
+        private readonly energyService: EnergyService,
+    ) {
+        super();
+    }
+
+    @ResolveField()
+    async poolRewards(
+        @Parent() parent: PairRewardTokensModel,
+    ): Promise<EsdtToken[]> {
+        return await Promise.all([
+            this.pairService.getFirstToken(parent.address),
+            this.pairService.getSecondToken(parent.address),
+        ]);
+    }
+
+    @ResolveField()
+    async farmReward(
+        @Parent() parent: PairRewardTokensModel,
+    ): Promise<NftCollection> {
+        const farmAddress = await this.pairCompute.getPairFarmAddress(
+            parent.address,
+        );
+
+        if (!farmAddress) {
+            return undefined;
+        }
+
+        return await this.energyService.getLockedToken();
+    }
+
+    @ResolveField()
+    async dualFarmReward(
+        @Parent() parent: PairRewardTokensModel,
+    ): Promise<EsdtToken> {
+        const stakingProxyAddress =
+            await this.pairCompute.getPairStakingProxyAddress(parent.address);
+
+        if (!stakingProxyAddress) {
+            return undefined;
+        }
+
+        return await this.stakingProxyService.getStakingToken(
+            stakingProxyAddress,
+        );
+    }
+}
 
 @Resolver(() => PairCompoundedAPRModel)
 export class PairCompoundedAPRResolver extends GenericResolver {
@@ -331,6 +388,13 @@ export class PairResolver {
         @Parent() parent: PairModel,
     ): Promise<PairCompoundedAPRModel> {
         return new PairCompoundedAPRModel({ address: parent.address });
+    }
+
+    @ResolveField(() => PairRewardTokensModel, { nullable: true })
+    async rewardTokens(
+        @Parent() parent: PairModel,
+    ): Promise<PairRewardTokensModel> {
+        return new PairRewardTokensModel({ address: parent.address });
     }
 
     @Query(() => String)
