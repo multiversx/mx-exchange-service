@@ -55,6 +55,7 @@
         "@nestjs/platform-express": "^10.2.0",
         "@nestjs/schedule": "^3.0.2",
         "@nestjs/typeorm": "^10.0.0",
+        "@opentelemetry/api": "^1.4.1",
         "agentkeepalive": "^4.2.1",
         "amqp-connection-manager": "^4.1.14",
         "amqplib": "^0.10.3",
