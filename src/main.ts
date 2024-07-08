@@ -15,6 +15,8 @@ import { LoggerService } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const tracer = require('dd-trace').init();
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
 
     const app = await NestFactory.create<NestExpressApplication>(
@@ -37,15 +39,6 @@ async function bootstrap() {
     httpServer.keepAliveTimeout =
         apiConfigService.getKeepAliveTimeoutUpstream();
     httpServer.headersTimeout = apiConfigService.getKeepAliveTimeoutUpstream(); //`keepAliveTimeout + server's expected response time`
-
-    if (apiConfigService.isTracerActive()) {
-        const tracer = require('dd-trace').init({
-            profiling: true,
-            env: 'dev',
-            service: 'graph-xexchange',
-            version: '1.0.3',
-        });
-    }
 
     const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
         PubSubModule,
