@@ -39,7 +39,12 @@ async function bootstrap() {
     httpServer.headersTimeout = apiConfigService.getKeepAliveTimeoutUpstream(); //`keepAliveTimeout + server's expected response time`
 
     if (apiConfigService.isTracerActive()) {
-        const tracer = require('dd-trace').init();
+        const tracer = require('dd-trace').init({
+            profiling: true,
+            env: 'dev',
+            service: 'graph-xexchange',
+            version: '1.0.3',
+        });
     }
 
     const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
