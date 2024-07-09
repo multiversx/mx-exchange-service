@@ -128,6 +128,25 @@ export class PairFilteringService {
         return filteredPairs;
     }
 
+    async pairsByLpTokenIds(
+        pairFilter: PairsFilter,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.lpTokenIds || pairFilter.lpTokenIds.length === 0) {
+            return pairsMetadata;
+        }
+
+        const lpTokensIDs = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairAbi.lpTokenID(pairMetadata.address),
+            ),
+        );
+
+        return pairsMetadata.filter((_, index) =>
+            pairFilter.lpTokenIds.includes(lpTokensIDs[index]),
+        );
+    }
+
     async pairsByState(
         pairFilter: PairFilterArgs | PairsFilter,
         pairsMetadata: PairMetadata[],

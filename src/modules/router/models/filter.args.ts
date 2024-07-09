@@ -60,6 +60,8 @@ export class PairsFilter {
     minDeployedAt: number;
     @Field({ nullable: true })
     searchToken: string;
+    @Field(() => [String], { nullable: true })
+    lpTokenIds: string[];
 }
 
 @InputType()
