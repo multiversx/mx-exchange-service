@@ -124,31 +124,16 @@ export class TradingViewService {
         }
 
         const resolution = this.convertResolution(queryArgs.resolution);
+        const start = queryArgs.from;
 
-        let start = queryArgs.from;
-
-        // if 'countback' is set, 'from' should be ignored
-        if (queryArgs.countback) {
-            const decodedResolution = decodeTime(resolution);
-            const resolutionInMinutes = moment
-                .duration(decodedResolution[0], decodedResolution[1])
-                .asMinutes();
-
-            const countbackDuration = queryArgs.countback * resolutionInMinutes;
-            start = moment
-                .unix(queryArgs.to)
-                .subtract(countbackDuration, 'minutes')
-                .unix();
-        }
-
-        const priceCandles =
-            await this.analyticsQueryService.getPriceCandlesWithoutGapfilling({
-                series: series,
-                metric: metric,
-                start: start,
-                end: queryArgs.to,
-                resolution: resolution,
-            });
+        const priceCandles = await this.analyticsQueryService.getCandles({
+            series: series,
+            metric: metric,
+            start: start,
+            end: queryArgs.to,
+            resolution: resolution,
+            countback: queryArgs.countback,
+        });
 
         if (priceCandles.length === 0) {
             const nextTime = await this.analyticsQueryService.getCandleNextTime(
@@ -179,14 +164,16 @@ export class TradingViewService {
             h: [],
             l: [],
             c: [],
+            v: [],
         });
 
         for (const candle of priceCandles) {
             result.t.push(moment(candle.time).unix());
-            result.o.push(new BigNumber(candle.ohlc[0]).toNumber());
-            result.h.push(new BigNumber(candle.ohlc[1]).toNumber());
-            result.l.push(new BigNumber(candle.ohlc[2]).toNumber());
-            result.c.push(new BigNumber(candle.ohlc[3]).toNumber());
+            result.o.push(new BigNumber(candle.ohlcv[0]).toNumber());
+            result.h.push(new BigNumber(candle.ohlcv[1]).toNumber());
+            result.l.push(new BigNumber(candle.ohlcv[2]).toNumber());
+            result.c.push(new BigNumber(candle.ohlcv[3]).toNumber());
+            result.v.push(new BigNumber(candle.ohlcv[4]).toNumber());
         }
 
         return result;
