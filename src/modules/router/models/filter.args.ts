@@ -62,6 +62,8 @@ export class PairsFilter {
     searchToken: string;
     @Field(() => [String], { nullable: true })
     lpTokenIds: string[];
+    @Field(() => [String], { nullable: true })
+    farmTokens: string[];
 }
 
 @InputType()

@@ -75,6 +75,14 @@ export class PairsMetadataBuilder {
         return this;
     }
 
+    async filterByFarmTokens(): Promise<PairsMetadataBuilder> {
+        this.pairsMetadata = await this.filteringService.pairsByFarmTokens(
+            this.filters,
+            this.pairsMetadata,
+        );
+        return this;
+    }
+
     async filterByState(): Promise<PairsMetadataBuilder> {
         this.pairsMetadata = await this.filteringService.pairsByState(
             this.filters,

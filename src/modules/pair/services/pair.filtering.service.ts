@@ -8,6 +8,9 @@ import {
 } from 'src/modules/router/models/filter.args';
 import BigNumber from 'bignumber.js';
 import { PairService } from './pair.service';
+import { farmsAddresses } from 'src/utils/farm.utils';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 
 @Injectable()
 export class PairFilteringService {
@@ -15,6 +18,7 @@ export class PairFilteringService {
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly pairService: PairService,
+        private readonly farmAbi: FarmAbiServiceV2,
     ) {}
 
     async pairsByIssuedLpToken(
@@ -144,6 +148,35 @@ export class PairFilteringService {
 
         return pairsMetadata.filter((_, index) =>
             pairFilter.lpTokenIds.includes(lpTokensIDs[index]),
+        );
+    }
+
+    async pairsByFarmTokens(
+        pairFilter: PairsFilter,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.farmTokens || pairFilter.farmTokens.length === 0) {
+            return pairsMetadata;
+        }
+
+        const farmAddresses = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairCompute.getPairFarmAddress(pairMetadata.address),
+            ),
+        );
+
+        const farmTokens = await Promise.all(
+            farmAddresses.map((farmAddress) => {
+                if (!farmAddress) {
+                    return undefined;
+                }
+
+                return this.farmAbi.farmTokenID(farmAddress);
+            }),
+        );
+
+        return pairsMetadata.filter((_, index) =>
+            pairFilter.farmTokens.includes(farmTokens[index]),
         );
     }
 
