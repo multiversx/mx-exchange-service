@@ -1,6 +1,7 @@
 import {
     CandleDataModel,
     HistoricDataModel,
+    OhlcvDataModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 
@@ -42,13 +43,14 @@ export interface AnalyticsQueryInterface {
         end,
     }): Promise<CandleDataModel[]>;
 
-    getPriceCandlesWithoutGapfilling({
+    getCandles({
         series,
         metric,
         resolution,
         start,
         end,
-    }): Promise<CandleDataModel[]>;
+        countback,
+    }): Promise<OhlcvDataModel[]>;
 
     getCandleNextTime({ series, metric, resolution, start }): Promise<string>;
 }
