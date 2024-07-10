@@ -9,7 +9,6 @@ import { AnalyticsQueryService } from 'src/services/analytics/services/analytics
 import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
-import { decodeTime } from 'src/utils/analytics.utils';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
