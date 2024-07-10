@@ -747,6 +747,16 @@ export class PairComputeService implements IPairComputeService {
         return addresses[farmAddressIndex];
     }
 
+    async getPairFarmToken(pairAddress: string): Promise<string> {
+        const farmAddress = await this.getPairFarmAddress(pairAddress);
+
+        if (!farmAddress) {
+            return undefined;
+        }
+
+        return this.farmAbi.farmTokenID(farmAddress);
+    }
+
     async getPairStakingFarmAddress(pairAddress: string): Promise<string> {
         const stakingProxyAddress = await this.getPairStakingProxyAddress(
             pairAddress,
