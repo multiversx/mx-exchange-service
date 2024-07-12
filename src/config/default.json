@@ -450,7 +450,7 @@
             "claimRewardsFarmLockedToken": 35000000
         },
         "simpleLockEnergy": {
-            "lockTokens": 10000000,
+            "lockTokens": 13000000,
             "unlockTokens": {
                 "unlockEarly": 25000000,
                 "reduceLockPeriod": 20000000,
@@ -512,7 +512,7 @@
                 "dualFarmPosition": 67000000,
                 "exitFarm": 50000000
             },
-            "energyPosition": 10000000
+            "energyPosition": 13000000
         },
         "composableTasks": {
             "default": 1000000
