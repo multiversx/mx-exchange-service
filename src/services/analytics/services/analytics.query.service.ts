@@ -141,6 +141,21 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         });
     }
 
+    async getPreviousCandle({
+        series,
+        metric,
+        start,
+        resolution,
+    }): Promise<OhlcvDataModel> {
+        const service = await this.getService();
+        return await service.getPreviousCandle({
+            series,
+            metric,
+            start,
+            resolution,
+        });
+    }
+
     private async getService(): Promise<AnalyticsQueryInterface> {
         return this.timescaleDBQuery;
     }

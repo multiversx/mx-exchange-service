@@ -5,7 +5,7 @@ import {
     HistoricDataModel,
     OhlcvDataModel,
 } from 'src/modules/analytics/models/analytics.model';
-import { computeTimeInterval } from 'src/utils/analytics.utils';
+import { computeTimeInterval, decodeTime } from 'src/utils/analytics.utils';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 import {
@@ -36,6 +36,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
@@ -576,21 +578,10 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             resolution,
             metric,
         );
-        let startDate = moment.unix(start).utc().toString();
+        const startDate = moment.unix(start).utc().toString();
         const endDate = moment.unix(end).utc().toString();
 
-        if (countback) {
-            const firstCandle = await this.getCandleStartTime({
-                series,
-                metric,
-                start,
-                resolution,
-            });
-
-            startDate = moment(firstCandle).utc().toString();
-        }
-
-        let query = candleRepository
+        const queryResult = await candleRepository
             .createQueryBuilder()
             .select(`time_bucket('${resolution}', time) as bucket`)
             .addSelect('first(open, time) as open')
@@ -604,20 +595,13 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 endDate,
             })
             .groupBy('bucket')
-            .orderBy('bucket', 'DESC');
+            .orderBy('bucket', 'DESC')
+            .getRawMany();
 
-        if (countback) {
-            // TODO : needs optimization. query is slow due to ordering and limiting
-            query = query.limit(countback);
-        }
-
-        if (!query) {
+        if (!queryResult) {
             return [];
         }
 
-        const queryResult = await query.getRawMany();
-
-        // TODO : decide if we should leave this in
         const alignedOpenCloseRows = queryResult.map((row, index) => {
             if (index === queryResult.length - 1) {
                 return row;
@@ -686,31 +670,101 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         return firstRow?.time;
     }
 
-    private async getCandleStartTime({ series, metric, start, resolution }) {
+    async getPreviousCandle({ series, metric, start, resolution }) {
+        const profiler = new PerformanceProfiler();
+
         const startDate = moment.unix(start).utc().toString();
         const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
             resolution,
             metric,
         );
-        const cacheKey = `startCandle.${series}.${metric}.${startDate}`;
-        const cachedValue = await this.cacheService.get<string>(cacheKey);
 
-        if (cachedValue !== undefined) {
-            return cachedValue;
+        const query = candleRepository
+            .createQueryBuilder()
+            .select('time, open, high, low, close, volume')
+            .where('series = :series', { series })
+            .andWhere('time < :startDate', { startDate })
+            .orderBy('time', 'DESC')
+            .limit(1);
+        // .getRawOne();
+
+        console.log('candle_start', query.getQueryAndParameters());
+
+        const firstRow = await query.getRawOne();
+
+        profiler.stop();
+        MetricsCollector.setDataApiQueryDuration(
+            'getPreviousCandle',
+            profiler.duration,
+        );
+
+        if (!firstRow) {
+            return undefined;
         }
 
-        const firstRow = await candleRepository
+        return new OhlcvDataModel({
+            time: firstRow.time,
+            ohlcv: [
+                firstRow.open ?? null,
+                firstRow.high ?? null,
+                firstRow.low ?? null,
+                firstRow.close ?? null,
+                firstRow.volume ?? null,
+            ],
+        });
+    }
+
+    private async getCandleStartTime({
+        series,
+        metric,
+        end,
+        countback,
+        resolution,
+    }) {
+        const profiler = new PerformanceProfiler();
+
+        // const startDate = moment.unix(start).utc().toString();
+        const endDate = moment.unix(end).utc().toString();
+        const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
+            resolution,
+            metric,
+        );
+        const cacheKey = `startCandle.${series}.${metric}`;
+        // const cachedValue = await this.cacheService.get<string>(cacheKey);
+
+        // if (cachedValue !== undefined) {
+        //     console.log(
+        //         `Cache hit : CandleStartTime for series ${series} - resolution ${resolution}`,
+        //     );
+        //     profiler.stop();
+        //     MetricsCollector.setDataApiQueryDuration(
+        //         'getCandleStartTime',
+        //         profiler.duration,
+        //     );
+        //     return cachedValue;
+        // }
+
+        const query = candleRepository
             .createQueryBuilder()
-            .select('time')
+            // .select('time')
+            .select(`time_bucket('${resolution}', time) as bucket`)
             .where('series = :series', { series })
-            .orderBy('time', 'ASC')
-            .limit(1)
-            .getRawOne();
+            .andWhere('time < :endDate', { endDate })
+            .groupBy('bucket')
+            .orderBy('bucket', 'DESC')
+            .limit(countback);
+        // .getRawMany();
+
+        const firstRow = await query.getRawMany();
+
+        console.log('candle_start', query.getQueryAndParameters());
+        console.log(firstRow[firstRow.length - 1]);
+        console.log(firstRow.length);
 
         if (firstRow) {
             await this.cacheService.set(
                 cacheKey,
-                firstRow.time,
+                firstRow[firstRow.length - 1].time,
                 Constants.oneMinute() * 30,
                 Constants.oneMinute() * 20,
             );
@@ -723,7 +777,15 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             );
         }
 
-        return firstRow?.time;
+        console.log(
+            `Cache miss : CandleStartTime  for series ${series} - resolution ${resolution}`,
+        );
+        profiler.stop();
+        MetricsCollector.setDataApiQueryDuration(
+            'getCandleStartTime',
+            profiler.duration,
+        );
+        return firstRow[firstRow.length - 1].bucket;
     }
 
     private getCandleModelByResolution(

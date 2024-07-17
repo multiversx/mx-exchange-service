@@ -53,4 +53,10 @@ export interface AnalyticsQueryInterface {
     }): Promise<OhlcvDataModel[]>;
 
     getCandleNextTime({ series, metric, resolution, start }): Promise<string>;
+    getPreviousCandle({
+        series,
+        metric,
+        resolution,
+        start,
+    }): Promise<OhlcvDataModel>;
 }

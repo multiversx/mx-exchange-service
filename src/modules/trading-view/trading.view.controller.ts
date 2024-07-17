@@ -43,7 +43,7 @@ export class TradingViewController {
             has_daily: true,
             has_intraday: true,
             has_weekly_and_monthly: true,
-            has_empty_bars: false,
+            has_empty_bars: true,
             visible_plots_set: 'ohlcv',
             volume_precision: 2,
             supported_resolutions: supportedResolutions,

@@ -13,6 +13,8 @@ import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { OhlcvDataModel } from 'src/modules/analytics/models/analytics.model';
+import { decodeTime } from 'src/utils/analytics.utils';
 
 @Injectable()
 export class TradingViewService {
@@ -135,24 +137,9 @@ export class TradingViewService {
         });
 
         if (priceCandles.length === 0) {
-            const nextTime = await this.analyticsQueryService.getCandleNextTime(
-                {
-                    series,
-                    metric,
-                    resolution,
-                    start,
-                },
-            );
-
-            if (nextTime) {
-                return new BarsResponse({
-                    s: 'no_data',
-                    nextTime: moment(nextTime).unix(),
-                });
-            }
-
             return new BarsResponse({
                 s: 'no_data',
+                nextTime: start - 1,
             });
         }
 
@@ -176,6 +163,228 @@ export class TradingViewService {
         }
 
         return result;
+    }
+
+    private async fillMissingCandles(
+        series: string,
+        metric: string,
+        end: number,
+        resolution: PriceCandlesResolutions,
+        countback: number,
+        candles: OhlcvDataModel[],
+    ): Promise<OhlcvDataModel[]> {
+        const decodedResolution = decodeTime(resolution);
+        const resolutionInMinutes = moment
+            .duration(decodedResolution[0], decodedResolution[1])
+            .asMinutes();
+
+        const expectedTimestamps = [];
+
+        const roundedEndDown = this.getRoundedMoment(end, resolution);
+        expectedTimestamps.push(roundedEndDown.unix());
+
+        for (let index = 0; index < countback - 1; index++) {
+            const expectedTime = roundedEndDown.subtract(
+                resolutionInMinutes,
+                'minutes',
+            );
+            expectedTimestamps.push(expectedTime.unix());
+        }
+
+        expectedTimestamps.reverse();
+
+        const result = [];
+        console.log('initial candles', candles.length);
+        if (moment(candles[0].time).unix() !== expectedTimestamps[0]) {
+            const previousCandle =
+                await this.analyticsQueryService.getPreviousCandle({
+                    series,
+                    metric,
+                    start: expectedTimestamps[0],
+                    resolution,
+                });
+
+            console.log('prev candle call : ', previousCandle);
+            result.push(
+                new OhlcvDataModel({
+                    time: moment.unix(expectedTimestamps[0]).utc().toString(),
+                    ohlcv: [
+                        previousCandle.ohlcv[0],
+                        previousCandle.ohlcv[0],
+                        previousCandle.ohlcv[0],
+                        previousCandle.ohlcv[0],
+                        0,
+                    ],
+                }),
+            );
+        }
+
+        console.log('Start candle filling');
+        for (const [index, expectedTimestamp] of expectedTimestamps.entries()) {
+            const candleIndex = candles.findIndex(
+                (elem) => moment(elem.time).unix() === expectedTimestamp,
+            );
+
+            if (candleIndex === -1) {
+                console.log('missing timestamp : ', expectedTimestamp);
+
+                const previousCandle =
+                    index === 0 ? result[index] : result[index - 1];
+                console.log(
+                    `prev candle for index ${index - 1}`,
+                    previousCandle,
+                );
+                result.push(
+                    new OhlcvDataModel({
+                        time: moment.unix(expectedTimestamp).utc().toString(),
+                        ohlcv: [
+                            previousCandle.ohlcv[0],
+                            previousCandle.ohlcv[0],
+                            previousCandle.ohlcv[0],
+                            previousCandle.ohlcv[0],
+                            0,
+                        ],
+                    }),
+                );
+            } else {
+                result.push(candles[candleIndex]);
+            }
+        }
+
+        // console.log('provided : ' + end + ' (' + endDate.toString() + ')');
+        // console.log('rounded DOWN: ' + roundedEndDown.toString());
+
+        // console.log(expectedTimestamps);
+
+        return result;
+    }
+
+    private getRoundedMoment(
+        timestamp: number,
+        resolution: PriceCandlesResolutions,
+    ): moment.Moment {
+        const date = moment.unix(timestamp);
+
+        switch (resolution) {
+            case PriceCandlesResolutions.MINUTE_1:
+                return date.startOf('minute');
+            case PriceCandlesResolutions.MINUTE_5:
+                return date
+                    .startOf('minute')
+                    .minute(Math.floor(date.minute() / 5) * 5);
+            case PriceCandlesResolutions.MINUTE_15:
+                return date
+                    .startOf('minute')
+                    .minute(Math.floor(date.minute() / 15) * 15);
+            case PriceCandlesResolutions.MINUTE_30:
+                return date
+                    .startOf('minute')
+                    .minute(Math.floor(date.minute() / 30) * 30);
+            case PriceCandlesResolutions.HOUR_1:
+                return date.startOf('hour');
+            case PriceCandlesResolutions.HOUR_4:
+                return date
+                    .startOf('hour')
+                    .hour(Math.floor(date.hour() / 4) * 4);
+            case PriceCandlesResolutions.DAY_1:
+                return date.startOf('day');
+            case PriceCandlesResolutions.DAY_7:
+                return date.startOf('isoWeek');
+            case PriceCandlesResolutions.MONTH_1:
+                return date.startOf('month');
+            default:
+                throw new Error('Unsupported resolution');
+            // case PriceCandlesResolutions.MINUTE_1:
+            //     return rounding === 'down'
+            //         ? date.startOf('minute')
+            //         : date.startOf('minute').add(1, 'minute');
+            // case PriceCandlesResolutions.MINUTE_5:
+            //     if (rounding === 'down') {
+            //         return date
+            //             .minute(Math.floor(date.minute() / 5) * 5)
+            //             .second(0);
+            //     } else {
+            //         const roundedUp = date
+            //             .clone()
+            //             .minute(Math.ceil(date.minute() / 5) * 5)
+            //             .second(0);
+            //         return roundedUp.isAfter(date)
+            //             ? roundedUp
+            //             : roundedUp.add(5, 'minutes');
+            //     }
+            // case PriceCandlesResolutions.MINUTE_15:
+            //     if (rounding === 'down') {
+            //         return date
+            //             .minute(Math.floor(date.minute() / 15) * 15)
+            //             .second(0);
+            //     } else {
+            //         const roundedUp = date
+            //             .clone()
+            //             .minute(Math.ceil(date.minute() / 15) * 15)
+            //             .second(0);
+            //         return roundedUp.isAfter(date)
+            //             ? roundedUp
+            //             : roundedUp.add(15, 'minutes');
+            //     }
+            // case PriceCandlesResolutions.MINUTE_30:
+            //     if (rounding === 'down') {
+            //         return date
+            //             .minute(Math.floor(date.minute() / 30) * 30)
+            //             .second(0);
+            //     } else {
+            //         const roundedUp = date
+            //             .clone()
+            //             .minute(Math.ceil(date.minute() / 30) * 30)
+            //             .second(0);
+            //         return roundedUp.isAfter(date)
+            //             ? roundedUp
+            //             : roundedUp.add(30, 'minutes');
+            //     }
+            // case PriceCandlesResolutions.HOUR_1:
+            //     return rounding === 'down'
+            //         ? date.startOf('hour')
+            //         : date.startOf('hour').add(1, 'hour');
+            // case PriceCandlesResolutions.HOUR_4:
+            //     if (rounding === 'down') {
+            //         return date
+            //             .hour(Math.floor(date.hour() / 4) * 4)
+            //             .minute(0)
+            //             .second(0);
+            //     } else {
+            //         const roundedUp = date
+            //             .clone()
+            //             .hour(Math.ceil(date.hour() / 4) * 4)
+            //             .minute(0)
+            //             .second(0);
+            //         return roundedUp.isAfter(date)
+            //             ? roundedUp
+            //             : roundedUp.add(4, 'hours');
+            //     }
+            // case PriceCandlesResolutions.DAY_1:
+            //     return rounding === 'down'
+            //         ? date.startOf('day')
+            //         : date.startOf('day').add(1, 'day');
+            // case PriceCandlesResolutions.DAY_7:
+            //     if (rounding === 'down') {
+            //         return date
+            //             .startOf('day')
+            //             .day(date.day() - (date.day() % 7));
+            //     } else {
+            //         const roundedUp = date
+            //             .clone()
+            //             .startOf('day')
+            //             .day(date.day() + (7 - (date.day() % 7)));
+            //         return roundedUp.isAfter(date)
+            //             ? roundedUp
+            //             : roundedUp.add(7, 'days');
+            //     }
+            // case PriceCandlesResolutions.MONTH_1:
+            //     return rounding === 'down'
+            //         ? date.startOf('month')
+            //         : date.startOf('month').add(1, 'month');
+            // default:
+            //     throw new Error('Unsupported resolution');
+        }
     }
 
     private convertResolution(
