@@ -492,6 +492,9 @@ export class UserEnergyComputeService {
                 }
             }
         }
+        if (lockedTokensAttributes.length === 0) {
+            return false;
+        }
         return true;
     }
 
@@ -503,6 +506,9 @@ export class UserEnergyComputeService {
             if (attributes.unlockEpoch > currentEpoch) {
                 return false;
             }
+        }
+        if (lockedTokensAttributes.length === 0) {
+            return false;
         }
         return true;
     }
