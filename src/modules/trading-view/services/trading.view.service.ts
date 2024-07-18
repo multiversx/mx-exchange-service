@@ -55,8 +55,8 @@ export class TradingViewService {
         const baseTokenID = symbol.split(':')[0];
 
         const [firstToken, secondToken] = await Promise.all([
-            this.tokenService.getTokenMetadata(resolvedPair.firstTokenID),
-            this.tokenService.getTokenMetadata(resolvedPair.secondTokenID),
+            this.tokenService.tokenMetadata(resolvedPair.firstTokenID),
+            this.tokenService.tokenMetadata(resolvedPair.secondTokenID),
         ]);
 
         const tokenPrice =
@@ -105,7 +105,7 @@ export class TradingViewService {
             return undefined;
         }
 
-        return await this.tokenService.getTokenMetadata(symbol);
+        return await this.tokenService.tokenMetadata(symbol);
     }
 
     private async getPairMetadataFromSymbol(
@@ -147,12 +147,8 @@ export class TradingViewService {
                     : 'secondTokenPrice';
             const token =
                 pair.firstTokenID === baseTokenID
-                    ? await this.tokenService.getTokenMetadata(
-                          pair.firstTokenID,
-                      )
-                    : await this.tokenService.getTokenMetadata(
-                          pair.secondTokenID,
-                      );
+                    ? await this.tokenService.tokenMetadata(pair.firstTokenID)
+                    : await this.tokenService.tokenMetadata(pair.secondTokenID);
             tokenDecimals = token.decimals;
         } else {
             const token = await this.getTokenFromSymbol(queryArgs.symbol);
