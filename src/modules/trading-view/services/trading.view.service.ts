@@ -3,6 +3,7 @@ import {
     BarsQueryArgs,
     BarsResponse,
     TradingViewResolution,
+    TradingViewSymbol,
     resolutionMapping,
 } from '../dtos/bars.response';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
@@ -26,9 +27,7 @@ export class TradingViewService {
         private readonly pairCompute: PairComputeService,
     ) {}
 
-    async resolveSymbol(
-        symbol: string,
-    ): Promise<{ ticker: string; name: string; pricescale: number }> {
+    async resolveSymbol(symbol: string): Promise<TradingViewSymbol> {
         if (symbol.includes(':')) {
             return await this.resolvePairSymbol(symbol);
         }
@@ -39,12 +38,14 @@ export class TradingViewService {
             throw new NotFoundException(`Could not resolve symbol ${symbol}`);
         }
 
-        return { ticker: symbol, name: token.name, pricescale: 10000000 };
+        return new TradingViewSymbol({
+            ticker: symbol,
+            name: token.name,
+            pricescale: 10000000,
+        });
     }
 
-    async resolvePairSymbol(
-        symbol: string,
-    ): Promise<{ ticker: string; name: string; pricescale: number }> {
+    async resolvePairSymbol(symbol: string): Promise<TradingViewSymbol> {
         const resolvedPair = await this.getPairMetadataFromSymbol(symbol);
 
         if (!resolvedPair) {
@@ -63,14 +64,14 @@ export class TradingViewService {
                 ? await this.pairCompute.secondTokenPrice(resolvedPair.address)
                 : await this.pairCompute.firstTokenPrice(resolvedPair.address);
 
-        return {
+        return new TradingViewSymbol({
             ticker: symbol,
             name:
                 resolvedPair.firstTokenID === baseTokenID
                     ? `${firstToken.name} : ${secondToken.name}`
                     : `${secondToken.name} : ${firstToken.name}`,
             pricescale: this.getPriceScaleForPrice(tokenPrice),
-        };
+        });
     }
 
     private getPriceScaleForPrice(price: string): number {
