@@ -13,9 +13,9 @@ import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
-import { OhlcvDataModel } from 'src/modules/analytics/models/analytics.model';
-import { decodeTime } from 'src/utils/analytics.utils';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import { OhlcvDataModel } from 'src/modules/analytics/models/analytics.model';
+import { denominateAmount } from 'src/utils/token.converters';
 
 @Injectable()
 export class TradingViewService {
@@ -128,6 +128,7 @@ export class TradingViewService {
     async getBars(queryArgs: BarsQueryArgs): Promise<BarsResponse> {
         let metric: string;
         let series: string;
+        let tokenDecimals = 18;
 
         if (queryArgs.symbol.includes(':')) {
             const pair = await this.getPairMetadataFromSymbol(queryArgs.symbol);
@@ -143,6 +144,15 @@ export class TradingViewService {
                 pair.firstTokenID === baseTokenID
                     ? 'firstTokenPrice'
                     : 'secondTokenPrice';
+            const token =
+                pair.firstTokenID === baseTokenID
+                    ? await this.tokenService.getTokenMetadata(
+                          pair.firstTokenID,
+                      )
+                    : await this.tokenService.getTokenMetadata(
+                          pair.secondTokenID,
+                      );
+            tokenDecimals = token.decimals;
         } else {
             const token = await this.getTokenFromSymbol(queryArgs.symbol);
             if (!token) {
@@ -151,9 +161,9 @@ export class TradingViewService {
                     errmsg: `Could not resolve symbol ${queryArgs.symbol}`,
                 });
             }
-
             series = token.identifier;
             metric = 'priceUSD';
+            tokenDecimals = token.decimals;
         }
 
         const resolution = this.convertResolution(queryArgs.resolution);
@@ -175,14 +185,14 @@ export class TradingViewService {
             });
         }
 
-        if (queryArgs.countback && priceCandles.length > queryArgs.countback) {
-            console.log(
-                'countback :',
-                queryArgs.countback,
-                priceCandles.length,
-            );
-        }
+        return this.formatCandlesResponse(metric, priceCandles, tokenDecimals);
+    }
 
+    private formatCandlesResponse(
+        metric: string,
+        candles: OhlcvDataModel[],
+        tokenDecimals: number,
+    ): BarsResponse {
         const result = new BarsResponse({
             s: 'ok',
             t: [],
@@ -193,13 +203,28 @@ export class TradingViewService {
             v: [],
         });
 
-        for (const candle of priceCandles) {
+        for (const candle of candles) {
+            const closeValue = new BigNumber(candle.ohlcv[3]);
+            const volumeValue = new BigNumber(candle.ohlcv[4]);
+
             result.t.push(moment(candle.time).unix());
             result.o.push(new BigNumber(candle.ohlcv[0]).toNumber());
             result.h.push(new BigNumber(candle.ohlcv[1]).toNumber());
             result.l.push(new BigNumber(candle.ohlcv[2]).toNumber());
-            result.c.push(new BigNumber(candle.ohlcv[3]).toNumber());
-            result.v.push(new BigNumber(candle.ohlcv[4]).toNumber());
+            result.c.push(closeValue.toNumber());
+
+            if (metric === 'priceUSD') {
+                result.v.push(volumeValue.toNumber());
+            } else {
+                const denominatedVolume = denominateAmount(
+                    volumeValue.toFixed(),
+                    tokenDecimals,
+                );
+
+                result.v.push(
+                    denominatedVolume.multipliedBy(closeValue).toNumber(),
+                );
+            }
         }
 
         return result;
