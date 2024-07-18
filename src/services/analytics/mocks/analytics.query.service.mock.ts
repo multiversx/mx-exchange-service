@@ -1,6 +1,7 @@
 import {
     CandleDataModel,
     HistoricDataModel,
+    OhlcvDataModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -54,15 +55,7 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
     }): Promise<CandleDataModel[]> {
         throw new Error('Method not implemented.');
     }
-    getPriceCandlesWithoutGapfilling({
-        series,
-        metric,
-        start,
-        end,
-    }): Promise<CandleDataModel[]> {
-        throw new Error('Method not implemented.');
-    }
-    getCandleNextTime({ series, metric, start }): Promise<string> {
+    getCandles({ series, metric, start, end }): Promise<OhlcvDataModel[]> {
         throw new Error('Method not implemented.');
     }
 }

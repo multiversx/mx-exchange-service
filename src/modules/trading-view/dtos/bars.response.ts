@@ -27,14 +27,23 @@ export enum TradingViewResolution {
 }
 
 export class BarsResponse {
+    // status code. Expected values: ok | error | no_data
     s: string;
+    // Error message. Should be present only when s = 'error'
     errmsg?: string;
+    // Bar time. Unix timestamp (UTC)
     t: number[];
+    // Opening price
     o: number[];
+    // High price
     h: number[];
+    // Low price
     l: number[];
+    // Closing price
     c: number[];
+    // Volume
     v?: number[];
+    // Time of the next bar if there is no data (status code is no_data) in the requested period
     nextTime?: number;
 
     constructor(init?: Partial<BarsResponse>) {
@@ -79,3 +88,49 @@ export const resolutionMapping: {
     [TradingViewResolution.DAY_7]: PriceCandlesResolutions.DAY_7,
     [TradingViewResolution.MONTH_1]: PriceCandlesResolutions.MONTH_1,
 };
+
+export class TradingViewSymbol {
+    ticker: string;
+    name: string;
+    pricescale: number;
+
+    constructor(init?: Partial<TradingViewSymbol>) {
+        Object.assign(this, init);
+    }
+}
+
+export class ConfigResponse {
+    supported_resolutions: string[];
+    supports_marks: boolean;
+    supports_timescale_marks: boolean;
+    supports_group_request: boolean;
+    supports_search: boolean;
+    supports_time: boolean;
+
+    constructor(init?: Partial<ConfigResponse>) {
+        Object.assign(this, init);
+    }
+}
+
+export class SymbolsResponse {
+    ticker: string;
+    name: string;
+    type: string;
+    session: string;
+    timezone: string;
+    exchange: string;
+    minmov: number;
+    pricescale: number;
+    has_daily: boolean;
+    has_intraday: boolean;
+    has_weekly_and_monthly: boolean;
+    has_empty_bars: boolean;
+    visible_plots_set: string;
+    volume_precision: number;
+    supported_resolutions: string[];
+    data_status: string;
+
+    constructor(init?: Partial<SymbolsResponse>) {
+        Object.assign(this, init);
+    }
+}

@@ -3,6 +3,7 @@ import moment from 'moment';
 import {
     CandleDataModel,
     HistoricDataModel,
+    OhlcvDataModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { computeTimeInterval } from 'src/utils/analytics.utils';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
@@ -18,6 +19,15 @@ import {
     SumHourly,
     TokenBurnedWeekly,
     XExchangeAnalyticsEntity,
+    TokenCandlesMinute,
+    TokenCandlesHourly,
+    TokenCandlesDaily,
+    PairFirstTokenCandlesMinute,
+    PairFirstTokenCandlesHourly,
+    PairFirstTokenCandlesDaily,
+    PairSecondTokenCandlesMinute,
+    PairSecondTokenCandlesHourly,
+    PairSecondTokenCandlesDaily,
 } from './entities/timescaledb.entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -52,6 +62,24 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         private readonly priceCandleHourly: Repository<PriceCandleHourly>,
         @InjectRepository(PriceCandleDaily)
         private readonly priceCandleDaily: Repository<PriceCandleDaily>,
+        @InjectRepository(TokenCandlesMinute)
+        private readonly tokenCandlesMinute: Repository<TokenCandlesMinute>,
+        @InjectRepository(TokenCandlesHourly)
+        private readonly tokenCandlesHourly: Repository<TokenCandlesHourly>,
+        @InjectRepository(TokenCandlesDaily)
+        private readonly tokenCandlesDaily: Repository<TokenCandlesDaily>,
+        @InjectRepository(PairFirstTokenCandlesMinute)
+        private readonly pairFirstTokenCandlesMinute: Repository<PairFirstTokenCandlesMinute>,
+        @InjectRepository(PairFirstTokenCandlesHourly)
+        private readonly pairFirstTokenCandlesHourly: Repository<PairFirstTokenCandlesHourly>,
+        @InjectRepository(PairFirstTokenCandlesDaily)
+        private readonly pairFirstTokenCandlesDaily: Repository<PairFirstTokenCandlesDaily>,
+        @InjectRepository(PairSecondTokenCandlesMinute)
+        private readonly pairSecondTokenCandlesMinute: Repository<PairSecondTokenCandlesMinute>,
+        @InjectRepository(PairSecondTokenCandlesHourly)
+        private readonly pairSecondTokenCandlesHourly: Repository<PairSecondTokenCandlesHourly>,
+        @InjectRepository(PairSecondTokenCandlesDaily)
+        private readonly pairSecondTokenCandlesDaily: Repository<PairSecondTokenCandlesDaily>,
     ) {}
 
     @TimescaleDBQuery()
@@ -536,100 +564,66 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
-    async getPriceCandlesWithoutGapfilling({
+    async getCandles({
         series,
         metric,
         resolution,
         start,
         end,
-    }): Promise<CandleDataModel[]> {
-        const candleRepository = this.getCandleModelByResolution(resolution);
+    }): Promise<OhlcvDataModel[]> {
+        const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
+            resolution,
+            metric,
+        );
         const startDate = moment.unix(start).utc().toString();
         const endDate = moment.unix(end).utc().toString();
 
-        const query = await candleRepository
+        const queryResult = await candleRepository
             .createQueryBuilder()
             .select(`time_bucket('${resolution}', time) as bucket`)
             .addSelect('first(open, time) as open')
             .addSelect('last(close, time) as close')
             .addSelect('min(low) as low')
             .addSelect('max(high) as high')
+            .addSelect('sum(volume) as volume')
             .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
             .andWhere('time between :startDate and :endDate', {
                 startDate,
                 endDate,
             })
             .groupBy('bucket')
+            .orderBy('bucket', 'DESC')
             .getRawMany();
 
-        if (!query) {
+        if (!queryResult) {
             return [];
         }
 
-        const alignedOpenCloseRows = query.map((row, index) => {
-            if (index === 0) {
+        const alignedOpenCloseRows = queryResult.map((row, index) => {
+            if (index === queryResult.length - 1) {
                 return row;
             }
 
-            if (row.open !== query[index - 1].close) {
-                row.open = query[index - 1].close;
+            if (row.open !== queryResult[index + 1].close) {
+                row.open = queryResult[index + 1].close;
             }
 
             return row;
         });
 
-        return alignedOpenCloseRows.map(
+        return alignedOpenCloseRows.reverse().map(
             (row) =>
-                new CandleDataModel({
+                new OhlcvDataModel({
                     time: row.bucket,
-                    ohlc: [
+                    ohlcv: [
                         row.open ?? null,
                         row.high ?? null,
                         row.low ?? null,
                         row.close ?? null,
+                        row.volume ?? null,
                     ],
                 }),
         );
-    }
-
-    async getCandleNextTime({ series, metric, start, resolution }) {
-        const startDate = moment.unix(start).utc().toString();
-        const candleRepository = this.getCandleModelByResolution(resolution);
-        const cacheKey = `nextCandle.${series}.${metric}.${startDate}`;
-        const cachedValue = await this.cacheService.get<string>(cacheKey);
-
-        if (cachedValue !== undefined) {
-            return cachedValue;
-        }
-
-        const firstRow = await candleRepository
-            .createQueryBuilder()
-            .select('time')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .andWhere('time < :startDate', { startDate })
-            .orderBy('time', 'DESC')
-            .limit(1)
-            .getRawOne();
-
-        if (firstRow) {
-            await this.cacheService.set(
-                cacheKey,
-                firstRow.time,
-                Constants.oneMinute() * 30,
-                Constants.oneMinute() * 20,
-            );
-        } else {
-            await this.cacheService.set(
-                cacheKey,
-                null,
-                Constants.oneMinute() * 10,
-                Constants.oneMinute() * 7,
-            );
-        }
-
-        return firstRow?.time;
     }
 
     private getCandleModelByResolution(
@@ -644,5 +638,52 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         }
 
         return this.priceCandleDaily;
+    }
+
+    private getCandleRepositoryByResolutionAndMetric(
+        resolution: PriceCandlesResolutions,
+        metric: string,
+    ): Repository<
+        | TokenCandlesMinute
+        | TokenCandlesHourly
+        | TokenCandlesDaily
+        | PairFirstTokenCandlesMinute
+        | PairFirstTokenCandlesHourly
+        | PairFirstTokenCandlesDaily
+        | PairSecondTokenCandlesMinute
+        | PairSecondTokenCandlesHourly
+        | PairSecondTokenCandlesDaily
+    > {
+        switch (metric) {
+            case 'priceUSD':
+                if (resolution.includes('minute')) {
+                    return this.tokenCandlesMinute;
+                }
+                if (resolution.includes('hour')) {
+                    return this.tokenCandlesHourly;
+                }
+                return this.tokenCandlesDaily;
+
+            case 'firstTokenPrice':
+                if (resolution.includes('minute')) {
+                    return this.pairFirstTokenCandlesMinute;
+                }
+                if (resolution.includes('hour')) {
+                    return this.pairFirstTokenCandlesHourly;
+                }
+                return this.pairFirstTokenCandlesDaily;
+
+            case 'secondTokenPrice':
+                if (resolution.includes('minute')) {
+                    return this.pairSecondTokenCandlesMinute;
+                }
+                if (resolution.includes('hour')) {
+                    return this.pairSecondTokenCandlesHourly;
+                }
+                return this.pairSecondTokenCandlesDaily;
+
+            default:
+                return undefined;
+        }
     }
 }
