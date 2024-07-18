@@ -124,7 +124,7 @@ export class SumHourly {
       key,
       last(value, timestamp) as last
     FROM "hyper_dex_analytics"
-    WHERE key IN ('priceUSD', 'liquidityUSD', 'lockedValueUSD', 'totalLockedValueUSD')
+    WHERE key IN ('priceUSD', 'liquidityUSD', 'lockedValueUSD', 'totalLockedValueUSD', 'firstTokenPrice', 'secondTokenPrice')
     GROUP BY time, series, key;
   `,
     materialized: true,
@@ -157,7 +157,7 @@ export class CloseDaily {
       key,
       last(value, timestamp) as last
     FROM "hyper_dex_analytics"
-    WHERE key IN ('priceUSD', 'liquidityUSD', 'lockedValueUSD', 'totalLockedValueUSD')
+    WHERE key IN ('priceUSD', 'liquidityUSD', 'lockedValueUSD', 'totalLockedValueUSD', 'firstTokenPrice', 'secondTokenPrice')
     AND timestamp >= NOW() - INTERVAL '1 day'
     GROUP BY time, series, key;
   `,

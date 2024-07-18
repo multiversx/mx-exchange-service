@@ -32,6 +32,8 @@ import { UserEnergyTransactionService } from './services/userEnergy/user.energy.
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
+import { ProxyModuleV2 } from '../proxy/v2/proxy.v2.module';
+import { MetabondingModule } from '../metabonding/metabonding.module';
 
 @Module({
     imports: [
@@ -40,6 +42,7 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
         RouterModule,
         PairModule,
         ProxyModule,
+        ProxyModuleV2,
         ProxyPairModule,
         ProxyFarmModule,
         FarmModule,
@@ -50,6 +53,7 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
         StakingProxyModule,
         PriceDiscoveryModule,
         SimpleLockModule,
+        MetabondingModule,
         EnergyModule,
         TokenModule,
         RemoteConfigModule,

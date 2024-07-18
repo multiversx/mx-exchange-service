@@ -8,6 +8,8 @@ export class UnlockMileStoneModel {
     epochs: number;
     @Field()
     percent: number;
+    @Field()
+    unlockEpoch: number;
 
     constructor(init?: Partial<UnlockMileStoneModel>) {
         Object.assign(this, init);
