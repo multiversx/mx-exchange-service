@@ -28,9 +28,8 @@ export class TradingViewController {
 
     @Get('/symbols')
     async symbolResolve(@Query('symbol') symbol: string) {
-        const { ticker, name } = await this.tradingViewService.resolveSymbol(
-            symbol,
-        );
+        const { ticker, name, pricescale } =
+            await this.tradingViewService.resolveSymbol(symbol);
         return {
             ticker: ticker,
             name: name,
@@ -39,7 +38,7 @@ export class TradingViewController {
             timezone: 'Etc/UTC',
             exchange: 'xExchange',
             minmov: 1,
-            pricescale: 10000000,
+            pricescale: pricescale,
             has_daily: true,
             has_intraday: true,
             has_weekly_and_monthly: true,
