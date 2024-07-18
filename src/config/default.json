@@ -414,7 +414,7 @@
         "stakeProxy": {
             "stakeFarmTokens": {
                 "default": 27000000,
-                "withTokenMerge": 36000000
+                "withTokenMerge": 60000000
             },
             "claimDualYield": 55000000,
             "unstakeFarmTokens": 75000000
