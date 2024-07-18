@@ -175,7 +175,6 @@ export class TradingViewService {
             start: start,
             end: queryArgs.to,
             resolution: resolution,
-            countback: queryArgs.countback,
         });
 
         if (priceCandles.length === 0) {

@@ -113,7 +113,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         resolution,
         start,
         end,
-        countback,
     }): Promise<OhlcvDataModel[]> {
         const service = await this.getService();
         return await service.getCandles({
@@ -122,37 +121,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
             resolution,
             start,
             end,
-            countback,
-        });
-    }
-
-    async getCandleNextTime({
-        series,
-        metric,
-        resolution,
-        start,
-    }): Promise<string> {
-        const service = await this.getService();
-        return await service.getCandleNextTime({
-            series,
-            metric,
-            resolution,
-            start,
-        });
-    }
-
-    async getPreviousCandle({
-        series,
-        metric,
-        start,
-        resolution,
-    }): Promise<OhlcvDataModel> {
-        const service = await this.getService();
-        return await service.getPreviousCandle({
-            series,
-            metric,
-            start,
-            resolution,
         });
     }
 
