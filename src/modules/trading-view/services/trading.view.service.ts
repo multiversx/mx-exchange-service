@@ -41,7 +41,7 @@ export class TradingViewService {
         return new TradingViewSymbol({
             ticker: symbol,
             name: token.name,
-            pricescale: 10000000,
+            pricescale: this.getPriceScaleForPrice(token.price),
         });
     }
 
