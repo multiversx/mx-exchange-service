@@ -2,6 +2,8 @@ import { Controller, Get, Query, ValidationPipe } from '@nestjs/common';
 import {
     BarsQueryArgs,
     BarsResponse,
+    ConfigResponse,
+    SymbolsResponse,
     supportedResolutions,
 } from './dtos/bars.response';
 import { TradingViewService } from './services/trading.view.service';
@@ -15,40 +17,43 @@ export class TradingViewController {
     ) {}
 
     @Get('/config')
-    async config() {
-        return {
+    config(): ConfigResponse {
+        return new ConfigResponse({
             supported_resolutions: supportedResolutions,
             supports_marks: false,
             supports_timescale_marks: false,
             supports_group_request: false,
             supports_search: true,
             supports_time: false,
-        };
+        });
     }
 
     @Get('/symbols')
-    async symbolResolve(@Query('symbol') symbol: string) {
-        const { ticker, name } = await this.tradingViewService.resolveSymbol(
+    async symbolResolve(
+        @Query('symbol') symbol: string,
+    ): Promise<SymbolsResponse> {
+        const resolvedSymbol = await this.tradingViewService.resolveSymbol(
             symbol,
         );
-        return {
-            ticker: ticker,
-            name: name,
+
+        return new SymbolsResponse({
+            ticker: resolvedSymbol.ticker,
+            name: resolvedSymbol.name,
             type: 'crypto',
             session: '24x7',
             timezone: 'Etc/UTC',
             exchange: 'xExchange',
             minmov: 1,
-            pricescale: 10000000,
+            pricescale: resolvedSymbol.pricescale,
             has_daily: true,
             has_intraday: true,
             has_weekly_and_monthly: true,
-            has_empty_bars: false,
+            has_empty_bars: true,
             visible_plots_set: 'ohlcv',
             volume_precision: 2,
             supported_resolutions: supportedResolutions,
             data_status: 'streaming',
-        };
+        });
     }
 
     @Get('/history')

@@ -49,8 +49,5 @@ export interface AnalyticsQueryInterface {
         resolution,
         start,
         end,
-        countback,
     }): Promise<OhlcvDataModel[]>;
-
-    getCandleNextTime({ series, metric, resolution, start }): Promise<string>;
 }

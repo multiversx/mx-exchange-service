@@ -570,27 +570,15 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         resolution,
         start,
         end,
-        countback,
     }): Promise<OhlcvDataModel[]> {
         const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
             resolution,
             metric,
         );
-        let startDate = moment.unix(start).utc().toString();
+        const startDate = moment.unix(start).utc().toString();
         const endDate = moment.unix(end).utc().toString();
 
-        if (countback) {
-            const firstCandle = await this.getCandleStartTime({
-                series,
-                metric,
-                start,
-                resolution,
-            });
-
-            startDate = moment(firstCandle).utc().toString();
-        }
-
-        let query = candleRepository
+        const queryResult = await candleRepository
             .createQueryBuilder()
             .select(`time_bucket('${resolution}', time) as bucket`)
             .addSelect('first(open, time) as open')
@@ -604,20 +592,13 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 endDate,
             })
             .groupBy('bucket')
-            .orderBy('bucket', 'DESC');
+            .orderBy('bucket', 'DESC')
+            .getRawMany();
 
-        if (countback) {
-            // TODO : needs optimization. query is slow due to ordering and limiting
-            query = query.limit(countback);
-        }
-
-        if (!query) {
+        if (!queryResult) {
             return [];
         }
 
-        const queryResult = await query.getRawMany();
-
-        // TODO : decide if we should leave this in
         const alignedOpenCloseRows = queryResult.map((row, index) => {
             if (index === queryResult.length - 1) {
                 return row;
@@ -643,87 +624,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                     ],
                 }),
         );
-    }
-
-    async getCandleNextTime({ series, metric, start, resolution }) {
-        const startDate = moment.unix(start).utc().toString();
-        const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
-            resolution,
-            metric,
-        );
-        const cacheKey = `nextCandle.${series}.${metric}.${startDate}`;
-        const cachedValue = await this.cacheService.get<string>(cacheKey);
-
-        if (cachedValue !== undefined) {
-            return cachedValue;
-        }
-
-        const firstRow = await candleRepository
-            .createQueryBuilder()
-            .select('time')
-            .where('series = :series', { series })
-            .andWhere('time < :startDate', { startDate })
-            .orderBy('time', 'DESC')
-            .limit(1)
-            .getRawOne();
-
-        if (firstRow) {
-            await this.cacheService.set(
-                cacheKey,
-                firstRow.time,
-                Constants.oneMinute() * 30,
-                Constants.oneMinute() * 20,
-            );
-        } else {
-            await this.cacheService.set(
-                cacheKey,
-                null,
-                Constants.oneMinute() * 10,
-                Constants.oneMinute() * 7,
-            );
-        }
-
-        return firstRow?.time;
-    }
-
-    private async getCandleStartTime({ series, metric, start, resolution }) {
-        const startDate = moment.unix(start).utc().toString();
-        const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
-            resolution,
-            metric,
-        );
-        const cacheKey = `startCandle.${series}.${metric}.${startDate}`;
-        const cachedValue = await this.cacheService.get<string>(cacheKey);
-
-        if (cachedValue !== undefined) {
-            return cachedValue;
-        }
-
-        const firstRow = await candleRepository
-            .createQueryBuilder()
-            .select('time')
-            .where('series = :series', { series })
-            .orderBy('time', 'ASC')
-            .limit(1)
-            .getRawOne();
-
-        if (firstRow) {
-            await this.cacheService.set(
-                cacheKey,
-                firstRow.time,
-                Constants.oneMinute() * 30,
-                Constants.oneMinute() * 20,
-            );
-        } else {
-            await this.cacheService.set(
-                cacheKey,
-                null,
-                Constants.oneMinute() * 10,
-                Constants.oneMinute() * 7,
-            );
-        }
-
-        return firstRow?.time;
     }
 
     private getCandleModelByResolution(
