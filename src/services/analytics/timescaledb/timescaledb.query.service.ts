@@ -5,7 +5,7 @@ import {
     HistoricDataModel,
     OhlcvDataModel,
 } from 'src/modules/analytics/models/analytics.model';
-import { computeTimeInterval, decodeTime } from 'src/utils/analytics.utils';
+import { computeTimeInterval } from 'src/utils/analytics.utils';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 import {
@@ -36,8 +36,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
-import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
-import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
