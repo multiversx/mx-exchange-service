@@ -16,9 +16,14 @@ export class HistoricDataModel {
         Object.assign(this, init);
     }
 
-    static fromDataApiResponse(row: DataApiHistoricalResponse, aggregate: HistoricalValue) {
+    static fromDataApiResponse(
+        row: DataApiHistoricalResponse,
+        aggregate: HistoricalValue,
+    ) {
         return new HistoricDataModel({
-            timestamp: moment.utc(row.timestamp * 1000).format('yyyy-MM-DD HH:mm:ss'),
+            timestamp: moment
+                .utc(row.timestamp * 1000)
+                .format('yyyy-MM-DD HH:mm:ss'),
             value: new BigNumber(row[aggregate] ?? '0').toFixed(),
         });
     }
@@ -74,6 +79,19 @@ export class CandleDataModel {
     ohlc: number[];
 
     constructor(init?: Partial<CandleDataModel>) {
-      Object.assign(this, init);
-  }
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class OhlcvDataModel {
+    @Field()
+    time: string;
+
+    @Field(() => [Number])
+    ohlcv: number[];
+
+    constructor(init?: Partial<OhlcvDataModel>) {
+        Object.assign(this, init);
+    }
 }
