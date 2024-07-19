@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
     CandleDataModel,
     HistoricDataModel,
+    OhlcvDataModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { TimescaleDBQueryService } from '../timescaledb/timescaledb.query.service';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -98,6 +99,23 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     }): Promise<CandleDataModel[]> {
         const service = await this.getService();
         return await service.getPriceCandles({
+            series,
+            metric,
+            resolution,
+            start,
+            end,
+        });
+    }
+
+    async getCandles({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<OhlcvDataModel[]> {
+        const service = await this.getService();
+        return await service.getCandles({
             series,
             metric,
             resolution,
