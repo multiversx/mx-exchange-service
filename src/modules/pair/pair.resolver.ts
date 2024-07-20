@@ -146,7 +146,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
             return '0';
         }
 
-        return await this.stakingCompute.stakeFarmAPR(stakingAddress);
+        return await this.stakingCompute.stakeFarmBaseAPR(stakingAddress);
     }
 
     @ResolveField(() => String)
