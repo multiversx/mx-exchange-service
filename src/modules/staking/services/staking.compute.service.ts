@@ -231,6 +231,29 @@ export class StakingComputeService {
                   .toFixed();
     }
 
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async stakeFarmBaseAPR(stakeAddress: string): Promise<string> {
+        return await this.computeStakeFarmBaseAPR(stakeAddress);
+    }
+
+    async computeStakeFarmBaseAPR(stakeAddress: string): Promise<string> {
+        const [apr, rawBoostedApr] = await Promise.all([
+            this.stakeFarmAPR(stakeAddress),
+            this.boostedApr(stakeAddress),
+        ]);
+
+        const baseApr = new BigNumber(apr).minus(rawBoostedApr);
+
+        return baseApr.toFixed();
+    }
+
     async computeRewardsRemainingDays(stakeAddress: string): Promise<number> {
         const [perBlockRewardAmount, accumulatedRewards, rewardsCapacity] =
             await Promise.all([
