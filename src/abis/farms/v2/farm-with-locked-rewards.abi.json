@@ -1,20 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.73.0-nightly",
-            "commitHash": "4c8bb79d9f565115637cc6da739f8389e79f3a29",
-            "commitDate": "2023-07-15",
+            "version": "1.80.0-nightly",
+            "commitHash": "84b40fc908c3adc7e0e470b3fbaa264df0e122b8",
+            "commitDate": "2024-05-27",
             "channel": "Nightly",
-            "short": "rustc 1.73.0-nightly (4c8bb79d9 2023-07-15)"
+            "short": "rustc 1.80.0-nightly (84b40fc90 2024-05-27)"
         },
         "contractCrate": {
             "name": "farm-with-locked-rewards",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-1513-g4dc02033"
+            "gitVersion": "v1.6.0-1831-g81b6253f"
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.43.3"
+            "version": "0.50.5"
         }
     },
     "name": "Farm",
@@ -46,6 +46,10 @@
                 "multi_arg": true
             }
         ],
+        "outputs": []
+    },
+    "upgradeConstructor": {
+        "inputs": [],
         "outputs": []
     },
     "endpoints": [
@@ -177,6 +181,17 @@
             "outputs": []
         },
         {
+            "name": "setBoostedYieldsRewardsPercentage",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "percentage",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "calculateRewardsForGivenPosition",
             "mutability": "readonly",
             "inputs": [
@@ -220,7 +235,7 @@
             ]
         },
         {
-            "name": "allowExternalClaimBoostedRewards",
+            "name": "setAllowExternalClaimBoostedRewards",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -291,7 +306,22 @@
             ],
             "outputs": [
                 {
-                    "type": "UserTotalFarmPosition"
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getAllowExternalClaim",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
                 }
             ]
         },
@@ -599,17 +629,6 @@
                     "type": "Address"
                 }
             ]
-        },
-        {
-            "name": "setBoostedYieldsRewardsPercentage",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "percentage",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
         },
         {
             "name": "collectUndistributedBoostedRewards",
@@ -1083,25 +1102,9 @@
             ]
         }
     ],
+    "esdtAttributes": [],
     "hasCallback": true,
     "types": {
-        "Energy": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "amount",
-                    "type": "BigInt"
-                },
-                {
-                    "name": "last_update_epoch",
-                    "type": "u64"
-                },
-                {
-                    "name": "total_locked_tokens",
-                    "type": "BigUint"
-                }
-            ]
-        },
         "BoostedYieldsFactors": {
             "type": "struct",
             "fields": [
@@ -1211,6 +1214,23 @@
                 {
                     "name": "created_with_merge",
                     "type": "bool"
+                }
+            ]
+        },
+        "Energy": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "amount",
+                    "type": "BigInt"
+                },
+                {
+                    "name": "last_update_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "total_locked_tokens",
+                    "type": "BigUint"
                 }
             ]
         },
@@ -1340,19 +1360,6 @@
                 {
                     "name": "PartialActive",
                     "discriminant": 2
-                }
-            ]
-        },
-        "UserTotalFarmPosition": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "total_farm_position",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "allow_external_claim_boosted_rewards",
-                    "type": "bool"
                 }
             ]
         }
