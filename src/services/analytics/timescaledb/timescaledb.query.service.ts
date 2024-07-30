@@ -391,29 +391,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
-    async getPDlatestValue({
-        series,
-        metric,
-    }: AnalyticsQueryArgs): Promise<HistoricDataModel> {
-        const query = await this.pdCloseMinute
-            .createQueryBuilder()
-            .select('time')
-            .addSelect('last')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .orderBy('time', 'DESC')
-            .limit(1)
-            .getRawOne();
-
-        return query
-            ? new HistoricDataModel({
-                  value: query.last,
-                  timestamp: query.time,
-              })
-            : undefined;
-    }
-
-    @TimescaleDBQuery()
     async getPDCloseValues({
         series,
         metric,
