@@ -48,13 +48,9 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
 
             const value = await originalMethod.apply(this, args);
 
-            console.log('CACHE MISS', cacheKey);
-
             let { remoteTtl, localTtl } = cachingOptions;
 
             if (typeof value === 'undefined' || value === null) {
-                console.log('NULL', cacheKey, value);
-
                 remoteTtl = CacheTtlInfo.NullValue.remoteTtl;
                 localTtl = CacheTtlInfo.NullValue.localTtl;
             }

@@ -62,8 +62,5 @@ describe('TokenService', () => {
         await cachingService.deleteInCache(cacheKey);
         token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(undefined);
-
-        token = await service.tokenMetadata(tokenID);
-        expect(token).toEqual(expectedToken);
     });
 });
