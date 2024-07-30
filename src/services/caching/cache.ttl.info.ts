@@ -43,4 +43,9 @@ export class CacheTtlInfo {
         Constants.oneHour(),
         Constants.oneMinute() * 45,
     );
+
+    static NullValue: CacheTtlInfo = new CacheTtlInfo(
+        Constants.oneMinute() * 2,
+        Constants.oneMinute(),
+    );
 }
