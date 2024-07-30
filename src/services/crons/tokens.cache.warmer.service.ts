@@ -69,6 +69,7 @@ export class TokensCacheWarmerService {
                 pricePrevious24h,
                 pricePrevious7D,
                 liquidityUSD,
+                createdAt,
             ] = await Promise.all([
                 this.tokenComputeService.computeTokenLast2DaysVolumeUSD(
                     tokenID,
@@ -76,6 +77,9 @@ export class TokensCacheWarmerService {
                 this.tokenComputeService.computeTokenPrevious24hPrice(tokenID),
                 this.tokenComputeService.computeTokenPrevious7dPrice(tokenID),
                 this.tokenComputeService.computeTokenLiquidityUSD(tokenID),
+                this.tokenComputeService.computeTokenCreatedAtTimestamp(
+                    tokenID,
+                ),
             ]);
 
             const cachedKeys = await Promise.all([
@@ -92,6 +96,7 @@ export class TokensCacheWarmerService {
                     pricePrevious7D,
                 ),
                 this.tokenSetterService.setLiquidityUSD(tokenID, liquidityUSD),
+                this.tokenSetterService.setCreatedAt(tokenID, createdAt),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
