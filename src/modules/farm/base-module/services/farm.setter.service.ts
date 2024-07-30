@@ -282,7 +282,6 @@ export abstract class FarmSetterService extends GenericSetterService {
     }
 
     async setFarmBaseAPR(farmAddress: string, value: string): Promise<string> {
-        console.log(this.getCacheKey('farmBaseAPR', farmAddress));
         return await this.setData(
             this.getCacheKey('farmBaseAPR', farmAddress),
             value,
@@ -295,7 +294,6 @@ export abstract class FarmSetterService extends GenericSetterService {
         farmAddress: string,
         value: string,
     ): Promise<string> {
-        console.log(this.getCacheKey('farmBoostedAPR', farmAddress));
         return await this.setData(
             this.getCacheKey('maxBoostedApr', farmAddress),
             value,

@@ -56,12 +56,16 @@ export class StakingCacheWarmerService {
                 divisionSafetyConstant,
                 state,
                 apr,
+                baseApr,
+                boostedApr,
             ] = await Promise.all([
                 this.stakingAbi.getAnnualPercentageRewardsRaw(address),
                 this.stakingAbi.getMinUnbondEpochsRaw(address),
                 this.stakingAbi.getDivisionSafetyConstantRaw(address),
                 this.stakingAbi.getStateRaw(address),
                 this.stakeCompute.computeStakeFarmAPR(address),
+                this.stakeCompute.computeStakeFarmBaseAPR(address),
+                this.stakeCompute.computeBoostedApr(address),
             ]);
 
             const cacheKeys = await Promise.all([
@@ -79,6 +83,11 @@ export class StakingCacheWarmerService {
                 ),
                 this.stakeSetterService.setState(address, state),
                 this.stakeSetterService.setStakeFarmAPR(address, apr),
+                this.stakeSetterService.setStakeFarmBaseAPR(address, baseApr),
+                this.stakeSetterService.setStakeFarmBoostedAPR(
+                    address,
+                    boostedApr,
+                ),
             ]);
 
             await this.deleteCacheKeys(cacheKeys);
