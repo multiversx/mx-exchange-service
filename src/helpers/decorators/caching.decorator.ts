@@ -2,6 +2,7 @@ import { Inject } from '@nestjs/common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { ContextTracker } from '@multiversx/sdk-nestjs-common';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 export interface ICachingOptions {
     baseKey: string;
@@ -35,12 +36,40 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
 
             const cachingService: CacheService = this.cachingService;
 
-            return await cachingService.getOrSet(
+            let cachedValue = await cachingService.get(cacheKey);
+
+            if (cachedValue !== undefined) {
+                cachedValue = cachedValue === 'null' ? null : cachedValue;
+                cachedValue =
+                    cachedValue === 'undefined' ? undefined : cachedValue;
+
+                return cachedValue;
+            }
+
+            const value = await originalMethod.apply(this, args);
+
+            console.log('CACHE MISS', cacheKey);
+
+            let { remoteTtl, localTtl } = cachingOptions;
+
+            if (typeof value === 'undefined' || value === null) {
+                console.log('NULL', cacheKey, value);
+
+                remoteTtl = CacheTtlInfo.NullValue.remoteTtl;
+                localTtl = CacheTtlInfo.NullValue.localTtl;
+            }
+
+            cachedValue = typeof value === 'undefined' ? 'undefined' : value;
+            cachedValue = cachedValue === null ? 'null' : cachedValue;
+
+            await cachingService.set(
                 cacheKey,
-                () => originalMethod.apply(this, args),
-                cachingOptions.remoteTtl,
-                cachingOptions.localTtl,
+                cachedValue,
+                remoteTtl,
+                localTtl,
             );
+
+            return value;
         };
         return descriptor;
     };

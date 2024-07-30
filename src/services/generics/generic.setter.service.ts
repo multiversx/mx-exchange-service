@@ -4,6 +4,7 @@ import { generateSetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { CacheTtlInfo } from '../caching/cache.ttl.info';
 
 @Injectable()
 export class GenericSetterService {
@@ -19,6 +20,14 @@ export class GenericSetterService {
         remoteTtl: number,
         localTtl?: number,
     ): Promise<string> {
+        if (typeof value === 'undefined' || value === null) {
+            remoteTtl = CacheTtlInfo.NullValue.remoteTtl;
+            localTtl = CacheTtlInfo.NullValue.localTtl;
+        }
+
+        value = typeof value === 'undefined' ? 'undefined' : value;
+        value = value === null ? 'null' : value;
+
         await this.cachingService.set(cacheKey, value, remoteTtl, localTtl);
         return cacheKey;
     }
