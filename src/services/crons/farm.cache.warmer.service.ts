@@ -121,11 +121,7 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheFarmsV2APRs(): Promise<void> {
-        for (const address of farmsAddresses()) {
-            if (farmVersion(address) !== FarmVersion.V2) {
-                continue;
-            }
-
+        for (const address of farmsAddresses([FarmVersion.V2])) {
             const [baseApr, boostedApr] = await Promise.all([
                 this.farmComputeV2.computeFarmBaseAPR(address),
                 this.farmComputeV2.computeMaxBoostedApr(address),

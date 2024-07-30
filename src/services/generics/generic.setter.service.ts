@@ -5,6 +5,7 @@ import { Logger } from 'winston';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { CacheTtlInfo } from '../caching/cache.ttl.info';
+import { formatNullOrUndefined } from 'src/utils/cache.utils';
 
 @Injectable()
 export class GenericSetterService {
@@ -25,10 +26,12 @@ export class GenericSetterService {
             localTtl = CacheTtlInfo.NullValue.localTtl;
         }
 
-        value = typeof value === 'undefined' ? 'undefined' : value;
-        value = value === null ? 'null' : value;
-
-        await this.cachingService.set(cacheKey, value, remoteTtl, localTtl);
+        await this.cachingService.set(
+            cacheKey,
+            formatNullOrUndefined(value),
+            remoteTtl,
+            localTtl,
+        );
         return cacheKey;
     }
 

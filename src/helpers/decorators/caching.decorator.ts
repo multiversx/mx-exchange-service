@@ -3,6 +3,10 @@ import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import {
+    formatNullOrUndefined,
+    parseCachedNullOrUndefined,
+} from 'src/utils/cache.utils';
 
 export interface ICachingOptions {
     baseKey: string;
@@ -36,14 +40,10 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
 
             const cachingService: CacheService = this.cachingService;
 
-            let cachedValue = await cachingService.get(cacheKey);
+            const cachedValue = await cachingService.get(cacheKey);
 
             if (cachedValue !== undefined) {
-                cachedValue = cachedValue === 'null' ? null : cachedValue;
-                cachedValue =
-                    cachedValue === 'undefined' ? undefined : cachedValue;
-
-                return cachedValue;
+                return parseCachedNullOrUndefined(cachedValue);
             }
 
             const value = await originalMethod.apply(this, args);
@@ -55,12 +55,9 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
                 localTtl = CacheTtlInfo.NullValue.localTtl;
             }
 
-            cachedValue = typeof value === 'undefined' ? 'undefined' : value;
-            cachedValue = cachedValue === null ? 'null' : cachedValue;
-
             await cachingService.set(
                 cacheKey,
-                cachedValue,
+                formatNullOrUndefined(value),
                 remoteTtl,
                 localTtl,
             );
