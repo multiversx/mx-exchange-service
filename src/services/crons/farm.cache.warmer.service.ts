@@ -10,6 +10,7 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmSetterFactory } from 'src/modules/farm/farm.setter.factory';
+import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -21,6 +22,7 @@ export class FarmCacheWarmerService {
         private readonly farmComputeFactory: FarmComputeFactory,
         private readonly farmComputeV1_2: FarmComputeServiceV1_2,
         private readonly farmComputeV1_3: FarmComputeServiceV1_3,
+        private readonly farmComputeV2: FarmComputeServiceV2,
         private readonly farmSetterFactory: FarmSetterFactory,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -111,6 +113,31 @@ export class FarmCacheWarmerService {
                 this.farmSetterFactory
                     .useSetter(address)
                     .setFarmAPR(address, apr),
+            ]);
+            this.invalidatedKeys.push(...cachedKeys);
+            await this.deleteCacheKeys();
+        }
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async cacheFarmsV2APRs(): Promise<void> {
+        for (const address of farmsAddresses()) {
+            if (farmVersion(address) !== FarmVersion.V2) {
+                continue;
+            }
+
+            const [baseApr, boostedApr] = await Promise.all([
+                this.farmComputeV2.computeFarmBaseAPR(address),
+                this.farmComputeV2.computeMaxBoostedApr(address),
+            ]);
+
+            const cachedKeys = await Promise.all([
+                this.farmSetterFactory
+                    .useSetter(address)
+                    .setFarmBaseAPR(address, baseApr),
+                this.farmSetterFactory
+                    .useSetter(address)
+                    .setFarmBoostedAPR(address, boostedApr),
             ]);
             this.invalidatedKeys.push(...cachedKeys);
             await this.deleteCacheKeys();

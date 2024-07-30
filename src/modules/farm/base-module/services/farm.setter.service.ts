@@ -280,4 +280,27 @@ export abstract class FarmSetterService extends GenericSetterService {
             CacheTtlInfo.ContractInfo.localTtl,
         );
     }
+
+    async setFarmBaseAPR(farmAddress: string, value: string): Promise<string> {
+        console.log(this.getCacheKey('farmBaseAPR', farmAddress));
+        return await this.setData(
+            this.getCacheKey('farmBaseAPR', farmAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async setFarmBoostedAPR(
+        farmAddress: string,
+        value: string,
+    ): Promise<string> {
+        console.log(this.getCacheKey('farmBoostedAPR', farmAddress));
+        return await this.setData(
+            this.getCacheKey('maxBoostedApr', farmAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
 }
