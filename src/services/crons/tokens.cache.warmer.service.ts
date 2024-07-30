@@ -21,6 +21,36 @@ export class TokensCacheWarmerService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Lock({ name: 'cacheTokensMetadata', verbose: true })
+    async cacheTokensMetadata(): Promise<void> {
+        this.logger.info('Start refresh cached tokens metadata', {
+            context: 'CacheTokens',
+        });
+
+        const tokenIDs = await this.tokenService.getUniqueTokenIDs(false);
+        const profiler = new PerformanceProfiler();
+        const cachedKeys = [];
+
+        for (const tokenID of tokenIDs) {
+            const token = await this.tokenService.tokenMetadataRaw(tokenID);
+
+            const cachedKey = await this.tokenSetterService.setMetadata(
+                tokenID,
+                token,
+            );
+
+            cachedKeys.push(cachedKey);
+        }
+
+        await this.deleteCacheKeys(cachedKeys);
+
+        profiler.stop();
+        this.logger.info(
+            `Finish refresh tokens metadata in ${profiler.duration}`,
+        );
+    }
+
     @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cacheTokens', verbose: true })
     async cacheTokens(): Promise<void> {

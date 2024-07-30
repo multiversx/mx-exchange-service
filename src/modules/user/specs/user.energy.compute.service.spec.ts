@@ -65,8 +65,10 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { MetabondingAbiServiceMockProvider } from 'src/modules/metabonding/mocks/metabonding.abi.service.mock';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { StakingProxyFilteringService } from 'src/modules/staking-proxy/services/staking.proxy.filtering.service';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -112,6 +114,7 @@ describe('UserEnergyComputeService', () => {
                 UserEsdtComputeService,
                 StakingProxyService,
                 StakingProxyAbiService,
+                StakingProxyFilteringService,
                 SimpleLockAbiServiceProvider,
                 SimpleLockService,
                 StakingAbiServiceProvider,
@@ -129,6 +132,7 @@ describe('UserEnergyComputeService', () => {
                 MXApiServiceProvider,
                 MXProxyServiceProvider,
                 LockedAssetGetterService,
+                MetabondingAbiServiceMockProvider,
                 RemoteConfigGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 AnalyticsQueryServiceProvider,

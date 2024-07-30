@@ -6,6 +6,7 @@ import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/p
 import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
 import { PriceDiscoverySetterService } from 'src/modules/price-discovery/services/price.discovery.setter.service';
 import { PUB_SUB } from '../redis.pubSub.module';
+import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class PriceDiscoveryCacheWarmerService {
@@ -126,7 +127,8 @@ export class PriceDiscoveryCacheWarmerService {
         }
     }
 
-    @Cron('*/12 * * * * *') // Update prices and reserves every 6 seconds
+    @Cron(CronExpression.EVERY_MINUTE) // Update prices and reserves every 6 seconds
+    @Lock({ name: 'cachePriceDiscoveryPrices', verbose: true })
     async cacheTokensPrices(): Promise<void> {
         const priceDiscoveryAddresses: string[] = scAddress.priceDiscovery;
 

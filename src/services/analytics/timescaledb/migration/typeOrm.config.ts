@@ -10,6 +10,15 @@ import {
     SumDaily,
     SumHourly,
     XExchangeAnalyticsEntity,
+    TokenCandlesMinute,
+    TokenCandlesHourly,
+    TokenCandlesDaily,
+    PairFirstTokenCandlesMinute,
+    PairFirstTokenCandlesHourly,
+    PairFirstTokenCandlesDaily,
+    PairSecondTokenCandlesMinute,
+    PairSecondTokenCandlesHourly,
+    PairSecondTokenCandlesDaily,
 } from '../entities/timescaledb.entities';
 
 config();
@@ -32,7 +41,16 @@ export default new DataSource({
         CloseHourly,
         PriceCandleMinute,
         PriceCandleHourly,
-        PriceCandleDaily
+        PriceCandleDaily,
+        TokenCandlesMinute,
+        TokenCandlesHourly,
+        TokenCandlesDaily,
+        PairFirstTokenCandlesMinute,
+        PairFirstTokenCandlesHourly,
+        PairFirstTokenCandlesDaily,
+        PairSecondTokenCandlesMinute,
+        PairSecondTokenCandlesHourly,
+        PairSecondTokenCandlesDaily,
     ],
     migrations: ['src/services/analytics/timescaledb/migration/*-xExchange.ts'],
 });

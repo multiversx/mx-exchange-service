@@ -30,14 +30,14 @@ export class PriceDiscoveryService {
         const launchedTokenID = await this.priceDiscoveryAbi.launchedTokenID(
             priceDiscoveryAddress,
         );
-        return this.tokenService.getTokenMetadata(launchedTokenID);
+        return this.tokenService.tokenMetadata(launchedTokenID);
     }
 
     async getAcceptedToken(priceDiscoveryAddress: string): Promise<EsdtToken> {
         const acceptedTokenID = await this.priceDiscoveryAbi.acceptedTokenID(
             priceDiscoveryAddress,
         );
-        return this.tokenService.getTokenMetadata(acceptedTokenID);
+        return this.tokenService.tokenMetadata(acceptedTokenID);
     }
 
     async getRedeemToken(
