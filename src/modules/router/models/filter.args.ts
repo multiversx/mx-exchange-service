@@ -42,8 +42,8 @@ export class PairsFilter {
     secondTokenID: string;
     @Field(() => Boolean)
     issuedLpToken = true;
-    @Field({ nullable: true })
-    state: string;
+    @Field(() => [String], { nullable: true })
+    state: string[];
     @Field({ nullable: true })
     minVolume: number;
     @Field({ nullable: true })

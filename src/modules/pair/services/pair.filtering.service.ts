@@ -172,7 +172,7 @@ export class PairFilteringService {
         pairFilter: PairFilterArgs | PairsFilter,
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        if (!pairFilter.state) {
+        if (!pairFilter.state || pairFilter.state.length === 0) {
             return pairsMetadata;
         }
 
@@ -182,14 +182,13 @@ export class PairFilteringService {
             ),
         );
 
-        const filteredPairsMetadata = [];
-        for (let index = 0; index < pairsStates.length; index++) {
-            if (pairsStates[index] === pairFilter.state) {
-                filteredPairsMetadata.push(pairsMetadata[index]);
+        return pairsMetadata.filter((_, index) => {
+            if (!Array.isArray(pairFilter.state)) {
+                return pairsStates[index] === pairFilter.state;
             }
-        }
 
-        return filteredPairsMetadata;
+            return pairFilter.state.includes(pairsStates[index]);
+        });
     }
 
     async pairsByFeeState(
