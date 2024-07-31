@@ -127,7 +127,7 @@ export class PriceDiscoveryCacheWarmerService {
         }
     }
 
-    @Cron(CronExpression.EVERY_MINUTE) // Update prices and reserves every 6 seconds
+    @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cachePriceDiscoveryPrices', verbose: true })
     async cacheTokensPrices(): Promise<void> {
         const priceDiscoveryAddresses: string[] = scAddress.priceDiscovery;
