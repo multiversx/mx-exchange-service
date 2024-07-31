@@ -36,6 +36,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { GovernanceCacheWarmerService } from './crons/governance.cache.warmer.service';
 import { GovernanceModule } from '../modules/governance/governance.module';
 import { TokensCacheWarmerService } from './crons/tokens.cache.warmer.service';
+import { FarmModuleV2 } from 'src/modules/farm/v2/farm.v2.module';
 
 @Module({
     imports: [
@@ -48,6 +49,7 @@ import { TokensCacheWarmerService } from './crons/tokens.cache.warmer.service';
         FarmModule,
         FarmModuleV1_2,
         FarmModuleV1_3,
+        FarmModuleV2,
         StakingModule,
         StakingProxyModule,
         MetabondingModule,

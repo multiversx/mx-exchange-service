@@ -1,20 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.76.0-nightly",
-            "commitHash": "d86d65bbc19b928387f68427fcc3a0da498d8a19",
-            "commitDate": "2023-12-10",
+            "version": "1.80.0-nightly",
+            "commitHash": "84b40fc908c3adc7e0e470b3fbaa264df0e122b8",
+            "commitDate": "2024-05-27",
             "channel": "Nightly",
-            "short": "rustc 1.76.0-nightly (d86d65bbc 2023-12-10)"
+            "short": "rustc 1.80.0-nightly (84b40fc90 2024-05-27)"
         },
         "contractCrate": {
             "name": "farm-staking",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-1579-ge4b95afa"
+            "gitVersion": "v1.6.0-1831-g81b6253f"
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.45.2"
+            "version": "0.50.5"
         }
     },
     "name": "FarmStaking",
@@ -48,13 +48,11 @@
         ],
         "outputs": []
     },
+    "upgradeConstructor": {
+        "inputs": [],
+        "outputs": []
+    },
     "endpoints": [
-        {
-            "name": "upgrade",
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
         {
             "name": "mergeFarmTokens",
             "mutability": "mutable",
@@ -70,6 +68,17 @@
                     "type": "EsdtTokenPayment"
                 }
             ]
+        },
+        {
+            "name": "setBoostedYieldsRewardsPercentage",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "percentage",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
         },
         {
             "name": "calculateRewardsForGivenPosition",
@@ -97,6 +106,20 @@
                 "*"
             ],
             "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "withdrawRewards",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "withdraw_amount",
+                    "type": "BigUint"
+                }
+            ],
             "outputs": []
         },
         {
@@ -205,7 +228,7 @@
             ]
         },
         {
-            "name": "allowExternalClaimBoostedRewards",
+            "name": "setAllowExternalClaimBoostedRewards",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -214,21 +237,6 @@
                 }
             ],
             "outputs": []
-        },
-        {
-            "name": "getAllowExternalClaimRewards",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "user",
-                    "type": "Address"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "bool"
-                }
-            ]
         },
         {
             "name": "getFarmingTokenId",
@@ -291,7 +299,22 @@
             ],
             "outputs": [
                 {
-                    "type": "UserTotalFarmPosition"
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getAllowExternalClaim",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
                 }
             ]
         },
@@ -659,9 +682,6 @@
         {
             "name": "claimBoostedRewards",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
             "inputs": [
                 {
                     "name": "opt_user",
@@ -674,17 +694,6 @@
                     "type": "EsdtTokenPayment"
                 }
             ]
-        },
-        {
-            "name": "setBoostedYieldsRewardsPercentage",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "percentage",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
         },
         {
             "name": "collectUndistributedBoostedRewards",
@@ -1412,19 +1421,6 @@
                 {
                     "name": "PartialActive",
                     "discriminant": 2
-                }
-            ]
-        },
-        "UserTotalFarmPosition": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "total_farm_position",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "allow_external_claim_boosted_rewards",
-                    "type": "bool"
                 }
             ]
         }

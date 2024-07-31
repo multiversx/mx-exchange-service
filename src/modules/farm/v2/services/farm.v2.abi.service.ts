@@ -412,7 +412,7 @@ export class FarmAbiServiceV2
             return '0';
         }
 
-        return response.firstValue.valueOf().total_farm_position.toFixed();
+        return response.firstValue.valueOf().toFixed();
     }
 
     @ErrorLoggerAsync({

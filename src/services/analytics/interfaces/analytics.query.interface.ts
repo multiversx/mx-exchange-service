@@ -1,6 +1,7 @@
 import {
     CandleDataModel,
     HistoricDataModel,
+    OhlcvDataModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 
@@ -41,4 +42,12 @@ export interface AnalyticsQueryInterface {
         start,
         end,
     }): Promise<CandleDataModel[]>;
+
+    getCandles({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<OhlcvDataModel[]>;
 }

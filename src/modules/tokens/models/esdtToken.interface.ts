@@ -17,7 +17,7 @@ export abstract class IEsdtToken {
     @Field({ nullable: true }) circulatingSupply?: string;
     @Field(() => IAssets, { nullable: true }) assets?: IAssets;
     @Field(() => Int) transactions: number;
-    @Field(() => Int) accounts: number;
+    @Field(() => Int, { defaultValue: 0 }) accounts: number;
     @Field() isPaused: boolean;
     @Field() canUpgrade: boolean;
     @Field() canMint: boolean;
