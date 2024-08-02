@@ -128,11 +128,51 @@ export class PairFilteringService {
         return filteredPairs;
     }
 
+    async pairsByLpTokenIds(
+        pairFilter: PairsFilter,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.lpTokenIds || pairFilter.lpTokenIds.length === 0) {
+            return pairsMetadata;
+        }
+
+        const lpTokensIDs = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairAbi.lpTokenID(pairMetadata.address),
+            ),
+        );
+
+        return pairsMetadata.filter((_, index) =>
+            pairFilter.lpTokenIds.includes(lpTokensIDs[index]),
+        );
+    }
+
+    async pairsByFarmTokens(
+        pairFilter: PairsFilter,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.farmTokens || pairFilter.farmTokens.length === 0) {
+            return pairsMetadata;
+        }
+
+        const farmTokens = await Promise.all(
+            pairsMetadata.map((pairMetadata) =>
+                this.pairCompute.getPairFarmToken(pairMetadata.address),
+            ),
+        );
+
+        return pairsMetadata.filter(
+            (_, index) =>
+                farmTokens[index] &&
+                pairFilter.farmTokens.includes(farmTokens[index]),
+        );
+    }
+
     async pairsByState(
         pairFilter: PairFilterArgs | PairsFilter,
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        if (!pairFilter.state) {
+        if (!pairFilter.state || pairFilter.state.length === 0) {
             return pairsMetadata;
         }
 
@@ -142,14 +182,13 @@ export class PairFilteringService {
             ),
         );
 
-        const filteredPairsMetadata = [];
-        for (let index = 0; index < pairsStates.length; index++) {
-            if (pairsStates[index] === pairFilter.state) {
-                filteredPairsMetadata.push(pairsMetadata[index]);
+        return pairsMetadata.filter((_, index) => {
+            if (!Array.isArray(pairFilter.state)) {
+                return pairsStates[index] === pairFilter.state;
             }
-        }
 
-        return filteredPairsMetadata;
+            return pairFilter.state.includes(pairsStates[index]);
+        });
     }
 
     async pairsByFeeState(
