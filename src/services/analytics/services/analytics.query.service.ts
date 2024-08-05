@@ -116,6 +116,11 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         });
     }
 
+    async getStartDate(series: string): Promise<string | undefined> {
+        const service = await this.getService();
+        return await service.getStartDate(series);
+    }
+
     private async getService(): Promise<AnalyticsQueryInterface> {
         return this.timescaleDBQuery;
     }
