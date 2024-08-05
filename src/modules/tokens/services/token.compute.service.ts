@@ -634,13 +634,15 @@ export class TokenComputeService implements ITokenComputeService {
             this.tokenTradeChange24h(tokenID),
         ]);
 
-        const volumeScore = new BigNumber(0.4).multipliedBy(
-            Math.log(volumeChange),
-        );
-        const priceScore = new BigNumber(0.3).multipliedBy(priceChange);
-        const tradeScore = new BigNumber(0.3).multipliedBy(
-            Math.log(tradeChange),
-        );
+        const volumeScore = new BigNumber(
+            constantsConfig.trendingScore.VOLUME_WEIGHT,
+        ).multipliedBy(Math.log(volumeChange));
+        const priceScore = new BigNumber(
+            constantsConfig.trendingScore.PRICE_WEIGHT,
+        ).multipliedBy(priceChange);
+        const tradeScore = new BigNumber(
+            constantsConfig.trendingScore.TRADES_COUNT_WEIGHT,
+        ).multipliedBy(Math.log(tradeChange));
 
         if (volumeScore.isNaN() || priceScore.isNaN() || tradeScore.isNaN()) {
             return new BigNumber('-Infinity').toFixed();
