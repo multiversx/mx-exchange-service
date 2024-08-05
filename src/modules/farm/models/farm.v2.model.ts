@@ -48,6 +48,8 @@ export class FarmModelV2 extends BaseFarmModel {
     @Field()
     lastGlobalUpdateWeek: number;
     @Field()
+    farmTokenSupplyCurrentWeek: string;
+    @Field()
     baseApr: string;
     @Field()
     boostedApr: string;

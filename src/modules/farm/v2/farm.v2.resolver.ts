@@ -159,6 +159,14 @@ export class FarmResolverV2 extends FarmResolver {
         return this.farmAbi.energyFactoryAddress(parent.address);
     }
 
+    @ResolveField()
+    async farmTokenSupplyCurrentWeek(
+        @Parent() parent: FarmModelV2,
+    ): Promise<string> {
+        const week = await this.weekTimekeepingAbi.currentWeek(parent.address);
+        return this.farmAbi.farmSupplyForWeek(parent.address, week);
+    }
+
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [UserTotalBoostedPosition], {
         description: 'Returns the total farm position of the user in the farm',

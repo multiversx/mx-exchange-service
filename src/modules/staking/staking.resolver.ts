@@ -192,6 +192,14 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async farmTokenSupplyCurrentWeek(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        const week = await this.weekTimekeepingAbi.currentWeek(parent.address);
+        return this.stakingAbi.farmSupplyForWeek(parent.address, week);
+    }
+
+    @ResolveField()
     async energyFactoryAddress(
         @Parent() parent: StakingModel,
     ): Promise<string> {

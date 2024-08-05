@@ -436,4 +436,32 @@ export class FarmAbiServiceV2
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmSupplyForWeek(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        return this.getFarmSupplyForWeekRaw(farmAddress, week);
+    }
+
+    async getFarmSupplyForWeekRaw(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmSupplyForWeek([
+                new U32Value(new BigNumber(week)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
 }
