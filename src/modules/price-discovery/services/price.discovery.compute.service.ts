@@ -241,6 +241,10 @@ export class PriceDiscoveryComputeService
             this.apiService.getBlockByNonce(1, endBlockNonce),
         ]);
 
+        if (startBlock === undefined) {
+            return [];
+        }
+
         const [startDate, endDate] = [
             startBlock.timestamp,
             endBlock ? endBlock.timestamp : moment().unix(),
