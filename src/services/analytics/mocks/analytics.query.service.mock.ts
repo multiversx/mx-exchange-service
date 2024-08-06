@@ -8,12 +8,6 @@ import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface
 import { AnalyticsQueryService } from '../services/analytics.query.service';
 
 export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
-    getPDlatestValue({
-        series,
-        metric,
-    }: AnalyticsQueryArgs): Promise<HistoricDataModel> {
-        throw new Error('Method not implemented.');
-    }
     getPDCloseValues({
         series,
         metric,
@@ -56,6 +50,9 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
         throw new Error('Method not implemented.');
     }
     getCandles({ series, metric, start, end }): Promise<OhlcvDataModel[]> {
+        throw new Error('Method not implemented.');
+    }
+    getStartDate(series: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
 }

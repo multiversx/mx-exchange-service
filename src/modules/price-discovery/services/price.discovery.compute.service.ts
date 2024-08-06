@@ -45,11 +45,12 @@ export class PriceDiscoveryComputeService
         );
 
         if (phase.name === 'Redeem') {
-            const latestPrice = await this.analyticsQuery.getPDlatestValue({
-                series: priceDiscoveryAddress,
-                metric: 'launchedTokenPrice',
-            });
-            return latestPrice?.value ?? '0';
+            const latestPrice = await this.closingValues(
+                priceDiscoveryAddress,
+                'launchedTokenPrice',
+                '1 hour',
+            );
+            return latestPrice.length > 0 ? latestPrice.last().value : '0';
         }
 
         const [
@@ -95,11 +96,12 @@ export class PriceDiscoveryComputeService
         );
 
         if (phase.name === 'Redeem') {
-            const latestPrice = await this.analyticsQuery.getPDlatestValue({
-                series: priceDiscoveryAddress,
-                metric: 'acceptedTokenPrice',
-            });
-            return latestPrice?.value ?? '0';
+            const latestPrice = await this.closingValues(
+                priceDiscoveryAddress,
+                'acceptedTokenPrice',
+                '1 hour',
+            );
+            return latestPrice.length > 0 ? latestPrice.last().value : '0';
         }
 
         const [
@@ -147,11 +149,12 @@ export class PriceDiscoveryComputeService
         );
 
         if (phase.name === 'Redeem') {
-            const latestPrice = await this.analyticsQuery.getPDlatestValue({
-                series: priceDiscoveryAddress,
-                metric: 'launchedTokenPriceUSD',
-            });
-            return latestPrice?.value ?? '0';
+            const latestPrice = await this.closingValues(
+                priceDiscoveryAddress,
+                'launchedTokenPriceUSD',
+                '1 hour',
+            );
+            return latestPrice.length > 0 ? latestPrice.last().value : '0';
         }
 
         const acceptedToken = await this.priceDiscoveryService.getAcceptedToken(
@@ -189,11 +192,12 @@ export class PriceDiscoveryComputeService
         );
 
         if (phase.name === 'Redeem') {
-            const latestPrice = await this.analyticsQuery.getPDlatestValue({
-                series: priceDiscoveryAddress,
-                metric: 'acceptedTokenPriceUSD',
-            });
-            return latestPrice?.value ?? '0';
+            const latestPrice = await this.closingValues(
+                priceDiscoveryAddress,
+                'acceptedTokenPriceUSD',
+                '1 hour',
+            );
+            return latestPrice.length > 0 ? latestPrice.last().value : '0';
         }
 
         const acceptedTokenID = await this.priceDiscoveryAbi.acceptedTokenID(
@@ -236,6 +240,10 @@ export class PriceDiscoveryComputeService
             this.apiService.getBlockByNonce(1, startBlockNonce),
             this.apiService.getBlockByNonce(1, endBlockNonce),
         ]);
+
+        if (startBlock === undefined) {
+            return [];
+        }
 
         const [startDate, endDate] = [
             startBlock.timestamp,

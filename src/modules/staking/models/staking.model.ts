@@ -32,6 +32,8 @@ export class StakingModel {
     annualPercentageRewards: string;
     @Field()
     apr: string;
+    @Field()
+    boostedApr: string;
     @Field(() => Int)
     minUnboundEpochs: number;
     @Field()
@@ -64,6 +66,8 @@ export class StakingModel {
     boosterRewards: [GlobalInfoByWeekModel];
     @Field()
     lastGlobalUpdateWeek: number;
+    @Field()
+    farmTokenSupplyCurrentWeek: string;
     @Field()
     energyFactoryAddress: string;
     @Field({ description: 'Accumulated boosted rewards for specific week' })

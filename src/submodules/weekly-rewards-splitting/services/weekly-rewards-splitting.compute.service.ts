@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { TokenDistributionModel } from '../models/weekly-rewards-splitting.model';
@@ -20,7 +20,9 @@ export class WeeklyRewardsSplittingComputeService
     constructor(
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly energyAbi: EnergyAbiService,
+        @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
+        @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
     ) {}
 

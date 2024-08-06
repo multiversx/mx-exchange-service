@@ -412,7 +412,7 @@ export class FarmAbiServiceV2
             return '0';
         }
 
-        return response.firstValue.valueOf().total_farm_position.toFixed();
+        return response.firstValue.valueOf().toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -435,5 +435,33 @@ export class FarmAbiServiceV2
             contract.methodsExplicit.getFarmPositionMigrationNonce();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmSupplyForWeek(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        return this.getFarmSupplyForWeekRaw(farmAddress, week);
+    }
+
+    async getFarmSupplyForWeekRaw(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmSupplyForWeek([
+                new U32Value(new BigNumber(week)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 }

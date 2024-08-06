@@ -633,6 +633,36 @@ export class StakingAbiService
         logArgs: true,
     })
     @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmSupplyForWeek(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        return this.getFarmSupplyForWeekRaw(farmAddress, week);
+    }
+
+    async getFarmSupplyForWeekRaw(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getStakingSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmSupplyForWeek([
+                new U32Value(new BigNumber(week)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
         baseKey: 'stake',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
@@ -667,7 +697,7 @@ export class StakingAbiService
             return '0';
         }
 
-        return response.firstValue.valueOf().total_farm_position.toFixed();
+        return response.firstValue.valueOf().toFixed();
     }
 
     @ErrorLoggerAsync({

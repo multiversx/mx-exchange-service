@@ -213,4 +213,28 @@ export class StakingSetterService extends GenericSetterService {
             CacheTtlInfo.ContractBalance.localTtl,
         );
     }
+
+    async setStakeFarmBaseAPR(
+        stakeAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('stakeFarmBaseAPR', stakeAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async setStakeFarmBoostedAPR(
+        stakeAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('boostedApr', stakeAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
 }

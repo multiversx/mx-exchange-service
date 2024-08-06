@@ -101,6 +101,11 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async boostedApr(@Parent() parent: StakingModel) {
+        return this.stakingCompute.boostedApr(parent.address);
+    }
+
+    @ResolveField()
     async minUnboundEpochs(@Parent() parent: StakingModel) {
         return this.stakingAbi.minUnbondEpochs(parent.address);
     }
@@ -184,6 +189,14 @@ export class StakingResolver {
         return this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(
             parent.address,
         );
+    }
+
+    @ResolveField()
+    async farmTokenSupplyCurrentWeek(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        const week = await this.weekTimekeepingAbi.currentWeek(parent.address);
+        return this.stakingAbi.farmSupplyForWeek(parent.address, week);
     }
 
     @ResolveField()

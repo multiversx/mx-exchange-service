@@ -1,6 +1,10 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { PairService } from './services/pair.service';
-import { PairResolver } from './pair.resolver';
+import {
+    PairCompoundedAPRResolver,
+    PairResolver,
+    PairRewardTokensResolver,
+} from './pair.resolver';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairTransactionService } from './services/pair.transactions.service';
 import { ContextModule } from '../../services/context/context.module';
@@ -19,6 +23,8 @@ import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { PairFilteringService } from './services/pair.filtering.service';
+import { StakingModule } from '../staking/staking.module';
+import { EnergyModule } from '../energy/energy.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -33,6 +39,8 @@ import { PairFilteringService } from './services/pair.filtering.service';
         RemoteConfigModule,
         FarmModuleV2,
         StakingProxyModule,
+        StakingModule,
+        EnergyModule,
     ],
     providers: [
         PairService,
@@ -43,6 +51,8 @@ import { PairFilteringService } from './services/pair.filtering.service';
         PairResolver,
         ElasticService,
         PairFilteringService,
+        PairCompoundedAPRResolver,
+        PairRewardTokensResolver,
     ],
     exports: [
         PairService,

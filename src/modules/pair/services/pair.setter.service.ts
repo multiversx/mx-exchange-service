@@ -402,4 +402,28 @@ export class PairSetterService extends GenericSetterService {
             CacheTtlInfo.ContractState.localTtl,
         );
     }
+
+    async setInitialLiquidityAdder(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('initialLiquidityAdder', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async setTrustedSwapPairs(
+        pairAddress: string,
+        value: string[],
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('trustedSwapPairs', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
 }

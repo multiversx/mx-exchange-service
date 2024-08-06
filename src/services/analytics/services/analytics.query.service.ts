@@ -65,14 +65,6 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         return await service.getHourlySumValues(args);
     }
 
-    async getPDlatestValue({
-        series,
-        metric,
-    }: AnalyticsQueryArgs): Promise<HistoricDataModel> {
-        const service = await this.getService();
-        return await service.getPDlatestValue({ series, metric });
-    }
-
     async getPDCloseValues({
         series,
         metric,
@@ -122,6 +114,11 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
             start,
             end,
         });
+    }
+
+    async getStartDate(series: string): Promise<string | undefined> {
+        const service = await this.getService();
+        return await service.getStartDate(series);
     }
 
     private async getService(): Promise<AnalyticsQueryInterface> {

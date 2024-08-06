@@ -49,15 +49,11 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     pairMetadata.secondTokenID,
                 ),
+                this.pairSetterService.setLpTokenID(
+                    pairMetadata.address,
+                    lpTokenID,
+                ),
             ]);
-            if (lpTokenID !== undefined) {
-                cachedKeys.push(
-                    await this.pairSetterService.setLpTokenID(
-                        pairMetadata.address,
-                        lpTokenID,
-                    ),
-                );
-            }
 
             await this.deleteCacheKeys(cachedKeys);
         }
@@ -148,6 +144,10 @@ export class PairCacheWarmerService {
                 hasDualFarms,
                 tradesCount,
                 deployedAt,
+                whitelistedAddresses,
+                feeDestinations,
+                initialLiquidityAdder,
+                trustedSwapPairs,
             ] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.pairAbi.getStateRaw(pairAddress),
@@ -161,6 +161,10 @@ export class PairCacheWarmerService {
                 this.pairComputeService.computeHasDualFarms(pairAddress),
                 this.pairComputeService.computeTradesCount(pairAddress),
                 this.pairComputeService.computeDeployedAt(pairAddress),
+                this.pairAbi.getWhitelistedAddressesRaw(pairAddress),
+                this.pairAbi.getFeeDestinationsRaw(pairAddress),
+                this.pairAbi.getInitialLiquidityAdderRaw(pairAddress),
+                this.pairAbi.getTrustedSwapPairsRaw(pairAddress),
             ]);
 
             const cachedKeys = await Promise.all([
@@ -195,12 +199,29 @@ export class PairCacheWarmerService {
                 ),
                 this.pairSetterService.setTradesCount(pairAddress, tradesCount),
                 this.pairSetterService.setDeployedAt(pairAddress, deployedAt),
+                this.pairSetterService.setWhitelistedAddresses(
+                    pairAddress,
+                    whitelistedAddresses,
+                ),
+                this.pairSetterService.setFeeDestinations(
+                    pairAddress,
+                    feeDestinations,
+                ),
+                this.pairSetterService.setInitialLiquidityAdder(
+                    pairAddress,
+                    initialLiquidityAdder,
+                ),
+                this.pairSetterService.setTrustedSwapPairs(
+                    pairAddress,
+                    trustedSwapPairs,
+                ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
     }
 
     @Cron('*/12 * * * * *') // Update prices and reserves every 12 seconds
+    @Lock({ name: 'cachePairTokenPrices', verbose: true })
     async cacheTokenPrices(): Promise<void> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         const invalidatedKeys = [];

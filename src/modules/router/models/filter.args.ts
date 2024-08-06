@@ -7,6 +7,7 @@ export enum PairSortableFields {
     VOLUME_24 = 'volume_24h',
     FEES_24 = 'fees_24h',
     DEPLOYED_AT = 'deployed_at',
+    APR = 'apr',
 }
 
 registerEnumType(PairSortableFields, { name: 'PairSortableFields' });
@@ -41,8 +42,8 @@ export class PairsFilter {
     secondTokenID: string;
     @Field(() => Boolean)
     issuedLpToken = true;
-    @Field({ nullable: true })
-    state: string;
+    @Field(() => [String], { nullable: true })
+    state: string[];
     @Field({ nullable: true })
     minVolume: number;
     @Field({ nullable: true })
@@ -59,6 +60,10 @@ export class PairsFilter {
     minDeployedAt: number;
     @Field({ nullable: true })
     searchToken: string;
+    @Field(() => [String], { nullable: true })
+    lpTokenIds: string[];
+    @Field(() => [String], { nullable: true })
+    farmTokens: string[];
 }
 
 @InputType()

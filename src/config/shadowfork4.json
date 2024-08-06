@@ -32,8 +32,11 @@
         "feesCollector": "erd1qqqqqqqqqqqqqpgqjsnxqprks7qxfwkcg2m2v9hxkrchgm9akp2segrswt",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqg48z8qfm028ze6y3d6tamdfaw6vn774tkp2shg5dt5",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqxv0y4p6vvszrknaztatycac77yvsxqrrkp2sghd86c",
-        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqu64gygjs5ted4rupaewaszyhaxl9lv7m2jpsw47nzr",
-        "escrow": "erd1qqqqqqqqqqqqqpgqeh4yv09rmyg4xgn5ma03mvm4v5gndu8w2jpsglz3cn"
+        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq97fctvqlskzu0str05muew2qyjttp8kfkp2sl9k0gx",
+        "escrow": "erd1qqqqqqqqqqqqqpgqeh4yv09rmyg4xgn5ma03mvm4v5gndu8w2jpsglz3cn",
+        "positionCreator": "erd1qqqqqqqqqqqqqpgqp6s52q4m6nkf5usqacjuuqymnayv6puc2jpsp35nhg",
+        "lockedTokenPositionCreator": "erd1qqqqqqqqqqqqqpgqucxekem48mrlzcenugl7z6k38l2ead702jpsrlfg4r",
+        "composableTasks": "erd1qqqqqqqqqqqqqpgqa6a50v9m5nc50cxaz9qxrd8mz9lxnfjt2jpsjj0cky"
     },
     "governance": {
         "oldEnergy": {

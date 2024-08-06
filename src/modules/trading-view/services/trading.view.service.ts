@@ -175,10 +175,24 @@ export class TradingViewService {
         });
 
         if (priceCandles.length === 0) {
-            return new BarsResponse({
+            const seriesStartDate =
+                await this.analyticsQueryService.getStartDate(series);
+
+            const noDataResponse = new BarsResponse({
                 s: 'no_data',
-                nextTime: start - 1,
             });
+
+            if (!seriesStartDate) {
+                return noDataResponse;
+            }
+
+            const seriesStartUnix = moment(seriesStartDate).unix();
+
+            if (start > seriesStartUnix) {
+                noDataResponse.nextTime = start - 1;
+            }
+
+            return noDataResponse;
         }
 
         return this.formatCandlesResponse(metric, priceCandles, tokenDecimals);

@@ -62,6 +62,11 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
+    async boostedApr(@Parent() parent: FarmModelV2): Promise<string> {
+        return this.farmCompute.maxBoostedApr(parent.address);
+    }
+
+    @ResolveField()
     async boosterRewards(
         @Parent() parent: FarmModelV2,
     ): Promise<GlobalInfoByWeekModel[]> {
@@ -152,6 +157,14 @@ export class FarmResolverV2 extends FarmResolver {
     @ResolveField()
     async energyFactoryAddress(@Parent() parent: FarmModelV2): Promise<string> {
         return this.farmAbi.energyFactoryAddress(parent.address);
+    }
+
+    @ResolveField()
+    async farmTokenSupplyCurrentWeek(
+        @Parent() parent: FarmModelV2,
+    ): Promise<string> {
+        const week = await this.weekTimekeepingAbi.currentWeek(parent.address);
+        return this.farmAbi.farmSupplyForWeek(parent.address, week);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

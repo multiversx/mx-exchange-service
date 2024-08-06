@@ -287,6 +287,10 @@ export class RouterService {
     ): Promise<PairMetadata[]> {
         let sortFieldData = [];
 
+        if (!sortField) {
+            return pairsMetadata;
+        }
+
         switch (sortField) {
             case PairSortableFields.DEPLOYED_AT:
                 sortFieldData = await Promise.all(
@@ -320,6 +324,13 @@ export class RouterService {
                 sortFieldData = await Promise.all(
                     pairsMetadata.map((pair) =>
                         this.pairCompute.volumeUSD(pair.address, '24h'),
+                    ),
+                );
+                break;
+            case PairSortableFields.APR:
+                sortFieldData = await Promise.all(
+                    pairsMetadata.map((pair) =>
+                        this.pairCompute.computeCompoundedApr(pair.address),
                     ),
                 );
                 break;
