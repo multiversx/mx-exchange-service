@@ -454,20 +454,23 @@ export class UserEnergyComputeService {
             const userMetabondingEntry = await this.metabondingAbi.userEntry(
                 userAddress,
             );
-            const metabondingTokensAttributes =
-                await this.mxApi.getNftAttributesByTokenIdentifier(
-                    scAddress.metabondingStakingAddress,
-                    tokenIdentifier(
-                        lkmexTokenID,
-                        userMetabondingEntry.tokenNonce,
+
+            if (userMetabondingEntry.tokenNonce > 0) {
+                const metabondingTokensAttributes =
+                    await this.mxApi.getNftAttributesByTokenIdentifier(
+                        scAddress.metabondingStakingAddress,
+                        tokenIdentifier(
+                            lkmexTokenID,
+                            userMetabondingEntry.tokenNonce,
+                        ),
+                    );
+                metabondingCheck = this.checkLKMEXNegativeEnergy(stats.epoch, [
+                    LockedAssetAttributes.fromAttributes(
+                        userMetabondingEntry.tokenNonce >= lkmexActivationNonce,
+                        metabondingTokensAttributes,
                     ),
-                );
-            metabondingCheck = this.checkLKMEXNegativeEnergy(stats.epoch, [
-                LockedAssetAttributes.fromAttributes(
-                    userMetabondingEntry.tokenNonce >= lkmexActivationNonce,
-                    metabondingTokensAttributes,
-                ),
-            ]);
+                ]);
+            }
         }
 
         return new UserNegativeEnergyCheck({
