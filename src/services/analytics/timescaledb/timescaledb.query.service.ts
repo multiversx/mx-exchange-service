@@ -156,16 +156,12 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .groupBy('day')
                 .getRawMany();
 
-            return (
-                query?.map(
-                    (row) =>
-                        new HistoricDataModel({
-                            timestamp: moment
-                                .utc(row.day)
-                                .format('yyyy-MM-DD HH:mm:ss'),
-                            value: row.last ?? '0',
-                        }),
-                ) ?? []
+            return await this.gapfillCloseData(
+                query,
+                series,
+                metric,
+                startDate,
+                this.closeDaily,
             );
         } catch (error) {
             this.logger.error('getLatestCompleteValues', {
@@ -249,11 +245,12 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .groupBy('hour')
                 .getRawMany();
 
-            return await this.gapfillHourlyData(
+            return await this.gapfillCloseData(
                 query,
                 series,
                 metric,
                 startDate,
+                this.closeHourly,
             );
         } catch (error) {
             this.logger.error(
@@ -261,77 +258,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             );
             return [];
         }
-    }
-
-    private async gapfillHourlyData(
-        data: any[],
-        series: string,
-        metric: string,
-        previousStartDate: Date,
-    ): Promise<HistoricDataModel[]> {
-        if (!data || data.length === 0) {
-            return [];
-        }
-
-        if (data[0].last) {
-            return this.formatHourlyData(data);
-        }
-
-        const startDate = await this.getStartDate(series);
-        const endDate = previousStartDate;
-
-        if (!startDate) {
-            return this.formatHourlyData(data, true);
-        }
-
-        const previousValue = await this.closeHourly
-            .createQueryBuilder()
-            .select('last, time')
-            .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
-            .andWhere('time between :start and :end', {
-                start: moment(startDate).utc().toDate(),
-                end: endDate,
-            })
-            .orderBy('time', 'DESC')
-            .limit(1)
-            .getRawOne();
-
-        if (!previousValue) {
-            return this.formatHourlyData(data, true);
-        }
-
-        return this.formatHourlyData(data, false, previousValue.last);
-    }
-
-    private formatHourlyData(
-        data: any[],
-        removeGaps = false,
-        gapfillValue = '0',
-    ): HistoricDataModel[] {
-        if (!removeGaps) {
-            return data.map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row.hour)
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.last ?? gapfillValue,
-                    }),
-            );
-        }
-
-        return data
-            .filter((row) => row.last)
-            .map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row.hour)
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.last,
-                    }),
-            );
     }
 
     @TimescaleDBQuery()
@@ -702,5 +628,89 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             default:
                 return undefined;
         }
+    }
+
+    private async gapfillCloseData(
+        data: any[],
+        series: string,
+        metric: string,
+        previousStartDate: Date,
+        repository: Repository<CloseHourly | CloseDaily>,
+    ): Promise<HistoricDataModel[]> {
+        if (!data || data.length === 0) {
+            return [];
+        }
+
+        const timeColumn =
+            repository instanceof Repository &&
+            repository.target === CloseHourly
+                ? 'hour'
+                : 'day';
+
+        if (data[0].last) {
+            return this.formatCloseData(data, timeColumn);
+        }
+
+        const startDate = await this.getStartDate(series);
+        const endDate = previousStartDate;
+
+        if (!startDate) {
+            return this.formatCloseData(data, timeColumn, true);
+        }
+
+        const previousValue = await repository
+            .createQueryBuilder()
+            .select('last, time')
+            .where('series = :series', { series })
+            .andWhere('key = :metric', { metric })
+            .andWhere('time between :start and :end', {
+                start: moment(startDate).utc().toDate(),
+                end: endDate,
+            })
+            .orderBy('time', 'DESC')
+            .limit(1)
+            .getRawOne();
+
+        if (!previousValue) {
+            return this.formatCloseData(data, timeColumn, true);
+        }
+
+        return this.formatCloseData(
+            data,
+            timeColumn,
+            false,
+            previousValue.last,
+        );
+    }
+
+    private formatCloseData(
+        data: any[],
+        timeColumn: 'hour' | 'day',
+        removeGaps = false,
+        gapfillValue = '0',
+    ): HistoricDataModel[] {
+        if (!removeGaps) {
+            return data.map(
+                (row) =>
+                    new HistoricDataModel({
+                        timestamp: moment
+                            .utc(row[timeColumn])
+                            .format('yyyy-MM-DD HH:mm:ss'),
+                        value: row.last ?? gapfillValue,
+                    }),
+            );
+        }
+
+        return data
+            .filter((row) => row.last)
+            .map(
+                (row) =>
+                    new HistoricDataModel({
+                        timestamp: moment
+                            .utc(row[timeColumn])
+                            .format('yyyy-MM-DD HH:mm:ss'),
+                        value: row.last,
+                    }),
+            );
     }
 }
