@@ -166,14 +166,10 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             this.mxApi.getNftsCountForUser(userAddress),
         ]);
 
-        if (userNftsCount === 0) {
-            return [];
-        }
-
         const userNfts = await this.contextGetter.getNftsForUser(
             userAddress,
             0,
-            userNftsCount,
+            userNftsCount > 0 ? userNftsCount : 100,
             'MetaESDT',
             [farmTokenID],
         );

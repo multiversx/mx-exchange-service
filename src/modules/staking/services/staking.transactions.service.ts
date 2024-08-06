@@ -215,7 +215,7 @@ export class StakingTransactionService {
         const userNfts = await this.contextGetter.getNftsForUser(
             userAddress,
             0,
-            userNftsCount,
+            userNftsCount > 0 ? userNftsCount : 100,
             'MetaESDT',
             [stakeTokenID],
         );

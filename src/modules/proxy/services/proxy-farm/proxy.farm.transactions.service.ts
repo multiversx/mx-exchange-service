@@ -277,7 +277,7 @@ export class ProxyFarmTransactionsService {
         const userNfts = await this.contextGetter.getNftsForUser(
             sender,
             0,
-            userNftsCount,
+            userNftsCount > 0 ? userNftsCount : 100,
             'MetaESDT',
             [wrappedFarmTokenID],
         );
