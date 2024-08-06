@@ -51,7 +51,7 @@ export class TokensCacheWarmerService {
         );
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     @Lock({ name: 'cacheTokens', verbose: true })
     async cacheTokens(): Promise<void> {
         this.logger.info('Start refresh cached tokens data', {
@@ -64,19 +64,22 @@ export class TokensCacheWarmerService {
         await this.cacheTokensSwapsCount();
 
         for (const tokenID of tokens) {
-            const [
-                volumeLast2D,
-                pricePrevious24h,
-                pricePrevious7D,
-                liquidityUSD,
-            ] = await Promise.all([
-                this.tokenComputeService.computeTokenLast2DaysVolumeUSD(
+            const volumeLast2D =
+                await this.tokenComputeService.computeTokenLast2DaysVolumeUSD(
                     tokenID,
-                ),
-                this.tokenComputeService.computeTokenPrevious24hPrice(tokenID),
-                this.tokenComputeService.computeTokenPrevious7dPrice(tokenID),
-                this.tokenComputeService.computeTokenLiquidityUSD(tokenID),
-            ]);
+                );
+            const pricePrevious24h =
+                await this.tokenComputeService.computeTokenPrevious24hPrice(
+                    tokenID,
+                );
+            const pricePrevious7D =
+                await this.tokenComputeService.computeTokenPrevious7dPrice(
+                    tokenID,
+                );
+            const liquidityUSD =
+                await this.tokenComputeService.computeTokenLiquidityUSD(
+                    tokenID,
+                );
 
             const cachedKeys = await Promise.all([
                 this.tokenSetterService.setVolumeLast2Days(

@@ -74,8 +74,8 @@ export class TokenSetterService extends GenericSetterService {
         return await this.setData(
             `token.tokenLast2DaysVolumeUSD.${tokenID}`,
             value,
-            CacheTtlInfo.Token.remoteTtl,
-            CacheTtlInfo.Token.localTtl,
+            CacheTtlInfo.TokenAnalytics.remoteTtl,
+            CacheTtlInfo.TokenAnalytics.localTtl,
         );
     }
 
@@ -83,8 +83,8 @@ export class TokenSetterService extends GenericSetterService {
         return await this.setData(
             `token.tokenPrevious24hPrice.${tokenID}`,
             value,
-            CacheTtlInfo.Price.remoteTtl,
-            CacheTtlInfo.Price.localTtl,
+            CacheTtlInfo.TokenAnalytics.remoteTtl,
+            CacheTtlInfo.TokenAnalytics.localTtl,
         );
     }
 
@@ -92,8 +92,8 @@ export class TokenSetterService extends GenericSetterService {
         return await this.setData(
             `token.tokenPrevious7dPrice.${tokenID}`,
             value,
-            CacheTtlInfo.Price.remoteTtl,
-            CacheTtlInfo.Price.localTtl,
+            CacheTtlInfo.TokenAnalytics.remoteTtl,
+            CacheTtlInfo.TokenAnalytics.localTtl,
         );
     }
 
@@ -101,8 +101,8 @@ export class TokenSetterService extends GenericSetterService {
         return await this.setData(
             `token.tokenLiquidityUSD.${tokenID}`,
             value,
-            CacheTtlInfo.Price.remoteTtl,
-            CacheTtlInfo.Price.localTtl,
+            CacheTtlInfo.TokenAnalytics.remoteTtl,
+            CacheTtlInfo.TokenAnalytics.localTtl,
         );
     }
 
