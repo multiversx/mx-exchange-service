@@ -14,6 +14,11 @@ export class CacheTtlInfo {
         Constants.oneMinute() * 5,
     );
 
+    static TokenAnalytics: CacheTtlInfo = new CacheTtlInfo(
+        Constants.oneMinute() * 30,
+        Constants.oneMinute() * 10,
+    );
+
     static ContractState: CacheTtlInfo = new CacheTtlInfo(
         Constants.oneMinute() * 10,
         Constants.oneMinute() * 3,
