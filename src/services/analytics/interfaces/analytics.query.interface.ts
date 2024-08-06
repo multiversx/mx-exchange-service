@@ -45,4 +45,6 @@ export interface AnalyticsQueryInterface {
         start,
         end,
     }): Promise<OhlcvDataModel[]>;
+
+    getStartDate(series: string): Promise<string>;
 }

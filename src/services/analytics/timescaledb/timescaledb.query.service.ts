@@ -421,7 +421,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    private async getStartDate(series: string): Promise<string | undefined> {
+    async getStartDate(series: string): Promise<string | undefined> {
         const cacheKey = `startDate.${series}`;
         const cachedValue = await this.cacheService.get<string>(cacheKey);
         if (cachedValue !== undefined) {
