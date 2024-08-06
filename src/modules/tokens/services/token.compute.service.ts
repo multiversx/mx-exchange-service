@@ -215,8 +215,8 @@ export class TokenComputeService implements ITokenComputeService {
     })
     @GetOrSetCache({
         baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Price.remoteTtl,
-        localTtl: CacheTtlInfo.Price.localTtl,
+        remoteTtl: CacheTtlInfo.TokenAnalytics.remoteTtl,
+        localTtl: CacheTtlInfo.TokenAnalytics.localTtl,
     })
     async tokenPrevious24hPrice(tokenID: string): Promise<string> {
         return await this.computeTokenPrevious24hPrice(tokenID);
@@ -236,8 +236,8 @@ export class TokenComputeService implements ITokenComputeService {
     })
     @GetOrSetCache({
         baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenAnalytics.remoteTtl,
+        localTtl: CacheTtlInfo.TokenAnalytics.localTtl,
     })
     async tokenPrevious7dPrice(tokenID: string): Promise<string> {
         return await this.computeTokenPrevious7dPrice(tokenID);
@@ -402,8 +402,8 @@ export class TokenComputeService implements ITokenComputeService {
     })
     @GetOrSetCache({
         baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenAnalytics.remoteTtl,
+        localTtl: CacheTtlInfo.TokenAnalytics.localTtl,
     })
     async tokenLast2DaysVolumeUSD(
         tokenID: string,
@@ -458,8 +458,8 @@ export class TokenComputeService implements ITokenComputeService {
     })
     @GetOrSetCache({
         baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenAnalytics.remoteTtl,
+        localTtl: CacheTtlInfo.TokenAnalytics.localTtl,
     })
     async tokenLiquidityUSD(tokenID: string): Promise<string> {
         return await this.computeTokenLiquidityUSD(tokenID);
