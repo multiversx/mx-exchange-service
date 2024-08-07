@@ -780,15 +780,16 @@ export class PairComputeService implements IPairComputeService {
 
         const stakingProxyAddresses =
             await this.remoteConfigGetterService.getStakingProxyAddresses();
+        const farmAddress = await this.getPairFarmAddress(pairAddress);
 
-        const pairAddresses = await Promise.all(
+        const farmsAddresses = await Promise.all(
             stakingProxyAddresses.map((address) =>
-                this.stakingProxyAbiService.pairAddress(address),
+                this.stakingProxyAbiService.lpFarmAddress(address),
             ),
         );
 
-        const stakingProxyIndex = pairAddresses.findIndex(
-            (address) => address === pairAddress,
+        const stakingProxyIndex = farmsAddresses.findIndex(
+            (address) => address === farmAddress,
         );
 
         return stakingProxyIndex === -1
