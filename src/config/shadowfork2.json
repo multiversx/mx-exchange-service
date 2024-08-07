@@ -34,9 +34,9 @@
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqxv0y4p6vvszrknaztatycac77yvsxqrrkp2sghd86c",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq97fctvqlskzu0str05muew2qyjttp8kfkp2sl9k0gx",
         "escrow": "erd1qqqqqqqqqqqqqpgqeh4yv09rmyg4xgn5ma03mvm4v5gndu8w2jpsglz3cn",
-        "positionCreator": "erd1qqqqqqqqqqqqqpgqp6s52q4m6nkf5usqacjuuqymnayv6puc2jpsp35nhg",
-        "lockedTokenPositionCreator": "erd1qqqqqqqqqqqqqpgqucxekem48mrlzcenugl7z6k38l2ead702jpsrlfg4r",
-        "composableTasks": "erd1qqqqqqqqqqqqqpgqa6a50v9m5nc50cxaz9qxrd8mz9lxnfjt2jpsjj0cky"
+        "positionCreator": "erd1qqqqqqqqqqqqqpgqucxekem48mrlzcenugl7z6k38l2ead702jpsrlfg4r",
+        "lockedTokenPositionCreator": "erd1qqqqqqqqqqqqqpgq43cyf9yjfy79ey0cax55kenxgpefhayk2jps6zt793",
+        "composableTasks": "erd1qqqqqqqqqqqqqpgqte9qae42w7x4karshkmfdrmnv56ka2zc2jpsqg0ner"
     },
     "governance": {
         "oldEnergy": {
