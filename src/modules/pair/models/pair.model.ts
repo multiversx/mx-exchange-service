@@ -214,9 +214,6 @@ export class PairModel {
     farmAddress: string;
 
     @Field({ nullable: true })
-    stakingFarmAddress: string;
-
-    @Field({ nullable: true })
     stakingProxyAddress: string;
 
     constructor(init?: Partial<PairModel>) {

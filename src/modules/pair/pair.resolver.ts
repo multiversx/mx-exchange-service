@@ -403,11 +403,6 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async stakingFarmAddress(@Parent() parent: PairModel): Promise<string> {
-        return await this.pairCompute.getPairStakingFarmAddress(parent.address);
-    }
-
-    @ResolveField()
     async stakingProxyAddress(@Parent() parent: PairModel): Promise<string> {
         return await this.pairCompute.getPairStakingProxyAddress(
             parent.address,
