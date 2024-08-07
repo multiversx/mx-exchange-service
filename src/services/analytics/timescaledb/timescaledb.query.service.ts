@@ -655,7 +655,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         const endDate = previousStartDate;
 
         if (!startDate) {
-            return this.formatCloseData(data, timeColumn, true);
+            return this.formatCloseData(data, timeColumn);
         }
 
         const previousValue = await repository
@@ -672,45 +672,25 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             .getRawOne();
 
         if (!previousValue) {
-            return this.formatCloseData(data, timeColumn, true);
+            return this.formatCloseData(data, timeColumn);
         }
 
-        return this.formatCloseData(
-            data,
-            timeColumn,
-            false,
-            previousValue.last,
-        );
+        return this.formatCloseData(data, timeColumn, previousValue.last);
     }
 
     private formatCloseData(
         data: any[],
         timeColumn: 'hour' | 'day',
-        removeGaps = false,
         gapfillValue = '0',
     ): HistoricDataModel[] {
-        if (!removeGaps) {
-            return data.map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row[timeColumn])
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.last ?? gapfillValue,
-                    }),
-            );
-        }
-
-        return data
-            .filter((row) => row.last)
-            .map(
-                (row) =>
-                    new HistoricDataModel({
-                        timestamp: moment
-                            .utc(row[timeColumn])
-                            .format('yyyy-MM-DD HH:mm:ss'),
-                        value: row.last,
-                    }),
-            );
+        return data.map(
+            (row) =>
+                new HistoricDataModel({
+                    timestamp: moment
+                        .utc(row[timeColumn])
+                        .format('yyyy-MM-DD HH:mm:ss'),
+                    value: row.last ?? gapfillValue,
+                }),
+        );
     }
 }
