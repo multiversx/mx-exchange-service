@@ -397,6 +397,23 @@ export class PairResolver {
         return new PairRewardTokensModel({ address: parent.address });
     }
 
+    @ResolveField()
+    async farmAddress(@Parent() parent: PairModel): Promise<string> {
+        return await this.pairCompute.getPairFarmAddress(parent.address);
+    }
+
+    @ResolveField()
+    async stakingFarmAddress(@Parent() parent: PairModel): Promise<string> {
+        return await this.pairCompute.getPairStakingFarmAddress(parent.address);
+    }
+
+    @ResolveField()
+    async stakingProxyAddress(@Parent() parent: PairModel): Promise<string> {
+        return await this.pairCompute.getPairStakingProxyAddress(
+            parent.address,
+        );
+    }
+
     @Query(() => String)
     async getAmountOut(
         @Args('pairAddress') pairAddress: string,

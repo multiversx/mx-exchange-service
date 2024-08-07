@@ -210,6 +210,15 @@ export class PairModel {
     @Field(() => PairRewardTokensModel, { nullable: true })
     rewardTokens: PairRewardTokensModel;
 
+    @Field({ nullable: true })
+    farmAddress: string;
+
+    @Field({ nullable: true })
+    stakingFarmAddress: string;
+
+    @Field({ nullable: true })
+    stakingProxyAddress: string;
+
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);
     }
