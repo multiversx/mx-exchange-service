@@ -141,23 +141,10 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 return [];
             }
 
-            const previousValue = this.closeDaily
-                .createQueryBuilder()
-                .select('last')
-                .where('series = :series', { series })
-                .andWhere('key = :metric', { metric })
-                .andWhere('time < :startDate', { startDate })
-                .orderBy('time', 'DESC')
-                .limit(1);
-
             const query = await this.closeDaily
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 day', time) as day")
-                .addSelect(
-                    `locf(last(last, time) ${
-                        start || time ? `, (${previousValue.getQuery()})` : ''
-                    }) as last`,
-                )
+                .addSelect(`locf(last(last, time)) as last`)
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :startDate and :endDate', {
@@ -254,21 +241,10 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         metric,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            const previousValue = this.closeHourly
-                .createQueryBuilder()
-                .select('last')
-                .where('series = :series', { series })
-                .andWhere('key = :metric', { metric })
-                .andWhere("time < now() - INTERVAL '1 day'")
-                .orderBy('time', 'DESC')
-                .limit(1);
-
             const query = await this.closeHourly
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 hour', time) as hour")
-                .addSelect(
-                    `locf(last(last, time), (${previousValue.getQuery()})) as last`,
-                )
+                .addSelect(`locf(last(last, time)) as last`)
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere("time between now() - INTERVAL '1 day' and now()")
