@@ -5,6 +5,7 @@ import { FarmFactoryService } from './farm.factory';
 import {
     BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,
+    FarmsFilter,
 } from './models/farm.args';
 import { ExitFarmTokensModel, RewardsModel } from './models/farm.model';
 import { FarmsUnion } from './models/farm.union';
@@ -15,8 +16,15 @@ export class FarmQueryResolver {
     constructor(private readonly farmFactory: FarmFactoryService) {}
 
     @Query(() => [FarmsUnion])
-    async farms(): Promise<Array<typeof FarmsUnion>> {
-        return this.farmFactory.getFarms();
+    async farms(
+        @Args({
+            name: 'filters',
+            type: () => FarmsFilter,
+            nullable: true,
+        })
+        filters: FarmsFilter,
+    ): Promise<Array<typeof FarmsUnion>> {
+        return this.farmFactory.getFarms(filters);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
