@@ -37,6 +37,8 @@ import { GovernanceCacheWarmerService } from './crons/governance.cache.warmer.se
 import { GovernanceModule } from '../modules/governance/governance.module';
 import { TokensCacheWarmerService } from './crons/tokens.cache.warmer.service';
 import { FarmModuleV2 } from 'src/modules/farm/v2/farm.v2.module';
+import { EscrowCacheWarmerService } from './crons/escrow.cache.warmer.service';
+import { EscrowModule } from 'src/modules/escrow/escrow.module';
 
 @Module({
     imports: [
@@ -63,6 +65,7 @@ import { FarmModuleV2 } from 'src/modules/farm/v2/farm.v2.module';
         RemoteConfigModule,
         GovernanceModule,
         DynamicModuleUtils.getCacheModule(),
+        EscrowModule,
     ],
     controllers: [],
     providers: [
@@ -81,6 +84,7 @@ import { FarmModuleV2 } from 'src/modules/farm/v2/farm.v2.module';
         LogsProcessorService,
         ElasticService,
         TokensCacheWarmerService,
+        EscrowCacheWarmerService,
     ],
 })
 export class CacheWarmerModule {}
