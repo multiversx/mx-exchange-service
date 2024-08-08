@@ -241,7 +241,7 @@
                     },
                     "claimRewards": 30000000
                 },
-                "claimBoostedRewards": 20000000
+                "claimBoostedRewards": 30000000
             },
             "admin": {
                 "end_produce_rewards": 200000000,
@@ -390,8 +390,8 @@
             },
             "unstakeFarm": 18500000,
             "unbondFarm": 8000000,
-            "claimRewards": 15000000,
-            "claimBoostedRewards": 20000000,
+            "claimRewards": 40000000,
+            "claimBoostedRewards": 30000000,
             "claimRewardsWithNewValue": 7500000,
             "compoundRewards": 10000000,
             "mergeTokens": 20000000,
@@ -504,7 +504,7 @@
                 "liquidityPosition": 57500000,
                 "farmPosition": 87000000,
                 "dualFarmPosition": 115000000,
-                "stakingPosition": 55000000
+                "stakingPosition": 65000000
             },
             "dualTokens": {
                 "farmPosition": 35000000,
