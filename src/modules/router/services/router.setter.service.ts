@@ -48,14 +48,6 @@ export class RouterSetterService extends GenericSetterService {
         );
     }
 
-    async setTotalVolumeUSD(time: string, value: string): Promise<string> {
-        return await this.setData(
-            this.getCacheKey('totalVolumeUSD', time),
-            value,
-            Constants.oneMinute(),
-        );
-    }
-
     async setTotalFeesUSD(time: string, value: string): Promise<string> {
         return await this.setData(
             this.getCacheKey('totalFeesUSD', time),

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
@@ -27,7 +27,7 @@ import { AnalyticsSetterService } from './services/analytics.setter.service';
         AnalyticsServicesModule,
         MXCommunicationModule,
         ContextModule,
-        RouterModule,
+        forwardRef(() => RouterModule),
         PairModule,
         FarmModule,
         ProxyModule,
