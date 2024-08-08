@@ -20,10 +20,10 @@ export class FarmFactoryService {
         private readonly farmServiceV2: FarmServiceV2,
     ) {}
 
-    getFarms(filters: FarmsFilter): Array<typeof FarmsUnion> {
+    getFarms(filters?: FarmsFilter): Array<typeof FarmsUnion> {
         const farms: Array<typeof FarmsUnion> = [];
-        let addresses = farmsAddresses(filters.versions);
-        if (filters.addresses) {
+        let addresses = farmsAddresses(filters?.versions);
+        if (filters?.addresses) {
             addresses = addresses.filter((address) =>
                 filters.addresses.includes(address),
             );
