@@ -2,6 +2,15 @@ import { ArgsType, Field, InputType, Int } from '@nestjs/graphql';
 import { InputTokenModel } from 'src/models/inputToken.model';
 
 @InputType()
+export class FarmsFilter {
+    @Field(() => [String], { nullable: true })
+    versions?: string[];
+
+    @Field(() => [String], { nullable: true })
+    addresses?: string[];
+}
+
+@InputType()
 export class CalculateRewardsArgs {
     @Field()
     farmAddress: string;
