@@ -32,6 +32,8 @@ import ConnectionArgs, {
     getPagingParameters,
 } from '../common/filters/connection.args';
 import PageResponse from '../common/page.response';
+import { AnalyticsAWSGetterService } from '../analytics/services/analytics.aws.getter.service';
+import BigNumber from 'bignumber.js';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -41,6 +43,7 @@ export class RouterResolver {
         private readonly routerCompute: RouterComputeService,
         private readonly routerTransaction: RouterTransactionService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
     ) {}
 
     @Query(() => FactoryModel)
@@ -82,7 +85,15 @@ export class RouterResolver {
 
     @ResolveField()
     async totalVolumeUSD24h() {
-        return this.routerCompute.totalVolumeUSD('24h');
+        const volumesUSD = await this.analyticsAWSGetter.getValues24hSum(
+            'factory',
+            'volumeUSD',
+        );
+        let totalVolumeUSD = new BigNumber(0);
+        volumesUSD.forEach((volumeUSD) => {
+            totalVolumeUSD = totalVolumeUSD.plus(volumeUSD.value);
+        });
+        return totalVolumeUSD.toFixed();
     }
 
     @ResolveField()

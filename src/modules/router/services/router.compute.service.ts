@@ -51,36 +51,6 @@ export class RouterComputeService {
         baseKey: 'router',
         remoteTtl: Constants.oneMinute() * 5,
     })
-    async totalVolumeUSD(time: string): Promise<BigNumber> {
-        return await this.computeTotalVolumeUSD(time);
-    }
-
-    async computeTotalVolumeUSD(time: string): Promise<BigNumber> {
-        const pairsAddress = await this.routerAbi.pairsAddress();
-        let totalVolumeUSD = new BigNumber(0);
-
-        const promises = pairsAddress.map((pairAddress) =>
-            this.pairCompute.volumeUSD(pairAddress, time),
-        );
-
-        const volumesUSD = await Promise.all(promises);
-        for (const volumeUSD of volumesUSD) {
-            totalVolumeUSD =
-                volumeUSD !== 'NaN'
-                    ? totalVolumeUSD.plus(volumeUSD)
-                    : totalVolumeUSD;
-        }
-
-        return totalVolumeUSD;
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'router',
-        remoteTtl: Constants.oneMinute() * 5,
-    })
     async totalFeesUSD(time: string): Promise<BigNumber> {
         return await this.computeTotalFeesUSD(time);
     }
