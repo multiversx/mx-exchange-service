@@ -26,6 +26,8 @@ import moment from 'moment';
 import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { TokenService } from './token.service';
+import { computeValueUSD } from 'src/utils/token.converters';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -39,6 +41,8 @@ export class TokenComputeService implements ITokenComputeService {
     >;
 
     constructor(
+        @Inject(forwardRef(() => TokenService))
+        private readonly tokenService: TokenService,
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
@@ -466,17 +470,33 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeTokenLiquidityUSD(tokenID: string): Promise<string> {
-        const values24h = await this.analyticsQuery.getLatestCompleteValues({
-            series: tokenID,
-            metric: 'lockedValueUSD',
-            time: '1 day',
+        const pairs = await this.routerAbi.pairsMetadata();
+        const priceUSD = await this.tokenPriceDerivedUSD(tokenID);
+        const tokenMetadata = await this.tokenService.tokenMetadata(tokenID);
+        const promises = [];
+        for (const pair of pairs) {
+            switch (tokenID) {
+                case pair.firstTokenID:
+                    promises.push(this.pairAbi.firstTokenReserve(pair.address));
+                    break;
+                case pair.secondTokenID:
+                    promises.push(
+                        this.pairAbi.secondTokenReserve(pair.address),
+                    );
+                    break;
+            }
+        }
+        const allLockedValues = await Promise.all(promises);
+        let newLockedValue = new BigNumber(0);
+        allLockedValues.forEach((value) => {
+            newLockedValue = newLockedValue.plus(value);
         });
 
-        if (!values24h || values24h.length === 0) {
-            return undefined;
-        }
-
-        return values24h[values24h.length - 1]?.value ?? undefined;
+        return computeValueUSD(
+            newLockedValue.toFixed(),
+            tokenMetadata.decimals,
+            priceUSD,
+        ).toFixed();
     }
 
     @ErrorLoggerAsync({
