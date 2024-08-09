@@ -21,6 +21,7 @@ import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { constantsConfig } from 'src/config';
 import { StakingAbiService } from '../staking/services/staking.abi.service';
+import { PairAbiService } from '../pair/services/pair.abi.service';
 
 @Resolver(() => LiquidityPositionSingleTokenModel)
 export class LiquidityPositionSingleTokenResolver {
@@ -57,6 +58,7 @@ export class FarmPositionSingleTokenResolver {
     constructor(
         private readonly posCreatorTransaction: PositionCreatorTransactionService,
         private readonly farmAbi: FarmAbiServiceV2,
+        private readonly pairAbi: PairAbiService,
     ) {}
 
     @ResolveField(() => [TransactionModel])
@@ -73,10 +75,12 @@ export class FarmPositionSingleTokenResolver {
         @Args('lockEpochs', { nullable: true }) lockEpochs: number,
     ): Promise<TransactionModel[]> {
         const pairAddress = await this.farmAbi.pairContractAddress(farmAddress);
+        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
 
         if (
+            parent.payment.tokenIdentifier !== lpTokenID &&
             pairAddress !==
-            parent.swaps[parent.swaps.length - 1].pairs[0].address
+                parent.swaps[parent.swaps.length - 1].pairs[0].address
         ) {
             throw new GraphQLError('Invalid farm address', {
                 extensions: {
@@ -110,6 +114,7 @@ export class DualFarmPositionSingleTokenResolver {
     constructor(
         private readonly posCreatorTransaction: PositionCreatorTransactionService,
         private readonly stakingProxyAbi: StakingProxyAbiService,
+        private readonly pairAbi: PairAbiService,
     ) {}
 
     @ResolveField(() => [TransactionModel])
@@ -127,9 +132,12 @@ export class DualFarmPositionSingleTokenResolver {
         const pairAddress = await this.stakingProxyAbi.pairAddress(
             dualFarmAddress,
         );
+        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
+
         if (
+            parent.payment.tokenIdentifier !== lpTokenID &&
             pairAddress !==
-            parent.swaps[parent.swaps.length - 1].pairs[0].address
+                parent.swaps[parent.swaps.length - 1].pairs[0].address
         ) {
             throw new GraphQLError('Invalid farm address', {
                 extensions: {
