@@ -87,7 +87,8 @@ export class MXApiService {
             if (
                 this.apiConfigService.isDeephistoryActive() &&
                 context &&
-                context.deepHistoryTimestamp
+                context.deepHistoryTimestamp &&
+                !resourceUrl.includes('timestamp=')
             ) {
                 resourceUrl = resourceUrl.includes('?')
                     ? `${resourceUrl}&timestamp=${context.deepHistoryTimestamp}`

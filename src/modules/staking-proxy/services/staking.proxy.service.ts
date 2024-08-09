@@ -3,7 +3,7 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ruleOfThree } from 'src/helpers/helpers';
-import { Constants } from '@multiversx/sdk-nestjs-common';
+import { Constants, ContextTracker } from '@multiversx/sdk-nestjs-common';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
@@ -45,9 +45,30 @@ export class StakingProxyService {
         private readonly stakingProxyFilteringService: StakingProxyFilteringService,
     ) {}
 
-    async getStakingProxies(): Promise<StakingProxyModel[]> {
-        const stakingProxiesAddress: string[] =
+    async getStakingProxyAddresses(): Promise<string[]> {
+        let stakingProxiesAddress: string[] =
             await this.remoteConfigGetterService.getStakingProxyAddresses();
+
+        const context = ContextTracker.get();
+        if (context && context.deepHistoryTimestamp) {
+            const timestamps = await Promise.all(
+                stakingProxiesAddress.map((address) =>
+                    this.stakingProxyAbi.stakingProxyDeployedTimestamp(address),
+                ),
+            );
+            stakingProxiesAddress = stakingProxiesAddress.filter((_, index) => {
+                return (
+                    timestamps[index] !== undefined &&
+                    timestamps[index] <= context.deepHistoryTimestamp
+                );
+            });
+        }
+
+        return stakingProxiesAddress;
+    }
+
+    async getStakingProxies(): Promise<StakingProxyModel[]> {
+        const stakingProxiesAddress = await this.getStakingProxyAddresses();
 
         const stakingProxies: StakingProxyModel[] = [];
         for (const address of stakingProxiesAddress) {
@@ -288,7 +309,7 @@ export class StakingProxyService {
             return cachedValue;
         }
         const stakingProxiesAddress: string[] =
-            await this.remoteConfigGetterService.getStakingProxyAddresses();
+            await this.getStakingProxyAddresses();
 
         for (const address of stakingProxiesAddress) {
             const dualYieldTokenID =

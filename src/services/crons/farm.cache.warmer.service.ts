@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
-import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
+import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
@@ -10,6 +10,7 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmSetterFactory } from 'src/modules/farm/farm.setter.factory';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -18,6 +19,7 @@ export class FarmCacheWarmerService {
     constructor(
         private readonly farmAbiFactory: FarmAbiFactory,
         private readonly farmAbiV1_2: FarmAbiServiceV1_2,
+        private readonly farmFactory: FarmFactoryService,
         private readonly farmComputeFactory: FarmComputeFactory,
         private readonly farmComputeV1_2: FarmComputeServiceV1_2,
         private readonly farmComputeV1_3: FarmComputeServiceV1_3,
@@ -27,7 +29,7 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_HOUR)
     async cacheFarmsTokens(): Promise<void> {
-        const farmsAddress: string[] = farmsAddresses();
+        const farmsAddress = await this.farmFactory.getFarmsAddresses();
         const promises = farmsAddress.map(async (farmAddress) => {
             const [farmTokenID, farmingTokenID, farmedTokenID] =
                 await Promise.all([
@@ -62,7 +64,8 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmsV1_2(): Promise<void> {
-        for (const address of farmsAddresses()) {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+        for (const address of farmsAddresses) {
             if (farmVersion(address) !== FarmVersion.V1_2) {
                 continue;
             }
@@ -99,7 +102,8 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmsV1_3(): Promise<void> {
-        for (const address of farmsAddresses()) {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+        for (const address of farmsAddresses) {
             if (farmVersion(address) !== FarmVersion.V1_3) {
                 continue;
             }
@@ -119,7 +123,8 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheFarmInfo(): Promise<void> {
-        for (const farmAddress of farmsAddresses()) {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+        for (const farmAddress of farmsAddresses) {
             const [
                 minimumFarmingEpochs,
                 penaltyPercent,
@@ -171,7 +176,8 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmReserves(): Promise<void> {
-        for (const farmAddress of farmsAddresses()) {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+        for (const farmAddress of farmsAddresses) {
             const [
                 farmTokenSupply,
                 lastRewardBlockNonce,
@@ -212,7 +218,8 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmTokensPrices(): Promise<void> {
-        for (const farmAddress of farmsAddresses()) {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+        for (const farmAddress of farmsAddresses) {
             const [
                 farmedTokenPriceUSD,
                 farmingTokenPriceUSD,

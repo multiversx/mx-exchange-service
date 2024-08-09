@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { farmVersion, farmsAddresses } from 'src/utils/farm.utils';
+import { farmVersion } from 'src/utils/farm.utils';
 import { FarmAbiService } from './base-module/services/farm.abi.service';
 import { FarmVersion } from './models/farm.model';
 import { FarmAbiServiceV1_2 } from './v1.2/services/farm.v1.2.abi.service';
@@ -7,6 +7,7 @@ import { FarmAbiServiceV1_3 } from './v1.3/services/farm.v1.3.abi.service';
 import { FarmAbiServiceV2 } from './v2/services/farm.v2.abi.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Constants } from '@multiversx/sdk-nestjs-common';
+import { FarmFactoryService } from './farm.factory';
 
 @Injectable()
 export class FarmAbiFactory {
@@ -14,6 +15,7 @@ export class FarmAbiFactory {
         private readonly abiServiceV1_2: FarmAbiServiceV1_2,
         private readonly abiServiceV1_3: FarmAbiServiceV1_3,
         private readonly abiServiceV2: FarmAbiServiceV2,
+        private readonly farmFactory: FarmFactoryService,
         private readonly cachingService: CacheService,
     ) {}
 
@@ -29,7 +31,8 @@ export class FarmAbiFactory {
     }
 
     async isFarmToken(tokenID: string): Promise<boolean> {
-        for (const farmAddress of farmsAddresses()) {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+        for (const farmAddress of farmsAddresses) {
             const farmTokenID = await this.useAbi(farmAddress).farmTokenID(
                 farmAddress,
             );
@@ -49,7 +52,10 @@ export class FarmAbiFactory {
         if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
-        for (const farmAddress of farmsAddresses()) {
+
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+
+        for (const farmAddress of farmsAddresses) {
             const farmTokenID = await this.useAbi(farmAddress).farmTokenID(
                 farmAddress,
             );

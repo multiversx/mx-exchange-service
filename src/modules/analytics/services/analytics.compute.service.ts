@@ -5,10 +5,9 @@ import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
+import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
-import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
@@ -21,6 +20,8 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
+import { StakingService } from 'src/modules/staking/services/staking.service';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -28,14 +29,15 @@ export class AnalyticsComputeService {
         private readonly routerAbi: RouterAbiService,
         private readonly farmAbi: FarmAbiFactory,
         private readonly farmCompute: FarmComputeFactory,
+        private readonly farmFactory: FarmFactoryService,
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
+        private readonly stakingService: StakingService,
         private readonly stakingCompute: StakingComputeService,
         private readonly tokenCompute: TokenComputeService,
         private readonly tokenService: TokenService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
-        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
     ) {}
 
@@ -51,9 +53,9 @@ export class AnalyticsComputeService {
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
-
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
         const promises: Promise<string>[] = [];
-        for (const farmAddress of farmsAddresses()) {
+        for (const farmAddress of farmsAddresses) {
             promises.push(
                 this.farmCompute
                     .useCompute(farmAddress)
@@ -118,25 +120,26 @@ export class AnalyticsComputeService {
         let totalValueLockedUSD = new BigNumber(0);
 
         const stakingAddresses =
-            await this.remoteConfigGetterService.getStakingAddresses();
+            await this.stakingService.getStakingAddresses();
         const promises = stakingAddresses.map((stakingAddress) =>
             this.stakingCompute.stakedValueUSD(stakingAddress),
         );
 
         promises.push(this.computeTotalLockedMexStakedUSD());
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
 
-        if (farmsAddresses()[5] !== undefined) {
+        if (farmsAddresses[5] !== undefined) {
             promises.push(
                 this.farmCompute
-                    .useCompute(farmsAddresses()[5])
-                    .computeFarmLockedValueUSD(farmsAddresses()[5]),
+                    .useCompute(farmsAddresses[5])
+                    .computeFarmLockedValueUSD(farmsAddresses[5]),
             );
         }
-        if (farmsAddresses()[13] !== undefined) {
+        if (farmsAddresses[13] !== undefined) {
             promises.push(
                 this.farmCompute
-                    .useCompute(farmsAddresses()[13])
-                    .computeFarmLockedValueUSD(farmsAddresses()[13]),
+                    .useCompute(farmsAddresses[13])
+                    .computeFarmLockedValueUSD(farmsAddresses[13]),
             );
         }
 
@@ -163,7 +166,7 @@ export class AnalyticsComputeService {
     }
 
     async computeTotalAggregatedRewards(days: number): Promise<string> {
-        const addresses: string[] = farmsAddresses();
+        const addresses: string[] = await this.farmFactory.getFarmsAddresses();
         const promises = addresses.map(async (farmAddress) => {
             if (
                 farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS ||
