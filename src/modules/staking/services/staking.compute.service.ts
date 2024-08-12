@@ -8,7 +8,7 @@ import { StakingService } from './staking.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { denominateAmount } from 'src/utils/token.converters';
+import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { OptimalCompoundModel } from '../models/staking.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
@@ -176,17 +176,17 @@ export class StakingComputeService {
     async computeStakedValueUSD(stakeAddress: string): Promise<string> {
         const [farmTokenSupply, farmingToken] = await Promise.all([
             this.stakingAbi.farmTokenSupply(stakeAddress),
-            this.tokenService.tokenMetadata(constantsConfig.MEX_TOKEN_ID),
             this.stakingService.getFarmingToken(stakeAddress),
         ]);
 
         const farmingTokenPrice = await this.tokenCompute.tokenPriceDerivedUSD(
             farmingToken.identifier,
         );
-        return new BigNumber(farmTokenSupply)
-            .multipliedBy(farmingTokenPrice)
-            .multipliedBy(`1e-${farmingToken.decimals}`)
-            .toFixed();
+        return computeValueUSD(
+            farmTokenSupply,
+            farmingToken.decimals,
+            farmingTokenPrice,
+        ).toFixed();
     }
 
     @ErrorLoggerAsync({
