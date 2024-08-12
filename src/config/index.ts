@@ -32,3 +32,5 @@ export const cachedTokensPriceConfig = config.get('cachedTokensPrice');
 export const constantsConfig = config.get('constants');
 
 export const dataApiConfig = config.get('dataApi');
+
+export const leaguesConfig = config.get('leagues');

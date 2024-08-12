@@ -30,7 +30,15 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => UserEnergyModel)
 export class UserEnergyResolver {
-    constructor(private readonly energyService: EnergyService) {}
+    constructor(
+        private readonly energyService: EnergyService,
+        private readonly energyCompute: EnergyComputeService,
+    ) {}
+
+    @ResolveField()
+    async league(@Parent() parent: UserEnergyModel): Promise<string> {
+        return this.energyCompute.computeLeagueByEnergy(parent.amount);
+    }
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => UserEnergyModel)
