@@ -413,32 +413,12 @@ export class StakingComputeService {
         );
     }
 
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'stake',
-        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
-        localTtl: CacheTtlInfo.ContractBalance.localTtl,
-    })
-    async userRewardsDistributionForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<TokenDistributionModel[]> {
-        return await this.computeUserRewardsDistributionForWeek(
-            scAddress,
-            userAddress,
-            week,
-        );
-    }
-
     async computeUserRewardsDistributionForWeek(
         scAddress: string,
         userAddress: string,
         week: number,
     ): Promise<TokenDistributionModel[]> {
-        const userRewardsForWeek = await this.userRewardsForWeek(
+        const userRewardsForWeek = await this.computeUserRewardsForWeek(
             scAddress,
             userAddress,
             week,
@@ -551,22 +531,6 @@ export class StakingComputeService {
                 : userRewardsForWeek;
 
         return paymentAmount.integerValue().toFixed();
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'stake',
-        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
-        localTtl: CacheTtlInfo.ContractBalance.localTtl,
-    })
-    async userRewardsForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<EsdtTokenPayment[]> {
-        return this.computeUserRewardsForWeek(scAddress, userAddress, week);
     }
 
     async computeUserRewardsForWeek(
