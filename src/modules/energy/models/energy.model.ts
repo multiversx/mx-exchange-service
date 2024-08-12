@@ -24,3 +24,14 @@ export class EnergyModel {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class UserEnergyModel extends EnergyModel {
+    @Field(() => String)
+    league: string;
+
+    constructor(init?: Partial<EnergyType>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}

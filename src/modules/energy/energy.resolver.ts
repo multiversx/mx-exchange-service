@@ -1,5 +1,12 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Int, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import {
+    Args,
+    Int,
+    Parent,
+    Query,
+    ResolveField,
+    Resolver,
+} from '@nestjs/graphql';
 import { scAddress } from 'src/config';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -8,7 +15,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { NftCollection } from '../tokens/models/nftCollection.model';
-import { EnergyModel, UnlockType } from './models/energy.model';
+import { UnlockType, UserEnergyModel } from './models/energy.model';
 import {
     LockOption,
     SimpleLockEnergyModel,
@@ -20,6 +27,20 @@ import { EnergyAbiService } from './services/energy.abi.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+
+@Resolver(() => UserEnergyModel)
+export class UserEnergyResolver {
+    constructor(private readonly energyService: EnergyService) {}
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => UserEnergyModel)
+    async userEnergy(
+        @AuthUser() user: UserAuthResult,
+        @Args('vmQuery', { nullable: true }) vmQuery: boolean,
+    ): Promise<UserEnergyModel> {
+        return this.energyService.getUserEnergy(user.address, vmQuery);
+    }
+}
 
 @Resolver(() => SimpleLockEnergyModel)
 export class EnergyResolver {
@@ -64,15 +85,6 @@ export class EnergyResolver {
         return new SimpleLockEnergyModel({
             address: scAddress.simpleLockEnergy,
         });
-    }
-
-    @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => EnergyModel)
-    async userEnergy(
-        @AuthUser() user: UserAuthResult,
-        @Args('vmQuery', { nullable: true }) vmQuery: boolean,
-    ): Promise<EnergyModel> {
-        return this.energyService.getUserEnergy(user.address, vmQuery);
     }
 
     @Query(() => String)
