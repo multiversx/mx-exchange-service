@@ -65,7 +65,7 @@ export class StakingCacheWarmerService {
                 this.stakingAbi.getStateRaw(address),
                 this.stakeCompute.computeStakeFarmAPR(address),
                 this.stakeCompute.computeStakeFarmBaseAPR(address),
-                this.stakeCompute.computeBoostedApr(address),
+                this.stakeCompute.computeBoostedAPR(address),
             ]);
 
             const cacheKeys = await Promise.all([
