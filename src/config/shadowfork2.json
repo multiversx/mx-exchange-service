@@ -120,6 +120,13 @@
             "USDC-c76f1f": "5000000",
             "WEGLD-bd4d79": "100000000000000000",
             "MEX-455c57": "1000000000000000000000000"
+        },
+        "trendingScore": {
+          "MIN_24H_VOLUME": 10000,
+          "MIN_24H_TRADE_COUNT": 100,
+          "PRICE_WEIGHT": 0.5,
+          "VOLUME_WEIGHT": 0.5,
+          "TRADES_COUNT_WEIGHT": 0
         }
     }
 }
