@@ -179,8 +179,7 @@ export class StakingProxyResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => TransactionModel, {
-        nullable: true,
+    @Query(() => [TransactionModel], {
         description:
             'Update staking / farm positions for total farm position from dual yield token',
     })
