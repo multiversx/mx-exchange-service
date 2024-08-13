@@ -232,7 +232,7 @@ export class TokenComputeService implements ITokenComputeService {
             metric: 'priceUSD',
         });
 
-        return values24h[0]?.value ?? undefined;
+        return values24h.find((item) => item.value !== '0')?.value ?? undefined;
     }
 
     @ErrorLoggerAsync({
@@ -278,11 +278,11 @@ export class TokenComputeService implements ITokenComputeService {
         const currentPriceBN = new BigNumber(currentPrice);
         const previous24hPriceBN = new BigNumber(previous24hPrice);
 
-        if (previous24hPriceBN.isZero()) {
+        if (previous24hPriceBN.isZero() || previous24hPrice === undefined) {
             return 0;
         }
 
-        return currentPriceBN.dividedBy(previous24hPrice).toNumber();
+        return currentPriceBN.dividedBy(previous24hPriceBN).toNumber();
     }
 
     async computeTokenPriceChange7d(tokenID: string): Promise<number> {
@@ -354,10 +354,6 @@ export class TokenComputeService implements ITokenComputeService {
 
         const currentSwapsBN = new BigNumber(currentSwaps);
         const previous24hSwapsBN = new BigNumber(previous24hSwaps);
-
-        if (currentSwapsBN.isZero()) {
-            return 0;
-        }
 
         const maxPrevious24hTradeCount = BigNumber.maximum(
             previous24hSwapsBN,
@@ -654,20 +650,20 @@ export class TokenComputeService implements ITokenComputeService {
             this.tokenTradeChange24h(tokenID),
         ]);
 
+        const minScore = -(10 ** 9);
+
         const volumeScore = new BigNumber(
             constantsConfig.trendingScore.VOLUME_WEIGHT,
-        ).multipliedBy(Math.log(volumeChange));
+        ).multipliedBy(volumeChange > 0 ? Math.log(volumeChange) : minScore);
         const priceScore = new BigNumber(
             constantsConfig.trendingScore.PRICE_WEIGHT,
-        ).multipliedBy(priceChange);
+        ).multipliedBy(priceChange > 0 ? Math.log(priceChange) : minScore);
         const tradeScore = new BigNumber(
             constantsConfig.trendingScore.TRADES_COUNT_WEIGHT,
-        ).multipliedBy(Math.log(tradeChange));
+        ).multipliedBy(tradeChange > 0 ? Math.log(tradeChange) : minScore);
 
-        if (volumeScore.isNaN() || priceScore.isNaN() || tradeScore.isNaN()) {
-            return new BigNumber('-Infinity').toFixed();
-        }
+        const trendingScore = volumeScore.plus(priceScore).plus(tradeScore);
 
-        return volumeScore.plus(priceScore).plus(tradeScore).toFixed();
+        return trendingScore.toFixed();
     }
 }
