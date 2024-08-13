@@ -1,10 +1,11 @@
 import { EnergyType } from '@multiversx/sdk-exchange';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { constantsConfig } from 'src/config';
+import { constantsConfig, leaguesConfig } from 'src/config';
 import { LockOption } from '../models/simple.lock.energy.model';
 import { IEnergyComputeService } from './interfaces';
 import { EnergyAbiService } from './energy.abi.service';
+import { denominateAmount } from 'src/utils/token.converters';
 
 @Injectable()
 export class EnergyComputeService implements IEnergyComputeService {
@@ -55,6 +56,23 @@ export class EnergyComputeService implements IEnergyComputeService {
         return tokenAmount
             .multipliedBy(penaltyPercentageUnlock)
             .dividedBy(constantsConfig.MAX_PENALTY_PERCENT);
+    }
+
+    public computeLeagueByEnergy(energyRaw: string): string {
+        const energy = denominateAmount(energyRaw, 18);
+
+        for (const league of leaguesConfig) {
+            const min = league.minEnergy ?? new BigNumber(0);
+            const max = league.maxEnergy ?? new BigNumber(Infinity);
+
+            const inInterval =
+                energy.isGreaterThanOrEqualTo(min) && energy.isLessThan(max);
+            if (inInterval) {
+                return league.name;
+            }
+        }
+
+        return '';
     }
 
     private async computePenaltyPercentageFullUnlock(

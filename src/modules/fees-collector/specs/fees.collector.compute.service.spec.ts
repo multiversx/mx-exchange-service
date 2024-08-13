@@ -22,7 +22,10 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
-import { EnergyModel } from 'src/modules/energy/models/energy.model';
+import {
+    EnergyModel,
+    UserEnergyModel,
+} from 'src/modules/energy/models/energy.model';
 import BigNumber from 'bignumber.js';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
@@ -228,11 +231,12 @@ describe('FeesCollectorComputeService', () => {
             const totalLockedTokensForWeek = '1000000000000000000000000';
             const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
 
-            const user1Energy = new EnergyModel({
+            const user1Energy = new UserEnergyModel({
                 amount: user1EnergyAmount.toFixed(),
                 totalLockedTokens: new BigNumber(
                     totalLockedTokensForWeek,
                 ).toFixed(),
+                league: 'Bronze',
             });
 
             const service = module.get<FeesCollectorComputeService>(
@@ -285,11 +289,12 @@ describe('FeesCollectorComputeService', () => {
             const totalLockedTokensForWeek = '1000000000000000000000000';
             const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
 
-            const user1Energy = new EnergyModel({
+            const user1Energy = new UserEnergyModel({
                 amount: user1EnergyAmount.dividedBy(4).toFixed(),
                 totalLockedTokens: new BigNumber(
                     totalLockedTokensForWeek,
                 ).toFixed(),
+                league: 'Bronze',
             });
 
             const service = module.get<FeesCollectorComputeService>(
@@ -345,11 +350,12 @@ describe('FeesCollectorComputeService', () => {
             const totalLockedTokensForWeek = '1000000000000000000000000';
             const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
 
-            const user1Energy = new EnergyModel({
+            const user1Energy = new UserEnergyModel({
                 amount: user1EnergyAmount.dividedBy(4).toFixed(),
                 totalLockedTokens: new BigNumber(totalLockedTokensForWeek)
                     .dividedBy(4)
                     .toFixed(),
+                league: 'Bronze',
             });
 
             const service = module.get<FeesCollectorComputeService>(
