@@ -7,7 +7,7 @@ import {
     ResolveField,
     Resolver,
 } from '@nestjs/graphql';
-import { scAddress } from 'src/config';
+import { leaguesConfig, scAddress } from 'src/config';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -15,7 +15,11 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { NftCollection } from '../tokens/models/nftCollection.model';
-import { UnlockType, UserEnergyModel } from './models/energy.model';
+import {
+    LeagueModel,
+    UnlockType,
+    UserEnergyModel,
+} from './models/energy.model';
 import {
     LockOption,
     SimpleLockEnergyModel,
@@ -28,6 +32,7 @@ import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { EnergyComputeService } from './services/energy.compute.service';
+import BigNumber from 'bignumber.js';
 
 @Resolver(() => UserEnergyModel)
 export class UserEnergyResolver {
@@ -267,5 +272,18 @@ export class EnergyResolver {
     @Query(() => String)
     async userEnergyAmount(@AuthUser() user: UserAuthResult): Promise<string> {
         return this.energyAbi.energyAmountForUser(user.address);
+    }
+
+    @Query(() => [LeagueModel])
+    async leagues(): Promise<LeagueModel[]> {
+        return leaguesConfig.map(
+            (league) =>
+                new LeagueModel({
+                    name: league.name,
+                    minEnergy: league.minEnergy ?? '0',
+                    maxEnergy:
+                        league.maxEnergy ?? new BigNumber(Infinity).toFixed(),
+                }),
+        );
     }
 }
