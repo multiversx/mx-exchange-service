@@ -27,6 +27,7 @@ import { EnergyAbiService } from './services/energy.abi.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { EnergyComputeService } from './services/energy.compute.service';
 
 @Resolver(() => UserEnergyModel)
 export class UserEnergyResolver {
