@@ -102,7 +102,7 @@ export class StakingResolver {
 
     @ResolveField()
     async boostedApr(@Parent() parent: StakingModel) {
-        return this.stakingCompute.boostedApr(parent.address);
+        return this.stakingCompute.boostedAPR(parent.address);
     }
 
     @ResolveField()

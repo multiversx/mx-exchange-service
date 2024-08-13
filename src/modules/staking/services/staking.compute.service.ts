@@ -8,7 +8,7 @@ import { StakingService } from './staking.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { denominateAmount } from 'src/utils/token.converters';
+import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { OptimalCompoundModel } from '../models/staking.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
@@ -176,17 +176,17 @@ export class StakingComputeService {
     async computeStakedValueUSD(stakeAddress: string): Promise<string> {
         const [farmTokenSupply, farmingToken] = await Promise.all([
             this.stakingAbi.farmTokenSupply(stakeAddress),
-            this.tokenService.tokenMetadata(constantsConfig.MEX_TOKEN_ID),
             this.stakingService.getFarmingToken(stakeAddress),
         ]);
 
         const farmingTokenPrice = await this.tokenCompute.tokenPriceDerivedUSD(
             farmingToken.identifier,
         );
-        return new BigNumber(farmTokenSupply)
-            .multipliedBy(farmingTokenPrice)
-            .multipliedBy(`1e-${farmingToken.decimals}`)
-            .toFixed();
+        return computeValueUSD(
+            farmTokenSupply,
+            farmingToken.decimals,
+            farmingTokenPrice,
+        ).toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -202,6 +202,20 @@ export class StakingComputeService {
     }
 
     async computeStakeFarmAPR(stakeAddress: string): Promise<string> {
+        const [accumulatedRewards, rewardsCapacity, produceRewardsEnabled] =
+            await Promise.all([
+                this.stakingAbi.accumulatedRewards(stakeAddress),
+                this.stakingAbi.rewardCapacity(stakeAddress),
+                this.stakingAbi.produceRewardsEnabled(stakeAddress),
+            ]);
+
+        if (
+            !produceRewardsEnabled ||
+            new BigNumber(accumulatedRewards).isEqualTo(rewardsCapacity)
+        ) {
+            return '0';
+        }
+
         const [
             annualPercentageRewards,
             perBlockRewardAmount,
@@ -234,24 +248,45 @@ export class StakingComputeService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    @GetOrSetCache({
-        baseKey: 'stake',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
     async stakeFarmBaseAPR(stakeAddress: string): Promise<string> {
         return await this.computeStakeFarmBaseAPR(stakeAddress);
     }
 
     async computeStakeFarmBaseAPR(stakeAddress: string): Promise<string> {
-        const [apr, rawBoostedApr] = await Promise.all([
+        const [apr, boostedApr] = await Promise.all([
             this.stakeFarmAPR(stakeAddress),
-            this.boostedApr(stakeAddress),
+            this.boostedAPR(stakeAddress),
         ]);
 
-        const baseApr = new BigNumber(apr).minus(rawBoostedApr);
+        const baseAPR = new BigNumber(apr).minus(boostedApr);
 
-        return baseApr.toFixed();
+        return baseAPR.toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async boostedAPR(stakeAddress: string): Promise<string> {
+        return await this.computeBoostedAPR(stakeAddress);
+    }
+
+    async computeBoostedAPR(stakeAddress: string): Promise<string> {
+        const [boostedYieldsRewardsPercentage, apr] = await Promise.all([
+            this.stakingAbi.boostedYieldsRewardsPercenatage(stakeAddress),
+            this.stakeFarmAPR(stakeAddress),
+        ]);
+
+        const bnBoostedRewardsPercentage = new BigNumber(
+            boostedYieldsRewardsPercentage,
+        )
+            .dividedBy(constantsConfig.MAX_PERCENT)
+            .multipliedBy(100);
+
+        const boostedAPR = new BigNumber(apr).multipliedBy(
+            bnBoostedRewardsPercentage.dividedBy(100),
+        );
+
+        return boostedAPR.toFixed();
     }
 
     async computeRewardsRemainingDays(stakeAddress: string): Promise<number> {
@@ -777,36 +812,5 @@ export class StakingComputeService {
             stakeAddress,
         );
         return deployedAt ?? undefined;
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'stake',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async boostedApr(stakeAddress: string): Promise<string> {
-        return await this.computeBoostedApr(stakeAddress);
-    }
-
-    async computeBoostedApr(stakeAddress: string): Promise<string> {
-        const [boostedYieldsRewardsPercentage, apr] = await Promise.all([
-            this.stakingAbi.boostedYieldsRewardsPercenatage(stakeAddress),
-            this.stakeFarmAPR(stakeAddress),
-        ]);
-
-        const bnBoostedRewardsPercentage = new BigNumber(
-            boostedYieldsRewardsPercentage,
-        )
-            .dividedBy(constantsConfig.MAX_PERCENT)
-            .multipliedBy(100);
-
-        const rawBoostedApr = new BigNumber(apr).multipliedBy(
-            bnBoostedRewardsPercentage.dividedBy(100),
-        );
-
-        return rawBoostedApr.toFixed();
     }
 }

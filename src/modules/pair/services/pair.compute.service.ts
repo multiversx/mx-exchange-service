@@ -830,7 +830,7 @@ export class PairComputeService implements IPairComputeService {
         if (stakingFarmAddress) {
             const [dualFarmBaseAPR, dualFarmBoostedAPR] = await Promise.all([
                 this.stakingCompute.stakeFarmAPR(stakingFarmAddress),
-                this.stakingCompute.boostedApr(stakingFarmAddress),
+                this.stakingCompute.boostedAPR(stakingFarmAddress),
             ]);
 
             dualFarmBaseAprBN = new BigNumber(dualFarmBaseAPR);

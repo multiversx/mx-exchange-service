@@ -161,7 +161,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
             return '0';
         }
 
-        return await this.stakingCompute.boostedApr(stakingAddress);
+        return await this.stakingCompute.boostedAPR(stakingAddress);
     }
 }
 
