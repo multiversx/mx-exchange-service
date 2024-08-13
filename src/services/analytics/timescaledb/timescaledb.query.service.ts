@@ -200,7 +200,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :start and now()', {
-                    start: startDate,
+                    start: moment(startDate).startOf('day').toDate(),
                 })
                 .groupBy('day')
                 .getRawMany();
@@ -232,7 +232,11 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
             const endDate = moment().utc().toDate();
-            const startDate = moment().subtract(1, 'day').utc().toDate();
+            const startDate = moment()
+                .subtract(1, 'day')
+                .utc()
+                .startOf('hour')
+                .toDate();
 
             const query = await this.closeHourly
                 .createQueryBuilder()
@@ -272,13 +276,23 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 ? 'series LIKE :series'
                 : 'series = :series';
 
+            const endDate = moment().utc().toDate();
+            const startDate = moment()
+                .subtract(1, 'day')
+                .utc()
+                .startOf('hour')
+                .toDate();
+
             const query = await this.sumHourly
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 hour', time) as hour")
                 .addSelect('sum(sum) as sum')
                 .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
-                .andWhere("time between now() - INTERVAL '1 day' and now()")
+                .andWhere('time between :startDate and :endDate', {
+                    startDate,
+                    endDate,
+                })
                 .groupBy('hour')
                 .getRawMany();
             return (
