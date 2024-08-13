@@ -4,6 +4,7 @@ import { Args, Resolver } from '@nestjs/graphql';
 import {
     CandleDataModel,
     HistoricDataModel,
+    OhlcvDataModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs, PriceCandlesQueryArgs } from './models/query.args';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
@@ -196,5 +197,19 @@ export class AnalyticsResolver {
             args.end,
             args.resolution,
         );
+    }
+
+    @Query(() => [OhlcvDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
+    async tokenPast7dPrice(
+        @Args('tokenID') tokenID: string,
+    ): Promise<OhlcvDataModel[]> {
+        return await this.analyticsCompute.tokenPast7dPrice(tokenID);
     }
 }

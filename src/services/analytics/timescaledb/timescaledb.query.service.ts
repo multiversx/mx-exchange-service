@@ -535,6 +535,58 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
+    async getCandlesWithGapfilling({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<OhlcvDataModel[]> {
+        try {
+            const candleRepository =
+                this.getCandleRepositoryByResolutionAndMetric(
+                    resolution,
+                    metric,
+                );
+            const startDate = moment.unix(start).utc().toDate();
+            const endDate = moment.unix(end).utc().toDate();
+
+            const queryResult = await candleRepository
+                .createQueryBuilder()
+                .select(`time_bucket_gapfill('${resolution}', time) as bucket`)
+                .addSelect('locf(first(open, time)) as open')
+                .addSelect('locf(max(high)) as high')
+                .addSelect('locf(min(low)) as low')
+                .addSelect('locf(last(close, time)) as close')
+                .addSelect('locf(sum(volume)) as volume')
+                .where('series = :series', { series })
+                .andWhere('time between :startDate and :endDate', {
+                    startDate,
+                    endDate,
+                })
+                .groupBy('bucket')
+                .getRawMany();
+
+            return await this.gapfillCandleData(
+                queryResult,
+                series,
+                metric,
+                startDate,
+                candleRepository,
+            );
+        } catch (error) {
+            this.logger.error('getTokenPriceCandles', {
+                series,
+                resolution,
+                start,
+                end,
+                error,
+            });
+            return [];
+        }
+    }
+
+    @TimescaleDBQuery()
     async getCandles({
         series,
         metric,
@@ -718,6 +770,82 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                         .utc(row[timeColumn])
                         .format('yyyy-MM-DD HH:mm:ss'),
                     value: row.last ?? gapfillValue,
+                }),
+        );
+    }
+
+    private async gapfillCandleData(
+        data: any[],
+        series: string,
+        metric: string,
+        previousStartDate: Date,
+        repository: Repository<
+            | TokenCandlesMinute
+            | TokenCandlesHourly
+            | TokenCandlesDaily
+            | PairFirstTokenCandlesMinute
+            | PairFirstTokenCandlesHourly
+            | PairFirstTokenCandlesDaily
+            | PairSecondTokenCandlesMinute
+            | PairSecondTokenCandlesHourly
+            | PairSecondTokenCandlesDaily
+        >,
+    ): Promise<OhlcvDataModel[]> {
+        if (!data || data.length === 0) {
+            return [];
+        }
+
+        if (data[0].open) {
+            return this.formatCandleData(data);
+        }
+
+        const startDate = await this.getStartDate(series);
+        const endDate = previousStartDate;
+
+        if (!startDate) {
+            return this.formatCandleData(data);
+        }
+
+        const previousValue = await repository
+            .createQueryBuilder()
+            .select('open, high, low, close, volume')
+            .where('series = :series', { series })
+            .andWhere('time between :start and :end', {
+                start: moment(startDate).utc().toDate(),
+                end: endDate,
+            })
+            .orderBy('time', 'DESC')
+            .limit(1)
+            .getRawOne();
+
+        if (!previousValue) {
+            return this.formatCandleData(data);
+        }
+
+        return this.formatCandleData(data, previousValue);
+    }
+
+    private formatCandleData(
+        data: any[],
+        gapfillValue = {
+            open: '0',
+            high: '0',
+            low: '0',
+            close: '0',
+            volume: '0',
+        },
+    ): OhlcvDataModel[] {
+        return data.map(
+            (row) =>
+                new OhlcvDataModel({
+                    time: row.bucket,
+                    ohlcv: [
+                        row.open ?? gapfillValue.open,
+                        row.high ?? gapfillValue.high,
+                        row.low ?? gapfillValue.low,
+                        row.close ?? gapfillValue.close,
+                        row.volume ?? gapfillValue.volume,
+                    ],
                 }),
         );
     }

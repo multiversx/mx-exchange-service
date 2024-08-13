@@ -116,6 +116,23 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         });
     }
 
+    async getCandlesWithGapfilling({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<OhlcvDataModel[]> {
+        const service = await this.getService();
+        return await service.getCandlesWithGapfilling({
+            series,
+            metric,
+            resolution,
+            start,
+            end,
+        });
+    }
+
     async getStartDate(series: string): Promise<string | undefined> {
         const service = await this.getService();
         return await service.getStartDate(series);

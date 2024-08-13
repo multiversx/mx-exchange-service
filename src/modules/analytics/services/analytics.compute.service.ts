@@ -21,6 +21,8 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { OhlcvDataModel } from '../models/analytics.model';
+import moment from 'moment';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -250,6 +252,33 @@ export class AnalyticsComputeService {
             series: tokenID,
             metric,
             time,
+        });
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneMinute() * 30,
+        localTtl: Constants.oneMinute() * 10,
+    })
+    async tokenPast7dPrice(tokenID: string): Promise<OhlcvDataModel[]> {
+        return await this.computeTokenPast7dPrice(tokenID);
+    }
+
+    async computeTokenPast7dPrice(tokenID: string): Promise<OhlcvDataModel[]> {
+        const endDate = moment().utc().unix();
+        const startDate = moment()
+            .subtract(7, 'days')
+            .utc()
+            .startOf('hour')
+            .unix();
+
+        return await this.analyticsQuery.getCandlesWithGapfilling({
+            series: tokenID,
+            metric: 'priceUSD',
+            start: startDate,
+            end: endDate,
+            resolution: '4 hours',
         });
     }
 

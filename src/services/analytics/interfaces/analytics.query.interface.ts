@@ -46,5 +46,13 @@ export interface AnalyticsQueryInterface {
         end,
     }): Promise<OhlcvDataModel[]>;
 
+    getCandlesWithGapfilling({
+        series,
+        metric,
+        resolution,
+        start,
+        end,
+    }): Promise<OhlcvDataModel[]>;
+
     getStartDate(series: string): Promise<string>;
 }
