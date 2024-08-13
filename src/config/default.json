@@ -504,7 +504,7 @@
                 "liquidityPosition": 57500000,
                 "farmPosition": 87000000,
                 "dualFarmPosition": 115000000,
-                "stakingPosition": 70000000
+                "stakingPosition": 80000000
             },
             "dualTokens": {
                 "farmPosition": 50000000,
