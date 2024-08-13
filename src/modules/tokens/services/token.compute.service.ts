@@ -232,7 +232,7 @@ export class TokenComputeService implements ITokenComputeService {
             metric: 'priceUSD',
         });
 
-        return values24h.find((item) => item.value !== '0')?.value ?? undefined;
+        return values24h[0]?.value ?? undefined;
     }
 
     @ErrorLoggerAsync({
