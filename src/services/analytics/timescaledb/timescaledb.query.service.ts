@@ -436,10 +436,10 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     private async allStartDatesRaw(): Promise<object> {
-        const startDateRows = await this.dexAnalytics
+        const startDateRows = await this.closeDaily
             .createQueryBuilder()
             .select('series')
-            .addSelect('min(timestamp) as earliest_timestamp')
+            .addSelect('min(time) as earliest_timestamp')
             .groupBy('series')
             .getRawMany();
 
