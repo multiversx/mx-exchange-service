@@ -270,15 +270,12 @@ export class AnalyticsComputeService {
     async computeTokensLast7dPrice(
         identifiers: string[],
     ): Promise<TokenCandlesModel[]> {
-        // const endDate = moment().utc().unix();
-        // const startDate = moment()
-        //     .subtract(2, 'days')
-        //     .utc()
-        //     .startOf('hour')
-        //     .unix();
-
-        const startDate = 1723449600;
-        const endDate = 1723620357;
+        const endDate = moment().utc().unix();
+        const startDate = moment()
+            .subtract(7, 'days')
+            .utc()
+            .startOf('hour')
+            .unix();
 
         const tokenCandles = await this.analyticsQuery.getCandlesForTokens({
             identifiers,
@@ -332,35 +329,10 @@ export class AnalyticsComputeService {
         });
         console.log(lastCandles);
 
-        // TODO : handle case where lastCandles == [].
-
         // TODO : perform manual gapfilling on tokenCandles with the data in 'lastCandles'
         const result: TokenCandlesModel[] = [];
-        // for (let i = 0; i < identifiers.length; i++) {
-        //     const tokenID = identifiers[i];
 
-        //     const tokenData = tokenCandles.find(
-        //         (elem) => elem.identifier === tokenID,
-        //     );
-
-        //     if (!tokenData) {
-        //         const missingCandle = lastCandles.find(
-        //             (elem) => elem.identifier === tokenID,
-        //         );
-
-        //         continue;
-        //     }
-
-        //     const needsGapfilling = tokenData.candles.some((candle) =>
-        //         candle.ohlcv.includes(-1),
-        //     );
-
-        //     if (needsGapfilling) {
-        //         tokensNeedingGapfilling.push(tokenID);
-        //     }
-        // }
-
-        return tokenCandles;
+        return result;
     }
 
     private async fiterPairsByIssuedLpToken(
