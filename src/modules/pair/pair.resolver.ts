@@ -35,6 +35,7 @@ import { StakingComputeService } from '../staking/services/staking.compute.servi
 import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
 import { NftCollection } from '../tokens/models/nftCollection.model';
 import { EnergyService } from '../energy/services/energy.service';
+import { PairLoader } from './services/pair.loader';
 
 @Resolver(() => PairRewardTokensModel)
 export class PairRewardTokensResolver extends GenericResolver {
@@ -172,6 +173,7 @@ export class PairResolver {
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly transactionService: PairTransactionService,
+        private readonly pairLoader: PairLoader,
     ) {}
 
     @ResolveField()

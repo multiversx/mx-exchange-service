@@ -32,14 +32,41 @@ export abstract class FarmServiceBase {
         return this.tokenService.tokenMetadata(farmedTokenID);
     }
 
+    async getAllFarmedTokens(farmAddresses: string[]): Promise<EsdtToken[]> {
+        const farmedTokenIDs = await this.farmAbi.getAllKeys<string>(
+            farmAddresses,
+            'farm.farmedTokenID',
+            this.farmAbi.farmedTokenID.bind(this.farmAbi),
+        );
+        return this.tokenService.getAllTokensMetadata(farmedTokenIDs);
+    }
+
     async getFarmToken(farmAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.farmAbi.farmTokenID(farmAddress);
         return this.tokenService.getNftCollectionMetadata(farmTokenID);
     }
 
+    async getAllFarmTokens(farmAddresses: string[]): Promise<NftCollection[]> {
+        const farmTokenIDs = await this.farmAbi.getAllKeys<string>(
+            farmAddresses,
+            'farm.farmTokenID',
+            this.farmAbi.farmTokenID.bind(this.farmAbi),
+        );
+        return this.tokenService.getAllNftsCollectionMetadata(farmTokenIDs);
+    }
+
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
         return this.tokenService.tokenMetadata(farmingTokenID);
+    }
+
+    async getAllFarmingTokens(farmAddresses: string[]): Promise<EsdtToken[]> {
+        const farmingTokenIDs = await this.farmAbi.getAllKeys<string>(
+            farmAddresses,
+            'farm.farmingTokenID',
+            this.farmAbi.farmingTokenID.bind(this.farmAbi),
+        );
+        return this.tokenService.getAllTokensMetadata(farmingTokenIDs);
     }
 
     protected async getRemainingFarmingEpochs(

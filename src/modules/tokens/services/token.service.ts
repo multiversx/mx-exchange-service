@@ -122,45 +122,76 @@ export class TokenService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenMetadata(tokenID: string): Promise<EsdtToken> {
-        return await this.tokenMetadataRaw(tokenID);
+        console.log('tokenMetadata', tokenID);
+        return this.tokenMetadataRaw(tokenID);
+    }
+
+    async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
+        const keys = tokenIDs.map(
+            (tokenID) => `token.tokenMetadata.${tokenID}`,
+        );
+        console.log(`getAllTokensMetadata keys: ${keys.length}`);
+        const values = await this.cachingService.getMany<EsdtToken>(keys);
+
+        const missingIndexes: number[] = [];
+        values.forEach((value, index) => {
+            if (!value) {
+                missingIndexes.push(index);
+            }
+        });
+
+        for (const missingIndex of missingIndexes) {
+            const token = await this.tokenMetadata(tokenIDs[missingIndex]);
+            values[missingIndex] = token;
+        }
+        return values;
     }
 
     async tokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
-        return await this.apiService.getToken(tokenID);
+        return this.apiService.getToken(tokenID);
     }
 
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
     async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
-        if (collection === undefined) {
-            return undefined;
-        }
-        const cacheKey = `token.${collection}`;
-        const cachedToken = await this.cachingService.get<NftCollection>(
-            cacheKey,
+        return this.getNftCollectionMetadataRaw(collection);
+    }
+
+    async getAllNftsCollectionMetadata(
+        collections: string[],
+    ): Promise<NftCollection[]> {
+        const keys = collections.map(
+            (collection) => `token.getNftCollectionMetadata.${collection}`,
         );
-        if (cachedToken && cachedToken !== undefined) {
-            await this.cachingService.set<NftCollection>(
-                cacheKey,
-                cachedToken,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
+        console.log(`getAllNftsCollectionMetadata keys: ${keys.length}`);
+        const values = await this.cachingService.getMany<NftCollection>(keys);
+
+        const missingIndexes: number[] = [];
+        values.forEach((value, index) => {
+            if (!value) {
+                missingIndexes.push(index);
+            }
+        });
+
+        for (const missingIndex of missingIndexes) {
+            const token = await this.getNftCollectionMetadata(
+                collections[missingIndex],
             );
-            return cachedToken;
+            values[missingIndex] = token;
         }
+        return values;
+    }
 
-        const token = await this.apiService.getNftCollection(collection);
-
-        if (token !== undefined) {
-            await this.cachingService.set<NftCollection>(
-                cacheKey,
-                token,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            );
-
-            return token;
-        }
-
-        return undefined;
+    async getNftCollectionMetadataRaw(
+        collection: string,
+    ): Promise<NftCollection> {
+        return this.apiService.getNftCollection(collection);
     }
 
     async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {

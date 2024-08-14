@@ -29,6 +29,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IFarmAbiServiceV2 } from './interfaces';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class FarmAbiServiceV2
@@ -39,8 +40,9 @@ export class FarmAbiServiceV2
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,
         protected readonly mxApi: MXApiService,
+        protected readonly cacheService: CacheService,
     ) {
-        super(mxProxy, gatewayService, mxApi);
+        super(mxProxy, gatewayService, mxApi, cacheService);
     }
 
     async getLastErrorMessageRaw(farmAddress: string): Promise<string> {
