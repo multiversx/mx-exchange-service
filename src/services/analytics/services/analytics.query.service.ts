@@ -3,6 +3,7 @@ import {
     CandleDataModel,
     HistoricDataModel,
     OhlcvDataModel,
+    TokenCandlesModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { TimescaleDBQueryService } from '../timescaledb/timescaledb.query.service';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -116,18 +117,28 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         });
     }
 
-    async getCandlesWithGapfilling({
-        series,
-        metric,
+    async getCandlesForTokens({
+        identifiers,
         resolution,
         start,
         end,
-    }): Promise<OhlcvDataModel[]> {
+    }): Promise<TokenCandlesModel[]> {
         const service = await this.getService();
-        return await service.getCandlesWithGapfilling({
-            series,
-            metric,
+        return await service.getCandlesForTokens({
+            identifiers,
             resolution,
+            start,
+            end,
+        });
+    }
+    async getLastCandleForTokens({
+        identifiers,
+        start,
+        end,
+    }): Promise<TokenCandlesModel[]> {
+        const service = await this.getService();
+        return await service.getLastCandleForTokens({
+            identifiers,
             start,
             end,
         });
@@ -136,6 +147,11 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     async getStartDate(series: string): Promise<string | undefined> {
         const service = await this.getService();
         return await service.getStartDate(series);
+    }
+
+    async getEarliestStartDate(series: string[]): Promise<string | undefined> {
+        const service = await this.getService();
+        return await service.getEarliestStartDate(series);
     }
 
     private async getService(): Promise<AnalyticsQueryInterface> {

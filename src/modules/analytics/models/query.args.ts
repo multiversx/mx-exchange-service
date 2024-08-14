@@ -53,3 +53,9 @@ export class PriceCandlesQueryArgs {
     @Field(() => PriceCandlesResolutions)
     resolution: PriceCandlesResolutions;
 }
+
+@ArgsType()
+export class TokenPriceCandlesQueryArgs {
+    @Field(() => [String])
+    identifiers: string[];
+}

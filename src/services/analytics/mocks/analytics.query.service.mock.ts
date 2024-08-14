@@ -2,6 +2,7 @@ import {
     CandleDataModel,
     HistoricDataModel,
     OhlcvDataModel,
+    TokenCandlesModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -52,15 +53,25 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
     getCandles({ series, metric, start, end }): Promise<OhlcvDataModel[]> {
         throw new Error('Method not implemented.');
     }
-    getCandlesWithGapfilling({
-        series,
-        metric,
+    getCandlesForTokens({
+        identifiers,
+        resolution,
         start,
         end,
-    }): Promise<OhlcvDataModel[]> {
+    }): Promise<TokenCandlesModel[]> {
+        throw new Error('Method not implemented.');
+    }
+    getLastCandleForTokens({
+        identifiers,
+        start,
+        end,
+    }): Promise<TokenCandlesModel[]> {
         throw new Error('Method not implemented.');
     }
     getStartDate(series: string): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
+    getEarliestStartDate(series: string[]): Promise<string> {
         throw new Error('Method not implemented.');
     }
 }

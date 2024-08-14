@@ -21,7 +21,7 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
-import { OhlcvDataModel } from '../models/analytics.model';
+import { OhlcvDataModel, TokenCandlesModel } from '../models/analytics.model';
 import moment from 'moment';
 
 @Injectable()
@@ -256,30 +256,111 @@ export class AnalyticsComputeService {
     }
 
     @ErrorLoggerAsync()
-    @GetOrSetCache({
-        baseKey: 'analytics',
-        remoteTtl: Constants.oneMinute() * 30,
-        localTtl: Constants.oneMinute() * 10,
-    })
-    async tokenPast7dPrice(tokenID: string): Promise<OhlcvDataModel[]> {
-        return await this.computeTokenPast7dPrice(tokenID);
+    // @GetOrSetCache({
+    //     baseKey: 'analytics',
+    //     remoteTtl: Constants.oneMinute() * 30,
+    //     localTtl: Constants.oneMinute() * 10,
+    // })
+    async tokensLast7dPrice(
+        identifiers: string[],
+    ): Promise<TokenCandlesModel[]> {
+        return await this.computeTokensLast7dPrice(identifiers);
     }
 
-    async computeTokenPast7dPrice(tokenID: string): Promise<OhlcvDataModel[]> {
-        const endDate = moment().utc().unix();
-        const startDate = moment()
-            .subtract(7, 'days')
-            .utc()
-            .startOf('hour')
-            .unix();
+    async computeTokensLast7dPrice(
+        identifiers: string[],
+    ): Promise<TokenCandlesModel[]> {
+        // const endDate = moment().utc().unix();
+        // const startDate = moment()
+        //     .subtract(2, 'days')
+        //     .utc()
+        //     .startOf('hour')
+        //     .unix();
 
-        return await this.analyticsQuery.getCandlesWithGapfilling({
-            series: tokenID,
-            metric: 'priceUSD',
+        const startDate = 1723449600;
+        const endDate = 1723620357;
+
+        const tokenCandles = await this.analyticsQuery.getCandlesForTokens({
+            identifiers,
             start: startDate,
             end: endDate,
             resolution: '4 hours',
         });
+
+        const tokensNeedingGapfilling = [];
+        for (let i = 0; i < identifiers.length; i++) {
+            const tokenID = identifiers[i];
+
+            const tokenData = tokenCandles.find(
+                (elem) => elem.identifier === tokenID,
+            );
+
+            if (!tokenData) {
+                tokensNeedingGapfilling.push(tokenID);
+                continue;
+            }
+
+            const needsGapfilling = tokenData.candles.some((candle) =>
+                candle.ohlcv.includes(-1),
+            );
+
+            if (needsGapfilling) {
+                tokensNeedingGapfilling.push(tokenID);
+            }
+        }
+
+        if (tokensNeedingGapfilling.length === 0) {
+            return tokenCandles;
+        }
+
+        console.log('Start gapfilling', tokensNeedingGapfilling);
+
+        const earliestStartDate =
+            await this.analyticsQuery.getEarliestStartDate(
+                tokensNeedingGapfilling,
+            );
+
+        console.log('Min start date', earliestStartDate);
+
+        // TODO : handle case where startDate == undefined.
+        // No activity for any of the tokens -> return array with 0 for all tokens ??
+
+        const lastCandles = await this.analyticsQuery.getLastCandleForTokens({
+            identifiers: tokensNeedingGapfilling,
+            start: moment(earliestStartDate).utc().unix(),
+            end: startDate,
+        });
+        console.log(lastCandles);
+
+        // TODO : handle case where lastCandles == [].
+
+        // TODO : perform manual gapfilling on tokenCandles with the data in 'lastCandles'
+        const result: TokenCandlesModel[] = [];
+        // for (let i = 0; i < identifiers.length; i++) {
+        //     const tokenID = identifiers[i];
+
+        //     const tokenData = tokenCandles.find(
+        //         (elem) => elem.identifier === tokenID,
+        //     );
+
+        //     if (!tokenData) {
+        //         const missingCandle = lastCandles.find(
+        //             (elem) => elem.identifier === tokenID,
+        //         );
+
+        //         continue;
+        //     }
+
+        //     const needsGapfilling = tokenData.candles.some((candle) =>
+        //         candle.ohlcv.includes(-1),
+        //     );
+
+        //     if (needsGapfilling) {
+        //         tokensNeedingGapfilling.push(tokenID);
+        //     }
+        // }
+
+        return tokenCandles;
     }
 
     private async fiterPairsByIssuedLpToken(

@@ -4,6 +4,7 @@ import {
     CandleDataModel,
     HistoricDataModel,
     OhlcvDataModel,
+    TokenCandlesModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { computeTimeInterval } from 'src/utils/analytics.utils';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
@@ -423,6 +424,40 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         return moment.min(filteredTimestamps).toISOString();
     }
 
+    async getEarliestStartDate(series: string[]): Promise<string | undefined> {
+        const allStartDates = await this.allStartDates();
+
+        const filteredTimestamps = [];
+
+        for (const currentSeries of series) {
+            if (!currentSeries.includes('%')) {
+                if (allStartDates[currentSeries] !== undefined) {
+                    filteredTimestamps.push(
+                        moment(allStartDates[currentSeries]),
+                    );
+                }
+                continue;
+            }
+
+            const seriesWithoutWildcard = currentSeries.replace(
+                new RegExp('%', 'g'),
+                '',
+            );
+            for (const [key, value] of Object.entries(allStartDates)) {
+                if (!key.includes(seriesWithoutWildcard)) {
+                    continue;
+                }
+                filteredTimestamps.push(moment(value));
+            }
+        }
+
+        if (filteredTimestamps.length === 0) {
+            return undefined;
+        }
+
+        return moment.min(filteredTimestamps).toISOString();
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -535,48 +570,87 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
-    async getCandlesWithGapfilling({
-        series,
-        metric,
+    async getCandlesForTokens({
+        identifiers,
         resolution,
         start,
         end,
-    }): Promise<OhlcvDataModel[]> {
+    }): Promise<TokenCandlesModel[]> {
         try {
             const candleRepository =
                 this.getCandleRepositoryByResolutionAndMetric(
                     resolution,
-                    metric,
+                    'priceUSD',
                 );
             const startDate = moment.unix(start).utc().toDate();
             const endDate = moment.unix(end).utc().toDate();
 
-            const queryResult = await candleRepository
+            const query = candleRepository
                 .createQueryBuilder()
-                .select(`time_bucket_gapfill('${resolution}', time) as bucket`)
+                .select(
+                    `time_bucket_gapfill('${resolution}', time) as bucket, series`,
+                )
                 .addSelect('locf(first(open, time)) as open')
                 .addSelect('locf(max(high)) as high')
                 .addSelect('locf(min(low)) as low')
                 .addSelect('locf(last(close, time)) as close')
                 .addSelect('locf(sum(volume)) as volume')
-                .where('series = :series', { series })
+                .where('series in (:...identifiers)', { identifiers })
                 .andWhere('time between :startDate and :endDate', {
                     startDate,
                     endDate,
                 })
-                .groupBy('bucket')
-                .getRawMany();
+                .groupBy('series')
+                .addGroupBy('bucket');
+            // .getRawMany();
 
-            return await this.gapfillCandleData(
-                queryResult,
-                series,
-                metric,
-                startDate,
-                candleRepository,
-            );
+            // console.log(query.getQueryAndParameters());
+
+            const queryResult = await query.getRawMany();
+
+            // console.log(queryResult.length);
+
+            if (!queryResult || queryResult.length === 0) {
+                return [];
+            }
+
+            const result: TokenCandlesModel[] = [];
+
+            for (let i = 0; i < queryResult.length; i++) {
+                const row = queryResult[i];
+
+                let tokenIndex = result.findIndex(
+                    (elem) => elem.identifier === row.series,
+                );
+
+                if (tokenIndex === -1) {
+                    result.push(
+                        new TokenCandlesModel({
+                            identifier: row.series,
+                            candles: [],
+                        }),
+                    );
+                    tokenIndex = result.length - 1;
+                }
+
+                result[tokenIndex].candles.push(
+                    new OhlcvDataModel({
+                        time: row.bucket,
+                        ohlcv: [
+                            row.open ?? -1,
+                            row.high ?? -1,
+                            row.low ?? -1,
+                            row.close ?? -1,
+                            row.volume ?? -1,
+                        ],
+                    }),
+                );
+            }
+
+            return result;
         } catch (error) {
-            this.logger.error('getTokenPriceCandles', {
-                series,
+            this.logger.error('getCandlesForTokens', {
+                identifiers,
                 resolution,
                 start,
                 end,
@@ -584,6 +658,77 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             });
             return [];
         }
+    }
+
+    @TimescaleDBQuery()
+    async getLastCandleForTokens({
+        identifiers,
+        start,
+        end,
+    }): Promise<TokenCandlesModel[]> {
+        const startDate = moment.unix(start).utc().toDate();
+        const endDate = moment.unix(end).utc().toDate();
+
+        const query = this.tokenCandlesMinute
+            .createQueryBuilder()
+            .select(`series`)
+            .addSelect('last(time, time) as time')
+            .addSelect('last(open, time) as open')
+            .addSelect('last(high, time) as high')
+            .addSelect('last(low, time) as low')
+            .addSelect('last(close, time) as close')
+            .addSelect('last(volume, time) as volume')
+            .where('series in (:...identifiers)', { identifiers })
+            .andWhere('time between :startDate and :endDate', {
+                startDate,
+                endDate,
+            })
+            .groupBy('series');
+
+        // console.log(query.getQueryAndParameters());
+
+        const queryResult = await query.getRawMany();
+
+        if (!queryResult || queryResult.length === 0) {
+            return [];
+        }
+
+        // console.log(queryResult);
+
+        // TODO: refactor result format. duplicated code from getCandlesForTokens
+        const result: TokenCandlesModel[] = [];
+        for (let i = 0; i < queryResult.length; i++) {
+            const row = queryResult[i];
+
+            let tokenIndex = result.findIndex(
+                (elem) => elem.identifier === row.series,
+            );
+
+            if (tokenIndex === -1) {
+                result.push(
+                    new TokenCandlesModel({
+                        identifier: row.series,
+                        candles: [],
+                    }),
+                );
+                tokenIndex = result.length - 1;
+            }
+
+            result[tokenIndex].candles.push(
+                new OhlcvDataModel({
+                    time: row.bucket,
+                    ohlcv: [
+                        row.open ?? 0,
+                        row.high ?? 0,
+                        row.low ?? 0,
+                        row.close ?? 0,
+                        row.volume ?? 0,
+                    ],
+                }),
+            );
+        }
+
+        return result;
     }
 
     @TimescaleDBQuery()

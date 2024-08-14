@@ -2,6 +2,7 @@ import {
     CandleDataModel,
     HistoricDataModel,
     OhlcvDataModel,
+    TokenCandlesModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 
@@ -46,13 +47,20 @@ export interface AnalyticsQueryInterface {
         end,
     }): Promise<OhlcvDataModel[]>;
 
-    getCandlesWithGapfilling({
-        series,
-        metric,
+    getCandlesForTokens({
+        identifiers,
         resolution,
         start,
         end,
-    }): Promise<OhlcvDataModel[]>;
+    }): Promise<TokenCandlesModel[]>;
+
+    getLastCandleForTokens({
+        identifiers,
+        start,
+        end,
+    }): Promise<TokenCandlesModel[]>;
 
     getStartDate(series: string): Promise<string>;
+
+    getEarliestStartDate(series: string[]): Promise<string>;
 }

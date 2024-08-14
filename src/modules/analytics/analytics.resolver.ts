@@ -5,8 +5,13 @@ import {
     CandleDataModel,
     HistoricDataModel,
     OhlcvDataModel,
+    TokenCandlesModel,
 } from 'src/modules/analytics/models/analytics.model';
-import { AnalyticsQueryArgs, PriceCandlesQueryArgs } from './models/query.args';
+import {
+    AnalyticsQueryArgs,
+    PriceCandlesQueryArgs,
+    TokenPriceCandlesQueryArgs,
+} from './models/query.args';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
@@ -199,7 +204,7 @@ export class AnalyticsResolver {
         );
     }
 
-    @Query(() => [OhlcvDataModel])
+    @Query(() => [TokenCandlesModel])
     @UsePipes(
         new ValidationPipe({
             skipNullProperties: true,
@@ -207,9 +212,9 @@ export class AnalyticsResolver {
             skipUndefinedProperties: true,
         }),
     )
-    async tokenPast7dPrice(
-        @Args('tokenID') tokenID: string,
-    ): Promise<OhlcvDataModel[]> {
-        return await this.analyticsCompute.tokenPast7dPrice(tokenID);
+    async tokensLast7dPrice(
+        @Args() args: TokenPriceCandlesQueryArgs,
+    ): Promise<TokenCandlesModel[]> {
+        return await this.analyticsCompute.tokensLast7dPrice(args.identifiers);
     }
 }

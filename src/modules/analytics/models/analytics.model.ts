@@ -95,3 +95,16 @@ export class OhlcvDataModel {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class TokenCandlesModel {
+    @Field()
+    identifier: string;
+
+    @Field(() => [OhlcvDataModel])
+    candles: OhlcvDataModel[];
+
+    constructor(init?: Partial<TokenCandlesModel>) {
+        Object.assign(this, init);
+    }
+}
