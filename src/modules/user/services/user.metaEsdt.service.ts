@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
-import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { UserNftTokens } from '../models/nfttokens.union';
 import { UserMetaEsdtComputeService } from './metaEsdt.compute.service';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
@@ -16,11 +15,9 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
-import { farmsAddresses } from 'src/utils/farm.utils';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryService } from '../../price-discovery/services/price.discovery.service';
-import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { INFTToken } from '../../tokens/models/nft.interface';
 import { constantsConfig, scAddress } from 'src/config';
 import {
@@ -53,6 +50,9 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
+import { StakingProxyService } from 'src/modules/staking-proxy/services/staking.proxy.service';
+import { StakingService } from 'src/modules/staking/services/staking.service';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -74,19 +74,20 @@ enum NftTokenType {
 export class UserMetaEsdtService {
     constructor(
         private readonly userComputeService: UserMetaEsdtComputeService,
-        private readonly apiService: MXApiService,
         private readonly proxyPairAbi: ProxyPairAbiService,
         private readonly proxyFarmAbi: ProxyFarmAbiService,
         private readonly farmAbi: FarmAbiFactory,
+        private readonly farmFactory: FarmFactoryService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly stakingAbi: StakingAbiService,
+        private readonly stakingService: StakingService,
         private readonly proxyStakeAbi: StakingProxyAbiService,
+        private readonly stakingProxyService: StakingProxyService,
         private readonly priceDiscoveryService: PriceDiscoveryService,
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly simpleLockAbi: SimpleLockAbiService,
         private readonly energyAbi: EnergyAbiService,
         private readonly lockedTokenWrapperAbi: LockedTokenWrapperAbiService,
-        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -118,8 +119,9 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
         calculateUSD = true,
     ): Promise<UserFarmToken[]> {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
         const farmTokenIDs = await Promise.all(
-            farmsAddresses().map((address) =>
+            farmsAddresses.map((address) =>
                 this.farmAbi.useAbi(address).farmTokenID(address),
             ),
         );
@@ -253,7 +255,7 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
     ): Promise<UserStakeFarmToken[]> {
         const stakingAddresses =
-            await this.remoteConfigGetterService.getStakingAddresses();
+            await this.stakingService.getStakingAddresses();
         const stakingTokenIDs = await Promise.all(
             stakingAddresses.map((address) =>
                 this.stakingAbi.farmTokenID(address),
@@ -288,7 +290,7 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
     ): Promise<UserUnbondFarmToken[]> {
         const stakingAddresses =
-            await this.remoteConfigGetterService.getStakingAddresses();
+            await this.stakingService.getStakingAddresses();
         const stakingTokenIDs = await Promise.all(
             stakingAddresses.map((address) =>
                 this.stakingAbi.farmTokenID(address),
@@ -323,7 +325,7 @@ export class UserMetaEsdtService {
         calculateUSD = true,
     ): Promise<UserDualYiledToken[]> {
         const stakingProxyAddresses =
-            await this.remoteConfigGetterService.getStakingProxyAddresses();
+            await this.stakingProxyService.getStakingProxyAddresses();
         const dualYieldTokenIDs = await Promise.all(
             stakingProxyAddresses.map((address) =>
                 this.proxyStakeAbi.dualYieldTokenID(address),
@@ -677,7 +679,8 @@ export class UserMetaEsdtService {
         }
 
         let promises: Promise<string>[] = [];
-        for (const farmAddress of farmsAddresses()) {
+        const farmsAddresses = await this.farmFactory.getFarmsAddresses();
+        for (const farmAddress of farmsAddresses) {
             promises.push(
                 this.farmAbi.useAbi(farmAddress).farmTokenID(farmAddress),
             );
@@ -688,8 +691,7 @@ export class UserMetaEsdtService {
         }
 
         promises = [];
-        const staking =
-            await this.remoteConfigGetterService.getStakingAddresses();
+        const staking = await this.stakingService.getStakingAddresses();
         for (const address of staking) {
             promises.push(this.stakingAbi.farmTokenID(address));
         }
@@ -704,7 +706,7 @@ export class UserMetaEsdtService {
 
         promises = [];
         const stakingProxy =
-            await this.remoteConfigGetterService.getStakingProxyAddresses();
+            await this.stakingProxyService.getStakingProxyAddresses();
         for (const address of stakingProxy) {
             promises.push(this.proxyStakeAbi.dualYieldTokenID(address));
         }

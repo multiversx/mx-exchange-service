@@ -69,7 +69,7 @@ import { TradingViewModule } from './modules/trading-view/trading.view.module';
                         },
                     };
                 },
-                fieldResolverEnhancers: ['guards'],
+                fieldResolverEnhancers: ['guards', 'interceptors'],
             }),
             inject: [WINSTON_MODULE_NEST_PROVIDER],
         }),
