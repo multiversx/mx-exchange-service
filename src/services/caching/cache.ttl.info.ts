@@ -31,7 +31,7 @@ export class CacheTtlInfo {
 
     static ContractBalance: CacheTtlInfo = new CacheTtlInfo(
         Constants.oneMinute(),
-        Constants.oneSecond() * 30,
+        Constants.oneSecond() * 45,
     );
 
     static Price: CacheTtlInfo = new CacheTtlInfo(

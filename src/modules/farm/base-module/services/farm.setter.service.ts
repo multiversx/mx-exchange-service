@@ -212,18 +212,6 @@ export abstract class FarmSetterService extends GenericSetterService {
         );
     }
 
-    async setFarmedTokenPriceUSD(
-        farmAddress: string,
-        value: string,
-    ): Promise<string> {
-        return await this.setData(
-            this.getCacheKey('farmedTokenPriceUSD', farmAddress),
-            value,
-            CacheTtlInfo.Price.remoteTtl,
-            CacheTtlInfo.Price.localTtl,
-        );
-    }
-
     async setFarmingTokenPriceUSD(
         farmAddress: string,
         value: string,

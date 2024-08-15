@@ -35,17 +35,6 @@ export class FarmComputeLoader {
         },
     );
 
-    public readonly farmTokenPriceUSDLoader = new DataLoader<string, string>(
-        async (addresses: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                addresses,
-                'farm.farmTokenPriceUSD',
-                this.farmCompute.farmTokenPriceUSD.bind(this.farmCompute),
-            );
-        },
-    );
-
     public readonly farmingTokenPriceUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
             return await getAllKeys(
