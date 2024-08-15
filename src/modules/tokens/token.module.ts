@@ -17,6 +17,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
 import { TokenFilteringService } from './services/token.filtering.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
+import { TokenLoader } from './services/token.loader';
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { ESLogsService } from 'src/services/elastic-search/services/es.logs.serv
         ElasticSearchModule,
     ],
     providers: [
+        TokenLoader,
         TokenService,
         TokenSetterService,
         TokenComputeService,
@@ -45,6 +47,7 @@ import { ESLogsService } from 'src/services/elastic-search/services/es.logs.serv
     ],
     exports: [
         TokenRepositoryService,
+        TokenLoader,
         TokenService,
         TokenSetterService,
         TokenComputeService,
