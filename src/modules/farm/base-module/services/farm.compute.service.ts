@@ -27,28 +27,6 @@ export abstract class FarmComputeService implements IFarmComputeService {
         protected readonly cacheService: CacheService,
     ) {}
 
-    async getAllKeys<T>(
-        farmAddresses: string[],
-        baseKey: string,
-        getterMethod: (address: string) => Promise<T>,
-    ): Promise<T[]> {
-        const keys = farmAddresses.map((address) => `${baseKey}.${address}`);
-        const values = await this.cacheService.getMany<T>(keys);
-
-        const missingIndexes: number[] = [];
-        values.forEach((value, index) => {
-            if (!value) {
-                missingIndexes.push(index);
-            }
-        });
-
-        for (const missingIndex of missingIndexes) {
-            const tokenID = await getterMethod(farmAddresses[missingIndex]);
-            values[missingIndex] = tokenID;
-        }
-        return values;
-    }
-
     @ErrorLoggerAsync({
         logArgs: true,
     })
