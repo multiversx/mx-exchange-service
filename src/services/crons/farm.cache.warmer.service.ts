@@ -27,10 +27,10 @@ export class FarmCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_MINUTE)
     async cacheFarmsTokens(): Promise<void> {
         const farmsAddress: string[] = farmsAddresses();
-        const promises = farmsAddress.map(async (farmAddress) => {
+        for (const farmAddress of farmsAddress) {
             const [farmTokenID, farmingTokenID, farmedTokenID] =
                 await Promise.all([
                     this.farmAbiFactory
@@ -57,9 +57,7 @@ export class FarmCacheWarmerService {
             ]);
             this.invalidatedKeys.push(cacheKeys);
             await this.deleteCacheKeys();
-        });
-
-        await Promise.all(promises);
+        }
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
@@ -236,25 +234,16 @@ export class FarmCacheWarmerService {
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmTokensPrices(): Promise<void> {
         for (const farmAddress of farmsAddresses()) {
-            const [
-                farmedTokenPriceUSD,
-                farmingTokenPriceUSD,
-                totalValueLockedUSD,
-            ] = await Promise.all([
-                this.farmComputeFactory
-                    .useCompute(farmAddress)
-                    .computeFarmedTokenPriceUSD(farmAddress),
-                this.farmComputeFactory
-                    .useCompute(farmAddress)
-                    .computeFarmingTokenPriceUSD(farmAddress),
-                this.farmComputeFactory
-                    .useCompute(farmAddress)
-                    .computeFarmLockedValueUSD(farmAddress),
-            ]);
+            const [farmingTokenPriceUSD, totalValueLockedUSD] =
+                await Promise.all([
+                    this.farmComputeFactory
+                        .useCompute(farmAddress)
+                        .computeFarmingTokenPriceUSD(farmAddress),
+                    this.farmComputeFactory
+                        .useCompute(farmAddress)
+                        .computeFarmLockedValueUSD(farmAddress),
+                ]);
             const cacheKeys = await Promise.all([
-                this.farmSetterFactory
-                    .useSetter(farmAddress)
-                    .setFarmedTokenPriceUSD(farmAddress, farmedTokenPriceUSD),
                 this.farmSetterFactory
                     .useSetter(farmAddress)
                     .setFarmingTokenPriceUSD(farmAddress, farmingTokenPriceUSD),

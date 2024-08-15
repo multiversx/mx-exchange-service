@@ -43,43 +43,9 @@ export abstract class FarmComputeService implements IFarmComputeService {
         return '0';
     }
 
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'farm',
-        remoteTtl: CacheTtlInfo.Price.remoteTtl,
-        localTtl: CacheTtlInfo.Price.localTtl,
-    })
     async farmedTokenPriceUSD(farmAddress: string): Promise<string> {
-        return await this.computeFarmedTokenPriceUSD(farmAddress);
-    }
-
-    async computeFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
         const farmedTokenID = await this.farmAbi.farmedTokenID(farmAddress);
-        if (scAddress.has(farmedTokenID)) {
-            const tokenPriceUSD =
-                await this.tokenCompute.computeTokenPriceDerivedUSD(
-                    farmedTokenID,
-                );
-            return tokenPriceUSD;
-        }
-
-        return await this.tokenCompute.computeTokenPriceDerivedUSD(
-            farmedTokenID,
-        );
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'farm',
-        remoteTtl: CacheTtlInfo.Price.remoteTtl,
-        localTtl: CacheTtlInfo.Price.localTtl,
-    })
-    async farmTokenPriceUSD(farmAddress: string): Promise<string> {
-        return this.farmingTokenPriceUSD(farmAddress);
+        return this.tokenCompute.tokenPriceDerivedUSD(farmedTokenID);
     }
 
     @ErrorLoggerAsync({
@@ -97,9 +63,7 @@ export abstract class FarmComputeService implements IFarmComputeService {
     async computeFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
         const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
         if (scAddress.has(farmingTokenID)) {
-            return await this.tokenCompute.computeTokenPriceDerivedUSD(
-                farmingTokenID,
-            );
+            return await this.tokenCompute.tokenPriceDerivedUSD(farmingTokenID);
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(

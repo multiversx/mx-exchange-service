@@ -9,9 +9,6 @@ export class FarmComputeServiceMock implements IFarmComputeService {
     async farmedTokenPriceUSD(farmAddress: string): Promise<string> {
         return '100';
     }
-    async farmTokenPriceUSD(farmAddress: string): Promise<string> {
-        return '200';
-    }
     async farmingTokenPriceUSD(farmAddress: string): Promise<string> {
         return '200';
     }
