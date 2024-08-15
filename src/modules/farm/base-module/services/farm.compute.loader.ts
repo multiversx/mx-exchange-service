@@ -1,16 +1,22 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { FarmComputeService } from './farm.compute.service';
 import DataLoader from 'dataloader';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable({
     scope: Scope.REQUEST,
 })
 export class FarmComputeLoader {
-    constructor(protected readonly farmCompute: FarmComputeService) {}
+    constructor(
+        protected readonly farmCompute: FarmComputeService,
+        protected readonly cacheService: CacheService,
+    ) {}
 
     public readonly farmLockedValueUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await this.farmCompute.getAllKeys(
+            return await getAllKeys(
+                this.cacheService,
                 addresses,
                 'farm.farmLockedValueUSD',
                 this.farmCompute.farmLockedValueUSD.bind(this.farmCompute),
@@ -20,7 +26,8 @@ export class FarmComputeLoader {
 
     public readonly farmedTokenPriceUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await this.farmCompute.getAllKeys(
+            return await getAllKeys(
+                this.cacheService,
                 addresses,
                 'farm.farmedTokenPriceUSD',
                 this.farmCompute.farmedTokenPriceUSD.bind(this.farmCompute),
@@ -30,7 +37,8 @@ export class FarmComputeLoader {
 
     public readonly farmTokenPriceUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await this.farmCompute.getAllKeys(
+            return await getAllKeys(
+                this.cacheService,
                 addresses,
                 'farm.farmTokenPriceUSD',
                 this.farmCompute.farmTokenPriceUSD.bind(this.farmCompute),
@@ -40,7 +48,8 @@ export class FarmComputeLoader {
 
     public readonly farmingTokenPriceUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await this.farmCompute.getAllKeys(
+            return await getAllKeys(
+                this.cacheService,
                 addresses,
                 'farm.farmingTokenPriceUSD',
                 this.farmCompute.farmingTokenPriceUSD.bind(this.farmCompute),

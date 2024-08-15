@@ -16,6 +16,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Inject, forwardRef } from '@nestjs/common';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 export abstract class FarmServiceBase {
     constructor(
@@ -33,7 +34,8 @@ export abstract class FarmServiceBase {
     }
 
     async getAllFarmedTokens(farmAddresses: string[]): Promise<EsdtToken[]> {
-        const farmedTokenIDs = await this.farmAbi.getAllKeys<string>(
+        const farmedTokenIDs = await getAllKeys<string>(
+            this.cachingService,
             farmAddresses,
             'farm.farmedTokenID',
             this.farmAbi.farmedTokenID.bind(this.farmAbi),
@@ -47,7 +49,8 @@ export abstract class FarmServiceBase {
     }
 
     async getAllFarmTokens(farmAddresses: string[]): Promise<NftCollection[]> {
-        const farmTokenIDs = await this.farmAbi.getAllKeys<string>(
+        const farmTokenIDs = await getAllKeys<string>(
+            this.cachingService,
             farmAddresses,
             'farm.farmTokenID',
             this.farmAbi.farmTokenID.bind(this.farmAbi),
@@ -61,7 +64,8 @@ export abstract class FarmServiceBase {
     }
 
     async getAllFarmingTokens(farmAddresses: string[]): Promise<EsdtToken[]> {
-        const farmingTokenIDs = await this.farmAbi.getAllKeys<string>(
+        const farmingTokenIDs = await getAllKeys<string>(
+            this.cachingService,
             farmAddresses,
             'farm.farmingTokenID',
             this.farmAbi.farmingTokenID.bind(this.farmAbi),
