@@ -46,6 +46,10 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
                 return parseCachedNullOrUndefined(cachedValue);
             }
 
+            if (process.env.ENABLE_CACHE_WARMER === 'false') {
+                console.log('Cache miss for key:', cacheKey);
+            }
+
             const value = await originalMethod.apply(this, args);
 
             let { remoteTtl, localTtl } = cachingOptions;
