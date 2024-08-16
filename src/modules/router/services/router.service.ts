@@ -156,11 +156,11 @@ export class RouterService {
         return pairsMetadata;
     }
 
-    // @GetOrSetCache({
-    //     baseKey: 'router',
-    //     remoteTtl: Constants.oneSecond() * 30,
-    //     localTtl: Constants.oneSecond() * 6,
-    // })
+    @GetOrSetCache({
+        baseKey: 'router',
+        remoteTtl: Constants.oneSecond() * 30,
+        localTtl: Constants.oneSecond() * 6,
+    })
     private async pairsByIssuedLpToken(
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
