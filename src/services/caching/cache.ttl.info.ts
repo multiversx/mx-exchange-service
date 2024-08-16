@@ -11,7 +11,7 @@ export class CacheTtlInfo {
 
     static Token: CacheTtlInfo = new CacheTtlInfo(
         Constants.oneMinute() * 10,
-        Constants.oneMinute() * 5,
+        Constants.oneMinute() * 7,
     );
 
     static TokenAnalytics: CacheTtlInfo = new CacheTtlInfo(
