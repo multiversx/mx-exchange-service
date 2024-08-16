@@ -25,7 +25,8 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { PairFilteringService } from './services/pair.filtering.service';
 import { StakingModule } from '../staking/staking.module';
 import { EnergyModule } from '../energy/energy.module';
-import { PairLoader } from './services/pair.loader';
+import { PairAbiLoader } from './services/pair.abi.loader';
+import { PairComputeLoader } from './services/pair.compute.loader';
 @Module({
     imports: [
         CommonAppModule,
@@ -50,7 +51,8 @@ import { PairLoader } from './services/pair.loader';
         PairAbiService,
         PairTransactionService,
         PairFilteringService,
-        PairLoader,
+        PairAbiLoader,
+        PairComputeLoader,
         ElasticService,
         PairResolver,
         PairCompoundedAPRResolver,

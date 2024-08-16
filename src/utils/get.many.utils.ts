@@ -34,11 +34,11 @@ async function getMany<T>(
 
 export async function getAllKeys<T>(
     cacheService: CacheService,
-    tokenIDs: string[],
+    rawKeys: string[],
     baseKey: string,
     getterMethod: (address: string) => Promise<T>,
 ): Promise<T[]> {
-    const keys = tokenIDs.map((tokenID) => `${baseKey}.${tokenID}`);
+    const keys = rawKeys.map((tokenID) => `${baseKey}.${tokenID}`);
     const values = await getMany<T>(cacheService, keys);
 
     const missingIndexes: number[] = [];
@@ -49,7 +49,7 @@ export async function getAllKeys<T>(
     });
 
     for (const missingIndex of missingIndexes) {
-        const tokenID = await getterMethod(tokenIDs[missingIndex]);
+        const tokenID = await getterMethod(rawKeys[missingIndex]);
         values[missingIndex] = tokenID;
     }
     return values;

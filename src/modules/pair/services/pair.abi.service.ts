@@ -51,7 +51,6 @@ export class PairAbiService
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async firstTokenID(pairAddress: string): Promise<string> {
-        console.log('firstTokenID', pairAddress);
         return await this.getFirstTokenIDRaw(pairAddress);
     }
 
@@ -73,7 +72,6 @@ export class PairAbiService
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async secondTokenID(pairAddress: string): Promise<string> {
-        console.log('secondTokenID', pairAddress);
         return await this.getSecondTokenIDRaw(pairAddress);
     }
 
@@ -95,7 +93,6 @@ export class PairAbiService
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async lpTokenID(pairAddress: string): Promise<string> {
-        console.log('lpTokenID', pairAddress);
         return await this.getLpTokenIDRaw(pairAddress);
     }
 
