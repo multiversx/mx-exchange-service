@@ -1,4 +1,5 @@
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { parseCachedNullOrUndefined } from './cache.utils';
 
 async function getMany<T>(
     cacheService: CacheService,
@@ -19,14 +20,16 @@ async function getMany<T>(
     }
 
     if (missingKeys.length === 0) {
-        return values;
+        return values.map((value) => parseCachedNullOrUndefined(value));
     }
 
     const remoteValues = await cacheService.getManyRemote<T>(missingKeys);
 
     for (const [index, missingIndex] of missingIndexes.entries()) {
         const remoteValue = remoteValues[index];
-        values[missingIndex] = remoteValue ? remoteValue : undefined;
+        values[missingIndex] = remoteValue
+            ? parseCachedNullOrUndefined(remoteValue)
+            : undefined;
     }
 
     return values;
