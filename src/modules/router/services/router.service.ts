@@ -9,16 +9,16 @@ import {
     PairSortingArgs,
     PairsFilter,
 } from '../models/filter.args';
-import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from './router.abi.service';
-import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import BigNumber from 'bignumber.js';
 import { CollectionType } from 'src/modules/common/collection.type';
 import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { SortingOrder } from 'src/modules/common/page.data';
+import { getAllKeys } from 'src/utils/get.many.utils';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class RouterService {
@@ -27,6 +27,7 @@ export class RouterService {
         private readonly routerAbi: RouterAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly pairFilteringService: PairFilteringService,
+        private readonly cacheService: CacheService,
     ) {}
 
     async getFactory(): Promise<FactoryModel> {
@@ -156,11 +157,6 @@ export class RouterService {
         return pairsMetadata;
     }
 
-    @GetOrSetCache({
-        baseKey: 'router',
-        remoteTtl: Constants.oneSecond() * 30,
-        localTtl: Constants.oneSecond() * 6,
-    })
     private async pairsByIssuedLpToken(
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
@@ -170,10 +166,12 @@ export class RouterService {
     private async filterPairsByIssuedLpTokenRaw(
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        const promises = pairsMetadata.map((pairMetadata) =>
-            this.pairAbi.lpTokenID(pairMetadata.address),
+        const lpTokensIDs = await getAllKeys(
+            this.cacheService,
+            pairsMetadata.map((pair) => pair.address),
+            'pair.lpTokenID',
+            this.pairAbi.lpTokenID.bind(this.pairAbi),
         );
-        const lpTokensIDs = await Promise.all(promises);
 
         const filteredPairsMetadata = [];
         for (let index = 0; index < lpTokensIDs.length; index++) {
