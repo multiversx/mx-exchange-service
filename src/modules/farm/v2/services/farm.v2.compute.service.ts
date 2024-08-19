@@ -136,33 +136,12 @@ export class FarmComputeServiceV2
         return totalFarmRewards;
     }
 
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    async userRewardsDistributionForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<TokenDistributionModel[]> {
-        return await this.cachingService.getOrSet(
-            `farm.userRewardsDistributionForWeek.${scAddress}.${userAddress}.${week}`,
-            () =>
-                this.computeUserRewardsDistributionForWeek(
-                    scAddress,
-                    userAddress,
-                    week,
-                ),
-            CacheTtlInfo.ContractBalance.remoteTtl,
-            CacheTtlInfo.ContractBalance.localTtl,
-        );
-    }
-
     async computeUserRewardsDistributionForWeek(
         scAddress: string,
         userAddress: string,
         week: number,
     ): Promise<TokenDistributionModel[]> {
-        const userRewardsForWeek = await this.userRewardsForWeek(
+        const userRewardsForWeek = await this.computeUserRewardsForWeek(
             scAddress,
             userAddress,
             week,
@@ -275,22 +254,6 @@ export class FarmComputeServiceV2
                 : userRewardsForWeek;
 
         return paymentAmount.integerValue().toFixed();
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'farm',
-        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
-        localTtl: CacheTtlInfo.ContractBalance.localTtl,
-    })
-    async userRewardsForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<EsdtTokenPayment[]> {
-        return this.computeUserRewardsForWeek(scAddress, userAddress, week);
     }
 
     async computeUserRewardsForWeek(

@@ -49,7 +49,7 @@ export class UserInfoByWeekResolver {
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
         if (parent.scAddress === scAddress.feesCollector) {
-            return this.feesCollectorCompute.userRewardsForWeek(
+            return this.feesCollectorCompute.computeUserRewardsForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
@@ -58,14 +58,14 @@ export class UserInfoByWeekResolver {
 
         const stakingAddresses = await this.remoteConfig.getStakingAddresses();
         if (stakingAddresses.includes(parent.scAddress)) {
-            return this.stakingCompute.userRewardsForWeek(
+            return this.stakingCompute.computeUserRewardsForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
             );
         }
 
-        return this.farmComputeV2.userRewardsForWeek(
+        return this.farmComputeV2.computeUserRewardsForWeek(
             parent.scAddress,
             parent.userAddress,
             parent.week,
@@ -77,7 +77,7 @@ export class UserInfoByWeekResolver {
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<TokenDistributionModel[]> {
         if (parent.scAddress === scAddress.feesCollector) {
-            return this.feesCollectorCompute.userRewardsDistributionForWeek(
+            return this.feesCollectorCompute.computeUserRewardsDistributionForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
@@ -85,14 +85,14 @@ export class UserInfoByWeekResolver {
         }
         const stakingAddresses = await this.remoteConfig.getStakingAddresses();
         if (stakingAddresses.includes(parent.scAddress)) {
-            return this.stakingCompute.userRewardsDistributionForWeek(
+            return this.stakingCompute.computeUserRewardsDistributionForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
             );
         }
 
-        return this.farmComputeV2.userRewardsDistributionForWeek(
+        return this.farmComputeV2.computeUserRewardsDistributionForWeek(
             parent.scAddress,
             parent.userAddress,
             parent.week,
