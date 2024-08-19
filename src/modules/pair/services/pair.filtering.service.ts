@@ -50,9 +50,9 @@ export class PairFilteringService {
         pairFilter: PairFilterArgs | PairsFilter,
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        if (pairFilter.address) {
-            pairsMetadata = pairsMetadata.filter(
-                (pair) => pairFilter.address === pair.address,
+        if (pairFilter.addresses) {
+            pairsMetadata = pairsMetadata.filter((pair) =>
+                pairFilter.addresses.includes(pair.address),
             );
         }
         return await Promise.resolve(pairsMetadata);

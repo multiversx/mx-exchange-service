@@ -122,9 +122,9 @@ export class RouterService {
         pairFilter: PairFilterArgs,
         pairsMetadata: PairMetadata[],
     ): PairMetadata[] {
-        if (pairFilter.address) {
-            pairsMetadata = pairsMetadata.filter(
-                (pair) => pairFilter.address === pair.address,
+        if (pairFilter.addresses) {
+            pairsMetadata = pairsMetadata.filter((pair) =>
+                pairFilter.addresses.includes(pair.address),
             );
         }
         return pairsMetadata;
