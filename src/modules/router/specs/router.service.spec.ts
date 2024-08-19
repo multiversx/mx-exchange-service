@@ -109,7 +109,7 @@ describe('RouterService', () => {
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
             firstTokenID: 'WEGLD-123456',
             issuedLpToken: true,
-            address: null,
+            addresses: null,
             secondTokenID: null,
             state: null,
             feeState: null,
@@ -146,7 +146,7 @@ describe('RouterService', () => {
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
             firstTokenID: 'WEGLD-123456',
             issuedLpToken: true,
-            address: null,
+            addresses: null,
             secondTokenID: null,
             state: null,
             feeState: false,
@@ -168,7 +168,7 @@ describe('RouterService', () => {
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
             firstTokenID: null,
             issuedLpToken: true,
-            address: null,
+            addresses: null,
             secondTokenID: null,
             state: null,
             feeState: null,
