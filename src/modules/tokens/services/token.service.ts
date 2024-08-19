@@ -1,5 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { EsdtToken } from '../models/esdtToken.model';
+import { EsdtToken, EsdtTokenType } from '../models/esdtToken.model';
 import {
     TokenSortingArgs,
     TokensFilter,
@@ -22,12 +22,15 @@ import { SortingOrder } from 'src/modules/common/page.data';
 import { TokenFilteringService } from './token.filtering.service';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { getAllKeys } from 'src/utils/get.many.utils';
+import { PairService } from 'src/modules/pair/services/pair.service';
 
 @Injectable()
 export class TokenService {
     constructor(
         private readonly tokenRepository: TokenRepositoryService,
         private readonly pairAbi: PairAbiService,
+        @Inject(forwardRef(() => PairService))
+        private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
         protected readonly cachingService: CacheService,
@@ -111,6 +114,13 @@ export class TokenService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async getEsdtTokenType(tokenID: string): Promise<string> {
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            tokenID,
+        );
+        if (pairAddress) {
+            return EsdtTokenType.FungibleLpToken;
+        }
+
         return await this.tokenRepository.getTokenType(tokenID);
     }
 
