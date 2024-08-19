@@ -41,6 +41,17 @@ $ npm run start:dev
 $ npm run start
 ```
 
+4. Disable SSL for TimescaleDB in `timescaledb.module.ts`:
+
+```
+// ssl: true,
+// extra: {
+//     ssl: {
+//         rejectUnauthorized: false,
+//     },
+// },
+```
+
 It depends on the following external systems:
 
 -   gateway:
