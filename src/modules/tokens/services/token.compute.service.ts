@@ -202,6 +202,14 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            tokenID,
+        );
+
+        if (pairAddress) {
+            return this.pairCompute.lpTokenPriceUSD(pairAddress);
+        }
+
         const [egldPriceUSD, derivedEGLD, usdcPrice] = await Promise.all([
             this.getEgldPriceInUSD(),
             this.computeTokenPriceDerivedEGLD(tokenID, []),
