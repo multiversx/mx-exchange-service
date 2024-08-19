@@ -504,7 +504,7 @@
                 "liquidityPosition": 57500000,
                 "farmPosition": 87000000,
                 "dualFarmPosition": 115000000,
-                "stakingPosition": 70000000
+                "stakingPosition": 80000000
             },
             "dualTokens": {
                 "farmPosition": 50000000,
@@ -629,5 +629,34 @@
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"
-    }
+    },
+    "leagues": [
+        {
+            "name": "Bronze",
+            "minEnergy": "720000000",
+            "maxEnergy": "7200000000"
+        },
+        {
+            "name": "Silver",
+            "minEnergy": "7200000000",
+            "maxEnergy": "72000000000"
+        
+        },
+        {
+            "name": "Gold",
+            "minEnergy": "72000000000",
+            "maxEnergy": "720000000000"
+        
+        },
+        {
+            "name": "Platinum",
+            "minEnergy": "720000000000",
+            "maxEnergy": "7200000000000"
+        
+        },
+        {
+            "name": "Diamond",
+            "minEnergy": "7200000000000"
+        }
+    ]
 }

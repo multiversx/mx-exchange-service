@@ -33,15 +33,14 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
-import { Constants } from '@multiversx/sdk-nestjs-common';
+import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-        private readonly cacheService: CacheService,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
@@ -198,7 +197,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere('time between :start and now()', {
-                    start: startDate,
+                    start: moment(startDate).startOf('day').toDate(),
                 })
                 .groupBy('day')
                 .getRawMany();
@@ -230,7 +229,11 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
             const endDate = moment().utc().toDate();
-            const startDate = moment().subtract(1, 'day').utc().toDate();
+            const startDate = moment()
+                .subtract(1, 'day')
+                .utc()
+                .startOf('hour')
+                .toDate();
 
             const query = await this.closeHourly
                 .createQueryBuilder()
@@ -270,13 +273,23 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 ? 'series LIKE :series'
                 : 'series = :series';
 
+            const endDate = moment().utc().toDate();
+            const startDate = moment()
+                .subtract(1, 'day')
+                .utc()
+                .startOf('hour')
+                .toDate();
+
             const query = await this.sumHourly
                 .createQueryBuilder()
                 .select("time_bucket_gapfill('1 hour', time) as hour")
                 .addSelect('sum(sum) as sum')
                 .where(seriesWhere, { series })
                 .andWhere('key = :metric', { metric })
-                .andWhere("time between now() - INTERVAL '1 day' and now()")
+                .andWhere('time between :startDate and :endDate', {
+                    startDate,
+                    endDate,
+                })
                 .groupBy('hour')
                 .getRawMany();
             return (
@@ -388,41 +401,56 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     async getStartDate(series: string): Promise<string | undefined> {
-        const cacheKey = `startDate.${series}`;
-        const cachedValue = await this.cacheService.get<string>(cacheKey);
-        if (cachedValue !== undefined) {
-            return cachedValue;
+        const allStartDates = await this.allStartDates();
+
+        if (!series.includes('%')) {
+            return allStartDates[series] ?? undefined;
         }
 
-        const seriesWhere = series.includes('%')
-            ? 'series LIKE :series'
-            : 'series = :series';
+        const seriesWithoutWildcard = series.replace(new RegExp('%', 'g'), '');
+        const filteredTimestamps = [];
+        for (const [key, value] of Object.entries(allStartDates)) {
+            if (!key.includes(seriesWithoutWildcard)) {
+                continue;
+            }
+            filteredTimestamps.push(moment(value));
+        }
 
-        const firstRow = await this.dexAnalytics
+        if (filteredTimestamps.length === 0) {
+            return undefined;
+        }
+
+        return moment.min(filteredTimestamps).toISOString();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'timescaledb',
+        remoteTtl: Constants.oneMinute() * 30,
+        localTtl: Constants.oneMinute() * 20,
+    })
+    private async allStartDates(): Promise<object> {
+        return await this.allStartDatesRaw();
+    }
+
+    private async allStartDatesRaw(): Promise<object> {
+        const startDateRows = await this.closeDaily
             .createQueryBuilder()
-            .select('timestamp')
-            .where(seriesWhere, { series })
-            .orderBy('timestamp', 'ASC')
-            .limit(1)
-            .getRawOne();
+            .select('series')
+            .addSelect('min(time) as earliest_timestamp')
+            .groupBy('series')
+            .getRawMany();
 
-        if (firstRow) {
-            await this.cacheService.set(
-                cacheKey,
-                firstRow.timestamp,
-                Constants.oneMinute() * 30,
-                Constants.oneMinute() * 20,
-            );
-        } else {
-            await this.cacheService.set(
-                cacheKey,
-                null,
-                Constants.oneMinute() * 10,
-                Constants.oneMinute() * 7,
-            );
+        const allDates = {};
+
+        for (let i = 0; i < startDateRows.length; i++) {
+            const row = startDateRows[i];
+            allDates[row.series] = row.earliest_timestamp;
         }
 
-        return firstRow?.timestamp;
+        return allDates;
     }
 
     @TimescaleDBQuery()
