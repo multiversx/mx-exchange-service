@@ -114,6 +114,7 @@ export class UserMetaEsdtComputeService {
         return new UserToken({
             ...esdtToken,
             valueUSD: valueUSD,
+            pairAddress,
         });
     }
 
