@@ -85,11 +85,6 @@ export class WeeklyRewardsSplittingAbiService
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    @GetOrSetCache({
-        baseKey: 'weeklyRewards',
-        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
-        localTtl: CacheTtlInfo.ContractBalance.localTtl,
-    })
     async userEnergyForWeek(
         scAddress: string,
         user: string,
