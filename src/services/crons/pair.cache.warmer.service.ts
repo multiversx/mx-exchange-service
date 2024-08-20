@@ -69,6 +69,10 @@ export class PairCacheWarmerService {
             return;
         }
 
+        this.logger.info('Start refresh cached pairs analytics', {
+            context: 'CachePairs',
+        });
+
         const pairsAddresses = await this.routerAbi.pairsAddress();
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
@@ -123,11 +127,19 @@ export class PairCacheWarmerService {
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        this.logger.info('Finished refresh cached pairs analytics', {
+            context: 'CachePairs',
+        });
     }
 
     @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cachePairsInfo', verbose: true })
     async cachePairsInfo(): Promise<void> {
+        this.logger.info('Start refresh cached pairs info', {
+            context: 'CachePairs',
+        });
+
         const pairsAddresses = await this.routerAbi.pairsAddress();
 
         for (const pairAddress of pairsAddresses) {
@@ -218,11 +230,19 @@ export class PairCacheWarmerService {
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        this.logger.info('Finished refresh cached pairs info', {
+            context: 'CachePairs',
+        });
     }
 
     @Cron('*/12 * * * * *') // Update prices and reserves every 12 seconds
     @Lock({ name: 'cachePairTokenPrices', verbose: true })
     async cacheTokenPrices(): Promise<void> {
+        this.logger.info('Start refresh cached pairs prices', {
+            context: 'CachePairs',
+        });
+
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         const invalidatedKeys = [];
         for (const pairAddress of pairsMetadata) {
@@ -301,6 +321,10 @@ export class PairCacheWarmerService {
             invalidatedKeys.push(cachedKeys);
         }
         await this.deleteCacheKeys(invalidatedKeys);
+
+        this.logger.info('Finished refresh cached pairs prices', {
+            context: 'CachePairs',
+        });
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
