@@ -14,6 +14,8 @@ import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Logger } from 'winston';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -23,6 +25,7 @@ export class PairCacheWarmerService {
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly tokenSetter: TokenSetterService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -52,6 +55,10 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setLpTokenID(
                     pairMetadata.address,
                     lpTokenID,
+                ),
+                this.tokenSetter.setEsdtTokenType(
+                    lpTokenID,
+                    EsdtTokenType.FungibleLpToken,
                 ),
             ]);
 
