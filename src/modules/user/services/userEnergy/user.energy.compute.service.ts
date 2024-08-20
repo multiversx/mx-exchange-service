@@ -91,10 +91,6 @@ export class UserEnergyComputeService {
         );
     }
 
-    @GetOrSetCache({
-        baseKey: 'userEnergy',
-        remoteTtl: Constants.oneMinute() * 10,
-    })
     async outdatedContract(
         userAddress: string,
         contractAddress: string,
