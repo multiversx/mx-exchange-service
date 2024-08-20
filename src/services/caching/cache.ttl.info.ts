@@ -35,8 +35,8 @@ export class CacheTtlInfo {
     );
 
     static Price: CacheTtlInfo = new CacheTtlInfo(
-        Constants.oneMinute(),
-        Constants.oneSecond() * 45,
+        Constants.oneMinute() * 2,
+        Constants.oneMinute() * 1,
     );
 
     static Analytics: CacheTtlInfo = new CacheTtlInfo(
