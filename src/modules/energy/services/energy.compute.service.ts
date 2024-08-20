@@ -59,7 +59,7 @@ export class EnergyComputeService implements IEnergyComputeService {
     }
 
     public computeLeagueByEnergy(energyRaw: string): string {
-        const energy = denominateAmount(energyRaw, 18);
+        const energy = new BigNumber(energyRaw);
 
         for (const league of leaguesConfig) {
             const min = league.minEnergy ?? new BigNumber(0);
