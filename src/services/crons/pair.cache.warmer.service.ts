@@ -298,6 +298,9 @@ export class PairCacheWarmerService {
         }
 
         for (const pairMetadata of pairsMetadata) {
+            const lpTokenID = await this.pairAbi.lpTokenID(
+                pairMetadata.address,
+            );
             const [
                 firstTokenPrice,
                 firstTokenPriceUSD,
@@ -343,6 +346,7 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     lpTokenPriceUSD,
                 ),
+                this.tokenSetter.setDerivedUSD(lpTokenID, lpTokenPriceUSD),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
