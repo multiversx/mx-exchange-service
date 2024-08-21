@@ -14,6 +14,7 @@ import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Logger } from 'winston';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -242,9 +243,10 @@ export class PairCacheWarmerService {
         this.logger.info('Start refresh cached pairs prices', {
             context: 'CachePairs',
         });
+        const performance = new PerformanceProfiler('cacheTokenPrices');
 
         const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const invalidatedKeys = [];
+
         for (const pairAddress of pairsMetadata) {
             const pairInfo = await this.pairAbi.getPairInfoMetadataRaw(
                 pairAddress.address,
@@ -268,7 +270,7 @@ export class PairCacheWarmerService {
                     pairInfo,
                 ),
             ]);
-            invalidatedKeys.push(cachedKeys);
+            await this.deleteCacheKeys(cachedKeys);
         }
 
         for (const pairMetadata of pairsMetadata) {
@@ -318,13 +320,19 @@ export class PairCacheWarmerService {
                     lpTokenPriceUSD,
                 ),
             ]);
-            invalidatedKeys.push(cachedKeys);
+            await this.deleteCacheKeys(cachedKeys);
         }
-        await this.deleteCacheKeys(invalidatedKeys);
 
-        this.logger.info('Finished refresh cached pairs prices', {
-            context: 'CachePairs',
-        });
+        performance.stop();
+
+        this.logger.info(
+            `Finished refresh cached pairs prices in ${
+                performance.duration / 1000
+            }s`,
+            {
+                context: 'CachePairs',
+            },
+        );
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
