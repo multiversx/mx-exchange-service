@@ -716,6 +716,8 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeDeployedAt(pairAddress: string): Promise<number> {
+        // TODO: to be removed
+        return undefined;
         const { deployedAt } = await this.apiService.getAccountStats(
             pairAddress,
         );
