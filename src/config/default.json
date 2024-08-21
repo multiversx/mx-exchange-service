@@ -416,7 +416,7 @@
                 "default": 40000000,
                 "withTokenMerge": 60000000
             },
-            "claimDualYield": 55000000,
+            "claimDualYield": 75000000,
             "unstakeFarmTokens": 75000000
         },
         "metabonding": {
@@ -501,10 +501,10 @@
         },
         "positionCreator": {
             "singleToken": {
-                "liquidityPosition": 57500000,
+                "liquidityPosition": 70000000,
                 "farmPosition": 87000000,
-                "dualFarmPosition": 115000000,
-                "stakingPosition": 80000000
+                "dualFarmPosition": 130000000,
+                "stakingPosition": 100000000
             },
             "dualTokens": {
                 "farmPosition": 50000000,
