@@ -147,6 +147,7 @@ export class PairCacheWarmerService {
         this.logger.info('Start refresh cached pairs info', {
             context: 'CachePairs',
         });
+        const performance = new PerformanceProfiler('cachePairsInfo');
 
         const pairsAddresses = await this.routerAbi.pairsAddress();
 
@@ -186,6 +187,11 @@ export class PairCacheWarmerService {
                 this.pairAbi.getInitialLiquidityAdderRaw(pairAddress),
                 this.pairAbi.getTrustedSwapPairsRaw(pairAddress),
             ]);
+
+            const lockedValueUSD =
+                await this.pairComputeService.computeLockedValueUSD(
+                    pairAddress,
+                );
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
@@ -235,13 +241,24 @@ export class PairCacheWarmerService {
                     pairAddress,
                     trustedSwapPairs,
                 ),
+                this.pairSetterService.setLockedValueUSD(
+                    pairAddress,
+                    lockedValueUSD.toFixed(),
+                ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
 
-        this.logger.info('Finished refresh cached pairs info', {
-            context: 'CachePairs',
-        });
+        performance.stop();
+
+        this.logger.info(
+            `Finished refresh cached pairs info in ${
+                performance.duration / 1000
+            }s`,
+            {
+                context: 'CachePairs',
+            },
+        );
     }
 
     @Cron('*/12 * * * * *') // Update prices and reserves every 12 seconds
