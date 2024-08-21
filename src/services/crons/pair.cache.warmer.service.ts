@@ -38,9 +38,14 @@ export class PairCacheWarmerService {
         this.logger.info('Start refresh cached pairs', {
             context: 'CachePairs',
         });
+        const performance = new PerformanceProfiler('cachePairs');
+
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         for (const pairMetadata of pairsMetadata) {
             const lpTokenID = await this.pairAbi.getLpTokenIDRaw(
+                pairMetadata.address,
+            );
+            const deployedAt = await this.pairComputeService.computeDeployedAt(
                 pairMetadata.address,
             );
 
@@ -61,13 +66,22 @@ export class PairCacheWarmerService {
                     lpTokenID,
                     EsdtTokenType.FungibleLpToken,
                 ),
+                this.pairSetterService.setDeployedAt(
+                    pairMetadata.address,
+                    deployedAt,
+                ),
             ]);
 
             await this.deleteCacheKeys(cachedKeys);
         }
-        this.logger.info('Finished refresh cached pairs', {
-            context: 'CachePairs',
-        });
+        performance.stop();
+
+        this.logger.info(
+            `Finished refresh cached pairs in ${performance.duration / 1000}s`,
+            {
+                context: 'CachePairs',
+            },
+        );
     }
 
     @Cron(CronExpression.EVERY_5_MINUTES)
