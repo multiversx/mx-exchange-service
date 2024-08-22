@@ -11,6 +11,7 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import moment from 'moment';
 import { TokenRepositoryService } from 'src/modules/tokens/services/token.repository.service';
+import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 
 @Injectable()
 export class TokensCacheWarmerService {
@@ -19,6 +20,7 @@ export class TokensCacheWarmerService {
         private readonly tokenComputeService: TokenComputeService,
         private readonly tokenSetterService: TokenSetterService,
         private readonly tokenRepository: TokenRepositoryService,
+        private readonly pairSetter: PairSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -81,6 +83,7 @@ export class TokensCacheWarmerService {
                     priceDerivedEGLD,
                 ),
                 this.tokenSetterService.setDerivedUSD(tokenID, priceDerivedUSD),
+                this.pairSetter.setTokenPriceUSD(tokenID, priceDerivedUSD),
             ]);
 
             await this.deleteCacheKeys(cachedKeys);
