@@ -341,7 +341,7 @@
                 },
                 "v2": {
                     "enterFarm": {
-                        "default": 25000000,
+                        "default": 35000000,
                         "withTokenMerge": 55000000
                     },
                     "compoundRewards": 21600000,
