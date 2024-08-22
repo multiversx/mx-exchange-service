@@ -179,7 +179,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async tokenPriceUSD(tokenID: string): Promise<string> {
-        return await this.tokenCompute.computeTokenPriceDerivedUSD(tokenID);
+        return await this.tokenCompute.tokenPriceDerivedUSD(tokenID);
     }
 
     @ErrorLoggerAsync({
