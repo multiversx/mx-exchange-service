@@ -10,7 +10,6 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { OptimalCompoundModel } from '../models/staking.model';
-import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
@@ -18,6 +17,7 @@ import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/s
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Injectable()
 export class StakingComputeService {
@@ -26,9 +26,9 @@ export class StakingComputeService {
         @Inject(forwardRef(() => StakingService))
         private readonly stakingService: StakingService,
         private readonly contextGetter: ContextGetterService,
-        private readonly tokenService: TokenService,
         private readonly tokenCompute: TokenComputeService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
+        private readonly weekTimeKeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
         private readonly apiService: MXApiService,
@@ -476,119 +476,53 @@ export class StakingComputeService {
         userAddress: string,
         week: number,
     ): Promise<string> {
-        return this.computeUserAccumulatedRewards(scAddress, userAddress, week);
-    }
-
-    async computeUserAccumulatedRewards(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<string> {
-        const [
-            boostedYieldsFactors,
-            boostedYieldsRewardsPercenatage,
-            userEnergy,
-            totalRewards,
-            rewardsPerBlock,
-            farmTokenSupply,
-            totalEnergy,
-            blocksInWeek,
-            liquidity,
-        ] = await Promise.all([
-            this.stakingAbi.boostedYieldsFactors(scAddress),
-            this.stakingAbi.boostedYieldsRewardsPercenatage(scAddress),
-            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
-                scAddress,
-                userAddress,
-                week,
-            ),
-            this.stakingAbi.accumulatedRewardsForWeek(scAddress, week),
-            this.stakingAbi.perBlockRewardsAmount(scAddress),
-            this.stakingAbi.farmTokenSupply(scAddress),
-            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
-            this.computeBlocksInWeek(scAddress, week),
-            this.stakingAbi.userTotalStakePosition(scAddress, userAddress),
-        ]);
-
-        const energyAmount = userEnergy.amount;
-
-        const userHasMinEnergy = new BigNumber(energyAmount).isGreaterThan(
-            boostedYieldsFactors.minEnergyAmount,
+        const rewards = await this.computeUserRewardsForWeek(
+            scAddress,
+            userAddress,
+            week,
         );
-        if (!userHasMinEnergy) {
-            return '0';
-        }
 
-        const userMinFarmAmount = new BigNumber(liquidity).isGreaterThan(
-            boostedYieldsFactors.minFarmAmount,
-        );
-        if (!userMinFarmAmount) {
-            return '0';
-        }
-
-        if (totalRewards.length === 0) {
-            return '0';
-        }
-
-        const userMaxBoostedRewardsPerBlock = new BigNumber(rewardsPerBlock)
-            .multipliedBy(boostedYieldsRewardsPercenatage)
-            .dividedBy(constantsConfig.MAX_PERCENT)
-            .multipliedBy(liquidity)
-            .dividedBy(farmTokenSupply);
-
-        const userRewardsForWeek = new BigNumber(
-            boostedYieldsFactors.maxRewardsFactor,
-        )
-            .multipliedBy(userMaxBoostedRewardsPerBlock)
-            .multipliedBy(blocksInWeek);
-
-        const boostedRewardsByEnergy = new BigNumber(totalRewards)
-            .multipliedBy(boostedYieldsFactors.userRewardsEnergy)
-            .multipliedBy(userEnergy.amount)
-            .dividedBy(totalEnergy);
-
-        const boostedRewardsByTokens = new BigNumber(totalRewards)
-            .multipliedBy(boostedYieldsFactors.userRewardsFarm)
-            .multipliedBy(liquidity)
-            .dividedBy(farmTokenSupply);
-
-        const constantsBase = new BigNumber(
-            boostedYieldsFactors.userRewardsEnergy,
-        ).plus(boostedYieldsFactors.userRewardsFarm);
-
-        const boostedRewardAmount = boostedRewardsByEnergy
-            .plus(boostedRewardsByTokens)
-            .dividedBy(constantsBase);
-
-        const paymentAmount =
-            boostedRewardAmount.comparedTo(userRewardsForWeek) < 1
-                ? boostedRewardAmount
-                : userRewardsForWeek;
-
-        return paymentAmount.integerValue().toFixed();
+        return rewards[0] ? rewards[0].amount : '0';
     }
 
     async computeUserRewardsForWeek(
         scAddress: string,
         userAddress: string,
         week: number,
+        rewardsPerWeek?: EsdtTokenPayment[],
     ): Promise<EsdtTokenPayment[]> {
-        const payments: EsdtTokenPayment[] = [];
-        const [
-            totalRewardsForWeek,
-            userEnergyForWeek,
-            totalEnergyForWeek,
-            liquidity,
-        ] = await Promise.all([
-            this.weeklyRewardsSplittingAbi.totalRewardsForWeek(scAddress, week),
-            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+        const userRewardsForWeek = [];
+
+        const [currentWeek, userEnergyForWeek, totalEnergyForWeek, liquidity] =
+            await Promise.all([
+                this.weekTimeKeepingAbi.currentWeek(scAddress),
+                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                    scAddress,
+                    userAddress,
+                    week,
+                ),
+                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+                    scAddress,
+                    week,
+                ),
+
+                this.stakingAbi.userTotalStakePosition(scAddress, userAddress),
+            ]);
+
+        const rewardsForWeek =
+            rewardsPerWeek ??
+            (await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
                 scAddress,
-                userAddress,
                 week,
-            ),
-            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
-            this.stakingAbi.userTotalStakePosition(scAddress, userAddress),
-        ]);
+            ));
+
+        if (rewardsForWeek.length === 0) {
+            return userRewardsForWeek;
+        }
+
+        if (rewardsForWeek.length !== 1) {
+            throw new Error('Invalid boosted yields rewards');
+        }
 
         const boostedYieldsFactors = await this.stakingAbi.boostedYieldsFactors(
             scAddress,
@@ -598,76 +532,168 @@ export class StakingComputeService {
             userEnergyForWeek.amount,
         ).isGreaterThan(boostedYieldsFactors.minEnergyAmount);
         if (!userHasMinEnergy) {
-            return payments;
+            return userRewardsForWeek;
         }
 
         const userMinFarmAmount = new BigNumber(liquidity).isGreaterThan(
             boostedYieldsFactors.minFarmAmount,
         );
         if (!userMinFarmAmount) {
-            return payments;
+            return userRewardsForWeek;
         }
 
-        if (totalRewardsForWeek.length === 0) {
-            return payments;
+        const farmTokenSupply =
+            week === currentWeek
+                ? await this.stakingAbi.farmTokenSupply(scAddress)
+                : await this.stakingAbi.farmSupplyForWeek(scAddress, week);
+
+        const rewardForWeek = rewardsForWeek[0];
+
+        const weeklyRewardsAmount = new BigNumber(rewardForWeek.amount);
+        if (weeklyRewardsAmount.isZero()) {
+            return userRewardsForWeek;
         }
 
+        const userMaxRewards = weeklyRewardsAmount
+            .multipliedBy(liquidity)
+            .multipliedBy(boostedYieldsFactors.maxRewardsFactor)
+            .dividedBy(farmTokenSupply)
+            .integerValue();
+
+        const boostedRewardsByEnergy = weeklyRewardsAmount
+            .multipliedBy(boostedYieldsFactors.userRewardsEnergy)
+            .multipliedBy(userEnergyForWeek.amount)
+            .dividedBy(totalEnergyForWeek)
+            .integerValue();
+
+        const boostedRewardsByTokens = weeklyRewardsAmount
+            .multipliedBy(boostedYieldsFactors.userRewardsFarm)
+            .multipliedBy(liquidity)
+            .dividedBy(farmTokenSupply)
+            .integerValue();
+
+        const constantsBase = new BigNumber(
+            boostedYieldsFactors.userRewardsEnergy,
+        ).plus(boostedYieldsFactors.userRewardsFarm);
+
+        const boostedRewardAmount = boostedRewardsByEnergy
+            .plus(boostedRewardsByTokens)
+            .dividedBy(constantsBase)
+            .integerValue();
+
+        const userRewardForWeek =
+            boostedRewardAmount.comparedTo(userMaxRewards) < 1
+                ? boostedRewardAmount
+                : userMaxRewards;
+
+        if (userRewardForWeek.isPositive()) {
+            userRewardsForWeek.push(
+                new EsdtTokenPayment({
+                    tokenID: rewardForWeek.tokenID,
+                    nonce: rewardForWeek.nonce,
+                    amount: userRewardForWeek.toFixed(),
+                }),
+            );
+        }
+
+        return userRewardsForWeek;
+    }
+
+    async computeUserCurentBoostedAPR(
+        scAddress: string,
+        userAddress: string,
+    ): Promise<number> {
+        const [currentWeek, boostedRewardsPerWeek, userTotalStakePosition] =
+            await Promise.all([
+                this.weekTimeKeepingAbi.currentWeek(scAddress),
+                this.computeBoostedRewardsPerWeek(scAddress),
+                this.stakingAbi.userTotalStakePosition(scAddress, userAddress),
+            ]);
+
+        const userRewardsPerWeek = await this.computeUserRewardsForWeek(
+            scAddress,
+            userAddress,
+            currentWeek,
+            boostedRewardsPerWeek,
+        );
+
+        return new BigNumber(userRewardsPerWeek[0].amount)
+            .multipliedBy(52)
+            .dividedBy(userTotalStakePosition)
+            .toNumber();
+    }
+
+    async computeUserMaxBoostedAPR(
+        scAddress: string,
+        userAddress: string,
+    ): Promise<number> {
         const [
-            rewardsPerBlock,
+            boostedRewardsPerWeek,
+            boostedYieldsFactors,
             farmTokenSupply,
-            boostedYieldsRewardsPercenatage,
+            userTotalStakePosition,
         ] = await Promise.all([
+            this.computeBoostedRewardsPerWeek(scAddress),
+            this.stakingAbi.boostedYieldsFactors(scAddress),
+            this.stakingAbi.farmTokenSupply(scAddress),
+            this.stakingAbi.userTotalStakePosition(scAddress, userAddress),
+        ]);
+
+        const userMaxRewardsPerWeek = new BigNumber(
+            boostedRewardsPerWeek[0].amount,
+        )
+            .multipliedBy(boostedYieldsFactors.maxRewardsFactor)
+            .multipliedBy(userTotalStakePosition)
+            .dividedBy(farmTokenSupply);
+
+        return userMaxRewardsPerWeek
+            .multipliedBy(52)
+            .dividedBy(userTotalStakePosition)
+            .toNumber();
+    }
+
+    async computeBoostedRewardsPerWeek(
+        scAddress: string,
+    ): Promise<EsdtTokenPayment[]> {
+        const [
+            rewardTokenID,
+            rewardsPerBlock,
+            annualPercentageRewards,
+            farmTokenSupply,
+            boostedYieldsRewardsPercentage,
+        ] = await Promise.all([
+            this.stakingAbi.rewardTokenID(scAddress),
             this.stakingAbi.perBlockRewardsAmount(scAddress),
+            this.stakingAbi.annualPercentageRewards(scAddress),
             this.stakingAbi.farmTokenSupply(scAddress),
             this.stakingAbi.boostedYieldsRewardsPercenatage(scAddress),
         ]);
 
-        const userMaxBoostedRewardsPerBlock = new BigNumber(rewardsPerBlock)
-            .multipliedBy(boostedYieldsRewardsPercenatage)
+        const rewardsPerBlockAPRBound = new BigNumber(farmTokenSupply)
+            .multipliedBy(annualPercentageRewards)
             .dividedBy(constantsConfig.MAX_PERCENT)
-            .multipliedBy(liquidity)
-            .dividedBy(farmTokenSupply);
+            .dividedBy(constantsConfig.BLOCKS_IN_YEAR);
 
-        const userRewardsForWeek = new BigNumber(
-            boostedYieldsFactors.maxRewardsFactor,
+        const actualRewardsPerBlock = new BigNumber(rewardsPerBlock).isLessThan(
+            rewardsPerBlockAPRBound,
         )
-            .multipliedBy(userMaxBoostedRewardsPerBlock)
-            .multipliedBy(constantsConfig.BLOCKS_PER_WEEK);
+            ? new BigNumber(rewardsPerBlock)
+            : rewardsPerBlockAPRBound;
+        const blocksInWeek = 14440 * 7;
+        const totalRewardsPerWeek =
+            actualRewardsPerBlock.multipliedBy(blocksInWeek);
 
-        for (const weeklyRewards of totalRewardsForWeek) {
-            const boostedRewardsByEnergy = new BigNumber(weeklyRewards.amount)
-                .multipliedBy(boostedYieldsFactors.userRewardsEnergy)
-                .multipliedBy(userEnergyForWeek.amount)
-                .dividedBy(totalEnergyForWeek);
-
-            const boostedRewardsByTokens = new BigNumber(weeklyRewards.amount)
-                .multipliedBy(boostedYieldsFactors.userRewardsFarm)
-                .multipliedBy(liquidity)
-                .dividedBy(farmTokenSupply);
-
-            const constantsBase = new BigNumber(
-                boostedYieldsFactors.userRewardsEnergy,
-            ).plus(boostedYieldsFactors.userRewardsFarm);
-
-            const boostedRewardAmount = boostedRewardsByEnergy
-                .plus(boostedRewardsByTokens)
-                .dividedBy(constantsBase);
-
-            const paymentAmount =
-                boostedRewardAmount.comparedTo(userRewardsForWeek) < 1
-                    ? boostedRewardAmount
-                    : userRewardsForWeek;
-            if (paymentAmount.isPositive()) {
-                const payment = new EsdtTokenPayment();
-                payment.amount = paymentAmount.integerValue().toFixed();
-                payment.nonce = 0;
-                payment.tokenID = weeklyRewards.tokenID;
-                payment.tokenType = weeklyRewards.tokenType;
-                payments.push(payment);
-            }
-        }
-
-        return payments;
+        return [
+            new EsdtTokenPayment({
+                tokenID: rewardTokenID,
+                nonce: 0,
+                amount: totalRewardsPerWeek
+                    .multipliedBy(boostedYieldsRewardsPercentage)
+                    .dividedBy(constantsConfig.MAX_PERCENT)
+                    .integerValue()
+                    .toFixed(),
+            }),
+        ];
     }
 
     @ErrorLoggerAsync({
