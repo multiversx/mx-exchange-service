@@ -531,7 +531,9 @@ export class PairComputeService implements IPairComputeService {
             ),
         );
 
-        return actualFees24hBig.times(365).div(lockedValueUSD).toFixed();
+        const feesAPR = actualFees24hBig.times(365).div(lockedValueUSD);
+
+        return !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
     }
 
     @ErrorLoggerAsync({
