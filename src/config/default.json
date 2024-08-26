@@ -509,7 +509,7 @@
             "dualTokens": {
                 "farmPosition": 50000000,
                 "farmPositionProxy": 60000000,
-                "dualFarmPosition": 70000000,
+                "dualFarmPosition": 100000000,
                 "exitFarm": 50000000
             },
             "energyPosition": 13000000
