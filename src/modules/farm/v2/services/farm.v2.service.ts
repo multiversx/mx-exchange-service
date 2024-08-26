@@ -207,6 +207,7 @@ export class FarmServiceV2 extends FarmServiceBase {
 
         return new BoostedRewardsModel({
             farmAddress,
+            userAddress,
             boostedRewardsWeeklyInfo: modelsList,
             claimProgress: currentClaimProgress,
             accumulatedRewards: userAccumulatedRewards,
