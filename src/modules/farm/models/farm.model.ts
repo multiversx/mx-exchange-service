@@ -47,12 +47,18 @@ export class RewardsModel {
 export class BoostedRewardsModel {
     @Field()
     farmAddress: string;
+    @Field()
+    userAddress: string;
     @Field(() => [UserInfoByWeekModel], { nullable: true })
     boostedRewardsWeeklyInfo: UserInfoByWeekModel[];
     @Field(() => ClaimProgress, { nullable: true })
     claimProgress: ClaimProgress;
     @Field({ nullable: true })
     accumulatedRewards: string;
+    @Field({ nullable: true })
+    curentBoostedAPR: number;
+    @Field({ nullable: true })
+    maximumBoostedAPR: number;
 
     constructor(init?: Partial<BoostedRewardsModel>) {
         Object.assign(this, init);
