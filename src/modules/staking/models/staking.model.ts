@@ -9,6 +9,7 @@ import {
     UserInfoByWeekModel,
 } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
+import { BoostedRewardsModel } from 'src/modules/farm/models/farm.model';
 
 @ObjectType()
 export class StakingModel {
@@ -106,6 +107,13 @@ export class StakingRewardsModel {
 
     constructor(init?: Partial<StakingRewardsModel>) {
         Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class StakingBoostedRewardsModel extends BoostedRewardsModel {
+    constructor(init?: Partial<StakingBoostedRewardsModel>) {
+        super(init);
     }
 }
 

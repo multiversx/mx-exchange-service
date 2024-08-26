@@ -15,6 +15,7 @@ import {
 } from './models/staking.args';
 import {
     OptimalCompoundModel,
+    StakingBoostedRewardsModel,
     StakingModel,
     StakingRewardsModel,
 } from './models/staking.model';
@@ -34,15 +35,37 @@ import { constantsConfig } from 'src/config';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { StakeAddressValidationPipe } from './validators/stake.address.validator';
 import { BoostedYieldsFactors } from '../farm/models/farm.v2.model';
-import {
-    BoostedRewardsModel,
-    UserTotalBoostedPosition,
-} from '../farm/models/farm.model';
+import { UserTotalBoostedPosition } from '../farm/models/farm.model';
 import { StakingFarmsResponse } from './models/staking.farms.response';
 import ConnectionArgs, {
     getPagingParameters,
 } from '../common/filters/connection.args';
 import PageResponse from '../common/page.response';
+
+@Resolver(() => StakingBoostedRewardsModel)
+export class StakingBoostedRewardsResolver {
+    constructor(private readonly stakingCompute: StakingComputeService) {}
+
+    @ResolveField()
+    async curentBoostedAPR(
+        @Parent() parent: StakingBoostedRewardsModel,
+    ): Promise<number> {
+        return this.stakingCompute.computeUserCurentBoostedAPR(
+            parent.farmAddress,
+            parent.userAddress,
+        );
+    }
+
+    @ResolveField()
+    async maximumBoostedAPR(
+        @Parent() parent: StakingBoostedRewardsModel,
+    ): Promise<number> {
+        return this.stakingCompute.computeUserMaxBoostedAPR(
+            parent.farmAddress,
+            parent.userAddress,
+        );
+    }
+}
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -315,14 +338,14 @@ export class StakingResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => [BoostedRewardsModel], {
+    @Query(() => [StakingBoostedRewardsModel], {
         description: 'Returns staking boosted rewards for the user',
     })
     async getStakingBoostedRewardsBatch(
         @Args('stakingAddresses', { type: () => [String] })
         stakingAddresses: string[],
         @AuthUser() user: UserAuthResult,
-    ): Promise<BoostedRewardsModel[]> {
+    ): Promise<StakingBoostedRewardsModel[]> {
         return this.stakingService.getStakingBoostedRewardsBatch(
             stakingAddresses,
             user.address,

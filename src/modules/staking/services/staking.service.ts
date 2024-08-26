@@ -9,7 +9,11 @@ import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { StakingModel, StakingRewardsModel } from '../models/staking.model';
+import {
+    StakingBoostedRewardsModel,
+    StakingModel,
+    StakingRewardsModel,
+} from '../models/staking.model';
 import {
     StakingTokenAttributesModel,
     UnbondTokenAttributesModel,
@@ -26,7 +30,6 @@ import {
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { constantsConfig } from 'src/config';
-import { BoostedRewardsModel } from 'src/modules/farm/models/farm.model';
 import { CollectionType } from 'src/modules/common/collection.type';
 import { PaginationArgs } from 'src/modules/dex.model';
 import {
@@ -255,7 +258,7 @@ export class StakingService {
     async getStakingBoostedRewardsBatch(
         stakingAddresses: string[],
         userAddress: string,
-    ): Promise<BoostedRewardsModel[]> {
+    ): Promise<StakingBoostedRewardsModel[]> {
         const promises = stakingAddresses.map(async (address) => {
             return await this.getStakingBoostedRewards(address, userAddress);
         });
@@ -265,7 +268,7 @@ export class StakingService {
     async getStakingBoostedRewards(
         stakingAddress: string,
         userAddress: string,
-    ): Promise<BoostedRewardsModel> {
+    ): Promise<StakingBoostedRewardsModel> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             stakingAddress,
         );
@@ -309,8 +312,9 @@ export class StakingService {
                 currentWeek,
             );
 
-        return new BoostedRewardsModel({
+        return new StakingBoostedRewardsModel({
             farmAddress: stakingAddress,
+            userAddress: userAddress,
             boostedRewardsWeeklyInfo: modelsList,
             claimProgress: currentClaimProgress,
             accumulatedRewards: userAccumulatedRewards,
