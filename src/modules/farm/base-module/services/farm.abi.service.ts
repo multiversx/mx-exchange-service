@@ -14,6 +14,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { IFarmAbiService } from './interfaces';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 export class FarmAbiService
     extends GenericAbiService
@@ -23,8 +24,31 @@ export class FarmAbiService
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,
         protected readonly apiService: MXApiService,
+        protected readonly cacheService: CacheService,
     ) {
         super(mxProxy);
+    }
+
+    async getAllKeys<T>(
+        farmAddresses: string[],
+        baseKey: string,
+        getterMethod: (address: string) => Promise<T>,
+    ): Promise<T[]> {
+        const keys = farmAddresses.map((address) => `${baseKey}.${address}`);
+        const values = await this.cacheService.getMany<T>(keys);
+
+        const missingIndexes: number[] = [];
+        values.forEach((value, index) => {
+            if (!value) {
+                missingIndexes.push(index);
+            }
+        });
+
+        for (const missingIndex of missingIndexes) {
+            const tokenID = await getterMethod(farmAddresses[missingIndex]);
+            values[missingIndex] = tokenID;
+        }
+        return values;
     }
 
     @ErrorLoggerAsync({

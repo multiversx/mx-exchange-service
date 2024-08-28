@@ -10,6 +10,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IFarmAbiServiceV1_3 } from './interfaces';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class FarmAbiServiceV1_3
@@ -20,8 +21,9 @@ export class FarmAbiServiceV1_3
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,
         protected readonly mxApi: MXApiService,
+        protected readonly cacheService: CacheService,
     ) {
-        super(mxProxy, gatewayService, mxApi);
+        super(mxProxy, gatewayService, mxApi, cacheService);
     }
 
     @ErrorLoggerAsync({

@@ -13,6 +13,8 @@ import { WeekTimekeepingModule } from '../../../submodules/week-timekeeping/week
 import { WeeklyRewardsSplittingModule } from '../../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { EnergyModule } from '../../energy/energy.module';
 import { FarmTransactionResolverV2 } from './farm.v2.transaction.resolver';
+import { FarmAbiLoaderV2 } from './services/farm.v2.abi.loader';
+import { FarmComputeLoaderV2 } from './services/farm.v2.compute.loader';
 
 @Module({
     imports: [
@@ -25,6 +27,8 @@ import { FarmTransactionResolverV2 } from './farm.v2.transaction.resolver';
         forwardRef(() => WeeklyRewardsSplittingModule),
     ],
     providers: [
+        FarmAbiLoaderV2,
+        FarmComputeLoaderV2,
         FarmServiceV2,
         FarmAbiServiceV2,
         FarmSetterServiceV2,

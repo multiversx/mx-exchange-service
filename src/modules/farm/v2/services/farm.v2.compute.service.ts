@@ -35,10 +35,10 @@ export class FarmComputeServiceV2
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
+        protected readonly cachingService: CacheService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
-        private readonly cachingService: CacheService,
     ) {
         super(
             farmAbi,
@@ -47,6 +47,7 @@ export class FarmComputeServiceV2
             pairCompute,
             contextGetter,
             tokenCompute,
+            cachingService,
         );
     }
 
