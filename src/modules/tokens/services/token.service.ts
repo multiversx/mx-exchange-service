@@ -21,6 +21,7 @@ import BigNumber from 'bignumber.js';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { TokenFilteringService } from './token.filtering.service';
 import { PaginationArgs } from 'src/modules/dex.model';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class TokenService {
@@ -126,23 +127,12 @@ export class TokenService {
     }
 
     async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
-        const keys = tokenIDs.map(
-            (tokenID) => `token.tokenMetadata.${tokenID}`,
+        return getAllKeys<EsdtToken>(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenMetadata',
+            this.tokenMetadata.bind(this),
         );
-        const values = await this.cachingService.getMany<EsdtToken>(keys);
-
-        const missingIndexes: number[] = [];
-        values.forEach((value, index) => {
-            if (!value) {
-                missingIndexes.push(index);
-            }
-        });
-
-        for (const missingIndex of missingIndexes) {
-            const token = await this.tokenMetadata(tokenIDs[missingIndex]);
-            values[missingIndex] = token;
-        }
-        return values;
     }
 
     async tokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
@@ -164,25 +154,12 @@ export class TokenService {
     async getAllNftsCollectionMetadata(
         collections: string[],
     ): Promise<NftCollection[]> {
-        const keys = collections.map(
-            (collection) => `token.getNftCollectionMetadata.${collection}`,
+        return getAllKeys<NftCollection>(
+            this.cachingService,
+            collections,
+            'token.getNftCollectionMetadata',
+            this.getNftCollectionMetadata.bind(this),
         );
-        const values = await this.cachingService.getMany<NftCollection>(keys);
-
-        const missingIndexes: number[] = [];
-        values.forEach((value, index) => {
-            if (!value) {
-                missingIndexes.push(index);
-            }
-        });
-
-        for (const missingIndex of missingIndexes) {
-            const token = await this.getNftCollectionMetadata(
-                collections[missingIndex],
-            );
-            values[missingIndex] = token;
-        }
-        return values;
     }
 
     async getNftCollectionMetadataRaw(
