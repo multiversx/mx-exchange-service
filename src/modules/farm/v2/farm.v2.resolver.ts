@@ -9,7 +9,7 @@ import { constantsConfig } from '../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FarmAbiServiceV2 } from './services/farm.v2.abi.service';
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { JwtOrNativeAuthGuard } from 'src/modules/auth/jwt.or.native.auth.guard';
 import { UserAuthResult } from 'src/modules/auth/user.auth.result';
 import { AuthUser } from 'src/modules/auth/auth.user';
@@ -21,6 +21,10 @@ import {
 } from '../models/farm.model';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { Logger } from 'winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { FarmAbiLoaderV2 } from './services/farm.v2.abi.loader';
+import { FarmComputeLoaderV2 } from './services/farm.v2.compute.loader';
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
@@ -28,10 +32,20 @@ export class FarmResolverV2 extends FarmResolver {
         protected readonly farmAbi: FarmAbiServiceV2,
         protected readonly farmService: FarmServiceV2,
         protected readonly farmCompute: FarmComputeServiceV2,
+        protected readonly farmAbiLoader: FarmAbiLoaderV2,
+        protected readonly farmComputeLoader: FarmComputeLoaderV2,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {
-        super(farmAbi, farmService, farmCompute);
+        super(
+            farmAbi,
+            farmService,
+            farmCompute,
+            farmAbiLoader,
+            farmComputeLoader,
+            logger,
+        );
     }
 
     @ResolveField()
