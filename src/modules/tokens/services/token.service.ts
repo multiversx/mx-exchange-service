@@ -21,6 +21,7 @@ import BigNumber from 'bignumber.js';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { TokenFilteringService } from './token.filtering.service';
 import { PaginationArgs } from 'src/modules/dex.model';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class TokenService {
@@ -122,45 +123,49 @@ export class TokenService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenMetadata(tokenID: string): Promise<EsdtToken> {
-        return await this.tokenMetadataRaw(tokenID);
+        return this.tokenMetadataRaw(tokenID);
+    }
+
+    async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
+        return getAllKeys<EsdtToken>(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenMetadata',
+            this.tokenMetadata.bind(this),
+        );
     }
 
     async tokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
-        return await this.apiService.getToken(tokenID);
+        return this.apiService.getToken(tokenID);
     }
 
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
     async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
-        if (collection === undefined) {
-            return undefined;
-        }
-        const cacheKey = `token.${collection}`;
-        const cachedToken = await this.cachingService.get<NftCollection>(
-            cacheKey,
+        return this.getNftCollectionMetadataRaw(collection);
+    }
+
+    async getAllNftsCollectionMetadata(
+        collections: string[],
+    ): Promise<NftCollection[]> {
+        return getAllKeys<NftCollection>(
+            this.cachingService,
+            collections,
+            'token.getNftCollectionMetadata',
+            this.getNftCollectionMetadata.bind(this),
         );
-        if (cachedToken && cachedToken !== undefined) {
-            await this.cachingService.set<NftCollection>(
-                cacheKey,
-                cachedToken,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            );
-            return cachedToken;
-        }
+    }
 
-        const token = await this.apiService.getNftCollection(collection);
-
-        if (token !== undefined) {
-            await this.cachingService.set<NftCollection>(
-                cacheKey,
-                token,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            );
-
-            return token;
-        }
-
-        return undefined;
+    async getNftCollectionMetadataRaw(
+        collection: string,
+    ): Promise<NftCollection> {
+        return this.apiService.getNftCollection(collection);
     }
 
     async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {

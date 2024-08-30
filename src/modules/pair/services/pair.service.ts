@@ -19,6 +19,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { PairComputeService } from './pair.compute.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class PairService {
@@ -39,9 +40,31 @@ export class PairService {
         return await this.tokenService.tokenMetadata(firstTokenID);
     }
 
+    async getAllFirstTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
+        const tokenIDs = await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.firstTokenID',
+            this.pairAbi.firstTokenID.bind(this.pairAbi),
+        );
+
+        return this.tokenService.getAllTokensMetadata(tokenIDs);
+    }
+
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.pairAbi.secondTokenID(pairAddress);
         return await this.tokenService.tokenMetadata(secondTokenID);
+    }
+
+    async getAllSecondTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
+        const tokenIDs = await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.secondTokenID',
+            this.pairAbi.secondTokenID.bind(this.pairAbi),
+        );
+
+        return this.tokenService.getAllTokensMetadata(tokenIDs);
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
@@ -49,6 +72,17 @@ export class PairService {
         return lpTokenID === undefined
             ? undefined
             : await this.tokenService.tokenMetadata(lpTokenID);
+    }
+
+    async getAllLpTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
+        const tokenIDs = await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.lpTokenID',
+            this.pairAbi.lpTokenID.bind(this.pairAbi),
+        );
+
+        return this.tokenService.getAllTokensMetadata(tokenIDs);
     }
 
     async getAmountOut(

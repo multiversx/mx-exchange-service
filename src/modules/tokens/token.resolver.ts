@@ -8,18 +8,17 @@ import {
     TokensFiltersArgs,
 } from './models/tokens.filter.args';
 import { TokenService } from './services/token.service';
-import { GenericResolver } from '../../services/generics/generic.resolver';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
-import { TokenComputeService } from './services/token.compute.service';
 import { TokensResponse } from './models/tokens.response';
 import ConnectionArgs, {
     getPagingParameters,
 } from '../common/filters/connection.args';
 import PageResponse from '../common/page.response';
+import { TokenLoader } from './services/token.loader';
 
 @Resolver(() => AssetsModel)
-export class AssetsResolver extends GenericResolver {
+export class AssetsResolver {
     @ResolveField(() => SocialModel, { nullable: true })
     async social(@Parent() parent: AssetsModel): Promise<SocialModel> {
         return new SocialModel(parent.social);
@@ -27,40 +26,36 @@ export class AssetsResolver extends GenericResolver {
 }
 
 @Resolver(() => EsdtToken)
-export class TokensResolver extends GenericResolver {
+export class TokensResolver {
     constructor(
         private readonly tokenService: TokenService,
-        private readonly tokenCompute: TokenComputeService,
-    ) {
-        super();
-    }
+        private readonly tokenLoader: TokenLoader,
+    ) {}
 
     @ResolveField(() => String)
     async derivedEGLD(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenPriceDerivedEGLD(parent.identifier),
+        return this.tokenLoader.tokenPriceDerivedEGLDLoader.load(
+            parent.identifier,
         );
     }
 
     @ResolveField(() => String)
     async price(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenPriceDerivedUSD(parent.identifier),
+        return this.tokenLoader.tokenPriceDerivedUSDLoader.load(
+            parent.identifier,
         );
     }
 
     @ResolveField(() => String, { nullable: true })
     async previous24hPrice(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenPrevious24hPrice(parent.identifier),
+        return this.tokenLoader.tokenPrevious24hPriceLoader.load(
+            parent.identifier,
         );
     }
 
     @ResolveField(() => String)
     async type(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenService.getEsdtTokenType(parent.identifier),
-        );
+        return this.tokenLoader.tokenTypeLoader.load(parent.identifier);
     }
 
     @ResolveField(() => AssetsModel, { nullable: true })
@@ -75,57 +70,49 @@ export class TokensResolver extends GenericResolver {
 
     @ResolveField(() => String, { nullable: true })
     async previous7dPrice(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenPrevious7dPrice(parent.identifier),
+        return this.tokenLoader.tokenPrevious7dPriceLoader.load(
+            parent.identifier,
         );
     }
 
     @ResolveField(() => String, { nullable: true })
     async volumeUSD24h(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenVolumeUSD24h(parent.identifier),
-        );
+        return this.tokenLoader.tokenVolumeUSD24hLoader.load(parent.identifier);
     }
 
     @ResolveField(() => String, { nullable: true })
     async previous24hVolume(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenPrevious24hVolumeUSD(parent.identifier),
+        return this.tokenLoader.tokenPrevious24hVolumeUSDLoader.load(
+            parent.identifier,
         );
     }
 
     @ResolveField(() => String, { nullable: true })
     async liquidityUSD(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenLiquidityUSD(parent.identifier),
-        );
+        return this.tokenLoader.tokenLiquidityUSDLoader.load(parent.identifier);
     }
 
     @ResolveField(() => String, { nullable: true })
     async createdAt(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenCreatedAt(parent.identifier),
-        );
+        return this.tokenLoader.tokenCreatedAtLoader.load(parent.identifier);
     }
 
     @ResolveField(() => Number, { nullable: true })
     async swapCount24h(@Parent() parent: EsdtToken): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenSwapCount(parent.identifier),
-        );
+        return this.tokenLoader.tokenSwapCountLoader.load(parent.identifier);
     }
 
     @ResolveField(() => Number, { nullable: true })
     async previous24hSwapCount(@Parent() parent: EsdtToken): Promise<number> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenPrevious24hSwapCount(parent.identifier),
+        return this.tokenLoader.tokenPrevious24hSwapCountLoader.load(
+            parent.identifier,
         );
     }
 
     @ResolveField(() => String, { nullable: true })
     async trendingScore(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.tokenCompute.tokenTrendingScore(parent.identifier),
+        return this.tokenLoader.tokenTrendingScoreLoader.load(
+            parent.identifier,
         );
     }
 

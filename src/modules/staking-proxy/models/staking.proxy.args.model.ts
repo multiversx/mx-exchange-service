@@ -31,14 +31,14 @@ export class UnstakeFarmTokensArgs {
 
 @InputType()
 export class StakingProxiesFilter {
-    @Field({ nullable: true })
-    address: string;
-    @Field({ nullable: true })
-    pairAddress: string;
-    @Field({ nullable: true })
-    stakingFarmAddress: string;
-    @Field({ nullable: true })
-    lpFarmAddress: string;
+    @Field(() => [String], { nullable: true })
+    addresses: string[];
+    @Field(() => [String], { nullable: true })
+    pairAddresses: string[];
+    @Field(() => [String], { nullable: true })
+    stakingFarmAddresses: string[];
+    @Field(() => [String], { nullable: true })
+    lpFarmAddresses: string[];
     @Field(() => String, { nullable: true })
     searchToken?: string;
 }

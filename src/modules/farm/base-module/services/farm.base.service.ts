@@ -16,6 +16,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Inject, forwardRef } from '@nestjs/common';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 export abstract class FarmServiceBase {
     constructor(
@@ -32,14 +33,44 @@ export abstract class FarmServiceBase {
         return this.tokenService.tokenMetadata(farmedTokenID);
     }
 
+    async getAllFarmedTokens(farmAddresses: string[]): Promise<EsdtToken[]> {
+        const farmedTokenIDs = await getAllKeys<string>(
+            this.cachingService,
+            farmAddresses,
+            'farm.farmedTokenID',
+            this.farmAbi.farmedTokenID.bind(this.farmAbi),
+        );
+        return this.tokenService.getAllTokensMetadata(farmedTokenIDs);
+    }
+
     async getFarmToken(farmAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.farmAbi.farmTokenID(farmAddress);
         return this.tokenService.getNftCollectionMetadata(farmTokenID);
     }
 
+    async getAllFarmTokens(farmAddresses: string[]): Promise<NftCollection[]> {
+        const farmTokenIDs = await getAllKeys<string>(
+            this.cachingService,
+            farmAddresses,
+            'farm.farmTokenID',
+            this.farmAbi.farmTokenID.bind(this.farmAbi),
+        );
+        return this.tokenService.getAllNftsCollectionMetadata(farmTokenIDs);
+    }
+
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
         return this.tokenService.tokenMetadata(farmingTokenID);
+    }
+
+    async getAllFarmingTokens(farmAddresses: string[]): Promise<EsdtToken[]> {
+        const farmingTokenIDs = await getAllKeys<string>(
+            this.cachingService,
+            farmAddresses,
+            'farm.farmingTokenID',
+            this.farmAbi.farmingTokenID.bind(this.farmAbi),
+        );
+        return this.tokenService.getAllTokensMetadata(farmingTokenIDs);
     }
 
     protected async getRemainingFarmingEpochs(

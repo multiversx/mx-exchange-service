@@ -201,7 +201,7 @@ export class PairModel {
     @Field()
     tradesCount: number;
 
-    @Field({ nullable: true })
+    @Field(() => Int, { nullable: true })
     deployedAt: number;
 
     @Field(() => PairCompoundedAPRModel, { nullable: true })

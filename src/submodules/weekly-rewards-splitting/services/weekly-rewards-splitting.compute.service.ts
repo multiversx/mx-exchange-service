@@ -35,9 +35,7 @@ export class WeeklyRewardsSplittingComputeService
         const tokenDistributions = await Promise.all(
             payments.map(async (token) => {
                 const tokenPriceUSD =
-                    await this.tokenCompute.computeTokenPriceDerivedUSD(
-                        token.tokenID,
-                    );
+                    await this.tokenCompute.tokenPriceDerivedUSD(token.tokenID);
                 const rewardsPriceUSD = new BigNumber(
                     tokenPriceUSD,
                 ).multipliedBy(new BigNumber(token.amount));
