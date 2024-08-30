@@ -1,4 +1,5 @@
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { parseCachedNullOrUndefined } from './cache.utils';
 
 async function getMany<T>(
     cacheService: CacheService,
@@ -19,14 +20,16 @@ async function getMany<T>(
     }
 
     if (missingKeys.length === 0) {
-        return values;
+        return values.map((value) => parseCachedNullOrUndefined(value));
     }
 
     const remoteValues = await cacheService.getManyRemote<T>(missingKeys);
 
     for (const [index, missingIndex] of missingIndexes.entries()) {
         const remoteValue = remoteValues[index];
-        values[missingIndex] = remoteValue ? remoteValue : undefined;
+        values[missingIndex] = remoteValue
+            ? parseCachedNullOrUndefined(remoteValue)
+            : undefined;
     }
 
     return values;
@@ -34,11 +37,11 @@ async function getMany<T>(
 
 export async function getAllKeys<T>(
     cacheService: CacheService,
-    tokenIDs: string[],
+    rawKeys: string[],
     baseKey: string,
     getterMethod: (address: string) => Promise<T>,
 ): Promise<T[]> {
-    const keys = tokenIDs.map((tokenID) => `${baseKey}.${tokenID}`);
+    const keys = rawKeys.map((tokenID) => `${baseKey}.${tokenID}`);
     const values = await getMany<T>(cacheService, keys);
 
     const missingIndexes: number[] = [];
@@ -49,7 +52,7 @@ export async function getAllKeys<T>(
     });
 
     for (const missingIndex of missingIndexes) {
-        const tokenID = await getterMethod(tokenIDs[missingIndex]);
+        const tokenID = await getterMethod(rawKeys[missingIndex]);
         values[missingIndex] = tokenID;
     }
     return values;

@@ -28,13 +28,14 @@ import { PairAbiService } from './services/pair.abi.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
-import { constantsConfig } from 'src/config';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { FarmComputeServiceV2 } from '../farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from '../staking/services/staking.compute.service';
 import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
 import { NftCollection } from '../tokens/models/nftCollection.model';
 import { EnergyService } from '../energy/services/energy.service';
+import { PairAbiLoader } from './services/pair.abi.loader';
+import { PairComputeLoader } from './services/pair.compute.loader';
 
 @Resolver(() => PairRewardTokensModel)
 export class PairRewardTokensResolver extends GenericResolver {
@@ -172,74 +173,92 @@ export class PairResolver {
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly transactionService: PairTransactionService,
+        private readonly pairAbiLoader: PairAbiLoader,
+        private readonly pairComputeLoader: PairComputeLoader,
     ) {}
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel): Promise<EsdtToken> {
-        return this.pairService.getFirstToken(parent.address);
+        return this.pairAbiLoader.firstTokenLoader.load(parent.address);
     }
 
     @ResolveField()
     async secondToken(@Parent() parent: PairModel): Promise<EsdtToken> {
-        return this.pairService.getSecondToken(parent.address);
+        return this.pairAbiLoader.secondTokenLoader.load(parent.address);
     }
 
     @ResolveField()
     async liquidityPoolToken(@Parent() parent: PairModel): Promise<EsdtToken> {
-        return this.pairService.getLpToken(parent.address);
+        return this.pairAbiLoader.liquidityPoolTokenLoader.load(parent.address);
     }
 
     @ResolveField()
     async firstTokenPrice(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.firstTokenPrice(parent.address);
+        return this.pairComputeLoader.firstTokenPriceLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async firstTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.firstTokenPriceUSD(parent.address);
+        return this.pairComputeLoader.firstTokenPriceUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async secondTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.secondTokenPriceUSD(parent.address);
+        return this.pairComputeLoader.secondTokenPriceUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async secondTokenPrice(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.secondTokenPrice(parent.address);
+        return this.pairComputeLoader.secondTokenPriceLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async liquidityPoolTokenPriceUSD(
         @Parent() parent: PairModel,
     ): Promise<string> {
-        return this.pairCompute.lpTokenPriceUSD(parent.address);
+        return this.pairComputeLoader.lpTokenPriceUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async firstTokenLockedValueUSD(
         @Parent() parent: PairModel,
     ): Promise<string> {
-        return this.pairCompute.firstTokenLockedValueUSD(parent.address);
+        return this.pairComputeLoader.firstTokenLockedValueUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async secondTokenLockedValueUSD(
         @Parent() parent: PairModel,
     ): Promise<string> {
-        return this.pairCompute.secondTokenLockedValueUSD(parent.address);
+        return this.pairComputeLoader.secondTokenLockedValueUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async lockedValueUSD(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.lockedValueUSD(parent.address);
+        return this.pairComputeLoader.lockedValueUSDLoader.load(parent.address);
     }
 
     @ResolveField()
     async previous24hLockedValueUSD(
         @Parent() parent: PairModel,
     ): Promise<string> {
-        return this.pairCompute.previous24hLockedValueUSD(parent.address);
+        return this.pairComputeLoader.previous24hLockedValueUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
@@ -259,7 +278,9 @@ export class PairResolver {
 
     @ResolveField()
     async previous24hVolumeUSD(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.previous24hVolumeUSD(parent.address);
+        return this.pairComputeLoader.previous24hVolumeUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
@@ -269,42 +290,43 @@ export class PairResolver {
 
     @ResolveField()
     async previous24hFeesUSD(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.previous24hFeesUSD(parent.address);
+        return this.pairComputeLoader.previous24hFeesUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async feesAPR(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.feesAPR(parent.address);
+        return this.pairComputeLoader.feesAPRLoader.load(parent.address);
     }
 
     @ResolveField()
     async info(@Parent() parent: PairModel): Promise<PairInfoModel> {
-        return this.pairAbi.pairInfoMetadata(parent.address);
+        return this.pairAbiLoader.infoMetadataLoader.load(parent.address);
     }
 
     @ResolveField()
     async totalFeePercent(@Parent() parent: PairModel): Promise<number> {
-        return this.pairAbi.totalFeePercent(parent.address);
+        return this.pairAbiLoader.totalFeePercentLoader.load(parent.address);
     }
 
     @ResolveField()
     async specialFeePercent(@Parent() parent: PairModel): Promise<number> {
-        return this.pairAbi.specialFeePercent(parent.address);
+        return this.pairAbiLoader.specialFeePercentLoader.load(parent.address);
     }
 
     @ResolveField()
     async feesCollectorCutPercentage(
         @Parent() parent: PairModel,
     ): Promise<number> {
-        const fees = await this.pairAbi.feesCollectorCutPercentage(
+        return this.pairAbiLoader.feesCollectorCutPercentageLoader.load(
             parent.address,
         );
-        return fees / constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
     }
 
     @ResolveField()
     async type(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.type(parent.address);
+        return this.pairComputeLoader.typeLoader.load(parent.address);
     }
 
     @ResolveField()
@@ -314,12 +336,12 @@ export class PairResolver {
 
     @ResolveField()
     async state(@Parent() parent: PairModel): Promise<string> {
-        return this.pairAbi.state(parent.address);
+        return this.pairAbiLoader.stateLoader.load(parent.address);
     }
 
     @ResolveField()
     async feeState(@Parent() parent: PairModel): Promise<boolean> {
-        return this.pairAbi.feeState(parent.address);
+        return this.pairAbiLoader.feeStateLoader.load(parent.address);
     }
 
     @ResolveField()
@@ -365,22 +387,22 @@ export class PairResolver {
 
     @ResolveField()
     async hasFarms(@Parent() parent: PairModel): Promise<boolean> {
-        return this.pairCompute.hasFarms(parent.address);
+        return this.pairComputeLoader.hasFarmsLoader.load(parent.address);
     }
 
     @ResolveField()
     async hasDualFarms(@Parent() parent: PairModel): Promise<boolean> {
-        return this.pairCompute.hasDualFarms(parent.address);
+        return this.pairComputeLoader.hasDualFarmsLoader.load(parent.address);
     }
 
     @ResolveField()
     async tradesCount(@Parent() parent: PairModel): Promise<number> {
-        return this.pairCompute.tradesCount(parent.address);
+        return this.pairComputeLoader.tradesCountLoader.load(parent.address);
     }
 
     @ResolveField()
     async deployedAt(@Parent() parent: PairModel): Promise<number> {
-        return this.pairCompute.deployedAt(parent.address);
+        return this.pairComputeLoader.deployedAtLoader.load(parent.address);
     }
 
     @ResolveField(() => PairCompoundedAPRModel, { nullable: true })
