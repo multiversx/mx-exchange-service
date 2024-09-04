@@ -92,11 +92,6 @@ export class TokenUnstakeAbiService
     }
 
     @ErrorLoggerAsync({ logArgs: true })
-    @GetOrSetCache({
-        baseKey: 'tokenUnstake',
-        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
-        localTtl: CacheTtlInfo.ContractBalance.localTtl,
-    })
     async unlockedTokensForUser(
         userAddress: string,
     ): Promise<UnstakePairModel[]> {

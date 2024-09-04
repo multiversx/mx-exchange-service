@@ -14,6 +14,7 @@ import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Logger } from 'winston';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -69,6 +70,10 @@ export class PairCacheWarmerService {
             return;
         }
 
+        this.logger.info('Start refresh cached pairs analytics', {
+            context: 'CachePairs',
+        });
+
         const pairsAddresses = await this.routerAbi.pairsAddress();
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
@@ -123,11 +128,20 @@ export class PairCacheWarmerService {
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        this.logger.info('Finished refresh cached pairs analytics', {
+            context: 'CachePairs',
+        });
     }
 
     @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cachePairsInfo', verbose: true })
     async cachePairsInfo(): Promise<void> {
+        this.logger.info('Start refresh cached pairs info', {
+            context: 'CachePairs',
+        });
+        const performance = new PerformanceProfiler('cachePairsInfo');
+
         const pairsAddresses = await this.routerAbi.pairsAddress();
 
         for (const pairAddress of pairsAddresses) {
@@ -166,6 +180,11 @@ export class PairCacheWarmerService {
                 this.pairAbi.getInitialLiquidityAdderRaw(pairAddress),
                 this.pairAbi.getTrustedSwapPairsRaw(pairAddress),
             ]);
+
+            const lockedValueUSD =
+                await this.pairComputeService.computeLockedValueUSD(
+                    pairAddress,
+                );
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
@@ -215,16 +234,36 @@ export class PairCacheWarmerService {
                     pairAddress,
                     trustedSwapPairs,
                 ),
+                this.pairSetterService.setLockedValueUSD(
+                    pairAddress,
+                    lockedValueUSD.toFixed(),
+                ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        performance.stop();
+
+        this.logger.info(
+            `Finished refresh cached pairs info in ${
+                performance.duration / 1000
+            }s`,
+            {
+                context: 'CachePairs',
+            },
+        );
     }
 
     @Cron('*/12 * * * * *') // Update prices and reserves every 12 seconds
     @Lock({ name: 'cachePairTokenPrices', verbose: true })
     async cacheTokenPrices(): Promise<void> {
+        this.logger.info('Start refresh cached pairs prices', {
+            context: 'CachePairs',
+        });
+        const performance = new PerformanceProfiler('cacheTokenPrices');
+
         const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const invalidatedKeys = [];
+
         for (const pairAddress of pairsMetadata) {
             const pairInfo = await this.pairAbi.getPairInfoMetadataRaw(
                 pairAddress.address,
@@ -248,7 +287,7 @@ export class PairCacheWarmerService {
                     pairInfo,
                 ),
             ]);
-            invalidatedKeys.push(cachedKeys);
+            await this.deleteCacheKeys(cachedKeys);
         }
 
         for (const pairMetadata of pairsMetadata) {
@@ -298,9 +337,19 @@ export class PairCacheWarmerService {
                     lpTokenPriceUSD,
                 ),
             ]);
-            invalidatedKeys.push(cachedKeys);
+            await this.deleteCacheKeys(cachedKeys);
         }
-        await this.deleteCacheKeys(invalidatedKeys);
+
+        performance.stop();
+
+        this.logger.info(
+            `Finished refresh cached pairs prices in ${
+                performance.duration / 1000
+            }s`,
+            {
+                context: 'CachePairs',
+            },
+        );
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
