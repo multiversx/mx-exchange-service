@@ -256,11 +256,6 @@ export class AnalyticsComputeService {
     }
 
     @ErrorLoggerAsync()
-    // @GetOrSetCache({
-    //     baseKey: 'analytics',
-    //     remoteTtl: Constants.oneMinute() * 30,
-    //     localTtl: Constants.oneMinute() * 10,
-    // })
     async tokensLast7dPrice(
         identifiers: string[],
     ): Promise<TokenCandlesModel[]> {
@@ -270,12 +265,8 @@ export class AnalyticsComputeService {
     async computeTokensLast7dPrice(
         identifiers: string[],
     ): Promise<TokenCandlesModel[]> {
-        const endDate = moment().utc().unix();
-        const startDate = moment()
-            .subtract(7, 'days')
-            .utc()
-            .startOf('hour')
-            .unix();
+        const endDate = moment().unix();
+        const startDate = moment().subtract(7, 'days').startOf('hour').unix();
 
         const tokenCandles = await this.analyticsQuery.getCandlesForTokens({
             identifiers,
@@ -310,29 +301,159 @@ export class AnalyticsComputeService {
             return tokenCandles;
         }
 
-        console.log('Start gapfilling', tokensNeedingGapfilling);
-
         const earliestStartDate =
             await this.analyticsQuery.getEarliestStartDate(
                 tokensNeedingGapfilling,
             );
 
-        console.log('Min start date', earliestStartDate);
+        // No activity for any of the tokens -> gapfill with 0 candles for all tokens
+        if (!earliestStartDate) {
+            tokensNeedingGapfilling.forEach((tokenID) => {
+                let missingTokenData = new TokenCandlesModel({
+                    identifier: tokenID,
+                    candles: [],
+                });
 
-        // TODO : handle case where startDate == undefined.
-        // No activity for any of the tokens -> return array with 0 for all tokens ??
+                missingTokenData = this.gapfillTokenCandles(
+                    missingTokenData,
+                    startDate,
+                    endDate,
+                    4,
+                    [0, 0, 0, 0],
+                );
+                tokenCandles.push(missingTokenData);
+            });
+
+            return tokenCandles;
+        }
 
         const lastCandles = await this.analyticsQuery.getLastCandleForTokens({
             identifiers: tokensNeedingGapfilling,
             start: moment(earliestStartDate).utc().unix(),
             end: startDate,
         });
-        console.log(lastCandles);
 
-        // TODO : perform manual gapfilling on tokenCandles with the data in 'lastCandles'
         const result: TokenCandlesModel[] = [];
 
+        for (let i = 0; i < identifiers.length; i++) {
+            const tokenID = identifiers[i];
+
+            let tokenData = tokenCandles.find(
+                (elem) => elem.identifier === tokenID,
+            );
+
+            const lastCandle = lastCandles.find(
+                (elem) => elem.identifier === tokenID,
+            );
+
+            const gapfillOhlc = !lastCandle
+                ? [0, 0, 0, 0]
+                : lastCandle.candles[0].ohlcv;
+
+            if (!tokenData) {
+                tokenData = new TokenCandlesModel({
+                    identifier: tokenID,
+                    candles: [],
+                });
+            }
+
+            tokenData = this.gapfillTokenCandles(
+                tokenData,
+                startDate,
+                endDate,
+                4,
+                gapfillOhlc,
+            );
+
+            result.push(tokenData);
+        }
+
         return result;
+    }
+
+    private gapfillTokenCandles(
+        tokenData: TokenCandlesModel,
+        startTimestamp: number,
+        endTimestamp: number,
+        hoursResolution: number,
+        gapfillOhlc: number[],
+    ): TokenCandlesModel {
+        if (tokenData.candles.length === 0) {
+            const intervalTimestamps = this.generateTimestampsForHoursInterval(
+                startTimestamp,
+                endTimestamp,
+                hoursResolution,
+            );
+            intervalTimestamps.forEach((timestamp) => {
+                tokenData.candles.push(
+                    new OhlcvDataModel({
+                        time: (timestamp * 1000).toString(),
+                        ohlcv: [
+                            gapfillOhlc[0],
+                            gapfillOhlc[1],
+                            gapfillOhlc[2],
+                            gapfillOhlc[3],
+                            0,
+                        ],
+                    }),
+                );
+            });
+
+            return tokenData;
+        }
+
+        const needsGapfilling = tokenData.candles.some((candle) =>
+            candle.ohlcv.includes(-1),
+        );
+
+        if (!needsGapfilling) {
+            return tokenData;
+        }
+
+        for (let i = 0; i < tokenData.candles.length; i++) {
+            if (!tokenData.candles[i].ohlcv.includes(-1)) {
+                continue;
+            }
+
+            tokenData.candles[i].ohlcv = [
+                gapfillOhlc[0],
+                gapfillOhlc[1],
+                gapfillOhlc[2],
+                gapfillOhlc[3],
+                0,
+            ];
+        }
+
+        return tokenData;
+    }
+
+    private generateTimestampsForHoursInterval(
+        startTimestamp: number,
+        endTimestamp: number,
+        intervalHours: number,
+    ): number[] {
+        const timestamps: number[] = [];
+
+        let start = moment.unix(startTimestamp);
+        const end = moment.unix(endTimestamp);
+
+        // Align the start time with the next 4-hour boundary
+        const remainder = start.hour() % intervalHours;
+        if (remainder !== 0) {
+            start = start
+                .add(intervalHours - remainder, 'hours')
+                .startOf('hour');
+        } else {
+            start = start.startOf('hour'); // Align exactly to the hour if already aligned
+        }
+
+        // Generate timestamps at the specified interval until we reach the end time
+        while (start.isSameOrBefore(end)) {
+            timestamps.push(start.unix()); // Store the Unix timestamp
+            start = start.add(intervalHours, 'hours'); // Add the interval
+        }
+
+        return timestamps;
     }
 
     private async fiterPairsByIssuedLpToken(

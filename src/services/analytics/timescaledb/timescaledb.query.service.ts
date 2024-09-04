@@ -594,7 +594,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .addSelect('locf(max(high)) as high')
                 .addSelect('locf(min(low)) as low')
                 .addSelect('locf(last(close, time)) as close')
-                .addSelect('locf(sum(volume)) as volume')
+                .addSelect('sum(volume) as volume')
                 .where('series in (:...identifiers)', { identifiers })
                 .andWhere('time between :startDate and :endDate', {
                     startDate,
@@ -604,6 +604,8 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .addGroupBy('bucket');
             // .getRawMany();
 
+            // console.log('start', startDate);
+            // console.log('end', endDate);
             // console.log(query.getQueryAndParameters());
 
             const queryResult = await query.getRawMany();
@@ -641,7 +643,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                             row.high ?? -1,
                             row.low ?? -1,
                             row.close ?? -1,
-                            row.volume ?? -1,
+                            row.volume ?? 0,
                         ],
                     }),
                 );
@@ -716,7 +718,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
 
             result[tokenIndex].candles.push(
                 new OhlcvDataModel({
-                    time: row.bucket,
+                    time: row.time,
                     ohlcv: [
                         row.open ?? 0,
                         row.high ?? 0,
