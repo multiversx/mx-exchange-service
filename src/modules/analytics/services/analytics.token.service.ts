@@ -1,0 +1,222 @@
+import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { Injectable } from '@nestjs/common';
+import moment from 'moment';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { OhlcvDataModel, TokenCandlesModel } from '../models/analytics.model';
+
+@Injectable()
+export class AnalyticsTokenService {
+    constructor(private readonly analyticsQuery: AnalyticsQueryService) {}
+
+    @ErrorLoggerAsync()
+    async tokensLast7dPrice(
+        identifiers: string[],
+    ): Promise<TokenCandlesModel[]> {
+        return await this.computeTokensLast7dPrice(identifiers);
+    }
+
+    async computeTokensLast7dPrice(
+        identifiers: string[],
+        hoursResolution = 4,
+    ): Promise<TokenCandlesModel[]> {
+        const endDate = moment().unix();
+        const startDate = moment().subtract(7, 'days').startOf('hour').unix();
+
+        const tokenCandles = await this.analyticsQuery.getCandlesForTokens({
+            identifiers,
+            start: startDate,
+            end: endDate,
+            resolution: `${hoursResolution} hours`,
+        });
+
+        const tokensNeedingGapfilling = this.identifyTokensNeedingGapfilling(
+            identifiers,
+            tokenCandles,
+        );
+
+        if (tokensNeedingGapfilling.length === 0) {
+            return tokenCandles;
+        }
+
+        return this.handleGapFilling(
+            tokenCandles,
+            tokensNeedingGapfilling,
+            startDate,
+            endDate,
+            hoursResolution,
+        );
+    }
+
+    private identifyTokensNeedingGapfilling(
+        identifiers: string[],
+        tokenCandles: TokenCandlesModel[],
+    ): string[] {
+        return identifiers.filter((tokenID) => {
+            const tokenData = tokenCandles.find(
+                (elem) => elem.identifier === tokenID,
+            );
+            return (
+                !tokenData ||
+                tokenData.candles.some((candle) => candle.ohlcv.includes(-1))
+            );
+        });
+    }
+
+    private async handleGapFilling(
+        tokenCandles: TokenCandlesModel[],
+        tokensNeedingGapfilling: string[],
+        startDate: number,
+        endDate: number,
+        hoursResolution: number,
+    ): Promise<TokenCandlesModel[]> {
+        const earliestStartDate =
+            await this.analyticsQuery.getEarliestStartDate(
+                tokensNeedingGapfilling,
+            );
+
+        if (!earliestStartDate) {
+            return this.gapfillTokensWithEmptyData(
+                tokenCandles,
+                tokensNeedingGapfilling,
+                startDate,
+                endDate,
+                hoursResolution,
+            );
+        }
+
+        const lastCandles = await this.analyticsQuery.getLastCandleForTokens({
+            identifiers: tokensNeedingGapfilling,
+            start: moment(earliestStartDate).utc().unix(),
+            end: startDate,
+        });
+
+        return this.gapfillTokens(
+            tokenCandles,
+            tokensNeedingGapfilling,
+            lastCandles,
+            startDate,
+            endDate,
+            hoursResolution,
+        );
+    }
+
+    private gapfillTokensWithEmptyData(
+        tokenCandles: TokenCandlesModel[],
+        tokensNeedingGapfilling: string[],
+        startTimestamp: number,
+        endTimestamp: number,
+        hoursResolution: number,
+    ): TokenCandlesModel[] {
+        tokensNeedingGapfilling.forEach((tokenID) => {
+            const emptyTokenData = this.gapfillTokenCandles(
+                new TokenCandlesModel({ identifier: tokenID, candles: [] }),
+                startTimestamp,
+                endTimestamp,
+                hoursResolution,
+                [0, 0, 0, 0, 0],
+            );
+            tokenCandles.push(emptyTokenData);
+        });
+        return tokenCandles;
+    }
+
+    private gapfillTokens(
+        tokenCandles: TokenCandlesModel[],
+        tokensNeedingGapfilling: string[],
+        lastCandles: TokenCandlesModel[],
+        startTimestamp: number,
+        endTimestamp: number,
+        hoursResolution: number,
+    ): TokenCandlesModel[] {
+        return tokensNeedingGapfilling.map((tokenID) => {
+            let tokenData = tokenCandles.find(
+                (elem) => elem.identifier === tokenID,
+            );
+            const lastCandle = lastCandles.find(
+                (elem) => elem.identifier === tokenID,
+            );
+
+            // TODO: replace gapfilled volume value with 0
+            const gapfillOhlc = lastCandle
+                ? lastCandle.candles[0].ohlcv
+                : [0, 0, 0, 0, 0];
+
+            if (!tokenData) {
+                tokenData = new TokenCandlesModel({
+                    identifier: tokenID,
+                    candles: [],
+                });
+            }
+
+            return this.gapfillTokenCandles(
+                tokenData,
+                startTimestamp,
+                endTimestamp,
+                hoursResolution,
+                gapfillOhlc,
+            );
+        });
+    }
+
+    private gapfillTokenCandles(
+        tokenData: TokenCandlesModel,
+        startTimestamp: number,
+        endTimestamp: number,
+        hoursResolution: number,
+        gapfillOhlc: number[],
+    ): TokenCandlesModel {
+        if (tokenData.candles.length === 0) {
+            const timestamps = this.generateTimestampsForHoursInterval(
+                startTimestamp,
+                endTimestamp,
+                hoursResolution,
+            );
+
+            timestamps.forEach((timestamp) => {
+                tokenData.candles.push(
+                    new OhlcvDataModel({
+                        time: (timestamp * 1000).toString(),
+                        ohlcv: [...gapfillOhlc],
+                    }),
+                );
+            });
+
+            return tokenData;
+        }
+
+        tokenData.candles.forEach((candle) => {
+            if (candle.ohlcv.includes(-1)) {
+                candle.ohlcv = [...gapfillOhlc];
+            }
+        });
+
+        return tokenData;
+    }
+
+    private generateTimestampsForHoursInterval(
+        startTimestamp: number,
+        endTimestamp: number,
+        intervalHours: number,
+    ): number[] {
+        const timestamps: number[] = [];
+
+        let start = moment.unix(startTimestamp);
+        const end = moment.unix(endTimestamp);
+
+        // Align the start time with the next 4-hour boundary
+        const remainder = start.hour() % intervalHours;
+        if (remainder !== 0) {
+            start = start.add(intervalHours - remainder, 'hours');
+        }
+
+        start = start.startOf('hour');
+
+        // Generate timestamps at the specified interval until we reach the end time
+        while (start.isSameOrBefore(end)) {
+            timestamps.push(start.unix());
+            start = start.add(intervalHours, 'hours');
+        }
+
+        return timestamps;
+    }
+}

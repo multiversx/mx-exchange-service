@@ -18,6 +18,7 @@ import { PairComputeService } from '../pair/services/pair.compute.service';
 import { TokenService } from '../tokens/services/token.service';
 import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.validator';
+import { AnalyticsTokenService } from './services/analytics.token.service';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -27,6 +28,7 @@ export class AnalyticsResolver {
         private readonly tokenService: TokenService,
         private readonly pairCompute: PairComputeService,
         private readonly analyticsPairService: AnalyticsPairService,
+        private readonly analyticsTokenService: AnalyticsTokenService,
     ) {}
 
     @Query(() => String)
@@ -215,6 +217,8 @@ export class AnalyticsResolver {
     async tokensLast7dPrice(
         @Args() args: TokenPriceCandlesQueryArgs,
     ): Promise<TokenCandlesModel[]> {
-        return await this.analyticsCompute.tokensLast7dPrice(args.identifiers);
+        return await this.analyticsTokenService.tokensLast7dPrice(
+            args.identifiers,
+        );
     }
 }
