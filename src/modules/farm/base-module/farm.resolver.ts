@@ -69,7 +69,7 @@ export class FarmResolver {
 
     @ResolveField()
     async farmTokenPriceUSD(@Parent() parent: BaseFarmModel): Promise<string> {
-        return this.farmComputeLoader.farmTokenPriceUSDLoader.load(
+        return this.farmComputeLoader.farmingTokenPriceUSDLoader.load(
             parent.address,
         );
     }

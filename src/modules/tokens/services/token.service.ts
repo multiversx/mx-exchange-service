@@ -107,8 +107,8 @@ export class TokenService {
     })
     @GetOrSetCache({
         baseKey: 'token',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
     })
     async getEsdtTokenType(tokenID: string): Promise<string> {
         return await this.tokenRepository.getTokenType(tokenID);
