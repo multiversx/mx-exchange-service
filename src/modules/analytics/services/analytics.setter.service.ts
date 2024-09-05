@@ -4,6 +4,7 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
+import { OhlcvDataModel } from '../models/analytics.model';
 
 export class AnalyticsSetterService extends GenericSetterService {
     constructor(
@@ -82,6 +83,18 @@ export class AnalyticsSetterService extends GenericSetterService {
             value,
             Constants.oneMinute() * 10,
             Constants.oneMinute() * 5,
+        );
+    }
+
+    async setTokenLast7dPrices(
+        tokenID: string,
+        values: OhlcvDataModel[],
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('tokenLast7dPrices', tokenID),
+            values,
+            Constants.oneMinute() * 10,
+            Constants.oneMinute() * 6,
         );
     }
 }

@@ -56,6 +56,7 @@ import { AnalyticsTokenService } from './services/analytics.token.service';
         AnalyticsAWSSetterService,
         AnalyticsComputeService,
         AnalyticsSetterService,
+        AnalyticsTokenService,
     ],
 })
 export class AnalyticsModule {}

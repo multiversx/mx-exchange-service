@@ -9,12 +9,6 @@ export class AnalyticsTokenService {
     constructor(private readonly analyticsQuery: AnalyticsQueryService) {}
 
     @ErrorLoggerAsync()
-    async tokensLast7dPrice(
-        identifiers: string[],
-    ): Promise<TokenCandlesModel[]> {
-        return await this.computeTokensLast7dPrice(identifiers);
-    }
-
     async computeTokensLast7dPrice(
         identifiers: string[],
         hoursResolution = 4,
@@ -128,7 +122,12 @@ export class AnalyticsTokenService {
         endTimestamp: number,
         hoursResolution: number,
     ): TokenCandlesModel[] {
-        return tokensNeedingGapfilling.map((tokenID) => {
+        const result = tokenCandles.filter(
+            (tokenData) =>
+                !tokensNeedingGapfilling.includes(tokenData.identifier),
+        );
+
+        const gapfilledTokens = tokensNeedingGapfilling.map((tokenID) => {
             let tokenData = tokenCandles.find(
                 (elem) => elem.identifier === tokenID,
             );
@@ -136,10 +135,15 @@ export class AnalyticsTokenService {
                 (elem) => elem.identifier === tokenID,
             );
 
-            // TODO: replace gapfilled volume value with 0
-            const gapfillOhlc = lastCandle
-                ? lastCandle.candles[0].ohlcv
-                : [0, 0, 0, 0, 0];
+            let gapfillOhlc = [0, 0, 0, 0, 0];
+            if (lastCandle) {
+                // remove volume (last value in array) - not suitable for gapfilling
+                const adjustedCandle = lastCandle.candles[0].ohlcv;
+                adjustedCandle.pop();
+                adjustedCandle.push(0);
+
+                gapfillOhlc = adjustedCandle;
+            }
 
             if (!tokenData) {
                 tokenData = new TokenCandlesModel({
@@ -156,6 +160,8 @@ export class AnalyticsTokenService {
                 gapfillOhlc,
             );
         });
+
+        return [...gapfilledTokens, ...result];
     }
 
     private gapfillTokenCandles(

@@ -217,7 +217,7 @@ export class AnalyticsResolver {
     async tokensLast7dPrice(
         @Args() args: TokenPriceCandlesQueryArgs,
     ): Promise<TokenCandlesModel[]> {
-        return await this.analyticsTokenService.tokensLast7dPrice(
+        return await this.analyticsAWSGetter.getTokensLast7dPrices(
             args.identifiers,
         );
     }
