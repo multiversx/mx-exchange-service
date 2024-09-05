@@ -4,7 +4,6 @@ import { Args, Resolver } from '@nestjs/graphql';
 import {
     CandleDataModel,
     HistoricDataModel,
-    OhlcvDataModel,
     TokenCandlesModel,
 } from 'src/modules/analytics/models/analytics.model';
 import {
@@ -18,7 +17,6 @@ import { PairComputeService } from '../pair/services/pair.compute.service';
 import { TokenService } from '../tokens/services/token.service';
 import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.validator';
-import { AnalyticsTokenService } from './services/analytics.token.service';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -28,7 +26,6 @@ export class AnalyticsResolver {
         private readonly tokenService: TokenService,
         private readonly pairCompute: PairComputeService,
         private readonly analyticsPairService: AnalyticsPairService,
-        private readonly analyticsTokenService: AnalyticsTokenService,
     ) {}
 
     @Query(() => String)

@@ -585,7 +585,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             const startDate = moment.unix(start).utc().toDate();
             const endDate = moment.unix(end).utc().toDate();
 
-            const query = candleRepository
+            const queryResult = await candleRepository
                 .createQueryBuilder()
                 .select(
                     `time_bucket_gapfill('${resolution}', time) as bucket, series`,
@@ -601,55 +601,10 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                     endDate,
                 })
                 .groupBy('series')
-                .addGroupBy('bucket');
-            // .getRawMany();
+                .addGroupBy('bucket')
+                .getRawMany();
 
-            // console.log('start', startDate);
-            // console.log('end', endDate);
-            // console.log(query.getQueryAndParameters());
-
-            const queryResult = await query.getRawMany();
-
-            // console.log(queryResult.length);
-
-            if (!queryResult || queryResult.length === 0) {
-                return [];
-            }
-
-            const result: TokenCandlesModel[] = [];
-
-            for (let i = 0; i < queryResult.length; i++) {
-                const row = queryResult[i];
-
-                let tokenIndex = result.findIndex(
-                    (elem) => elem.identifier === row.series,
-                );
-
-                if (tokenIndex === -1) {
-                    result.push(
-                        new TokenCandlesModel({
-                            identifier: row.series,
-                            candles: [],
-                        }),
-                    );
-                    tokenIndex = result.length - 1;
-                }
-
-                result[tokenIndex].candles.push(
-                    new OhlcvDataModel({
-                        time: row.bucket,
-                        ohlcv: [
-                            row.open ?? -1,
-                            row.high ?? -1,
-                            row.low ?? -1,
-                            row.close ?? -1,
-                            row.volume ?? 0,
-                        ],
-                    }),
-                );
-            }
-
-            return result;
+            return this.processTokenCandles(queryResult, -1);
         } catch (error) {
             this.logger.error('getCandlesForTokens', {
                 identifiers,
@@ -668,40 +623,50 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         start,
         end,
     }): Promise<TokenCandlesModel[]> {
-        const startDate = moment.unix(start).utc().toDate();
-        const endDate = moment.unix(end).utc().toDate();
+        try {
+            const startDate = moment.unix(start).utc().toDate();
+            const endDate = moment.unix(end).utc().toDate();
 
-        const query = this.tokenCandlesMinute
-            .createQueryBuilder()
-            .select(`series`)
-            .addSelect('last(time, time) as time')
-            .addSelect('last(open, time) as open')
-            .addSelect('last(high, time) as high')
-            .addSelect('last(low, time) as low')
-            .addSelect('last(close, time) as close')
-            .addSelect('last(volume, time) as volume')
-            .where('series in (:...identifiers)', { identifiers })
-            .andWhere('time between :startDate and :endDate', {
-                startDate,
-                endDate,
-            })
-            .groupBy('series');
+            const queryResult = await this.tokenCandlesMinute
+                .createQueryBuilder()
+                .select(`series`)
+                .addSelect('last(time, time) as time')
+                .addSelect('last(open, time) as open')
+                .addSelect('last(high, time) as high')
+                .addSelect('last(low, time) as low')
+                .addSelect('last(close, time) as close')
+                .addSelect('last(volume, time) as volume')
+                .where('series in (:...identifiers)', { identifiers })
+                .andWhere('time between :startDate and :endDate', {
+                    startDate,
+                    endDate,
+                })
+                .groupBy('series')
+                .getRawMany();
 
-        // console.log(query.getQueryAndParameters());
+            return this.processTokenCandles(queryResult, 0);
+        } catch (error) {
+            this.logger.error('getLastCandleForTokens', {
+                identifiers,
+                start,
+                end,
+                error,
+            });
+            return [];
+        }
+    }
 
-        const queryResult = await query.getRawMany();
-
+    private processTokenCandles(
+        queryResult: any[],
+        defaultValue: number,
+    ): TokenCandlesModel[] {
         if (!queryResult || queryResult.length === 0) {
             return [];
         }
 
-        // console.log(queryResult);
-
-        // TODO: refactor result format. duplicated code from getCandlesForTokens
         const result: TokenCandlesModel[] = [];
-        for (let i = 0; i < queryResult.length; i++) {
-            const row = queryResult[i];
 
+        queryResult.forEach((row) => {
             let tokenIndex = result.findIndex(
                 (elem) => elem.identifier === row.series,
             );
@@ -718,17 +683,17 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
 
             result[tokenIndex].candles.push(
                 new OhlcvDataModel({
-                    time: row.time,
+                    time: row.bucket ?? row.time,
                     ohlcv: [
-                        row.open ?? 0,
-                        row.high ?? 0,
-                        row.low ?? 0,
-                        row.close ?? 0,
+                        row.open ?? defaultValue,
+                        row.high ?? defaultValue,
+                        row.low ?? defaultValue,
+                        row.close ?? defaultValue,
                         row.volume ?? 0,
                     ],
                 }),
             );
-        }
+        });
 
         return result;
     }
