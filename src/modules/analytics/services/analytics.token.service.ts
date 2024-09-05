@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import moment from 'moment';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { OhlcvDataModel, TokenCandlesModel } from '../models/analytics.model';
+import { isValidUnixTimestamp } from 'src/helpers/helpers';
 
 @Injectable()
 export class AnalyticsTokenService {
@@ -29,7 +30,7 @@ export class AnalyticsTokenService {
         );
 
         if (tokensNeedingGapfilling.length === 0) {
-            return tokenCandles;
+            return tokenCandles.map((tokenData) => this.formatData(tokenData));
         }
 
         return this.handleGapFilling(
@@ -111,7 +112,7 @@ export class AnalyticsTokenService {
             );
             tokenCandles.push(emptyTokenData);
         });
-        return tokenCandles;
+        return tokenCandles.map((tokenData) => this.formatData(tokenData));
     }
 
     private gapfillTokens(
@@ -161,7 +162,9 @@ export class AnalyticsTokenService {
             );
         });
 
-        return [...gapfilledTokens, ...result];
+        return [...gapfilledTokens, ...result].map((tokenData) =>
+            this.formatData(tokenData),
+        );
     }
 
     private gapfillTokenCandles(
@@ -181,7 +184,7 @@ export class AnalyticsTokenService {
             timestamps.forEach((timestamp) => {
                 tokenData.candles.push(
                     new OhlcvDataModel({
-                        time: (timestamp * 1000).toString(),
+                        time: timestamp,
                         ohlcv: [...gapfillOhlc],
                     }),
                 );
@@ -203,8 +206,8 @@ export class AnalyticsTokenService {
         startTimestamp: number,
         endTimestamp: number,
         intervalHours: number,
-    ): number[] {
-        const timestamps: number[] = [];
+    ): string[] {
+        const timestamps: string[] = [];
 
         let start = moment.unix(startTimestamp);
         const end = moment.unix(endTimestamp);
@@ -219,10 +222,21 @@ export class AnalyticsTokenService {
 
         // Generate timestamps at the specified interval until we reach the end time
         while (start.isSameOrBefore(end)) {
-            timestamps.push(start.unix());
+            timestamps.push(start.unix().toString());
             start = start.add(intervalHours, 'hours');
         }
 
         return timestamps;
+    }
+
+    private formatData(tokenData: TokenCandlesModel): TokenCandlesModel {
+        tokenData.candles.forEach((candle) => {
+            const candleTime = isValidUnixTimestamp(candle.time)
+                ? candle.time
+                : moment(candle.time).unix().toString();
+
+            candle.time = candleTime;
+        });
+        return tokenData;
     }
 }
