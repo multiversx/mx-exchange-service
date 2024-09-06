@@ -183,6 +183,10 @@ export class AnalyticsResolver {
     }
 
     @Query(() => [CandleDataModel], {
+        deprecationReason:
+            'New optimized query is now available (tokensLast7dPrice).' +
+            'It allows fetching price data for multiple tokens in a single request',
+    })
     @UsePipes(
         new ValidationPipe({
             skipNullProperties: true,
