@@ -1,5 +1,12 @@
 import { ArgsType, Field, registerEnumType } from '@nestjs/graphql';
-import { IsNotEmpty, Matches } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsNotEmpty,
+    Matches,
+    Min,
+} from 'class-validator';
 import { IsValidMetric } from 'src/helpers/validators/metric.validator';
 import { IsValidSeries } from 'src/helpers/validators/series.validator';
 import { IsValidUnixTime } from 'src/helpers/validators/unix.time.validator';
@@ -57,5 +64,8 @@ export class PriceCandlesQueryArgs {
 @ArgsType()
 export class TokenPriceCandlesQueryArgs {
     @Field(() => [String])
+    @IsArray()
+    @ArrayMinSize(1, { message: 'At least 1 token ID is required' })
+    @ArrayMaxSize(10, { message: 'At most 10 token IDs can be provided' })
     identifiers: string[];
 }

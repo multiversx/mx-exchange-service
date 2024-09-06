@@ -182,7 +182,7 @@ export class AnalyticsResolver {
         return [];
     }
 
-    @Query(() => [CandleDataModel])
+    @Query(() => [CandleDataModel], {
     @UsePipes(
         new ValidationPipe({
             skipNullProperties: true,
@@ -212,7 +212,8 @@ export class AnalyticsResolver {
         }),
     )
     async tokensLast7dPrice(
-        @Args() args: TokenPriceCandlesQueryArgs,
+        @Args({ type: () => TokenPriceCandlesQueryArgs })
+        args: TokenPriceCandlesQueryArgs,
     ): Promise<TokenCandlesModel[]> {
         return await this.analyticsAWSGetter.getTokensLast7dPrices(
             args.identifiers,
