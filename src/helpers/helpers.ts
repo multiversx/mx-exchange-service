@@ -65,7 +65,7 @@ export function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function isValidUnixTimestamp(value: string) {
+export function isValidUnixTimestamp(value: string): boolean {
     if (/^\d+$/.test(value) === false) {
         return false;
     }
