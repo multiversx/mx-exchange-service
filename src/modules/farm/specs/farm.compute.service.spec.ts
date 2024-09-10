@@ -67,7 +67,7 @@ describe('FarmService', () => {
         const service = module.get<FarmComputeServiceV1_2>(
             FarmComputeServiceV1_2,
         );
-        const farmedTokenPriceUSD = await service.computeFarmedTokenPriceUSD(
+        const farmedTokenPriceUSD = await service.farmedTokenPriceUSD(
             Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
             ).bech32(),

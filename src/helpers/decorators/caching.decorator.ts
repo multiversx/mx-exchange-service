@@ -7,6 +7,7 @@ import {
     formatNullOrUndefined,
     parseCachedNullOrUndefined,
 } from 'src/utils/cache.utils';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 export interface ICachingOptions {
     baseKey: string;
@@ -34,15 +35,33 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
                 ...args,
             );
 
+            const genericCacheKey = generateCacheKeyFromParams(
+                cachingOptions.baseKey,
+                propertyKey,
+            );
+
             if (context && context.deepHistoryTimestamp) {
                 cacheKey = `${cacheKey}.${context.deepHistoryTimestamp}`;
             }
 
             const cachingService: CacheService = this.cachingService;
 
-            const cachedValue = await cachingService.get(cacheKey);
+            const locallyCachedValue = await cachingService.getLocal(cacheKey);
+            if (locallyCachedValue !== undefined) {
+                MetricsCollector.incrementLocalCacheHit(genericCacheKey);
 
+                return parseCachedNullOrUndefined(locallyCachedValue);
+            }
+
+            const cachedValue = await cachingService.getRemote(cacheKey);
             if (cachedValue !== undefined) {
+                MetricsCollector.incrementCachedApiHit(genericCacheKey);
+
+                cachingService.setLocal(
+                    cacheKey,
+                    cachedValue,
+                    cachingOptions.localTtl,
+                );
                 return parseCachedNullOrUndefined(cachedValue);
             }
 
@@ -61,6 +80,8 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
                 remoteTtl,
                 localTtl,
             );
+
+            MetricsCollector.incrementCacheMiss(genericCacheKey);
 
             return value;
         };
