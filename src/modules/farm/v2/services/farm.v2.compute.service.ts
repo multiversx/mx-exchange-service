@@ -180,25 +180,11 @@ export class FarmComputeServiceV2
         scAddress: string,
         userAddress: string,
         week: number,
+        additionalUserFarmAmount = '0',
+        additionalUserEnergyAmount = '0',
         rewardsPerWeek?: EsdtTokenPayment[],
     ): Promise<EsdtTokenPayment[]> {
         const userRewardsForWeek = [];
-
-        const [currentWeek, userEnergyForWeek, totalEnergyForWeek, liquidity] =
-            await Promise.all([
-                this.weekTimeKeepingAbi.currentWeek(scAddress),
-                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
-                    scAddress,
-                    userAddress,
-                    week,
-                ),
-                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
-                    scAddress,
-                    week,
-                ),
-
-                this.farmAbi.userTotalFarmPosition(scAddress, userAddress),
-            ]);
 
         const rewardsForWeek =
             rewardsPerWeek ??
@@ -215,9 +201,35 @@ export class FarmComputeServiceV2
             throw new Error('Invalid boosted yields rewards');
         }
 
-        const boostedYieldsFactors = await this.farmAbi.boostedYieldsFactors(
-            scAddress,
-        );
+        const [currentWeek, boostedYieldsFactors, userEnergyForWeek] =
+            await Promise.all([
+                this.weekTimeKeepingAbi.currentWeek(scAddress),
+                this.farmAbi.boostedYieldsFactors(scAddress),
+                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                    scAddress,
+                    userAddress,
+                    week,
+                ),
+            ]);
+
+        let [totalEnergyForWeek, liquidity] = await Promise.all([
+            this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
+            this.farmAbi.userTotalFarmPosition(scAddress, userAddress),
+        ]);
+        let farmTokenSupply =
+            week === currentWeek
+                ? await this.farmAbi.farmTokenSupply(scAddress)
+                : await this.farmAbi.farmSupplyForWeek(scAddress, week);
+
+        totalEnergyForWeek = new BigNumber(totalEnergyForWeek)
+            .plus(additionalUserEnergyAmount)
+            .toFixed();
+        liquidity = new BigNumber(liquidity)
+            .plus(additionalUserFarmAmount)
+            .toFixed();
+        farmTokenSupply = new BigNumber(farmTokenSupply)
+            .plus(additionalUserFarmAmount)
+            .toFixed();
 
         const userHasMinEnergy = new BigNumber(
             userEnergyForWeek.amount,
@@ -232,11 +244,6 @@ export class FarmComputeServiceV2
         if (!userMinFarmAmount) {
             return userRewardsForWeek;
         }
-
-        const farmTokenSupply =
-            week === currentWeek
-                ? await this.farmAbi.farmTokenSupply(scAddress)
-                : await this.farmAbi.farmSupplyForWeek(scAddress, week);
 
         const rewardForWeek = rewardsForWeek[0];
 
@@ -293,11 +300,12 @@ export class FarmComputeServiceV2
     async computeUserCurentBoostedAPR(
         scAddress: string,
         userAddress: string,
+        additionalUserFarmAmount = '0',
+        additionalUserEnergy = '0',
     ): Promise<number> {
         const [
             currentWeek,
             boostedRewardsPerWeek,
-            userTotalFarmPosition,
             farmToken,
             farmedToken,
             farmingTokenPriceUSD,
@@ -305,17 +313,26 @@ export class FarmComputeServiceV2
         ] = await Promise.all([
             this.weekTimeKeepingAbi.currentWeek(scAddress),
             this.computeBoostedRewardsPerWeek(scAddress),
-            this.farmAbi.userTotalFarmPosition(scAddress, userAddress),
             this.farmService.getFarmToken(scAddress),
             this.farmService.getFarmedToken(scAddress),
             this.farmingTokenPriceUSD(scAddress),
             this.farmedTokenPriceUSD(scAddress),
         ]);
 
+        let userTotalFarmPosition = await this.farmAbi.userTotalFarmPosition(
+            scAddress,
+            userAddress,
+        );
+        userTotalFarmPosition = new BigNumber(userTotalFarmPosition)
+            .plus(additionalUserFarmAmount)
+            .toFixed();
+
         const userRewardsPerWeek = await this.computeUserRewardsForWeek(
             scAddress,
             userAddress,
             currentWeek,
+            additionalUserFarmAmount,
+            additionalUserEnergy,
             boostedRewardsPerWeek,
         );
 
@@ -339,12 +356,11 @@ export class FarmComputeServiceV2
     async computeUserMaxBoostedAPR(
         scAddress: string,
         userAddress: string,
+        additionalUserFarmAmount = '0',
     ): Promise<number> {
         const [
             boostedRewardsPerWeek,
             boostedYieldsFactors,
-            farmTokenSupply,
-            userTotalFarmPosition,
             farmToken,
             farmedToken,
             farmingTokenPriceUSD,
@@ -352,13 +368,22 @@ export class FarmComputeServiceV2
         ] = await Promise.all([
             this.computeBoostedRewardsPerWeek(scAddress),
             this.farmAbi.boostedYieldsFactors(scAddress),
-            this.farmAbi.farmTokenSupply(scAddress),
-            this.farmAbi.userTotalFarmPosition(scAddress, userAddress),
             this.farmService.getFarmToken(scAddress),
             this.farmService.getFarmedToken(scAddress),
             this.farmingTokenPriceUSD(scAddress),
             this.farmedTokenPriceUSD(scAddress),
         ]);
+
+        let [farmTokenSupply, userTotalFarmPosition] = await Promise.all([
+            this.farmAbi.farmTokenSupply(scAddress),
+            this.farmAbi.userTotalFarmPosition(scAddress, userAddress),
+        ]);
+        farmTokenSupply = new BigNumber(farmTokenSupply)
+            .plus(additionalUserFarmAmount)
+            .toFixed();
+        userTotalFarmPosition = new BigNumber(userTotalFarmPosition)
+            .plus(additionalUserFarmAmount)
+            .toFixed();
 
         const userMaxRewardsPerWeek = new BigNumber(
             boostedRewardsPerWeek[0].amount,
