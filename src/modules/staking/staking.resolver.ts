@@ -49,20 +49,41 @@ export class StakingBoostedRewardsResolver {
     @ResolveField()
     async curentBoostedAPR(
         @Parent() parent: StakingBoostedRewardsModel,
+        @Args('additionalUserFarmAmount', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserFarmAmount: string,
+        @Args('additionalUserEnergy', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserEnergy: string,
     ): Promise<number> {
         return this.stakingCompute.computeUserCurentBoostedAPR(
             parent.farmAddress,
             parent.userAddress,
+            additionalUserFarmAmount,
+            additionalUserEnergy,
         );
     }
 
     @ResolveField()
     async maximumBoostedAPR(
         @Parent() parent: StakingBoostedRewardsModel,
+        @Args('additionalUserFarmAmount', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserFarmAmount: string,
     ): Promise<number> {
         return this.stakingCompute.computeUserMaxBoostedAPR(
             parent.farmAddress,
             parent.userAddress,
+            additionalUserFarmAmount,
         );
     }
 }
