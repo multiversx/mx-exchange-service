@@ -3,6 +3,9 @@ import { BigNumber } from 'bignumber.js';
 import { BinaryUtils } from '@multiversx/sdk-nestjs-common';
 import moment from 'moment';
 
+export const SECONDS_TIMESTAMP_LENGTH = 10;
+export const MILLISECONDS_TIMESTAMP_LENGTH = 13;
+
 export function encodeTransactionData(data: string): string {
     const delimiter = '@';
 
@@ -63,18 +66,17 @@ export function delay(ms: number) {
 }
 
 export function isValidUnixTimestamp(value: string) {
-    const timestamp = Number(value);
-    if (isNaN(timestamp)) {
+    if (/^\d+$/.test(value) === false) {
         return false;
     }
 
-    // If the timestamp is in seconds (10 digits)
-    if (value.length === 10) {
+    const timestamp = Number(value);
+
+    if (value.length === SECONDS_TIMESTAMP_LENGTH) {
         return moment.unix(timestamp).isValid();
     }
 
-    // If the timestamp is in milliseconds (13 digits)
-    if (value.length === 13) {
+    if (value.length === MILLISECONDS_TIMESTAMP_LENGTH) {
         return moment(timestamp).isValid();
     }
 
