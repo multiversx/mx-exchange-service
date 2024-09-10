@@ -73,6 +73,13 @@ export class FarmAbiServiceMockV2
     async farmPositionMigrationNonce(farmAddress: string): Promise<number> {
         return 10;
     }
+
+    async farmSupplyForWeek(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        return '2';
+    }
 }
 
 export const FarmAbiServiceProviderV2 = {

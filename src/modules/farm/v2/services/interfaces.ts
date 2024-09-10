@@ -1,4 +1,3 @@
-import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import {
     IFarmAbiService,
     IFarmComputeService,
@@ -25,6 +24,7 @@ export interface IFarmAbiServiceV2 extends IFarmAbiService {
         userAddress: string,
     ): Promise<string>;
     farmPositionMigrationNonce(farmAddress: string): Promise<number>;
+    farmSupplyForWeek(farmAddress: string, week: number): Promise<string>;
 }
 
 export interface IFarmComputeServiceV2 extends IFarmComputeService {
