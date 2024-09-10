@@ -1,7 +1,7 @@
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { parseCachedNullOrUndefined } from './cache.utils';
 
-async function getMany<T>(
+export async function getMany<T>(
     cacheService: CacheService,
     keys: string[],
 ): Promise<(T | undefined)[]> {

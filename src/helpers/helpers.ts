@@ -1,6 +1,10 @@
 import { Address } from '@multiversx/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import { BinaryUtils } from '@multiversx/sdk-nestjs-common';
+import moment from 'moment';
+
+export const SECONDS_TIMESTAMP_LENGTH = 10;
+export const MILLISECONDS_TIMESTAMP_LENGTH = 13;
 
 export function encodeTransactionData(data: string): string {
     const delimiter = '@';
@@ -59,4 +63,22 @@ export function awsOneYear(): string {
 
 export function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function isValidUnixTimestamp(value: string): boolean {
+    if (/^\d+$/.test(value) === false) {
+        return false;
+    }
+
+    const timestamp = Number(value);
+
+    if (value.length === SECONDS_TIMESTAMP_LENGTH) {
+        return moment.unix(timestamp).isValid();
+    }
+
+    if (value.length === MILLISECONDS_TIMESTAMP_LENGTH) {
+        return moment(timestamp).isValid();
+    }
+
+    return false;
 }

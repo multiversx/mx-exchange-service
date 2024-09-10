@@ -4,8 +4,13 @@ import { Args, Resolver } from '@nestjs/graphql';
 import {
     CandleDataModel,
     HistoricDataModel,
+    TokenCandlesModel,
 } from 'src/modules/analytics/models/analytics.model';
-import { AnalyticsQueryArgs, PriceCandlesQueryArgs } from './models/query.args';
+import {
+    AnalyticsQueryArgs,
+    PriceCandlesQueryArgs,
+    TokenPriceCandlesQueryArgs,
+} from './models/query.args';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
@@ -177,7 +182,11 @@ export class AnalyticsResolver {
         return [];
     }
 
-    @Query(() => [CandleDataModel])
+    @Query(() => [CandleDataModel], {
+        deprecationReason:
+            'New optimized query is now available (tokensLast7dPrice).' +
+            'It allows fetching price data for multiple tokens in a single request',
+    })
     @UsePipes(
         new ValidationPipe({
             skipNullProperties: true,
@@ -195,6 +204,23 @@ export class AnalyticsResolver {
             args.start,
             args.end,
             args.resolution,
+        );
+    }
+
+    @Query(() => [TokenCandlesModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
+    async tokensLast7dPrice(
+        @Args({ type: () => TokenPriceCandlesQueryArgs })
+        args: TokenPriceCandlesQueryArgs,
+    ): Promise<TokenCandlesModel[]> {
+        return await this.analyticsAWSGetter.getTokensLast7dPrices(
+            args.identifiers,
         );
     }
 }
