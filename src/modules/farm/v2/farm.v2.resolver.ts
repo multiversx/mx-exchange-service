@@ -26,6 +26,52 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { FarmAbiLoaderV2 } from './services/farm.v2.abi.loader';
 import { FarmComputeLoaderV2 } from './services/farm.v2.compute.loader';
 
+@Resolver(() => BoostedRewardsModel)
+export class FarmBoostedRewardsResolver {
+    constructor(private readonly farmCompute: FarmComputeServiceV2) {}
+
+    @ResolveField()
+    async curentBoostedAPR(
+        @Parent() parent: BoostedRewardsModel,
+        @Args('additionalUserFarmAmount', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserFarmAmount: string,
+        @Args('additionalUserEnergy', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserEnergy: string,
+    ): Promise<number> {
+        return this.farmCompute.computeUserCurentBoostedAPR(
+            parent.farmAddress,
+            parent.userAddress,
+            additionalUserFarmAmount,
+            additionalUserEnergy,
+        );
+    }
+
+    @ResolveField()
+    async maximumBoostedAPR(
+        @Parent() parent: BoostedRewardsModel,
+        @Args('additionalUserFarmAmount', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserFarmAmount: string,
+    ): Promise<number> {
+        return this.farmCompute.computeUserMaxBoostedAPR(
+            parent.farmAddress,
+            parent.userAddress,
+            additionalUserFarmAmount,
+        );
+    }
+}
+
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
     constructor(

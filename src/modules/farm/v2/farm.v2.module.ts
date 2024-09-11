@@ -3,7 +3,7 @@ import { TokenModule } from 'src/modules/tokens/token.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { FarmAbiServiceV2 } from './services/farm.v2.abi.service';
-import { FarmResolverV2 } from './farm.v2.resolver';
+import { FarmBoostedRewardsResolver, FarmResolverV2 } from './farm.v2.resolver';
 import { FarmServiceV2 } from './services/farm.v2.service';
 import { FarmComputeServiceV2 } from './services/farm.v2.compute.service';
 import { PairModule } from 'src/modules/pair/pair.module';
@@ -36,6 +36,7 @@ import { FarmComputeLoaderV2 } from './services/farm.v2.compute.loader';
         FarmTransactionServiceV2,
         FarmResolverV2,
         FarmTransactionResolverV2,
+        FarmBoostedRewardsResolver,
     ],
     exports: [
         FarmServiceV2,
