@@ -20,6 +20,7 @@ import { PairComputeService } from './pair.compute.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class PairService {
@@ -46,6 +47,7 @@ export class PairService {
             pairAddresses,
             'pair.firstTokenID',
             this.pairAbi.firstTokenID.bind(this.pairAbi),
+            CacheTtlInfo.Token,
         );
 
         return this.tokenService.getAllTokensMetadata(tokenIDs);
@@ -62,6 +64,7 @@ export class PairService {
             pairAddresses,
             'pair.secondTokenID',
             this.pairAbi.secondTokenID.bind(this.pairAbi),
+            CacheTtlInfo.Token,
         );
 
         return this.tokenService.getAllTokensMetadata(tokenIDs);
@@ -80,6 +83,7 @@ export class PairService {
             pairAddresses,
             'pair.lpTokenID',
             this.pairAbi.lpTokenID.bind(this.pairAbi),
+            CacheTtlInfo.Token,
         );
     }
 
@@ -95,6 +99,7 @@ export class PairService {
             pairAddresses,
             'pair.state',
             this.pairAbi.state.bind(this.pairAbi),
+            CacheTtlInfo.ContractState,
         );
     }
 
@@ -104,6 +109,7 @@ export class PairService {
             pairAddresses,
             'pair.feeState',
             this.pairAbi.feeState.bind(this.pairAbi),
+            CacheTtlInfo.ContractState,
         );
     }
 
@@ -113,6 +119,7 @@ export class PairService {
             pairAddresses,
             'pair.lockedValueUSD',
             this.pairCompute.lockedValueUSD.bind(this.pairCompute),
+            CacheTtlInfo.ContractInfo,
         );
     }
 
@@ -122,6 +129,7 @@ export class PairService {
             pairAddresses,
             'pair.deployedAt',
             this.pairCompute.deployedAt.bind(this.pairCompute),
+            CacheTtlInfo.ContractState,
         );
     }
 
@@ -131,6 +139,7 @@ export class PairService {
             pairAddresses,
             'pair.tradesCount',
             this.pairCompute.tradesCount.bind(this.pairCompute),
+            CacheTtlInfo.ContractState,
         );
     }
 
@@ -140,6 +149,7 @@ export class PairService {
             pairAddresses,
             'pair.hasFarms',
             this.pairCompute.hasFarms.bind(this.pairCompute),
+            CacheTtlInfo.ContractState,
         );
     }
 
@@ -149,6 +159,7 @@ export class PairService {
             pairAddresses,
             'pair.hasDualFarms',
             this.pairCompute.hasDualFarms.bind(this.pairCompute),
+            CacheTtlInfo.ContractState,
         );
     }
 

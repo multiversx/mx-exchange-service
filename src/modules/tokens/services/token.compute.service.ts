@@ -196,6 +196,7 @@ export class TokenComputeService implements ITokenComputeService {
             tokenIDs,
             'token.tokenPriceDerivedEGLD',
             this.tokenPriceDerivedEGLD.bind(this),
+            CacheTtlInfo.Price,
         );
     }
 
@@ -238,6 +239,7 @@ export class TokenComputeService implements ITokenComputeService {
             tokenIDs,
             'token.tokenPriceDerivedUSD',
             this.tokenPriceDerivedUSD.bind(this),
+            CacheTtlInfo.Price,
         );
     }
 
@@ -268,6 +270,7 @@ export class TokenComputeService implements ITokenComputeService {
             tokenIDs,
             'token.tokenPrevious24hPrice',
             this.tokenPrevious24hPrice.bind(this),
+            CacheTtlInfo.TokenAnalytics,
         );
     }
 
@@ -299,6 +302,7 @@ export class TokenComputeService implements ITokenComputeService {
             tokenIDs,
             'token.tokenPrevious7dPrice',
             this.tokenPrevious7dPrice.bind(this),
+            CacheTtlInfo.TokenAnalytics,
         );
     }
 
@@ -431,6 +435,7 @@ export class TokenComputeService implements ITokenComputeService {
             tokenIDs,
             'token.tokenVolumeUSD24h',
             this.tokenVolumeUSD24h.bind(this),
+            CacheTtlInfo.Token,
         );
     }
 
@@ -459,6 +464,7 @@ export class TokenComputeService implements ITokenComputeService {
             tokenIDs,
             'token.tokenPrevious24hVolumeUSD',
             this.tokenPrevious24hVolumeUSD.bind(this),
+            CacheTtlInfo.Token,
         );
     }
 
@@ -566,6 +572,7 @@ export class TokenComputeService implements ITokenComputeService {
             tokenIDs,
             'token.tokenLiquidityUSD',
             this.tokenLiquidityUSD.bind(this),
+            CacheTtlInfo.TokenAnalytics,
         );
     }
 
@@ -605,6 +612,7 @@ export class TokenComputeService implements ITokenComputeService {
             tokenIDs,
             'token.tokenCreatedAt',
             this.tokenCreatedAt.bind(this),
+            CacheTtlInfo.Token,
         );
     }
 
@@ -756,6 +764,7 @@ export class TokenComputeService implements ITokenComputeService {
             tokenIDs,
             'token.tokenTrendingScore',
             this.tokenTrendingScore.bind(this),
+            CacheTtlInfo.Token,
         );
     }
 }

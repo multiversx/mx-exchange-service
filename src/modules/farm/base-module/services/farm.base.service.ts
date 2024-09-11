@@ -17,6 +17,7 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Inject, forwardRef } from '@nestjs/common';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 export abstract class FarmServiceBase {
     constructor(
@@ -39,6 +40,7 @@ export abstract class FarmServiceBase {
             farmAddresses,
             'farm.farmedTokenID',
             this.farmAbi.farmedTokenID.bind(this.farmAbi),
+            CacheTtlInfo.Token,
         );
         return this.tokenService.getAllTokensMetadata(farmedTokenIDs);
     }
@@ -54,6 +56,7 @@ export abstract class FarmServiceBase {
             farmAddresses,
             'farm.farmTokenID',
             this.farmAbi.farmTokenID.bind(this.farmAbi),
+            CacheTtlInfo.Token,
         );
         return this.tokenService.getAllNftsCollectionMetadata(farmTokenIDs);
     }
@@ -69,6 +72,7 @@ export abstract class FarmServiceBase {
             farmAddresses,
             'farm.farmingTokenID',
             this.farmAbi.farmingTokenID.bind(this.farmAbi),
+            CacheTtlInfo.Token,
         );
         return this.tokenService.getAllTokensMetadata(farmingTokenIDs);
     }

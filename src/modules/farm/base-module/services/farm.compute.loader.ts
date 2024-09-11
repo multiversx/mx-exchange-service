@@ -3,6 +3,7 @@ import { FarmComputeService } from './farm.compute.service';
 import DataLoader from 'dataloader';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { getAllKeys } from 'src/utils/get.many.utils';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable({
     scope: Scope.REQUEST,
@@ -20,6 +21,7 @@ export class FarmComputeLoader {
                 addresses,
                 'farm.farmLockedValueUSD',
                 this.farmCompute.farmLockedValueUSD.bind(this.farmCompute),
+                CacheTtlInfo.ContractState,
             );
         },
     );
@@ -31,6 +33,7 @@ export class FarmComputeLoader {
                 addresses,
                 'farm.farmedTokenPriceUSD',
                 this.farmCompute.farmedTokenPriceUSD.bind(this.farmCompute),
+                CacheTtlInfo.Price,
             );
         },
     );
@@ -42,6 +45,7 @@ export class FarmComputeLoader {
                 addresses,
                 'farm.farmingTokenPriceUSD',
                 this.farmCompute.farmingTokenPriceUSD.bind(this.farmCompute),
+                CacheTtlInfo.Price,
             );
         },
     );

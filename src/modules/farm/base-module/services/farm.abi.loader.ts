@@ -6,6 +6,7 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmAbiService } from './farm.abi.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { getAllKeys } from 'src/utils/get.many.utils';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable({
     scope: Scope.REQUEST,
@@ -44,6 +45,7 @@ export class FarmAbiLoader {
             addresses,
             'farm.produceRewardsEnabled',
             this.farmAbi.produceRewardsEnabled.bind(this.farmAbi),
+            CacheTtlInfo.ContractState,
         );
     });
 
@@ -54,6 +56,7 @@ export class FarmAbiLoader {
                 addresses,
                 'farm.perBlockRewards',
                 this.farmAbi.rewardsPerBlock.bind(this.farmAbi),
+                CacheTtlInfo.ContractState,
             );
         },
     );
@@ -65,6 +68,7 @@ export class FarmAbiLoader {
                 addresses,
                 'farm.farmTokenSupply',
                 this.farmAbi.farmTokenSupply.bind(this.farmAbi),
+                CacheTtlInfo.ContractInfo,
             );
         },
     );
@@ -76,6 +80,7 @@ export class FarmAbiLoader {
                 addresses,
                 'farm.penaltyPercent',
                 this.farmAbi.penaltyPercent.bind(this.farmAbi),
+                CacheTtlInfo.ContractState,
             );
         },
     );
@@ -87,6 +92,7 @@ export class FarmAbiLoader {
                 addresses,
                 'farm.minimumFarmingEpochs',
                 this.farmAbi.minimumFarmingEpochs.bind(this.farmAbi),
+                CacheTtlInfo.ContractState,
             );
         },
     );
@@ -98,6 +104,7 @@ export class FarmAbiLoader {
                 addresses,
                 'farm.rewardPerShare',
                 this.farmAbi.rewardPerShare.bind(this.farmAbi),
+                CacheTtlInfo.ContractInfo,
             );
         },
     );
@@ -109,6 +116,7 @@ export class FarmAbiLoader {
                 addresses,
                 'farm.rewardReserve',
                 this.farmAbi.rewardReserve.bind(this.farmAbi),
+                CacheTtlInfo.ContractInfo,
             );
         },
     );
@@ -120,6 +128,7 @@ export class FarmAbiLoader {
                 addresses,
                 'farm.lastRewardBlockNonce',
                 this.farmAbi.lastRewardBlockNonce.bind(this.farmAbi),
+                CacheTtlInfo.ContractInfo,
             );
         },
     );
@@ -133,6 +142,7 @@ export class FarmAbiLoader {
             addresses,
             'farm.divisionSafetyConstant',
             this.farmAbi.divisionSafetyConstant.bind(this.farmAbi),
+            CacheTtlInfo.ContractInfo,
         );
     });
 
@@ -143,6 +153,7 @@ export class FarmAbiLoader {
                 addresses,
                 'farm.state',
                 this.farmAbi.state.bind(this.farmAbi),
+                CacheTtlInfo.ContractState,
             );
         },
     );

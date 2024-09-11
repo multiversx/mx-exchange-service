@@ -7,6 +7,7 @@ import { PairService } from './pair.service';
 import { PairInfoModel } from '../models/pair-info.model';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { constantsConfig } from 'src/config';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable({
     scope: Scope.REQUEST,
@@ -44,6 +45,7 @@ export class PairAbiLoader {
                 addresses,
                 'pair.pairInfoMetadata',
                 this.pairAbi.pairInfoMetadata.bind(this.pairAbi),
+                CacheTtlInfo.ContractBalance,
             );
         },
     );
@@ -55,6 +57,7 @@ export class PairAbiLoader {
                 addresses,
                 'pair.totalFeePercent',
                 this.pairAbi.totalFeePercent.bind(this.pairAbi),
+                CacheTtlInfo.ContractState,
             );
         },
     );
@@ -66,6 +69,7 @@ export class PairAbiLoader {
                 addresses,
                 'pair.specialFeePercent',
                 this.pairAbi.specialFeePercent.bind(this.pairAbi),
+                CacheTtlInfo.ContractState,
             );
         },
     );
@@ -79,6 +83,7 @@ export class PairAbiLoader {
             addresses,
             'pair.feesCollectorCutPercentage',
             this.pairAbi.feesCollectorCutPercentage.bind(this.pairAbi),
+            CacheTtlInfo.ContractState,
         );
 
         return percentages.map(
@@ -108,6 +113,7 @@ export class PairAbiLoader {
             addresses,
             'pair.initialLiquidityAdder',
             this.pairAbi.initialLiquidityAdder.bind(this.pairAbi),
+            CacheTtlInfo.ContractState,
         );
     });
 }

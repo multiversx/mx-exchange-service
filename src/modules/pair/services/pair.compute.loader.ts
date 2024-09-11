@@ -4,6 +4,7 @@ import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import DataLoader from 'dataloader';
 import { PairService } from './pair.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable({
     scope: Scope.REQUEST,
@@ -22,6 +23,7 @@ export class PairComputeLoader {
                 addresses,
                 'pair.firstTokenPrice',
                 this.pairCompute.firstTokenPrice.bind(this.pairCompute),
+                CacheTtlInfo.Price,
             );
         },
     );
@@ -33,6 +35,7 @@ export class PairComputeLoader {
                 addresses,
                 'pair.secondTokenPrice',
                 this.pairCompute.secondTokenPrice.bind(this.pairCompute),
+                CacheTtlInfo.Price,
             );
         },
     );
@@ -44,6 +47,7 @@ export class PairComputeLoader {
                 addresses,
                 'pair.firstTokenPriceUSD',
                 this.pairCompute.firstTokenPriceUSD.bind(this.pairCompute),
+                CacheTtlInfo.Price,
             );
         },
     );
@@ -55,6 +59,7 @@ export class PairComputeLoader {
                 addresses,
                 'pair.secondTokenPriceUSD',
                 this.pairCompute.secondTokenPriceUSD.bind(this.pairCompute),
+                CacheTtlInfo.Price,
             );
         },
     );
@@ -66,6 +71,7 @@ export class PairComputeLoader {
                 addresses,
                 'pair.lpTokenPriceUSD',
                 this.pairCompute.lpTokenPriceUSD.bind(this.pairCompute),
+                CacheTtlInfo.Price,
             );
         },
     );
@@ -79,6 +85,7 @@ export class PairComputeLoader {
             addresses,
             'pair.firstTokenLockedValueUSD',
             this.pairCompute.firstTokenLockedValueUSD.bind(this.pairCompute),
+            CacheTtlInfo.ContractInfo,
         );
     });
 
@@ -91,6 +98,7 @@ export class PairComputeLoader {
             addresses,
             'pair.secondTokenLockedValueUSD',
             this.pairCompute.secondTokenLockedValueUSD.bind(this.pairCompute),
+            CacheTtlInfo.ContractInfo,
         );
     });
 
@@ -109,6 +117,7 @@ export class PairComputeLoader {
             addresses,
             'pair.previous24hLockedValueUSD',
             this.pairCompute.previous24hLockedValueUSD.bind(this.pairCompute),
+            CacheTtlInfo.ContractInfo,
         );
     });
 
@@ -119,6 +128,7 @@ export class PairComputeLoader {
                 addresses,
                 'pair.previous24hVolumeUSD',
                 this.pairCompute.previous24hVolumeUSD.bind(this.pairCompute),
+                CacheTtlInfo.Analytics,
             );
         },
     );
@@ -130,6 +140,7 @@ export class PairComputeLoader {
                 addresses,
                 'pair.previous24hFeesUSD',
                 this.pairCompute.previous24hFeesUSD.bind(this.pairCompute),
+                CacheTtlInfo.Analytics,
             );
         },
     );
@@ -141,6 +152,7 @@ export class PairComputeLoader {
                 addresses,
                 'pair.feesAPR',
                 this.pairCompute.feesAPR.bind(this.pairCompute),
+                CacheTtlInfo.ContractState,
             );
         },
     );
@@ -152,6 +164,7 @@ export class PairComputeLoader {
                 addresses,
                 'pair.type',
                 this.pairCompute.type.bind(this.pairCompute),
+                CacheTtlInfo.ContractState,
             );
         },
     );
