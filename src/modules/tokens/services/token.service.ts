@@ -48,13 +48,13 @@ export class TokenService {
             );
         }
 
-        const promises = tokenIDs.map((tokenID) => this.tokenMetadata(tokenID));
-        let tokens = await Promise.all(promises);
+        let tokens = await this.getAllTokensMetadata(tokenIDs);
 
         if (filters.type) {
-            for (const token of tokens) {
-                token.type = await this.getEsdtTokenType(token.identifier);
-            }
+            const tokenTypes = await this.getAllEsdtTokensType(tokenIDs);
+            tokens.forEach((token, index) => {
+                token.type = tokenTypes[index];
+            });
             tokens = tokens.filter((token) => token.type === filters.type);
         }
 
@@ -87,9 +87,7 @@ export class TokenService {
             tokenIDs = await this.sortTokens(tokenIDs, sorting);
         }
 
-        let tokens = await Promise.all(
-            tokenIDs.map((tokenID) => this.tokenMetadata(tokenID)),
-        );
+        let tokens = await this.getAllTokensMetadata(tokenIDs);
 
         tokens = await this.tokenFilteringService.tokensBySearchTerm(
             filters,
@@ -122,6 +120,16 @@ export class TokenService {
         }
 
         return await this.tokenRepository.getTokenType(tokenID);
+    }
+
+    async getAllEsdtTokensType(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys<string>(
+            this.cachingService,
+            tokenIDs,
+            'token.getEsdtTokenType',
+            this.getEsdtTokenType.bind(this),
+            CacheTtlInfo.Token,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -181,19 +189,21 @@ export class TokenService {
     async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         const tokenIDs: string[] = [];
-        await Promise.all(
-            pairsMetadata.map(async (iterator) => {
-                if (activePool) {
-                    const state = await this.pairAbi.state(iterator.address);
-                    if (state !== 'Active') {
-                        return;
-                    }
+        const pairStates = activePool
+            ? await this.pairService.getAllStates(
+                  pairsMetadata.map((pair) => pair.address),
+              )
+            : [];
+
+        for (const [index, pair] of pairsMetadata.entries()) {
+            if (activePool) {
+                if (pairStates[index] !== 'Active') {
+                    continue;
                 }
-                tokenIDs.push(
-                    ...[iterator.firstTokenID, iterator.secondTokenID],
-                );
-            }),
-        );
+            }
+            tokenIDs.push(...[pair.firstTokenID, pair.secondTokenID]);
+        }
+
         return [...new Set(tokenIDs)];
     }
 
@@ -205,25 +215,22 @@ export class TokenService {
 
         switch (tokenSorting.sortField) {
             case TokensSortableFields.PRICE:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenPriceDerivedUSD(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensPriceDerivedUSD(
+                        tokenIDs,
+                    );
                 break;
             case TokensSortableFields.PREVIOUS_24H_PRICE:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenPrevious24hPrice(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensPrevious24hPrice(
+                        tokenIDs,
+                    );
                 break;
             case TokensSortableFields.PREVIOUS_7D_PRICE:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenPrevious7dPrice(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensPrevious7dPrice(
+                        tokenIDs,
+                    );
                 break;
             case TokensSortableFields.PRICE_CHANGE_7D:
                 sortFieldData = await Promise.all(
@@ -254,32 +261,23 @@ export class TokenService {
                 );
                 break;
             case TokensSortableFields.CREATED_AT:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenCreatedAt(tokenID),
-                    ),
+                sortFieldData = await this.tokenCompute.getAllTokensCreatedAt(
+                    tokenIDs,
                 );
                 break;
             case TokensSortableFields.LIQUIDITY:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenLiquidityUSD(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensLiquidityUSD(tokenIDs);
                 break;
             case TokensSortableFields.VOLUME:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenVolumeUSD24h(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensVolumeUSD24h(tokenIDs);
                 break;
             case TokensSortableFields.PREVIOUS_24H_VOLUME:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenPrevious24hVolumeUSD(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensPrevious24hVolumeUSD(
+                        tokenIDs,
+                    );
                 break;
             case TokensSortableFields.TRADES_COUNT:
                 sortFieldData = await Promise.all(
