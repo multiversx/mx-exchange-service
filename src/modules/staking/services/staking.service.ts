@@ -86,6 +86,12 @@ export class StakingService {
                 farmsStakingAddresses,
             );
 
+        farmsStakingAddresses =
+            await this.stakingFilteringService.stakingFarmsByRewardsDepleted(
+                filters,
+                farmsStakingAddresses,
+            );
+
         if (sorting) {
             farmsStakingAddresses = await this.sortFarms(
                 farmsStakingAddresses,
@@ -119,6 +125,14 @@ export class StakingService {
             stakeAddress,
         );
         return await this.tokenService.tokenMetadata(farmingTokenID);
+    }
+
+    async getAllFarmingTokens(stakeAddresses: string[]): Promise<EsdtToken[]> {
+        const farmingTokenIDs = await this.stakingAbi.getAllFarmingTokensIds(
+            stakeAddresses,
+        );
+
+        return await this.tokenService.getAllTokensMetadata(farmingTokenIDs);
     }
 
     async getRewardToken(stakeAddress: string): Promise<EsdtToken> {
