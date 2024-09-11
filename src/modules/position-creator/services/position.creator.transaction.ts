@@ -292,13 +292,18 @@ export class PositionCreatorTransactionService {
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
-        const gasLimit =
+        let gasLimit =
             gasConfig.positionCreator.singleToken.dualFarmPosition +
             gasConfig.pairs.addLiquidity +
             gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
-            gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
-            gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                swapRoutes[0].pairs.length;
+            gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge;
+
+        gasLimit =
+            swapRoutes.length < 1
+                ? gasLimit
+                : gasLimit +
+                  gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                      swapRoutes[0].pairs.length;
 
         let interaction = contract.methodsExplicit
             .createMetastakingPosFromSingleToken([

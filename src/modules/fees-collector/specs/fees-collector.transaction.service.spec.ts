@@ -83,7 +83,7 @@ describe('FeesCollectorTransactionService', () => {
             new FeesCollectorTransactionModel({
                 transaction: {
                     chainID: mxConfig.chainID,
-                    gasLimit: 100000000,
+                    gasLimit: 120000000,
                     gasPrice: 1000000000,
                     nonce: 0,
                     receiver: scAddress.feesCollector,
@@ -124,7 +124,7 @@ describe('FeesCollectorTransactionService', () => {
             new FeesCollectorTransactionModel({
                 transaction: {
                     chainID: mxConfig.chainID,
-                    gasLimit: 100000000,
+                    gasLimit: 120000000,
                     gasPrice: 1000000000,
                     nonce: 0,
                     receiver: scAddress.feesCollector,
