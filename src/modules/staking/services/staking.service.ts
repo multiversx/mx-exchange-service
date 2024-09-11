@@ -36,6 +36,8 @@ import {
 } from '../models/staking.args';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { StakingFilteringService } from './staking.filtering.service';
+import { getAllKeys } from 'src/utils/get.many.utils';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class StakingService {
@@ -51,6 +53,7 @@ export class StakingService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         @Inject(forwardRef(() => StakingFilteringService))
         private readonly stakingFilteringService: StakingFilteringService,
+        private readonly cachingService: CacheService,
     ) {}
 
     async getFarmsStaking(): Promise<StakingModel[]> {
@@ -83,6 +86,12 @@ export class StakingService {
                 farmsStakingAddresses,
             );
 
+        farmsStakingAddresses =
+            await this.stakingFilteringService.stakingFarmsByRewardsDepleted(
+                filters,
+                farmsStakingAddresses,
+            );
+
         if (sorting) {
             farmsStakingAddresses = await this.sortFarms(
                 farmsStakingAddresses,
@@ -106,6 +115,37 @@ export class StakingService {
         });
     }
 
+    async getAllAccumulatedRewards(
+        stakeAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.accumulatedRewards',
+            this.stakingAbi.accumulatedRewards.bind(this.stakingAbi),
+        );
+    }
+
+    async getAllRewardCapacity(stakeAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.rewardCapacity',
+            this.stakingAbi.rewardCapacity.bind(this.stakingAbi),
+        );
+    }
+
+    async getAllProduceRewardsEnabled(
+        stakeAddresses: string[],
+    ): Promise<boolean[]> {
+        return await getAllKeys<boolean>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.produceRewardsEnabled',
+            this.stakingAbi.produceRewardsEnabled.bind(this.stakingAbi),
+        );
+    }
+
     async getFarmToken(stakeAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.stakingAbi.farmTokenID(stakeAddress);
         return await this.tokenService.getNftCollectionMetadata(farmTokenID);
@@ -116,6 +156,23 @@ export class StakingService {
             stakeAddress,
         );
         return await this.tokenService.tokenMetadata(farmingTokenID);
+    }
+
+    async getAllFarmingTokensIds(stakeAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.farmingTokenID',
+            this.stakingAbi.farmingTokenID.bind(this.stakingAbi),
+        );
+    }
+
+    async getAllFarmingTokens(stakeAddresses: string[]): Promise<EsdtToken[]> {
+        const farmingTokenIDs = await this.getAllFarmingTokensIds(
+            stakeAddresses,
+        );
+
+        return await this.tokenService.getAllTokensMetadata(farmingTokenIDs);
     }
 
     async getRewardToken(stakeAddress: string): Promise<EsdtToken> {

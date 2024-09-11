@@ -22,10 +22,8 @@ export class StakingFilteringService {
 
         const searchTerm = stakingFilter.searchToken.toUpperCase().trim();
 
-        const farmingTokens = await Promise.all(
-            stakeAddresses.map((address) =>
-                this.stakingService.getFarmingToken(address),
-            ),
+        const farmingTokens = await this.stakingService.getAllFarmingTokens(
+            stakeAddresses,
         );
 
         const filteredAddresses: string[] = [];
@@ -42,5 +40,37 @@ export class StakingFilteringService {
         }
 
         return filteredAddresses;
+    }
+
+    async stakingFarmsByRewardsDepleted(
+        stakingFilter: StakingFarmsFilter,
+        stakeAddresses: string[],
+    ): Promise<string[]> {
+        if (
+            typeof stakingFilter.rewardsDepleted === 'undefined' ||
+            stakingFilter.rewardsDepleted === null
+        ) {
+            return stakeAddresses;
+        }
+
+        const allProduceRewardsEnabled =
+            await this.stakingService.getAllProduceRewardsEnabled(
+                stakeAddresses,
+            );
+        const allAccumulatedRewards =
+            await this.stakingService.getAllAccumulatedRewards(stakeAddresses);
+        const allRewardCapacity =
+            await this.stakingService.getAllRewardCapacity(stakeAddresses);
+
+        const rewardsDepleted = stakeAddresses.map(
+            (_, index) =>
+                allAccumulatedRewards[index] === allRewardCapacity[index] ||
+                !allProduceRewardsEnabled[index],
+        );
+
+        return stakeAddresses.filter(
+            (_, index) =>
+                rewardsDepleted[index] === stakingFilter.rewardsDepleted,
+        );
     }
 }
