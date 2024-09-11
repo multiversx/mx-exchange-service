@@ -47,8 +47,8 @@ export class StakingFilteringService {
         stakeAddresses: string[],
     ): Promise<string[]> {
         if (
-            typeof stakingFilter.rewardsDepleted === 'undefined' ||
-            stakingFilter.rewardsDepleted === null
+            typeof stakingFilter.rewardsDepletedPerFarm === 'undefined' ||
+            stakingFilter.rewardsDepletedPerFarm === null
         ) {
             return stakeAddresses;
         }
@@ -70,7 +70,7 @@ export class StakingFilteringService {
 
         return stakeAddresses.filter(
             (_, index) =>
-                rewardsDepleted[index] === stakingFilter.rewardsDepleted,
+                rewardsDepleted[index] === stakingFilter.rewardsDepletedPerFarm,
         );
     }
 }
