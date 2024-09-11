@@ -341,7 +341,7 @@
                 },
                 "v2": {
                     "enterFarm": {
-                        "default": 25000000,
+                        "default": 35000000,
                         "withTokenMerge": 55000000
                     },
                     "compoundRewards": 21600000,
@@ -388,7 +388,7 @@
                 "default": 20000000,
                 "withTokenMerge": 23000000
             },
-            "unstakeFarm": 18500000,
+            "unstakeFarm": 25000000,
             "unbondFarm": 8000000,
             "claimRewards": 40000000,
             "claimBoostedRewards": 30000000,
@@ -416,7 +416,7 @@
                 "default": 40000000,
                 "withTokenMerge": 60000000
             },
-            "claimDualYield": 55000000,
+            "claimDualYield": 75000000,
             "unstakeFarmTokens": 75000000
         },
         "metabonding": {
@@ -470,7 +470,7 @@
         },
         "feesCollector": {
             "baseClaimRewards": 20000000,
-            "claimRewardsPerWeek": 20000000,
+            "claimRewardsPerWeek": 25000000,
             "addKnownContracts": 10000000,
             "addKnownTokens": 10000000
         },
@@ -501,15 +501,15 @@
         },
         "positionCreator": {
             "singleToken": {
-                "liquidityPosition": 57500000,
-                "farmPosition": 87000000,
-                "dualFarmPosition": 115000000,
-                "stakingPosition": 80000000
+                "liquidityPosition": 10000000,
+                "farmPosition": 15000000,
+                "dualFarmPosition": 20000000,
+                "stakingPosition": 10000000
             },
             "dualTokens": {
                 "farmPosition": 50000000,
                 "farmPositionProxy": 60000000,
-                "dualFarmPosition": 70000000,
+                "dualFarmPosition": 100000000,
                 "exitFarm": 50000000
             },
             "energyPosition": 13000000

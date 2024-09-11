@@ -28,6 +28,7 @@ import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.tran
 import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 
 @Injectable()
 export class PositionCreatorTransactionService {
@@ -98,11 +99,15 @@ export class PositionCreatorTransactionService {
             ]);
         }
 
+        const gasLimit =
+            gasConfig.positionCreator.singleToken.liquidityPosition +
+            gasConfig.pairs.addLiquidity +
+            gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                swapRoutes[0].pairs.length;
+
         interaction = interaction
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(
-                gasConfig.positionCreator.singleToken.liquidityPosition,
-            )
+            .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID);
 
         if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
@@ -189,11 +194,18 @@ export class PositionCreatorTransactionService {
             ];
         }
 
+        const gasLimit =
+            gasConfig.positionCreator.singleToken.farmPosition +
+            gasConfig.pairs.addLiquidity +
+            gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+            gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                swapRoutes[0].pairs.length;
+
         let interaction = contract.methodsExplicit
             .createFarmPosFromSingleToken(endpointArgs)
             .withSender(Address.fromBech32(sender))
             .withChainID(mxConfig.chainID)
-            .withGasLimit(gasConfig.positionCreator.singleToken.farmPosition);
+            .withGasLimit(gasLimit);
 
         if (
             payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
@@ -280,6 +292,19 @@ export class PositionCreatorTransactionService {
 
         const contract = await this.mxProxy.getPostitionCreatorContract();
 
+        let gasLimit =
+            gasConfig.positionCreator.singleToken.dualFarmPosition +
+            gasConfig.pairs.addLiquidity +
+            gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+            gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge;
+
+        gasLimit =
+            swapRoutes.length < 1
+                ? gasLimit
+                : gasLimit +
+                  gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                      swapRoutes[0].pairs.length;
+
         let interaction = contract.methodsExplicit
             .createMetastakingPosFromSingleToken([
                 new AddressValue(Address.fromBech32(stakingProxyAddress)),
@@ -288,9 +313,7 @@ export class PositionCreatorTransactionService {
                 ...swapRouteArgs,
             ])
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(
-                gasConfig.positionCreator.singleToken.dualFarmPosition,
-            )
+            .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID);
 
         if (
@@ -358,6 +381,12 @@ export class PositionCreatorTransactionService {
 
         const multiSwapArgs = this.serializeSwapRouteArgs(swapRoute);
 
+        const gasLimit =
+            gasConfig.positionCreator.singleToken.stakingPosition +
+            gasConfig.stake.stakeFarm.withTokenMerge +
+            gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                swapRoute.pairs.length;
+
         const contract = await this.mxProxy.getPostitionCreatorContract();
         let interaction = contract.methodsExplicit
             .createFarmStakingPosFromSingleToken([
@@ -372,7 +401,7 @@ export class PositionCreatorTransactionService {
                 ...multiSwapArgs,
             ])
             .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.singleToken.stakingPosition)
+            .withGasLimit(gasLimit)
             .withChainID(mxConfig.chainID);
 
         if (
