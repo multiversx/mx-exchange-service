@@ -28,6 +28,7 @@ import { PendingExecutor } from 'src/utils/pending.executor';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenService } from './token.service';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -189,6 +190,15 @@ export class TokenComputeService implements ITokenComputeService {
         return priceSoFar;
     }
 
+    async getAllTokensPriceDerivedEGLD(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPriceDerivedEGLD',
+            this.tokenPriceDerivedEGLD.bind(this),
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -222,6 +232,15 @@ export class TokenComputeService implements ITokenComputeService {
             .toFixed();
     }
 
+    async getAllTokensPriceDerivedUSD(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPriceDerivedUSD',
+            this.tokenPriceDerivedUSD.bind(this),
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -241,6 +260,15 @@ export class TokenComputeService implements ITokenComputeService {
         });
 
         return values24h[0]?.value ?? undefined;
+    }
+
+    async getAllTokensPrevious24hPrice(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPrevious24hPrice',
+            this.tokenPrevious24hPrice.bind(this),
+        );
     }
 
     @ErrorLoggerAsync({
@@ -263,6 +291,15 @@ export class TokenComputeService implements ITokenComputeService {
         });
 
         return values7d[0]?.value ?? undefined;
+    }
+
+    async getAllTokensPrevious7dPrice(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPrevious7dPrice',
+            this.tokenPrevious7dPrice.bind(this),
+        );
     }
 
     @ErrorLoggerAsync({
@@ -388,6 +425,15 @@ export class TokenComputeService implements ITokenComputeService {
         return valuesLast2Days.current;
     }
 
+    async getAllTokensVolumeUSD24h(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenVolumeUSD24h',
+            this.tokenVolumeUSD24h.bind(this),
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -403,6 +449,17 @@ export class TokenComputeService implements ITokenComputeService {
     async computeTokenPrevious24hVolumeUSD(tokenID: string): Promise<string> {
         const valuesLast2Days = await this.tokenLast2DaysVolumeUSD(tokenID);
         return valuesLast2Days.previous;
+    }
+
+    async getAllTokensPrevious24hVolumeUSD(
+        tokenIDs: string[],
+    ): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPrevious24hVolumeUSD',
+            this.tokenPrevious24hVolumeUSD.bind(this),
+        );
     }
 
     @ErrorLoggerAsync({
@@ -503,6 +560,15 @@ export class TokenComputeService implements ITokenComputeService {
         ).toFixed();
     }
 
+    async getAllTokensLiquidityUSD(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys<string>(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenLiquidityUSD',
+            this.tokenLiquidityUSD.bind(this),
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -531,6 +597,15 @@ export class TokenComputeService implements ITokenComputeService {
         }
 
         return undefined;
+    }
+
+    async getAllTokensCreatedAt(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenCreatedAt',
+            this.tokenCreatedAt.bind(this),
+        );
     }
 
     @ErrorLoggerAsync({
@@ -673,5 +748,14 @@ export class TokenComputeService implements ITokenComputeService {
         const trendingScore = volumeScore.plus(priceScore).plus(tradeScore);
 
         return trendingScore.toFixed();
+    }
+
+    async getAllTokensTrendingScore(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenTrendingScore',
+            this.tokenTrendingScore.bind(this),
+        );
     }
 }

@@ -17,12 +17,7 @@ export class TokenLoader {
 
     public readonly tokenTypeLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                tokenIDs,
-                'token.getEsdtTokenType',
-                this.tokenService.getEsdtTokenType.bind(this.tokenService),
-            );
+            return await this.tokenService.getAllEsdtTokensType(tokenIDs);
         },
     );
 
@@ -30,21 +25,13 @@ export class TokenLoader {
         string,
         string
     >(async (tokenIDs: string[]) => {
-        return await getAllKeys(
-            this.cacheService,
-            tokenIDs,
-            'token.tokenPriceDerivedEGLD',
-            this.tokenCompute.tokenPriceDerivedEGLD.bind(this.tokenCompute),
-        );
+        return await this.tokenCompute.getAllTokensPriceDerivedEGLD(tokenIDs);
     });
 
     public readonly tokenPriceDerivedUSDLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
+            return await this.tokenCompute.getAllTokensPriceDerivedUSD(
                 tokenIDs,
-                'token.tokenPriceDerivedUSD',
-                this.tokenCompute.tokenPriceDerivedUSD.bind(this.tokenCompute),
             );
         },
     );
@@ -53,33 +40,20 @@ export class TokenLoader {
         string,
         string
     >(async (tokenIDs: string[]) => {
-        return await getAllKeys(
-            this.cacheService,
-            tokenIDs,
-            'token.tokenPrevious24hPrice',
-            this.tokenCompute.tokenPrevious24hPrice.bind(this.tokenCompute),
-        );
+        return await this.tokenCompute.getAllTokensPrevious24hPrice(tokenIDs);
     });
 
     public readonly tokenPrevious7dPriceLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
+            return await this.tokenCompute.getAllTokensPrevious7dPrice(
                 tokenIDs,
-                'token.tokenPrevious7dPrice',
-                this.tokenCompute.tokenPrevious7dPrice.bind(this.tokenCompute),
             );
         },
     );
 
     public readonly tokenVolumeUSD24hLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                tokenIDs,
-                'token.tokenVolumeUSD24h',
-                this.tokenCompute.tokenVolumeUSD24h.bind(this.tokenCompute),
-            );
+            return await this.tokenCompute.getAllTokensVolumeUSD24h(tokenIDs);
         },
     );
 
@@ -87,33 +61,20 @@ export class TokenLoader {
         string,
         string
     >(async (tokenIDs: string[]) => {
-        return await getAllKeys(
-            this.cacheService,
+        return await this.tokenCompute.getAllTokensPrevious24hVolumeUSD(
             tokenIDs,
-            'token.tokenPrevious24hVolumeUSD',
-            this.tokenCompute.tokenPrevious24hVolumeUSD.bind(this.tokenCompute),
         );
     });
 
     public readonly tokenLiquidityUSDLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                tokenIDs,
-                'token.tokenLiquidityUSD',
-                this.tokenCompute.tokenLiquidityUSD.bind(this.tokenCompute),
-            );
+            return await this.tokenCompute.getAllTokensLiquidityUSD(tokenIDs);
         },
     );
 
     public readonly tokenCreatedAtLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                tokenIDs,
-                'token.tokenCreatedAt',
-                this.tokenCompute.tokenCreatedAt.bind(this.tokenCompute),
-            );
+            return await this.tokenCompute.getAllTokensCreatedAt(tokenIDs);
         },
     );
 
@@ -142,12 +103,7 @@ export class TokenLoader {
 
     public readonly tokenTrendingScoreLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                tokenIDs,
-                'token.tokenTrendingScore',
-                this.tokenCompute.tokenTrendingScore.bind(this.tokenCompute),
-            );
+            return await this.tokenCompute.getAllTokensTrendingScore(tokenIDs);
         },
     );
 }
