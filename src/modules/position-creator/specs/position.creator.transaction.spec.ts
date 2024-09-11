@@ -37,6 +37,7 @@ import { StakingAbiService } from 'src/modules/staking/services/staking.abi.serv
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -143,6 +144,12 @@ describe('PositionCreatorTransaction', () => {
                     swapRoutes,
                 );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.liquidityPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transactions).toEqual([
                 {
                     nonce: 0,
@@ -153,8 +160,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.liquidityPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         `ESDTTransfer@USDC-123456@100000000000000000000@createLpPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000012@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
                     ),
@@ -206,6 +212,12 @@ describe('PositionCreatorTransaction', () => {
                     1440,
                 );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.liquidityPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transactions).toEqual([
                 {
                     nonce: 0,
@@ -216,8 +228,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.liquidityPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         `ESDTTransfer@USDC-123456@100000000000000000000@createPairPosFromSingleToken@1440@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
                     ),
@@ -267,6 +278,12 @@ describe('PositionCreatorTransaction', () => {
                     1440,
                 );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.liquidityPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transactions).toEqual([
                 {
                     nonce: 0,
@@ -277,8 +294,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.liquidityPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         `createPairPosFromSingleToken@1440@47008144020574367766@47008144020574367766823`,
                     ),
@@ -381,6 +397,13 @@ describe('PositionCreatorTransaction', () => {
                 swapRoutes,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.farmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transactions).toEqual([
                 {
                     nonce: 0,
@@ -391,8 +414,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.farmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         `createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@47008144020574367766@47008144020574367766823`,
                     ),
@@ -442,6 +464,13 @@ describe('PositionCreatorTransaction', () => {
                 swapRoutes,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.farmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transactions).toEqual([
                 {
                     nonce: 0,
@@ -451,8 +480,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.farmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
                     ),
@@ -507,6 +535,13 @@ describe('PositionCreatorTransaction', () => {
                 swapRoutes,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.farmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transactions).toEqual([
                 {
                     nonce: 0,
@@ -534,8 +569,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.farmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@47008144020574367766@47008144020574367766823`,
                     ),
@@ -590,6 +624,13 @@ describe('PositionCreatorTransaction', () => {
                 swapRoutes,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.farmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transactions).toEqual([
                 {
                     nonce: 0,
@@ -599,8 +640,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.farmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
                     ),
@@ -653,6 +693,13 @@ describe('PositionCreatorTransaction', () => {
                 1440,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.farmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transactions).toEqual([
                 {
                     nonce: 0,
@@ -662,8 +709,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.farmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmPosFromSingleToken@1440@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327`,
                     ),
@@ -714,6 +760,13 @@ describe('PositionCreatorTransaction', () => {
                 1440,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.farmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -724,8 +777,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.farmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         `createFarmPosFromSingleToken@1440@47008144020574367766@47008144020574367766823`,
                     ),
@@ -830,6 +882,14 @@ describe('PositionCreatorTransaction', () => {
                 swapRoutes,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.dualFarmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -839,8 +899,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.dualFarmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         'createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@47008144020574367766@47008144020574367766823',
                     ),
@@ -897,6 +956,14 @@ describe('PositionCreatorTransaction', () => {
                 swapRoutes,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.dualFarmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -906,8 +973,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.dualFarmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
                     ),
@@ -969,6 +1035,14 @@ describe('PositionCreatorTransaction', () => {
                 swapRoutes,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.dualFarmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -996,8 +1070,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.dualFarmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@47008144020574367766@47008144020574367766823',
                     ),
@@ -1059,6 +1132,14 @@ describe('PositionCreatorTransaction', () => {
                 swapRoutes,
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.dualFarmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes[0].pairs.length;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -1068,8 +1149,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.dualFarmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
                     ),
@@ -1114,6 +1194,12 @@ describe('PositionCreatorTransaction', () => {
                 [],
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.dualFarmPosition +
+                gasConfig.pairs.addLiquidity +
+                gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
+                gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -1123,8 +1209,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.dualFarmPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@EGLDMEXLP-abcdef@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@@',
                     ),
@@ -1222,6 +1307,12 @@ describe('PositionCreatorTransaction', () => {
                 ],
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.stakingPosition +
+                gasConfig.stake.stakeFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes.swaps.length;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -1231,8 +1322,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.stakingPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         'createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@90661089388014913158134@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@89754478494134764026552',
                     ),
@@ -1277,6 +1367,12 @@ describe('PositionCreatorTransaction', () => {
                 ],
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.stakingPosition +
+                gasConfig.stake.stakeFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes.swaps.length;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -1286,8 +1382,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.stakingPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@01@USDC-123456@@100000000000000000000@createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@999999999899699097301@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
                     ),
@@ -1343,6 +1438,12 @@ describe('PositionCreatorTransaction', () => {
                 ],
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.stakingPosition +
+                gasConfig.stake.stakeFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes.swaps.length;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -1370,8 +1471,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.stakingPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@STAKETOK-1111@01@100000000000000000000@createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@90661089388014913158134@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@89754478494134764026552',
                     ),
@@ -1422,6 +1522,12 @@ describe('PositionCreatorTransaction', () => {
                 ],
             );
 
+            const gasLimit =
+                gasConfig.positionCreator.singleToken.stakingPosition +
+                gasConfig.stake.stakeFarm.withTokenMerge +
+                gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
+                    swapRoutes.swaps.length;
+
             expect(transaction).toEqual([
                 {
                     nonce: 0,
@@ -1431,8 +1537,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit:
-                        gasConfig.positionCreator.singleToken.stakingPosition,
+                    gasLimit: gasLimit,
                     data: encodeTransactionData(
                         'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@STAKETOK-1111@01@100000000000000000000@createFarmStakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@999999999899699097301@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@989999999900702106327',
                     ),

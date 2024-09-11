@@ -29,6 +29,7 @@ import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
 import { Address } from '@multiversx/sdk-core/out';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 
 describe('FarmServiceV2', () => {
     let module: TestingModule;
@@ -131,13 +132,22 @@ describe('FarmServiceV2', () => {
             totalLockedTokens: '1',
             lastUpdateEpoch: 256,
         });
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'totalRewardsForWeek',
+        ).mockResolvedValue([
+            new EsdtTokenPayment({
+                amount: '60480000000000000000000',
+                tokenID: 'MEX-123456',
+            }),
+        ]);
         jest.spyOn(farmAbi, 'farmTokenSupply').mockResolvedValue('2');
         jest.spyOn(farmAbi, 'rewardsPerBlock').mockResolvedValue(
             '1000000000000000000',
         );
         jest.spyOn(farmAbi, 'userTotalFarmPosition').mockResolvedValue('2');
 
-        const accumulatedRewards = await service.computeUserAccumulatedRewards(
+        const accumulatedRewards = await service.computeUserRewardsForWeek(
             Address.fromBech32(
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
             ).bech32(),
@@ -145,6 +155,6 @@ describe('FarmServiceV2', () => {
             1,
         );
 
-        expect(accumulatedRewards).toEqual('60480000000000000000000');
+        expect(accumulatedRewards[0].amount).toEqual('60480000000000000000000');
     });
 });

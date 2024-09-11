@@ -4,6 +4,7 @@ import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { HistoricDataModel } from '../models/analytics.model';
 import moment from 'moment';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { parseCachedNullOrUndefined } from 'src/utils/cache.utils';
 
 @Injectable()
 export class AnalyticsAWSGetterService {
@@ -14,7 +15,7 @@ export class AnalyticsAWSGetterService {
         if (!data || data === undefined) {
             return undefined;
         }
-        return data;
+        return parseCachedNullOrUndefined(data);
     }
 
     @ErrorLoggerAsync()

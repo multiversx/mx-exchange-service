@@ -3,6 +3,7 @@ import { PairComputeService } from './pair.compute.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import DataLoader from 'dataloader';
+import { PairService } from './pair.service';
 
 @Injectable({
     scope: Scope.REQUEST,
@@ -10,6 +11,7 @@ import DataLoader from 'dataloader';
 export class PairComputeLoader {
     constructor(
         private readonly pairCompute: PairComputeService,
+        private readonly pairService: PairService,
         private readonly cacheService: CacheService,
     ) {}
 
@@ -94,12 +96,7 @@ export class PairComputeLoader {
 
     public readonly lockedValueUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                addresses,
-                'pair.lockedValueUSD',
-                this.pairCompute.lockedValueUSD.bind(this.pairCompute),
-            );
+            return await this.pairService.getAllLockedValueUSD(addresses);
         },
     );
 
@@ -161,45 +158,25 @@ export class PairComputeLoader {
 
     public readonly hasFarmsLoader = new DataLoader<string, boolean>(
         async (addresses: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                addresses,
-                'pair.hasFarms',
-                this.pairCompute.hasFarms.bind(this.pairCompute),
-            );
+            return await this.pairService.getAllHasFarms(addresses);
         },
     );
 
     public readonly hasDualFarmsLoader = new DataLoader<string, boolean>(
         async (addresses: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                addresses,
-                'pair.hasDualFarms',
-                this.pairCompute.hasDualFarms.bind(this.pairCompute),
-            );
+            return await this.pairService.getAllHasDualFarms(addresses);
         },
     );
 
     public readonly tradesCountLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                addresses,
-                'pair.tradesCount',
-                this.pairCompute.tradesCount.bind(this.pairCompute),
-            );
+            return await this.pairService.getAllTradesCount(addresses);
         },
     );
 
     public readonly deployedAtLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                addresses,
-                'pair.deployedAt',
-                this.pairCompute.deployedAt.bind(this.pairCompute),
-            );
+            return await this.pairService.getAllDeployedAt(addresses);
         },
     );
 }

@@ -25,10 +25,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const lpTokensIDs = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairAbi.lpTokenID(pairMetadata.address),
-            ),
+        const lpTokensIDs = await this.pairService.getAllLpTokensIds(
+            pairsMetadata.map((pairMetadata) => pairMetadata.address),
         );
 
         const filteredPairsMetadata = [];
@@ -96,16 +94,15 @@ export class PairFilteringService {
         }
 
         const searchTerm = pairFilter.searchToken.toUpperCase().trim();
-
-        const pairsFirstToken = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairService.getFirstToken(pairMetadata.address),
-            ),
+        const pairsAddresses = pairsMetadata.map(
+            (pairMetadata) => pairMetadata.address,
         );
-        const pairsSecondToken = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairService.getSecondToken(pairMetadata.address),
-            ),
+
+        const pairsFirstToken = await this.pairService.getAllFirstTokens(
+            pairsAddresses,
+        );
+        const pairsSecondToken = await this.pairService.getAllSecondTokens(
+            pairsAddresses,
         );
 
         const filteredPairs: PairMetadata[] = [];
@@ -136,10 +133,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const lpTokensIDs = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairAbi.lpTokenID(pairMetadata.address),
-            ),
+        const lpTokensIDs = await this.pairService.getAllLpTokensIds(
+            pairsMetadata.map((pairMetadata) => pairMetadata.address),
         );
 
         return pairsMetadata.filter((_, index) =>
@@ -176,10 +171,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const pairsStates = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairAbi.state(pairMetadata.address),
-            ),
+        const pairsStates = await this.pairService.getAllStates(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter((_, index) => {
@@ -202,10 +195,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const pairsFeeStates = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairAbi.feeState(pairMetadata.address),
-            ),
+        const pairsFeeStates = await this.pairService.getAllFeeStates(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter(
@@ -241,10 +232,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const pairsLiquidityUSD = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.lockedValueUSD(pairMetadata.address),
-            ),
+        const pairsLiquidityUSD = await this.pairService.getAllLockedValueUSD(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter((_, index) => {
@@ -261,10 +250,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const pairsTradesCount = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.tradesCount(pairMetadata.address),
-            ),
+        const pairsTradesCount = await this.pairService.getAllTradesCount(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter(
@@ -283,10 +270,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const pairsHasFarms = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.hasFarms(pairMetadata.address),
-            ),
+        const pairsHasFarms = await this.pairService.getAllHasFarms(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter(
@@ -305,10 +290,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const pairsHasDualFarms = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.hasDualFarms(pairMetadata.address),
-            ),
+        const pairsHasDualFarms = await this.pairService.getAllHasDualFarms(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter(
@@ -324,10 +307,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const pairsDeployedAt = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.deployedAt(pairMetadata.address),
-            ),
+        const pairsDeployedAt = await this.pairService.getAllDeployedAt(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter(

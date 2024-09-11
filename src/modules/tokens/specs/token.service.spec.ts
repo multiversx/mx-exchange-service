@@ -14,6 +14,10 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenComputeServiceProvider } from '../mocks/token.compute.service.mock';
 import { TokenFilteringService } from '../services/token.filtering.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 
 describe('TokenService', () => {
     let module: TestingModule;
@@ -29,13 +33,17 @@ describe('TokenService', () => {
             ],
             providers: [
                 PairAbiServiceProvider,
+                PairComputeServiceProvider,
+                PairService,
                 RouterAbiServiceProvider,
+                WrapAbiServiceProvider,
                 TokenRepositoryServiceProvider,
                 MXApiServiceProvider,
                 TokenService,
                 ApiConfigService,
                 TokenComputeServiceProvider,
                 TokenFilteringService,
+                ContextGetterServiceProvider,
             ],
         }).compile();
     });

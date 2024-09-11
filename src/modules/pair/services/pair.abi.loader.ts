@@ -89,23 +89,13 @@ export class PairAbiLoader {
 
     public readonly stateLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return getAllKeys<string>(
-                this.cacheService,
-                addresses,
-                'pair.state',
-                this.pairAbi.state.bind(this.pairAbi),
-            );
+            return this.pairService.getAllStates(addresses);
         },
     );
 
     public readonly feeStateLoader = new DataLoader<string, boolean>(
         async (addresses: string[]) => {
-            return getAllKeys<boolean>(
-                this.cacheService,
-                addresses,
-                'pair.feeState',
-                this.pairAbi.feeState.bind(this.pairAbi),
-            );
+            return this.pairService.getAllFeeStates(addresses);
         },
     );
 
