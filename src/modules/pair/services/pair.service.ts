@@ -74,15 +74,82 @@ export class PairService {
             : await this.tokenService.tokenMetadata(lpTokenID);
     }
 
-    async getAllLpTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
-        const tokenIDs = await getAllKeys<string>(
+    async getAllLpTokensIds(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
             this.cachingService,
             pairAddresses,
             'pair.lpTokenID',
             this.pairAbi.lpTokenID.bind(this.pairAbi),
         );
+    }
+
+    async getAllLpTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
+        const tokenIDs = await this.getAllLpTokensIds(pairAddresses);
 
         return this.tokenService.getAllTokensMetadata(tokenIDs);
+    }
+
+    async getAllStates(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.state',
+            this.pairAbi.state.bind(this.pairAbi),
+        );
+    }
+
+    async getAllFeeStates(pairAddresses: string[]): Promise<boolean[]> {
+        return await getAllKeys<boolean>(
+            this.cachingService,
+            pairAddresses,
+            'pair.feeState',
+            this.pairAbi.feeState.bind(this.pairAbi),
+        );
+    }
+
+    async getAllLockedValueUSD(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.lockedValueUSD',
+            this.pairCompute.lockedValueUSD.bind(this.pairCompute),
+        );
+    }
+
+    async getAllDeployedAt(pairAddresses: string[]): Promise<number[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.deployedAt',
+            this.pairCompute.deployedAt.bind(this.pairCompute),
+        );
+    }
+
+    async getAllTradesCount(pairAddresses: string[]): Promise<number[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.tradesCount',
+            this.pairCompute.tradesCount.bind(this.pairCompute),
+        );
+    }
+
+    async getAllHasFarms(pairAddresses: string[]): Promise<boolean[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.hasFarms',
+            this.pairCompute.hasFarms.bind(this.pairCompute),
+        );
+    }
+
+    async getAllHasDualFarms(pairAddresses: string[]): Promise<boolean[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.hasDualFarms',
+            this.pairCompute.hasDualFarms.bind(this.pairCompute),
+        );
     }
 
     async getAmountOut(
