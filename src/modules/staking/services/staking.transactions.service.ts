@@ -9,7 +9,7 @@ import {
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { mxConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig, constantsConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
@@ -226,7 +226,11 @@ export class StakingTransactionService {
 
         const promises: Promise<TransactionModel>[] = [];
         userNfts.forEach((nft) => {
-            if (nft.nonce < migrationNonce) {
+            if (
+                nft.nonce < migrationNonce &&
+                nft.attributes.length >
+                    constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
+            ) {
                 promises.push(
                     this.claimRewards(userAddress, stakingAddress, {
                         tokenID: nft.collection,
