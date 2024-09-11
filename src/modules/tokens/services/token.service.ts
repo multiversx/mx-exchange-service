@@ -128,7 +128,6 @@ export class TokenService {
             tokenIDs,
             'token.getEsdtTokenType',
             this.getEsdtTokenType.bind(this),
-            CacheTtlInfo.Token,
         );
     }
 
