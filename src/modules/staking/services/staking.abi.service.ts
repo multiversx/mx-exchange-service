@@ -20,6 +20,8 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IStakingAbiService } from './interfaces';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class StakingAbiService
@@ -30,6 +32,7 @@ export class StakingAbiService
         protected readonly mxProxy: MXProxyService,
         private readonly gatewayService: MXGatewayService,
         private readonly apiService: MXApiService,
+        private readonly cachingService: CacheService,
     ) {
         super(mxProxy);
     }
@@ -76,6 +79,15 @@ export class StakingAbiService
             contract.methodsExplicit.getFarmingTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getAllFarmingTokensIds(stakeAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.farmingTokenID',
+            this.farmingTokenID.bind(this),
+        );
     }
 
     @ErrorLoggerAsync({
@@ -166,6 +178,17 @@ export class StakingAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
+    async getAllAccumulatedRewards(
+        stakeAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.accumulatedRewards',
+            this.accumulatedRewards.bind(this),
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -186,6 +209,15 @@ export class StakingAbiService
             contract.methodsExplicit.getRewardCapacity();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
+    }
+
+    async getAllRewardCapacity(stakeAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.rewardCapacity',
+            this.rewardCapacity.bind(this),
+        );
     }
 
     @ErrorLoggerAsync({
@@ -316,6 +348,17 @@ export class StakingAbiService
             'produce_rewards_enabled',
         );
         return response === '01';
+    }
+
+    async getAllProduceRewardsEnabled(
+        stakeAddresses: string[],
+    ): Promise<boolean[]> {
+        return await getAllKeys<boolean>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.produceRewardsEnabled',
+            this.produceRewardsEnabled.bind(this),
+        );
     }
 
     @ErrorLoggerAsync({

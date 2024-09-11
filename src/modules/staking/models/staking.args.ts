@@ -40,7 +40,7 @@ export class StakingFarmsFilter {
     @Field(() => String, { nullable: true })
     searchToken?: string;
     @Field({ nullable: true })
-    rewardsDepletedPerFarm?: boolean;
+    rewardsEnded?: boolean;
 }
 
 @InputType()

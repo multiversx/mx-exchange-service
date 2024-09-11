@@ -1,12 +1,14 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { StakingFarmsFilter } from '../models/staking.args';
 import { StakingService } from './staking.service';
+import { StakingAbiService } from './staking.abi.service';
 
 @Injectable()
 export class StakingFilteringService {
     constructor(
         @Inject(forwardRef(() => StakingService))
         private readonly stakingService: StakingService,
+        private readonly stakingAbi: StakingAbiService,
     ) {}
 
     async stakingFarmsByToken(
@@ -47,20 +49,19 @@ export class StakingFilteringService {
         stakeAddresses: string[],
     ): Promise<string[]> {
         if (
-            typeof stakingFilter.rewardsDepletedPerFarm === 'undefined' ||
-            stakingFilter.rewardsDepletedPerFarm === null
+            typeof stakingFilter.rewardsEnded === 'undefined' ||
+            stakingFilter.rewardsEnded === null
         ) {
             return stakeAddresses;
         }
 
         const allProduceRewardsEnabled =
-            await this.stakingService.getAllProduceRewardsEnabled(
-                stakeAddresses,
-            );
+            await this.stakingAbi.getAllProduceRewardsEnabled(stakeAddresses);
         const allAccumulatedRewards =
-            await this.stakingService.getAllAccumulatedRewards(stakeAddresses);
-        const allRewardCapacity =
-            await this.stakingService.getAllRewardCapacity(stakeAddresses);
+            await this.stakingAbi.getAllAccumulatedRewards(stakeAddresses);
+        const allRewardCapacity = await this.stakingAbi.getAllRewardCapacity(
+            stakeAddresses,
+        );
 
         const rewardsDepleted = stakeAddresses.map(
             (_, index) =>
@@ -69,8 +70,7 @@ export class StakingFilteringService {
         );
 
         return stakeAddresses.filter(
-            (_, index) =>
-                rewardsDepleted[index] === stakingFilter.rewardsDepletedPerFarm,
+            (_, index) => rewardsDepleted[index] === stakingFilter.rewardsEnded,
         );
     }
 }
