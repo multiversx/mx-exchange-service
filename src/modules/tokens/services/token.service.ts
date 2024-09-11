@@ -128,6 +128,7 @@ export class TokenService {
             tokenIDs,
             'token.getEsdtTokenType',
             this.getEsdtTokenType.bind(this),
+            CacheTtlInfo.Token,
         );
     }
 
@@ -149,6 +150,7 @@ export class TokenService {
             tokenIDs,
             'token.tokenMetadata',
             this.tokenMetadata.bind(this),
+            CacheTtlInfo.Token,
         );
     }
 
@@ -176,6 +178,7 @@ export class TokenService {
             collections,
             'token.getNftCollectionMetadata',
             this.getNftCollectionMetadata.bind(this),
+            CacheTtlInfo.Token,
         );
     }
 

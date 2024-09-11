@@ -4,6 +4,7 @@ import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import DataLoader from 'dataloader';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { TokenService } from './token.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable({
     scope: Scope.REQUEST,
@@ -85,6 +86,7 @@ export class TokenLoader {
                 tokenIDs,
                 'token.tokenSwapCount',
                 this.tokenCompute.tokenSwapCount.bind(this.tokenCompute),
+                CacheTtlInfo.Token,
             );
         },
     );
@@ -98,6 +100,7 @@ export class TokenLoader {
             tokenIDs,
             'token.tokenPrevious24hSwapCount',
             this.tokenCompute.tokenPrevious24hSwapCount.bind(this.tokenCompute),
+            CacheTtlInfo.Token,
         );
     });
 
