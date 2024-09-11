@@ -313,7 +313,7 @@ export class UserEnergyComputeService {
             (token) => token.creator,
         );
         const promisesDualYieldTokens = dualYieldTokens.map((token) => {
-            return this.getFarmAddressForDualYieldToken(token.collection);
+            return this.getStakeAddressForDualYieldToken(token.collection);
         });
 
         userActiveStakeAddresses = userActiveStakeAddresses.concat(
@@ -716,14 +716,14 @@ export class UserEnergyComputeService {
         return this.stakeProxyAbi.lpFarmAddress(stakingProxyAddress);
     }
 
-    async getStakeAddressForDualYieldToken(token: UserDualYiledToken) {
-        if (!token || token === undefined) {
+    async getStakeAddressForDualYieldToken(collection: string) {
+        if (!collection || collection === undefined) {
             return undefined;
         }
 
         const stakingProxyAddress =
             await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(
-                token.collection,
+                collection,
             );
         return this.stakeProxyAbi.stakingFarmAddress(stakingProxyAddress);
     }
