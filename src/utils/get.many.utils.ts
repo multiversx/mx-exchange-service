@@ -1,9 +1,11 @@
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { parseCachedNullOrUndefined } from './cache.utils';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 async function getMany<T>(
     cacheService: CacheService,
     keys: string[],
+    localTtl: number,
 ): Promise<(T | undefined)[]> {
     const values = await cacheService.getManyLocal<T>(keys);
 
@@ -25,6 +27,10 @@ async function getMany<T>(
 
     const remoteValues = await cacheService.getManyRemote<T>(missingKeys);
 
+    if (localTtl > 0) {
+        await cacheService.setManyLocal<T>(missingKeys, remoteValues, localTtl);
+    }
+
     for (const [index, missingIndex] of missingIndexes.entries()) {
         const remoteValue = remoteValues[index];
         values[missingIndex] = remoteValue
@@ -40,9 +46,14 @@ export async function getAllKeys<T>(
     rawKeys: string[],
     baseKey: string,
     getterMethod: (address: string) => Promise<T>,
+    ttlOptions?: CacheTtlInfo,
 ): Promise<T[]> {
     const keys = rawKeys.map((tokenID) => `${baseKey}.${tokenID}`);
-    const values = await getMany<T>(cacheService, keys);
+    const values = await getMany<T>(
+        cacheService,
+        keys,
+        ttlOptions?.localTtl ?? 0,
+    );
 
     const missingIndexes: number[] = [];
     values.forEach((value, index) => {
