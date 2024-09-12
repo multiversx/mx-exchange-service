@@ -28,7 +28,13 @@ async function getMany<T>(
     const remoteValues = await cacheService.getManyRemote<T>(missingKeys);
 
     if (localTtl > 0) {
-        await cacheService.setManyLocal<T>(missingKeys, remoteValues, localTtl);
+        await cacheService.setManyLocal<T>(
+            missingKeys,
+            remoteValues.map((value) =>
+                value ? parseCachedNullOrUndefined(value) : undefined,
+            ),
+            localTtl,
+        );
     }
 
     for (const [index, missingIndex] of missingIndexes.entries()) {
