@@ -616,6 +616,20 @@ export class StakingComputeService {
         additionalUserStakeAmount = '0',
         additionalUserEnergy = '0',
     ): Promise<number> {
+        const [produceRewardsEnabled, accumulatedRewards, rewardsCapacity] =
+            await Promise.all([
+                this.stakingAbi.produceRewardsEnabled(scAddress),
+                this.stakingAbi.accumulatedRewards(scAddress),
+                this.stakingAbi.rewardCapacity(scAddress),
+            ]);
+
+        if (
+            !produceRewardsEnabled ||
+            new BigNumber(accumulatedRewards).isEqualTo(rewardsCapacity)
+        ) {
+            return 0;
+        }
+
         const [currentWeek, boostedRewardsPerWeek] = await Promise.all([
             this.weekTimeKeepingAbi.currentWeek(scAddress),
             this.computeBoostedRewardsPerWeek(
@@ -652,6 +666,20 @@ export class StakingComputeService {
         userAddress: string,
         additionalUserStakeAmount = '0',
     ): Promise<number> {
+        const [produceRewardsEnabled, accumulatedRewards, rewardsCapacity] =
+            await Promise.all([
+                this.stakingAbi.produceRewardsEnabled(scAddress),
+                this.stakingAbi.accumulatedRewards(scAddress),
+                this.stakingAbi.rewardCapacity(scAddress),
+            ]);
+
+        if (
+            !produceRewardsEnabled ||
+            new BigNumber(accumulatedRewards).isEqualTo(rewardsCapacity)
+        ) {
+            return 0;
+        }
+
         const [boostedRewardsPerWeek, boostedYieldsFactors] = await Promise.all(
             [
                 this.computeBoostedRewardsPerWeek(
