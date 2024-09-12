@@ -33,7 +33,10 @@
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqg48z8qfm028ze6y3d6tamdfaw6vn774tkp2shg5dt5",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqxv0y4p6vvszrknaztatycac77yvsxqrrkp2sghd86c",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqu64gygjs5ted4rupaewaszyhaxl9lv7m2jpsw47nzr",
-        "escrow": "erd1qqqqqqqqqqqqqpgqeh4yv09rmyg4xgn5ma03mvm4v5gndu8w2jpsglz3cn"
+        "escrow": "erd1qqqqqqqqqqqqqpgqeh4yv09rmyg4xgn5ma03mvm4v5gndu8w2jpsglz3cn",
+        "positionCreator": "erd1qqqqqqqqqqqqqpgq43cyf9yjfy79ey0cax55kenxgpefhayk2jps6zt793",
+        "lockedTokenPositionCreator": "erd1qqqqqqqqqqqqqpgqwtyu7d5qw322smp0kjq789ua0wtz5cfa2jpsu999xr",
+        "composableTasks": "erd1qqqqqqqqqqqqqpgqsytkvnexypp7argk02l0rasnj57sxa542jpshkl7df"
     },
     "governance": {
         "oldEnergy": {
