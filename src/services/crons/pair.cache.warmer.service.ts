@@ -90,26 +90,26 @@ export class PairCacheWarmerService {
                     metric: 'firstTokenVolume',
                     time,
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const secondTokenVolume24h =
                 await this.analyticsQuery.getAggregatedValue({
                     series: pairAddress,
                     metric: 'secondTokenVolume',
                     time,
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSD24h = await this.analyticsQuery.getAggregatedValue({
                 series: pairAddress,
                 metric: 'volumeUSD',
                 time,
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const feesUSD24h = await this.analyticsQuery.getAggregatedValue({
                 series: pairAddress,
                 metric: 'feesUSD',
                 time,
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenVolume(
