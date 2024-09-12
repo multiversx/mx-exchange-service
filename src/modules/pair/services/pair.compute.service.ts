@@ -23,6 +23,8 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { TransactionStatus } from 'src/utils/transaction.utils';
+import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -42,6 +44,8 @@ export class PairComputeService implements IPairComputeService {
         private readonly stakingProxyAbiService: StakingProxyAbiService,
         private readonly elasticService: ElasticService,
         private readonly apiService: MXApiService,
+        private readonly farmCompute: FarmComputeServiceV2,
+        private readonly stakingCompute: StakingComputeService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -175,7 +179,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async tokenPriceUSD(tokenID: string): Promise<string> {
-        return await this.tokenCompute.computeTokenPriceDerivedUSD(tokenID);
+        return await this.tokenCompute.tokenPriceDerivedUSD(tokenID);
     }
 
     @ErrorLoggerAsync({
@@ -527,7 +531,9 @@ export class PairComputeService implements IPairComputeService {
             ),
         );
 
-        return actualFees24hBig.times(365).div(lockedValueUSD).toFixed();
+        const feesAPR = actualFees24hBig.times(365).div(lockedValueUSD);
+
+        return !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
     }
 
     @ErrorLoggerAsync({
@@ -716,5 +722,142 @@ export class PairComputeService implements IPairComputeService {
             pairAddress,
         );
         return deployedAt ?? undefined;
+    }
+
+    async getPairFarmAddress(pairAddress: string): Promise<string> {
+        const hasFarms = await this.hasFarms(pairAddress);
+
+        if (!hasFarms) {
+            return undefined;
+        }
+
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
+        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
+
+        const farmingTokenIDs = await Promise.all(
+            addresses.map((address) => this.farmAbi.farmingTokenID(address)),
+        );
+
+        const farmAddressIndex = farmingTokenIDs.findIndex(
+            (tokenID) => tokenID === lpTokenID,
+        );
+
+        if (farmAddressIndex === -1) {
+            return undefined;
+        }
+
+        return addresses[farmAddressIndex];
+    }
+
+    async getPairFarmToken(pairAddress: string): Promise<string> {
+        const farmAddress = await this.getPairFarmAddress(pairAddress);
+
+        if (!farmAddress) {
+            return undefined;
+        }
+
+        return this.farmAbi.farmTokenID(farmAddress);
+    }
+
+    async getPairStakingFarmAddress(pairAddress: string): Promise<string> {
+        const stakingProxyAddress = await this.getPairStakingProxyAddress(
+            pairAddress,
+        );
+
+        if (!stakingProxyAddress) {
+            return undefined;
+        }
+
+        return await this.stakingProxyAbiService.stakingFarmAddress(
+            stakingProxyAddress,
+        );
+    }
+
+    async getPairStakingProxyAddress(pairAddress: string): Promise<string> {
+        const hasDualFarms = await this.hasDualFarms(pairAddress);
+
+        if (!hasDualFarms) {
+            return undefined;
+        }
+
+        const stakingProxyAddresses =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
+        const farmAddress = await this.getPairFarmAddress(pairAddress);
+
+        const farmsAddresses = await Promise.all(
+            stakingProxyAddresses.map((address) =>
+                this.stakingProxyAbiService.lpFarmAddress(address),
+            ),
+        );
+
+        const stakingProxyIndex = farmsAddresses.findIndex(
+            (address) => address === farmAddress,
+        );
+
+        return stakingProxyIndex === -1
+            ? undefined
+            : stakingProxyAddresses[stakingProxyIndex];
+    }
+
+    async computeCompoundedApr(pairAddress: string): Promise<string> {
+        const [feesAPR, farmAddress, stakingFarmAddress] = await Promise.all([
+            this.feesAPR(pairAddress),
+            this.getPairFarmAddress(pairAddress),
+            this.getPairStakingFarmAddress(pairAddress),
+        ]);
+
+        let feesAprBN = new BigNumber(feesAPR);
+        let farmBaseAprBN = new BigNumber('0');
+        let farmBoostedAprBN = new BigNumber('0');
+        let dualFarmBaseAprBN = new BigNumber('0');
+        let dualFarmBoostedAprBN = new BigNumber('0');
+
+        if (farmAddress) {
+            const [farmBaseAPR, farmBoostedAPR] = await Promise.all([
+                this.farmCompute.farmBaseAPR(farmAddress),
+                this.farmCompute.maxBoostedApr(farmAddress),
+            ]);
+
+            farmBaseAprBN = new BigNumber(farmBaseAPR);
+            farmBoostedAprBN = new BigNumber(farmBoostedAPR);
+
+            if (farmBaseAprBN.isNaN() || !farmBaseAprBN.isFinite()) {
+                farmBaseAprBN = new BigNumber(0);
+            }
+            if (farmBoostedAprBN.isNaN() || !farmBoostedAprBN.isFinite()) {
+                farmBoostedAprBN = new BigNumber(0);
+            }
+        }
+
+        if (stakingFarmAddress) {
+            const [dualFarmBaseAPR, dualFarmBoostedAPR] = await Promise.all([
+                this.stakingCompute.stakeFarmAPR(stakingFarmAddress),
+                this.stakingCompute.boostedAPR(stakingFarmAddress),
+            ]);
+
+            dualFarmBaseAprBN = new BigNumber(dualFarmBaseAPR);
+            dualFarmBoostedAprBN = new BigNumber(dualFarmBoostedAPR);
+
+            if (dualFarmBaseAprBN.isNaN() || !dualFarmBaseAprBN.isFinite()) {
+                dualFarmBaseAprBN = new BigNumber(0);
+            }
+            if (
+                dualFarmBoostedAprBN.isNaN() ||
+                !dualFarmBoostedAprBN.isFinite()
+            ) {
+                dualFarmBoostedAprBN = new BigNumber(0);
+            }
+        }
+
+        if (feesAprBN.isNaN() || !feesAprBN.isFinite()) {
+            feesAprBN = new BigNumber(0);
+        }
+
+        return feesAprBN
+            .plus(farmBaseAprBN)
+            .plus(farmBoostedAprBN)
+            .plus(dualFarmBaseAprBN)
+            .plus(dualFarmBoostedAprBN)
+            .toFixed();
     }
 }

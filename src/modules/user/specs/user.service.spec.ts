@@ -233,6 +233,9 @@ describe('UserService', () => {
                 nonce: 1,
                 royalties: 0,
                 valueUSD: '20',
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
                 decodedAttributes: new FarmTokenAttributesModelV1_2({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',

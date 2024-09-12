@@ -1,20 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.71.0-nightly",
-            "commitHash": "a2b1646c597329d0a25efa3889b66650f65de1de",
-            "commitDate": "2023-05-25",
+            "version": "1.80.0-nightly",
+            "commitHash": "84b40fc908c3adc7e0e470b3fbaa264df0e122b8",
+            "commitDate": "2024-05-27",
             "channel": "Nightly",
-            "short": "rustc 1.71.0-nightly (a2b1646c5 2023-05-25)"
+            "short": "rustc 1.80.0-nightly (84b40fc90 2024-05-27)"
         },
         "contractCrate": {
             "name": "farm-with-locked-rewards",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-1401-g81fa7ee8"
+            "gitVersion": "v1.6.0-1831-g81b6253f"
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.39.4"
+            "version": "0.50.5"
         }
     },
     "name": "Farm",
@@ -46,6 +46,10 @@
                 "multi_arg": true
             }
         ],
+        "outputs": []
+    },
+    "upgradeConstructor": {
+        "inputs": [],
         "outputs": []
     },
     "endpoints": [
@@ -101,10 +105,6 @@
             ],
             "inputs": [
                 {
-                    "name": "exit_amount",
-                    "type": "BigUint"
-                },
-                {
                     "name": "opt_orig_caller",
                     "type": "optional<Address>",
                     "multi_arg": true
@@ -116,32 +116,6 @@
                 },
                 {
                     "type": "EsdtTokenPayment"
-                },
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "calculateRewardsForGivenPosition",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "user",
-                    "type": "Address"
-                },
-                {
-                    "name": "farm_token_amount",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "attributes",
-                    "type": "FarmTokenAttributes"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
                 }
             ]
         },
@@ -154,6 +128,25 @@
             "inputs": [
                 {
                     "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "claimBoostedRewards",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "opt_user",
                     "type": "optional<Address>",
                     "multi_arg": true
                 }
@@ -188,6 +181,40 @@
             "outputs": []
         },
         {
+            "name": "setBoostedYieldsRewardsPercentage",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "percentage",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "calculateRewardsForGivenPosition",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                },
+                {
+                    "name": "farm_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "attributes",
+                    "type": "FarmTokenAttributes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
             "name": "getRewardPerShare",
             "mutability": "readonly",
             "inputs": [],
@@ -206,6 +233,17 @@
                     "type": "BigUint"
                 }
             ]
+        },
+        {
+            "name": "setAllowExternalClaimBoostedRewards",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "allow_external_claim",
+                    "type": "bool"
+                }
+            ],
+            "outputs": []
         },
         {
             "name": "getFarmingTokenId",
@@ -254,6 +292,46 @@
             "outputs": [
                 {
                     "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getUserTotalFarmPosition",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getAllowExternalClaim",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "getFarmPositionMigrationNonce",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
                 }
             ]
         },
@@ -551,17 +629,6 @@
                     "type": "Address"
                 }
             ]
-        },
-        {
-            "name": "setBoostedYieldsRewardsPercentage",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "percentage",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
         },
         {
             "name": "collectUndistributedBoostedRewards",
@@ -1035,25 +1102,9 @@
             ]
         }
     ],
+    "esdtAttributes": [],
     "hasCallback": true,
     "types": {
-        "Energy": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "amount",
-                    "type": "BigInt"
-                },
-                {
-                    "name": "last_update_epoch",
-                    "type": "u64"
-                },
-                {
-                    "name": "total_locked_tokens",
-                    "type": "BigUint"
-                }
-            ]
-        },
         "BoostedYieldsFactors": {
             "type": "struct",
             "fields": [
@@ -1163,6 +1214,23 @@
                 {
                     "name": "created_with_merge",
                     "type": "bool"
+                }
+            ]
+        },
+        "Energy": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "amount",
+                    "type": "BigInt"
+                },
+                {
+                    "name": "last_update_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "total_locked_tokens",
+                    "type": "BigUint"
                 }
             ]
         },

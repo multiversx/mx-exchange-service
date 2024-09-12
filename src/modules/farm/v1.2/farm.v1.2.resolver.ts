@@ -6,6 +6,11 @@ import { FarmAbiServiceV1_2 } from './services/farm.v1.2.abi.service';
 import { FarmServiceV1_2 } from './services/farm.v1.2.service';
 import { FarmComputeServiceV1_2 } from './services/farm.v1.2.compute.service';
 import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
+import { Logger } from 'winston';
+import { Inject } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { FarmAbiLoaderV1_2 } from './services/farm.v1.2.abi.loader';
+import { FarmComputeLoaderV1_2 } from './services/farm.v1.2.compute.loader';
 
 @Resolver(() => FarmModelV1_2)
 export class FarmResolverV1_2 extends FarmResolver {
@@ -13,8 +18,18 @@ export class FarmResolverV1_2 extends FarmResolver {
         protected readonly farmAbi: FarmAbiServiceV1_2,
         protected readonly farmService: FarmServiceV1_2,
         protected readonly farmCompute: FarmComputeServiceV1_2,
+        protected readonly farmAbiLoader: FarmAbiLoaderV1_2,
+        protected readonly farmComputeLoader: FarmComputeLoaderV1_2,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
-        super(farmAbi, farmService, farmCompute);
+        super(
+            farmAbi,
+            farmService,
+            farmCompute,
+            farmAbiLoader,
+            farmComputeLoader,
+            logger,
+        );
     }
 
     @ResolveField()

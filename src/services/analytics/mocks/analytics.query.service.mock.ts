@@ -52,6 +52,9 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
     getCandles({ series, metric, start, end }): Promise<OhlcvDataModel[]> {
         throw new Error('Method not implemented.');
     }
+    getStartDate(series: string): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
 }
 
 export const AnalyticsQueryServiceProvider = {

@@ -33,17 +33,14 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TimescaleDBQuery } from 'src/helpers/decorators/timescaledb.query.decorator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
-import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()
 export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     constructor(
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-        private readonly cacheService: CacheService,
         @InjectRepository(XExchangeAnalyticsEntity)
         private readonly dexAnalytics: Repository<XExchangeAnalyticsEntity>,
         @InjectRepository(SumDaily)
@@ -403,7 +400,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         );
     }
 
-    private async getStartDate(series: string): Promise<string | undefined> {
+    async getStartDate(series: string): Promise<string | undefined> {
         const allStartDates = await this.allStartDates();
 
         if (!series.includes('%')) {

@@ -10,6 +10,8 @@ import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import moment from 'moment';
+import { TokenRepositoryService } from 'src/modules/tokens/services/token.repository.service';
+import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 
 @Injectable()
 export class TokensCacheWarmerService {
@@ -17,6 +19,8 @@ export class TokensCacheWarmerService {
         private readonly tokenService: TokenService,
         private readonly tokenComputeService: TokenComputeService,
         private readonly tokenSetterService: TokenSetterService,
+        private readonly tokenRepository: TokenRepositoryService,
+        private readonly pairSetter: PairSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -30,24 +34,67 @@ export class TokensCacheWarmerService {
 
         const tokenIDs = await this.tokenService.getUniqueTokenIDs(false);
         const profiler = new PerformanceProfiler();
-        const cachedKeys = [];
 
         for (const tokenID of tokenIDs) {
             const token = await this.tokenService.tokenMetadataRaw(tokenID);
+            const tokenType = await this.tokenRepository.getTokenType(tokenID);
 
-            const cachedKey = await this.tokenSetterService.setMetadata(
-                tokenID,
-                token,
-            );
+            const cachedKeys = await Promise.all([
+                this.tokenSetterService.setMetadata(tokenID, token),
+                this.tokenSetterService.setEsdtTokenType(tokenID, tokenType),
+            ]);
 
-            cachedKeys.push(cachedKey);
+            await this.deleteCacheKeys(cachedKeys);
         }
-
-        await this.deleteCacheKeys(cachedKeys);
 
         profiler.stop();
         this.logger.info(
             `Finish refresh tokens metadata in ${profiler.duration}`,
+            {
+                context: 'CacheTokens',
+            },
+        );
+    }
+
+    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Lock({ name: 'cacheTokensPrices', verbose: true })
+    async cacheTokensPrices(): Promise<void> {
+        this.logger.info('Start refresh tokens prices', {
+            context: 'CacheTokens',
+        });
+
+        const tokensIDs = await this.tokenService.getUniqueTokenIDs(false);
+        const profiler = new PerformanceProfiler();
+
+        for (const tokenID of tokensIDs) {
+            const priceDerivedEGLD =
+                await this.tokenComputeService.computeTokenPriceDerivedEGLD(
+                    tokenID,
+                    [],
+                );
+            const priceDerivedUSD =
+                await this.tokenComputeService.computeTokenPriceDerivedUSD(
+                    tokenID,
+                );
+
+            const cachedKeys = await Promise.all([
+                this.tokenSetterService.setDerivedEGLD(
+                    tokenID,
+                    priceDerivedEGLD,
+                ),
+                this.tokenSetterService.setDerivedUSD(tokenID, priceDerivedUSD),
+                this.pairSetter.setTokenPriceUSD(tokenID, priceDerivedUSD),
+            ]);
+
+            await this.deleteCacheKeys(cachedKeys);
+        }
+
+        profiler.stop();
+        this.logger.info(
+            `Finish refresh tokens prices in ${profiler.duration}`,
+            {
+                context: 'CacheTokens',
+            },
         );
     }
 
@@ -80,6 +127,10 @@ export class TokensCacheWarmerService {
                 await this.tokenComputeService.computeTokenLiquidityUSD(
                     tokenID,
                 );
+            const createdAt =
+                await this.tokenComputeService.computeTokenCreatedAtTimestamp(
+                    tokenID,
+                );
 
             const cachedKeys = await Promise.all([
                 this.tokenSetterService.setVolumeLast2Days(
@@ -95,6 +146,7 @@ export class TokensCacheWarmerService {
                     pricePrevious7D,
                 ),
                 this.tokenSetterService.setLiquidityUSD(tokenID, liquidityUSD),
+                this.tokenSetterService.setCreatedAt(tokenID, createdAt),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
@@ -102,7 +154,9 @@ export class TokensCacheWarmerService {
         await this.cacheTokensTrendingScore(tokens);
 
         profiler.stop();
-        this.logger.info(`Finish refresh tokens data in ${profiler.duration}`);
+        this.logger.info(`Finish refresh tokens data in ${profiler.duration}`, {
+            context: 'CacheTokens',
+        });
     }
 
     private async cacheTokensSwapsCount(): Promise<void> {

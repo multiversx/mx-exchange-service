@@ -147,7 +147,7 @@ export class CacheWarmerService {
     @Cron('*/6 * * * * *')
     async cacheShardCurrentBlockNonce(): Promise<void> {
         const stats = await this.apiService.getStats();
-        const promises: Promise<number>[] = [];
+        let promises: Promise<number>[] = [];
         for (let index = 0; index < stats.shards; index++) {
             promises.push(this.apiService.getCurrentBlockNonce(index));
         }
@@ -164,6 +164,29 @@ export class CacheWarmerService {
                 shardsNonces[index],
                 Constants.oneMinute(),
             );
+            invalidatedKeys.push(cacheKey);
+        }
+
+        promises = [];
+        for (let index = 0; index < stats.shards; index++) {
+            promises.push(
+                this.apiService.getShardBlockCountInEpoch(stats.epoch, index),
+            );
+        }
+        const shardsBlockCount = await Promise.all(promises);
+        for (let index = 0; index < stats.shards; index++) {
+            const cacheKey = generateCacheKeyFromParams(
+                'context',
+                'blocksCountInEpoch',
+                index,
+                stats.epoch,
+            );
+            await this.cachingService.set(
+                cacheKey,
+                shardsBlockCount[index],
+                Constants.oneMinute(),
+            );
+            invalidatedKeys.push(cacheKey);
         }
 
         await this.deleteCacheKeys(invalidatedKeys);

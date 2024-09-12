@@ -62,6 +62,7 @@ import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staki
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { Address } from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class UserMetaEsdtComputeService {
@@ -113,6 +114,7 @@ export class UserMetaEsdtComputeService {
         return new UserToken({
             ...esdtToken,
             valueUSD: valueUSD,
+            pairAddress,
         });
     }
 
@@ -159,6 +161,7 @@ export class UserMetaEsdtComputeService {
                     tokenPriceUSD,
                 ).toFixed(),
                 decodedAttributes: decodedFarmAttributes,
+                pairAddress: Address.Zero().bech32(),
             });
         }
         const farmTokenBalanceUSD =
@@ -170,6 +173,7 @@ export class UserMetaEsdtComputeService {
             ...nftToken,
             valueUSD: farmTokenBalanceUSD,
             decodedAttributes: decodedFarmAttributes,
+            pairAddress,
         });
     }
 
@@ -265,6 +269,7 @@ export class UserMetaEsdtComputeService {
                 ...nftToken,
                 valueUSD: valueUSD,
                 decodedAttributes: decodedWLPTAttributes,
+                pairAddress,
             });
         }
     }
@@ -289,6 +294,7 @@ export class UserMetaEsdtComputeService {
                 ...nftToken,
                 valueUSD: valueUSD,
                 decodedAttributes: decodedWLPTAttributes,
+                pairAddress,
             });
         }
     }
@@ -325,6 +331,7 @@ export class UserMetaEsdtComputeService {
         return new UserLockedFarmToken({
             ...nftToken,
             valueUSD: userFarmToken.valueUSD,
+            pairAddress: userFarmToken.pairAddress,
             decodedAttributes: decodedWFMTAttributes,
         });
     }
@@ -373,6 +380,7 @@ export class UserMetaEsdtComputeService {
             return new UserLockedFarmTokenV2({
                 ...nftToken,
                 valueUSD: userFarmToken.valueUSD,
+                pairAddress: userFarmToken.pairAddress,
                 decodedAttributes: decodedWFMTAttributes,
             });
         } catch (e) {
@@ -503,6 +511,7 @@ export class UserMetaEsdtComputeService {
         return new UserDualYiledToken({
             ...nftToken,
             valueUSD: farmTokenUSD.valueUSD,
+            pairAddress: farmTokenUSD.pairAddress,
             decodedAttributes: decodedAttributes[0],
         });
     }
@@ -616,6 +625,7 @@ export class UserMetaEsdtComputeService {
             ...nftToken,
             decodedAttributes,
             valueUSD: userEsdtToken.valueUSD,
+            pairAddress,
         });
     }
 
@@ -658,6 +668,7 @@ export class UserMetaEsdtComputeService {
             ...nftToken,
             decodedAttributes,
             valueUSD: userFarmToken.valueUSD,
+            pairAddress: userFarmToken.pairAddress,
         });
     }
 

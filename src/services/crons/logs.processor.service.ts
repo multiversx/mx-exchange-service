@@ -43,7 +43,7 @@ export class LogsProcessorService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async handleNewLogs() {
-        if (this.isProcessing) {
+        if (this.isProcessing || process.env.NODE_ENV === 'shadowfork2') {
             return;
         }
 

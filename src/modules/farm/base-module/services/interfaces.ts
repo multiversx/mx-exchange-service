@@ -29,7 +29,6 @@ export interface IFarmAbiService {
 export interface IFarmComputeService {
     farmLockedValueUSD(farmAddress: string): Promise<string>;
     farmedTokenPriceUSD(farmAddress: string): Promise<string>;
-    farmTokenPriceUSD(farmAddress: string): Promise<string>;
     farmingTokenPriceUSD(farmAddress: string): Promise<string>;
     computeMintedRewards(farmAddress: string): Promise<BigNumber>;
 }

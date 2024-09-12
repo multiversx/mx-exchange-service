@@ -10,6 +10,7 @@ import { FarmServiceV1_3 } from './v1.3/services/farm.v1.3.service';
 import { FarmServiceV2 } from './v2/services/farm.v2.service';
 import { FarmServiceBase } from './base-module/services/farm.base.service';
 import { FarmModelV2 } from './models/farm.v2.model';
+import { FarmsFilter } from './models/farm.args';
 
 @Injectable()
 export class FarmFactoryService {
@@ -19,9 +20,16 @@ export class FarmFactoryService {
         private readonly farmServiceV2: FarmServiceV2,
     ) {}
 
-    getFarms(): Array<typeof FarmsUnion> {
+    getFarms(filters?: FarmsFilter): Array<typeof FarmsUnion> {
         const farms: Array<typeof FarmsUnion> = [];
-        for (const address of farmsAddresses()) {
+        let addresses = farmsAddresses(filters?.versions);
+        if (filters?.addresses) {
+            addresses = addresses.filter((address) =>
+                filters.addresses.includes(address),
+            );
+        }
+
+        for (const address of addresses) {
             const version = farmVersion(address);
             switch (version) {
                 case FarmVersion.V1_2:

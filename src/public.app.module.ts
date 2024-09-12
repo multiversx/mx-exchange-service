@@ -36,7 +36,10 @@ import { EscrowModule } from './modules/escrow/escrow.module';
 import { GovernanceModule } from './modules/governance/governance.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
+import { PositionCreatorModule } from './modules/position-creator/position.creator.module';
+import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
 import { TradingViewModule } from './modules/trading-view/trading.view.module';
+import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 
 @Module({
     imports: [
@@ -96,9 +99,12 @@ import { TradingViewModule } from './modules/trading-view/trading.view.module';
         LockedTokenWrapperModule,
         EscrowModule,
         GovernanceModule,
+        PositionCreatorModule,
+        ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
         TradingViewModule,
     ],
+    providers: [QueryMetricsPlugin],
 })
 export class PublicAppModule {
     configure(consumer: MiddlewareConsumer) {

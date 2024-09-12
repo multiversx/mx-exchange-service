@@ -139,8 +139,8 @@ export class MXApiService {
     async getShardBlockCountInEpoch(
         epoch: number,
         shardId: number,
-    ): Promise<Stats> {
-        return await this.doGetGeneric<Stats>(
+    ): Promise<number> {
+        return await this.doGetGeneric<number>(
             this.getStats.name,
             `blocks/count?epoch=${epoch}&shard=${shardId}`,
         );

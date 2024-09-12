@@ -37,7 +37,42 @@ export class RewardsModel {
     claimProgress: ClaimProgress;
     @Field({ nullable: true })
     accumulatedRewards: string;
+
     constructor(init?: Partial<RewardsModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class BoostedRewardsModel {
+    @Field()
+    farmAddress: string;
+    @Field()
+    userAddress: string;
+    @Field(() => [UserInfoByWeekModel], { nullable: true })
+    boostedRewardsWeeklyInfo: UserInfoByWeekModel[];
+    @Field(() => ClaimProgress, { nullable: true })
+    claimProgress: ClaimProgress;
+    @Field({ nullable: true })
+    accumulatedRewards: string;
+    @Field({ nullable: true })
+    curentBoostedAPR: number;
+    @Field({ nullable: true })
+    maximumBoostedAPR: number;
+
+    constructor(init?: Partial<BoostedRewardsModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserTotalBoostedPosition {
+    @Field()
+    address: string;
+    @Field()
+    boostedTokensAmount: string;
+
+    constructor(init?: Partial<UserTotalBoostedPosition>) {
         Object.assign(this, init);
     }
 }

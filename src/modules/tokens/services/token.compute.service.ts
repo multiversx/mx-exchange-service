@@ -26,6 +26,9 @@ import moment from 'moment';
 import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { TokenService } from './token.service';
+import { computeValueUSD } from 'src/utils/token.converters';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -39,6 +42,8 @@ export class TokenComputeService implements ITokenComputeService {
     >;
 
     constructor(
+        @Inject(forwardRef(() => TokenService))
+        private readonly tokenService: TokenService,
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
@@ -185,6 +190,16 @@ export class TokenComputeService implements ITokenComputeService {
         return priceSoFar;
     }
 
+    async getAllTokensPriceDerivedEGLD(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPriceDerivedEGLD',
+            this.tokenPriceDerivedEGLD.bind(this),
+            CacheTtlInfo.Price,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -198,6 +213,14 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            tokenID,
+        );
+
+        if (pairAddress) {
+            return this.pairCompute.lpTokenPriceUSD(pairAddress);
+        }
+
         const [egldPriceUSD, derivedEGLD, usdcPrice] = await Promise.all([
             this.getEgldPriceInUSD(),
             this.computeTokenPriceDerivedEGLD(tokenID, []),
@@ -208,6 +231,16 @@ export class TokenComputeService implements ITokenComputeService {
             .times(egldPriceUSD)
             .times(usdcPrice)
             .toFixed();
+    }
+
+    async getAllTokensPriceDerivedUSD(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPriceDerivedUSD',
+            this.tokenPriceDerivedUSD.bind(this),
+            CacheTtlInfo.Price,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -229,6 +262,16 @@ export class TokenComputeService implements ITokenComputeService {
         });
 
         return values24h[0]?.value ?? undefined;
+    }
+
+    async getAllTokensPrevious24hPrice(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPrevious24hPrice',
+            this.tokenPrevious24hPrice.bind(this),
+            CacheTtlInfo.TokenAnalytics,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -253,6 +296,16 @@ export class TokenComputeService implements ITokenComputeService {
         return values7d[0]?.value ?? undefined;
     }
 
+    async getAllTokensPrevious7dPrice(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPrevious7dPrice',
+            this.tokenPrevious7dPrice.bind(this),
+            CacheTtlInfo.TokenAnalytics,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -274,11 +327,11 @@ export class TokenComputeService implements ITokenComputeService {
         const currentPriceBN = new BigNumber(currentPrice);
         const previous24hPriceBN = new BigNumber(previous24hPrice);
 
-        if (previous24hPriceBN.isZero()) {
+        if (previous24hPriceBN.isZero() || previous24hPrice === undefined) {
             return 0;
         }
 
-        return currentPriceBN.dividedBy(previous24hPrice).toNumber();
+        return currentPriceBN.dividedBy(previous24hPriceBN).toNumber();
     }
 
     async computeTokenPriceChange7d(tokenID: string): Promise<number> {
@@ -351,10 +404,6 @@ export class TokenComputeService implements ITokenComputeService {
         const currentSwapsBN = new BigNumber(currentSwaps);
         const previous24hSwapsBN = new BigNumber(previous24hSwaps);
 
-        if (currentSwapsBN.isZero()) {
-            return 0;
-        }
-
         const maxPrevious24hTradeCount = BigNumber.maximum(
             previous24hSwapsBN,
             constantsConfig.trendingScore.MIN_24H_TRADE_COUNT,
@@ -380,6 +429,16 @@ export class TokenComputeService implements ITokenComputeService {
         return valuesLast2Days.current;
     }
 
+    async getAllTokensVolumeUSD24h(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenVolumeUSD24h',
+            this.tokenVolumeUSD24h.bind(this),
+            CacheTtlInfo.Token,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -395,6 +454,18 @@ export class TokenComputeService implements ITokenComputeService {
     async computeTokenPrevious24hVolumeUSD(tokenID: string): Promise<string> {
         const valuesLast2Days = await this.tokenLast2DaysVolumeUSD(tokenID);
         return valuesLast2Days.previous;
+    }
+
+    async getAllTokensPrevious24hVolumeUSD(
+        tokenIDs: string[],
+    ): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenPrevious24hVolumeUSD',
+            this.tokenPrevious24hVolumeUSD.bind(this),
+            CacheTtlInfo.Token,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -466,17 +537,43 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeTokenLiquidityUSD(tokenID: string): Promise<string> {
-        const values24h = await this.analyticsQuery.getLatestCompleteValues({
-            series: tokenID,
-            metric: 'lockedValueUSD',
-            time: '1 day',
+        const pairs = await this.routerAbi.pairsMetadata();
+        const priceUSD = await this.tokenPriceDerivedUSD(tokenID);
+        const tokenMetadata = await this.tokenService.tokenMetadata(tokenID);
+        const promises = [];
+        for (const pair of pairs) {
+            switch (tokenID) {
+                case pair.firstTokenID:
+                    promises.push(this.pairAbi.firstTokenReserve(pair.address));
+                    break;
+                case pair.secondTokenID:
+                    promises.push(
+                        this.pairAbi.secondTokenReserve(pair.address),
+                    );
+                    break;
+            }
+        }
+        const allLockedValues = await Promise.all(promises);
+        let newLockedValue = new BigNumber(0);
+        allLockedValues.forEach((value) => {
+            newLockedValue = newLockedValue.plus(value);
         });
 
-        if (!values24h || values24h.length === 0) {
-            return undefined;
-        }
+        return computeValueUSD(
+            newLockedValue.toFixed(),
+            tokenMetadata.decimals,
+            priceUSD,
+        ).toFixed();
+    }
 
-        return values24h[values24h.length - 1]?.value ?? undefined;
+    async getAllTokensLiquidityUSD(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys<string>(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenLiquidityUSD',
+            this.tokenLiquidityUSD.bind(this),
+            CacheTtlInfo.TokenAnalytics,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -507,6 +604,16 @@ export class TokenComputeService implements ITokenComputeService {
         }
 
         return undefined;
+    }
+
+    async getAllTokensCreatedAt(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenCreatedAt',
+            this.tokenCreatedAt.bind(this),
+            CacheTtlInfo.Token,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -634,18 +741,30 @@ export class TokenComputeService implements ITokenComputeService {
             this.tokenTradeChange24h(tokenID),
         ]);
 
-        const volumeScore = new BigNumber(0.4).multipliedBy(
-            Math.log(volumeChange),
-        );
-        const priceScore = new BigNumber(0.3).multipliedBy(priceChange);
-        const tradeScore = new BigNumber(0.3).multipliedBy(
-            Math.log(tradeChange),
-        );
+        const minScore = -(10 ** 9);
 
-        if (volumeScore.isNaN() || priceScore.isNaN() || tradeScore.isNaN()) {
-            return new BigNumber('-Infinity').toFixed();
-        }
+        const volumeScore = new BigNumber(
+            constantsConfig.trendingScore.VOLUME_WEIGHT,
+        ).multipliedBy(volumeChange > 0 ? Math.log(volumeChange) : minScore);
+        const priceScore = new BigNumber(
+            constantsConfig.trendingScore.PRICE_WEIGHT,
+        ).multipliedBy(priceChange > 0 ? Math.log(priceChange) : minScore);
+        const tradeScore = new BigNumber(
+            constantsConfig.trendingScore.TRADES_COUNT_WEIGHT,
+        ).multipliedBy(tradeChange > 0 ? Math.log(tradeChange) : minScore);
 
-        return volumeScore.plus(priceScore).plus(tradeScore).toFixed();
+        const trendingScore = volumeScore.plus(priceScore).plus(tradeScore);
+
+        return trendingScore.toFixed();
+    }
+
+    async getAllTokensTrendingScore(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenTrendingScore',
+            this.tokenTrendingScore.bind(this),
+            CacheTtlInfo.Token,
+        );
     }
 }

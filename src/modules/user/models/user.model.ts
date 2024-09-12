@@ -23,11 +23,13 @@ import { WrappedLockedTokenAttributesModel } from 'src/modules/simple-lock/model
 export enum ContractType {
     Farm = 'Farm',
     FeesCollector = 'FeesCollector',
+    StakingFarm = 'StakingFarm',
 }
 
 @ObjectType()
 export class UserToken extends EsdtToken {
     @Field() valueUSD: string;
+    @Field({ nullable: true }) pairAddress: string;
 
     constructor(init?: Partial<UserToken>) {
         super(init);
@@ -58,6 +60,7 @@ export class UserLockedAssetToken extends LockedAssetToken {
 @ObjectType()
 export class UserFarmToken extends FarmToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserFarmToken>) {
         super(init);
@@ -68,6 +71,7 @@ export class UserFarmToken extends FarmToken {
 @ObjectType()
 export class UserLockedLPToken extends LockedLpToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedLPToken>) {
         super(init);
@@ -78,6 +82,7 @@ export class UserLockedLPToken extends LockedLpToken {
 @ObjectType()
 export class UserLockedFarmToken extends LockedFarmToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedFarmToken>) {
         super(init);
@@ -88,6 +93,7 @@ export class UserLockedFarmToken extends LockedFarmToken {
 @ObjectType()
 export class UserLockedLPTokenV2 extends LockedLpTokenV2 {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedLPTokenV2>) {
         super(init);
@@ -98,6 +104,7 @@ export class UserLockedLPTokenV2 extends LockedLpTokenV2 {
 @ObjectType()
 export class UserLockedFarmTokenV2 extends LockedFarmTokenV2 {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedFarmTokenV2>) {
         super(init);
@@ -128,6 +135,7 @@ export class UserUnbondFarmToken extends UnbondFarmToken {
 @ObjectType()
 export class UserDualYiledToken extends DualYieldToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserDualYiledToken>) {
         super(init);
@@ -156,6 +164,7 @@ export class UserLockedEsdtToken extends LockedEsdtToken {
 @ObjectType()
 export class UserLockedSimpleLpToken extends LockedSimpleLpToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedSimpleLpToken>) {
         super(init);
@@ -166,6 +175,7 @@ export class UserLockedSimpleLpToken extends LockedSimpleLpToken {
 @ObjectType()
 export class UserLockedSimpleFarmToken extends LockedSimpleFarmToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedSimpleFarmToken>) {
         super(init);

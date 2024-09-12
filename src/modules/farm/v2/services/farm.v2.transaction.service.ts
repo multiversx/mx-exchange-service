@@ -1,4 +1,4 @@
-import { Address, BigUIntValue, TokenTransfer } from '@multiversx/sdk-core';
+import { Address, TokenTransfer } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
@@ -17,6 +17,8 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class FarmTransactionServiceV2 extends TransactionsFarmService {
@@ -25,6 +27,8 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         protected readonly farmAbi: FarmAbiServiceV2,
         protected readonly pairService: PairService,
         protected readonly pairAbi: PairAbiService,
+        private readonly mxApi: MXApiService,
+        private readonly contextGetter: ContextGetterService,
     ) {
         super(mxProxy, farmAbi, pairService, pairAbi);
     }
@@ -82,7 +86,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         );
 
         return contract.methodsExplicit
-            .exitFarm([new BigUIntValue(new BigNumber(args.exitAmount))])
+            .exitFarm()
             .withSingleESDTNFTTransfer(
                 TokenTransfer.metaEsdtFromBigInteger(
                     args.farmTokenID,
@@ -130,10 +134,61 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             .toPlainObject();
     }
 
+    async claimBoostedRewards(
+        sender: string,
+        farmAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+
+        return contract.methodsExplicit
+            .claimBoostedRewards()
+            .withSender(Address.fromString(sender))
+            .withChainID(mxConfig.chainID)
+            .withGasLimit(gasConfig.farms[FarmVersion.V2].claimBoostedRewards)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
     compoundRewards(
         sender: string,
         args: CompoundRewardsArgs,
     ): Promise<TransactionModel> {
         throw new Error('Method not implemented.');
+    }
+
+    async migrateTotalFarmPosition(
+        farmAddress: string,
+        userAddress: string,
+    ): Promise<TransactionModel[]> {
+        const [farmTokenID, migrationNonce, userNftsCount] = await Promise.all([
+            this.farmAbi.farmTokenID(farmAddress),
+            this.farmAbi.farmPositionMigrationNonce(farmAddress),
+            this.mxApi.getNftsCountForUser(userAddress),
+        ]);
+
+        const userNfts = await this.contextGetter.getNftsForUser(
+            userAddress,
+            0,
+            userNftsCount > 0 ? userNftsCount : 100,
+            'MetaESDT',
+            [farmTokenID],
+        );
+
+        const promises: Promise<TransactionModel>[] = [];
+        userNfts.forEach((nft) => {
+            if (nft.nonce < migrationNonce) {
+                promises.push(
+                    this.claimRewards(userAddress, {
+                        farmAddress,
+                        farmTokenID: nft.collection,
+                        farmTokenNonce: nft.nonce,
+                        amount: nft.balance,
+                        lockRewards: true,
+                    }),
+                );
+            }
+        });
+
+        return Promise.all(promises);
     }
 }

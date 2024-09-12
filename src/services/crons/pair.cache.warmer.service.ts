@@ -14,6 +14,9 @@ import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Logger } from 'winston';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -23,6 +26,7 @@ export class PairCacheWarmerService {
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly tokenSetter: TokenSetterService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -49,15 +53,15 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     pairMetadata.secondTokenID,
                 ),
+                this.pairSetterService.setLpTokenID(
+                    pairMetadata.address,
+                    lpTokenID,
+                ),
+                this.tokenSetter.setEsdtTokenType(
+                    lpTokenID,
+                    EsdtTokenType.FungibleLpToken,
+                ),
             ]);
-            if (lpTokenID !== undefined) {
-                cachedKeys.push(
-                    await this.pairSetterService.setLpTokenID(
-                        pairMetadata.address,
-                        lpTokenID,
-                    ),
-                );
-            }
 
             await this.deleteCacheKeys(cachedKeys);
         }
@@ -73,6 +77,10 @@ export class PairCacheWarmerService {
             return;
         }
 
+        this.logger.info('Start refresh cached pairs analytics', {
+            context: 'CachePairs',
+        });
+
         const pairsAddresses = await this.routerAbi.pairsAddress();
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
@@ -82,26 +90,26 @@ export class PairCacheWarmerService {
                     metric: 'firstTokenVolume',
                     time,
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const secondTokenVolume24h =
                 await this.analyticsQuery.getAggregatedValue({
                     series: pairAddress,
                     metric: 'secondTokenVolume',
                     time,
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSD24h = await this.analyticsQuery.getAggregatedValue({
                 series: pairAddress,
                 metric: 'volumeUSD',
                 time,
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const feesUSD24h = await this.analyticsQuery.getAggregatedValue({
                 series: pairAddress,
                 metric: 'feesUSD',
                 time,
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenVolume(
@@ -127,11 +135,20 @@ export class PairCacheWarmerService {
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        this.logger.info('Finished refresh cached pairs analytics', {
+            context: 'CachePairs',
+        });
     }
 
     @Cron(CronExpression.EVERY_MINUTE)
     @Lock({ name: 'cachePairsInfo', verbose: true })
     async cachePairsInfo(): Promise<void> {
+        this.logger.info('Start refresh cached pairs info', {
+            context: 'CachePairs',
+        });
+        const performance = new PerformanceProfiler('cachePairsInfo');
+
         const pairsAddresses = await this.routerAbi.pairsAddress();
 
         for (const pairAddress of pairsAddresses) {
@@ -148,6 +165,10 @@ export class PairCacheWarmerService {
                 hasDualFarms,
                 tradesCount,
                 deployedAt,
+                whitelistedAddresses,
+                feeDestinations,
+                initialLiquidityAdder,
+                trustedSwapPairs,
             ] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.pairAbi.getStateRaw(pairAddress),
@@ -161,7 +182,16 @@ export class PairCacheWarmerService {
                 this.pairComputeService.computeHasDualFarms(pairAddress),
                 this.pairComputeService.computeTradesCount(pairAddress),
                 this.pairComputeService.computeDeployedAt(pairAddress),
+                this.pairAbi.getWhitelistedAddressesRaw(pairAddress),
+                this.pairAbi.getFeeDestinationsRaw(pairAddress),
+                this.pairAbi.getInitialLiquidityAdderRaw(pairAddress),
+                this.pairAbi.getTrustedSwapPairsRaw(pairAddress),
             ]);
+
+            const lockedValueUSD =
+                await this.pairComputeService.computeLockedValueUSD(
+                    pairAddress,
+                );
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
@@ -195,15 +225,52 @@ export class PairCacheWarmerService {
                 ),
                 this.pairSetterService.setTradesCount(pairAddress, tradesCount),
                 this.pairSetterService.setDeployedAt(pairAddress, deployedAt),
+                this.pairSetterService.setWhitelistedAddresses(
+                    pairAddress,
+                    whitelistedAddresses,
+                ),
+                this.pairSetterService.setFeeDestinations(
+                    pairAddress,
+                    feeDestinations,
+                ),
+                this.pairSetterService.setInitialLiquidityAdder(
+                    pairAddress,
+                    initialLiquidityAdder,
+                ),
+                this.pairSetterService.setTrustedSwapPairs(
+                    pairAddress,
+                    trustedSwapPairs,
+                ),
+                this.pairSetterService.setLockedValueUSD(
+                    pairAddress,
+                    lockedValueUSD.toFixed(),
+                ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        performance.stop();
+
+        this.logger.info(
+            `Finished refresh cached pairs info in ${
+                performance.duration / 1000
+            }s`,
+            {
+                context: 'CachePairs',
+            },
+        );
     }
 
     @Cron('*/12 * * * * *') // Update prices and reserves every 12 seconds
+    @Lock({ name: 'cachePairTokenPrices', verbose: true })
     async cacheTokenPrices(): Promise<void> {
+        this.logger.info('Start refresh cached pairs prices', {
+            context: 'CachePairs',
+        });
+        const performance = new PerformanceProfiler('cacheTokenPrices');
+
         const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const invalidatedKeys = [];
+
         for (const pairAddress of pairsMetadata) {
             const pairInfo = await this.pairAbi.getPairInfoMetadataRaw(
                 pairAddress.address,
@@ -227,10 +294,13 @@ export class PairCacheWarmerService {
                     pairInfo,
                 ),
             ]);
-            invalidatedKeys.push(cachedKeys);
+            await this.deleteCacheKeys(cachedKeys);
         }
 
         for (const pairMetadata of pairsMetadata) {
+            const lpTokenID = await this.pairAbi.lpTokenID(
+                pairMetadata.address,
+            );
             const [
                 firstTokenPrice,
                 firstTokenPriceUSD,
@@ -276,10 +346,21 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     lpTokenPriceUSD,
                 ),
+                this.tokenSetter.setDerivedUSD(lpTokenID, lpTokenPriceUSD),
             ]);
-            invalidatedKeys.push(cachedKeys);
+            await this.deleteCacheKeys(cachedKeys);
         }
-        await this.deleteCacheKeys(invalidatedKeys);
+
+        performance.stop();
+
+        this.logger.info(
+            `Finished refresh cached pairs prices in ${
+                performance.duration / 1000
+            }s`,
+            {
+                context: 'CachePairs',
+            },
+        );
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

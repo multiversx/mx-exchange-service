@@ -19,6 +19,8 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { PairComputeService } from './pair.compute.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { getAllKeys } from 'src/utils/get.many.utils';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class PairService {
@@ -39,9 +41,33 @@ export class PairService {
         return await this.tokenService.tokenMetadata(firstTokenID);
     }
 
+    async getAllFirstTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
+        const tokenIDs = await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.firstTokenID',
+            this.pairAbi.firstTokenID.bind(this.pairAbi),
+            CacheTtlInfo.Token,
+        );
+
+        return this.tokenService.getAllTokensMetadata(tokenIDs);
+    }
+
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.pairAbi.secondTokenID(pairAddress);
         return await this.tokenService.tokenMetadata(secondTokenID);
+    }
+
+    async getAllSecondTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
+        const tokenIDs = await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.secondTokenID',
+            this.pairAbi.secondTokenID.bind(this.pairAbi),
+            CacheTtlInfo.Token,
+        );
+
+        return this.tokenService.getAllTokensMetadata(tokenIDs);
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
@@ -49,6 +75,92 @@ export class PairService {
         return lpTokenID === undefined
             ? undefined
             : await this.tokenService.tokenMetadata(lpTokenID);
+    }
+
+    async getAllLpTokensIds(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.lpTokenID',
+            this.pairAbi.lpTokenID.bind(this.pairAbi),
+            CacheTtlInfo.Token,
+        );
+    }
+
+    async getAllLpTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
+        const tokenIDs = await this.getAllLpTokensIds(pairAddresses);
+
+        return this.tokenService.getAllTokensMetadata(tokenIDs);
+    }
+
+    async getAllStates(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.state',
+            this.pairAbi.state.bind(this.pairAbi),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
+    async getAllFeeStates(pairAddresses: string[]): Promise<boolean[]> {
+        return await getAllKeys<boolean>(
+            this.cachingService,
+            pairAddresses,
+            'pair.feeState',
+            this.pairAbi.feeState.bind(this.pairAbi),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
+    async getAllLockedValueUSD(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.lockedValueUSD',
+            this.pairCompute.lockedValueUSD.bind(this.pairCompute),
+            CacheTtlInfo.ContractInfo,
+        );
+    }
+
+    async getAllDeployedAt(pairAddresses: string[]): Promise<number[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.deployedAt',
+            this.pairCompute.deployedAt.bind(this.pairCompute),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
+    async getAllTradesCount(pairAddresses: string[]): Promise<number[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.tradesCount',
+            this.pairCompute.tradesCount.bind(this.pairCompute),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
+    async getAllHasFarms(pairAddresses: string[]): Promise<boolean[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.hasFarms',
+            this.pairCompute.hasFarms.bind(this.pairCompute),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
+    async getAllHasDualFarms(pairAddresses: string[]): Promise<boolean[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.hasDualFarms',
+            this.pairCompute.hasDualFarms.bind(this.pairCompute),
+            CacheTtlInfo.ContractState,
+        );
     }
 
     async getAmountOut(

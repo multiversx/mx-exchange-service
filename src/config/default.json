@@ -42,7 +42,10 @@
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqnysvq99c2t4a9pvvv22elnl6p73el8vw0n4spyfv7p",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu",
-        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a"
+        "escrow": "erd1qqqqqqqqqqqqqpgqz0wkk0j6y4h0mcxfxsg023j4x5sfgrmz0n4s4swp7a",
+        "positionCreator": "erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6",
+        "lockedTokenPositionCreator": "erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6",
+        "composableTasks": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh"
     },
     "tokenProviderUSD": "WEGLD-71e90a",
     "tokensSupply": ["MEX-27f4cd"],
@@ -213,8 +216,8 @@
             },
             "v2": {
                 "enterFarm": {
-                    "default": 15000000,
-                    "withTokenMerge": 16500000
+                    "default": 20000000,
+                    "withTokenMerge": 25000000
                 },
                 "unlockedRewards": {
                     "exitFarm": {
@@ -237,7 +240,8 @@
                         }
                     },
                     "claimRewards": 30000000
-                }
+                },
+                "claimBoostedRewards": 30000000
             },
             "admin": {
                 "end_produce_rewards": 200000000,
@@ -261,7 +265,8 @@
                     "withTokenMerge": 40000000
                 },
                 "removeLiquidity": 30000000,
-                "defaultMergeWLPT": 20000000
+                "defaultMergeWLPT": 20000000,
+                "increaseEnergy": 20000000
             },
             "farms": {
                 "v1.2": {
@@ -336,7 +341,7 @@
                 },
                 "v2": {
                     "enterFarm": {
-                        "default": 25000000,
+                        "default": 35000000,
                         "withTokenMerge": 55000000
                     },
                     "compoundRewards": 21600000,
@@ -372,19 +377,21 @@
                             }
                         },
                         "claimRewards": 20700000
-                    }
+                    },
+                    "increaseEnergy": 20000000
                 },
                 "defaultMergeWFMT": 20000000
             }
         },
         "stake": {
             "stakeFarm": {
-                "default": 9000000,
-                "withTokenMerge": 12000000
+                "default": 20000000,
+                "withTokenMerge": 23000000
             },
-            "unstakeFarm": 9500000,
+            "unstakeFarm": 25000000,
             "unbondFarm": 8000000,
-            "claimRewards": 10000000,
+            "claimRewards": 40000000,
+            "claimBoostedRewards": 30000000,
             "claimRewardsWithNewValue": 7500000,
             "compoundRewards": 10000000,
             "mergeTokens": 20000000,
@@ -406,10 +413,10 @@
         },
         "stakeProxy": {
             "stakeFarmTokens": {
-                "default": 26000000,
-                "withTokenMerge": 36000000
+                "default": 40000000,
+                "withTokenMerge": 60000000
             },
-            "claimDualYield": 55000000,
+            "claimDualYield": 75000000,
             "unstakeFarmTokens": 75000000
         },
         "metabonding": {
@@ -443,7 +450,7 @@
             "claimRewardsFarmLockedToken": 35000000
         },
         "simpleLockEnergy": {
-            "lockTokens": 10000000,
+            "lockTokens": 13000000,
             "unlockTokens": {
                 "unlockEarly": 25000000,
                 "reduceLockPeriod": 20000000,
@@ -463,7 +470,7 @@
         },
         "feesCollector": {
             "baseClaimRewards": 20000000,
-            "claimRewardsPerWeek": 20000000,
+            "claimRewardsPerWeek": 25000000,
             "addKnownContracts": 10000000,
             "addKnownTokens": 10000000
         },
@@ -491,6 +498,24 @@
         },
         "governance": {
             "vote": 50000000
+        },
+        "positionCreator": {
+            "singleToken": {
+                "liquidityPosition": 10000000,
+                "farmPosition": 15000000,
+                "dualFarmPosition": 20000000,
+                "stakingPosition": 10000000
+            },
+            "dualTokens": {
+                "farmPosition": 50000000,
+                "farmPositionProxy": 60000000,
+                "dualFarmPosition": 100000000,
+                "exitFarm": 50000000
+            },
+            "energyPosition": 13000000
+        },
+        "composableTasks": {
+            "default": 1000000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
@@ -532,7 +557,10 @@
         "governance": {
             "energy": "./src/abis/governance-v2.abi.json",
             "tokenSnapshot": "./src/abis/governance-v2-merkle-proof.abi.json"
-        }
+        },
+        "positionCreator": "./src/abis/auto-pos-creator.abi.json",
+        "lockedTokenPositionCreator": "./src/abis/locked-token-pos-creator.abi.json",
+        "composableTasks": "./src/abis/composable-tasks.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,
@@ -592,11 +620,43 @@
         "COMPOUND_TRANSACTION_FEE": 0.000365144,
         "trendingScore": {
           "MIN_24H_VOLUME": 10000,
-          "MIN_24H_TRADE_COUNT": 100
+          "MIN_24H_TRADE_COUNT": 100,
+          "PRICE_WEIGHT": 0.5,
+          "VOLUME_WEIGHT": 0.25,
+          "TRADES_COUNT_WEIGHT": 0.25
         },
         "AWS_QUERY_CACHE_WARMER_DELAY": 100
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"
-    }
+    },
+    "leagues": [
+        {
+            "name": "Bronze",
+            "minEnergy": "720000000000000000000000000",
+            "maxEnergy": "7200000000000000000000000000"
+        },
+        {
+            "name": "Silver",
+            "minEnergy": "7200000000000000000000000000",
+            "maxEnergy": "72000000000000000000000000000"
+        
+        },
+        {
+            "name": "Gold",
+            "minEnergy": "72000000000000000000000000000",
+            "maxEnergy": "720000000000000000000000000000"
+        
+        },
+        {
+            "name": "Platinum",
+            "minEnergy": "720000000000000000000000000000",
+            "maxEnergy": "7200000000000000000000000000000"
+        
+        },
+        {
+            "name": "Diamond",
+            "minEnergy": "7200000000000000000000000000000"
+        }
+    ]
 }

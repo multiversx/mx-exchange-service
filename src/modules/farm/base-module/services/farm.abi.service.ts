@@ -14,6 +14,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { IFarmAbiService } from './interfaces';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 export class FarmAbiService
     extends GenericAbiService
@@ -23,6 +24,7 @@ export class FarmAbiService
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,
         protected readonly apiService: MXApiService,
+        protected readonly cacheService: CacheService,
     ) {
         super(mxProxy);
     }

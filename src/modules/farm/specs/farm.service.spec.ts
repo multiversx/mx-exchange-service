@@ -163,6 +163,12 @@ describe('FarmService', () => {
                 rewardType: 'customRewards',
                 version: 'v1.3',
             },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
+                rewardType: 'lockedRewards',
+                version: 'v2',
+            },
         ]);
     });
 

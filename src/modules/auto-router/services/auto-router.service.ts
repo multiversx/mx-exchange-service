@@ -25,6 +25,7 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { TransactionModel } from 'src/models/transaction.model';
 
 @Injectable()
 export class AutoRouterService {
@@ -446,10 +447,30 @@ export class AutoRouterService {
         return routePairs;
     }
 
-    async getTransactions(sender: string, parent: AutoRouteModel) {
+    async getTransactions(
+        sender: string,
+        parent: AutoRouteModel,
+    ): Promise<TransactionModel[]> {
         if (parent.pairs.length == 1) {
-            if (parent.swapType === SWAP_TYPE.fixedInput)
-                return await this.pairTransactionService.swapTokensFixedInput(
+            if (parent.swapType === SWAP_TYPE.fixedInput) {
+                const transaction =
+                    await this.pairTransactionService.swapTokensFixedInput(
+                        sender,
+                        {
+                            pairAddress: parent.pairs[0].address,
+                            tokenInID: parent.tokenInID,
+                            tokenOutID: parent.tokenOutID,
+                            amountIn: parent.amountIn,
+                            amountOut: parent.amountOut,
+                            tolerance: parent.tolerance,
+                        },
+                    );
+
+                return [transaction];
+            }
+
+            const transaction =
+                await this.pairTransactionService.swapTokensFixedOutput(
                     sender,
                     {
                         pairAddress: parent.pairs[0].address,
@@ -457,20 +478,10 @@ export class AutoRouterService {
                         tokenOutID: parent.tokenOutID,
                         amountIn: parent.amountIn,
                         amountOut: parent.amountOut,
-                        tolerance: parent.tolerance,
                     },
                 );
 
-            return await this.pairTransactionService.swapTokensFixedOutput(
-                sender,
-                {
-                    pairAddress: parent.pairs[0].address,
-                    tokenInID: parent.tokenInID,
-                    tokenOutID: parent.tokenOutID,
-                    amountIn: parent.amountIn,
-                    amountOut: parent.amountOut,
-                },
-            );
+            return [transaction];
         }
 
         if (

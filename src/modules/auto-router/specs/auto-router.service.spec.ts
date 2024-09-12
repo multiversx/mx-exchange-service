@@ -31,6 +31,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 
@@ -79,6 +80,7 @@ describe('AutoRouterService', () => {
                 AutoRouterService,
                 AutoRouterComputeService,
                 AutoRouterTransactionService,
+                ComposableTasksTransactionService,
                 ApiConfigService,
                 MXApiServiceProvider,
                 PairFilteringService,
@@ -275,35 +277,13 @@ describe('AutoRouterService', () => {
             {
                 nonce: 0,
                 value: '1000000000000000000',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
+                receiver: Address.Zero().bech32(),
                 sender: '',
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
-                gasLimit: gasConfig.wrapeGLD,
-                data: encodeTransactionData('wrapEgld'),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                signature: undefined,
-                guardian: undefined,
-                guardianSignature: undefined,
-            },
-            {
-                nonce: 0,
-                value: '0',
-                receiver: Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000013',
-                ).bech32(),
-                sender: '',
-                receiverUsername: undefined,
-                senderUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
-                data: encodeTransactionData(
-                    'ESDTTransfer@WEGLD-123456@01000000000000000000@swapTokensFixedInput@USDC-123456@4911161424654532',
-                ),
+                gasLimit: 40200000,
+                data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNzExNzJhY2UwMjZiMGM0QEBAMDJAMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDcxMTcyYWNlMDI2YjBjNA==',
                 chainID: 'T',
                 version: 1,
                 options: undefined,
@@ -352,41 +332,13 @@ describe('AutoRouterService', () => {
             {
                 nonce: 0,
                 value: '0',
-                receiver: Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000011',
-                ).bech32(),
+                receiver: Address.Zero().bech32(),
                 sender: '',
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
-                gasLimit: 2 * gasConfig.router.multiPairSwapMultiplier,
-                data: encodeTransactionData(
-                    `ESDTTransfer@USDC-123456@508044325756587816@multiPairSwap@${Address.fromHex(
-                        '0000000000000000000000000000000000000000000000000000000000000013',
-                    ).bech32()}@swapTokensFixedOutput@WEGLD-123456@630015438895@${Address.fromHex(
-                        '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32()}@swapTokensFixedOutput@MEX-123456@500000000000000000`,
-                ),
-                chainID: 'T',
-                version: 1,
-                options: undefined,
-                signature: undefined,
-                guardian: undefined,
-                guardianSignature: undefined,
-            },
-            {
-                nonce: 0,
-                value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: '',
-                receiverUsername: undefined,
-                senderUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.wrapeGLD,
-                data: encodeTransactionData(
-                    'ESDTTransfer@WEGLD-123456@500000000000000000@unwrapEgld',
-                ),
+                gasLimit: 75200000,
+                data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDcwY2VmOWY1ZWRmY2YyOEA2MzZmNmQ3MDZmNzM2NTU0NjE3MzZiNzNAMDAwMDAwMDQ0NTQ3NGM0NDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODA2ZjA1YjU5ZDNiMjAwMDBAMDNAMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEzMDAwMDAwMTU3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzQwMDAwMDAwYzU3NDU0NzRjNDQyZDMxMzIzMzM0MzUzNjAwMDAwMDA1OTJhZmQ4YjAyZjAwMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMjAwMDAwMDE1NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NGY3NTc0NzA3NTc0MDAwMDAwMGE0ZDQ1NTgyZDMxMzIzMzM0MzUzNjAwMDAwMDA4MDZmMDViNTlkM2IyMDAwMEAwMUA=',
                 chainID: 'T',
                 version: 1,
                 options: undefined,

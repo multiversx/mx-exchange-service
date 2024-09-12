@@ -10,14 +10,18 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FeesCollectorComputeService } from '../fees-collector/services/fees-collector.compute.service';
 import { FarmComputeServiceV2 } from '../farm/v2/services/farm.v2.compute.service';
+import { StakingComputeService } from '../staking/services/staking.compute.service';
+import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 
 @Resolver(() => UserInfoByWeekModel)
 export class UserInfoByWeekResolver {
     constructor(
         private readonly farmComputeV2: FarmComputeServiceV2,
         private readonly feesCollectorCompute: FeesCollectorComputeService,
+        private readonly stakingCompute: StakingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
+        private readonly remoteConfig: RemoteConfigGetterService,
     ) {}
 
     @ResolveField(() => EnergyModel)
@@ -45,17 +49,26 @@ export class UserInfoByWeekResolver {
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
         if (parent.scAddress === scAddress.feesCollector) {
-            return this.feesCollectorCompute.userRewardsForWeek(
+            return this.feesCollectorCompute.computeUserRewardsForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
             );
         }
-        return this.farmComputeV2.userRewardsForWeek(
+
+        const stakingAddresses = await this.remoteConfig.getStakingAddresses();
+        if (stakingAddresses.includes(parent.scAddress)) {
+            return this.stakingCompute.computeUserRewardsForWeek(
+                parent.scAddress,
+                parent.userAddress,
+                parent.week,
+            );
+        }
+
+        return this.farmComputeV2.computeUserRewardsForWeek(
             parent.scAddress,
             parent.userAddress,
             parent.week,
-            parent.positionAmount,
         );
     }
 
@@ -64,17 +77,25 @@ export class UserInfoByWeekResolver {
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<TokenDistributionModel[]> {
         if (parent.scAddress === scAddress.feesCollector) {
-            return this.feesCollectorCompute.userRewardsDistributionForWeek(
+            return this.feesCollectorCompute.computeUserRewardsDistributionForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
             );
         }
-        return this.farmComputeV2.userRewardsDistributionForWeek(
+        const stakingAddresses = await this.remoteConfig.getStakingAddresses();
+        if (stakingAddresses.includes(parent.scAddress)) {
+            return this.stakingCompute.computeUserRewardsDistributionForWeek(
+                parent.scAddress,
+                parent.userAddress,
+                parent.week,
+            );
+        }
+
+        return this.farmComputeV2.computeUserRewardsDistributionForWeek(
             parent.scAddress,
             parent.userAddress,
             parent.week,
-            parent.positionAmount,
         );
     }
 }

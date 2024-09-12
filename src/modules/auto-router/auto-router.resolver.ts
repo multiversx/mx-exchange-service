@@ -1,7 +1,7 @@
 import { Resolver, Query, ResolveField, Args, Parent } from '@nestjs/graphql';
 import { AutoRouterService } from '../auto-router/services/auto-router.service';
 import { AutoRouterArgs } from '../auto-router/models/auto-router.args';
-import { AutoRouteModel } from './models/auto-route.model';
+import { AutoRouteModel, SwapRouteModel } from './models/auto-route.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { UseGuards } from '@nestjs/common';
 import { AuthUser } from '../auth/auth.user';
@@ -10,10 +10,33 @@ import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 
-@Resolver(() => AutoRouteModel)
-export class AutoRouterResolver {
-    constructor(private readonly autoRouterService: AutoRouterService) {}
+@Resolver(() => SwapRouteModel)
+export class SwapRouteResolver {
+    constructor(protected readonly autoRouterService: AutoRouterService) {}
 
+    @ResolveField(() => [String])
+    fees(@Parent() parent: AutoRouteModel): string[] {
+        const fees = this.autoRouterService.getFeesDenom(
+            parent.intermediaryAmounts,
+            parent.tokenRoute,
+            parent.pairs,
+        );
+
+        return fees;
+    }
+
+    @ResolveField(() => [String])
+    pricesImpact(@Parent() parent: AutoRouteModel): string[] {
+        return this.autoRouterService.getPriceImpactPercents(
+            parent.intermediaryAmounts,
+            parent.tokenRoute,
+            parent.pairs,
+        );
+    }
+}
+
+@Resolver(() => AutoRouteModel)
+export class AutoRouterResolver extends SwapRouteResolver {
     @Query(() => AutoRouteModel)
     async swap(@Args() args: AutoRouterArgs): Promise<AutoRouteModel> {
         try {
@@ -34,30 +57,12 @@ export class AutoRouterResolver {
         }
     }
 
-    @ResolveField(() => [String])
-    fees(@Parent() parent: AutoRouteModel): string[] {
-        return this.autoRouterService.getFeesDenom(
-            parent.intermediaryAmounts,
-            parent.tokenRoute,
-            parent.pairs,
-        );
-    }
-
-    @ResolveField(() => [String])
-    pricesImpact(@Parent() parent: AutoRouteModel): string[] {
-        return this.autoRouterService.getPriceImpactPercents(
-            parent.intermediaryAmounts,
-            parent.tokenRoute,
-            parent.pairs,
-        );
-    }
-
     @UseGuards(JwtOrNativeAuthGuard)
     @ResolveField(() => [TransactionModel])
     async transactions(
         @Parent() parent: AutoRouteModel,
         @AuthUser() user: UserAuthResult,
-    ) {
+    ): Promise<TransactionModel[]> {
         try {
             return await this.autoRouterService.getTransactions(
                 user.address,

@@ -659,7 +659,7 @@ describe('RouterService', () => {
                         nonce: 1,
                         amount: '1000000000000000000',
                         attributes:
-                            'AAAAEEVHTERNRVhMUC1hYmNkZWYAAAAAAAAAAAAAAAAAAAAB',
+                            'AAAAEVRPSzVUT0s2TFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAQ==',
                     }),
                 ),
             ).rejects.toThrow('Not a valid user defined pair');
@@ -682,7 +682,7 @@ describe('RouterService', () => {
                         nonce: 1,
                         amount: '1000',
                         attributes:
-                            'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
+                            'AAAAEVRPSzVVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
                     }),
                 ),
             ).rejects.toThrow('Not enough value locked');

@@ -2,6 +2,15 @@ import { ArgsType, Field, InputType, Int } from '@nestjs/graphql';
 import { InputTokenModel } from 'src/models/inputToken.model';
 
 @InputType()
+export class FarmsFilter {
+    @Field(() => [String], { nullable: true })
+    versions?: string[];
+
+    @Field(() => [String], { nullable: true })
+    addresses?: string[];
+}
+
+@InputType()
 export class CalculateRewardsArgs {
     @Field()
     farmAddress: string;
@@ -58,7 +67,12 @@ export class SftFarmInteractionArgs {
 export class ExitFarmArgs extends SftFarmInteractionArgs {
     @Field(() => Boolean, { nullable: true })
     withPenalty = false;
-    @Field({ nullable: true })
+    @Field({
+        nullable: true,
+        deprecationReason:
+            'Exit farm no longer require this value;' +
+            'field is deprecated and will be removed on next release;',
+    })
     exitAmount?: string;
 }
 

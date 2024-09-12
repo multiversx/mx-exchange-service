@@ -1,8 +1,9 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { TransactionModel } from 'src/models/transaction.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+
 @ObjectType()
-export class AutoRouteModel {
+export class SwapRouteModel {
     @Field()
     swapType: SWAP_TYPE;
 
@@ -60,6 +61,13 @@ export class AutoRouteModel {
     @Field()
     tolerance: number;
 
+    constructor(init?: Partial<SwapRouteModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class AutoRouteModel extends SwapRouteModel {
     @Field(() => [TransactionModel], { nullable: true })
     transactions: TransactionModel[];
 
@@ -67,6 +75,7 @@ export class AutoRouteModel {
     noAuthTransactions: TransactionModel[];
 
     constructor(init?: Partial<AutoRouteModel>) {
+        super(init);
         Object.assign(this, init);
     }
 }

@@ -4,6 +4,7 @@ import {
     BigUIntValue,
     BytesValue,
     TokenTransfer,
+    TypedValue,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -13,12 +14,18 @@ import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.tran
 import { TransactionModel } from '../../../models/transaction.model';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
+import { ComposableTaskType } from 'src/modules/composable-tasks/models/composable.tasks.model';
+import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
+import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
+import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { decimalToHex } from 'src/utils/token.converters';
 
 @Injectable()
 export class AutoRouterTransactionService {
     constructor(
         private readonly mxProxy: MXProxyService,
         private readonly transactionsWrapService: WrapTransactionsService,
+        private readonly composeTasksTransactionService: ComposableTasksTransactionService,
     ) {}
 
     async multiPairSwap(
@@ -26,37 +33,39 @@ export class AutoRouterTransactionService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const [contract, wrapTransaction, unwrapTransaction] =
-            await Promise.all([
-                this.mxProxy.getRouterSmartContract(),
-                this.wrapIfNeeded(
-                    sender,
-                    args.tokenInID,
-                    args.intermediaryAmounts[0],
-                ),
-                this.unwrapIfNeeded(
-                    sender,
-                    args.tokenOutID,
-                    args.intermediaryAmounts[
-                        args.intermediaryAmounts.length - 1
-                    ],
-                ),
-            ]);
-
-        if (wrapTransaction) transactions.push(wrapTransaction);
+        const contract = await this.mxProxy.getRouterSmartContract();
 
         const amountIn = new BigNumber(args.intermediaryAmounts[0]).plus(
             new BigNumber(args.intermediaryAmounts[0]).multipliedBy(
                 args.swapType === SWAP_TYPE.fixedOutput ? args.tolerance : 0,
             ),
         );
+
+        if (args.tokenInID === mxConfig.EGLDIdentifier) {
+            return [
+                await this.wrapEgldAndMultiSwapTransaction(
+                    amountIn.integerValue().toFixed(),
+                    args,
+                ),
+            ];
+        }
+
+        if (args.tokenOutID === mxConfig.EGLDIdentifier) {
+            return [
+                await this.multiSwapAndUnwrapEgldTransaction(
+                    amountIn.integerValue().toFixed(),
+                    args,
+                ),
+            ];
+        }
+
         const gasLimit =
             args.addressRoute.length * gasConfig.router.multiPairSwapMultiplier;
 
         const transactionArgs =
             args.swapType == SWAP_TYPE.fixedInput
-                ? await this.multiPairFixedInputSwaps(args)
-                : await this.multiPairFixedOutputSwaps(args);
+                ? this.multiPairFixedInputSwaps(args)
+                : this.multiPairFixedOutputSwaps(args);
 
         transactions.push(
             contract.methodsExplicit
@@ -72,16 +81,22 @@ export class AutoRouterTransactionService {
                 .buildTransaction()
                 .toPlainObject(),
         );
-
-        if (unwrapTransaction) transactions.push(unwrapTransaction);
+        if (args.tokenOutID === mxConfig.EGLDIdentifier) {
+            transactions.push(
+                await this.transactionsWrapService.unwrapEgld(
+                    sender,
+                    args.intermediaryAmounts[
+                        args.intermediaryAmounts.length - 1
+                    ],
+                ),
+            );
+        }
 
         return transactions;
     }
 
-    private async multiPairFixedInputSwaps(
-        args: MultiSwapTokensArgs,
-    ): Promise<any[]> {
-        const swaps = [];
+    multiPairFixedInputSwaps(args: MultiSwapTokensArgs): TypedValue[] {
+        const swaps: TypedValue[] = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;
 
@@ -113,10 +128,8 @@ export class AutoRouterTransactionService {
         return swaps;
     }
 
-    private async multiPairFixedOutputSwaps(
-        args: MultiSwapTokensArgs,
-    ): Promise<any[]> {
-        const swaps = [];
+    multiPairFixedOutputSwaps(args: MultiSwapTokensArgs): TypedValue[] {
+        const swaps: TypedValue[] = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;
 
@@ -195,26 +208,107 @@ export class AutoRouterTransactionService {
         return swaps;
     }
 
-    async wrapIfNeeded(
-        sender: string,
-        tokenID: string,
-        amount: string,
+    async wrapEgldAndMultiSwapTransaction(
+        value: string,
+        args: MultiSwapTokensArgs,
     ): Promise<TransactionModel> {
-        if (tokenID === mxConfig.EGLDIdentifier) {
-            return await this.transactionsWrapService.wrapEgld(sender, amount);
-        }
+        const typedArgs =
+            args.swapType === SWAP_TYPE.fixedInput
+                ? this.multiPairFixedInputSwaps(args)
+                : this.multiPairFixedOutputSwaps(args);
+        const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
+
+        return this.composeTasksTransactionService.getComposeTasksTransaction(
+            new EsdtTokenPayment({
+                tokenIdentifier: 'EGLD',
+                tokenNonce: 0,
+                amount: value,
+            }),
+            new EgldOrEsdtTokenPayment({
+                tokenIdentifier: args.tokenRoute[args.tokenRoute.length - 1],
+                nonce: 0,
+                amount: args.intermediaryAmounts[
+                    args.intermediaryAmounts.length - 1
+                ],
+            }),
+            [
+                {
+                    type: ComposableTaskType.WRAP_EGLD,
+                    arguments: [],
+                },
+                {
+                    type: ComposableTaskType.ROUTER_SWAP,
+                    arguments: swaps,
+                },
+            ],
+        );
     }
 
-    async unwrapIfNeeded(
-        sender: string,
-        tokenID: string,
-        amount: string,
+    async multiSwapAndUnwrapEgldTransaction(
+        value: string,
+        args: MultiSwapTokensArgs,
     ): Promise<TransactionModel> {
-        if (tokenID === mxConfig.EGLDIdentifier) {
-            return await this.transactionsWrapService.unwrapEgld(
-                sender,
-                amount,
+        const typedArgs =
+            args.swapType === SWAP_TYPE.fixedInput
+                ? this.multiPairFixedInputSwaps(args)
+                : this.multiPairFixedOutputSwaps(args);
+        const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
+
+        return this.composeTasksTransactionService.getComposeTasksTransaction(
+            new EsdtTokenPayment({
+                tokenIdentifier: args.tokenRoute[0],
+                tokenNonce: 0,
+                amount: value,
+            }),
+            new EgldOrEsdtTokenPayment({
+                tokenIdentifier: 'EGLD',
+                nonce: 0,
+                amount: args.intermediaryAmounts[
+                    args.intermediaryAmounts.length - 1
+                ],
+            }),
+            [
+                {
+                    type: ComposableTaskType.ROUTER_SWAP,
+                    arguments: swaps,
+                },
+                {
+                    type: ComposableTaskType.UNWRAP_EGLD,
+                    arguments: [],
+                },
+            ],
+        );
+    }
+
+    private convertMultiPairSwapsToBytesValues(
+        args: TypedValue[],
+    ): BytesValue[] {
+        if (args.length % 4 !== 0) {
+            throw new Error('Invalid number of router swap arguments');
+        }
+
+        const swaps: BytesValue[] = [];
+
+        for (let index = 0; index <= args.length - 4; index += 4) {
+            const pairAddress = args[index];
+            const functionName = args[index + 1];
+            const tokenOutID = args[index + 2];
+            const amountOutMin = args[index + 3];
+
+            swaps.push(
+                new BytesValue(Buffer.from(pairAddress.valueOf().hex(), 'hex')),
+            );
+            swaps.push(BytesValue.fromUTF8(functionName.valueOf()));
+            swaps.push(BytesValue.fromUTF8(tokenOutID.valueOf()));
+            swaps.push(
+                new BytesValue(
+                    Buffer.from(
+                        decimalToHex(new BigNumber(amountOutMin.valueOf())),
+                        'hex',
+                    ),
+                ),
             );
         }
+        return swaps;
     }
 }

@@ -37,6 +37,7 @@ export class UserEsdtComputeService {
         return new UserToken({
             ...esdtToken,
             valueUSD: valueUSD,
+            pairAddress,
         });
     }
 }

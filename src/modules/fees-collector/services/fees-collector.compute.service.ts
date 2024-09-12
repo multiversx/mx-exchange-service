@@ -32,26 +32,6 @@ export class FeesCollectorComputeService {
         private readonly tokenCompute: TokenComputeService,
     ) {}
 
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'feesCollector',
-        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
-        localTtl: CacheTtlInfo.ContractBalance.localTtl,
-    })
-    async userRewardsForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<EsdtTokenPayment[]> {
-        return await this.computeUserRewardsForWeek(
-            scAddress,
-            userAddress,
-            week,
-        );
-    }
-
     async computeUserRewardsForWeek(
         scAddress: string,
         userAddress: string,
@@ -102,32 +82,12 @@ export class FeesCollectorComputeService {
         return payments;
     }
 
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'feesCollector',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
-    })
-    async userRewardsDistributionForWeek(
-        scAddress: string,
-        userAddress: string,
-        week: number,
-    ): Promise<TokenDistributionModel[]> {
-        return await this.computeUserRewardsDistributionForWeek(
-            scAddress,
-            userAddress,
-            week,
-        );
-    }
-
     async computeUserRewardsDistributionForWeek(
         scAddress: string,
         userAddress: string,
         week: number,
     ): Promise<TokenDistributionModel[]> {
-        const userRewardsForWeek = await this.userRewardsForWeek(
+        const userRewardsForWeek = await this.computeUserRewardsForWeek(
             scAddress,
             userAddress,
             week,

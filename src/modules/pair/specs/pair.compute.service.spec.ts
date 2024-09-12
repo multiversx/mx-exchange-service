@@ -28,6 +28,17 @@ import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/moc
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
 import { FarmAbiServiceProviderV2 } from 'src/modules/farm/mocks/farm.v2.abi.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
+import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
+import { StakingService } from 'src/modules/staking/services/staking.service';
+import { StakingFilteringService } from 'src/modules/staking/services/staking.filtering.service';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -59,6 +70,17 @@ describe('PairService', () => {
                 FarmAbiServiceProviderV2,
                 RemoteConfigGetterServiceProvider,
                 StakingProxyAbiServiceProvider,
+                FarmComputeServiceV2,
+                FarmServiceV2,
+                WeekTimekeepingComputeService,
+                WeekTimekeepingAbiServiceProvider,
+                WeeklyRewardsSplittingAbiServiceProvider,
+                WeeklyRewardsSplittingComputeService,
+                StakingComputeService,
+                StakingService,
+                StakingAbiServiceProvider,
+                StakingFilteringService,
+                EnergyAbiServiceProvider,
             ],
         }).compile();
     });

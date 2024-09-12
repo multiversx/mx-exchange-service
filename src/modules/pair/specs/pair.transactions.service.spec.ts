@@ -19,6 +19,7 @@ import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.se
 import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 
 describe('TransactionPairService', () => {
@@ -46,6 +47,7 @@ describe('TransactionPairService', () => {
                 WrapTransactionsService,
                 WrapService,
                 TokenServiceProvider,
+                ComposableTasksTransactionService,
                 PairTransactionService,
                 MXApiServiceProvider,
             ],
@@ -456,47 +458,23 @@ describe('TransactionPairService', () => {
             },
         );
 
-        expect(transactions).toEqual([
-            {
-                nonce: 0,
-                value: '5',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: '',
-                receiverUsername: undefined,
-                senderUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.wrapeGLD,
-                data: encodeTransactionData('wrapEgld'),
-                chainID: mxConfig.chainID,
-                version: 1,
-                options: undefined,
-                signature: undefined,
-                guardian: undefined,
-                guardianSignature: undefined,
-            },
-            {
-                nonce: 0,
-                value: '0',
-                receiver: Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
-                sender: '',
-                receiverUsername: undefined,
-                senderUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
-                data: encodeTransactionData(
-                    'ESDTTransfer@WEGLD-123456@5@swapTokensFixedInput@MEX-123456@4',
-                ),
-                chainID: mxConfig.chainID,
-                version: 1,
-                options: undefined,
-                signature: undefined,
-                guardian: undefined,
-                guardianSignature: undefined,
-            },
-        ]);
+        expect(transactions).toEqual({
+            chainID: 'T',
+            data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwNEBAQDAyQDAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBhNGQ0NTU4MmQzMTMyMzMzNDM1MzYwMDAwMDAwMTA0',
+            gasLimit: 40200000,
+            gasPrice: 1000000000,
+            guardian: undefined,
+            guardianSignature: undefined,
+            nonce: 0,
+            options: undefined,
+            receiver: Address.Zero().bech32(),
+            receiverUsername: undefined,
+            sender: '',
+            senderUsername: undefined,
+            signature: undefined,
+            value: '5',
+            version: 1,
+        });
     });
 
     it('should get swap tokens fixed output transaction + unwrap tx', async () => {
@@ -504,7 +482,7 @@ describe('TransactionPairService', () => {
             PairTransactionService,
         );
 
-        const transactions = await service.swapTokensFixedOutput(
+        const transaction = await service.swapTokensFixedOutput(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress: Address.fromHex(
@@ -517,49 +495,23 @@ describe('TransactionPairService', () => {
             },
         );
 
-        expect(transactions).toEqual([
-            {
-                nonce: 0,
-                value: '0',
-                receiver: Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
-                sender: '',
-                receiverUsername: undefined,
-                senderUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.pairs.swapTokensFixedOutput.default,
-                data: encodeTransactionData(
-                    'ESDTTransfer@MEX-123456@05@swapTokensFixedOutput@WEGLD-123456@05',
-                ),
-                chainID: mxConfig.chainID,
-                version: 1,
-                options: undefined,
-                signature: undefined,
-                guardian: undefined,
-                guardianSignature: undefined,
-            },
-            {
-                nonce: 0,
-                value: '0',
-                receiver:
-                    'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: '',
-                receiverUsername: undefined,
-                senderUsername: undefined,
-                gasPrice: 1000000000,
-                gasLimit: gasConfig.wrapeGLD,
-                data: encodeTransactionData(
-                    'ESDTTransfer@WEGLD-123456@05@unwrapEgld',
-                ),
-                chainID: mxConfig.chainID,
-                version: 1,
-                options: undefined,
-                signature: undefined,
-                guardian: undefined,
-                guardianSignature: undefined,
-            },
-        ]);
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver: Address.Zero().bech32(),
+            sender: '',
+            receiverUsername: undefined,
+            senderUsername: undefined,
+            gasPrice: 1000000000,
+            gasLimit: 40200000,
+            data: 'RVNEVFRyYW5zZmVyQDRkNDU1ODJkMzEzMjMzMzQzNTM2QDA1QDYzNmY2ZDcwNmY3MzY1NTQ2MTczNmI3M0AwMDAwMDAwNDQ1NDc0YzQ0MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDVAMDJAMDAwMDAwMTU3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzQwMDAwMDAwYzU3NDU0NzRjNDQyZDMxMzIzMzM0MzUzNjAwMDAwMDAxMDVAMDFA',
+            chainID: mxConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
+        });
     });
 
     it('should validate tokens', async () => {

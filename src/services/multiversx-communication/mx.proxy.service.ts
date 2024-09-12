@@ -224,6 +224,30 @@ export class MXProxyService {
         );
     }
 
+    async getPostitionCreatorContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.positionCreator,
+            abiConfig.positionCreator,
+            'AutoPosCreator',
+        );
+    }
+
+    async getLockedTokenPositionCreatorContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.lockedTokenPositionCreator,
+            abiConfig.lockedTokenPositionCreator,
+            'LockedTokenPosCreatorContract',
+        );
+    }
+
+    async getComposableTasksSmartContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.composableTasks,
+            abiConfig.composableTasks,
+            'ComposableTasksContract',
+        );
+    }
+
     async getSmartContract(
         contractAddress: string,
         contractAbiPath: string,

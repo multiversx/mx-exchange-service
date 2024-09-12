@@ -15,6 +15,7 @@ import {
 } from './models/staking.args';
 import {
     OptimalCompoundModel,
+    StakingBoostedRewardsModel,
     StakingModel,
     StakingRewardsModel,
 } from './models/staking.model';
@@ -27,11 +28,65 @@ import { StakingTransactionService } from './services/staking.transactions.servi
 import { StakingAbiService } from './services/staking.abi.service';
 import { StakingComputeService } from './services/staking.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { constantsConfig } from 'src/config';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { StakeAddressValidationPipe } from './validators/stake.address.validator';
+import { BoostedYieldsFactors } from '../farm/models/farm.v2.model';
+import { UserTotalBoostedPosition } from '../farm/models/farm.model';
 import { StakingFarmsResponse } from './models/staking.farms.response';
 import ConnectionArgs, {
     getPagingParameters,
 } from '../common/filters/connection.args';
 import PageResponse from '../common/page.response';
+
+@Resolver(() => StakingBoostedRewardsModel)
+export class StakingBoostedRewardsResolver {
+    constructor(private readonly stakingCompute: StakingComputeService) {}
+
+    @ResolveField()
+    async curentBoostedAPR(
+        @Parent() parent: StakingBoostedRewardsModel,
+        @Args('additionalUserFarmAmount', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserFarmAmount: string,
+        @Args('additionalUserEnergy', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserEnergy: string,
+    ): Promise<number> {
+        return this.stakingCompute.computeUserCurentBoostedAPR(
+            parent.farmAddress,
+            parent.userAddress,
+            additionalUserFarmAmount,
+            additionalUserEnergy,
+        );
+    }
+
+    @ResolveField()
+    async maximumBoostedAPR(
+        @Parent() parent: StakingBoostedRewardsModel,
+        @Args('additionalUserFarmAmount', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserFarmAmount: string,
+    ): Promise<number> {
+        return this.stakingCompute.computeUserMaxBoostedAPR(
+            parent.farmAddress,
+            parent.userAddress,
+            additionalUserFarmAmount,
+        );
+    }
+}
 
 @Resolver(() => StakingModel)
 export class StakingResolver {
@@ -40,6 +95,8 @@ export class StakingResolver {
         private readonly stakingAbi: StakingAbiService,
         private readonly stakingCompute: StakingComputeService,
         private readonly stakingTransactionService: StakingTransactionService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
     ) {}
 
     @ResolveField()
@@ -88,6 +145,11 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async boostedApr(@Parent() parent: StakingModel) {
+        return this.stakingCompute.boostedAPR(parent.address);
+    }
+
+    @ResolveField()
     async minUnboundEpochs(@Parent() parent: StakingModel) {
         return this.stakingAbi.minUnbondEpochs(parent.address);
     }
@@ -123,23 +185,137 @@ export class StakingResolver {
     }
 
     @ResolveField()
-    async pairContractManagedAddress(@Parent() parent: StakingModel) {
-        return this.stakingAbi.pairContractAddress(parent.address);
-    }
-
-    @ResolveField()
-    async burnGasLimit(@Parent() parent: StakingModel) {
-        return this.stakingAbi.burnGasLimit(parent.address);
-    }
-
-    @ResolveField()
-    async transferExecGasLimit(@Parent() parent: StakingModel) {
-        return this.stakingAbi.transferExecGasLimit(parent.address);
-    }
-
-    @ResolveField()
     async state(@Parent() parent: StakingModel) {
         return this.stakingAbi.state(parent.address);
+    }
+
+    @ResolveField()
+    async time(@Parent() parent: StakingModel): Promise<WeekTimekeepingModel> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return new WeekTimekeepingModel({
+            scAddress: parent.address,
+            currentWeek: currentWeek,
+        });
+    }
+
+    @ResolveField()
+    async boosterRewards(
+        @Parent() parent: StakingModel,
+    ): Promise<GlobalInfoByWeekModel[]> {
+        const modelsList = [];
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        for (
+            let week = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS;
+            week <= currentWeek;
+            week++
+        ) {
+            if (week < 1) {
+                continue;
+            }
+            modelsList.push(
+                new GlobalInfoByWeekModel({
+                    scAddress: parent.address,
+                    week: week,
+                }),
+            );
+        }
+        return modelsList;
+    }
+
+    @ResolveField()
+    async lastGlobalUpdateWeek(
+        @Parent() parent: StakingModel,
+    ): Promise<number> {
+        return this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(
+            parent.address,
+        );
+    }
+
+    @ResolveField()
+    async farmTokenSupplyCurrentWeek(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        const week = await this.weekTimekeepingAbi.currentWeek(parent.address);
+        return this.stakingAbi.farmSupplyForWeek(parent.address, week);
+    }
+
+    @ResolveField()
+    async energyFactoryAddress(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        return this.stakingAbi.energyFactoryAddress(parent.address);
+    }
+
+    @ResolveField()
+    async boostedYieldsRewardsPercenatage(
+        @Parent() parent: StakingModel,
+    ): Promise<number> {
+        return this.stakingAbi.boostedYieldsRewardsPercenatage(parent.address);
+    }
+
+    @ResolveField()
+    async boostedYieldsFactors(
+        @Parent() parent: StakingModel,
+    ): Promise<BoostedYieldsFactors> {
+        return this.stakingAbi.boostedYieldsFactors(parent.address);
+    }
+
+    @ResolveField()
+    async optimalEnergyPerStaking(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return this.stakingCompute.optimalEnergyPerStaking(
+            parent.address,
+            currentWeek,
+        );
+    }
+
+    @ResolveField()
+    async accumulatedRewardsForWeek(
+        @Parent() parent: StakingModel,
+        @Args('week', { nullable: true }) week: number,
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return this.stakingAbi.accumulatedRewardsForWeek(
+            parent.address,
+            week ?? currentWeek,
+        );
+    }
+
+    @ResolveField()
+    async undistributedBoostedRewards(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            parent.address,
+        );
+        return this.stakingCompute.undistributedBoostedRewards(
+            parent.address,
+            currentWeek,
+        );
+    }
+
+    @ResolveField()
+    async undistributedBoostedRewardsClaimed(
+        @Parent() parent: StakingModel,
+    ): Promise<string> {
+        return this.stakingAbi.undistributedBoostedRewards(parent.address);
+    }
+
+    @ResolveField()
+    async stakingPositionMigrationNonce(
+        @Parent() parent: StakingModel,
+    ): Promise<number> {
+        return this.stakingAbi.farmPositionMigrationNonce(parent.address);
     }
 
     @ResolveField()
@@ -174,9 +350,26 @@ export class StakingResolver {
     @Query(() => [StakingRewardsModel])
     async getStakingRewardsForPosition(
         @Args('stakingPositions') args: BatchFarmRewardsComputeArgs,
+        @Args('computeBoosted', { nullable: true }) computeBoosted: boolean,
     ): Promise<StakingRewardsModel[]> {
         return this.stakingService.getBatchRewardsForPosition(
             args.farmsPositions,
+            computeBoosted,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [StakingBoostedRewardsModel], {
+        description: 'Returns staking boosted rewards for the user',
+    })
+    async getStakingBoostedRewardsBatch(
+        @Args('stakingAddresses', { type: () => [String] })
+        stakingAddresses: string[],
+        @AuthUser() user: UserAuthResult,
+    ): Promise<StakingBoostedRewardsModel[]> {
+        return this.stakingService.getStakingBoostedRewardsBatch(
+            stakingAddresses,
+            user.address,
         );
     }
 
@@ -192,6 +385,37 @@ export class StakingResolver {
             amount,
             timeInterval,
         );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [UserTotalBoostedPosition], {
+        description:
+            'Returns the total staked position of the user in the staking contract',
+    })
+    async userTotalStakePosition(
+        @Args(
+            'stakeAddresses',
+            { type: () => [String] },
+            StakeAddressValidationPipe,
+        )
+        stakeAddresses: string[],
+        @AuthUser() user: UserAuthResult,
+    ): Promise<UserTotalBoostedPosition[]> {
+        const positions = await Promise.all(
+            stakeAddresses.map((stakeAddress) =>
+                this.stakingAbi.userTotalStakePosition(
+                    stakeAddress,
+                    user.address,
+                ),
+            ),
+        );
+
+        return stakeAddresses.map((stakeAddress, index) => {
+            return new UserTotalBoostedPosition({
+                address: stakeAddress,
+                boostedTokensAmount: positions[index],
+            });
+        });
     }
 
     @Query(() => [StakingModel])
@@ -263,32 +487,20 @@ export class StakingResolver {
         );
     }
 
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setPenaltyPercent(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('percent') percent: number,
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [TransactionModel])
+    async migrateTotalStakingPosition(
+        @Args('stakeAddresses', { type: () => [String] })
+        stakeAddresses: string[],
         @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setPenaltyPercent(
-            farmStakeAddress,
-            percent,
+    ): Promise<TransactionModel[]> {
+        const promises = stakeAddresses.map((stakeAddress) =>
+            this.stakingTransactionService.migrateTotalStakingPosition(
+                stakeAddress,
+                user.address,
+            ),
         );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setMinimumFarmingEpochs(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('epochs') epochs: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setMinimumFarmingEpochs(
-            farmStakeAddress,
-            epochs,
-        );
+        return (await Promise.all(promises)).flat();
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -356,34 +568,6 @@ export class StakingResolver {
         return this.stakingTransactionService.setRewardsState(
             farmStakeAddress,
             false,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setBurnGasLimit(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('gasLimit') gasLimit: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setBurnGasLimit(
-            farmStakeAddress,
-            gasLimit,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setTransferExecGasLimit(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('gasLimit') gasLimit: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setTransferExecGasLimit(
-            farmStakeAddress,
-            gasLimit,
         );
     }
 
@@ -520,6 +704,18 @@ export class StakingResolver {
             user.address,
             args.farmStakeAddress,
             args.payment,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => TransactionModel)
+    async claimStakingBoostedRewards(
+        @Args('stakeAddress') stakeAddress: string,
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        return this.stakingTransactionService.claimBoostedRewards(
+            user.address,
+            stakeAddress,
         );
     }
 

@@ -12,6 +12,7 @@ import { StakingProxyService } from './services/staking.proxy.service';
 import { StakingProxySetterService } from './services/staking.proxy.setter.service';
 import { StakingProxyTransactionService } from './services/staking.proxy.transactions.service';
 import { StakingProxyResolver } from './staking.proxy.resolver';
+import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { StakingProxyFilteringService } from './services/staking.proxy.filtering.service';
 
 @Module({
@@ -21,6 +22,7 @@ import { StakingProxyFilteringService } from './services/staking.proxy.filtering
         MXCommunicationModule,
         forwardRef(() => PairModule),
         FarmModule,
+        FarmModuleV2,
         StakingModule,
         TokenModule,
         RemoteConfigModule,

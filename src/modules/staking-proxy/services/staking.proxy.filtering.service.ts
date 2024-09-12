@@ -17,9 +17,9 @@ export class StakingProxyFilteringService {
         filter: StakingProxiesFilter,
         stakingProxyAddresses: string[],
     ): string[] {
-        if (filter.address) {
-            stakingProxyAddresses = stakingProxyAddresses.filter(
-                (address) => filter.address === address,
+        if (filter.addresses) {
+            stakingProxyAddresses = stakingProxyAddresses.filter((address) =>
+                filter.addresses.includes(address),
             );
         }
         return stakingProxyAddresses;
@@ -29,7 +29,7 @@ export class StakingProxyFilteringService {
         filter: StakingProxiesFilter,
         stakingProxyAddresses: string[],
     ): Promise<string[]> {
-        if (!filter.pairAddress) {
+        if (!filter.pairAddresses) {
             return stakingProxyAddresses;
         }
 
@@ -39,8 +39,8 @@ export class StakingProxyFilteringService {
             ),
         );
 
-        return stakingProxyAddresses.filter(
-            (_, index) => pairAddresses[index] === filter.pairAddress,
+        return stakingProxyAddresses.filter((_, index) =>
+            filter.pairAddresses.includes(pairAddresses[index]),
         );
     }
 
@@ -48,7 +48,7 @@ export class StakingProxyFilteringService {
         filter: StakingProxiesFilter,
         stakingProxyAddresses: string[],
     ): Promise<string[]> {
-        if (!filter.stakingFarmAddress) {
+        if (!filter.stakingFarmAddresses) {
             return stakingProxyAddresses;
         }
 
@@ -58,9 +58,8 @@ export class StakingProxyFilteringService {
             ),
         );
 
-        return stakingProxyAddresses.filter(
-            (_, index) =>
-                stakingFarmAddresses[index] === filter.stakingFarmAddress,
+        return stakingProxyAddresses.filter((_, index) =>
+            filter.stakingFarmAddresses.includes(stakingFarmAddresses[index]),
         );
     }
 
@@ -68,7 +67,7 @@ export class StakingProxyFilteringService {
         filter: StakingProxiesFilter,
         stakingProxyAddresses: string[],
     ): Promise<string[]> {
-        if (!filter.lpFarmAddress) {
+        if (!filter.lpFarmAddresses) {
             return stakingProxyAddresses;
         }
 
@@ -78,8 +77,8 @@ export class StakingProxyFilteringService {
             ),
         );
 
-        return stakingProxyAddresses.filter(
-            (_, index) => lpFarmAddresses[index] === filter.lpFarmAddress,
+        return stakingProxyAddresses.filter((_, index) =>
+            filter.lpFarmAddresses.includes(lpFarmAddresses[index]),
         );
     }
 
