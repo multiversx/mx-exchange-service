@@ -54,6 +54,15 @@ export class StakingProxyResolver {
     }
 
     @ResolveField()
+    async stakingMinUnboundEpochs(
+        @Parent() parent: StakingProxyModel,
+    ): Promise<number> {
+        return this.stakingProxyService.getStakingFarmMinUnboundEpochs(
+            parent.address,
+        );
+    }
+
+    @ResolveField()
     async pairAddress(@Parent() parent: StakingProxyModel): Promise<string> {
         return this.stakingProxyAbi.pairAddress(parent.address);
     }
