@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { RewardsModel } from 'src/modules/farm/models/farm.model';
@@ -13,6 +13,8 @@ export class StakingProxyModel {
     lpFarmAddress: string;
     @Field()
     stakingFarmAddress: string;
+    @Field(() => Int)
+    stakingMinUnboundEpochs: number;
     @Field()
     pairAddress: string;
     @Field()

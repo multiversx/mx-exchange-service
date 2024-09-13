@@ -28,12 +28,14 @@ import { CollectionType } from 'src/modules/common/collection.type';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { StakingProxiesFilter } from '../models/staking.proxy.args.model';
 import { StakingProxyFilteringService } from './staking.proxy.filtering.service';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 
 @Injectable()
 export class StakingProxyService {
     constructor(
         private readonly stakingProxyAbi: StakingProxyAbiService,
         private readonly stakingService: StakingService,
+        private readonly stakingAbiService: StakingAbiService,
         private readonly farmFactory: FarmFactoryService,
         private readonly pairService: PairService,
         private readonly tokenService: TokenService,
@@ -304,5 +306,14 @@ export class StakingProxyService {
         }
 
         return undefined;
+    }
+
+    async getStakingFarmMinUnboundEpochs(
+        stakingProxyAddress: string,
+    ): Promise<number> {
+        const stakingFarmAddress =
+            await this.stakingProxyAbi.stakingFarmAddress(stakingProxyAddress);
+
+        return await this.stakingAbiService.minUnbondEpochs(stakingFarmAddress);
     }
 }
