@@ -671,6 +671,10 @@ export class StakingComputeService {
             .plus(additionalUserStakeAmount)
             .toFixed();
 
+        if (userTotalStakePosition === '0') {
+            return 0;
+        }
+
         const userRewardsPerWeek = await this.computeUserRewardsForWeek(
             scAddress,
             userAddress,
@@ -725,6 +729,10 @@ export class StakingComputeService {
         userTotalStakePosition = new BigNumber(userTotalStakePosition)
             .plus(additionalUserStakeAmount)
             .toFixed();
+
+        if (userTotalStakePosition === '0') {
+            return 0;
+        }
 
         const userMaxRewardsPerWeek = new BigNumber(
             boostedRewardsPerWeek[0].amount,
