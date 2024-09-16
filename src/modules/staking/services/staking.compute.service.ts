@@ -289,6 +289,31 @@ export class StakingComputeService {
         return boostedAPR.toFixed();
     }
 
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async maxBoostedAPR(stakeAddress: string): Promise<string> {
+        return await this.computeMaxBoostedApr(stakeAddress);
+    }
+
+    async computeMaxBoostedApr(stakeAddress: string): Promise<string> {
+        const [baseAPR, boostedYieldsFactors, boostedYieldsRewardsPercentage] =
+            await Promise.all([
+                this.stakeFarmBaseAPR(stakeAddress),
+                this.stakingAbi.boostedYieldsFactors(stakeAddress),
+                this.stakingAbi.boostedYieldsRewardsPercenatage(stakeAddress),
+            ]);
+
+        const bnRawMaxBoostedApr = new BigNumber(baseAPR)
+            .multipliedBy(boostedYieldsFactors.maxRewardsFactor)
+            .multipliedBy(boostedYieldsRewardsPercentage)
+            .dividedBy(
+                constantsConfig.MAX_PERCENT - boostedYieldsRewardsPercentage,
+            );
+
+        return bnRawMaxBoostedApr.toFixed();
+    }
+
     async computeRewardsRemainingDays(stakeAddress: string): Promise<number> {
         const [perBlockRewardAmount, accumulatedRewards, rewardsCapacity] =
             await Promise.all([
