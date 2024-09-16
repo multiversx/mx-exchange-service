@@ -132,9 +132,16 @@ describe('FarmServiceV2', () => {
             totalLockedTokens: '1',
             lastUpdateEpoch: 256,
         });
-        jest.spyOn(farmAbi, 'accumulatedRewardsForWeek').mockResolvedValue(
-            '60480000000000000000000',
-        );
+        jest.spyOn(
+            weeklyRewardsSplittingAbi,
+            'totalRewardsForWeek',
+        ).mockResolvedValue([
+            new EsdtTokenPayment({
+                tokenID: 'MEX-123456',
+                nonce: 0,
+                amount: '60480000000000000000000',
+            }),
+        ]);
         jest.spyOn(farmAbi, 'farmTokenSupply').mockResolvedValue('2');
         jest.spyOn(farmAbi, 'rewardsPerBlock').mockResolvedValue(
             '1000000000000000000',
