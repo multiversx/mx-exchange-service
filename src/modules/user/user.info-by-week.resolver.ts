@@ -58,14 +58,14 @@ export class UserInfoByWeekResolver {
 
         const stakingAddresses = await this.remoteConfig.getStakingAddresses();
         if (stakingAddresses.includes(parent.scAddress)) {
-            return this.stakingCompute.computeUserRewardsForWeek(
+            return this.stakingCompute.userRewardsForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,
             );
         }
 
-        return this.farmComputeV2.computeUserRewardsForWeek(
+        return this.farmComputeV2.userRewardsForWeek(
             parent.scAddress,
             parent.userAddress,
             parent.week,
