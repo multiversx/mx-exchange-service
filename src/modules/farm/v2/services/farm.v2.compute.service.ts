@@ -208,14 +208,6 @@ export class FarmComputeServiceV2
         additionalUserEnergyAmount = '0',
         rewardsPerWeek?: string,
     ): Promise<string> {
-        const rewardsForWeek =
-            rewardsPerWeek ??
-            (await this.farmAbi.accumulatedRewardsForWeek(scAddress, week));
-
-        if (rewardsForWeek === undefined) {
-            return '0';
-        }
-
         const [currentWeek, boostedYieldsFactors, userEnergyForWeek] =
             await Promise.all([
                 this.weekTimeKeepingAbi.currentWeek(scAddress),
@@ -226,6 +218,28 @@ export class FarmComputeServiceV2
                     week,
                 ),
             ]);
+
+        let rewardsForWeek: string;
+
+        if (week === currentWeek) {
+            rewardsForWeek = await this.farmAbi.accumulatedRewardsForWeek(
+                scAddress,
+                week,
+            );
+        } else {
+            const totalRewards =
+                await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                    scAddress,
+                    week,
+                );
+            rewardsForWeek = totalRewards[0].amount;
+        }
+
+        rewardsForWeek = rewardsPerWeek ?? rewardsForWeek;
+
+        if (rewardsForWeek === undefined) {
+            return '0';
+        }
 
         let [totalEnergyForWeek, liquidity] = await Promise.all([
             this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),

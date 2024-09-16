@@ -517,14 +517,6 @@ export class StakingComputeService {
         additionalUserEnergy = '0',
         rewardsPerWeek?: string,
     ): Promise<string> {
-        const rewardsForWeek =
-            rewardsPerWeek ??
-            (await this.stakingAbi.accumulatedRewardsForWeek(scAddress, week));
-
-        if (rewardsForWeek === undefined) {
-            return '0';
-        }
-
         const [currentWeek, boostedYieldsFactors, userEnergyForWeek] =
             await Promise.all([
                 this.weekTimeKeepingAbi.currentWeek(scAddress),
@@ -535,6 +527,24 @@ export class StakingComputeService {
                     week,
                 ),
             ]);
+
+        let rewardsForWeek: string;
+
+        if (week === currentWeek) {
+            rewardsForWeek = await this.stakingAbi.accumulatedRewardsForWeek(
+                scAddress,
+                week,
+            );
+        } else {
+            const totalRewards =
+                await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                    scAddress,
+                    week,
+                );
+            rewardsForWeek = totalRewards[0].amount;
+        }
+
+        rewardsForWeek = rewardsPerWeek ?? rewardsForWeek;
 
         let [totalEnergyForWeek, liquidity] = await Promise.all([
             this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
