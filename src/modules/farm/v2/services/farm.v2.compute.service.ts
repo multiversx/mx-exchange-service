@@ -327,6 +327,10 @@ export class FarmComputeServiceV2
             .plus(additionalUserFarmAmount)
             .toFixed();
 
+        if (userTotalFarmPosition === '0') {
+            return 0;
+        }
+
         const userRewardsPerWeek = await this.computeUserRewardsForWeek(
             scAddress,
             userAddress,
@@ -384,6 +388,10 @@ export class FarmComputeServiceV2
         userTotalFarmPosition = new BigNumber(userTotalFarmPosition)
             .plus(additionalUserFarmAmount)
             .toFixed();
+
+        if (userTotalFarmPosition === '0') {
+            return 0;
+        }
 
         const userMaxRewardsPerWeek = new BigNumber(
             boostedRewardsPerWeek[0].amount,
