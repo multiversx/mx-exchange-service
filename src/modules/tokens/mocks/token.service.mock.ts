@@ -21,6 +21,10 @@ export class TokenServiceMock {
 
         return [...new Set(tokenIDs)];
     }
+
+    async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
+        return tokenIDs.map((tokenID) => Tokens(tokenID));
+    }
 }
 
 export const TokenServiceProvider = {
