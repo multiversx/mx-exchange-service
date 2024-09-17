@@ -8,6 +8,7 @@ import { Plugin } from '@nestjs/apollo';
 import { PerformanceProfiler } from './performance.profiler';
 import { CpuProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { MetricsCollector } from './metrics.collector';
+import { Kind, OperationTypeNode } from 'graphql';
 
 @Plugin()
 export class QueryMetricsPlugin implements ApolloServerPlugin {
@@ -21,10 +22,7 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
             async executionDidStart(
                 requestContext: GraphQLRequestContext<any>,
             ): Promise<void | GraphQLRequestExecutionListener<any>> {
-                operationName = requestContext.operationName;
-                if (!operationName) {
-                    operationName = requestContext.queryHash;
-                }
+                operationName = deanonymizeQuery(requestContext);
                 origin =
                     requestContext.request.http?.headers.get('origin') ??
                     'Unknown';
@@ -47,4 +45,40 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
             },
         };
     }
+}
+
+function deanonymizeQuery(requestContext: GraphQLRequestContext<any>): string {
+    if (requestContext.operationName) {
+        return requestContext.operationName;
+    }
+
+    if (!requestContext.document) {
+        return requestContext.queryHash;
+    }
+
+    const queryNames = [];
+    const definitions = requestContext.document.definitions;
+    for (const definition of definitions) {
+        if (
+            definition.kind !== Kind.OPERATION_DEFINITION ||
+            definition.operation !== OperationTypeNode.QUERY
+        ) {
+            continue;
+        }
+
+        const selections = definition.selectionSet.selections;
+        for (const selection of selections) {
+            if (selection.kind !== Kind.FIELD) {
+                continue;
+            }
+
+            const name = selection.name?.value ?? 'undefined';
+
+            queryNames.push(name);
+        }
+    }
+
+    return queryNames.length > 0
+        ? queryNames.join('|')
+        : requestContext.queryHash;
 }
