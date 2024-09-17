@@ -6,13 +6,18 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ISimpleLockAbiService } from './interfaces';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class SimpleLockAbiService
     extends GenericAbiService
     implements ISimpleLockAbiService
 {
-    constructor(protected readonly mxProxy: MXProxyService) {
+    constructor(
+        protected readonly mxProxy: MXProxyService,
+        private readonly cachingService: CacheService,
+    ) {
         super(mxProxy);
     }
 
@@ -39,6 +44,18 @@ export class SimpleLockAbiService
         return response.firstValue.valueOf().toString();
     }
 
+    async getAllLockedTokenIds(
+        simpleLockAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            simpleLockAddresses,
+            'simpleLock.lockedTokenID',
+            this.lockedTokenID.bind(this),
+            CacheTtlInfo.Token,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -62,6 +79,18 @@ export class SimpleLockAbiService
         return response.firstValue.valueOf().toString();
     }
 
+    async getAllLpProxyTokenIds(
+        simpleLockAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            simpleLockAddresses,
+            'simpleLock.lpProxyTokenID',
+            this.lpProxyTokenID.bind(this),
+            CacheTtlInfo.Token,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -83,6 +112,18 @@ export class SimpleLockAbiService
 
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getAllFarmProxyTokenIds(
+        simpleLockAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            simpleLockAddresses,
+            'simpleLock.farmProxyTokenID',
+            this.farmProxyTokenID.bind(this),
+            CacheTtlInfo.Token,
+        );
     }
 
     @ErrorLoggerAsync({
