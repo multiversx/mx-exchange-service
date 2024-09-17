@@ -25,6 +25,8 @@ import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.servi
 import { TransactionStatus } from 'src/utils/transaction.utils';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -46,6 +48,7 @@ export class PairComputeService implements IPairComputeService {
         private readonly apiService: MXApiService,
         private readonly farmCompute: FarmComputeServiceV2,
         private readonly stakingCompute: StakingComputeService,
+        private readonly cachingService: CacheService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -218,6 +221,18 @@ export class PairComputeService implements IPairComputeService {
         );
     }
 
+    async getAllFirstTokensPriceUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.firstTokenPriceUSD',
+            this.firstTokenPriceUSD.bind(this),
+            CacheTtlInfo.Price,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -251,6 +266,18 @@ export class PairComputeService implements IPairComputeService {
 
         return await this.tokenCompute.computeTokenPriceDerivedUSD(
             secondTokenID,
+        );
+    }
+
+    async getAllSecondTokensPricesUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.secondTokenPriceUSD',
+            this.secondTokenPriceUSD.bind(this),
+            CacheTtlInfo.Price,
         );
     }
 
