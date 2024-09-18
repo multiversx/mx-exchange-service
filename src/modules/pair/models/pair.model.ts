@@ -198,10 +198,10 @@ export class PairModel {
     @Field()
     hasDualFarms: boolean;
 
-    @Field()
+    @Field(() => Int)
     tradesCount: number;
 
-    @Field()
+    @Field(() => Int)
     tradesCount24h: number;
 
     @Field(() => Int, { nullable: true })
