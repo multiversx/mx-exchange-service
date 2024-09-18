@@ -394,6 +394,18 @@ export class PairSetterService extends GenericSetterService {
         );
     }
 
+    async setTradesCount24h(
+        pairAddress: string,
+        value: number,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('tradesCount24h', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
     async setDeployedAt(pairAddress: string, value: number): Promise<string> {
         return await this.setData(
             this.getCacheKey('deployedAt', pairAddress),
