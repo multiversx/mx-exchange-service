@@ -201,6 +201,9 @@ export class PairModel {
     @Field()
     tradesCount: number;
 
+    @Field()
+    tradesCount24h: number;
+
     @Field(() => Int, { nullable: true })
     deployedAt: number;
 

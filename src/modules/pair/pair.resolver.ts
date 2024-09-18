@@ -401,6 +401,11 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async tradesCount24h(@Parent() parent: PairModel): Promise<number> {
+        return this.pairComputeLoader.tradesCount24hLoader.load(parent.address);
+    }
+
+    @ResolveField()
     async deployedAt(@Parent() parent: PairModel): Promise<number> {
         return this.pairComputeLoader.deployedAtLoader.load(parent.address);
     }
