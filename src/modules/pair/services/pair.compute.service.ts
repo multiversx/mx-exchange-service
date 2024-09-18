@@ -719,7 +719,6 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async getAllTradesCount24h(pairAddresses: string[]): Promise<number[]> {
-        console.log('here', pairAddresses);
         return await getAllKeys(
             this.cachingService,
             pairAddresses,
