@@ -566,7 +566,7 @@ export class StakingComputeService {
                     scAddress,
                     week,
                 );
-            rewardsForWeek = totalRewards[0].amount;
+            rewardsForWeek = totalRewards[0]?.amount ?? '0';
         }
 
         rewardsForWeek = rewardsPerWeek ?? rewardsForWeek;
