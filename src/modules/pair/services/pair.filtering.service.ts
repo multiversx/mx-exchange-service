@@ -259,6 +259,24 @@ export class PairFilteringService {
         );
     }
 
+    async pairsByTradesCount24h(
+        pairFilter: PairsFilter,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.minTradesCount24h) {
+            return pairsMetadata;
+        }
+
+        const pairsTradesCount24h = await this.pairCompute.getAllTradesCount24h(
+            pairsMetadata.map((pair) => pair.address),
+        );
+
+        return pairsMetadata.filter(
+            (_, index) =>
+                pairsTradesCount24h[index] >= pairFilter.minTradesCount24h,
+        );
+    }
+
     async pairsByHasFarms(
         pairFilter: PairsFilter,
         pairsMetadata: PairMetadata[],
