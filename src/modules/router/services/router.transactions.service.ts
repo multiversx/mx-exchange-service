@@ -463,7 +463,9 @@ export class RouterTransactionService {
         }
         if (
             new BigNumber(commonTokenValue).isLessThan(
-                swapEnableConfig.minLockedTokenValue,
+                new BigNumber(swapEnableConfig.minLockedTokenValue).minus(
+                    constantsConfig.roundedSwapEnable[commonToken],
+                ),
             )
         ) {
             throw new Error('Not enough value locked');
