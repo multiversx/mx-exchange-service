@@ -17,16 +17,15 @@ import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
-import { ElasticService } from 'src/helpers/elastic.service';
-import { ElasticQuery, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
-import { TransactionStatus } from 'src/utils/transaction.utils';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { getAllKeys } from 'src/utils/get.many.utils';
+import { ESTransactionsService } from 'src/services/elastic-search/services/es.transactions.service';
+import moment from 'moment';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -44,11 +43,11 @@ export class PairComputeService implements IPairComputeService {
         private readonly farmAbi: FarmAbiServiceV2,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly stakingProxyAbiService: StakingProxyAbiService,
-        private readonly elasticService: ElasticService,
         private readonly apiService: MXApiService,
         private readonly farmCompute: FarmComputeServiceV2,
         private readonly stakingCompute: StakingComputeService,
         private readonly cachingService: CacheService,
+        private readonly elasticTransactionsService: ESTransactionsService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -715,20 +714,41 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeTradesCount(pairAddress: string): Promise<number> {
-        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+        return await this.elasticTransactionsService.computePairSwapCount(
+            pairAddress,
+        );
+    }
 
-        elasticQueryAdapter.condition.must = [
-            QueryType.Match('receiver', pairAddress),
-            QueryType.Match('status', TransactionStatus.success),
-            QueryType.Should([
-                QueryType.Match('function', 'swapTokensFixedInput'),
-                QueryType.Match('function', 'swapTokensFixedOutput'),
-            ]),
-        ];
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'pair',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async tradesCount24h(pairAddress: string): Promise<number> {
+        return await this.computeTradesCount24h(pairAddress);
+    }
 
-        return await this.elasticService.getCount(
-            'transactions',
-            elasticQueryAdapter,
+    async computeTradesCount24h(pairAddress: string): Promise<number> {
+        const end = moment.utc().unix();
+        const start = moment.unix(end).subtract(1, 'day').unix();
+
+        return await this.elasticTransactionsService.computePairSwapCount(
+            pairAddress,
+            start,
+            end,
+        );
+    }
+
+    async getAllTradesCount24h(pairAddresses: string[]): Promise<number[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.tradesCount24h',
+            this.tradesCount24h.bind(this),
+            CacheTtlInfo.ContractState,
         );
     }
 

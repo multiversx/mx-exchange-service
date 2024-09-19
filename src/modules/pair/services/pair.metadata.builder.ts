@@ -123,6 +123,14 @@ export class PairsMetadataBuilder {
         return this;
     }
 
+    async filterByTradesCount24h(): Promise<PairsMetadataBuilder> {
+        this.pairsMetadata = await this.filteringService.pairsByTradesCount24h(
+            this.filters,
+            this.pairsMetadata,
+        );
+        return this;
+    }
+
     async filterByHasFarms(): Promise<PairsMetadataBuilder> {
         this.pairsMetadata = await this.filteringService.pairsByHasFarms(
             this.filters,

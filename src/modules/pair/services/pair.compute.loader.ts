@@ -177,6 +177,12 @@ export class PairComputeLoader {
         },
     );
 
+    public readonly tradesCount24hLoader = new DataLoader<string, number>(
+        async (addresses: string[]) => {
+            return await this.pairCompute.getAllTradesCount24h(addresses);
+        },
+    );
+
     public readonly deployedAtLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
             return await this.pairService.getAllDeployedAt(addresses);
