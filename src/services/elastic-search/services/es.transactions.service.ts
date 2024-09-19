@@ -3,6 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ElasticService, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { ElasticQuery } from '@multiversx/sdk-nestjs-elastic';
+import { TransactionStatus } from 'src/utils/transaction.utils';
 
 @Injectable()
 export class ESTransactionsService {
@@ -22,39 +23,42 @@ export class ESTransactionsService {
         );
     }
 
-    async computePairSwapCount(address: string): Promise<number> {
-        let swapTxCount = 0;
+    async computePairSwapCount(
+        address: string,
+        start?: number,
+        end?: number,
+    ): Promise<number> {
         const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
 
         elasticQueryAdapter.condition.must = [
             QueryType.Match('receiver', address),
-            QueryType.Wildcard(
-                'data',
-                '*QDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzR*',
-            ),
+            QueryType.Match('status', TransactionStatus.success),
+            QueryType.Should([
+                QueryType.Match('function', 'swapTokensFixedInput'),
+                QueryType.Match('function', 'swapTokensFixedOutput'),
+            ]),
         ];
 
-        let txCount = await this.elasticService.getCount(
+        if (start && end) {
+            elasticQueryAdapter.filter = [
+                QueryType.Range(
+                    'timestamp',
+                    {
+                        key: 'gte',
+                        value: start,
+                    },
+                    {
+                        key: 'lte',
+                        value: end,
+                    },
+                ),
+            ];
+        }
+
+        return await this.elasticService.getCount(
             'transactions',
             elasticQueryAdapter,
         );
-        swapTxCount += txCount;
-
-        elasticQueryAdapter.condition.must = [
-            QueryType.Match('receiver', address),
-            QueryType.Wildcard(
-                'data',
-                '*QDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDRmNzU3NDcwNzU3NE*',
-            ),
-        ];
-
-        txCount = await this.elasticService.getCount(
-            'transactions',
-            elasticQueryAdapter,
-        );
-        swapTxCount += txCount;
-
-        return swapTxCount;
     }
 
     async computePairAddLiquidityCount(address: string): Promise<number> {

@@ -300,6 +300,11 @@ export class RouterService {
                     pairsMetadata.map((pair) => pair.address),
                 );
                 break;
+            case PairSortableFields.TRADES_COUNT_24:
+                sortFieldData = await this.pairCompute.getAllTradesCount24h(
+                    pairsMetadata.map((pair) => pair.address),
+                );
+                break;
             case PairSortableFields.TVL:
                 sortFieldData = await this.pairService.getAllLockedValueUSD(
                     pairsMetadata.map((pair) => pair.address),

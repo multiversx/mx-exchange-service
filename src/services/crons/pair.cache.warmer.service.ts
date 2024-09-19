@@ -164,6 +164,7 @@ export class PairCacheWarmerService {
                 hasFarms,
                 hasDualFarms,
                 tradesCount,
+                tradesCount24h,
                 deployedAt,
                 whitelistedAddresses,
                 feeDestinations,
@@ -181,6 +182,7 @@ export class PairCacheWarmerService {
                 this.pairComputeService.computeHasFarms(pairAddress),
                 this.pairComputeService.computeHasDualFarms(pairAddress),
                 this.pairComputeService.computeTradesCount(pairAddress),
+                this.pairComputeService.computeTradesCount24h(pairAddress),
                 this.pairComputeService.computeDeployedAt(pairAddress),
                 this.pairAbi.getWhitelistedAddressesRaw(pairAddress),
                 this.pairAbi.getFeeDestinationsRaw(pairAddress),
@@ -224,6 +226,10 @@ export class PairCacheWarmerService {
                     hasDualFarms,
                 ),
                 this.pairSetterService.setTradesCount(pairAddress, tradesCount),
+                this.pairSetterService.setTradesCount24h(
+                    pairAddress,
+                    tradesCount24h,
+                ),
                 this.pairSetterService.setDeployedAt(pairAddress, deployedAt),
                 this.pairSetterService.setWhitelistedAddresses(
                     pairAddress,
