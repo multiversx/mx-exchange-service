@@ -28,10 +28,6 @@ export class FarmAbiFactory {
         }
     }
 
-    async getAllFarmTokenIds(): Promise<string[]> {
-        return await this.abiServiceV2.getAllFarmTokenIds(farmsAddresses());
-    }
-
     async isFarmToken(tokenID: string): Promise<boolean> {
         for (const farmAddress of farmsAddresses()) {
             const farmTokenID = await this.useAbi(farmAddress).farmTokenID(

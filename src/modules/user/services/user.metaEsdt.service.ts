@@ -48,10 +48,12 @@ import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staki
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lock.abi.service';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
-import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
+import { farmsAddresses } from 'src/utils/farm.utils';
+
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -76,7 +78,7 @@ export class UserMetaEsdtService {
         private readonly apiService: MXApiService,
         private readonly proxyPairAbi: ProxyPairAbiService,
         private readonly proxyFarmAbi: ProxyFarmAbiService,
-        private readonly farmAbi: FarmAbiFactory,
+        private readonly farmAbi: FarmAbiService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly stakingAbi: StakingAbiService,
         private readonly proxyStakeAbi: StakingProxyAbiService,
@@ -117,7 +119,9 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
         calculateUSD = true,
     ): Promise<UserFarmToken[]> {
-        const farmTokenIDs = await this.farmAbi.getAllFarmTokenIds();
+        const farmTokenIDs = await this.farmAbi.getAllFarmTokenIds(
+            farmsAddresses(),
+        );
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -366,10 +370,11 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedEsdtToken[]> {
-        const lockedEsdtTokenIDs =
-            await this.simpleLockAbi.getAllLockedTokenIds(
-                scAddress.simpleLockAddress,
-            );
+        const lockedEsdtTokenIDs = await Promise.all(
+            scAddress.simpleLockAddress.map((address: string) =>
+                this.simpleLockAbi.lockedTokenID(address),
+            ),
+        );
 
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
@@ -387,10 +392,11 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedSimpleLpToken[]> {
-        const lockedSimpleLpTokenIDs =
-            await this.simpleLockAbi.getAllLpProxyTokenIds(
-                scAddress.simpleLockAddress,
-            );
+        const lockedSimpleLpTokenIDs = await Promise.all(
+            scAddress.simpleLockAddress.map((address: string) =>
+                this.simpleLockAbi.lpProxyTokenID(address),
+            ),
+        );
 
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
@@ -410,10 +416,11 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserLockedSimpleFarmToken[]> {
-        const lockedSimpleFarmTokenIDs =
-            await this.simpleLockAbi.getAllFarmProxyTokenIds(
-                scAddress.simpleLockAddress,
-            );
+        const lockedSimpleFarmTokenIDs = await Promise.all(
+            scAddress.simpleLockAddress.map((address: string) =>
+                this.simpleLockAbi.farmProxyTokenID(address),
+            ),
+        );
 
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
@@ -669,7 +676,9 @@ export class UserMetaEsdtService {
             }
         }
 
-        const farmTokenIDs = await this.farmAbi.getAllFarmTokenIds();
+        const farmTokenIDs = await this.farmAbi.getAllFarmTokenIds(
+            farmsAddresses(),
+        );
         if (farmTokenIDs.find((farmTokenID) => farmTokenID === tokenID)) {
             return NftTokenType.FarmToken;
         }
