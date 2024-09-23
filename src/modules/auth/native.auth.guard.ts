@@ -1,7 +1,4 @@
-import {
-    NativeAuthError,
-    NativeAuthServer,
-} from '@multiversx/sdk-native-auth-server';
+import { NativeAuthServer } from '@multiversx/sdk-native-auth-server';
 import {
     Injectable,
     CanActivate,
@@ -50,7 +47,6 @@ export class NativeAuthGuard implements CanActivate {
                     await this.cachingService.set(key, value, ttl);
                 },
             },
-            validateImpersonateCallback: this.validateImpersonateAddress,
         });
     }
 
@@ -110,17 +106,5 @@ export class NativeAuthGuard implements CanActivate {
             this.logger.error(`${NativeAuthGuard.name}: ${error.message}`);
             return false;
         }
-    }
-
-    private async validateImpersonateAddress(
-        signerAddress: string,
-        _impersonateAddress: string,
-    ): Promise<boolean> {
-        const admins = process.env.SECURITY_ADMINS.split(',');
-        if (admins.find((admin) => admin === signerAddress) === undefined) {
-            throw new NativeAuthError('Impersonation not allowed');
-        }
-
-        return true;
     }
 }
