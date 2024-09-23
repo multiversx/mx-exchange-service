@@ -82,7 +82,7 @@ describe('Composable Tasks Transaction', () => {
             senderUsername: undefined,
             signature: undefined,
             value: '1000000000000000000',
-            version: 1,
+            version: 2,
         });
     });
 
@@ -114,7 +114,7 @@ describe('Composable Tasks Transaction', () => {
             senderUsername: undefined,
             signature: undefined,
             value: '1000000000000000000',
-            version: 1,
+            version: 2,
         });
     });
 
@@ -148,7 +148,7 @@ describe('Composable Tasks Transaction', () => {
             senderUsername: undefined,
             signature: undefined,
             value: '0',
-            version: 1,
+            version: 2,
         });
     });
 });

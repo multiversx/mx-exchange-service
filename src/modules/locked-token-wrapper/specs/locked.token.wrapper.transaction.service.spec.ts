@@ -110,7 +110,7 @@ describe('LockedTokenWrapperTransactionService', () => {
                 ),
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
             }),
         );
     });
@@ -141,7 +141,7 @@ describe('LockedTokenWrapperTransactionService', () => {
                 ),
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
             }),
         );
     });

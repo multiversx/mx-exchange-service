@@ -142,7 +142,7 @@ describe('StakingProxyTransactionService', () => {
                 ),
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
             }),
         );
     });
@@ -185,7 +185,7 @@ describe('StakingProxyTransactionService', () => {
                 ),
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
             }),
         );
     });
@@ -257,7 +257,7 @@ describe('StakingProxyTransactionService', () => {
                 `MultiESDTNFTTransfer@0000000000000000000000000000000000000000000000000000000000000000@01@METASTAKE-123456@01@1000000000000000000@claimDualYield`,
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             guardian: undefined,
             signature: undefined,
