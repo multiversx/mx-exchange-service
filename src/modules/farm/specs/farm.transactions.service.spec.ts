@@ -89,12 +89,12 @@ describe('FarmService', () => {
             nonce: 0,
             value: '0',
             receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms['v1.2'].enterFarm.default,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5@01@EGLDMEXLP-abcdef@@1000000000000@enterFarmAndLockRewards',
+                'ESDTTransfer@EGLDMEXLP-abcdef@1000000000000@enterFarmAndLockRewards',
             ),
             chainID: mxConfig.chainID,
             version: 2,

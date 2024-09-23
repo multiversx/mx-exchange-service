@@ -547,7 +547,7 @@ describe('RouterService', () => {
         const transaction = await service.setSwapEnabledByUser(
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'LKESDT-1234',
+                tokenID: 'LKESDT-123456',
                 nonce: 1,
                 amount: '10000000000',
                 attributes:
@@ -563,7 +563,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.swapEnableByUser,
             data: encodeTransactionData(
-                `ESDTNFTTransfer@LKESDT-1234@01@10000000000@${Address.fromHex(
+                `ESDTNFTTransfer@LKESDT-123456@01@10000000000@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000011',
                 ).bech32()}@setSwapEnabledByUser@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',
@@ -587,7 +587,7 @@ describe('RouterService', () => {
                 service.setSwapEnabledByUser(
                     Address.Zero().bech32(),
                     new InputTokenModel({
-                        tokenID: 'LKESDT-1234',
+                        tokenID: 'LKESDT-123456',
                         nonce: 1,
                         amount: '1000000000000000000',
                         attributes:
@@ -655,7 +655,7 @@ describe('RouterService', () => {
                 service.setSwapEnabledByUser(
                     Address.Zero().bech32(),
                     new InputTokenModel({
-                        tokenID: 'LKESDT-1234',
+                        tokenID: 'LKESDT-123456',
                         nonce: 1,
                         amount: '1000000000000000000',
                         attributes:
@@ -678,7 +678,7 @@ describe('RouterService', () => {
                 service.setSwapEnabledByUser(
                     Address.Zero().bech32(),
                     new InputTokenModel({
-                        tokenID: 'LKESDT-1234',
+                        tokenID: 'LKESDT-123456',
                         nonce: 1,
                         amount: '1000',
                         attributes:

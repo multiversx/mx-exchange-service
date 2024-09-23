@@ -46,7 +46,7 @@ export class RouterAbiServiceMock implements IRouterAbiService {
                 address: Address.Zero().bech32(),
             }),
             commonTokenID: 'USDC-123456',
-            lockedTokenID: 'LKESDT-1234',
+            lockedTokenID: 'LKESDT-123456',
             minLockedTokenValue: '8000000000',
             minLockPeriodEpochs: 1,
         });

@@ -90,7 +90,7 @@ describe('EscrowTransactionService', () => {
                 chainID: mxConfig.chainID,
                 nonce: 0,
                 data: encodeTransactionData(
-                    `MultiESDTNFTTransfer@${scAddress.escrow}@01@XMEX-123456@01@1000000000000000000@lockFunds@${receiverAddress}`,
+                    `ESDTNFTTransfer@XMEX-123456@01@1000000000000000000@${scAddress.escrow}@lockFunds@${receiverAddress}`,
                 ),
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.escrow.lockFunds,
