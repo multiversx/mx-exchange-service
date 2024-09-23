@@ -74,7 +74,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.stakeFarm.default,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01@WEGLD-123456@@1000@stakeFarm',
+                'ESDTTransfer@WEGLD-123456@1000@stakeFarm',
             ),
             chainID: mxConfig.chainID,
             version: 2,
@@ -106,7 +106,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.unstakeFarm,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@WEGLD-123456@@1000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unstakeFarm',
+                'ESDTTransfer@WEGLD-123456@1000@unstakeFarm',
             ),
             chainID: 'T',
             version: 2,
@@ -138,7 +138,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.unbondFarm,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@WEGLD-123456@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unbondFarm',
+                'ESDTTransfer@WEGLD-123456@01000000@unbondFarm',
             ),
             chainID: 'T',
             version: 2,
@@ -170,7 +170,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.claimRewards,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@WEGLD-123456@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
+                'ESDTTransfer@WEGLD-123456@01000000@claimRewards',
             ),
             chainID: 'T',
             version: 2,
@@ -202,7 +202,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.compoundRewards,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@WEGLD-123456@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@compoundRewards',
+                'ESDTTransfer@WEGLD-123456@01000000@compoundRewards',
             ),
             chainID: 'T',
             version: 2,
@@ -245,8 +245,8 @@ describe('StakingTransactionService', () => {
         const mxApi = module.get<MXApiService>(MXApiService);
         jest.spyOn(mxApi, 'getNftsForUser').mockResolvedValue([
             {
-                identifier: 'STAKETOK-1111-01',
-                collection: 'STAKETOK-1111',
+                identifier: 'STAKETOK-111111-01',
+                collection: 'STAKETOK-111111',
                 attributes:
                     'AAAABHA3g/MAAAAAAAAACA3gtrOnZAAAYLtgEaeB64tT1h15BHRQrapGl34gI5MSlRJiwQV9EJA=',
                 nonce: 1,
@@ -276,7 +276,7 @@ describe('StakingTransactionService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.stake.claimRewards,
                 data: encodeTransactionData(
-                    'ESDTNFTTransfer@STAKETOK-1111@01@1000000000000000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
+                    'ESDTNFTTransfer@STAKETOK-111111@01@1000000000000000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
                 ),
                 chainID: 'T',
                 version: 2,
