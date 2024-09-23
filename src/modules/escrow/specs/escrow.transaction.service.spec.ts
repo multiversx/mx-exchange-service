@@ -99,7 +99,7 @@ describe('EscrowTransactionService', () => {
                 sender: senderAddress,
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
             }),
         );
     });
@@ -132,7 +132,7 @@ describe('EscrowTransactionService', () => {
                 senderUsername: undefined,
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
                 guardian: undefined,
                 guardianSignature: undefined,
             }),
@@ -168,7 +168,7 @@ describe('EscrowTransactionService', () => {
                 senderUsername: undefined,
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
                 guardian: undefined,
                 guardianSignature: undefined,
             }),

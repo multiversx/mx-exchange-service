@@ -59,7 +59,7 @@ describe('DistributionTransactionsService', () => {
                 senderUsername: undefined,
                 signature: undefined,
                 value: '0',
-                version: 1,
+                version: 2,
                 guardian: undefined,
                 guardianSignature: undefined,
             }),
