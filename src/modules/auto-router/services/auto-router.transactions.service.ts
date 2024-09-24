@@ -3,6 +3,7 @@ import {
     AddressValue,
     BigUIntValue,
     BytesValue,
+    CompositeValue,
     TokenTransfer,
     TypedValue,
 } from '@multiversx/sdk-core';
@@ -117,12 +118,12 @@ export class AutoRouterTransactionService {
                 .integerValue();
 
             swaps.push(
-                ...[
+                CompositeValue.fromItems(
                     new AddressValue(Address.fromString(address)),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(amountOutMin),
-                ],
+                ),
             );
         }
         return swaps;

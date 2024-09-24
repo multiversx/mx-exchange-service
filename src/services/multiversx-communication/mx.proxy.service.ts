@@ -254,11 +254,33 @@ export class MXProxyService {
         );
     }
 
+    async getPositionCreatorContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.positionCreator,
+            abiConfig.positionCreator,
+            'AutoPosCreator',
+            options,
+        );
+    }
+
     async getLockedTokenPositionCreatorContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.lockedTokenPositionCreator,
             abiConfig.lockedTokenPositionCreator,
             'LockedTokenPosCreatorContract',
+        );
+    }
+
+    async getLockedTokenPositionCreatorContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.lockedTokenPositionCreator,
+            abiConfig.lockedTokenPositionCreator,
+            'LockedTokenPosCreatorContract',
+            options,
         );
     }
 

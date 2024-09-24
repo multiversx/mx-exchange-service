@@ -2,11 +2,12 @@ import {
     Address,
     AddressValue,
     BigUIntValue,
-    Interaction,
+    Token,
     TokenTransfer,
     TypedValue,
     U64Value,
-} from '@multiversx/sdk-core/out';
+    VariadicValue,
+} from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -29,6 +30,7 @@ import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class PositionCreatorTransactionService {
@@ -75,53 +77,52 @@ export class PositionCreatorTransactionService {
                 swapRoutes[swapRoutes.length - 1],
             );
 
-        const contract = lockEpochs
-            ? await this.mxProxy.getLockedTokenPositionCreatorContract()
-            : await this.mxProxy.getPostitionCreatorContract();
-
-        let interaction: Interaction;
-
-        if (lockEpochs) {
-            interaction = contract.methodsExplicit.createPairPosFromSingleToken(
-                [
-                    new U64Value(new BigNumber(lockEpochs)),
-                    new BigUIntValue(amount0Min),
-                    new BigUIntValue(amount1Min),
-                    ...swapRouteArgs,
-                ],
-            );
-        } else {
-            interaction = contract.methodsExplicit.createLpPosFromSingleToken([
-                new AddressValue(Address.fromBech32(pairAddress)),
-                new BigUIntValue(amount0Min),
-                new BigUIntValue(amount1Min),
-                ...swapRouteArgs,
-            ]);
-        }
-
         const gasLimit =
             gasConfig.positionCreator.singleToken.liquidityPosition +
             gasConfig.pairs.addLiquidity +
             gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
                 swapRoutes[0].pairs.length;
 
-        interaction = interaction
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID);
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasLimit,
+            function: 'createLpPosFromSingleToken',
+            arguments: [
+                new AddressValue(Address.newFromBech32(pairAddress)),
+                new BigUIntValue(amount0Min),
+                new BigUIntValue(amount1Min),
+                VariadicValue.fromItems(...swapRouteArgs),
+            ],
+        });
 
         if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
-            interaction = interaction.withValue(new BigNumber(payment.amount));
+            transactionOptions.nativeTransferAmount = payment.amount;
         } else {
-            interaction = interaction.withSingleESDTTransfer(
-                TokenTransfer.fungibleFromBigInteger(
-                    payment.tokenIdentifier,
-                    new BigNumber(payment.amount),
-                ),
+            transactionOptions.tokenTransfers = [
+                new TokenTransfer({
+                    token: new Token({
+                        identifier: payment.tokenIdentifier,
+                    }),
+                    amount: BigInt(payment.amount),
+                }),
+            ];
+        }
+
+        if (lockEpochs) {
+            transactionOptions.function = 'createPairPosFromSingleToken';
+            transactionOptions.arguments[0] = new U64Value(
+                new BigNumber(lockEpochs),
             );
         }
 
-        const transaction = interaction.buildTransaction().toPlainObject();
+        const transaction = lockEpochs
+            ? await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+                  transactionOptions,
+              )
+            : await this.mxProxy.getPositionCreatorContractTransaction(
+                  transactionOptions,
+              );
 
         return [transaction];
     }
@@ -173,27 +174,6 @@ export class PositionCreatorTransactionService {
                 swapRoutes[swapRoutes.length - 1],
             );
 
-        const contract = lockEpochs
-            ? await this.mxProxy.getLockedTokenPositionCreatorContract()
-            : await this.mxProxy.getPostitionCreatorContract();
-
-        let endpointArgs: TypedValue[];
-        if (lockEpochs) {
-            endpointArgs = [
-                new U64Value(new BigNumber(lockEpochs)),
-                new BigUIntValue(amount0Min),
-                new BigUIntValue(amount1Min),
-                ...swapRouteArgs,
-            ];
-        } else {
-            endpointArgs = [
-                new AddressValue(Address.fromBech32(farmAddress)),
-                new BigUIntValue(amount0Min),
-                new BigUIntValue(amount1Min),
-                ...swapRouteArgs,
-            ];
-        }
-
         const gasLimit =
             gasConfig.positionCreator.singleToken.farmPosition +
             gasConfig.pairs.addLiquidity +
@@ -201,36 +181,56 @@ export class PositionCreatorTransactionService {
             gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
                 swapRoutes[0].pairs.length;
 
-        let interaction = contract.methodsExplicit
-            .createFarmPosFromSingleToken(endpointArgs)
-            .withSender(Address.fromBech32(sender))
-            .withChainID(mxConfig.chainID)
-            .withGasLimit(gasLimit);
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasLimit,
+            function: 'createFarmPosFromSingleToken',
+            arguments: [
+                new AddressValue(Address.newFromBech32(farmAddress)),
+                new BigUIntValue(amount0Min),
+                new BigUIntValue(amount1Min),
+                VariadicValue.fromItems(...swapRouteArgs),
+            ],
+        });
+
+        if (lockEpochs) {
+            transactionOptions.arguments[0] = new U64Value(
+                new BigNumber(lockEpochs),
+            );
+        }
 
         if (
             payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
             payments.length === 1
         ) {
-            interaction = interaction.withValue(
-                new BigNumber(payments[0].amount),
-            );
+            transactionOptions.nativeTransferAmount = payments[0].amount;
         } else {
             payments[0].tokenIdentifier =
                 payments[0].tokenIdentifier === mxConfig.EGLDIdentifier
                     ? wrappedEgldTokenID
                     : payments[0].tokenIdentifier;
-            interaction = interaction.withMultiESDTNFTTransfer(
-                payments.map((payment) =>
-                    TokenTransfer.metaEsdtFromBigInteger(
-                        payment.tokenIdentifier,
-                        payment.tokenNonce,
-                        new BigNumber(payment.amount),
-                    ),
-                ),
+            transactionOptions.tokenTransfers = payments.map(
+                (payment) =>
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenIdentifier,
+                            nonce: BigInt(payment.tokenNonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
             );
         }
 
-        transactions.push(interaction.buildTransaction().toPlainObject());
+        const transaction = lockEpochs
+            ? await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+                  transactionOptions,
+              )
+            : await this.mxProxy.getPositionCreatorContractTransaction(
+                  transactionOptions,
+              );
+
+        transactions.push(transaction);
         return transactions;
     }
 
@@ -290,8 +290,6 @@ export class PositionCreatorTransactionService {
                       swapRoutes[swapRoutes.length - 1],
                   );
 
-        const contract = await this.mxProxy.getPostitionCreatorContract();
-
         let gasLimit =
             gasConfig.positionCreator.singleToken.dualFarmPosition +
             gasConfig.pairs.addLiquidity +
@@ -305,41 +303,47 @@ export class PositionCreatorTransactionService {
                   gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
                       swapRoutes[0].pairs.length;
 
-        let interaction = contract.methodsExplicit
-            .createMetastakingPosFromSingleToken([
-                new AddressValue(Address.fromBech32(stakingProxyAddress)),
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasLimit,
+            function: 'createMetastakingPosFromSingleToken',
+            arguments: [
+                new AddressValue(Address.newFromBech32(stakingProxyAddress)),
                 new BigUIntValue(amount0Min),
                 new BigUIntValue(amount1Min),
-                ...swapRouteArgs,
-            ])
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID);
+                VariadicValue.fromItems(...swapRouteArgs),
+            ],
+        });
 
         if (
             payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
             payments.length === 1
         ) {
-            interaction = interaction.withValue(
-                new BigNumber(payments[0].amount),
-            );
+            transactionOptions.nativeTransferAmount = payments[0].amount;
         } else {
             payments[0].tokenIdentifier =
                 payments[0].tokenIdentifier === mxConfig.EGLDIdentifier
                     ? wrappedEgldTokenID
                     : payments[0].tokenIdentifier;
-            interaction = interaction.withMultiESDTNFTTransfer(
-                payments.map((payment) =>
-                    TokenTransfer.metaEsdtFromBigInteger(
-                        payment.tokenIdentifier,
-                        payment.tokenNonce,
-                        new BigNumber(payment.amount),
-                    ),
-                ),
+            transactionOptions.tokenTransfers = payments.map(
+                (payment) =>
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenIdentifier,
+                            nonce: BigInt(payment.tokenNonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
             );
         }
 
-        transactions.push(interaction.buildTransaction().toPlainObject());
+        const transaction =
+            await this.mxProxy.getPositionCreatorContractTransaction(
+                transactionOptions,
+            );
+
+        transactions.push(transaction);
         return transactions;
     }
 
@@ -387,10 +391,13 @@ export class PositionCreatorTransactionService {
             gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
                 swapRoute.pairs.length;
 
-        const contract = await this.mxProxy.getPostitionCreatorContract();
-        let interaction = contract.methodsExplicit
-            .createFarmStakingPosFromSingleToken([
-                new AddressValue(Address.fromBech32(stakingAddress)),
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasLimit,
+            function: 'createFarmStakingPosFromSingleToken',
+            arguments: [
+                new AddressValue(Address.newFromBech32(stakingAddress)),
                 new BigUIntValue(
                     new BigNumber(
                         swapRoute.intermediaryAmounts[
@@ -398,36 +405,38 @@ export class PositionCreatorTransactionService {
                         ],
                     ),
                 ),
-                ...multiSwapArgs,
-            ])
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID);
+                VariadicValue.fromItems(...multiSwapArgs),
+            ],
+        });
 
         if (
             payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
             payments.length === 1
         ) {
-            interaction = interaction.withValue(
-                new BigNumber(payments[0].amount),
-            );
+            transactionOptions.nativeTransferAmount = payments[0].amount;
         } else {
             payments[0].tokenIdentifier =
                 payments[0].tokenIdentifier === mxConfig.EGLDIdentifier
                     ? wrappedEgldTokenID
                     : payments[0].tokenIdentifier;
-            interaction = interaction.withMultiESDTNFTTransfer(
-                payments.map((payment) =>
-                    TokenTransfer.metaEsdtFromBigInteger(
-                        payment.tokenIdentifier,
-                        payment.tokenNonce,
-                        new BigNumber(payment.amount),
-                    ),
-                ),
+            transactionOptions.tokenTransfers = payments.map(
+                (payment) =>
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenIdentifier,
+                            nonce: BigInt(payment.tokenNonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
             );
         }
 
-        transactions.push(interaction.buildTransaction().toPlainObject());
+        const transaction =
+            await this.mxProxy.getPositionCreatorContractTransaction(
+                transactionOptions,
+            );
+
+        transactions.push(transaction);
         return transactions;
     }
 
@@ -536,37 +545,46 @@ export class PositionCreatorTransactionService {
             ? gasConfig.positionCreator.dualTokens.farmPositionProxy
             : gasConfig.positionCreator.dualTokens.farmPosition;
 
-        const contract = isLockedToken
-            ? await this.mxProxy.getLockedTokenPositionCreatorContract()
-            : await this.mxProxy.getPostitionCreatorContract();
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasLimit,
+            function: 'createFarmPosFromTwoTokens',
+            arguments: endpointArgs,
+            tokenTransfers: [
+                new TokenTransfer({
+                    token: new Token({
+                        identifier: firstPayment.tokenIdentifier,
+                    }),
+                    amount: BigInt(firstPayment.amount),
+                }),
+                new TokenTransfer({
+                    token: new Token({
+                        identifier: secondPayment.tokenIdentifier,
+                        nonce: BigInt(secondPayment.tokenNonce),
+                    }),
+                    amount: BigInt(secondPayment.amount),
+                }),
+                ...payments.slice(2).map(
+                    (payment) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: payment.tokenIdentifier,
+                                nonce: BigInt(payment.tokenNonce),
+                            }),
+                            amount: BigInt(payment.amount),
+                        }),
+                ),
+            ],
+        });
 
-        const transaction = contract.methodsExplicit
-            .createFarmPosFromTwoTokens(endpointArgs)
-            .withMultiESDTNFTTransfer([
-                TokenTransfer.fungibleFromBigInteger(
-                    firstPayment.tokenIdentifier,
-                    new BigNumber(firstPayment.amount),
-                ),
-                TokenTransfer.metaEsdtFromBigInteger(
-                    secondPayment.tokenIdentifier,
-                    secondPayment.tokenNonce,
-                    new BigNumber(secondPayment.amount),
-                ),
-                ...payments
-                    .slice(2)
-                    .map((payment) =>
-                        TokenTransfer.metaEsdtFromBigInteger(
-                            payment.tokenIdentifier,
-                            payment.tokenNonce,
-                            new BigNumber(payment.amount),
-                        ),
-                    ),
-            ])
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        const transaction = isLockedToken
+            ? await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+                  transactionOptions,
+              )
+            : await this.mxProxy.getPositionCreatorContractTransaction(
+                  transactionOptions,
+              );
 
         transactions.push(transaction);
 
@@ -630,41 +648,48 @@ export class PositionCreatorTransactionService {
             .multipliedBy(1 - tolerance)
             .integerValue();
 
-        const contract = await this.mxProxy.getPostitionCreatorContract();
-
-        const interaction = contract.methodsExplicit
-            .createMetastakingPosFromTwoTokens([
-                new AddressValue(Address.fromBech32(stakingProxyAddress)),
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasConfig.positionCreator.dualTokens.dualFarmPosition,
+            function: 'createMetastakingPosFromTwoTokens',
+            arguments: [
+                new AddressValue(Address.newFromBech32(stakingProxyAddress)),
                 new BigUIntValue(amount0Min),
                 new BigUIntValue(amount1Min),
-            ])
-            .withMultiESDTNFTTransfer([
-                TokenTransfer.fungibleFromBigInteger(
-                    firstPayment.tokenIdentifier,
-                    new BigNumber(firstPayment.amount),
+            ],
+            tokenTransfers: [
+                new TokenTransfer({
+                    token: new Token({
+                        identifier: firstPayment.tokenIdentifier,
+                    }),
+                    amount: BigInt(firstPayment.amount),
+                }),
+                new TokenTransfer({
+                    token: new Token({
+                        identifier: secondPayment.tokenIdentifier,
+                    }),
+                    amount: BigInt(secondPayment.amount),
+                }),
+                ...payments.slice(2).map(
+                    (payment) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: payment.tokenIdentifier,
+                                nonce: BigInt(payment.tokenNonce),
+                            }),
+                            amount: BigInt(payment.amount),
+                        }),
                 ),
-                TokenTransfer.fungibleFromBigInteger(
-                    secondPayment.tokenIdentifier,
+            ],
+        });
 
-                    new BigNumber(secondPayment.amount),
-                ),
-                ...payments
-                    .slice(2)
-                    .map((payment) =>
-                        TokenTransfer.metaEsdtFromBigInteger(
-                            payment.tokenIdentifier,
-                            payment.tokenNonce,
-                            new BigNumber(payment.amount),
-                        ),
-                    ),
-            ])
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.dualTokens.dualFarmPosition)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        const transaction =
+            await this.mxProxy.getPositionCreatorContractTransaction(
+                transactionOptions,
+            );
 
-        transactions.push(interaction);
+        transactions.push(transaction);
         return transactions;
     }
 
@@ -694,26 +719,30 @@ export class PositionCreatorTransactionService {
             .multipliedBy(1 - tolerance)
             .integerValue();
 
-        const contract = await this.mxProxy.getPostitionCreatorContract();
-
-        return contract.methodsExplicit
-            .exitFarmPos([
-                new AddressValue(Address.fromBech32(farmAddress)),
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasConfig.positionCreator.dualTokens.exitFarm,
+            function: 'exitFarmPos',
+            arguments: [
+                new AddressValue(Address.newFromBech32(farmAddress)),
                 new BigUIntValue(amount0Min),
                 new BigUIntValue(amount1Min),
-            ])
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    payment.tokenIdentifier,
-                    payment.tokenNonce,
-                    new BigNumber(payment.amount),
-                ),
-            )
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasConfig.positionCreator.dualTokens.exitFarm)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+            ],
+            tokenTransfers: [
+                new TokenTransfer({
+                    token: new Token({
+                        identifier: payment.tokenIdentifier,
+                        nonce: BigInt(payment.tokenNonce),
+                    }),
+                    amount: BigInt(payment.amount),
+                }),
+            ],
+        });
+
+        return await this.mxProxy.getPositionCreatorContractTransaction(
+            transactionOptions,
+        );
     }
 
     async createEnergyPosition(
@@ -743,31 +772,37 @@ export class PositionCreatorTransactionService {
             gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
                 swapRoute.pairs.length;
 
-        const contract =
-            await this.mxProxy.getLockedTokenPositionCreatorContract();
-
-        let interaction = contract.methodsExplicit
-            .createEnergyPosition([
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasLimit,
+            function: 'createEnergyPosition',
+            arguments: [
                 new U64Value(new BigNumber(lockEpochs)),
                 new BigUIntValue(amountOutMin),
-                ...swapRouteArgs,
-            ])
-            .withSender(Address.fromBech32(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID);
+                VariadicValue.fromItems(...swapRouteArgs),
+            ],
+        });
 
         if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
-            interaction = interaction.withValue(new BigNumber(payment.amount));
+            transactionOptions.nativeTransferAmount = payment.amount;
         } else {
-            interaction = interaction.withSingleESDTTransfer(
-                TokenTransfer.fungibleFromBigInteger(
-                    payment.tokenIdentifier,
-                    new BigNumber(payment.amount),
-                ),
-            );
+            transactionOptions.tokenTransfers = [
+                new TokenTransfer({
+                    token: new Token({
+                        identifier: payment.tokenIdentifier,
+                    }),
+                    amount: BigInt(payment.amount),
+                }),
+            ];
         }
 
-        return [interaction.buildTransaction().toPlainObject()];
+        const transaction =
+            await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+                transactionOptions,
+            );
+
+        return [transaction];
     }
 
     private async getMinimumAmountsForLiquidity(
