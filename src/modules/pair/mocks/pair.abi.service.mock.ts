@@ -6,6 +6,7 @@ import { FeeDestination } from '../models/pair.model';
 import { PairsData } from './pair.constants';
 import { Address } from '@multiversx/sdk-core/out';
 import { PairAbiService } from '../services/pair.abi.service';
+import { constantsConfig } from 'src/config';
 
 export class PairAbiServiceMock implements IPairAbiService {
     async firstTokenID(pairAddress: string): Promise<string> {
@@ -42,7 +43,7 @@ export class PairAbiServiceMock implements IPairAbiService {
         return [];
     }
     async initialLiquidityAdder(pairAddress: string): Promise<string> {
-        return Address.Zero().bech32();
+        return constantsConfig.TEST_SENDERS[0];
     }
     async state(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).state;

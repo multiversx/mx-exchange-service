@@ -6,7 +6,7 @@ import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.moc
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 import { TransactionModel } from 'src/models/transaction.model';
-import { gasConfig, mxConfig } from 'src/config';
+import { constantsConfig, gasConfig, mxConfig } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { WinstonModule } from 'nest-winston';
 import { ConfigModule } from '@nestjs/config';
@@ -46,7 +46,7 @@ describe('WrapTransactionsService', () => {
             module.get<WrapTransactionsService>(WrapTransactionsService);
         const egldValue = '1000000000000000000';
         const transaction = await service.wrapEgld(
-            Address.Zero().bech32(),
+            constantsConfig.TEST_SENDERS[0],
             egldValue,
         );
 
@@ -59,7 +59,7 @@ describe('WrapTransactionsService', () => {
                 data: encodeTransactionData('wrapEgld'),
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: '',
+                sender: constantsConfig.TEST_SENDERS[0],
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
@@ -77,7 +77,7 @@ describe('WrapTransactionsService', () => {
             module.get<WrapTransactionsService>(WrapTransactionsService);
         const esdtValue = '1000000000000000000';
         const transaction = await service.unwrapEgld(
-            Address.Zero().bech32(),
+            constantsConfig.TEST_SENDERS[0],
             esdtValue,
         );
 
@@ -92,7 +92,7 @@ describe('WrapTransactionsService', () => {
                 ),
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: '',
+                sender: constantsConfig.TEST_SENDERS[0],
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,

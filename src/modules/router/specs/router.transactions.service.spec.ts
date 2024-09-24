@@ -9,7 +9,7 @@ import { RouterService } from '../services/router.service';
 import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
-import { mxConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig, constantsConfig } from 'src/config';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
@@ -545,7 +545,7 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setSwapEnabledByUser(
-            Address.Zero().bech32(),
+            constantsConfig.TEST_SENDERS[0],
             new InputTokenModel({
                 tokenID: 'LKESDT-123456',
                 nonce: 1,
@@ -558,8 +558,8 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.Zero().bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            receiver: constantsConfig.TEST_SENDERS[0],
+            sender: constantsConfig.TEST_SENDERS[0],
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.swapEnableByUser,
             data: encodeTransactionData(
