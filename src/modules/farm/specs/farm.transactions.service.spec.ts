@@ -785,7 +785,7 @@ describe('FarmService', () => {
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: gasConfig.farms.admin.mergeFarmTokensMultiplier * 2,
+            gasLimit: gasConfig.farms['v1.3'].mergeFarmTokensMultiplier * 2,
             data: encodeTransactionData(
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5@02@EGLDMEXFL-abcdef@@01000000000000@EGLDMEXFL-abcdef@@01000000000000@mergeFarmTokens',
             ),
