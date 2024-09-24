@@ -92,8 +92,8 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'WEGLD-123456',
-                nonce: 0,
+                tokenID: 'STAKETOK-111111',
+                nonce: 1,
                 amount: '1000',
             }),
         );
@@ -106,7 +106,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.unstakeFarm,
             data: encodeTransactionData(
-                'ESDTTransfer@WEGLD-123456@1000@unstakeFarm',
+                'ESDTNFTTransfer@STAKETOK-111111@01@1000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unstakeFarm',
             ),
             chainID: 'T',
             version: 2,
@@ -124,8 +124,8 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'WEGLD-123456',
-                nonce: 0,
+                tokenID: 'STAKETOK-111111',
+                nonce: 1,
                 amount: '1000000',
             }),
         );
@@ -138,7 +138,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.unbondFarm,
             data: encodeTransactionData(
-                'ESDTTransfer@WEGLD-123456@01000000@unbondFarm',
+                'ESDTNFTTransfer@STAKETOK-111111@01@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unbondFarm',
             ),
             chainID: 'T',
             version: 2,
@@ -156,8 +156,8 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'WEGLD-123456',
-                nonce: 0,
+                tokenID: 'STAKETOK-111111',
+                nonce: 1,
                 amount: '1000000',
             }),
         );
@@ -170,7 +170,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.claimRewards,
             data: encodeTransactionData(
-                'ESDTTransfer@WEGLD-123456@01000000@claimRewards',
+                'ESDTNFTTransfer@STAKETOK-111111@01@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
             ),
             chainID: 'T',
             version: 2,
@@ -188,8 +188,8 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'WEGLD-123456',
-                nonce: 0,
+                tokenID: 'STAKETOK-111111',
+                nonce: 1,
                 amount: '1000000',
             }),
         );
@@ -202,7 +202,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.compoundRewards,
             data: encodeTransactionData(
-                'ESDTTransfer@WEGLD-123456@01000000@compoundRewards',
+                'ESDTNFTTransfer@STAKETOK-111111@01@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@compoundRewards',
             ),
             chainID: 'T',
             version: 2,
