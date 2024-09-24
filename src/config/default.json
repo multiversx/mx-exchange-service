@@ -393,7 +393,7 @@
             "claimRewards": 40000000,
             "claimBoostedRewards": 30000000,
             "claimRewardsWithNewValue": 7500000,
-            "compoundRewards": 10000000,
+            "compoundRewards": 40000000,
             "mergeTokens": 20000000,
             "admin": {
                 "setState": 20000000,
