@@ -95,7 +95,7 @@ describe('RouterService', () => {
                 'createPair@TOK3-3333@TOK4-123456@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -128,7 +128,7 @@ describe('RouterService', () => {
                 'issueLpToken@erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2@LiquidityPoolToken3@LPT-3333',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -181,7 +181,7 @@ describe('RouterService', () => {
                 ).bech32()}`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -213,7 +213,7 @@ describe('RouterService', () => {
                 'pause@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -249,7 +249,7 @@ describe('RouterService', () => {
                 ).bech32()}`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -287,7 +287,7 @@ describe('RouterService', () => {
                 ).bech32()}@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -325,7 +325,7 @@ describe('RouterService', () => {
                 ).bech32()}@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -358,7 +358,7 @@ describe('RouterService', () => {
                 'setLocalRolesOwner@WEGLD-123456@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -388,7 +388,7 @@ describe('RouterService', () => {
             gasLimit: gasConfig.router.admin.removePair,
             data: encodeTransactionData('removePair@WEGLD-123456@USDC-123456'),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -415,7 +415,7 @@ describe('RouterService', () => {
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@01'),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -442,7 +442,7 @@ describe('RouterService', () => {
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@'),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -469,7 +469,7 @@ describe('RouterService', () => {
             gasLimit: gasConfig.router.admin.clearPairTemporaryOwnerStorage,
             data: 'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -500,7 +500,7 @@ describe('RouterService', () => {
                 'setTemporaryOwnerPeriod@1000000000000000000000000000000000',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -531,7 +531,7 @@ describe('RouterService', () => {
                 'setPairTemplateAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -547,7 +547,7 @@ describe('RouterService', () => {
         const transaction = await service.setSwapEnabledByUser(
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'LKESDT-1234',
+                tokenID: 'LKESDT-123456',
                 nonce: 1,
                 amount: '10000000000',
                 attributes:
@@ -563,14 +563,14 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.swapEnableByUser,
             data: encodeTransactionData(
-                `ESDTNFTTransfer@LKESDT-1234@01@10000000000@${Address.fromHex(
+                `ESDTNFTTransfer@LKESDT-123456@01@10000000000@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000011',
                 ).bech32()}@setSwapEnabledByUser@${Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',
                 ).bech32()}`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
         });
@@ -587,7 +587,7 @@ describe('RouterService', () => {
                 service.setSwapEnabledByUser(
                     Address.Zero().bech32(),
                     new InputTokenModel({
-                        tokenID: 'LKESDT-1234',
+                        tokenID: 'LKESDT-123456',
                         nonce: 1,
                         amount: '1000000000000000000',
                         attributes:
@@ -655,7 +655,7 @@ describe('RouterService', () => {
                 service.setSwapEnabledByUser(
                     Address.Zero().bech32(),
                     new InputTokenModel({
-                        tokenID: 'LKESDT-1234',
+                        tokenID: 'LKESDT-123456',
                         nonce: 1,
                         amount: '1000000000000000000',
                         attributes:
@@ -678,7 +678,7 @@ describe('RouterService', () => {
                 service.setSwapEnabledByUser(
                     Address.Zero().bech32(),
                     new InputTokenModel({
-                        tokenID: 'LKESDT-1234',
+                        tokenID: 'LKESDT-123456',
                         nonce: 1,
                         amount: '1000',
                         attributes:

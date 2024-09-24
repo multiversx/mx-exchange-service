@@ -20,8 +20,6 @@ import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/r
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
-import { encodeTransactionData } from 'src/helpers/helpers';
-import { gasConfig } from 'src/config';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
@@ -285,7 +283,7 @@ describe('AutoRouterService', () => {
                 gasLimit: 40200000,
                 data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNzExNzJhY2UwMjZiMGM0QEBAMDJAMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDcxMTcyYWNlMDI2YjBjNA==',
                 chainID: 'T',
-                version: 1,
+                version: 2,
                 options: undefined,
                 signature: undefined,
                 guardian: undefined,
@@ -340,7 +338,7 @@ describe('AutoRouterService', () => {
                 gasLimit: 75200000,
                 data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDcwY2VmOWY1ZWRmY2YyOEA2MzZmNmQ3MDZmNzM2NTU0NjE3MzZiNzNAMDAwMDAwMDQ0NTQ3NGM0NDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODA2ZjA1YjU5ZDNiMjAwMDBAMDNAMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEzMDAwMDAwMTU3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzQwMDAwMDAwYzU3NDU0NzRjNDQyZDMxMzIzMzM0MzUzNjAwMDAwMDA1OTJhZmQ4YjAyZjAwMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMjAwMDAwMDE1NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NGY3NTc0NzA3NTc0MDAwMDAwMGE0ZDQ1NTgyZDMxMzIzMzM0MzUzNjAwMDAwMDA4MDZmMDViNTlkM2IyMDAwMEAwMUA=',
                 chainID: 'T',
-                version: 1,
+                version: 2,
                 options: undefined,
                 signature: undefined,
                 guardian: undefined,

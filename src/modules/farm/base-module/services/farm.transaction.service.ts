@@ -273,7 +273,7 @@ export abstract class TransactionsFarmService {
             .withMultiESDTNFTTransfer(mappedPayments)
             .withSender(Address.fromString(sender))
             .withGasLimit(
-                gasConfig.farms.admin.mergeFarmTokensMultiplier *
+                gasConfig.farms['v1.3'].mergeFarmTokensMultiplier *
                     payments.length,
             )
             .withChainID(mxConfig.chainID)
