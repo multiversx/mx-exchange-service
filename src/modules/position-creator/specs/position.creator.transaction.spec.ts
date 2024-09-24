@@ -41,6 +41,9 @@ import { FarmVersion } from 'src/modules/farm/models/farm.model';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeEach(async () => {
         module = await Test.createTestingModule({
@@ -517,7 +520,7 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transactions = await service.createFarmPositionSingleToken(
-                constantsConfig.TEST_SENDERS[0],
+                senderAddress,
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
@@ -549,7 +552,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '100000000000000000000',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -565,8 +568,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: constantsConfig.TEST_SENDERS[0],
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    receiver: senderAddress,
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1021,7 +1024,7 @@ describe('PositionCreatorTransaction', () => {
             );
 
             const transaction = await service.createDualFarmPositionSingleToken(
-                constantsConfig.TEST_SENDERS[0],
+                senderAddress,
                 Address.Zero().bech32(),
                 [
                     new EsdtTokenPayment({
@@ -1052,7 +1055,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '100000000000000000000',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1068,8 +1071,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: constantsConfig.TEST_SENDERS[0],
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    receiver: senderAddress,
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1425,7 +1428,7 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transaction = await service.createStakingPositionSingleToken(
-                constantsConfig.TEST_SENDERS[0],
+                senderAddress,
                 Address.Zero().bech32(),
                 swapRoutes.swaps[0],
                 [
@@ -1454,7 +1457,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '100000000000000000000',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1470,8 +1473,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: constantsConfig.TEST_SENDERS[0],
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    receiver: senderAddress,
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1720,7 +1723,7 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transactions = await service.createFarmPositionDualTokens(
-                constantsConfig.TEST_SENDERS[0],
+                senderAddress,
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
@@ -1750,7 +1753,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '100000000000000000000',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1766,8 +1769,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: constantsConfig.TEST_SENDERS[0],
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    receiver: senderAddress,
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -2137,7 +2140,7 @@ describe('PositionCreatorTransaction', () => {
             );
 
             const transactions = await service.createDualFarmPositionDualTokens(
-                constantsConfig.TEST_SENDERS[0],
+                senderAddress,
                 Address.Zero().bech32(),
                 [
                     new EsdtTokenPayment({
@@ -2165,7 +2168,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '100000000000000000000',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -2181,8 +2184,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: constantsConfig.TEST_SENDERS[0],
-                    sender: constantsConfig.TEST_SENDERS[0],
+                    receiver: senderAddress,
+                    sender: senderAddress,
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,

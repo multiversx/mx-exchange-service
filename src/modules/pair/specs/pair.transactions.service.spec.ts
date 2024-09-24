@@ -8,7 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
-import { mxConfig, gasConfig, constantsConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
@@ -24,6 +24,9 @@ import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.a
 
 describe('TransactionPairService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -71,27 +74,24 @@ describe('TransactionPairService', () => {
         );
 
         const initialLiquidityBatchTransactions =
-            await service.addInitialLiquidityBatch(
-                constantsConfig.TEST_SENDERS[0],
-                {
-                    pairAddress: Address.fromHex(
-                        '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
-                    tokens: [
-                        {
-                            tokenID: 'MEX-123456',
-                            nonce: 0,
-                            amount: firstTokenAmount,
-                        },
-                        {
-                            tokenID: 'EGLD',
-                            nonce: 0,
-                            amount: secondTokenAmount,
-                        },
-                    ],
-                    tolerance: 0.01,
-                },
-            );
+            await service.addInitialLiquidityBatch(senderAddress, {
+                pairAddress: Address.fromHex(
+                    '0000000000000000000000000000000000000000000000000000000000000012',
+                ).bech32(),
+                tokens: [
+                    {
+                        tokenID: 'MEX-123456',
+                        nonce: 0,
+                        amount: firstTokenAmount,
+                    },
+                    {
+                        tokenID: 'EGLD',
+                        nonce: 0,
+                        amount: secondTokenAmount,
+                    },
+                ],
+                tolerance: 0.01,
+            });
 
         const [wrapEgldTransaction, addLiquidityTransaction] =
             initialLiquidityBatchTransactions;
@@ -101,7 +101,7 @@ describe('TransactionPairService', () => {
             value: secondTokenAmount,
             receiver:
                 'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-            sender: constantsConfig.TEST_SENDERS[0],
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -117,8 +117,8 @@ describe('TransactionPairService', () => {
         expect(addLiquidityTransaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: constantsConfig.TEST_SENDERS[0],
-            sender: constantsConfig.TEST_SENDERS[0],
+            receiver: senderAddress,
+            sender: senderAddress,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
@@ -142,7 +142,7 @@ describe('TransactionPairService', () => {
         );
 
         const addLiquidityTransaction = await service.addInitialLiquidity(
-            constantsConfig.TEST_SENDERS[0],
+            senderAddress,
             {
                 pairAddress: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
@@ -165,8 +165,8 @@ describe('TransactionPairService', () => {
         expect(addLiquidityTransaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: constantsConfig.TEST_SENDERS[0],
-            sender: constantsConfig.TEST_SENDERS[0],
+            receiver: senderAddress,
+            sender: senderAddress,
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
@@ -240,7 +240,7 @@ describe('TransactionPairService', () => {
         );
 
         const liquidityBatchTransactions = await service.addLiquidityBatch(
-            constantsConfig.TEST_SENDERS[0],
+            senderAddress,
             {
                 pairAddress: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
@@ -267,7 +267,7 @@ describe('TransactionPairService', () => {
             value: '10',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-            sender: constantsConfig.TEST_SENDERS[0],
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -283,8 +283,8 @@ describe('TransactionPairService', () => {
         expect(addLiquidity).toEqual({
             nonce: 0,
             value: '0',
-            receiver: constantsConfig.TEST_SENDERS[0],
-            sender: constantsConfig.TEST_SENDERS[0],
+            receiver: senderAddress,
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -312,7 +312,7 @@ describe('TransactionPairService', () => {
         );
 
         const liquidityBatchTransactions = await service.addLiquidityBatch(
-            constantsConfig.TEST_SENDERS[0],
+            senderAddress,
             {
                 pairAddress: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
@@ -340,7 +340,7 @@ describe('TransactionPairService', () => {
             value: secondTokenAmount,
             receiver:
                 'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-            sender: constantsConfig.TEST_SENDERS[0],
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -356,8 +356,8 @@ describe('TransactionPairService', () => {
         expect(addLiquidity).toEqual({
             nonce: 0,
             value: '0',
-            receiver: constantsConfig.TEST_SENDERS[0],
-            sender: constantsConfig.TEST_SENDERS[0],
+            receiver: senderAddress,
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -381,17 +381,14 @@ describe('TransactionPairService', () => {
             PairTransactionService,
         );
 
-        const transactions = await service.removeLiquidity(
-            constantsConfig.TEST_SENDERS[0],
-            {
-                pairAddress: Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
-                liquidity: '10',
-                liquidityTokenID: 'EGLD',
-                tolerance: 0.01,
-            },
-        );
+        const transactions = await service.removeLiquidity(senderAddress, {
+            pairAddress: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+            liquidity: '10',
+            liquidityTokenID: 'EGLD',
+            tolerance: 0.01,
+        });
 
         expect(transactions).toEqual([
             {
@@ -420,7 +417,7 @@ describe('TransactionPairService', () => {
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: constantsConfig.TEST_SENDERS[0],
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,

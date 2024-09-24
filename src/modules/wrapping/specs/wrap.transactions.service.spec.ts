@@ -6,7 +6,7 @@ import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.moc
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 import { TransactionModel } from 'src/models/transaction.model';
-import { constantsConfig, gasConfig, mxConfig } from 'src/config';
+import { gasConfig, mxConfig } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { WinstonModule } from 'nest-winston';
 import { ConfigModule } from '@nestjs/config';
@@ -15,6 +15,9 @@ import winston from 'winston';
 
 describe('WrapTransactionsService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -45,10 +48,7 @@ describe('WrapTransactionsService', () => {
         const service: WrapTransactionsService =
             module.get<WrapTransactionsService>(WrapTransactionsService);
         const egldValue = '1000000000000000000';
-        const transaction = await service.wrapEgld(
-            constantsConfig.TEST_SENDERS[0],
-            egldValue,
-        );
+        const transaction = await service.wrapEgld(senderAddress, egldValue);
 
         expect(transaction).toEqual(
             new TransactionModel({
@@ -59,7 +59,7 @@ describe('WrapTransactionsService', () => {
                 data: encodeTransactionData('wrapEgld'),
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: constantsConfig.TEST_SENDERS[0],
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
@@ -76,10 +76,7 @@ describe('WrapTransactionsService', () => {
         const service: WrapTransactionsService =
             module.get<WrapTransactionsService>(WrapTransactionsService);
         const esdtValue = '1000000000000000000';
-        const transaction = await service.unwrapEgld(
-            constantsConfig.TEST_SENDERS[0],
-            esdtValue,
-        );
+        const transaction = await service.unwrapEgld(senderAddress, esdtValue);
 
         expect(transaction).toEqual(
             new TransactionModel({
@@ -92,7 +89,7 @@ describe('WrapTransactionsService', () => {
                 ),
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: constantsConfig.TEST_SENDERS[0],
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,

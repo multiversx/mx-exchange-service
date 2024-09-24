@@ -34,11 +34,6 @@
         "COMPOUND_TRANSACTION_FEE": 0.1,
         "roundedSwapEnable": {
             "USDC-123456": "5000000"
-        },
-        "TEST_SENDERS": [
-            "erd1pwms7rl39twpjwgl8kzq4artpr9ynygv2pp0xjcx0nctyh66a0es2vam76",
-            "erd18ha5ndfgzzl55hddvrx7fvn8h66sd4kk8m3au4rnk66ydy2x2jwsk9uh9n",
-            "erd14p5yf6trmxckpa3e9qr5emmtpv6hlvmdca3emq909n44x4mv4wnsu6ycqf"
-        ]
+        }
     }
 }
