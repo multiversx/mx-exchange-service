@@ -87,6 +87,18 @@ export class MXProxyService {
         );
     }
 
+    async getWrapSmartContractTransaction(
+        shardID = 1,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.wrappingAddress.get(`shardID-${shardID}`),
+            abiConfig.wrap,
+            'EgldEsdtSwap',
+            options,
+        );
+    }
+
     async getFarmSmartContract(farmAddress: string): Promise<SmartContract> {
         const version = farmVersion(farmAddress);
         const type = farmType(farmAddress);
