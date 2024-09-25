@@ -440,19 +440,16 @@ describe('TransactionPairService', () => {
             PairTransactionService,
         );
 
-        const transactions = await service.swapTokensFixedInput(
-            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            {
-                pairAddress: Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
-                tokenInID: 'EGLD',
-                tokenOutID: 'MEX-123456',
-                amountIn: '5',
-                amountOut: '5',
-                tolerance: 0.01,
-            },
-        );
+        const transactions = await service.swapTokensFixedInput(senderAddress, {
+            pairAddress: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+            tokenInID: 'EGLD',
+            tokenOutID: 'MEX-123456',
+            amountIn: '5',
+            amountOut: '5',
+            tolerance: 0.01,
+        });
 
         expect(transactions).toEqual({
             chainID: 'T',
@@ -465,7 +462,7 @@ describe('TransactionPairService', () => {
             options: undefined,
             receiver: Address.Zero().bech32(),
             receiverUsername: undefined,
-            sender: '',
+            sender: senderAddress,
             senderUsername: undefined,
             signature: undefined,
             value: '5',
@@ -478,24 +475,21 @@ describe('TransactionPairService', () => {
             PairTransactionService,
         );
 
-        const transaction = await service.swapTokensFixedOutput(
-            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            {
-                pairAddress: Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
-                tokenInID: 'MEX-123456',
-                tokenOutID: 'EGLD',
-                amountIn: '5',
-                amountOut: '5',
-            },
-        );
+        const transaction = await service.swapTokensFixedOutput(senderAddress, {
+            pairAddress: Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+            tokenInID: 'MEX-123456',
+            tokenOutID: 'EGLD',
+            amountIn: '5',
+            amountOut: '5',
+        });
 
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
             receiver: Address.Zero().bech32(),
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
