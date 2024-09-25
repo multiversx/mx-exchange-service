@@ -303,6 +303,17 @@ export class MXProxyService {
         );
     }
 
+    async getComposableTasksContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.composableTasks,
+            abiConfig.composableTasks,
+            'ComposableTasksContract',
+            options,
+        );
+    }
+
     async getSmartContract(
         contractAddress: string,
         contractAbiPath: string,

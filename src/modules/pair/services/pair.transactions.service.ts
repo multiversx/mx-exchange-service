@@ -315,6 +315,7 @@ export class PairTransactionService {
 
         if (args.tokenInID === mxConfig.EGLDIdentifier) {
             return this.composableTasksTransaction.wrapEgldAndSwapTransaction(
+                sender,
                 args.amountIn,
                 args.tokenOutID,
                 amountOutMin.toFixed(),
@@ -324,6 +325,7 @@ export class PairTransactionService {
 
         if (args.tokenOutID === mxConfig.EGLDIdentifier) {
             return this.composableTasksTransaction.swapAndUnwrapEgldTransaction(
+                sender,
                 new EsdtTokenPayment({
                     tokenIdentifier: args.tokenInID,
                     tokenNonce: 0,
@@ -384,6 +386,7 @@ export class PairTransactionService {
 
         if (args.tokenInID === mxConfig.EGLDIdentifier) {
             return this.composableTasksTransaction.wrapEgldAndSwapTransaction(
+                sender,
                 args.amountIn,
                 args.tokenOutID,
                 args.amountOut,
@@ -393,6 +396,7 @@ export class PairTransactionService {
 
         if (args.tokenOutID === mxConfig.EGLDIdentifier) {
             return this.composableTasksTransaction.swapAndUnwrapEgldTransaction(
+                sender,
                 new EsdtTokenPayment({
                     tokenIdentifier: args.tokenInID,
                     tokenNonce: 0,
