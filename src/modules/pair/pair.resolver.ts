@@ -574,7 +574,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.whitelist(args);
+        return this.transactionService.whitelist(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -584,7 +584,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.removeWhitelist(args);
+        return this.transactionService.removeWhitelist(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -598,6 +598,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.addTrustedSwapPair(
+            user.address,
             pairAddress,
             swapPairAddress,
             firstTokenID,

@@ -6,7 +6,7 @@ import {
     U64Value,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
 import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
-import { Address, TokenTransfer } from '@multiversx/sdk-core';
+import { Address, Token, TokenTransfer } from '@multiversx/sdk-core';
 import { mxConfig, gasConfig, scAddress, constantsConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
@@ -27,6 +27,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { PairComputeService } from './pair.compute.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class PairTransactionService {
@@ -146,27 +147,29 @@ export class PairTransactionService {
             throw new Error('Permanent locked amount must be less than 1 USD');
         }
 
-        const contract = await this.mxProxy.getPairSmartContract(
+        return await this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.pairs.addLiquidity,
+                function: 'addInitialLiquidity',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: firstTokenInput.tokenID,
+                        }),
+                        amount: BigInt(firstTokenInput.amount),
+                    }),
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: secondTokenInput.tokenID,
+                        }),
+                        amount: BigInt(secondTokenInput.amount),
+                    }),
+                ],
+            }),
         );
-
-        return contract.methodsExplicit
-            .addInitialLiquidity()
-            .withMultiESDTNFTTransfer([
-                TokenTransfer.fungibleFromBigInteger(
-                    firstTokenInput.tokenID,
-                    new BigNumber(firstTokenInput.amount),
-                ),
-                TokenTransfer.fungibleFromBigInteger(
-                    secondTokenInput.tokenID,
-                    new BigNumber(secondTokenInput.amount),
-                ),
-            ])
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.pairs.addLiquidity)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     @ErrorLoggerAsync({
@@ -191,32 +194,33 @@ export class PairTransactionService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const contract = await this.mxProxy.getPairSmartContract(
+        return await this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.pairs.addLiquidity,
+                function: 'addLiquidity',
+                arguments: [
+                    new BigUIntValue(amount0Min),
+                    new BigUIntValue(amount1Min),
+                ],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: firstTokenInput.tokenID,
+                        }),
+                        amount: BigInt(firstTokenInput.amount),
+                    }),
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: secondTokenInput.tokenID,
+                        }),
+                        amount: BigInt(secondTokenInput.amount),
+                    }),
+                ],
+            }),
         );
-
-        const endpointArgs: TypedValue[] = [
-            new BigUIntValue(amount0Min),
-            new BigUIntValue(amount1Min),
-        ];
-
-        return contract.methodsExplicit
-            .addLiquidity(endpointArgs)
-            .withMultiESDTNFTTransfer([
-                TokenTransfer.fungibleFromBigInteger(
-                    firstTokenInput.tokenID,
-                    new BigNumber(firstTokenInput.amount),
-                ),
-                TokenTransfer.fungibleFromBigInteger(
-                    secondTokenInput.tokenID,
-                    new BigNumber(secondTokenInput.amount),
-                ),
-            ])
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.pairs.addLiquidity)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async removeLiquidity(
@@ -224,22 +228,16 @@ export class PairTransactionService {
         args: RemoveLiquidityArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const [
-            wrappedTokenID,
-            firstTokenID,
-            secondTokenID,
-            liquidityPosition,
-            contract,
-        ] = await Promise.all([
-            this.wrapAbi.wrappedEgldTokenID(),
-            this.pairAbi.firstTokenID(args.pairAddress),
-            this.pairAbi.secondTokenID(args.pairAddress),
-            this.pairService.getLiquidityPosition(
-                args.pairAddress,
-                args.liquidity,
-            ),
-            this.mxProxy.getPairSmartContract(args.pairAddress),
-        ]);
+        const [wrappedTokenID, firstTokenID, secondTokenID, liquidityPosition] =
+            await Promise.all([
+                this.wrapAbi.wrappedEgldTokenID(),
+                this.pairAbi.firstTokenID(args.pairAddress),
+                this.pairAbi.secondTokenID(args.pairAddress),
+                this.pairService.getLiquidityPosition(
+                    args.pairAddress,
+                    args.liquidity,
+                ),
+            ]);
 
         const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
             .multipliedBy(1 - args.tolerance)
@@ -248,24 +246,28 @@ export class PairTransactionService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const endpointArgs = [
-            new BigUIntValue(amount0Min),
-            new BigUIntValue(amount1Min),
-        ];
-        transactions.push(
-            contract.methodsExplicit
-                .removeLiquidity(endpointArgs)
-                .withSingleESDTTransfer(
-                    TokenTransfer.fungibleFromBigInteger(
-                        args.liquidityTokenID,
-                        new BigNumber(args.liquidity),
-                    ),
-                )
-                .withGasLimit(gasConfig.pairs.removeLiquidity)
-                .withChainID(mxConfig.chainID)
-                .buildTransaction()
-                .toPlainObject(),
+        const transaction = await this.mxProxy.getPairSmartContractTransaction(
+            args.pairAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.pairs.removeLiquidity,
+                function: 'removeLiquidity',
+                arguments: [
+                    new BigUIntValue(amount0Min),
+                    new BigUIntValue(amount1Min),
+                ],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.liquidityTokenID,
+                        }),
+                        amount: BigInt(args.liquidity),
+                    }),
+                ],
+            }),
         );
+        transactions.push(transaction);
 
         switch (wrappedTokenID) {
             case firstTokenID:
@@ -336,31 +338,36 @@ export class PairTransactionService {
             );
         }
 
-        const [contract, trustedSwapPairs] = await Promise.all([
-            this.mxProxy.getPairSmartContract(args.pairAddress),
-            this.pairAbi.trustedSwapPairs(args.pairAddress),
-        ]);
+        const trustedSwapPairs = await this.pairAbi.trustedSwapPairs(
+            args.pairAddress,
+        );
 
         const gasLimit =
             trustedSwapPairs.length === 0
                 ? gasConfig.pairs.swapTokensFixedInput.default
                 : gasConfig.pairs.swapTokensFixedInput.withFeeSwap;
 
-        return contract.methodsExplicit
-            .swapTokensFixedInput([
-                BytesValue.fromUTF8(args.tokenOutID),
-                new BigUIntValue(amountOutMin),
-            ])
-            .withSingleESDTTransfer(
-                TokenTransfer.fungibleFromBigInteger(
-                    args.tokenInID,
-                    new BigNumber(amountIn),
-                ),
-            )
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getPairSmartContractTransaction(
+            args.pairAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasLimit,
+                function: 'swapTokensFixedInput',
+                arguments: [
+                    BytesValue.fromUTF8(args.tokenOutID),
+                    new BigUIntValue(amountOutMin),
+                ],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.tokenInID,
+                        }),
+                        amount: BigInt(amountIn.integerValue().toFixed()),
+                    }),
+                ],
+            }),
+        );
     }
 
     @ErrorLoggerAsync({
@@ -407,31 +414,36 @@ export class PairTransactionService {
             );
         }
 
-        const [contract, trustedSwapPairs] = await Promise.all([
-            this.mxProxy.getPairSmartContract(args.pairAddress),
-            this.pairAbi.trustedSwapPairs(args.pairAddress),
-        ]);
+        const trustedSwapPairs = await this.pairAbi.trustedSwapPairs(
+            args.pairAddress,
+        );
 
         const gasLimit =
             trustedSwapPairs.length === 0
                 ? gasConfig.pairs.swapTokensFixedOutput.default
                 : gasConfig.pairs.swapTokensFixedOutput.withFeeSwap;
 
-        return contract.methodsExplicit
-            .swapTokensFixedOutput([
-                BytesValue.fromUTF8(args.tokenOutID),
-                new BigUIntValue(amountOut),
-            ])
-            .withSingleESDTTransfer(
-                TokenTransfer.fungibleFromBigInteger(
-                    args.tokenInID,
-                    new BigNumber(amountIn),
-                ),
-            )
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getPairSmartContractTransaction(
+            args.pairAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasLimit,
+                function: 'swapTokensFixedOutput',
+                arguments: [
+                    BytesValue.fromUTF8(args.tokenOutID),
+                    new BigUIntValue(amountOut),
+                ],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.tokenInID,
+                        }),
+                        amount: BigInt(amountIn.integerValue().toFixed()),
+                    }),
+                ],
+            }),
+        );
     }
 
     async validateTokens(
@@ -529,54 +541,63 @@ export class PairTransactionService {
         }
     }
 
-    async whitelist(args: WhitelistArgs): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getPairSmartContract(
+    async whitelist(
+        sender: string,
+        args: WhitelistArgs,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.pairs.admin.whitelist,
+                function: 'whitelist',
+                arguments: [
+                    new AddressValue(Address.newFromBech32(args.address)),
+                ],
+            }),
         );
-        const transactionArgs: TypedValue[] = [
-            new AddressValue(Address.fromString(args.address)),
-        ];
-        return contract.methodsExplicit
-            .whitelist(transactionArgs)
-            .withGasLimit(gasConfig.pairs.admin.whitelist)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
-    async removeWhitelist(args: WhitelistArgs): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getPairSmartContract(
+    async removeWhitelist(
+        sender: string,
+        args: WhitelistArgs,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.pairs.admin.removeWhitelist,
+                function: 'removeWhitelist',
+                arguments: [
+                    new AddressValue(Address.newFromBech32(args.address)),
+                ],
+            }),
         );
-        const transactionArgs: TypedValue[] = [
-            new AddressValue(Address.fromString(args.address)),
-        ];
-        return contract.methodsExplicit
-            .removeWhitelist(transactionArgs)
-            .withGasLimit(gasConfig.pairs.admin.removeWhitelist)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async addTrustedSwapPair(
+        sender: string,
         pairAddress: string,
         swapPairAddress: string,
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
-        const transactionArgs: TypedValue[] = [
-            BytesValue.fromHex(new Address(swapPairAddress).hex()),
-            BytesValue.fromUTF8(firstTokenID),
-            BytesValue.fromUTF8(secondTokenID),
-        ];
-        return contract.methodsExplicit
-            .addTrustedSwapPair(transactionArgs)
-            .withGasLimit(gasConfig.pairs.admin.addTrustedSwapPair)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getPairSmartContractTransaction(
+            pairAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.pairs.admin.addTrustedSwapPair,
+                function: 'addTrustedSwapPair',
+                arguments: [
+                    BytesValue.fromHex(new Address(swapPairAddress).hex()),
+                    BytesValue.fromUTF8(firstTokenID),
+                    BytesValue.fromUTF8(secondTokenID),
+                ],
+            }),
+        );
     }
 
     async removeTrustedSwapPair(
