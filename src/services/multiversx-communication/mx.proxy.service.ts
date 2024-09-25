@@ -75,6 +75,17 @@ export class MXProxyService {
         );
     }
 
+    async getRouterSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.routerAddress,
+            abiConfig.router,
+            'Router',
+            options,
+        );
+    }
+
     async getPairSmartContract(pairAddress: string): Promise<SmartContract> {
         return this.getSmartContract(pairAddress, abiConfig.pair, 'Pair');
     }
