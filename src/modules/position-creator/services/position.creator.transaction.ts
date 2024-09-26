@@ -114,17 +114,18 @@ export class PositionCreatorTransactionService {
             transactionOptions.arguments[0] = new U64Value(
                 new BigNumber(lockEpochs),
             );
+            return [
+                await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+                    transactionOptions,
+                ),
+            ];
         }
 
-        const transaction = lockEpochs
-            ? await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
-                  transactionOptions,
-              )
-            : await this.mxProxy.getPositionCreatorContractTransaction(
-                  transactionOptions,
-              );
-
-        return [transaction];
+        return [
+            await this.mxProxy.getPositionCreatorContractTransaction(
+                transactionOptions,
+            ),
+        ];
     }
 
     async createFarmPositionSingleToken(
@@ -194,12 +195,6 @@ export class PositionCreatorTransactionService {
             ],
         });
 
-        if (lockEpochs) {
-            transactionOptions.arguments[0] = new U64Value(
-                new BigNumber(lockEpochs),
-            );
-        }
-
         if (
             payments[0].tokenIdentifier === mxConfig.EGLDIdentifier &&
             payments.length === 1
@@ -222,15 +217,23 @@ export class PositionCreatorTransactionService {
             );
         }
 
-        const transaction = lockEpochs
-            ? await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
-                  transactionOptions,
-              )
-            : await this.mxProxy.getPositionCreatorContractTransaction(
-                  transactionOptions,
-              );
+        if (lockEpochs) {
+            transactionOptions.arguments[0] = new U64Value(
+                new BigNumber(lockEpochs),
+            );
+            transactions.push(
+                await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+                    transactionOptions,
+                ),
+            );
+            return transactions;
+        }
 
-        transactions.push(transaction);
+        transactions.push(
+            await this.mxProxy.getPositionCreatorContractTransaction(
+                transactionOptions,
+            ),
+        );
         return transactions;
     }
 
