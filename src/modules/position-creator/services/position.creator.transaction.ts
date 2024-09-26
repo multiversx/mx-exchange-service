@@ -221,18 +221,20 @@ export class PositionCreatorTransactionService {
             transactionOptions.arguments[0] = new U64Value(
                 new BigNumber(lockEpochs),
             );
-            return [
+            transactions.push(
                 await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
                     transactionOptions,
                 ),
-            ];
+            );
+            return transactions;
         }
 
-        return [
+        transactions.push(
             await this.mxProxy.getPositionCreatorContractTransaction(
                 transactionOptions,
             ),
-        ];
+        );
+        return transactions;
     }
 
     async createDualFarmPositionSingleToken(
