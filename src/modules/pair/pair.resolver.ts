@@ -616,6 +616,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.removeTrustedSwapPair(
+            user.address,
             pairAddress,
             firstTokenID,
             secondTokenID,
@@ -629,7 +630,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.pause(pairAddress);
+        return this.transactionService.pause(user.address, pairAddress);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -639,7 +640,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.resume(pairAddress);
+        return this.transactionService.resume(user.address, pairAddress);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -649,7 +650,10 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.setStateActiveNoSwaps(pairAddress);
+        return this.transactionService.setStateActiveNoSwaps(
+            user.address,
+            pairAddress,
+        );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -662,6 +666,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.setFeePercents(
+            user.address,
             pairAddress,
             totalFeePercent,
             specialFeePercent,
@@ -677,6 +682,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.setLockingDeadlineEpoch(
+            user.address,
             pairAddress,
             newDeadline,
         );
@@ -691,6 +697,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.setLockingScAddress(
+            user.address,
             pairAddress,
             newAddress,
         );
@@ -704,7 +711,11 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.setUnlockEpoch(pairAddress, newEpoch);
+        return this.transactionService.setUnlockEpoch(
+            user.address,
+            pairAddress,
+            newEpoch,
+        );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -714,7 +725,11 @@ export class PairResolver {
     })
     async setupFeesCollector(
         @Args('pairAddress') pairAddress: string,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.transactionService.setupFeesCollector(pairAddress);
+        return this.transactionService.setupFeesCollector(
+            user.address,
+            pairAddress,
+        );
     }
 }
