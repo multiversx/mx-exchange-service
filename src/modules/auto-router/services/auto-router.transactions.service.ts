@@ -45,6 +45,7 @@ export class AutoRouterTransactionService {
         if (args.tokenInID === mxConfig.EGLDIdentifier) {
             return [
                 await this.wrapEgldAndMultiSwapTransaction(
+                    sender,
                     amountIn.integerValue().toFixed(),
                     args,
                 ),
@@ -54,6 +55,7 @@ export class AutoRouterTransactionService {
         if (args.tokenOutID === mxConfig.EGLDIdentifier) {
             return [
                 await this.multiSwapAndUnwrapEgldTransaction(
+                    sender,
                     amountIn.integerValue().toFixed(),
                     args,
                 ),
@@ -216,6 +218,7 @@ export class AutoRouterTransactionService {
     }
 
     async wrapEgldAndMultiSwapTransaction(
+        sender: string,
         value: string,
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel> {
@@ -226,6 +229,7 @@ export class AutoRouterTransactionService {
         const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
 
         return this.composeTasksTransactionService.getComposeTasksTransaction(
+            sender,
             new EsdtTokenPayment({
                 tokenIdentifier: 'EGLD',
                 tokenNonce: 0,
@@ -252,6 +256,7 @@ export class AutoRouterTransactionService {
     }
 
     async multiSwapAndUnwrapEgldTransaction(
+        sender: string,
         value: string,
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel> {
@@ -262,6 +267,7 @@ export class AutoRouterTransactionService {
         const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
 
         return this.composeTasksTransactionService.getComposeTasksTransaction(
+            sender,
             new EsdtTokenPayment({
                 tokenIdentifier: args.tokenRoute[0],
                 tokenNonce: 0,

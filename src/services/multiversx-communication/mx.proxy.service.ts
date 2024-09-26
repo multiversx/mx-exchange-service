@@ -90,6 +90,18 @@ export class MXProxyService {
         return this.getSmartContract(pairAddress, abiConfig.pair, 'Pair');
     }
 
+    async getPairSmartContractTransaction(
+        pairAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            pairAddress,
+            abiConfig.pair,
+            'Pair',
+            options,
+        );
+    }
+
     async getWrapSmartContract(shardID = 1): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.wrappingAddress.get(`shardID-${shardID}`),
@@ -300,6 +312,17 @@ export class MXProxyService {
             scAddress.composableTasks,
             abiConfig.composableTasks,
             'ComposableTasksContract',
+        );
+    }
+
+    async getComposableTasksContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.composableTasks,
+            abiConfig.composableTasks,
+            'ComposableTasksContract',
+            options,
         );
     }
 
