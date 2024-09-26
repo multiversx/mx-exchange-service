@@ -1,10 +1,9 @@
 import { TransactionModel } from '../../../../models/transaction.model';
-import { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes';
 import {
-    Address,
     BigUIntValue,
+    BytesValue,
+    Token,
     TokenTransfer,
-    TypedValue,
 } from '@multiversx/sdk-core';
 import { mxConfig, gasConfig } from '../../../../config';
 import { BigNumber } from 'bignumber.js';
@@ -20,6 +19,7 @@ import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { FarmAbiService } from './farm.abi.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 export abstract class TransactionsFarmService {
     constructor(
@@ -114,145 +114,187 @@ export abstract class TransactionsFarmService {
         return gasLimit + lockedAssetCreateGas;
     }
 
-    async endProduceRewards(farmAddress: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .end_produce_rewards()
-            .withGasLimit(gasConfig.farms.admin.end_produce_rewards)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+    async endProduceRewards(
+        sender: string,
+        farmAddress: string,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.end_produce_rewards,
+                function: 'end_produce_rewards',
+            }),
+        );
     }
 
-    async startProduceRewards(farmAddress: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .start_produce_rewards()
-            .withGasLimit(gasConfig.farms.admin.start_produce_rewards)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+    async startProduceRewards(
+        sender: string,
+        farmAddress: string,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.start_produce_rewards,
+                function: 'start_produce_rewards',
+            }),
+        );
     }
 
     async setPerBlockRewardAmount(
+        sender: string,
         farmAddress: string,
         amount: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .setPerBlockRewardAmount([new BigUIntValue(new BigNumber(amount))])
-            .withGasLimit(gasConfig.farms.admin.setPerBlockRewardAmount)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.setPerBlockRewardAmount,
+                function: 'setPerBlockRewardAmount',
+                arguments: [new BigUIntValue(new BigNumber(amount))],
+            }),
+        );
     }
 
     async setPenaltyPercent(
+        sender: string,
         farmAddress: string,
         percent: number,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .set_penalty_percent([new BigUIntValue(new BigNumber(percent))])
-            .withGasLimit(gasConfig.farms.admin.set_penalty_percent)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.set_penalty_percent,
+                function: 'set_penalty_percent',
+                arguments: [new BigUIntValue(new BigNumber(percent))],
+            }),
+        );
     }
 
     async setMinimumFarmingEpochs(
+        sender: string,
         farmAddress: string,
         epochs: number,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .set_minimum_farming_epochs([
-                new BigUIntValue(new BigNumber(epochs)),
-            ])
-            .withGasLimit(gasConfig.farms.admin.set_minimum_farming_epochs)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.set_minimum_farming_epochs,
+                function: 'set_minimum_farming_epochs',
+                arguments: [new BigUIntValue(new BigNumber(epochs))],
+            }),
+        );
     }
 
     async setTransferExecGasLimit(
+        sender: string,
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .set_transfer_exec_gas_limit([
-                new BigUIntValue(new BigNumber(gasLimit)),
-            ])
-            .withGasLimit(gasConfig.farms.admin.set_transfer_exec_gas_limit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.set_transfer_exec_gas_limit,
+                function: 'set_transfer_exec_gas_limit',
+                arguments: [new BigUIntValue(new BigNumber(gasLimit))],
+            }),
+        );
     }
 
     async setBurnGasLimit(
+        sender: string,
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .set_burn_gas_limit([new BigUIntValue(new BigNumber(gasLimit))])
-            .withGasLimit(gasConfig.farms.admin.set_burn_gas_limit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.set_burn_gas_limit,
+                function: 'set_burn_gas_limit',
+                arguments: [new BigUIntValue(new BigNumber(gasLimit))],
+            }),
+        );
     }
 
-    async pause(farmAddress: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .pause()
-            .withGasLimit(gasConfig.farms.admin.pause)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+    async pause(
+        sender: string,
+        farmAddress: string,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.pause,
+                function: 'pause',
+            }),
+        );
     }
 
-    async resume(farmAddress: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .resume()
-            .withGasLimit(gasConfig.farms.admin.resume)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+    async resume(
+        sender: string,
+        farmAddress: string,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.resume,
+                function: 'resume',
+            }),
+        );
     }
 
     async registerFarmToken(
+        sender: string,
         farmAddress: string,
         tokenName: string,
         tokenTicker: string,
         decimals: number,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const transactionArgs: TypedValue[] = [
-            BytesValue.fromUTF8(tokenName),
-            BytesValue.fromUTF8(tokenTicker),
-            new BigUIntValue(new BigNumber(decimals)),
-        ];
-        return contract.methodsExplicit
-            .registerFarmToken(transactionArgs)
-            .withGasLimit(gasConfig.farms.admin.registerFarmToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.registerFarmToken,
+                function: 'registerFarmToken',
+                arguments: [
+                    BytesValue.fromUTF8(tokenName),
+                    BytesValue.fromUTF8(tokenTicker),
+                    new BigUIntValue(new BigNumber(decimals)),
+                ],
+            }),
+        );
     }
 
     async setLocalRolesFarmToken(
+        sender: string,
         farmAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        return contract.methodsExplicit
-            .setLocalRolesFarmToken()
-            .withGasLimit(gasConfig.farms.admin.setLocalRolesFarmToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms.admin.setLocalRolesFarmToken,
+                function: 'setLocalRolesFarmToken',
+            }),
+        );
     }
 
     async mergeFarmTokens(
@@ -260,24 +302,26 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const mappedPayments = payments.map((tokenPayment) =>
-            TokenTransfer.metaEsdtFromBigInteger(
-                tokenPayment.tokenID,
-                tokenPayment.nonce,
-                new BigNumber(tokenPayment.amount),
-            ),
-        );
-        return contract.methodsExplicit
-            .mergeFarmTokens()
-            .withMultiESDTNFTTransfer(mappedPayments)
-            .withSender(Address.fromString(sender))
-            .withGasLimit(
-                gasConfig.farms['v1.3'].mergeFarmTokensMultiplier *
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit:
+                    gasConfig.farms['v1.3'].mergeFarmTokensMultiplier *
                     payments.length,
-            )
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+                function: 'mergeFarmTokens',
+                tokenTransfers: payments.map(
+                    (tokenPayment) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: tokenPayment.tokenID,
+                                nonce: BigInt(tokenPayment.nonce),
+                            }),
+                            amount: BigInt(tokenPayment.amount),
+                        }),
+                ),
+            }),
+        );
     }
 }

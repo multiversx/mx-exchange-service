@@ -133,6 +133,28 @@ export class MXProxyService {
         return await this.getSmartContract(farmAddress, abiPath, 'Farm');
     }
 
+    async getFarmSmartContractTransaction(
+        farmAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        const version = farmVersion(farmAddress);
+        const type = farmType(farmAddress);
+        let abiPath = abiConfig.farm[version];
+        let contractInterface = `Farm_${version}`;
+
+        if (type !== undefined) {
+            abiPath = abiConfig.farm[version][type];
+            contractInterface = `Farm_${version}_${type}`;
+        }
+
+        return this.getSmartContractTransaction(
+            farmAddress,
+            abiPath,
+            contractInterface,
+            options,
+        );
+    }
+
     async getStakingSmartContract(
         stakeAddress: string,
     ): Promise<SmartContract> {
