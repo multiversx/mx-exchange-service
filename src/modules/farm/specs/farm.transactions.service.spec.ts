@@ -25,6 +25,9 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
 
 describe('FarmService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -237,19 +240,22 @@ describe('FarmService', () => {
             FarmTransactionServiceV1_2,
         );
 
-        const transaction = await transactionV1_2.setFarmMigrationConfig({
-            oldFarmAddress:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            oldFarmTokenID: 'EGLDMEXFL-abcdef',
-            newFarmAddress: Address.Zero().bech32(),
-            newLockedFarmAddress: Address.Zero().bech32(),
-        });
+        const transaction = await transactionV1_2.setFarmMigrationConfig(
+            senderAddress,
+            {
+                oldFarmAddress:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
+                oldFarmTokenID: 'EGLDMEXFL-abcdef',
+                newFarmAddress: Address.Zero().bech32(),
+                newLockedFarmAddress: Address.Zero().bech32(),
+            },
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -272,6 +278,7 @@ describe('FarmService', () => {
         );
 
         const transaction = await transactionV1_2.stopRewardsAndMigrateRps(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
         );
         expect(transaction).toEqual({
@@ -279,7 +286,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -302,6 +309,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.endProduceRewards(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             );
         } catch (e) {
@@ -310,6 +318,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.endProduceRewards(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcs2zduud',
         );
         expect(transaction).toEqual({
@@ -317,7 +326,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcs2zduud',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -340,6 +349,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.startProduceRewards(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             );
         } catch (e) {
@@ -348,6 +358,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.startProduceRewards(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
         );
         expect(transaction).toEqual({
@@ -355,7 +366,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -378,6 +389,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.setPerBlockRewardAmount(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 '1000000000000',
             );
@@ -387,6 +399,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.setPerBlockRewardAmount(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             '1000000000000',
         );
@@ -395,7 +408,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -420,6 +433,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.setPenaltyPercent(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 5,
             );
@@ -429,6 +443,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.setPenaltyPercent(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             5,
         );
@@ -437,7 +452,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -460,6 +475,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.setMinimumFarmingEpochs(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 10,
             );
@@ -469,6 +485,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.setMinimumFarmingEpochs(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             10,
         );
@@ -477,7 +494,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -500,6 +517,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.setTransferExecGasLimit(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 100000000,
             );
@@ -509,6 +527,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.setTransferExecGasLimit(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             100000000,
         );
@@ -517,7 +536,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -542,6 +561,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.setBurnGasLimit(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 100000000,
             );
@@ -551,6 +571,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.setBurnGasLimit(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcs2zduud',
             100000000,
         );
@@ -559,7 +580,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcs2zduud',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -582,6 +603,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.pause(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             );
         } catch (e) {
@@ -590,6 +612,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.pause(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
         );
         expect(transaction).toEqual({
@@ -597,7 +620,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -620,6 +643,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.resume(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             );
         } catch (e) {
@@ -628,6 +652,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.resume(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
         );
         expect(transaction).toEqual({
@@ -635,7 +660,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -658,6 +683,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.registerFarmToken(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 'FarmingToken12',
                 'T1T2-1234',
@@ -669,6 +695,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.registerFarmToken(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             'FarmingToken12',
             'T1T2-1234',
@@ -679,7 +706,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -704,6 +731,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.setLocalRolesFarmToken(
+                senderAddress,
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             );
         } catch (e) {
@@ -712,6 +740,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.setLocalRolesFarmToken(
+            senderAddress,
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
         );
         expect(transaction).toEqual({
@@ -719,7 +748,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
