@@ -87,13 +87,6 @@ export class PositionCreatorTransactionService {
             sender: sender,
             chainID: mxConfig.chainID,
             gasLimit: gasLimit,
-            function: 'createLpPosFromSingleToken',
-            arguments: [
-                new AddressValue(Address.newFromBech32(pairAddress)),
-                new BigUIntValue(amount0Min),
-                new BigUIntValue(amount1Min),
-                VariadicValue.fromItems(...swapRouteArgs),
-            ],
         });
 
         if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
@@ -110,22 +103,66 @@ export class PositionCreatorTransactionService {
         }
 
         if (lockEpochs) {
-            transactionOptions.function = 'createPairPosFromSingleToken';
-            transactionOptions.arguments[0] = new U64Value(
-                new BigNumber(lockEpochs),
-            );
             return [
-                await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+                await this.getLockedSingleTokenPairPositionTransaction(
+                    lockEpochs,
+                    amount0Min,
+                    amount1Min,
+                    swapRouteArgs,
                     transactionOptions,
                 ),
             ];
         }
 
         return [
-            await this.mxProxy.getPositionCreatorContractTransaction(
+            await this.getSingleTokenPairPositionTransaction(
+                pairAddress,
+                amount0Min,
+                amount1Min,
+                swapRouteArgs,
                 transactionOptions,
             ),
         ];
+    }
+
+    private async getLockedSingleTokenPairPositionTransaction(
+        lockEpochs: number,
+        amount0Min: BigNumber,
+        amount1Min: BigNumber,
+        swapRouteArgs: TypedValue[],
+        transactionOptions: TransactionOptions,
+    ): Promise<TransactionModel> {
+        transactionOptions.function = 'createPairPosFromSingleToken';
+        transactionOptions.arguments = [
+            new U64Value(new BigNumber(lockEpochs)),
+            new BigUIntValue(amount0Min),
+            new BigUIntValue(amount1Min),
+            VariadicValue.fromItems(...swapRouteArgs),
+        ];
+
+        return await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+            transactionOptions,
+        );
+    }
+
+    private async getSingleTokenPairPositionTransaction(
+        pairAddress: string,
+        amount0Min: BigNumber,
+        amount1Min: BigNumber,
+        swapRouteArgs: TypedValue[],
+        transactionOptions: TransactionOptions,
+    ): Promise<TransactionModel> {
+        transactionOptions.function = 'createLpPosFromSingleToken';
+        transactionOptions.arguments = [
+            new AddressValue(Address.newFromBech32(pairAddress)),
+            new BigUIntValue(amount0Min),
+            new BigUIntValue(amount1Min),
+            VariadicValue.fromItems(...swapRouteArgs),
+        ];
+
+        return await this.mxProxy.getPositionCreatorContractTransaction(
+            transactionOptions,
+        );
     }
 
     async createFarmPositionSingleToken(
@@ -187,12 +224,6 @@ export class PositionCreatorTransactionService {
             chainID: mxConfig.chainID,
             gasLimit: gasLimit,
             function: 'createFarmPosFromSingleToken',
-            arguments: [
-                new AddressValue(Address.newFromBech32(farmAddress)),
-                new BigUIntValue(amount0Min),
-                new BigUIntValue(amount1Min),
-                VariadicValue.fromItems(...swapRouteArgs),
-            ],
         });
 
         if (
@@ -218,11 +249,12 @@ export class PositionCreatorTransactionService {
         }
 
         if (lockEpochs) {
-            transactionOptions.arguments[0] = new U64Value(
-                new BigNumber(lockEpochs),
-            );
             transactions.push(
-                await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+                await this.getLockedSingleTokenFarmPositionTransaction(
+                    lockEpochs,
+                    amount0Min,
+                    amount1Min,
+                    swapRouteArgs,
                     transactionOptions,
                 ),
             );
@@ -230,11 +262,53 @@ export class PositionCreatorTransactionService {
         }
 
         transactions.push(
-            await this.mxProxy.getPositionCreatorContractTransaction(
+            await this.getSingleTokenFarmPositionTransaction(
+                farmAddress,
+                amount0Min,
+                amount1Min,
+                swapRouteArgs,
                 transactionOptions,
             ),
         );
         return transactions;
+    }
+
+    private async getSingleTokenFarmPositionTransaction(
+        farmAddress: string,
+        amount0Min: BigNumber,
+        amount1Min: BigNumber,
+        swapRouteArgs: TypedValue[],
+        transactionOptions: TransactionOptions,
+    ): Promise<TransactionModel> {
+        transactionOptions.arguments = [
+            new AddressValue(Address.newFromBech32(farmAddress)),
+            new BigUIntValue(amount0Min),
+            new BigUIntValue(amount1Min),
+            VariadicValue.fromItems(...swapRouteArgs),
+        ];
+
+        return await this.mxProxy.getPositionCreatorContractTransaction(
+            transactionOptions,
+        );
+    }
+
+    private async getLockedSingleTokenFarmPositionTransaction(
+        lockEpochs: number,
+        amount0Min: BigNumber,
+        amount1Min: BigNumber,
+        swapRouteArgs: TypedValue[],
+        transactionOptions: TransactionOptions,
+    ): Promise<TransactionModel> {
+        transactionOptions.arguments = [
+            new U64Value(new BigNumber(lockEpochs)),
+            new BigUIntValue(amount0Min),
+            new BigUIntValue(amount1Min),
+            VariadicValue.fromItems(...swapRouteArgs),
+        ];
+
+        return await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+            transactionOptions,
+        );
     }
 
     async createDualFarmPositionSingleToken(
