@@ -1,4 +1,10 @@
-import { AbiRegistry, Address, SmartContract } from '@multiversx/sdk-core';
+import {
+    AbiRegistry,
+    Address,
+    SmartContract,
+    SmartContractTransactionsFactory,
+    TransactionsFactoryConfig,
+} from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { abiConfig, mxConfig, scAddress } from '../../config';
 import Agent, { HttpsAgent } from 'agentkeepalive';
@@ -10,11 +16,14 @@ import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { promises } from 'fs';
 import { proxyVersion } from 'src/utils/proxy.utils';
 import { GovernanceType } from '../../utils/governance';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { TransactionModel } from 'src/models/transaction.model';
 
 @Injectable()
 export class MXProxyService {
     private readonly proxy: ProxyNetworkProviderProfiler;
     private static smartContracts: SmartContract[];
+    private static smartContractTransactionFactories: SmartContractTransactionsFactory[];
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
@@ -44,6 +53,7 @@ export class MXProxyService {
         );
 
         MXProxyService.smartContracts = [];
+        MXProxyService.smartContractTransactionFactories = [];
     }
 
     getService(): ProxyNetworkProviderProfiler {
@@ -65,8 +75,31 @@ export class MXProxyService {
         );
     }
 
+    async getRouterSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.routerAddress,
+            abiConfig.router,
+            'Router',
+            options,
+        );
+    }
+
     async getPairSmartContract(pairAddress: string): Promise<SmartContract> {
         return this.getSmartContract(pairAddress, abiConfig.pair, 'Pair');
+    }
+
+    async getPairSmartContractTransaction(
+        pairAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            pairAddress,
+            abiConfig.pair,
+            'Pair',
+            options,
+        );
     }
 
     async getWrapSmartContract(shardID = 1): Promise<SmartContract> {
@@ -74,6 +107,18 @@ export class MXProxyService {
             scAddress.wrappingAddress.get(`shardID-${shardID}`),
             abiConfig.wrap,
             'EgldEsdtSwap',
+        );
+    }
+
+    async getWrapSmartContractTransaction(
+        shardID = 1,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.wrappingAddress.get(`shardID-${shardID}`),
+            abiConfig.wrap,
+            'EgldEsdtSwap',
+            options,
         );
     }
 
@@ -232,6 +277,17 @@ export class MXProxyService {
         );
     }
 
+    async getPositionCreatorContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.positionCreator,
+            abiConfig.positionCreator,
+            'AutoPosCreator',
+            options,
+        );
+    }
+
     async getLockedTokenPositionCreatorContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.lockedTokenPositionCreator,
@@ -240,11 +296,33 @@ export class MXProxyService {
         );
     }
 
+    async getLockedTokenPositionCreatorContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.lockedTokenPositionCreator,
+            abiConfig.lockedTokenPositionCreator,
+            'LockedTokenPosCreatorContract',
+            options,
+        );
+    }
+
     async getComposableTasksSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.composableTasks,
             abiConfig.composableTasks,
             'ComposableTasksContract',
+        );
+    }
+
+    async getComposableTasksContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.composableTasks,
+            abiConfig.composableTasks,
+            'ComposableTasksContract',
+            options,
         );
     }
 
@@ -260,6 +338,50 @@ export class MXProxyService {
                 contractAddress,
                 contractAbiPath,
                 contractInterface,
+            )
+        );
+    }
+
+    async getSmartContractTransaction(
+        contractAddress: string,
+        contractAbiPath: string,
+        contractInterface: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        const factory = await this.getSmartContractTransactionFactory(
+            contractAbiPath,
+            contractInterface,
+            options.chainID,
+        );
+
+        return factory
+            .createTransactionForExecute({
+                sender: Address.newFromBech32(options.sender),
+                contract: Address.fromBech32(contractAddress),
+                function: options.function,
+                gasLimit: BigInt(options.gasLimit),
+                arguments: options.arguments ?? [],
+                nativeTransferAmount: options.nativeTransferAmount
+                    ? BigInt(options.nativeTransferAmount)
+                    : BigInt(0),
+                tokenTransfers: options.tokenTransfers ?? [],
+            })
+            .toPlainObject();
+    }
+
+    async getSmartContractTransactionFactory(
+        contractAbiPath: string,
+        contractInterface: string,
+        chainID: string,
+    ): Promise<SmartContractTransactionsFactory> {
+        return (
+            MXProxyService.smartContractTransactionFactories[
+                contractInterface
+            ] ||
+            this.createSmartContractTransactionsFactory(
+                contractAbiPath,
+                contractInterface,
+                chainID,
             )
         );
     }
@@ -280,5 +402,25 @@ export class MXProxyService {
         const key = `${contractInterface}.${contractAddress}`;
         MXProxyService.smartContracts[key] = newSC;
         return newSC;
+    }
+
+    private async createSmartContractTransactionsFactory(
+        contractAbiPath: string,
+        contractInterface: string,
+        chainID: string,
+    ): Promise<SmartContractTransactionsFactory> {
+        const jsonContent: string = await promises.readFile(contractAbiPath, {
+            encoding: 'utf8',
+        });
+        const json = JSON.parse(jsonContent);
+
+        const factory = new SmartContractTransactionsFactory({
+            config: new TransactionsFactoryConfig({ chainID }),
+            abi: AbiRegistry.create(json),
+        });
+
+        MXProxyService.smartContractTransactionFactories[contractInterface] =
+            factory;
+        return factory;
     }
 }
