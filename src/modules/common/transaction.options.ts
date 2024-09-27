@@ -1,4 +1,4 @@
-import { TokenTransfer } from '@multiversx/sdk-core/out';
+import { TokenTransfer } from '@multiversx/sdk-core';
 
 export class TransactionOptions {
     chainID: string;
