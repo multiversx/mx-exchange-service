@@ -75,8 +75,31 @@ export class MXProxyService {
         );
     }
 
+    async getRouterSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.routerAddress,
+            abiConfig.router,
+            'Router',
+            options,
+        );
+    }
+
     async getPairSmartContract(pairAddress: string): Promise<SmartContract> {
         return this.getSmartContract(pairAddress, abiConfig.pair, 'Pair');
+    }
+
+    async getPairSmartContractTransaction(
+        pairAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            pairAddress,
+            abiConfig.pair,
+            'Pair',
+            options,
+        );
     }
 
     async getWrapSmartContract(shardID = 1): Promise<SmartContract> {
@@ -254,6 +277,17 @@ export class MXProxyService {
         );
     }
 
+    async getPositionCreatorContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.positionCreator,
+            abiConfig.positionCreator,
+            'AutoPosCreator',
+            options,
+        );
+    }
+
     async getLockedTokenPositionCreatorContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.lockedTokenPositionCreator,
@@ -262,11 +296,33 @@ export class MXProxyService {
         );
     }
 
+    async getLockedTokenPositionCreatorContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.lockedTokenPositionCreator,
+            abiConfig.lockedTokenPositionCreator,
+            'LockedTokenPosCreatorContract',
+            options,
+        );
+    }
+
     async getComposableTasksSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.composableTasks,
             abiConfig.composableTasks,
             'ComposableTasksContract',
+        );
+    }
+
+    async getComposableTasksContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.composableTasks,
+            abiConfig.composableTasks,
+            'ComposableTasksContract',
+            options,
         );
     }
 

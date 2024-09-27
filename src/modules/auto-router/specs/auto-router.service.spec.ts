@@ -35,6 +35,9 @@ import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.s
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
@@ -117,9 +120,9 @@ describe('AutoRouterService', () => {
                 tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
                     new PairModel({
-                        address: Address.fromHex(
+                        address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
-                        ).bech32(),
+                        ).toBech32(),
                         firstToken: Tokens('WEGLD-123456'),
                         secondToken: Tokens('USDC-123456'),
                         info: new PairInfoModel({
@@ -161,9 +164,9 @@ describe('AutoRouterService', () => {
                 tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
                     new PairModel({
-                        address: Address.fromHex(
+                        address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
-                        ).bech32(),
+                        ).toBech32(),
                         firstToken: Tokens('WEGLD-123456'),
                         secondToken: Tokens('USDC-123456'),
                         info: new PairInfoModel({
@@ -210,9 +213,9 @@ describe('AutoRouterService', () => {
                 tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
                 pairs: [
                     new PairModel({
-                        address: Address.fromHex(
+                        address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
-                        ).bech32(),
+                        ).toBech32(),
                         firstToken: Tokens('WEGLD-123456'),
                         secondToken: Tokens('USDC-123456'),
                         info: new PairInfoModel({
@@ -223,9 +226,9 @@ describe('AutoRouterService', () => {
                         totalFeePercent: 0.003,
                     }),
                     new PairModel({
-                        address: Address.fromHex(
+                        address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000012',
-                        ).bech32(),
+                        ).toBech32(),
                         firstToken: Tokens('WEGLD-123456'),
                         secondToken: Tokens('MEX-123456'),
                         info: new PairInfoModel({
@@ -245,7 +248,7 @@ describe('AutoRouterService', () => {
 
     it('should get a wrap tx + a fixed input simple swap tx', async () => {
         const transactions = await service.getTransactions(
-            Address.Zero().bech32(),
+            senderAddress,
             new AutoRouteModel({
                 swapType: 0,
                 tokenInID: 'EGLD',
@@ -263,9 +266,9 @@ describe('AutoRouterService', () => {
                 tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
                     new PairModel({
-                        address: Address.fromHex(
+                        address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
-                        ).bech32(),
+                        ).toBech32(),
                     }),
                 ],
                 tolerance: 0.01,
@@ -275,8 +278,8 @@ describe('AutoRouterService', () => {
             {
                 nonce: 0,
                 value: '1000000000000000000',
-                receiver: Address.Zero().bech32(),
-                sender: '',
+                receiver: Address.Zero().toBech32(),
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
@@ -294,7 +297,7 @@ describe('AutoRouterService', () => {
 
     it('should get a fixed output multi swap tx + unwrap tx', async () => {
         const transactions = await service.getTransactions(
-            Address.Zero().bech32(),
+            senderAddress,
             new AutoRouteModel({
                 swapType: 1,
                 tokenInID: 'USDC-123456',
@@ -313,14 +316,14 @@ describe('AutoRouterService', () => {
                 tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
                 pairs: [
                     new PairModel({
-                        address: Address.fromHex(
+                        address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
-                        ).bech32(),
+                        ).toBech32(),
                     }),
                     new PairModel({
-                        address: Address.fromHex(
+                        address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000012',
-                        ).bech32(),
+                        ).toBech32(),
                     }),
                 ],
                 tolerance: 0.01,
@@ -330,8 +333,8 @@ describe('AutoRouterService', () => {
             {
                 nonce: 0,
                 value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: '',
+                receiver: Address.Zero().toBech32(),
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
