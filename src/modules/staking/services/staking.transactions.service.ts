@@ -9,7 +9,7 @@ import {
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { mxConfig, gasConfig, constantsConfig } from 'src/config';
+import { gasConfig, constantsConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
@@ -45,7 +45,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasLimit,
                 function: 'stakeFarm',
                 tokenTransfers: payments.map(
@@ -71,7 +70,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.unstakeFarm,
                 function: 'unstakeFarm',
                 tokenTransfers: [
@@ -96,7 +94,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.unbondFarm,
                 function: 'unbondFarm',
                 tokenTransfers: [
@@ -121,7 +118,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.claimRewards,
                 function: 'claimRewards',
                 tokenTransfers: [
@@ -147,7 +143,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.claimRewardsWithNewValue,
                 function: 'claimRewardsWithNewValue',
                 arguments: [new BigUIntValue(new BigNumber(newValue))],
@@ -173,7 +168,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.compoundRewards,
                 function: 'compoundRewards',
                 tokenTransfers: [
@@ -197,7 +191,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.claimBoostedRewards,
                 function: 'claimBoostedRewards',
             }),
@@ -257,7 +250,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.admin.topUpRewards,
                 function: 'topUpRewards',
                 tokenTransfers: [
@@ -281,7 +273,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.mergeTokens,
                 function: 'mergeFarmTokens',
                 tokenTransfers: payments.map(
@@ -308,7 +299,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.admin.whitelist,
                 function: whitelist
                     ? 'addSCAddressToWhitelist'
@@ -327,7 +317,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.admin.setState,
                 function: state ? 'resume' : 'pause',
             }),
@@ -343,7 +332,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.admin.setLocalRolesFarmToken,
                 function: 'setBurnRoleForAddress',
                 arguments: [new AddressValue(Address.newFromBech32(address))],
@@ -362,7 +350,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.admin.registerFarmToken,
                 function: 'registerFarmToken',
                 arguments: [
@@ -383,7 +370,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.admin.setPerBlockRewardAmount,
                 function: 'setPerBlockRewardAmount',
                 arguments: [new BigUIntValue(new BigNumber(perBlockAmount))],
@@ -400,7 +386,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.admin.setMaxApr,
                 function: 'setMaxApr',
                 arguments: [new BigUIntValue(new BigNumber(maxApr))],
@@ -417,7 +402,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.admin.setMinUnbondEpochs,
                 function: 'setMinUnbondEpochs',
                 arguments: [new U64Value(new BigNumber(minUnboundEpoch))],
@@ -434,7 +418,6 @@ export class StakingTransactionService {
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.stake.admin.setRewardsState,
                 function: rewards ? 'startProduceRewards' : 'endProduceRewards',
             }),

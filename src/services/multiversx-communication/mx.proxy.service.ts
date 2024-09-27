@@ -363,7 +363,7 @@ export class MXProxyService {
         const factory = await this.getSmartContractTransactionFactory(
             contractAbiPath,
             contractInterface,
-            options.chainID,
+            options.chainID ?? mxConfig.chainID,
         );
 
         return factory
