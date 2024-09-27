@@ -3,8 +3,8 @@ import {
     AddressValue,
     BigUIntValue,
     BytesValue,
+    Token,
     TokenTransfer,
-    TypedValue,
     U64Value,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
@@ -17,6 +17,7 @@ import { StakingAbiService } from './staking.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class StakingTransactionService {
@@ -35,30 +36,30 @@ export class StakingTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputTokens(stakeAddress, payments);
 
-        const contract = await this.mxProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-
         const gasLimit =
             payments.length > 1
                 ? gasConfig.stake.stakeFarm.withTokenMerge
                 : gasConfig.stake.stakeFarm.default;
-        const mappedPayments = payments.map((payment) =>
-            TokenTransfer.metaEsdtFromBigInteger(
-                payment.tokenID,
-                payment.nonce,
-                new BigNumber(payment.amount),
-            ),
-        );
 
-        return contract.methodsExplicit
-            .stakeFarm()
-            .withMultiESDTNFTTransfer(mappedPayments)
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getStakingSmartContractTransaction(
+            stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasLimit,
+                function: 'stakeFarm',
+                tokenTransfers: payments.map(
+                    (payment) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: payment.tokenID,
+                                nonce: BigInt(payment.nonce),
+                            }),
+                            amount: BigInt(payment.amount),
+                        }),
+                ),
+            }),
+        );
     }
 
     async unstakeFarm(
@@ -66,23 +67,24 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.unstakeFarm,
+                function: 'unstakeFarm',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenID,
+                            nonce: BigInt(payment.nonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
+                ],
+            }),
         );
-        return contract.methodsExplicit
-            .unstakeFarm()
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    payment.tokenID,
-                    payment.nonce,
-                    new BigNumber(payment.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.stake.unstakeFarm)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async unbondFarm(
@@ -90,23 +92,24 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.unbondFarm,
+                function: 'unbondFarm',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenID,
+                            nonce: BigInt(payment.nonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
+                ],
+            }),
         );
-        return contract.methodsExplicit
-            .unbondFarm()
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    payment.tokenID,
-                    payment.nonce,
-                    new BigNumber(payment.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.stake.unbondFarm)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async claimRewards(
@@ -114,23 +117,24 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.claimRewards,
+                function: 'claimRewards',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenID,
+                            nonce: BigInt(payment.nonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
+                ],
+            }),
         );
-        return contract.methodsExplicit
-            .claimRewards()
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    payment.tokenID,
-                    payment.nonce,
-                    new BigNumber(payment.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.stake.claimRewards)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async claimRewardsWithNewValue(
@@ -139,25 +143,25 @@ export class StakingTransactionService {
         payment: InputTokenModel,
         newValue: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.claimRewardsWithNewValue,
+                function: 'claimRewardsWithNewValue',
+                arguments: [new BigUIntValue(new BigNumber(newValue))],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenID,
+                            nonce: BigInt(payment.nonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
+                ],
+            }),
         );
-        return contract.methodsExplicit
-            .claimRewardsWithNewValue([
-                new BigUIntValue(new BigNumber(newValue)),
-            ])
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    payment.tokenID,
-                    payment.nonce,
-                    new BigNumber(payment.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.stake.claimRewardsWithNewValue)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async compoundRewards(
@@ -165,39 +169,39 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.compoundRewards,
+                function: 'compoundRewards',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenID,
+                            nonce: BigInt(payment.nonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
+                ],
+            }),
         );
-        return contract.methodsExplicit
-            .compoundRewards()
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    payment.tokenID,
-                    payment.nonce,
-                    new BigNumber(payment.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.stake.compoundRewards)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async claimBoostedRewards(
         sender: string,
         stakeAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.claimBoostedRewards,
+                function: 'claimBoostedRewards',
+            }),
         );
-        return contract.methodsExplicit
-            .claimBoostedRewards()
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.stake.claimBoostedRewards)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async migrateTotalStakingPosition(
@@ -245,24 +249,27 @@ export class StakingTransactionService {
     }
 
     async topUpRewards(
+        sender: string,
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.admin.topUpRewards,
+                function: 'topUpRewards',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenID,
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
+                ],
+            }),
         );
-        return contract.methodsExplicit
-            .topUpRewards([])
-            .withSingleESDTTransfer(
-                TokenTransfer.fungibleFromBigInteger(
-                    payment.tokenID,
-                    new BigNumber(payment.amount),
-                ),
-            )
-            .withGasLimit(gasConfig.stake.admin.topUpRewards)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async mergeFarmTokens(
@@ -270,184 +277,168 @@ export class StakingTransactionService {
         stakeAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.mergeTokens,
+                function: 'mergeFarmTokens',
+                tokenTransfers: payments.map(
+                    (payment) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: payment.tokenID,
+                                nonce: BigInt(payment.nonce),
+                            }),
+                            amount: BigInt(payment.amount),
+                        }),
+                ),
+            }),
         );
-        const mappedPayments = payments.map((payment) =>
-            TokenTransfer.metaEsdtFromBigInteger(
-                payment.tokenID,
-                payment.nonce,
-                new BigNumber(payment.amount),
-            ),
-        );
-        return contract.methodsExplicit
-            .mergeFarmTokens()
-            .withMultiESDTNFTTransfer(mappedPayments)
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.stake.mergeTokens)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async setAddressWhitelist(
+        sender: string,
         stakeAddress: string,
         address: string,
         whitelist: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.admin.whitelist,
+                function: whitelist
+                    ? 'addSCAddressToWhitelist'
+                    : 'removeSCAddressFromWhitelist',
+                arguments: [new AddressValue(Address.newFromBech32(address))],
+            }),
         );
-
-        if (whitelist)
-            return contract.methodsExplicit
-                .addSCAddressToWhitelist([
-                    new AddressValue(Address.fromString(address)),
-                ])
-                .withGasLimit(gasConfig.stake.admin.whitelist)
-                .withChainID(mxConfig.chainID)
-                .buildTransaction()
-                .toPlainObject();
-
-        return contract.methodsExplicit
-            .removeSCAddressFromWhitelist([
-                new AddressValue(Address.fromString(address)),
-            ])
-            .withGasLimit(gasConfig.stake.admin.whitelist)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async setState(
+        sender: string,
         stakeAddress: string,
         state: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.admin.setState,
+                function: state ? 'resume' : 'pause',
+            }),
         );
-
-        if (state)
-            return contract.methodsExplicit
-                .resume()
-                .withGasLimit(gasConfig.stake.admin.setState)
-                .withChainID(mxConfig.chainID)
-                .buildTransaction()
-                .toPlainObject();
-
-        return contract.methodsExplicit
-            .pause()
-            .withGasLimit(gasConfig.stake.admin.setState)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async setLocalRolesFarmToken(
+        sender: string,
         stakeAddress: string,
+        address: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.admin.setLocalRolesFarmToken,
+                function: 'setBurnRoleForAddress',
+                arguments: [new AddressValue(Address.newFromBech32(address))],
+            }),
         );
-        return contract.methodsExplicit
-            .setBurnRoleForAddress()
-            .withGasLimit(gasConfig.stake.admin.setLocalRolesFarmToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async registerFarmToken(
+        sender: string,
         stakeAddress: string,
         tokenName: string,
         tokenTicker: string,
         decimals: number,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.admin.registerFarmToken,
+                function: 'registerFarmToken',
+                arguments: [
+                    BytesValue.fromUTF8(tokenName),
+                    BytesValue.fromUTF8(tokenTicker),
+                    new U64Value(new BigNumber(decimals)),
+                ],
+            }),
         );
-        const transactionArgs: TypedValue[] = [
-            BytesValue.fromUTF8(tokenName),
-            BytesValue.fromUTF8(tokenTicker),
-            new U64Value(new BigNumber(decimals)),
-        ];
-        return contract.methodsExplicit
-            .registerFarmToken(transactionArgs)
-            .withGasLimit(gasConfig.stake.admin.registerFarmToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async setPerBlockRewardAmount(
+        sender: string,
         stakeAddress: string,
         perBlockAmount: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.admin.setPerBlockRewardAmount,
+                function: 'setPerBlockRewardAmount',
+                arguments: [new BigUIntValue(new BigNumber(perBlockAmount))],
+            }),
         );
-        return contract.methodsExplicit
-            .setPerBlockRewardAmount([
-                new BigUIntValue(new BigNumber(perBlockAmount)),
-            ])
-            .withGasLimit(gasConfig.stake.admin.setPerBlockRewardAmount)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async setMaxApr(
+        sender: string,
         stakeAddress: string,
         maxApr: number,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.admin.setMaxApr,
+                function: 'setMaxApr',
+                arguments: [new BigUIntValue(new BigNumber(maxApr))],
+            }),
         );
-        return contract.methodsExplicit
-            .setMaxApr([new BigUIntValue(new BigNumber(maxApr))])
-            .withGasLimit(gasConfig.stake.admin.setMaxApr)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async setMinUnbondEpochs(
+        sender: string,
         stakeAddress: string,
         minUnboundEpoch: number,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.admin.setMinUnbondEpochs,
+                function: 'setMinUnbondEpochs',
+                arguments: [new U64Value(new BigNumber(minUnboundEpoch))],
+            }),
         );
-        return contract.methodsExplicit
-            .setMinUnbondEpochs([new U64Value(new BigNumber(minUnboundEpoch))])
-            .withGasLimit(gasConfig.stake.admin.setMinUnbondEpochs)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async setRewardsState(
+        sender: string,
         stakeAddress: string,
         rewards: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        return await this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.stake.admin.setRewardsState,
+                function: rewards ? 'startProduceRewards' : 'endProduceRewards',
+            }),
         );
-
-        if (rewards)
-            return contract.methodsExplicit
-                .startProduceRewards()
-                .withGasLimit(gasConfig.stake.admin.setRewardsState)
-                .withChainID(mxConfig.chainID)
-                .buildTransaction()
-                .toPlainObject();
-
-        return contract.methodsExplicit
-            .endProduceRewards()
-            .withGasLimit(gasConfig.stake.admin.setRewardsState)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     private async validateInputTokens(

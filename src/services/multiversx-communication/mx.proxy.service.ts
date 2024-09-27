@@ -143,6 +143,18 @@ export class MXProxyService {
         );
     }
 
+    async getStakingSmartContractTransaction(
+        stakeAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            stakeAddress,
+            abiConfig.staking,
+            'Farm',
+            options,
+        );
+    }
+
     async getStakingProxySmartContract(
         stakingProxyAddress: string,
     ): Promise<SmartContract> {
