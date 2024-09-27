@@ -43,12 +43,12 @@ export class RouterTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        const checkPairExists = await this.checkPairExists(
+        const pairAddress = await this.getPairAddressByTokens(
             firstTokenID,
             secondTokenID,
         );
 
-        if (checkPairExists) {
+        if (pairAddress) {
             throw new Error('Pair already exists');
         }
 
@@ -116,12 +116,12 @@ export class RouterTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        const checkPairExists = await this.checkPairExists(
+        const pairAddress = await this.getPairAddressByTokens(
             firstTokenID,
             secondTokenID,
         );
 
-        if (!checkPairExists) {
+        if (!pairAddress) {
             throw new Error('Pair does not exist');
         }
 
@@ -398,24 +398,6 @@ export class RouterTransactionService {
         if (unwrapTransaction) transactions.push(unwrapTransaction);
 
         return transactions;
-    }
-
-    private async checkPairExists(
-        firstTokenID: string,
-        secondTokenID: string,
-    ): Promise<boolean> {
-        const pairsMetadata = await this.routerAbi.pairsMetadata();
-        for (const pair of pairsMetadata) {
-            if (
-                (pair.firstTokenID === firstTokenID &&
-                    pair.secondTokenID === secondTokenID) ||
-                (pair.firstTokenID === secondTokenID &&
-                    pair.secondTokenID === firstTokenID)
-            ) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private async getPairAddressByTokens(
