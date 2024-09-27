@@ -73,19 +73,27 @@ export class RouterTransactionService {
         secondTokenID: string,
         fees: number[],
     ): Promise<TransactionModel> {
-        const checkPairExists = await this.checkPairExists(
+        const pairAddress = await this.getPairAddressByTokens(
             firstTokenID,
             secondTokenID,
         );
 
-        if (!checkPairExists) {
+        if (!pairAddress) {
             throw new Error('Pair does not exist');
+        }
+
+        const initialLiquidityAdder = await this.pairAbi.initialLiquidityAdder(
+            pairAddress,
+        );
+
+        if (sender !== initialLiquidityAdder) {
+            throw new Error('Invalid sender address');
         }
 
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
-            new AddressValue(Address.newFromBech32(sender)),
+            new AddressValue(Address.newFromBech32(initialLiquidityAdder)),
         ];
 
         for (const fee of fees) {
@@ -408,6 +416,24 @@ export class RouterTransactionService {
             }
         }
         return false;
+    }
+
+    private async getPairAddressByTokens(
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<string> {
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        for (const pair of pairsMetadata) {
+            if (
+                (pair.firstTokenID === firstTokenID &&
+                    pair.secondTokenID === secondTokenID) ||
+                (pair.firstTokenID === secondTokenID &&
+                    pair.secondTokenID === firstTokenID)
+            ) {
+                return pair.address;
+            }
+        }
+        return undefined;
     }
 
     async wrapIfNeeded(

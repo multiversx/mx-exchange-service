@@ -115,7 +115,7 @@ describe('RouterService', () => {
             senderAddress,
             'WEGLD-123456',
             'USDC-123456',
-            [10000, 10000],
+            [300, 100],
         );
         expect(transaction).toEqual({
             nonce: 0,
@@ -129,7 +129,7 @@ describe('RouterService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.upgradePair,
             data: encodeTransactionData(
-                `upgradePair@WEGLD-123456@USDC-123456@${senderAddress}@10000@10000`,
+                `upgradePair@WEGLD-123456@USDC-123456@${senderAddress}@300@100`,
             ),
             chainID: mxConfig.chainID,
             version: 2,
