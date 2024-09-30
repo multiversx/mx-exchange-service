@@ -185,7 +185,11 @@ export class EnergyResolver {
             });
         }
 
-        return this.energyTransaction.updateLockOptions(lockOptions, remove);
+        return this.energyTransaction.updateLockOptions(
+            user.address,
+            lockOptions,
+            remove,
+        );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -205,6 +209,7 @@ export class EnergyResolver {
         }
 
         return this.energyTransaction.setPenaltyPercentage(
+            user.address,
             minPenaltyPercentage,
             maxPenaltyPercentage,
         );
@@ -225,7 +230,10 @@ export class EnergyResolver {
             });
         }
 
-        return this.energyTransaction.setFeesBurnPercentage(percentage);
+        return this.energyTransaction.setFeesBurnPercentage(
+            user.address,
+            percentage,
+        );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)

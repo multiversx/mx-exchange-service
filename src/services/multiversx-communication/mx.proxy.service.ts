@@ -220,6 +220,17 @@ export class MXProxyService {
         );
     }
 
+    async getSimpleLockEnergySmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.simpleLockEnergy,
+            abiConfig.simpleLockEnergy,
+            'SimpleLockEnergy',
+            options,
+        );
+    }
+
     async getMetabondingStakingSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.metabondingStakingAddress,
