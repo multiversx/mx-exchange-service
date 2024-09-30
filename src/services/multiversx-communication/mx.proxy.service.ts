@@ -188,6 +188,20 @@ export class MXProxyService {
         );
     }
 
+    async getProxyDexSmartContractTransaction(
+        proxyAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        const version = proxyVersion(proxyAddress);
+
+        return this.getSmartContractTransaction(
+            proxyAddress,
+            abiConfig.proxy[version],
+            'ProxyDexImpl',
+            options,
+        );
+    }
+
     async getDistributionSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.distributionAddress,
