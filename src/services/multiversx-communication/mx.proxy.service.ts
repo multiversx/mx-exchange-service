@@ -281,6 +281,17 @@ export class MXProxyService {
         );
     }
 
+    async getLockedTokenWrapperSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.lockedTokenWrapper,
+            abiConfig.lockedTokenWrapper,
+            'LockedTokenWrapper',
+            options,
+        );
+    }
+
     async getEnergyUpdateContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.energyUpdate,
