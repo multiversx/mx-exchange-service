@@ -54,13 +54,6 @@ export class LockedTokenWrapperTransactionService {
             LockedTokenAttributesRaw,
         );
 
-        console.log({
-            currentEpoch,
-            lockedTokenID,
-            wrappedLockedTokenAttributes,
-            lockedTokenAttributes,
-        });
-
         if (currentEpoch >= lockedTokenAttributes.unlockEpoch) {
             throw new Error('Cannot unwrap token after unlock epoch');
         }
