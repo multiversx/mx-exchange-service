@@ -202,6 +202,18 @@ export class MXProxyService {
         );
     }
 
+    async getPriceDiscoverySmartContractTransaction(
+        priceDiscoveryAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            priceDiscoveryAddress,
+            abiConfig.priceDiscovery,
+            'PriceDiscovery',
+            options,
+        );
+    }
+
     async getSimpleLockSmartContract(
         simpleLockAddress: string,
     ): Promise<SmartContract> {
