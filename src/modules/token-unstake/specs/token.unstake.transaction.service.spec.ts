@@ -13,6 +13,9 @@ import winston from 'winston';
 
 describe('TokenUnstakeTransactionService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -43,9 +46,7 @@ describe('TokenUnstakeTransactionService', () => {
             module.get<TokenUnstakeTransactionService>(
                 TokenUnstakeTransactionService,
             );
-        const transaction = await service.claimUnlockedTokens(
-            Address.Zero().bech32(),
-        );
+        const transaction = await service.claimUnlockedTokens(senderAddress);
 
         expect(transaction).toEqual(
             new TransactionModel({
@@ -54,7 +55,7 @@ describe('TokenUnstakeTransactionService', () => {
                 gasLimit: 13500000,
                 gasPrice: 1000000000,
                 nonce: 0,
-                sender: '',
+                sender: senderAddress,
                 receiver: scAddress.tokenUnstake,
                 senderUsername: undefined,
                 receiverUsername: undefined,
@@ -73,7 +74,7 @@ describe('TokenUnstakeTransactionService', () => {
             module.get<TokenUnstakeTransactionService>(
                 TokenUnstakeTransactionService,
             );
-        const transaction = await service.cancelUnbond(Address.Zero().bech32());
+        const transaction = await service.cancelUnbond(senderAddress);
 
         expect(transaction).toEqual(
             new TransactionModel({
@@ -82,7 +83,7 @@ describe('TokenUnstakeTransactionService', () => {
                 gasLimit: 9500000,
                 gasPrice: 1000000000,
                 nonce: 0,
-                sender: '',
+                sender: senderAddress,
                 receiver: scAddress.tokenUnstake,
                 senderUsername: undefined,
                 receiverUsername: undefined,
