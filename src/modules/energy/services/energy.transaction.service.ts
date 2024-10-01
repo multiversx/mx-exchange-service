@@ -34,7 +34,6 @@ export class EnergyTransactionService {
         return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.simpleLockEnergy.lockTokens,
                 function: 'lockTokens',
                 arguments: [new U64Value(new BigNumber(lockEpochs))],
@@ -103,7 +102,6 @@ export class EnergyTransactionService {
         return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit:
                     gasConfig.simpleLockEnergy.defaultMergeTokens *
                     inputTokens.length,
@@ -129,7 +127,6 @@ export class EnergyTransactionService {
         return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit:
                     gasConfig.simpleLockEnergy.migrateOldTokens * args.length,
                 function: 'migrateOldTokens',
@@ -157,7 +154,6 @@ export class EnergyTransactionService {
         return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.simpleLockEnergy.admin.updateLockOptions,
                 function: remove ? 'removeLockOptions' : 'addLockOptions',
                 arguments: [
@@ -183,7 +179,6 @@ export class EnergyTransactionService {
         return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit: gasConfig.simpleLockEnergy.admin.setPenaltyPercentage,
                 function: 'setPenaltyPercentage',
                 arguments: [
@@ -203,7 +198,6 @@ export class EnergyTransactionService {
         return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                chainID: mxConfig.chainID,
                 gasLimit:
                     gasConfig.simpleLockEnergy.admin.setFeesBurnPercentage,
                 function: 'setFeesBurnPercentage',
