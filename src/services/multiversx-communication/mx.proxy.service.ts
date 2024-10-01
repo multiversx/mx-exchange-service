@@ -311,6 +311,17 @@ export class MXProxyService {
         );
     }
 
+    async getEnergyUpdateSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.energyUpdate,
+            abiConfig.energyUpdate,
+            'EnergyUpdate',
+            options,
+        );
+    }
+
     async getTokenUnstakeContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.tokenUnstake,
