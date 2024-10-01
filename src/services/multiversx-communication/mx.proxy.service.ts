@@ -285,6 +285,17 @@ export class MXProxyService {
         );
     }
 
+    async getTokenUnstakeSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.tokenUnstake,
+            abiConfig.tokenUnstake,
+            'TokenUnstakeModule',
+            options,
+        );
+    }
+
     async getEscrowContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.escrow,
