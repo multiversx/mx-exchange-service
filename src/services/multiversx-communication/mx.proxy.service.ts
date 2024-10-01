@@ -212,6 +212,18 @@ export class MXProxyService {
         );
     }
 
+    async getSimpleLockSmartContractTransaction(
+        simpleLockAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            simpleLockAddress,
+            abiConfig.simpleLock,
+            'SimpleLock',
+            options,
+        );
+    }
+
     async getSimpleLockEnergySmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.simpleLockEnergy,
