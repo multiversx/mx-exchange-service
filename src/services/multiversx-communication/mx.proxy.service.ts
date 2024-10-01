@@ -293,6 +293,17 @@ export class MXProxyService {
         );
     }
 
+    async getEscrowSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.escrow,
+            abiConfig.escrow,
+            'LkmexTransfer',
+            options,
+        );
+    }
+
     async getGovernanceSmartContract(
         governanceAddress: string,
         type: GovernanceType,
