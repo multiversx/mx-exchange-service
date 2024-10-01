@@ -184,6 +184,17 @@ export class MXProxyService {
         );
     }
 
+    async getDistributionSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.distributionAddress,
+            abiConfig.distribution,
+            'Distribution',
+            options,
+        );
+    }
+
     async getLockedAssetFactorySmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.lockedAssetAddress,
