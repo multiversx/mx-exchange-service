@@ -238,6 +238,18 @@ export class MXProxyService {
         );
     }
 
+    async getFeesCollectorSmartContractTransaction(
+        options: TransactionOptions,
+        contractAddress?: string,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            contractAddress ?? scAddress.feesCollector,
+            abiConfig.feesCollector,
+            'FeesCollector',
+            options,
+        );
+    }
+
     async getLockedTokenWrapperContract() {
         return this.getSmartContract(
             scAddress.lockedTokenWrapper,
