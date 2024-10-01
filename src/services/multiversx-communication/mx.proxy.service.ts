@@ -228,6 +228,17 @@ export class MXProxyService {
         );
     }
 
+    async getMetabondingStakingSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.metabondingStakingAddress,
+            abiConfig.metabondingStaking,
+            'MetabondingStaking',
+            options,
+        );
+    }
+
     async getFeesCollectorContract(
         contractAddress?: string,
     ): Promise<SmartContract> {
