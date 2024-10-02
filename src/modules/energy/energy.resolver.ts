@@ -171,9 +171,8 @@ export class EnergyResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async updateLockOptions(
+    async addLockOptions(
         @Args('lockOptions', { type: () => [Int] }) lockOptions: number[],
-        @Args('remove', { nullable: true }) remove: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const owner = await this.energyAbi.ownerAddress();
@@ -185,94 +184,7 @@ export class EnergyResolver {
             });
         }
 
-        return this.energyTransaction.updateLockOptions(
-            user.address,
-            lockOptions,
-            remove,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setPenaltyPercentage(
-        @Args('minPenaltyPercentage') minPenaltyPercentage: number,
-        @Args('maxPenaltyPercentage') maxPenaltyPercentage: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        const owner = await this.energyAbi.ownerAddress();
-        if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
-
-        return this.energyTransaction.setPenaltyPercentage(
-            user.address,
-            minPenaltyPercentage,
-            maxPenaltyPercentage,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setFeesBurnPercentage(
-        @Args('percentage') percentage: number,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        const owner = await this.energyAbi.ownerAddress();
-        if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
-
-        return this.energyTransaction.setFeesBurnPercentage(
-            user.address,
-            percentage,
-        );
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setFeesCollectorAddress(
-        @Args('collectorAddress') collectorAddress: string,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        const owner = await this.energyAbi.ownerAddress();
-        if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
-
-        return this.energyTransaction.setFeesCollectorAddress(collectorAddress);
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Query(() => TransactionModel)
-    async setOldLockedAssetFactoryAddress(
-        @Args('oldLockedAssetFactoryAddress')
-        oldLockedAssetFactoryAddress: string,
-        @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel> {
-        const owner = await this.energyAbi.ownerAddress();
-        if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
-
-        return this.energyTransaction.setOldLockedAssetFactoryAddress(
-            oldLockedAssetFactoryAddress,
-        );
+        return this.energyTransaction.addLockOptions(user.address, lockOptions);
     }
 
     // Get energy amount for authenticated user

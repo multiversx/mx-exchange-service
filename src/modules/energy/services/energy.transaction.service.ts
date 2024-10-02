@@ -1,9 +1,6 @@
 import {
-    Address,
-    AddressValue,
     Token,
     TokenTransfer,
-    U16Value,
     U64Type,
     U64Value,
     VariadicType,
@@ -11,7 +8,7 @@ import {
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { mxConfig, gasConfig } from 'src/config';
+import { gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -145,17 +142,15 @@ export class EnergyTransactionService {
     }
 
     // Only owner transaction
-    // TODO - remove ? 'removeLockOptions' missing from abi
-    async updateLockOptions(
+    async addLockOptions(
         sender: string,
         lockOptions: number[],
-        remove = false,
     ): Promise<TransactionModel> {
         return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.simpleLockEnergy.admin.updateLockOptions,
-                function: remove ? 'removeLockOptions' : 'addLockOptions',
+                function: 'addLockOptions',
                 arguments: [
                     new VariadicValue(
                         new VariadicType(new U64Type(), false),
@@ -167,79 +162,5 @@ export class EnergyTransactionService {
                 ],
             }),
         );
-    }
-
-    // Only owner transaction
-    // TODO - remove ? missing from abi
-    async setPenaltyPercentage(
-        sender: string,
-        minPenaltyPercentage: number,
-        maxPenaltyPercentage: number,
-    ): Promise<TransactionModel> {
-        return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.simpleLockEnergy.admin.setPenaltyPercentage,
-                function: 'setPenaltyPercentage',
-                arguments: [
-                    new U16Value(new BigNumber(minPenaltyPercentage)),
-                    new U16Value(new BigNumber(maxPenaltyPercentage)),
-                ],
-            }),
-        );
-    }
-
-    // Only owner transaction
-    // TODO - remove ? missing from abi
-    async setFeesBurnPercentage(
-        sender: string,
-        percentage: number,
-    ): Promise<TransactionModel> {
-        return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
-            new TransactionOptions({
-                sender: sender,
-                gasLimit:
-                    gasConfig.simpleLockEnergy.admin.setFeesBurnPercentage,
-                function: 'setFeesBurnPercentage',
-                arguments: [new U16Value(new BigNumber(percentage))],
-            }),
-        );
-    }
-
-    // Only owner address
-    // TODO - remove ? missing from abi
-    async setFeesCollectorAddress(address: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
-
-        return contract.methodsExplicit
-            .setFeesBurnPercentage([
-                new AddressValue(Address.fromString(address)),
-            ])
-            .withGasLimit(
-                gasConfig.simpleLockEnergy.admin.setFeesCollectorAddress,
-            )
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    // Only owner address
-    // TODO - remove ? missing from abi
-    async setOldLockedAssetFactoryAddress(
-        address: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
-
-        return contract.methodsExplicit
-            .setOldLockedAssetFactoryAddress([
-                new AddressValue(Address.fromString(address)),
-            ])
-            .withGasLimit(
-                gasConfig.simpleLockEnergy.admin
-                    .setOldLockedAssetFactoryAddress,
-            )
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 }
