@@ -115,7 +115,11 @@ describe('EscrowTransactionService', () => {
             'getNftAttributesByTokenIdentifier',
         ).mockResolvedValue('AAAACk1FWC00NTVjNTcAAAAAAAAAAAAAAAAAAAAC');
 
-        const transaction = await service.withdraw(senderAddress);
+        const userAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000001',
+        ).toBech32();
+
+        const transaction = await service.withdraw(senderAddress, userAddress);
 
         expect(transaction).toEqual(
             new TransactionModel({
@@ -126,7 +130,7 @@ describe('EscrowTransactionService', () => {
                 gasLimit: gasConfig.escrow.withdraw,
                 value: '0',
                 receiver: scAddress.escrow,
-                sender: senderAddress,
+                sender: userAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 options: undefined,
@@ -142,11 +146,17 @@ describe('EscrowTransactionService', () => {
         const service = module.get<EscrowTransactionService>(
             EscrowTransactionService,
         );
+
+        const receiverAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000001',
+        ).toBech32();
+        const userAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000002',
+        ).toBech32();
         const transaction = await service.cancelTransfer(
             senderAddress,
-            Address.newFromHex(
-                '0000000000000000000000000000000000000000000000000000000000000001',
-            ).toBech32(),
+            receiverAddress,
+            userAddress,
         );
 
         expect(transaction).toEqual(
@@ -154,15 +164,13 @@ describe('EscrowTransactionService', () => {
                 chainID: mxConfig.chainID,
                 nonce: 0,
                 data: encodeTransactionData(
-                    `cancelTransfer@${senderAddress}@${Address.newFromHex(
-                        '0000000000000000000000000000000000000000000000000000000000000001',
-                    ).toBech32()}`,
+                    `cancelTransfer@${senderAddress}@${receiverAddress}`,
                 ),
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.escrow.cancelTransfer,
                 value: '0',
                 receiver: scAddress.escrow,
-                sender: senderAddress,
+                sender: userAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 options: undefined,

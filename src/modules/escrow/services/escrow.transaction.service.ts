@@ -15,10 +15,13 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 export class EscrowTransactionService {
     constructor(private readonly mxProxy: MXProxyService) {}
 
-    async withdraw(senderAddress: string): Promise<TransactionModel> {
+    async withdraw(
+        senderAddress: string,
+        userAddress: string,
+    ): Promise<TransactionModel> {
         return await this.mxProxy.getEscrowSmartContractTransaction(
             new TransactionOptions({
-                sender: senderAddress,
+                sender: userAddress,
                 gasLimit: gasConfig.escrow.withdraw,
                 function: 'withdraw',
                 arguments: [
@@ -31,10 +34,11 @@ export class EscrowTransactionService {
     async cancelTransfer(
         senderAddress: string,
         receiverAddress: string,
+        userAddress: string,
     ): Promise<TransactionModel> {
         return await this.mxProxy.getEscrowSmartContractTransaction(
             new TransactionOptions({
-                sender: senderAddress,
+                sender: userAddress,
                 gasLimit: gasConfig.escrow.cancelTransfer,
                 function: 'cancelTransfer',
                 arguments: [
