@@ -1,7 +1,7 @@
 import { TokenTransfer } from '@multiversx/sdk-core';
 
 export class TransactionOptions {
-    chainID: string;
+    chainID?: string;
     function: string;
     gasLimit: number;
     sender: string;

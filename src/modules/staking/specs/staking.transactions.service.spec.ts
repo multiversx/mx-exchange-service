@@ -19,6 +19,9 @@ import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.a
 
 describe('StakingTransactionService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -294,6 +297,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.topUpRewards(
+            senderAddress,
             Address.Zero().bech32(),
             new InputTokenModel({
                 tokenID: 'WEGLD-123456',
@@ -306,7 +310,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             senderUsername: undefined,
             receiverUsername: undefined,
             gasPrice: 1000000000,
@@ -368,6 +372,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setAddressWhitelist(
+            senderAddress,
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             true,
@@ -377,7 +382,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -400,6 +405,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setAddressWhitelist(
+            senderAddress,
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             false,
@@ -409,7 +415,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -432,6 +438,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setState(
+            senderAddress,
             Address.Zero().bech32(),
             false,
         );
@@ -440,7 +447,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -461,6 +468,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setState(
+            senderAddress,
             Address.Zero().bech32(),
             true,
         );
@@ -469,7 +477,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -490,6 +498,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.registerFarmToken(
+            senderAddress,
             Address.Zero().bech32(),
             'TokenToRegisterName',
             'TokenToRegisterID',
@@ -500,7 +509,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -523,6 +532,8 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setLocalRolesFarmToken(
+            senderAddress,
+            Address.Zero().bech32(),
             Address.Zero().bech32(),
         );
         expect(transaction).toEqual({
@@ -530,12 +541,14 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setLocalRolesFarmToken,
-            data: encodeTransactionData('setBurnRoleForAddress'),
+            data: encodeTransactionData(
+                'setBurnRoleForAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            ),
             chainID: 'T',
             version: 2,
             options: undefined,
@@ -551,6 +564,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setPerBlockRewardAmount(
+            senderAddress,
             Address.Zero().bech32(),
             '100',
         );
@@ -559,7 +573,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -580,6 +594,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setMaxApr(
+            senderAddress,
             Address.Zero().bech32(),
             100,
         );
@@ -588,7 +603,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -609,6 +624,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setMinUnbondEpochs(
+            senderAddress,
             Address.Zero().bech32(),
             100,
         );
@@ -617,7 +633,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -638,6 +654,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setRewardsState(
+            senderAddress,
             Address.Zero().bech32(),
             true,
         );
@@ -646,7 +663,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -667,6 +684,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setRewardsState(
+            senderAddress,
             Address.Zero().bech32(),
             false,
         );
@@ -675,7 +693,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,

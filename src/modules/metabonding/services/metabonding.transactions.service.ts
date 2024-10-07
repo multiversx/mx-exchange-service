@@ -1,13 +1,14 @@
-import { Address, BigUIntValue, TokenTransfer } from '@multiversx/sdk-core';
+import { BigUIntValue, Token, TokenTransfer } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { mxConfig, gasConfig } from 'src/config';
+import { gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { MetabondingAbiService } from './metabonding.abi.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class MetabondingTransactionService {
@@ -21,52 +22,54 @@ export class MetabondingTransactionService {
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
-        const [contract, userEntry] = await Promise.all([
-            this.mxProxy.getMetabondingStakingSmartContract(),
-            this.metabondingAbi.userEntry(sender),
-        ]);
+        const userEntry = await this.metabondingAbi.userEntry(sender);
 
         const gasLimit =
             userEntry.tokenNonce > 0
                 ? gasConfig.metabonding.stakeLockedAsset.withTokenMerge
                 : gasConfig.metabonding.stakeLockedAsset.default;
 
-        return contract.methodsExplicit
-            .stakeLockedAsset()
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    inputToken.tokenID,
-                    inputToken.nonce,
-                    new BigNumber(inputToken.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getMetabondingStakingSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasLimit,
+                function: 'stakeLockedAsset',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: inputToken.tokenID,
+                            nonce: BigInt(inputToken.nonce),
+                        }),
+                        amount: BigInt(inputToken.amount),
+                    }),
+                ],
+            }),
+        );
     }
 
-    async unstake(unstakeAmount: string): Promise<TransactionModel> {
-        const contract =
-            await this.mxProxy.getMetabondingStakingSmartContract();
-        return contract.methodsExplicit
-            .unstake([new BigUIntValue(new BigNumber(unstakeAmount))])
-            .withGasLimit(gasConfig.metabonding.unstake)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+    async unstake(
+        sender: string,
+        unstakeAmount: string,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getMetabondingStakingSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.metabonding.unstake,
+                function: 'unstake',
+                arguments: [new BigUIntValue(new BigNumber(unstakeAmount))],
+            }),
+        );
     }
 
     async unbond(sender: string): Promise<TransactionModel> {
-        const contract =
-            await this.mxProxy.getMetabondingStakingSmartContract();
         await this.pubSub.publish('deleteCacheKeys', [`${sender}.userEntry`]);
-        return contract.methodsExplicit
-            .unbond([])
-            .withGasLimit(gasConfig.metabonding.unbond)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+
+        return await this.mxProxy.getMetabondingStakingSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.metabonding.unbond,
+                function: 'unbond',
+            }),
+        );
     }
 }
