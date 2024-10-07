@@ -14,7 +14,7 @@
         "start:debug": "nest start --debug --watch",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "copy-env": "cp .env.example .env",
-        "test": "node --expose-gc --no-compilation-cache ./node_modules/.bin/jest --logHeapUsage --config ./test/jest-config.json --forceExit --logHeapUsage",
+        "test": "node --expose-gc --no-compilation-cache ./node_modules/.bin/jest --logHeapUsage --config ./test/jest-config.json --forceExit --logHeapUsage --maxWorkers=2",
         "test:watch": "jest --watch",
         "test:cov": "node --expose-gc --no-compilation-cache ./node_modules/.bin/jest --silent --verbose false --coverage --config ./test/jest-config.json --forceExit --logHeapUsage --maxWorkers=2",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
