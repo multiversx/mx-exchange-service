@@ -512,6 +512,7 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return this.stakingTransactionService.setPerBlockRewardAmount(
+            user.address,
             farmStakeAddress,
             perBlockAmount,
         );
@@ -526,6 +527,7 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return this.stakingTransactionService.setMaxApr(
+            user.address,
             farmStakeAddress,
             maxApr,
         );
@@ -540,6 +542,7 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return this.stakingTransactionService.setMinUnbondEpochs(
+            user.address,
             farmStakeAddress,
             minUnboundEpoch,
         );
@@ -553,6 +556,7 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return this.stakingTransactionService.setRewardsState(
+            user.address,
             farmStakeAddress,
             true,
         );
@@ -566,6 +570,7 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return this.stakingTransactionService.setRewardsState(
+            user.address,
             farmStakeAddress,
             false,
         );
@@ -580,6 +585,7 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return this.stakingTransactionService.setAddressWhitelist(
+            user.address,
             farmStakeAddress,
             address,
             true,
@@ -595,6 +601,7 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return this.stakingTransactionService.setAddressWhitelist(
+            user.address,
             farmStakeAddress,
             address,
             false,
@@ -612,6 +619,7 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return this.stakingTransactionService.registerFarmToken(
+            user.address,
             farmStakeAddress,
             tokenDisplayName,
             tokenTicker,
@@ -627,6 +635,7 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return await this.stakingTransactionService.setState(
+            user.address,
             farmStakeAddress,
             false,
         );
@@ -639,18 +648,25 @@ export class StakingResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setState(farmStakeAddress, true);
+        return this.stakingTransactionService.setState(
+            user.address,
+            farmStakeAddress,
+            true,
+        );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setLocalRolesFarmToken(
         @Args('farmStakeAddress') farmStakeAddress: string,
+        @Args('address') address: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
         return this.stakingTransactionService.setLocalRolesFarmToken(
+            user.address,
             farmStakeAddress,
+            address,
         );
     }
 
@@ -730,6 +746,7 @@ export class StakingResolver {
             user.address,
         );
         return this.stakingTransactionService.topUpRewards(
+            user.address,
             args.farmStakeAddress,
             args.payment,
         );

@@ -19,6 +19,9 @@ import { EscrowAbiServiceProvider } from '../mocks/escrow.abi.service.mock';
 
 describe('EscrowTransactionService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000000',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -52,8 +55,7 @@ describe('EscrowTransactionService', () => {
         const service: EscrowTransactionService =
             module.get<EscrowTransactionService>(EscrowTransactionService);
 
-        const senderAddress = Address.Zero().bech32();
-        const receiverAddress = Address.Zero().bech32();
+        const receiverAddress = Address.Zero().toBech32();
         await expect(
             service.lockFunds(senderAddress, receiverAddress, [
                 {
@@ -69,10 +71,9 @@ describe('EscrowTransactionService', () => {
         const service: EscrowTransactionService =
             module.get<EscrowTransactionService>(EscrowTransactionService);
 
-        const senderAddress = Address.Zero().bech32();
-        const receiverAddress = Address.fromHex(
+        const receiverAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000001',
-        ).bech32();
+        ).toBech32();
         const transaction = await service.lockFunds(
             senderAddress,
             receiverAddress,
@@ -90,7 +91,7 @@ describe('EscrowTransactionService', () => {
                 chainID: mxConfig.chainID,
                 nonce: 0,
                 data: encodeTransactionData(
-                    `MultiESDTNFTTransfer@${scAddress.escrow}@01@XMEX-123456@01@1000000000000000000@lockFunds@${receiverAddress}`,
+                    `ESDTNFTTransfer@XMEX-123456@01@1000000000000000000@${scAddress.escrow}@lockFunds@${receiverAddress}`,
                 ),
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.escrow.lockFunds,
@@ -99,7 +100,7 @@ describe('EscrowTransactionService', () => {
                 sender: senderAddress,
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
             }),
         );
     });
@@ -114,25 +115,27 @@ describe('EscrowTransactionService', () => {
             'getNftAttributesByTokenIdentifier',
         ).mockResolvedValue('AAAACk1FWC00NTVjNTcAAAAAAAAAAAAAAAAAAAAC');
 
-        const transaction = await service.withdraw(Address.Zero().bech32());
+        const userAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000001',
+        ).toBech32();
+
+        const transaction = await service.withdraw(senderAddress, userAddress);
 
         expect(transaction).toEqual(
             new TransactionModel({
                 chainID: mxConfig.chainID,
                 nonce: 0,
-                data: encodeTransactionData(
-                    `withdraw@${Address.Zero().bech32()}`,
-                ),
+                data: encodeTransactionData(`withdraw@${senderAddress}`),
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.escrow.withdraw,
                 value: '0',
                 receiver: scAddress.escrow,
-                sender: '',
+                sender: userAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
                 guardian: undefined,
                 guardianSignature: undefined,
             }),
@@ -143,11 +146,17 @@ describe('EscrowTransactionService', () => {
         const service = module.get<EscrowTransactionService>(
             EscrowTransactionService,
         );
+
+        const receiverAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000001',
+        ).toBech32();
+        const userAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000002',
+        ).toBech32();
         const transaction = await service.cancelTransfer(
-            Address.Zero().bech32(),
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000001',
-            ).bech32(),
+            senderAddress,
+            receiverAddress,
+            userAddress,
         );
 
         expect(transaction).toEqual(
@@ -155,20 +164,18 @@ describe('EscrowTransactionService', () => {
                 chainID: mxConfig.chainID,
                 nonce: 0,
                 data: encodeTransactionData(
-                    `cancelTransfer@${Address.Zero().bech32()}@${Address.fromHex(
-                        '0000000000000000000000000000000000000000000000000000000000000001',
-                    ).bech32()}`,
+                    `cancelTransfer@${senderAddress}@${receiverAddress}`,
                 ),
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.escrow.cancelTransfer,
                 value: '0',
                 receiver: scAddress.escrow,
-                sender: '',
+                sender: userAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
                 guardian: undefined,
                 guardianSignature: undefined,
             }),

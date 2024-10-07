@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { constantsConfig, mxConfig, gasConfig } from 'src/config';
 import {
+    Address,
     BigUIntValue,
     BytesValue,
-    TypedValue,
+    Token,
+    TokenTransfer,
     U64Value,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
-import { Address, TokenTransfer } from '@multiversx/sdk-core';
+} from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import BigNumber from 'bignumber.js';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -21,6 +22,7 @@ import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ProxyAbiServiceV2 } from 'src/modules/proxy/v2/services/proxy.v2.abi.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class ProxyPairTransactionsService {
@@ -84,9 +86,6 @@ export class ProxyPairTransactionsService {
             proxyAddress,
         );
 
-        const contract = await this.mxProxy.getProxyDexSmartContract(
-            proxyAddress,
-        );
         const amount0 = new BigNumber(liquidityTokens[0].amount);
         const amount1 = new BigNumber(liquidityTokens[1].amount);
 
@@ -97,33 +96,36 @@ export class ProxyPairTransactionsService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const endpointArgs: TypedValue[] = [
-            BytesValue.fromHex(new Address(args.pairAddress).hex()),
-            new BigUIntValue(amount0Min),
-            new BigUIntValue(amount1Min),
-        ];
-
         const gasLimit =
             liquidityTokens.length > 2
                 ? gasConfig.proxy.pairs.addLiquidity.withTokenMerge
                 : gasConfig.proxy.pairs.addLiquidity.default;
-        const mappedPayments: TokenTransfer[] = liquidityTokens.map(
-            (inputToken) =>
-                TokenTransfer.metaEsdtFromBigInteger(
-                    inputToken.tokenID,
-                    inputToken.nonce,
-                    new BigNumber(inputToken.amount),
-                ),
-        );
 
-        return contract.methodsExplicit
-            .addLiquidityProxy(endpointArgs)
-            .withMultiESDTNFTTransfer(mappedPayments)
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
+            proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasLimit,
+                function: 'addLiquidityProxy',
+                arguments: [
+                    BytesValue.fromHex(
+                        Address.newFromBech32(args.pairAddress).toHex(),
+                    ),
+                    new BigUIntValue(amount0Min),
+                    new BigUIntValue(amount1Min),
+                ],
+                tokenTransfers: liquidityTokens.map(
+                    (inputToken) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: inputToken.tokenID,
+                                nonce: BigInt(inputToken.nonce),
+                            }),
+                            amount: BigInt(inputToken.amount),
+                        }),
+                ),
+            }),
+        );
     }
 
     async removeLiquidityProxy(
@@ -132,22 +134,16 @@ export class ProxyPairTransactionsService {
         args: RemoveLiquidityProxyArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const [
-            wrappedTokenID,
-            firstTokenID,
-            secondTokenID,
-            liquidityPosition,
-            contract,
-        ] = await Promise.all([
-            this.wrapAbi.wrappedEgldTokenID(),
-            this.pairAbi.firstTokenID(args.pairAddress),
-            this.pairAbi.secondTokenID(args.pairAddress),
-            this.pairService.getLiquidityPosition(
-                args.pairAddress,
-                args.liquidity,
-            ),
-            this.mxProxy.getProxyDexSmartContract(proxyAddress),
-        ]);
+        const [wrappedTokenID, firstTokenID, secondTokenID, liquidityPosition] =
+            await Promise.all([
+                this.wrapAbi.wrappedEgldTokenID(),
+                this.pairAbi.firstTokenID(args.pairAddress),
+                this.pairAbi.secondTokenID(args.pairAddress),
+                this.pairService.getLiquidityPosition(
+                    args.pairAddress,
+                    args.liquidity,
+                ),
+            ]);
         const amount0Min = new BigNumber(
             liquidityPosition.firstTokenAmount.toString(),
         )
@@ -159,28 +155,33 @@ export class ProxyPairTransactionsService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const endpointArgs = [
-            BytesValue.fromHex(new Address(args.pairAddress).hex()),
-            new BigUIntValue(amount0Min),
-            new BigUIntValue(amount1Min),
-        ];
+        const removeLiquidityTransaction =
+            await this.mxProxy.getProxyDexSmartContractTransaction(
+                proxyAddress,
+                new TransactionOptions({
+                    sender: sender,
+                    gasLimit: gasConfig.proxy.pairs.removeLiquidity,
+                    function: 'removeLiquidityProxy',
+                    arguments: [
+                        BytesValue.fromHex(
+                            Address.newFromBech32(args.pairAddress).toHex(),
+                        ),
+                        new BigUIntValue(amount0Min),
+                        new BigUIntValue(amount1Min),
+                    ],
+                    tokenTransfers: [
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: args.wrappedLpTokenID,
+                                nonce: BigInt(args.wrappedLpTokenNonce),
+                            }),
+                            amount: BigInt(args.liquidity),
+                        }),
+                    ],
+                }),
+            );
 
-        transactions.push(
-            contract.methodsExplicit
-                .removeLiquidityProxy(endpointArgs)
-                .withSingleESDTNFTTransfer(
-                    TokenTransfer.metaEsdtFromBigInteger(
-                        args.wrappedLpTokenID,
-                        args.wrappedLpTokenNonce,
-                        new BigNumber(args.liquidity),
-                    ),
-                )
-                .withSender(Address.fromString(sender))
-                .withGasLimit(gasConfig.proxy.pairs.removeLiquidity)
-                .withChainID(mxConfig.chainID)
-                .buildTransaction()
-                .toPlainObject(),
-        );
+        transactions.push(removeLiquidityTransaction);
 
         switch (wrappedTokenID) {
             case firstTokenID:
@@ -215,26 +216,26 @@ export class ProxyPairTransactionsService {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
         }
 
-        const contract = await this.mxProxy.getProxyDexSmartContract(
-            proxyAddress,
-        );
         const gasLimit = gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length;
-        const mappedPayments = tokens.map((token) =>
-            TokenTransfer.metaEsdtFromBigInteger(
-                token.tokenID,
-                token.nonce,
-                new BigNumber(token.amount),
-            ),
-        );
 
-        return contract.methodsExplicit
-            .mergeWrappedLpTokens()
-            .withMultiESDTNFTTransfer(mappedPayments)
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
+            proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasLimit,
+                function: 'mergeWrappedLpTokens',
+                tokenTransfers: tokens.map(
+                    (token) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: token.tokenID,
+                                nonce: BigInt(token.nonce),
+                            }),
+                            amount: BigInt(token.amount),
+                        }),
+                ),
+            }),
+        );
     }
 
     async increaseProxyPairTokenEnergy(
@@ -243,25 +244,24 @@ export class ProxyPairTransactionsService {
         payment: InputTokenModel,
         lockEpochs: number,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.proxy.pairs.increaseEnergy,
+                function: 'increaseProxyPairTokenEnergy',
+                arguments: [new U64Value(new BigNumber(lockEpochs))],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenID,
+                            nonce: BigInt(payment.nonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
+                ],
+            }),
         );
-        return contract.methodsExplicit
-            .increaseProxyPairTokenEnergy([
-                new U64Value(new BigNumber(lockEpochs)),
-            ])
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    payment.tokenID,
-                    payment.nonce,
-                    new BigNumber(payment.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.proxy.pairs.increaseEnergy)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     private async convertInputTokenstoESDTTokens(
