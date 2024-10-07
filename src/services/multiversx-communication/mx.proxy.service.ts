@@ -218,6 +218,17 @@ export class MXProxyService {
         );
     }
 
+    async getLockedAssetFactorySmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.lockedAssetAddress,
+            abiConfig.lockedAssetFactory,
+            'LockedAssetFactory',
+            options,
+        );
+    }
+
     async getPriceDiscoverySmartContract(
         priceDiscoveryAddress: string,
     ): Promise<SmartContract> {
@@ -235,6 +246,18 @@ export class MXProxyService {
             simpleLockAddress,
             abiConfig.simpleLock,
             'SimpleLock',
+        );
+    }
+
+    async getSimpleLockSmartContractTransaction(
+        simpleLockAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            simpleLockAddress,
+            abiConfig.simpleLock,
+            'SimpleLock',
+            options,
         );
     }
 
