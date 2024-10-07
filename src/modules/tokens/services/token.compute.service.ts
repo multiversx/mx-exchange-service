@@ -260,8 +260,21 @@ export class TokenComputeService implements ITokenComputeService {
             series: tokenID,
             metric: 'priceUSD',
         });
-
+        if (values24h.length > 0 && values24h[0]?.value === '0') {
+            return await this.computeMissingPrevious24hPrice(tokenID);
+        }
         return values24h[0]?.value ?? undefined;
+    }
+
+    async computeMissingPrevious24hPrice(tokenID: string): Promise<string> {
+        const [wrappedEGLDPrev24hPrice, derivedEGLD] = await Promise.all([
+            this.tokenPrevious24hPrice(tokenProviderUSD),
+            this.tokenPriceDerivedEGLD(tokenID),
+        ]);
+
+        return new BigNumber(derivedEGLD)
+            .times(wrappedEGLDPrev24hPrice)
+            .toFixed();
     }
 
     async getAllTokensPrevious24hPrice(tokenIDs: string[]): Promise<string[]> {
