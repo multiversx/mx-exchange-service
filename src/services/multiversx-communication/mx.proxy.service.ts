@@ -210,6 +210,17 @@ export class MXProxyService {
         );
     }
 
+    async getDistributionSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.distributionAddress,
+            abiConfig.distribution,
+            'Distribution',
+            options,
+        );
+    }
+
     async getLockedAssetFactorySmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.lockedAssetAddress,
@@ -236,6 +247,18 @@ export class MXProxyService {
             priceDiscoveryAddress,
             abiConfig.priceDiscovery,
             'PriceDiscovery',
+        );
+    }
+
+    async getPriceDiscoverySmartContractTransaction(
+        priceDiscoveryAddress: string,
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            priceDiscoveryAddress,
+            abiConfig.priceDiscovery,
+            'PriceDiscovery',
+            options,
         );
     }
 
@@ -288,6 +311,17 @@ export class MXProxyService {
         );
     }
 
+    async getMetabondingStakingSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.metabondingStakingAddress,
+            abiConfig.metabondingStaking,
+            'MetabondingStaking',
+            options,
+        );
+    }
+
     async getFeesCollectorContract(
         contractAddress?: string,
     ): Promise<SmartContract> {
@@ -295,6 +329,18 @@ export class MXProxyService {
             contractAddress ?? scAddress.feesCollector,
             abiConfig.feesCollector,
             'FeesCollector',
+        );
+    }
+
+    async getFeesCollectorSmartContractTransaction(
+        options: TransactionOptions,
+        contractAddress?: string,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            contractAddress ?? scAddress.feesCollector,
+            abiConfig.feesCollector,
+            'FeesCollector',
+            options,
         );
     }
 
@@ -306,11 +352,33 @@ export class MXProxyService {
         );
     }
 
+    async getLockedTokenWrapperSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.lockedTokenWrapper,
+            abiConfig.lockedTokenWrapper,
+            'LockedTokenWrapper',
+            options,
+        );
+    }
+
     async getEnergyUpdateContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.energyUpdate,
             abiConfig.energyUpdate,
             'EnergyUpdate',
+        );
+    }
+
+    async getEnergyUpdateSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.energyUpdate,
+            abiConfig.energyUpdate,
+            'EnergyUpdate',
+            options,
         );
     }
 
@@ -322,11 +390,33 @@ export class MXProxyService {
         );
     }
 
+    async getTokenUnstakeSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.tokenUnstake,
+            abiConfig.tokenUnstake,
+            'TokenUnstakeModule',
+            options,
+        );
+    }
+
     async getEscrowContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.escrow,
             abiConfig.escrow,
             'LkmexTransfer',
+        );
+    }
+
+    async getEscrowSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.escrow,
+            abiConfig.escrow,
+            'LkmexTransfer',
+            options,
         );
     }
 

@@ -17,6 +17,9 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('FeesCollectorTransactionService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -49,7 +52,7 @@ describe('FeesCollectorTransactionService', () => {
         const service = module.get<FeesCollectorTransactionService>(
             FeesCollectorTransactionService,
         );
-        const transaction = await service.claimRewards(100000);
+        const transaction = await service.claimRewards(senderAddress, 100000);
         expect(transaction).toEqual(
             new TransactionModel({
                 chainID: mxConfig.chainID,
@@ -57,7 +60,7 @@ describe('FeesCollectorTransactionService', () => {
                 gasPrice: 1000000000,
                 nonce: 0,
                 receiver: scAddress.feesCollector,
-                sender: '',
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 value: '0',
@@ -77,7 +80,7 @@ describe('FeesCollectorTransactionService', () => {
         );
         const transaction = await service.claimRewardsBatch(
             scAddress.feesCollector,
-            Address.Zero().bech32(),
+            senderAddress,
         );
         expect(transaction).toEqual(
             new FeesCollectorTransactionModel({
@@ -87,7 +90,7 @@ describe('FeesCollectorTransactionService', () => {
                     gasPrice: 1000000000,
                     nonce: 0,
                     receiver: scAddress.feesCollector,
-                    sender: '',
+                    sender: senderAddress,
                     receiverUsername: undefined,
                     senderUsername: undefined,
                     value: '0',
@@ -118,7 +121,7 @@ describe('FeesCollectorTransactionService', () => {
 
         const transaction = await service.claimRewardsBatch(
             scAddress.feesCollector,
-            Address.Zero().bech32(),
+            senderAddress,
         );
         expect(transaction).toEqual(
             new FeesCollectorTransactionModel({
@@ -128,7 +131,7 @@ describe('FeesCollectorTransactionService', () => {
                     gasPrice: 1000000000,
                     nonce: 0,
                     receiver: scAddress.feesCollector,
-                    sender: '',
+                    sender: senderAddress,
                     receiverUsername: undefined,
                     senderUsername: undefined,
                     value: '0',
@@ -149,6 +152,7 @@ describe('FeesCollectorTransactionService', () => {
             FeesCollectorTransactionService,
         );
         const transaction = await service.handleKnownContracts(
+            senderAddress,
             [
                 Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
@@ -167,7 +171,7 @@ describe('FeesCollectorTransactionService', () => {
                 gasPrice: 1000000000,
                 nonce: 0,
                 receiver: scAddress.feesCollector,
-                sender: '',
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 value: '0',
@@ -191,7 +195,7 @@ describe('FeesCollectorTransactionService', () => {
         const service = module.get<FeesCollectorTransactionService>(
             FeesCollectorTransactionService,
         );
-        const transaction = await service.handleKnownTokens([
+        const transaction = await service.handleKnownTokens(senderAddress, [
             'WEGLD-123456',
             'MEX-123456',
         ]);
@@ -203,7 +207,7 @@ describe('FeesCollectorTransactionService', () => {
                 gasPrice: 1000000000,
                 nonce: 0,
                 receiver: scAddress.feesCollector,
-                sender: '',
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 value: '0',

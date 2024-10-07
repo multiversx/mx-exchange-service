@@ -15,6 +15,9 @@ import winston from 'winston';
 
 describe('MetabondingTransactionsService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -53,9 +56,8 @@ describe('MetabondingTransactionsService', () => {
             module.get<MetabondingTransactionService>(
                 MetabondingTransactionService,
             );
-        const sender = Address.Zero().bech32();
         const transaction = await service.stakeLockedAsset(
-            sender,
+            senderAddress,
             new InputTokenModel({
                 tokenID: 'LKMEX-abcdef',
                 nonce: 1,
@@ -72,8 +74,8 @@ describe('MetabondingTransactionsService', () => {
                 gasPrice: 1000000000,
                 nonce: 0,
                 options: undefined,
-                receiver: sender,
-                sender,
+                receiver: senderAddress,
+                sender: senderAddress,
                 signature: undefined,
                 value: '0',
                 version: 2,
@@ -86,7 +88,10 @@ describe('MetabondingTransactionsService', () => {
             module.get<MetabondingTransactionService>(
                 MetabondingTransactionService,
             );
-        const transaction = await service.unstake('1000000000000000000');
+        const transaction = await service.unstake(
+            senderAddress,
+            '1000000000000000000',
+        );
         expect(transaction).toEqual(
             new TransactionModel({
                 chainID: mxConfig.chainID,
@@ -96,7 +101,7 @@ describe('MetabondingTransactionsService', () => {
                 nonce: 0,
                 options: undefined,
                 receiver: scAddress.metabondingStakingAddress,
-                sender: '',
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 signature: undefined,
@@ -113,7 +118,7 @@ describe('MetabondingTransactionsService', () => {
             module.get<MetabondingTransactionService>(
                 MetabondingTransactionService,
             );
-        const transaction = await service.unbond(Address.Zero().bech32());
+        const transaction = await service.unbond(senderAddress);
         expect(transaction).toEqual(
             new TransactionModel({
                 chainID: mxConfig.chainID,
@@ -123,7 +128,7 @@ describe('MetabondingTransactionsService', () => {
                 nonce: 0,
                 options: undefined,
                 receiver: scAddress.metabondingStakingAddress,
-                sender: '',
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 signature: undefined,
