@@ -39,6 +39,10 @@ import { TokensCacheWarmerService } from './crons/tokens.cache.warmer.service';
 import { FarmModuleV2 } from 'src/modules/farm/v2/farm.v2.module';
 import { EscrowCacheWarmerService } from './crons/escrow.cache.warmer.service';
 import { EscrowModule } from 'src/modules/escrow/escrow.module';
+import { FeesCollectorCacheWarmerService } from './crons/fees.collector.cache.warmer.service';
+import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.module';
+import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
+import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 
 @Module({
     imports: [
@@ -66,6 +70,9 @@ import { EscrowModule } from 'src/modules/escrow/escrow.module';
         GovernanceModule,
         DynamicModuleUtils.getCacheModule(),
         EscrowModule,
+        FeesCollectorModule,
+        WeekTimekeepingModule,
+        WeeklyRewardsSplittingModule,
     ],
     controllers: [],
     providers: [
@@ -85,6 +92,7 @@ import { EscrowModule } from 'src/modules/escrow/escrow.module';
         ElasticService,
         TokensCacheWarmerService,
         EscrowCacheWarmerService,
+        FeesCollectorCacheWarmerService,
     ],
 })
 export class CacheWarmerModule {}

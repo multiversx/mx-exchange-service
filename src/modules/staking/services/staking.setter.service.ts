@@ -5,6 +5,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
+import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 
 @Injectable()
 export class StakingSetterService extends GenericSetterService {
@@ -172,6 +173,18 @@ export class StakingSetterService extends GenericSetterService {
     async setState(stakeAddress: string, value: string): Promise<string> {
         return await this.setData(
             this.getCacheKey('state', stakeAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async setBoostedYieldsFactors(
+        stakeAddress: string,
+        value: BoostedYieldsFactors,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('boostedYieldsFactors', stakeAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
