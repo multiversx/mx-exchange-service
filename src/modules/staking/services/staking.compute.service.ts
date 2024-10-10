@@ -142,16 +142,23 @@ export class StakingComputeService {
         stakeAddress: string,
         blockDifferenceBig: BigNumber,
     ): Promise<BigNumber> {
+        const extraRewardsAPRBoundedPerBlock =
+            await this.computeExtraRewardsAPRBoundedPerBlock(stakeAddress);
+
+        return extraRewardsAPRBoundedPerBlock.multipliedBy(blockDifferenceBig);
+    }
+
+    async computeExtraRewardsAPRBoundedPerBlock(
+        stakeAddress: string,
+    ): Promise<BigNumber> {
         const [farmTokenSupply, annualPercentageRewards] = await Promise.all([
             this.stakingAbi.farmTokenSupply(stakeAddress),
             this.stakingAbi.annualPercentageRewards(stakeAddress),
         ]);
-        const extraRewardsAPRBoundedPerBlock = new BigNumber(farmTokenSupply)
+        return new BigNumber(farmTokenSupply)
             .multipliedBy(annualPercentageRewards)
             .dividedBy(constantsConfig.MAX_PERCENT)
             .dividedBy(constantsConfig.BLOCKS_IN_YEAR);
-
-        return extraRewardsAPRBoundedPerBlock.multipliedBy(blockDifferenceBig);
     }
 
     async farmingTokenPriceUSD(stakeAddress: string): Promise<string> {
@@ -325,10 +332,18 @@ export class StakingComputeService {
         // 10 blocks per minute * 60 minutes per hour * 24 hours per day
         const blocksInDay = 10 * 60 * 24;
 
+        const extraRewardsAPRBoundedPerBlock =
+            await this.computeExtraRewardsAPRBoundedPerBlock(stakeAddress);
+
+        const perBlockRewards = BigNumber.min(
+            extraRewardsAPRBoundedPerBlock,
+            perBlockRewardAmount,
+        );
+
         return parseFloat(
             new BigNumber(rewardsCapacity)
                 .minus(accumulatedRewards)
-                .dividedBy(perBlockRewardAmount)
+                .dividedBy(perBlockRewards)
                 .dividedBy(blocksInDay)
                 .toFixed(2),
         );
