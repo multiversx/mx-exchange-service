@@ -34,6 +34,8 @@ export class StakingModel {
     @Field()
     apr: string;
     @Field()
+    aprIfUncapped: string;
+    @Field()
     boostedApr: string;
     @Field(() => Int)
     minUnboundEpochs: number;
@@ -43,6 +45,8 @@ export class StakingModel {
     lastRewardBlockNonce: number;
     @Field()
     rewardsRemainingDays: number;
+    @Field()
+    rewardsRemainingDaysIfUncapped: number;
     @Field()
     divisionSafetyConstant: string;
     @Field()

@@ -145,6 +145,11 @@ export class StakingResolver {
     }
 
     @ResolveField()
+    async aprIfUncapped(@Parent() parent: StakingModel) {
+        return this.stakingCompute.stakeFarmUncappedAPR(parent.address);
+    }
+
+    @ResolveField()
     async boostedApr(@Parent() parent: StakingModel) {
         return this.stakingCompute.boostedAPR(parent.address);
     }
@@ -167,6 +172,13 @@ export class StakingResolver {
     @ResolveField()
     async rewardsRemainingDays(@Parent() parent: StakingModel) {
         return this.stakingCompute.computeRewardsRemainingDays(parent.address);
+    }
+
+    @ResolveField()
+    async rewardsRemainingDaysIfUncapped(@Parent() parent: StakingModel) {
+        return this.stakingCompute.computeRewardsRemainingDaysIfUncapped(
+            parent.address,
+        );
     }
 
     @ResolveField()
