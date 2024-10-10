@@ -2,6 +2,7 @@ import {
     ElasticPagination,
     ElasticQuery,
     ElasticService,
+    ElasticSortOrder,
     QueryType,
 } from '@multiversx/sdk-nestjs-elastic';
 import { Inject, Injectable } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { hexToString } from 'src/helpers/helpers';
 import { SWAP_IDENTIFIER } from 'src/modules/rabbitmq/handlers/pair.swap.handler.service';
 import { Logger } from 'winston';
+import { RawElasticEventType } from '../entities/raw.elastic.event';
 
 @Injectable()
 export class ElasticSearchEventsService {
@@ -109,7 +111,40 @@ export class ElasticSearchEventsService {
         return tokensSwapCountMap;
     }
 
-    private async getEvents(
+    async getGovernanceVotes(
+        scAddress: string,
+        callerAddressHex: string,
+        proposalIdHex: string,
+    ): Promise<RawElasticEventType[]> {
+        const result: RawElasticEventType[] = [];
+        const processEventsAction = async (events: any[]): Promise<void> => {
+            result.push(...events);
+        };
+
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match('address', scAddress),
+            QueryType.Match('identifier', 'vote'),
+            QueryType.Match('topics', proposalIdHex),
+            QueryType.Match('topics', callerAddressHex),
+        ];
+
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.ascending },
+        ];
+
+        await this.elasticService.getScrollableList(
+            'events',
+            '',
+            elasticQueryAdapter,
+            processEventsAction,
+        );
+
+        return result;
+    }
+
+    async getEvents(
         eventIdentifiers: string[],
         startTimestamp: number,
         endTimestamp: number,
@@ -122,7 +157,6 @@ export class ElasticSearchEventsService {
         const elasticQueryAdapter: ElasticQuery =
             new ElasticQuery().withPagination(pagination);
 
-        elasticQueryAdapter.withPagination;
         elasticQueryAdapter.condition.must = [
             QueryType.Should(
                 eventIdentifiers.map((identifier) =>
@@ -143,6 +177,10 @@ export class ElasticSearchEventsService {
                     value: endTimestamp,
                 },
             ),
+        ];
+
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.ascending },
         ];
 
         await this.elasticService.getScrollableList(
