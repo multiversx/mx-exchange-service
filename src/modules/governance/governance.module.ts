@@ -58,7 +58,6 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
         GovernanceEnergyContractResolver,
         GovernanceTokenSnapshotContractResolver,
         GovernanceProposalResolver,
-        ElasticService,
     ],
     exports: [
         GovernanceTokenSnapshotAbiService,

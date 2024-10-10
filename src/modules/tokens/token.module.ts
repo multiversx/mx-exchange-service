@@ -13,7 +13,6 @@ import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.
 import { NftCollectionResolver } from './nftCollection.resolver';
 import { NftTokenResolver } from './nftToken.resolver';
 import { AnalyticsModule } from 'src/services/analytics/analytics.module';
-import { ElasticService } from 'src/helpers/elastic.service';
 import { TokenFilteringService } from './services/token.filtering.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
@@ -41,7 +40,6 @@ import { TokenLoader } from './services/token.loader';
         TokensResolver,
         NftCollectionResolver,
         NftTokenResolver,
-        ElasticService,
         TokenFilteringService,
         ESLogsService,
     ],
