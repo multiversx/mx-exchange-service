@@ -7,10 +7,11 @@ import {
 } from '@multiversx/sdk-nestjs-elastic';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { hexToString } from 'src/helpers/helpers';
 import { SWAP_IDENTIFIER } from 'src/modules/rabbitmq/handlers/pair.swap.handler.service';
 import { Logger } from 'winston';
 import { RawElasticEventType } from '../entities/raw.elastic.event';
+import { SwapEvent } from '@multiversx/sdk-exchange';
+import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
 
 @Injectable()
 export class ElasticSearchEventsService {
@@ -73,9 +74,12 @@ export class ElasticSearchEventsService {
                 if (!pairAddresses.includes(event.address)) {
                     continue;
                 }
+                const swapEvent = new SwapEvent(
+                    convertEventTopicsAndDataToBase64(event),
+                );
 
-                const firstTokenID = hexToString(event.topics[1]);
-                const secondTokenID = hexToString(event.topics[2]);
+                const firstTokenID = swapEvent.getTokenIn().tokenID;
+                const secondTokenID = swapEvent.getTokenOut().tokenID;
 
                 if (tokensSwapCountMap.has(firstTokenID)) {
                     tokensSwapCountMap.set(
