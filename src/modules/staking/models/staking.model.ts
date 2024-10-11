@@ -34,7 +34,7 @@ export class StakingModel {
     @Field()
     apr: string;
     @Field()
-    aprIfUncapped: string;
+    aprUncapped: string;
     @Field()
     boostedApr: string;
     @Field(() => Int)
@@ -46,7 +46,7 @@ export class StakingModel {
     @Field()
     rewardsRemainingDays: number;
     @Field()
-    rewardsRemainingDaysIfUncapped: number;
+    rewardsRemainingDaysUncapped: number;
     @Field()
     divisionSafetyConstant: string;
     @Field()

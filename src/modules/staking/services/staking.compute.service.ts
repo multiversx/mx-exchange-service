@@ -209,11 +209,9 @@ export class StakingComputeService {
     }
 
     async computeStakeFarmAPR(stakeAddress: string): Promise<string> {
-        const rewardsDepletedOrDisabled = await this.rewardsDepletedOrDisabled(
-            stakeAddress,
-        );
+        const isProducingRewards = await this.isProducingRewards(stakeAddress);
 
-        if (rewardsDepletedOrDisabled) {
+        if (isProducingRewards) {
             return '0';
         }
 
@@ -259,11 +257,9 @@ export class StakingComputeService {
     }
 
     async computeStakeFarmUncappedAPR(stakeAddress: string): Promise<string> {
-        const rewardsDepletedOrDisabled = await this.rewardsDepletedOrDisabled(
-            stakeAddress,
-        );
+        const isProducingRewards = await this.isProducingRewards(stakeAddress);
 
-        if (rewardsDepletedOrDisabled) {
+        if (isProducingRewards) {
             return '0';
         }
 
@@ -358,7 +354,7 @@ export class StakingComputeService {
         );
     }
 
-    async computeRewardsRemainingDaysIfUncapped(
+    async computeRewardsRemainingDaysUncapped(
         stakeAddress: string,
     ): Promise<number> {
         return await this.computeRewardsRemainingDaysBase(stakeAddress);
@@ -966,9 +962,7 @@ export class StakingComputeService {
         return deployedAt ?? undefined;
     }
 
-    private async rewardsDepletedOrDisabled(
-        stakeAddress: string,
-    ): Promise<boolean> {
+    private async isProducingRewards(stakeAddress: string): Promise<boolean> {
         const [accumulatedRewards, rewardsCapacity, produceRewardsEnabled] =
             await Promise.all([
                 this.stakingAbi.accumulatedRewards(stakeAddress),
