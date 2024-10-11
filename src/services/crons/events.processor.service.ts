@@ -12,6 +12,7 @@ import {
     EsdtLocalBurnEvent,
     ExitFarmEventV1_2,
     ExitFarmEventV1_3,
+    ExitFarmEventV2,
     TRANSACTION_EVENTS,
 } from '@multiversx/sdk-exchange';
 import { farmVersion } from 'src/utils/farm.utils';
@@ -248,7 +249,8 @@ export class EventsProcessorService {
             const events = transactionEvents.get(txHash);
 
             const burnEvents: EsdtLocalBurnEvent[] = [];
-            let exitFarmEvent: BaseFarmEvent | undefined = undefined;
+            let exitFarmEvent: BaseFarmEvent | ExitFarmEventV2 | undefined =
+                undefined;
             let timestamp: number;
 
             events.forEach((event) => {
@@ -264,6 +266,12 @@ export class EventsProcessorService {
                                 break;
                             case FarmVersion.V1_3:
                                 exitFarmEvent = new ExitFarmEventV1_3(event);
+                                break;
+                            case FarmVersion.V2:
+                                if (event.topics.length !== 6) {
+                                    break;
+                                }
+                                exitFarmEvent = new ExitFarmEventV2(event);
                                 break;
                         }
                         timestamp = event.timestamp;
@@ -376,7 +384,7 @@ export class EventsProcessorService {
     }
 
     private processExitFarmEvents(
-        exitFarmEvent: BaseFarmEvent,
+        exitFarmEvent: BaseFarmEvent | ExitFarmEventV2,
         burnEvents: EsdtLocalBurnEvent[] = [],
         timestamp: number,
     ): Promise<void> {
@@ -399,6 +407,41 @@ export class EventsProcessorService {
     }
 
     private getBurnedPenalty(
+        exitFarmEvent: BaseFarmEvent | ExitFarmEventV2,
+        esdtLocalBurnEvents: EsdtLocalBurnEvent[],
+    ): string {
+        if (!(exitFarmEvent instanceof ExitFarmEventV2)) {
+            return this.getBurnedPenaltyOldFarms(
+                exitFarmEvent,
+                esdtLocalBurnEvents,
+            );
+        }
+
+        let penalty = new BigNumber(0);
+
+        for (const localBurn of esdtLocalBurnEvents) {
+            const burnedTokenID = localBurn.getTopics().tokenID;
+            const burnedAmount = localBurn.getTopics().amount;
+
+            // Skip LP tokens burn
+            if (burnedTokenID !== constantsConfig.MEX_TOKEN_ID) {
+                continue;
+            }
+
+            if (
+                burnedAmount === exitFarmEvent.farmingToken.amount &&
+                burnedTokenID === exitFarmEvent.farmingToken.tokenIdentifier
+            ) {
+                continue;
+            }
+
+            penalty = penalty.plus(burnedAmount);
+        }
+
+        return penalty.toFixed();
+    }
+
+    private getBurnedPenaltyOldFarms(
         exitFarmEvent: BaseFarmEvent,
         esdtLocalBurnEvents: EsdtLocalBurnEvent[],
     ): string {
