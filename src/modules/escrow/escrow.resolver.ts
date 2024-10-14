@@ -129,8 +129,9 @@ export class EscrowResolver {
     })
     async escrowReceive(
         @Args('senderAddress') senderAddress: string,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.escrowTransaction.withdraw(senderAddress);
+        return this.escrowTransaction.withdraw(senderAddress, user.address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -141,9 +142,13 @@ export class EscrowResolver {
     async cancelEscrowTransfer(
         @Args('sender') sender: string,
         @Args('receiver') receiver: string,
-        @AuthUser(EscrowAdminValidator) _user: UserAuthResult,
+        @AuthUser(EscrowAdminValidator) user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.escrowTransaction.cancelTransfer(sender, receiver);
+        return this.escrowTransaction.cancelTransfer(
+            sender,
+            receiver,
+            user.address,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

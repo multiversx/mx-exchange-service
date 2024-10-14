@@ -19,6 +19,9 @@ import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.a
 
 describe('StakingTransactionService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -74,10 +77,10 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.stakeFarm.default,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01@WEGLD-123456@@1000@stakeFarm',
+                'ESDTTransfer@WEGLD-123456@1000@stakeFarm',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
         });
@@ -92,8 +95,8 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'WEGLD-123456',
-                nonce: 0,
+                tokenID: 'STAKETOK-111111',
+                nonce: 1,
                 amount: '1000',
             }),
         );
@@ -106,10 +109,10 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.unstakeFarm,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@WEGLD-123456@@1000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unstakeFarm',
+                'ESDTNFTTransfer@STAKETOK-111111@01@1000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unstakeFarm',
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
         });
@@ -124,8 +127,8 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'WEGLD-123456',
-                nonce: 0,
+                tokenID: 'STAKETOK-111111',
+                nonce: 1,
                 amount: '1000000',
             }),
         );
@@ -138,10 +141,10 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.unbondFarm,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@WEGLD-123456@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unbondFarm',
+                'ESDTNFTTransfer@STAKETOK-111111@01@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unbondFarm',
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
         });
@@ -156,8 +159,8 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'WEGLD-123456',
-                nonce: 0,
+                tokenID: 'STAKETOK-111111',
+                nonce: 1,
                 amount: '1000000',
             }),
         );
@@ -170,10 +173,10 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.claimRewards,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@WEGLD-123456@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
+                'ESDTNFTTransfer@STAKETOK-111111@01@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
         });
@@ -188,8 +191,8 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
-                tokenID: 'WEGLD-123456',
-                nonce: 0,
+                tokenID: 'STAKETOK-111111',
+                nonce: 1,
                 amount: '1000000',
             }),
         );
@@ -202,10 +205,10 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.compoundRewards,
             data: encodeTransactionData(
-                'ESDTNFTTransfer@WEGLD-123456@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@compoundRewards',
+                'ESDTNFTTransfer@STAKETOK-111111@01@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@compoundRewards',
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
         });
@@ -230,7 +233,7 @@ describe('StakingTransactionService', () => {
             gasLimit: gasConfig.stake.claimBoostedRewards,
             data: encodeTransactionData('claimBoostedRewards'),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -245,8 +248,8 @@ describe('StakingTransactionService', () => {
         const mxApi = module.get<MXApiService>(MXApiService);
         jest.spyOn(mxApi, 'getNftsForUser').mockResolvedValue([
             {
-                identifier: 'STAKETOK-1111-01',
-                collection: 'STAKETOK-1111',
+                identifier: 'STAKETOK-111111-01',
+                collection: 'STAKETOK-111111',
                 attributes:
                     'AAAABHA3g/MAAAAAAAAACA3gtrOnZAAAYLtgEaeB64tT1h15BHRQrapGl34gI5MSlRJiwQV9EJA=',
                 nonce: 1,
@@ -276,10 +279,10 @@ describe('StakingTransactionService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.stake.claimRewards,
                 data: encodeTransactionData(
-                    'ESDTNFTTransfer@STAKETOK-1111@01@1000000000000000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
+                    'ESDTNFTTransfer@STAKETOK-111111@01@1000000000000000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
                 ),
                 chainID: 'T',
-                version: 1,
+                version: 2,
                 options: undefined,
                 guardian: undefined,
                 signature: undefined,
@@ -294,6 +297,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.topUpRewards(
+            senderAddress,
             Address.Zero().bech32(),
             new InputTokenModel({
                 tokenID: 'WEGLD-123456',
@@ -306,7 +310,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             senderUsername: undefined,
             receiverUsername: undefined,
             gasPrice: 1000000000,
@@ -315,7 +319,7 @@ describe('StakingTransactionService', () => {
                 'ESDTTransfer@WEGLD-123456@01000000@topUpRewards',
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -356,7 +360,7 @@ describe('StakingTransactionService', () => {
                 'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@02@EGLDMEXFL-abcdef@@01000000@EGLDMEXFL-abcdef@@01000000@mergeFarmTokens',
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
         });
@@ -368,6 +372,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setAddressWhitelist(
+            senderAddress,
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             true,
@@ -377,7 +382,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -386,7 +391,7 @@ describe('StakingTransactionService', () => {
                 'addSCAddressToWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -400,6 +405,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setAddressWhitelist(
+            senderAddress,
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             false,
@@ -409,7 +415,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -418,7 +424,7 @@ describe('StakingTransactionService', () => {
                 'removeSCAddressFromWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -432,6 +438,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setState(
+            senderAddress,
             Address.Zero().bech32(),
             false,
         );
@@ -440,14 +447,14 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setState,
             data: encodeTransactionData('pause'),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -461,6 +468,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setState(
+            senderAddress,
             Address.Zero().bech32(),
             true,
         );
@@ -469,14 +477,14 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setState,
             data: encodeTransactionData('resume'),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -490,6 +498,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.registerFarmToken(
+            senderAddress,
             Address.Zero().bech32(),
             'TokenToRegisterName',
             'TokenToRegisterID',
@@ -500,7 +509,7 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -509,7 +518,7 @@ describe('StakingTransactionService', () => {
                 'registerFarmToken@TokenToRegisterName@TokenToRegisterID@18',
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -523,6 +532,8 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setLocalRolesFarmToken(
+            senderAddress,
+            Address.Zero().bech32(),
             Address.Zero().bech32(),
         );
         expect(transaction).toEqual({
@@ -530,14 +541,16 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setLocalRolesFarmToken,
-            data: encodeTransactionData('setBurnRoleForAddress'),
+            data: encodeTransactionData(
+                'setBurnRoleForAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -551,6 +564,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setPerBlockRewardAmount(
+            senderAddress,
             Address.Zero().bech32(),
             '100',
         );
@@ -559,14 +573,14 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setPerBlockRewardAmount,
             data: encodeTransactionData('setPerBlockRewardAmount@0100'),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -580,6 +594,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setMaxApr(
+            senderAddress,
             Address.Zero().bech32(),
             100,
         );
@@ -588,14 +603,14 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setMaxApr,
             data: encodeTransactionData('setMaxApr@0100'),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -609,6 +624,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setMinUnbondEpochs(
+            senderAddress,
             Address.Zero().bech32(),
             100,
         );
@@ -617,14 +633,14 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setMinUnbondEpochs,
             data: encodeTransactionData('setMinUnbondEpochs@0100'),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -638,6 +654,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setRewardsState(
+            senderAddress,
             Address.Zero().bech32(),
             true,
         );
@@ -646,14 +663,14 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setRewardsState,
             data: encodeTransactionData('startProduceRewards'),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -667,6 +684,7 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.setRewardsState(
+            senderAddress,
             Address.Zero().bech32(),
             false,
         );
@@ -675,14 +693,14 @@ describe('StakingTransactionService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender: '',
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.setRewardsState,
             data: encodeTransactionData('endProduceRewards'),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,

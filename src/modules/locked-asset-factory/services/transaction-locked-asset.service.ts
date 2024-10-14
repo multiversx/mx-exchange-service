@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Address, TokenTransfer } from '@multiversx/sdk-core';
-import { constantsConfig, mxConfig, gasConfig } from 'src/config';
+import { Token, TokenTransfer } from '@multiversx/sdk-core';
+import { constantsConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { BigNumber } from 'bignumber.js';
 import { UnlockAssetsArgs } from '../models/locked-asset.args';
@@ -10,6 +10,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { LockedAssetGetterService } from './locked.asset.getter.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class TransactionsLockedAssetService {
@@ -23,40 +24,45 @@ export class TransactionsLockedAssetService {
         sender: string,
         args: UnlockAssetsArgs,
     ): Promise<TransactionModel> {
-        const contract =
-            await this.mxProxy.getLockedAssetFactorySmartContract();
-        return contract.methodsExplicit
-            .unlockAssets()
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    args.lockedTokenID,
-                    args.lockedTokenNonce,
-                    new BigNumber(args.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.lockedAssetFactory.unlockAssets)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getLockedAssetFactorySmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.lockedAssetFactory.unlockAssets,
+                function: 'unlockAssets',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.lockedTokenID,
+                            nonce: BigInt(args.lockedTokenNonce),
+                        }),
+                        amount: BigInt(args.amount),
+                    }),
+                ],
+            }),
+        );
     }
 
-    async lockAssets(token: InputTokenModel): Promise<TransactionModel> {
+    async lockAssets(
+        sender: string,
+        token: InputTokenModel,
+    ): Promise<TransactionModel> {
         await this.validateLockAssetsInputTokens(token);
-        const contract =
-            await this.mxProxy.getLockedAssetFactorySmartContract();
-        return contract.methodsExplicit
-            .lockAssets()
-            .withSingleESDTTransfer(
-                TokenTransfer.fungibleFromBigInteger(
-                    token.tokenID,
-                    new BigNumber(token.amount),
-                ),
-            )
-            .withGasLimit(gasConfig.lockedAssetFactory.lockAssets)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+
+        return await this.mxProxy.getLockedAssetFactorySmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.lockedAssetFactory.lockAssets,
+                function: 'lockAssets',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: token.tokenID,
+                        }),
+                        amount: BigInt(token.amount),
+                    }),
+                ],
+            }),
+        );
     }
 
     async mergeLockedAssetTokens(
@@ -84,16 +90,6 @@ export class TransactionsLockedAssetService {
             throw error;
         }
 
-        const contract =
-            await this.mxProxy.getLockedAssetFactorySmartContract();
-
-        const mappedPayments = tokens.map((tokenPayment) =>
-            TokenTransfer.metaEsdtFromBigInteger(
-                tokenPayment.tokenID,
-                tokenPayment.nonce,
-                new BigNumber(tokenPayment.amount),
-            ),
-        );
         const gasLimit = new BigNumber(
             gasConfig.lockedAssetFactory.lockedAssetMerge,
         )
@@ -101,14 +97,23 @@ export class TransactionsLockedAssetService {
             .plus(gasConfig.lockedAssetFactory.defaultMergeLockedAssets)
             .toNumber();
 
-        return contract.methodsExplicit
-            .mergeLockedAssetTokens()
-            .withMultiESDTNFTTransfer(mappedPayments)
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getLockedAssetFactorySmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasLimit,
+                function: 'mergeLockedAssetTokens',
+                tokenTransfers: tokens.map(
+                    (tokenPayment) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: tokenPayment.tokenID,
+                                nonce: BigInt(tokenPayment.nonce),
+                            }),
+                            amount: BigInt(tokenPayment.amount),
+                        }),
+                ),
+            }),
+        );
     }
 
     async validateInputTokens(tokens: InputTokenModel[]): Promise<void> {
