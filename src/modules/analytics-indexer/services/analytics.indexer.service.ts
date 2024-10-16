@@ -1,6 +1,6 @@
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable } from '@nestjs/common';
-import { scAddress } from 'src/config';
+import { constantsConfig, scAddress } from 'src/config';
 import { StateService } from './state.service';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
@@ -13,8 +13,10 @@ import { RawElasticEventType } from 'src/services/elastic-search/entities/raw.el
 import {
     AddLiquidityEvent,
     DepositEvent,
+    EsdtLocalBurnEvent,
     RemoveLiquidityEvent,
     SwapEvent,
+    TRANSACTION_EVENTS,
     WithdrawEvent,
 } from '@multiversx/sdk-exchange';
 import { IndexerSwapHandlerService } from './event-handlers/swap.handler.service';
@@ -140,6 +142,7 @@ export class AnalyticsIndexerService {
             [
                 SWAP_IDENTIFIER.SWAP_FIXED_INPUT,
                 SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+                TRANSACTION_EVENTS.ESDT_LOCAL_BURN,
                 'addLiquidity',
                 'removeLiquidity',
                 'deposit',
@@ -168,6 +171,8 @@ export class AnalyticsIndexerService {
 
         this.data = [];
         let timestamp: number;
+        let hasSwapEvents = false;
+        const burnEvents: EsdtLocalBurnEvent[] = [];
 
         let eventData: any[] = [];
         for (const rawEvent of rawEvents) {
@@ -179,6 +184,7 @@ export class AnalyticsIndexerService {
                             this.swapHandlerService.handleSwapEvents(
                                 new SwapEvent(rawEvent),
                             );
+                        hasSwapEvents = true;
                         break;
                     case 'addLiquidity':
                         [eventData, timestamp] =
@@ -204,11 +210,24 @@ export class AnalyticsIndexerService {
                                 new WithdrawEvent(rawEvent),
                             );
                         break;
+                    case TRANSACTION_EVENTS.ESDT_LOCAL_BURN:
+                        burnEvents.push(new EsdtLocalBurnEvent(rawEvent));
+                        break;
                 }
                 this.updateIngestData(eventData);
             } catch (error) {
                 this.logger.error(error);
             }
+        }
+
+        const feeBurned = hasSwapEvents ? this.getBurnedFee(burnEvents) : '0';
+
+        if (feeBurned !== '0') {
+            const burnData = [];
+            burnData[constantsConfig.MEX_TOKEN_ID] = {
+                feeBurned: feeBurned,
+            };
+            this.updateIngestData(burnData);
         }
 
         if (Object.keys(this.data).length > 0) {
@@ -228,6 +247,22 @@ export class AnalyticsIndexerService {
                 },
             );
         }
+    }
+
+    private getBurnedFee(esdtLocalBurnEvents: EsdtLocalBurnEvent[]): string {
+        let fee = new BigNumber(0);
+        for (const localBurn of esdtLocalBurnEvents) {
+            const burnedTokenID = localBurn.getTopics().tokenID;
+            const burnedAmount = localBurn.getTopics().amount;
+
+            if (burnedTokenID !== constantsConfig.MEX_TOKEN_ID) {
+                continue;
+            }
+
+            fee = fee.plus(burnedAmount);
+        }
+
+        return fee.toFixed();
     }
 
     private updateIngestData(eventData: any[]): void {
