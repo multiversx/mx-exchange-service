@@ -118,6 +118,37 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
+    async getLastForMetric(
+        series: string,
+        metric: string,
+        time: number,
+    ): Promise<string> {
+        try {
+            const endDate = moment.unix(time).utc().toDate();
+
+            const query = this.dexAnalytics
+                .createQueryBuilder()
+                .select()
+                .where('series = :series', { series })
+                .andWhere('key = :metric', { metric })
+                .andWhere(`timestamp <= :endDate`, { endDate })
+                .orderBy('timestamp', 'DESC')
+                .limit(1);
+            const last = await query.getRawOne();
+
+            return last?.value ?? '0';
+        } catch (error) {
+            this.logger.error('getLastMetric', {
+                series,
+                metric,
+                time,
+                error,
+            });
+            throw error;
+        }
+    }
+
+    @TimescaleDBQuery()
     async getLatestCompleteValues({
         series,
         metric,

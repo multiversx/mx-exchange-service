@@ -22,6 +22,13 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
     getAggregatedValue(args: AnalyticsQueryArgs): Promise<string> {
         throw new Error('Method not implemented.');
     }
+    getLastForMetric(
+        series: string,
+        metric: string,
+        time: number,
+    ): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
     getLatestCompleteValues(
         args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
