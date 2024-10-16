@@ -16,7 +16,6 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
-import { farmsAddresses } from 'src/utils/farm.utils';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryService } from '../../price-discovery/services/price.discovery.service';
@@ -49,10 +48,12 @@ import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staki
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { SimpleLockAbiService } from 'src/modules/simple-lock/services/simple.lock.abi.service';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
-import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
+import { farmsAddresses } from 'src/utils/farm.utils';
+
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -77,7 +78,7 @@ export class UserMetaEsdtService {
         private readonly apiService: MXApiService,
         private readonly proxyPairAbi: ProxyPairAbiService,
         private readonly proxyFarmAbi: ProxyFarmAbiService,
-        private readonly farmAbi: FarmAbiFactory,
+        private readonly farmAbi: FarmAbiService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly stakingAbi: StakingAbiService,
         private readonly proxyStakeAbi: StakingProxyAbiService,
@@ -118,10 +119,8 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
         calculateUSD = true,
     ): Promise<UserFarmToken[]> {
-        const farmTokenIDs = await Promise.all(
-            farmsAddresses().map((address) =>
-                this.farmAbi.useAbi(address).farmTokenID(address),
-            ),
+        const farmTokenIDs = await this.farmAbi.getAllFarmTokenIds(
+            farmsAddresses(),
         );
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
@@ -254,11 +253,10 @@ export class UserMetaEsdtService {
     ): Promise<UserStakeFarmToken[]> {
         const stakingAddresses =
             await this.remoteConfigGetterService.getStakingAddresses();
-        const stakingTokenIDs = await Promise.all(
-            stakingAddresses.map((address) =>
-                this.stakingAbi.farmTokenID(address),
-            ),
+        const stakingTokenIDs = await this.stakingAbi.getAllFarmTokenIds(
+            stakingAddresses,
         );
+
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -289,11 +287,10 @@ export class UserMetaEsdtService {
     ): Promise<UserUnbondFarmToken[]> {
         const stakingAddresses =
             await this.remoteConfigGetterService.getStakingAddresses();
-        const stakingTokenIDs = await Promise.all(
-            stakingAddresses.map((address) =>
-                this.stakingAbi.farmTokenID(address),
-            ),
+        const stakingTokenIDs = await this.stakingAbi.getAllFarmTokenIds(
+            stakingAddresses,
         );
+
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -324,11 +321,11 @@ export class UserMetaEsdtService {
     ): Promise<UserDualYiledToken[]> {
         const stakingProxyAddresses =
             await this.remoteConfigGetterService.getStakingProxyAddresses();
-        const dualYieldTokenIDs = await Promise.all(
-            stakingProxyAddresses.map((address) =>
-                this.proxyStakeAbi.dualYieldTokenID(address),
-            ),
-        );
+        const dualYieldTokenIDs =
+            await this.proxyStakeAbi.getAllDualYieldTokenIds(
+                stakingProxyAddresses,
+            );
+
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -352,11 +349,11 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserRedeemToken[]> {
-        const redeemTokenIDs = await Promise.all(
-            scAddress.priceDiscovery.map((address: string) =>
-                this.priceDiscoveryAbi.redeemTokenID(address),
-            ),
-        );
+        const redeemTokenIDs =
+            await this.priceDiscoveryAbi.getAllRedeemTokenIds(
+                scAddress.priceDiscovery,
+            );
+
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -378,6 +375,7 @@ export class UserMetaEsdtService {
                 this.simpleLockAbi.lockedTokenID(address),
             ),
         );
+
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -399,6 +397,7 @@ export class UserMetaEsdtService {
                 this.simpleLockAbi.lpProxyTokenID(address),
             ),
         );
+
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -422,6 +421,7 @@ export class UserMetaEsdtService {
                 this.simpleLockAbi.farmProxyTokenID(address),
             ),
         );
+
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -676,18 +676,14 @@ export class UserMetaEsdtService {
             }
         }
 
-        let promises: Promise<string>[] = [];
-        for (const farmAddress of farmsAddresses()) {
-            promises.push(
-                this.farmAbi.useAbi(farmAddress).farmTokenID(farmAddress),
-            );
-        }
-        const farmTokenIDs = await Promise.all(promises);
+        const farmTokenIDs = await this.farmAbi.getAllFarmTokenIds(
+            farmsAddresses(),
+        );
         if (farmTokenIDs.find((farmTokenID) => farmTokenID === tokenID)) {
             return NftTokenType.FarmToken;
         }
 
-        promises = [];
+        let promises: Promise<string>[] = [];
         const staking =
             await this.remoteConfigGetterService.getStakingAddresses();
         for (const address of staking) {

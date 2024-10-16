@@ -51,12 +51,8 @@ export abstract class FarmServiceBase {
     }
 
     async getAllFarmTokens(farmAddresses: string[]): Promise<NftCollection[]> {
-        const farmTokenIDs = await getAllKeys<string>(
-            this.cachingService,
+        const farmTokenIDs = await this.farmAbi.getAllFarmTokenIds(
             farmAddresses,
-            'farm.farmTokenID',
-            this.farmAbi.farmTokenID.bind(this.farmAbi),
-            CacheTtlInfo.Token,
         );
         return this.tokenService.getAllNftsCollectionMetadata(farmTokenIDs);
     }
