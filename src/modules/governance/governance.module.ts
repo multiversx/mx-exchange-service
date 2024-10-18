@@ -28,7 +28,7 @@ import { GovernanceAbiFactory } from './services/governance.abi.factory';
 import { GovernanceServiceFactory } from './services/governance.factory';
 import { GovernanceOldEnergyAbiService } from './services/governance.old.energy.abi.service';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
-import { ElasticService } from 'src/helpers/elastic.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 @Module({
     imports: [
@@ -38,6 +38,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
         TokenModule,
         EnergyModule,
         LockedAssetModule,
+        ElasticSearchModule,
     ],
     providers: [
         GovernanceTokenSnapshotService,
@@ -57,7 +58,6 @@ import { ElasticService } from 'src/helpers/elastic.service';
         GovernanceEnergyContractResolver,
         GovernanceTokenSnapshotContractResolver,
         GovernanceProposalResolver,
-        ElasticService,
     ],
     exports: [
         GovernanceTokenSnapshotAbiService,
