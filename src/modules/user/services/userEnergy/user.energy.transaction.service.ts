@@ -72,7 +72,7 @@ export class UserEnergyTransactionService {
                 sender: userAddress,
                 gasLimit:
                     gasConfig.energyUpdate.updateFarmsEnergyForUser *
-                    endpointArgs.length,
+                    farmAddresses.length,
                 function: 'updateFarmsEnergyForUser',
                 arguments: endpointArgs,
             }),
