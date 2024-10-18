@@ -15,6 +15,7 @@ import { FarmTransactionFactory } from './farm.transaction.factory';
 import { FarmComputeFactory } from './farm.compute.factory';
 import { FarmAbiFactory } from './farm.abi.factory';
 import { FarmSetterFactory } from './farm.setter.factory';
+import { FarmAbiService } from './base-module/services/farm.abi.service';
 
 @Module({
     imports: [
@@ -37,12 +38,14 @@ import { FarmSetterFactory } from './farm.setter.factory';
         FarmTransactionFactory,
         FarmQueryResolver,
         FarmTransactionResolver,
+        FarmAbiService,
     ],
     exports: [
         FarmFactoryService,
         FarmAbiFactory,
         FarmSetterFactory,
         FarmComputeFactory,
+        FarmAbiService,
     ],
 })
 export class FarmModule {}

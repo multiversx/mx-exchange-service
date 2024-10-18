@@ -13,6 +13,11 @@ export class FarmAbiServiceMock implements IFarmAbiService {
     async farmTokenID(farmAddress: string): Promise<string> {
         return farms.find((f) => f.address === farmAddress).farmTokenID;
     }
+    async getAllFarmTokenIds(farmsAddresses: string[]): Promise<string[]> {
+        return farms
+            .filter((farm) => farmsAddresses.includes(farm.address))
+            .map((farm) => farm.farmTokenID);
+    }
     async farmingTokenID(farmAddress: string): Promise<string> {
         return farms.find((f) => f.address === farmAddress).farmingTokenID;
     }

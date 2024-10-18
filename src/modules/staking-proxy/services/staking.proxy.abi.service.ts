@@ -7,13 +7,18 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IStakingProxyAbiService } from './interfaces';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class StakingProxyAbiService
     extends GenericAbiService
     implements IStakingProxyAbiService
 {
-    constructor(protected readonly mxProxy: MXProxyService) {
+    constructor(
+        protected readonly mxProxy: MXProxyService,
+        private readonly cachingService: CacheService,
+    ) {
         super(mxProxy);
     }
 
@@ -145,6 +150,18 @@ export class StakingProxyAbiService
             contract.methodsExplicit.getDualYieldTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getAllDualYieldTokenIds(
+        stakingProxyAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakingProxyAddresses,
+            'stakeProxy.dualYieldTokenID',
+            this.dualYieldTokenID.bind(this),
+            CacheTtlInfo.Token,
+        );
     }
 
     @ErrorLoggerAsync({
