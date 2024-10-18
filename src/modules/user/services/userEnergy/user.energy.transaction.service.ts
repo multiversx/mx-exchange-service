@@ -1,4 +1,9 @@
-import { Address, AddressValue, TypedValue } from '@multiversx/sdk-core';
+import {
+    Address,
+    AddressValue,
+    TypedValue,
+    VariadicValue,
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { gasConfig, scAddress } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -21,18 +26,19 @@ export class UserEnergyTransactionService {
         const endpointArgs: TypedValue[] = [
             new AddressValue(Address.newFromBech32(userAddress)),
         ];
+        const farmAddresses: TypedValue[] = [];
 
         if (includeAllContracts) {
             const farms = await this.userEnergyCompute.userActiveFarmsV2(
                 userAddress,
             );
             farms.forEach((farm) => {
-                endpointArgs.push(
+                farmAddresses.push(
                     new AddressValue(Address.newFromBech32(farm)),
                 );
             });
             if (!skipFeesCollector) {
-                endpointArgs.push(
+                farmAddresses.push(
                     new AddressValue(
                         Address.newFromBech32(scAddress.feesCollector),
                     ),
@@ -46,7 +52,7 @@ export class UserEnergyTransactionService {
                 );
             contracts.forEach((contract) => {
                 if (contract !== undefined && !contract.claimProgressOutdated) {
-                    endpointArgs.push(
+                    farmAddresses.push(
                         new AddressValue(
                             Address.newFromBech32(contract.address),
                         ),
@@ -54,9 +60,12 @@ export class UserEnergyTransactionService {
                 }
             });
         }
-        if (endpointArgs.length === 1) {
+
+        if (farmAddresses.length === 0) {
             return null;
         }
+
+        endpointArgs.push(VariadicValue.fromItems(...farmAddresses));
 
         return await this.mxProxy.getEnergyUpdateSmartContractTransaction(
             new TransactionOptions({
