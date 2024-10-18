@@ -6,6 +6,7 @@ import {
     Token,
     TokenTransfer,
     TypedValue,
+    VariadicValue,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -72,8 +73,16 @@ export class AutoRouterTransactionService {
             function: 'multiPairSwap',
             arguments:
                 args.swapType == SWAP_TYPE.fixedInput
-                    ? this.multiPairFixedInputSwaps(args)
-                    : this.multiPairFixedOutputSwaps(args),
+                    ? [
+                          VariadicValue.fromItems(
+                              ...this.multiPairFixedInputSwaps(args),
+                          ),
+                      ]
+                    : [
+                          VariadicValue.fromItems(
+                              ...this.multiPairFixedOutputSwaps(args),
+                          ),
+                      ],
             tokenTransfers: [
                 new TokenTransfer({
                     token: new Token({
