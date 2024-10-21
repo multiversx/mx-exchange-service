@@ -6,7 +6,6 @@ import { PerformanceProfiler } from '../utils/performance.profiler';
 import { MetricsCollector } from '../utils/metrics.collector';
 import { IContractQuery } from '@multiversx/sdk-network-providers/out/interface';
 import { ContextTracker } from '@multiversx/sdk-nestjs-common';
-import { AxiosRequestConfig } from 'axios';
 import { ApiConfigService } from './api.config.service';
 import { NetworkProviderConfig } from '@multiversx/sdk-core/out/networkProviders/networkProviderConfig';
 
