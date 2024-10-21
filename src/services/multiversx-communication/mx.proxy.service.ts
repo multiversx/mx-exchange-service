@@ -49,7 +49,7 @@ export class MXProxyService {
                 headers: {
                     origin: 'xExchangeService',
                 },
-                clientName: 'xexchange-api',
+                clientName: 'xExchangeService',
             },
         );
 
