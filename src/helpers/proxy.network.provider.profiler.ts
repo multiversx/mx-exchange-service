@@ -8,12 +8,13 @@ import { IContractQuery } from '@multiversx/sdk-network-providers/out/interface'
 import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 import { AxiosRequestConfig } from 'axios';
 import { ApiConfigService } from './api.config.service';
+import { NetworkProviderConfig } from '@multiversx/sdk-core/out/networkProviders/networkProviderConfig';
 
 export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
     constructor(
         private readonly apiConfigService: ApiConfigService,
         url: string,
-        config?: AxiosRequestConfig,
+        config?: NetworkProviderConfig,
     ) {
         super(url, config);
     }

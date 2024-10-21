@@ -47,8 +47,9 @@ export class MXProxyService {
                 httpAgent: mxConfig.keepAlive ? httpAgent : null,
                 httpsAgent: mxConfig.keepAlive ? httpsAgent : null,
                 headers: {
-                    origin: 'MaiarExchangeService',
+                    origin: 'xExchangeService',
                 },
+                clientName: 'xexchange-api',
             },
         );
 
