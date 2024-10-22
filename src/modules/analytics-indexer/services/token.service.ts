@@ -8,6 +8,7 @@ import {
     tokenProviderUSD,
 } from 'src/config';
 import { StateService } from './state.service';
+import { PairMetadata } from '../entities/pair.metadata';
 
 @Injectable()
 export class IndexerTokenService {
@@ -19,7 +20,7 @@ export class IndexerTokenService {
 
     public computeTokenPriceDerivedUSD(tokenID: string): string {
         const egldPriceUSD = this.getEgldPriceInUSD();
-        const derivedEGLD = this.computeTokenPriceDerivedEGLD(tokenID);
+        const derivedEGLD = this.computeTokenPriceDerivedEGLD(tokenID, []);
 
         return new BigNumber(derivedEGLD).times(egldPriceUSD).toFixed();
     }
@@ -28,12 +29,24 @@ export class IndexerTokenService {
         return this.pairService.computeFirstTokenPrice(scAddress.WEGLD_USDC);
     }
 
-    private computeTokenPriceDerivedEGLD(tokenID: string): string {
+    private computeTokenPriceDerivedEGLD(
+        tokenID: string,
+        pairsNotToVisit: PairMetadata[],
+    ): string {
         if (tokenID === tokenProviderUSD) {
             return new BigNumber('1').toFixed();
         }
 
-        const tokenPairs = this.stateService.getTokenPairs(tokenID);
+        let tokenPairs = this.stateService.getTokenPairs(tokenID);
+
+        tokenPairs = tokenPairs.filter(
+            (pair) =>
+                pairsNotToVisit.find(
+                    (pairNotToVisit) => pairNotToVisit.address === pair.address,
+                ) === undefined,
+        );
+
+        pairsNotToVisit.push(...tokenPairs);
 
         let largestLiquidityEGLD = new BigNumber(0);
         let priceSoFar = '0';
@@ -56,6 +69,7 @@ export class IndexerTokenService {
                     const secondTokenDerivedEGLD =
                         this.computeTokenPriceDerivedEGLD(
                             pair.secondToken.identifier,
+                            pairsNotToVisit,
                         );
 
                     const firstTokenPrice =
@@ -82,6 +96,7 @@ export class IndexerTokenService {
                     const firstTokenDerivedEGLD =
                         this.computeTokenPriceDerivedEGLD(
                             pair.firstToken.identifier,
+                            pairsNotToVisit,
                         );
 
                     const secondTokenPrice =

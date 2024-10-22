@@ -128,7 +128,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
 
             const query = this.dexAnalytics
                 .createQueryBuilder()
-                .select()
+                .select('value')
                 .where('series = :series', { series })
                 .andWhere('key = :metric', { metric })
                 .andWhere(`timestamp <= :endDate`, { endDate })
