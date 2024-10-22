@@ -32,6 +32,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
+import { gasConfig, scAddress } from 'src/config';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -340,6 +341,64 @@ describe('AutoRouterService', () => {
                 gasPrice: 1000000000,
                 gasLimit: 75200000,
                 data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDcwY2VmOWY1ZWRmY2YyOEA2MzZmNmQ3MDZmNzM2NTU0NjE3MzZiNzNAMDAwMDAwMDQ0NTQ3NGM0NDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODA2ZjA1YjU5ZDNiMjAwMDBAMDNAMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEzMDAwMDAwMTU3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzQwMDAwMDAwYzU3NDU0NzRjNDQyZDMxMzIzMzM0MzUzNjAwMDAwMDA1OTJhZmQ4YjAyZjAwMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMjAwMDAwMDE1NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NGY3NTc0NzA3NTc0MDAwMDAwMGE0ZDQ1NTgyZDMxMzIzMzM0MzUzNjAwMDAwMDA4MDZmMDViNTlkM2IyMDAwMEAwMUA=',
+                chainID: 'T',
+                version: 2,
+                options: undefined,
+                signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
+            },
+        ]);
+    });
+
+    it('should get a fixed output multi swap tx', async () => {
+        const transactions = await service.getTransactions(
+            senderAddress,
+            new AutoRouteModel({
+                swapType: 1,
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'MEX-123456',
+                tokenInExchangeRate: '99201792616073289490',
+                tokenOutExchangeRate: '10080',
+                tokenInExchangeRateDenom: '99.20179261607328949',
+                tokenOutExchangeRateDenom: '0.01008',
+                tokenInPriceUSD: '1',
+                tokenOutPriceUSD: '0.01',
+                amountIn: '10181267',
+                amountOut: '1000000000000000000000',
+                intermediaryAmounts: [
+                    '10080463',
+                    '1004013040121365097',
+                    '1000000000000000000000',
+                ],
+                tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
+                pairs: [
+                    new PairModel({
+                        address: Address.newFromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000013',
+                        ).toBech32(),
+                    }),
+                    new PairModel({
+                        address: Address.newFromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000012',
+                        ).toBech32(),
+                    }),
+                ],
+                tolerance: 0.01,
+            }),
+        );
+
+        expect(transactions).toEqual([
+            {
+                nonce: 0,
+                value: '0',
+                receiver: scAddress.routerAddress,
+                sender: senderAddress,
+                receiverUsername: undefined,
+                senderUsername: undefined,
+                gasPrice: 1000000000,
+                gasLimit: gasConfig.router.multiPairSwapMultiplier * 2,
+                data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAOWI1YTkzQDZkNzU2Yzc0Njk1MDYxNjk3MjUzNzc2MTcwQDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTNANzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NGY3NTc0NzA3NTc0QDU3NDU0NzRjNDQyZDMxMzIzMzM0MzUzNkAwZTAwY2U0MzYxNTM1MGQyQDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTJANzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NGY3NTc0NzA3NTc0QDRkNDU1ODJkMzEzMjMzMzQzNTM2QDM2MzVjOWFkYzVkZWEwMDAwMA==',
                 chainID: 'T',
                 version: 2,
                 options: undefined,

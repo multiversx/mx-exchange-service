@@ -287,10 +287,6 @@ export class FarmAbiServiceV2
     async calculateRewardsForGivenPosition(
         args: CalculateRewardsArgs,
     ): Promise<BigNumber> {
-        console.log({
-            service: FarmAbiServiceV2.name,
-            method: this.calculateRewardsForGivenPosition.name,
-        });
         const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );

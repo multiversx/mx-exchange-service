@@ -56,6 +56,7 @@ export class MXApiService {
                 headers: {
                     origin: 'xExchangeService',
                 },
+                clientName: 'xExchangeService',
             },
         );
         this.genericGetExecutor = new PendingExecutor(

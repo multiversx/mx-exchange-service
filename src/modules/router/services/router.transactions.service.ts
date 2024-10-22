@@ -447,7 +447,6 @@ export class RouterTransactionService {
         const lockedTokensAttributes = LockedTokenAttributes.fromAttributes(
             inputTokens.attributes,
         );
-        console.log(lockedTokensAttributes);
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             lockedTokensAttributes.originalTokenID,
         );
