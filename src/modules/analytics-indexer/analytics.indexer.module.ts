@@ -14,6 +14,15 @@ import { TokenModule } from '../tokens/token.module';
 import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
 import { IndexerPriceDiscoveryService } from './services/price.discovery.service';
 import { AnalyticsIndexerCronService } from './services/analytics.indexer.cron.service';
+import { DatabaseModule } from 'src/services/database/database.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import {
+    IndexerSession,
+    IndexerSessionSchema,
+} from './schemas/indexer.session.schema';
+import { IndexerSessionRepositoryService } from 'src/services/database/repositories/indexer.session.repository';
+import { AnalyticsIndexerController } from './analytics.indexer.controller';
+import { AnalyticsIndexerPersistenceService } from './services/analytics.indexer.persistence.service';
 
 @Module({
     imports: [
@@ -22,6 +31,10 @@ import { AnalyticsIndexerCronService } from './services/analytics.indexer.cron.s
         TokenModule,
         PriceDiscoveryModule,
         ElasticSearchModule,
+        DatabaseModule,
+        MongooseModule.forFeature([
+            { name: IndexerSession.name, schema: IndexerSessionSchema },
+        ]),
     ],
     providers: [
         AnalyticsIndexerService,
@@ -34,7 +47,10 @@ import { AnalyticsIndexerCronService } from './services/analytics.indexer.cron.s
         IndexerSwapHandlerService,
         IndexerLiquidityHandlerService,
         IndexerPriceDiscoveryHandlerService,
+        IndexerSessionRepositoryService,
+        AnalyticsIndexerPersistenceService,
     ],
+    controllers: [AnalyticsIndexerController],
     exports: [AnalyticsIndexerService],
 })
 export class AnalyticsIndexerModule {}
