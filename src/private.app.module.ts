@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CommonAppModule } from './common.app.module';
 import { MetricsController } from './endpoints/metrics/metrics.controller';
-import { ElasticService } from './helpers/elastic.service';
 import { PairModule } from './modules/pair/pair.module';
 import { RemoteConfigController } from './modules/remote-config/remote-config.controller';
 import { RemoteConfigModule } from './modules/remote-config/remote-config.module';
@@ -19,6 +18,6 @@ import { ESTransactionsService } from './services/elastic-search/services/es.tra
         DynamicModuleUtils.getCacheModule(),
     ],
     controllers: [MetricsController, TokenController, RemoteConfigController],
-    providers: [ElasticService, ESTransactionsService],
+    providers: [ESTransactionsService],
 })
 export class PrivateAppModule {}

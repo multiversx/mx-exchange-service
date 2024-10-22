@@ -24,8 +24,8 @@ import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compu
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { getAllKeys } from 'src/utils/get.many.utils';
-import { ESTransactionsService } from 'src/services/elastic-search/services/es.transactions.service';
 import moment from 'moment';
+import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -47,7 +47,7 @@ export class PairComputeService implements IPairComputeService {
         private readonly farmCompute: FarmComputeServiceV2,
         private readonly stakingCompute: StakingComputeService,
         private readonly cachingService: CacheService,
-        private readonly elasticTransactionsService: ESTransactionsService,
+        private readonly elasticEventsService: ElasticSearchEventsService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -690,9 +690,7 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeTradesCount(pairAddress: string): Promise<number> {
-        return await this.elasticTransactionsService.computePairSwapCount(
-            pairAddress,
-        );
+        return await this.elasticEventsService.getPairSwapCount(pairAddress);
     }
 
     @ErrorLoggerAsync({
@@ -711,7 +709,7 @@ export class PairComputeService implements IPairComputeService {
         const end = moment.utc().unix();
         const start = moment.unix(end).subtract(1, 'day').unix();
 
-        return await this.elasticTransactionsService.computePairSwapCount(
+        return await this.elasticEventsService.getPairSwapCount(
             pairAddress,
             start,
             end,

@@ -23,7 +23,6 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { PairAbiService } from '../services/pair.abi.service';
-import { ElasticService } from 'src/helpers/elastic.service';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
 import { FarmAbiServiceProviderV2 } from 'src/modules/farm/mocks/farm.v2.abi.service.mock';
@@ -66,7 +65,6 @@ describe('PairService', () => {
                 ContextGetterServiceProvider,
                 ApiConfigService,
                 MXApiServiceProvider,
-                ElasticService,
                 FarmAbiServiceProviderV2,
                 RemoteConfigGetterServiceProvider,
                 StakingProxyAbiServiceProvider,
