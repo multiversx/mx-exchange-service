@@ -1,4 +1,3 @@
-import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable } from '@nestjs/common';
 import { constantsConfig, scAddress } from 'src/config';
 import { StateService } from './state.service';
@@ -22,12 +21,18 @@ import {
 import { IndexerSwapHandlerService } from './event-handlers/swap.handler.service';
 import { IndexerLiquidityHandlerService } from './event-handlers/liquidity.handler.service';
 import { IndexerPriceDiscoveryHandlerService } from './event-handlers/price.discovery.handler.service';
-import moment from 'moment';
+import { IndexerEventTypes } from '../schemas/indexer.session.schema';
 
 @Injectable()
 export class AnalyticsIndexerService {
     private filterAddresses: string[];
     private data: any[];
+    private errorsCount = 0;
+    private handleSwapEvents = false;
+    private handleLiquidityEvents = false;
+    private handlePriceDiscoveryEvents = false;
+    private handleBurnEvents = false;
+    private eventIdentifiers: string[];
 
     constructor(
         private readonly stateService: StateService,
@@ -41,46 +46,61 @@ export class AnalyticsIndexerService {
 
     public async indexAnalytics(
         startTimestamp: number,
-        endTimestamp?: number,
-    ): Promise<void> {
-        const performanceProfiler = new PerformanceProfiler();
-
-        const startDateUtc = moment
-            .unix(startTimestamp)
-            .format('YYYY-MM-DD HH:mm:ss');
-        const endDateUtc = endTimestamp
-            ? moment.unix(endTimestamp).format('YYYY-MM-DD HH:mm:ss')
-            : moment().format('YYYY-MM-DD HH:mm:ss');
-
-        this.logger.info(
-            `Start indexing analytics data between '${startDateUtc}' and '${endDateUtc}'`,
-            {
-                context: 'AnalyticsIndexerService',
-            },
-        );
-
-        await this.stateService.initState(startTimestamp);
-
-        this.initFilterAddresses();
+        endTimestamp: number,
+        eventTypes: IndexerEventTypes[],
+    ): Promise<number> {
+        await this.initIndexerState(startTimestamp, eventTypes);
 
         await this.fetchEvents(startTimestamp, endTimestamp);
 
-        performanceProfiler.stop();
-
-        this.logger.info(
-            `Finished indexing analytics data between '${startDateUtc}' and '${endDateUtc}' in ${performanceProfiler.duration}ms`,
-            {
-                context: 'AnalyticsIndexerService',
-            },
-        );
+        return this.errorsCount;
     }
 
-    private initFilterAddresses(): void {
+    private async initIndexerState(
+        startTimestamp: number,
+        eventTypes: IndexerEventTypes[],
+    ): Promise<void> {
+        await this.stateService.initState(startTimestamp);
+
         this.filterAddresses = [];
+        this.eventIdentifiers = [];
+        this.errorsCount = 0;
         const pairs = this.stateService.getPairsMetadata();
 
         this.filterAddresses.push(...pairs.map((pair) => pair.address));
         this.filterAddresses.push(...scAddress.priceDiscovery);
+
+        this.handleSwapEvents = eventTypes.includes(
+            IndexerEventTypes.SWAP_EVENTS,
+        );
+        this.handleLiquidityEvents = eventTypes.includes(
+            IndexerEventTypes.LIQUIDITY_EVENTS,
+        );
+        this.handlePriceDiscoveryEvents = eventTypes.includes(
+            IndexerEventTypes.PRICE_DISCOVERY_EVENTS,
+        );
+        this.handleBurnEvents = eventTypes.includes(
+            IndexerEventTypes.MEX_BURN_EVENTS,
+        );
+
+        if (this.handleBurnEvents || this.handleSwapEvents) {
+            this.eventIdentifiers.push('swapTokensFixedInput');
+            this.eventIdentifiers.push('swapTokensFixedOutput');
+        }
+
+        if (this.handleLiquidityEvents) {
+            this.eventIdentifiers.push('addLiquidity');
+            this.eventIdentifiers.push('removeLiquidity');
+        }
+
+        if (this.handlePriceDiscoveryEvents) {
+            this.eventIdentifiers.push('deposit');
+            this.eventIdentifiers.push('withdraw');
+        }
+
+        if (this.handleBurnEvents) {
+            this.eventIdentifiers.push(TRANSACTION_EVENTS.ESDT_LOCAL_BURN);
+        }
     }
 
     private async fetchEvents(
@@ -115,6 +135,7 @@ export class AnalyticsIndexerService {
                         console.log(`Could not process event:`, event);
                         console.log(error);
                     }
+                    this.incrementErrorsCount();
                     continue;
                 }
             }
@@ -139,19 +160,11 @@ export class AnalyticsIndexerService {
 
         await this.elasticEventsService.getEventsForAddresses(
             this.filterAddresses,
-            [
-                SWAP_IDENTIFIER.SWAP_FIXED_INPUT,
-                SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
-                TRANSACTION_EVENTS.ESDT_LOCAL_BURN,
-                'addLiquidity',
-                'removeLiquidity',
-                'deposit',
-                'withdraw',
-            ],
+            this.eventIdentifiers,
             startTimestamp,
             endTimestamp,
             processEventsAction,
-            1000,
+            5000,
         );
 
         // process remaining batch of events
@@ -180,47 +193,72 @@ export class AnalyticsIndexerService {
                 switch (rawEvent.identifier) {
                     case SWAP_IDENTIFIER.SWAP_FIXED_INPUT:
                     case SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT:
+                        hasSwapEvents = true;
+                        if (!this.handleSwapEvents) {
+                            break;
+                        }
                         [eventData, timestamp] =
                             this.swapHandlerService.handleSwapEvents(
                                 new SwapEvent(rawEvent),
                             );
-                        hasSwapEvents = true;
                         break;
                     case 'addLiquidity':
+                        if (!this.handleLiquidityEvents) {
+                            break;
+                        }
                         [eventData, timestamp] =
                             this.liquidityHandlerService.handleOldLiquidityEvent(
                                 new AddLiquidityEvent(rawEvent),
                             );
                         break;
                     case 'removeLiquidity':
+                        if (!this.handleLiquidityEvents) {
+                            break;
+                        }
                         [eventData, timestamp] =
                             this.liquidityHandlerService.handleOldLiquidityEvent(
                                 new RemoveLiquidityEvent(rawEvent),
                             );
                         break;
                     case 'deposit':
+                        if (!this.handlePriceDiscoveryEvents) {
+                            break;
+                        }
                         [eventData, timestamp] =
                             await this.priceDiscoveryHandlerService.handleOldPriceDiscoveryEvent(
                                 new DepositEvent(rawEvent),
                             );
                         break;
                     case 'withdraw':
+                        if (!this.handlePriceDiscoveryEvents) {
+                            break;
+                        }
                         [eventData, timestamp] =
                             await this.priceDiscoveryHandlerService.handleOldPriceDiscoveryEvent(
                                 new WithdrawEvent(rawEvent),
                             );
                         break;
                     case TRANSACTION_EVENTS.ESDT_LOCAL_BURN:
+                        if (!this.handleBurnEvents) {
+                            break;
+                        }
+                        timestamp = rawEvent.timestamp;
                         burnEvents.push(new EsdtLocalBurnEvent(rawEvent));
                         break;
                 }
                 this.updateIngestData(eventData);
             } catch (error) {
+                // console.log('Indexer catch', rawEvent);
                 this.logger.error(error);
+                this.incrementErrorsCount();
+                throw error;
             }
         }
 
-        const feeBurned = hasSwapEvents ? this.getBurnedFee(burnEvents) : '0';
+        const feeBurned =
+            this.handleBurnEvents && hasSwapEvents
+                ? this.getBurnedFee(burnEvents)
+                : '0';
 
         if (feeBurned !== '0') {
             const burnData = [];
@@ -286,5 +324,9 @@ export class AnalyticsIndexerService {
                 }
             }
         }
+    }
+
+    private incrementErrorsCount(): void {
+        this.errorsCount += 1;
     }
 }
