@@ -40,13 +40,7 @@ export class PairAbiLoader {
 
     public readonly infoMetadataLoader = new DataLoader<string, PairInfoModel>(
         async (addresses: string[]) => {
-            return getAllKeys<PairInfoModel>(
-                this.cacheService,
-                addresses,
-                'pair.pairInfoMetadata',
-                this.pairAbi.pairInfoMetadata.bind(this.pairAbi),
-                CacheTtlInfo.ContractBalance,
-            );
+            return this.pairAbi.getAllPairsInfoMetadata(addresses);
         },
     );
 

@@ -55,6 +55,20 @@ export class PairComputeServiceMock implements IPairComputeService {
     async secondTokenPriceUSD(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).secondTokenPriceUSD;
     }
+    async getAllFirstTokensPriceUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).firstTokenPriceUSD,
+        );
+    }
+    async getAllSecondTokensPricesUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).secondTokenPriceUSD,
+        );
+    }
     async firstTokenLockedValueUSD(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).firstTokenLockedValueUSD;
     }

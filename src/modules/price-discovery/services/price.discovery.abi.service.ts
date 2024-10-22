@@ -10,13 +10,18 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IPriceDiscoveryAbiService } from './interfaces';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class PriceDiscoveryAbiService
     extends GenericAbiService
     implements IPriceDiscoveryAbiService
 {
-    constructor(protected readonly mxProxy: MXProxyService) {
+    constructor(
+        protected readonly mxProxy: MXProxyService,
+        private readonly cachingService: CacheService,
+    ) {
         super(mxProxy);
     }
 
@@ -91,6 +96,18 @@ export class PriceDiscoveryAbiService
 
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getAllRedeemTokenIds(
+        priceDiscoveryAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            priceDiscoveryAddresses,
+            'priceDiscovery.redeemTokenID',
+            this.redeemTokenID.bind(this),
+            CacheTtlInfo.Token,
+        );
     }
 
     @ErrorLoggerAsync({

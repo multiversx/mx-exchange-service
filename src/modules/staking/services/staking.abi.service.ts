@@ -59,6 +59,16 @@ export class StakingAbiService
         return response.firstValue.valueOf().toString();
     }
 
+    async getAllFarmTokenIds(stakeAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.farmTokenID',
+            this.farmTokenID.bind(this),
+            CacheTtlInfo.Token,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })

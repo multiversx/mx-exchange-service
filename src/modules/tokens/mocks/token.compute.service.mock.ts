@@ -5,6 +5,9 @@ export class TokenComputeServiceMock {
     async tokenPriceDerivedEGLD(tokenID: string): Promise<string> {
         return Tokens(tokenID).derivedEGLD;
     }
+    async getAllTokensPriceDerivedUSD(tokenIDs: string[]): Promise<string[]> {
+        return tokenIDs.map((tokenID) => Tokens(tokenID).price);
+    }
 }
 
 export const TokenComputeServiceProvider = {

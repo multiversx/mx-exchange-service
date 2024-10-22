@@ -32,6 +32,11 @@ export class PairAbiServiceMock implements IPairAbiService {
     async pairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         return PairsData(pairAddress).info;
     }
+    async getAllPairsInfoMetadata(
+        pairAddresses: string[],
+    ): Promise<PairInfoModel[]> {
+        return pairAddresses.map((pairAddress) => PairsData(pairAddress).info);
+    }
     async totalFeePercent(pairAddress: string): Promise<number> {
         return PairsData(pairAddress).totalFeePercent;
     }

@@ -69,6 +69,7 @@ import { MetabondingAbiServiceMockProvider } from 'src/modules/metabonding/mocks
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { StakingProxyFilteringService } from 'src/modules/staking-proxy/services/staking.proxy.filtering.service';
+import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -100,6 +101,10 @@ describe('UserEnergyComputeService', () => {
                 LockedTokenWrapperService,
                 {
                     provide: FarmAbiServiceV2,
+                    useClass: FarmAbiServiceMock,
+                },
+                {
+                    provide: FarmAbiService,
                     useClass: FarmAbiServiceMock,
                 },
                 LockedTokenWrapperAbiServiceProvider,
