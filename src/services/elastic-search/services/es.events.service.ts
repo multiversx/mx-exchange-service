@@ -194,4 +194,55 @@ export class ElasticSearchEventsService {
             action,
         );
     }
+
+    async getEventsForAddresses(
+        addresses: string[],
+        eventIdentifiers: string[],
+        startTimestamp: number,
+        endTimestamp: number,
+        action: (items: any[]) => Promise<void>,
+        size = 100,
+    ): Promise<void> {
+        const pagination = new ElasticPagination();
+        pagination.size = size;
+
+        const elasticQueryAdapter: ElasticQuery =
+            new ElasticQuery().withPagination(pagination);
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Should(
+                eventIdentifiers.map((identifier) =>
+                    QueryType.Match('identifier', identifier),
+                ),
+            ),
+            QueryType.Should(
+                addresses.map((address) => QueryType.Match('address', address)),
+            ),
+        ];
+
+        elasticQueryAdapter.filter = [
+            QueryType.Range(
+                'timestamp',
+                {
+                    key: 'gte',
+                    value: startTimestamp,
+                },
+                {
+                    key: 'lte',
+                    value: endTimestamp,
+                },
+            ),
+        ];
+
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.ascending },
+        ];
+
+        await this.elasticService.getScrollableList(
+            'events',
+            '',
+            elasticQueryAdapter,
+            action,
+        );
+    }
 }

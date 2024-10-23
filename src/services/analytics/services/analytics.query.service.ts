@@ -21,6 +21,15 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         return await service.getAggregatedValue(args);
     }
 
+    async getLastForMetric(
+        series: string,
+        metric: string,
+        time: number,
+    ): Promise<string> {
+        const service = await this.getService();
+        return await service.getLastForMetric(series, metric, time);
+    }
+
     async getLatestCompleteValues(args: {
         series: any;
         metric: any;

@@ -1,0 +1,38 @@
+import { Module } from '@nestjs/common';
+import { PairModule } from '../pair/pair.module';
+import { RouterModule } from '../router/router.module';
+import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
+import { TokenModule } from '../tokens/token.module';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { IndexerService } from './services/indexer.service';
+import { IndexerStateService } from './services/indexer.state.service';
+import { IndexerPairService } from './services/indexer.pair.service';
+import { IndexerRouterService } from './services/indexer.router.service';
+import { IndexerTokenService } from './services/indexer.token.service';
+import { IndexerPriceDiscoveryService } from './services/indexer.price.discovery.service';
+import { IndexerSwapHandlerService } from './services/event-handlers/indexer.swap.handler.service';
+import { IndexerLiquidityHandlerService } from './services/event-handlers/indexer.liquidity.handler.service';
+import { IndexerPriceDiscoveryHandlerService } from './services/event-handlers/indexer.price.discovery.handler.service';
+
+@Module({
+    imports: [
+        PairModule,
+        RouterModule,
+        TokenModule,
+        PriceDiscoveryModule,
+        ElasticSearchModule,
+    ],
+    providers: [
+        IndexerService,
+        IndexerStateService,
+        IndexerPairService,
+        IndexerRouterService,
+        IndexerTokenService,
+        IndexerPriceDiscoveryService,
+        IndexerSwapHandlerService,
+        IndexerLiquidityHandlerService,
+        IndexerPriceDiscoveryHandlerService,
+    ],
+    exports: [IndexerService],
+})
+export class AnalyticsIndexerModule {}
