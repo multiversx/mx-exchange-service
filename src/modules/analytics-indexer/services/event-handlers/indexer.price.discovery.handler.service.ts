@@ -8,9 +8,9 @@ export class IndexerPriceDiscoveryHandlerService {
         private readonly priceDiscoveryService: IndexerPriceDiscoveryService,
     ) {}
 
-    async handleOldPriceDiscoveryEvent(
+    handlePriceDiscoveryEvent(
         event: DepositEvent | WithdrawEvent,
-    ): Promise<[any[], number]> {
+    ): [any[], number] {
         const [
             priceDiscoveryAddress,
             launchedTokenAmount,
@@ -23,16 +23,16 @@ export class IndexerPriceDiscoveryHandlerService {
             event.launchedTokenPrice,
         ];
 
-        const [acceptedTokenPrice, launchedTokenPriceUSD] = await Promise.all([
+        const acceptedTokenPrice =
             this.priceDiscoveryService.computeAcceptedTokenPrice(
                 priceDiscoveryAddress,
                 event,
-            ),
+            );
+        const launchedTokenPriceUSD =
             this.priceDiscoveryService.computeLaunchedTokenPriceUSD(
                 priceDiscoveryAddress,
                 event,
-            ),
-        ]);
+            );
 
         const data = [];
         const timestamp = event.getTopics().toJSON().timestamp;

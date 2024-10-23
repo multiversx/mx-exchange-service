@@ -6,15 +6,13 @@ import { AnalyticsQueryService } from 'src/services/analytics/services/analytics
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import BigNumber from 'bignumber.js';
-import { quote } from 'src/modules/pair/pair.utils';
 import { scAddress } from 'src/config';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 import { GlobalState } from '../global.state';
 import { PairMetadata } from '../entities/pair.metadata';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { PriceDiscoveryMetadata } from '../entities/price.discovery.metadata';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class IndexerStateService {
@@ -28,42 +26,31 @@ export class IndexerStateService {
         private readonly analyticsQueryService: AnalyticsQueryService,
         private readonly tokenService: TokenService,
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
+        private readonly cacheService: CacheService,
     ) {}
 
     public async initState(startTimestamp: number): Promise<void> {
         this.pairs = [];
 
-        const pairAddresses = await this.routerAbiService.pairsAddress();
+        const pairAddresses = await this.allPairAddresses();
 
-        const allFirstTokens = await this.pairService.getAllFirstTokens(
-            pairAddresses,
-        );
-        const allSecondTokens = await this.pairService.getAllSecondTokens(
-            pairAddresses,
-        );
-        const allFeePercentages = await Promise.all(
-            pairAddresses.map((address) =>
-                this.pairAbiService.totalFeePercent(address),
-            ),
-        );
+        const allFirstTokens = await this.allFirstTokens(pairAddresses);
+        const allSecondTokens = await this.allSecondTokens(pairAddresses);
+        const allFeePercentages = await this.allFeePercentages(pairAddresses);
 
         const priceDiscoveryAddresses: string[] = scAddress.priceDiscovery;
-        const pdLaunchedTokens = await Promise.all(
-            priceDiscoveryAddresses.map((address) =>
-                this.priceDiscoveryAbi.launchedTokenID(address),
-            ),
+        const pdLaunchedTokens = await this.allPDLaunchedTokens(
+            priceDiscoveryAddresses,
         );
-        const pdAcceptedTokens = await Promise.all(
-            priceDiscoveryAddresses.map((address) =>
-                this.priceDiscoveryAbi.acceptedTokenID(address),
-            ),
+        const pdAcceptedTokens = await this.allPDAcceptedTokens(
+            priceDiscoveryAddresses,
         );
 
         for (const [index, pdAddress] of priceDiscoveryAddresses.entries()) {
             const priceDiscover = new PriceDiscoveryMetadata({
                 address: pdAddress,
-                launchedTokenID: pdLaunchedTokens[index],
-                acceptedTokenID: pdAcceptedTokens[index],
+                launchedToken: pdLaunchedTokens[index],
+                acceptedToken: pdAcceptedTokens[index],
             });
 
             this.priceDiscoverySCs.push(priceDiscover);
@@ -109,10 +96,86 @@ export class IndexerStateService {
         remoteTtl: Constants.oneDay(),
         localTtl: Constants.oneDay(),
     })
-    public async getTokenMetadata(
-        tokenID: string,
-    ): Promise<EsdtToken | undefined> {
-        return await this.tokenService.tokenMetadata(tokenID);
+    public async allPairAddresses(): Promise<string[]> {
+        return await this.routerAbiService.pairsAddress();
+    }
+
+    private async allFirstTokens(
+        pairAddresses: string[],
+    ): Promise<EsdtToken[]> {
+        return await this.cacheService.getOrSet(
+            `indexer.allFirstTokens`,
+            async () => await this.pairService.getAllFirstTokens(pairAddresses),
+            Constants.oneDay(),
+            Constants.oneDay(),
+        );
+    }
+
+    private async allSecondTokens(
+        pairAddresses: string[],
+    ): Promise<EsdtToken[]> {
+        return await this.cacheService.getOrSet(
+            `indexer.allSecondTokens`,
+            async () =>
+                await this.pairService.getAllSecondTokens(pairAddresses),
+            Constants.oneDay(),
+            Constants.oneDay(),
+        );
+    }
+
+    private async allFeePercentages(
+        pairAddresses: string[],
+    ): Promise<number[]> {
+        return await this.cacheService.getOrSet(
+            `indexer.allFeePercentages`,
+            async () =>
+                await Promise.all(
+                    pairAddresses.map((address) =>
+                        this.pairAbiService.totalFeePercent(address),
+                    ),
+                ),
+            Constants.oneDay(),
+            Constants.oneDay(),
+        );
+    }
+
+    private async allPDLaunchedTokens(
+        priceDiscoveryAddresses: string[],
+    ): Promise<EsdtToken[]> {
+        return await this.cacheService.getOrSet(
+            `indexer.allPDLaunchedTokens`,
+            async () => {
+                const launchedTokenIDs = await Promise.all(
+                    priceDiscoveryAddresses.map((address) =>
+                        this.priceDiscoveryAbi.launchedTokenID(address),
+                    ),
+                );
+                return await this.tokenService.getAllTokensMetadata(
+                    launchedTokenIDs,
+                );
+            },
+            Constants.oneDay(),
+            Constants.oneDay(),
+        );
+    }
+    private async allPDAcceptedTokens(
+        priceDiscoveryAddresses: string[],
+    ): Promise<EsdtToken[]> {
+        return await this.cacheService.getOrSet(
+            `indexer.allPDAcceptedTokens`,
+            async () => {
+                const acceptedTokenIDs = await Promise.all(
+                    priceDiscoveryAddresses.map((address) =>
+                        this.priceDiscoveryAbi.acceptedTokenID(address),
+                    ),
+                );
+                return await this.tokenService.getAllTokensMetadata(
+                    acceptedTokenIDs,
+                );
+            },
+            Constants.oneDay(),
+            Constants.oneDay(),
+        );
     }
 
     @GetOrSetCache({
@@ -120,16 +183,10 @@ export class IndexerStateService {
         remoteTtl: Constants.oneDay(),
         localTtl: Constants.oneDay(),
     })
-    public async getNftCollection(
+    public async getTokenMetadata(
         tokenID: string,
-    ): Promise<NftCollection | undefined> {
-        return await this.getNftCollectionRaw(tokenID);
-    }
-
-    public async getNftCollectionRaw(
-        tokenID: string,
-    ): Promise<NftCollection | undefined> {
-        return await this.tokenService.getNftCollectionMetadataRaw(tokenID);
+    ): Promise<EsdtToken | undefined> {
+        return await this.tokenService.tokenMetadata(tokenID);
     }
 
     public getPairsMetadata(): PairMetadata[] {
@@ -178,59 +235,9 @@ export class IndexerStateService {
         return pair !== undefined;
     }
 
-    public async computeAcceptedTokenPrice(
-        acceptedTokenID: string,
-        launchedTokenID: string,
-        acceptedTokenAmount: string,
-        launchedTokenAmount: string,
-    ): Promise<string> {
-        const [launchedTokenDecimals, acceptedToken] = await Promise.all([
-            this.getCollectionDecimals(launchedTokenID),
-            this.getTokenMetadata(acceptedTokenID),
-        ]);
-
-        const acceptedTokenPrice = quote(
-            new BigNumber(`1e${acceptedToken.decimals}`).toFixed(),
-            acceptedTokenAmount,
-            launchedTokenAmount,
+    public getPriceDiscoveryMetadata(address: string): PriceDiscoveryMetadata {
+        return this.priceDiscoverySCs.find(
+            (priceDiscovery) => priceDiscovery.address === address,
         );
-
-        return new BigNumber(acceptedTokenPrice)
-            .multipliedBy(`1e-${launchedTokenDecimals}`)
-            .toFixed();
-    }
-
-    public async getCollectionDecimals(identifier: string): Promise<number> {
-        const collection = await this.getNftCollection(identifier);
-        return collection.decimals;
-    }
-
-    public computeLaunchedTokenPriceUSD(
-        acceptedTokenPriceUSD: BigNumber,
-        launchedTokenPrice: string,
-    ): string {
-        return new BigNumber(launchedTokenPrice)
-            .multipliedBy(acceptedTokenPriceUSD)
-            .toFixed();
-    }
-
-    public getLaunchedTokenID(
-        priceDiscoveryAddress: string,
-    ): string | undefined {
-        const contract = this.priceDiscoverySCs.find(
-            (priceDiscovery) =>
-                priceDiscovery.address === priceDiscoveryAddress,
-        );
-        return contract?.launchedTokenID;
-    }
-
-    public getAcceptedTokenID(
-        priceDiscoveryAddress: string,
-    ): string | undefined {
-        const contract = this.priceDiscoverySCs.find(
-            (priceDiscovery) =>
-                priceDiscovery.address === priceDiscoveryAddress,
-        );
-        return contract?.acceptedTokenID;
     }
 }
