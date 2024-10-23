@@ -12,7 +12,7 @@ import {
 import mongoose from 'mongoose';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { IndexerSessionRepositoryService } from 'src/services/database/repositories/indexer.session.repository';
+import { IndexerSessionRepositoryService } from './services/indexer.session.repository.service';
 import { IndexerSession } from './schemas/indexer.session.schema';
 import { CreateSessionDto } from './entities/create.session.dto';
 import { IndexerPersistenceService } from './services/indexer.persistence.service';

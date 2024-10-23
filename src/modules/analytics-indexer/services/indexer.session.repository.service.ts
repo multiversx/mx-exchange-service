@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { EntityRepository } from './entity.repository';
+import { EntityRepository } from 'src/services/database/repositories/entity.repository';
 import {
     IndexerSession,
     IndexerSessionDocument,
-} from 'src/modules/analytics-indexer/schemas/indexer.session.schema';
+} from '../schemas/indexer.session.schema';
 
 @Injectable()
 export class IndexerSessionRepositoryService extends EntityRepository<IndexerSessionDocument> {

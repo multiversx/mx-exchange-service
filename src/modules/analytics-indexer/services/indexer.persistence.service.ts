@@ -8,7 +8,7 @@ import {
 } from '../schemas/indexer.session.schema';
 import moment from 'moment';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { IndexerSessionRepositoryService } from 'src/services/database/repositories/indexer.session.repository';
+import { IndexerSessionRepositoryService } from './indexer.session.repository.service';
 import { CreateSessionDto } from '../entities/create.session.dto';
 
 @Injectable()
