@@ -8,6 +8,7 @@ import { TokenController } from './modules/tokens/token.controller';
 import { TokenModule } from './modules/tokens/token.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { ESTransactionsService } from './services/elastic-search/services/es.transactions.service';
+import { AnalyticsIndexerModule } from './modules/analytics-indexer/analytics.indexer.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { ESTransactionsService } from './services/elastic-search/services/es.tra
         TokenModule,
         RemoteConfigModule,
         DynamicModuleUtils.getCacheModule(),
+        AnalyticsIndexerModule,
     ],
     controllers: [MetricsController, TokenController, RemoteConfigController],
     providers: [ESTransactionsService],

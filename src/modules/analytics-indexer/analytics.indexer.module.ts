@@ -13,14 +13,29 @@ import { IndexerPriceDiscoveryService } from './services/indexer.price.discovery
 import { IndexerSwapHandlerService } from './services/event-handlers/indexer.swap.handler.service';
 import { IndexerLiquidityHandlerService } from './services/event-handlers/indexer.liquidity.handler.service';
 import { IndexerPriceDiscoveryHandlerService } from './services/event-handlers/indexer.price.discovery.handler.service';
+import { IndexerSessionRepositoryService } from './services/indexer.session.repository.service';
+import { IndexerPersistenceService } from './services/indexer.persistence.service';
+import { AnalyticsIndexerController } from './analytics.indexer.controller';
+import { DatabaseModule } from 'src/services/database/database.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import {
+    IndexerSession,
+    IndexerSessionSchema,
+} from './schemas/indexer.session.schema';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 
 @Module({
     imports: [
+        MXCommunicationModule,
         PairModule,
         RouterModule,
         TokenModule,
         PriceDiscoveryModule,
         ElasticSearchModule,
+        DatabaseModule,
+        MongooseModule.forFeature([
+            { name: IndexerSession.name, schema: IndexerSessionSchema },
+        ]),
     ],
     providers: [
         IndexerService,
@@ -32,7 +47,10 @@ import { IndexerPriceDiscoveryHandlerService } from './services/event-handlers/i
         IndexerSwapHandlerService,
         IndexerLiquidityHandlerService,
         IndexerPriceDiscoveryHandlerService,
+        IndexerSessionRepositoryService,
+        IndexerPersistenceService,
     ],
     exports: [IndexerService],
+    controllers: [AnalyticsIndexerController],
 })
 export class AnalyticsIndexerModule {}
