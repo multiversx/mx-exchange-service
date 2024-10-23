@@ -51,6 +51,7 @@ export class IndexerService {
         await this.initIndexerState(startTimestamp, eventTypes);
 
         await this.fetchEvents(startTimestamp, endTimestamp);
+
         return this.errorsCount;
     }
 
@@ -205,7 +206,7 @@ export class IndexerService {
                             break;
                         }
                         [eventData, timestamp] =
-                            this.liquidityHandlerService.handleOldLiquidityEvent(
+                            this.liquidityHandlerService.handleLiquidityEvent(
                                 new AddLiquidityEvent(rawEvent),
                             );
                         break;
@@ -214,7 +215,7 @@ export class IndexerService {
                             break;
                         }
                         [eventData, timestamp] =
-                            this.liquidityHandlerService.handleOldLiquidityEvent(
+                            this.liquidityHandlerService.handleLiquidityEvent(
                                 new RemoveLiquidityEvent(rawEvent),
                             );
                         break;
@@ -223,7 +224,7 @@ export class IndexerService {
                             break;
                         }
                         [eventData, timestamp] =
-                            await this.priceDiscoveryHandlerService.handleOldPriceDiscoveryEvent(
+                            this.priceDiscoveryHandlerService.handlePriceDiscoveryEvent(
                                 new DepositEvent(rawEvent),
                             );
                         break;
@@ -232,7 +233,7 @@ export class IndexerService {
                             break;
                         }
                         [eventData, timestamp] =
-                            await this.priceDiscoveryHandlerService.handleOldPriceDiscoveryEvent(
+                            this.priceDiscoveryHandlerService.handlePriceDiscoveryEvent(
                                 new WithdrawEvent(rawEvent),
                             );
                         break;

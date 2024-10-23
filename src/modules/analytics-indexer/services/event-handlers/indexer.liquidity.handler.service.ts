@@ -19,7 +19,7 @@ export class IndexerLiquidityHandlerService {
         private readonly tokenService: IndexerTokenService,
     ) {}
 
-    public handleOldLiquidityEvent(
+    public handleLiquidityEvent(
         event: AddLiquidityEvent | RemoveLiquidityEvent,
     ): [any[], number] {
         const pair = this.stateService.getPairMetadata(event.address);
