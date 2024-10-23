@@ -1,4 +1,4 @@
-import { Address, TokenTransfer } from '@multiversx/sdk-core';
+import { Token, TokenTransfer } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
@@ -19,6 +19,7 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class FarmTransactionServiceV2 extends TransactionsFarmService {
@@ -40,33 +41,32 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         sender: string,
         args: EnterFarmArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(
-            args.farmAddress,
-        );
+        await this.validateInputTokens(args.farmAddress, args.tokens);
 
         const gasLimit =
             args.tokens.length > 1
                 ? gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge
                 : gasConfig.farms[FarmVersion.V2].enterFarm.default;
 
-        await this.validateInputTokens(args.farmAddress, args.tokens);
-
-        const mappedPayments = args.tokens.map((tokenPayment) =>
-            TokenTransfer.metaEsdtFromBigInteger(
-                tokenPayment.tokenID,
-                tokenPayment.nonce,
-                new BigNumber(tokenPayment.amount),
-            ),
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            args.farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasLimit,
+                function: 'enterFarm',
+                tokenTransfers: args.tokens.map(
+                    (tokenPayment) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: tokenPayment.tokenID,
+                                nonce: BigInt(tokenPayment.nonce),
+                            }),
+                            amount: BigInt(tokenPayment.amount),
+                        }),
+                ),
+            }),
         );
-
-        return contract.methodsExplicit
-            .enterFarm()
-            .withMultiESDTNFTTransfer(mappedPayments)
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async exitFarm(
@@ -76,30 +76,33 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         if (!args.exitAmount && !new BigNumber(args.exitAmount).isPositive()) {
             throw new Error('Invalid exit amount');
         }
-        const contract = await this.mxProxy.getFarmSmartContract(
-            args.farmAddress,
-        );
+
         const gasLimit = await this.getExitFarmGasLimit(
             args,
             FarmVersion.V2,
             farmType(args.farmAddress),
         );
 
-        return contract.methodsExplicit
-            .exitFarm()
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    args.farmTokenID,
-                    args.farmTokenNonce,
-                    new BigNumber(args.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            args.farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasLimit,
+                function: 'exitFarm',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.farmTokenID,
+                            nonce: BigInt(args.farmTokenNonce),
+                        }),
+                        amount: BigInt(args.amount),
+                    }),
+                ],
+            }),
+        );
     }
+
     async claimRewards(
         sender: string,
         args: ClaimRewardsArgs,
@@ -114,39 +117,39 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             gasConfig.farms[FarmVersion.V2][type].claimRewards +
             lockedAssetCreateGas;
 
-        const contract = await this.mxProxy.getFarmSmartContract(
+        return await this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasLimit,
+                function: 'claimRewards',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.farmTokenID,
+                            nonce: BigInt(args.farmTokenNonce),
+                        }),
+                        amount: BigInt(args.amount),
+                    }),
+                ],
+            }),
         );
-
-        return contract.methodsExplicit
-            .claimRewards()
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    args.farmTokenID,
-                    args.farmTokenNonce,
-                    new BigNumber(args.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async claimBoostedRewards(
         sender: string,
         farmAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
-        return contract.methodsExplicit
-            .claimBoostedRewards()
-            .withSender(Address.fromString(sender))
-            .withChainID(mxConfig.chainID)
-            .withGasLimit(gasConfig.farms[FarmVersion.V2].claimBoostedRewards)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getFarmSmartContractTransaction(
+            farmAddress,
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.farms[FarmVersion.V2].claimBoostedRewards,
+                function: 'claimBoostedRewards',
+            }),
+        );
     }
 
     compoundRewards(

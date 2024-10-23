@@ -138,11 +138,11 @@ describe('StakingProxyTransactionService', () => {
                 sender: Address.Zero().bech32(),
                 receiver: Address.Zero().bech32(),
                 data: encodeTransactionData(
-                    `MultiESDTNFTTransfer@${Address.Zero().bech32()}@01@EGLDTOK4FL-abcdef@01@1@stakeFarmTokens`,
+                    `ESDTNFTTransfer@EGLDTOK4FL-abcdef@01@1@${Address.Zero().bech32()}@stakeFarmTokens`,
                 ),
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
             }),
         );
     });
@@ -185,7 +185,7 @@ describe('StakingProxyTransactionService', () => {
                 ),
                 options: undefined,
                 signature: undefined,
-                version: 1,
+                version: 2,
             }),
         );
     });
@@ -254,10 +254,10 @@ describe('StakingProxyTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stakeProxy.claimDualYield,
             data: encodeTransactionData(
-                `MultiESDTNFTTransfer@0000000000000000000000000000000000000000000000000000000000000000@01@METASTAKE-123456@01@1000000000000000000@claimDualYield`,
+                `ESDTNFTTransfer@METASTAKE-123456@01@1000000000000000000@0000000000000000000000000000000000000000000000000000000000000000@claimDualYield`,
             ),
             chainID: 'T',
-            version: 1,
+            version: 2,
             options: undefined,
             guardian: undefined,
             signature: undefined,
