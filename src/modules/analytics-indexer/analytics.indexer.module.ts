@@ -13,6 +13,7 @@ import { IndexerPriceDiscoveryService } from './services/indexer.price.discovery
 import { IndexerSwapHandlerService } from './services/event-handlers/indexer.swap.handler.service';
 import { IndexerLiquidityHandlerService } from './services/event-handlers/indexer.liquidity.handler.service';
 import { IndexerPriceDiscoveryHandlerService } from './services/event-handlers/indexer.price.discovery.handler.service';
+import { AnalyticsIndexerController } from './analytics.indexer.controller';
 import { DatabaseModule } from 'src/services/database/database.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
@@ -46,5 +47,6 @@ import { IndexerSessionRepositoryService } from 'src/services/database/repositor
         IndexerSessionRepositoryService,
     ],
     exports: [IndexerService],
+    controllers: [AnalyticsIndexerController],
 })
 export class AnalyticsIndexerModule {}
