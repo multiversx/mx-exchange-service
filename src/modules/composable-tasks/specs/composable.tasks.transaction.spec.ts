@@ -10,12 +10,11 @@ import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { ComposableTaskType } from '../models/composable.tasks.model';
 import { Address } from '@multiversx/sdk-core/out';
+import { gasConfig } from 'src/config';
+import { encodeTransactionData } from 'src/helpers/helpers';
 
 describe('Composable Tasks Transaction', () => {
     let module: TestingModule;
-    const senderAddress = Address.newFromHex(
-        '0000000000000000000000000000000000000000000000000000000000000001',
-    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -58,7 +57,6 @@ describe('Composable Tasks Transaction', () => {
         });
 
         const transaction = await service.getComposeTasksTransaction(
-            senderAddress,
             payment,
             tokenOut,
             [
@@ -80,11 +78,11 @@ describe('Composable Tasks Transaction', () => {
             options: undefined,
             receiver: Address.Zero().bech32(),
             receiverUsername: undefined,
-            sender: senderAddress,
+            sender: '',
             senderUsername: undefined,
             signature: undefined,
             value: '1000000000000000000',
-            version: 2,
+            version: 1,
         });
     });
 
@@ -94,7 +92,6 @@ describe('Composable Tasks Transaction', () => {
         );
 
         const transaction = await service.wrapEgldAndSwapTransaction(
-            senderAddress,
             '1000000000000000000',
             'USDC-123456',
             '20000000',
@@ -104,6 +101,7 @@ describe('Composable Tasks Transaction', () => {
         expect(transaction).toEqual({
             chainID: 'T',
             data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNDAxMzEyZDAwQEBAMDJAMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDQwMTMxMmQwMA==',
+
             gasLimit: 40200000,
             gasPrice: 1000000000,
             guardian: undefined,
@@ -112,11 +110,11 @@ describe('Composable Tasks Transaction', () => {
             options: undefined,
             receiver: Address.Zero().bech32(),
             receiverUsername: undefined,
-            sender: senderAddress,
+            sender: '',
             senderUsername: undefined,
             signature: undefined,
             value: '1000000000000000000',
-            version: 2,
+            version: 1,
         });
     });
 
@@ -126,7 +124,6 @@ describe('Composable Tasks Transaction', () => {
         );
 
         const transaction = await service.swapAndUnwrapEgldTransaction(
-            senderAddress,
             new EsdtTokenPayment({
                 tokenIdentifier: 'USDC-123456',
                 tokenNonce: 0,
@@ -147,11 +144,11 @@ describe('Composable Tasks Transaction', () => {
             options: undefined,
             receiver: Address.Zero().bech32(),
             receiverUsername: undefined,
-            sender: senderAddress,
+            sender: '',
             senderUsername: undefined,
             signature: undefined,
             value: '0',
-            version: 2,
+            version: 1,
         });
     });
 });

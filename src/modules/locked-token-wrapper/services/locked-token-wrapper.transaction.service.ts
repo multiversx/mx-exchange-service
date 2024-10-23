@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { TransactionModel } from '../../../models/transaction.model';
-import { Token, TokenTransfer } from '@multiversx/sdk-core';
-import { gasConfig, scAddress } from '../../../config';
+import { Address, TokenTransfer } from '@multiversx/sdk-core';
+import { mxConfig, gasConfig, scAddress } from '../../../config';
+import { BigNumber } from 'bignumber.js';
 import { InputTokenModel } from '../../../models/inputToken.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -12,7 +13,6 @@ import {
     WrappedLockedTokenAttributes,
 } from '@multiversx/sdk-exchange';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
-import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class LockedTokenWrapperTransactionService {
@@ -54,47 +54,52 @@ export class LockedTokenWrapperTransactionService {
             LockedTokenAttributesRaw,
         );
 
+        console.log({
+            currentEpoch,
+            lockedTokenID,
+            wrappedLockedTokenAttributes,
+            lockedTokenAttributes,
+        });
+
         if (currentEpoch >= lockedTokenAttributes.unlockEpoch) {
             throw new Error('Cannot unwrap token after unlock epoch');
         }
 
-        return await this.mxProxy.getLockedTokenWrapperSmartContractTransaction(
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.lockedTokenWrapper.unwrapLockedToken,
-                function: 'unwrapLockedToken',
-                tokenTransfers: [
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: inputToken.tokenID,
-                            nonce: BigInt(inputToken.nonce),
-                        }),
-                        amount: BigInt(inputToken.amount),
-                    }),
-                ],
-            }),
-        );
+        const contract = await this.mxProxy.getLockedTokenWrapperContract();
+        return contract.methodsExplicit
+            .unwrapLockedToken()
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    inputToken.tokenID,
+                    inputToken.nonce,
+                    new BigNumber(inputToken.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.lockedTokenWrapper.unwrapLockedToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async wrapLockedToken(
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getLockedTokenWrapperSmartContractTransaction(
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.lockedTokenWrapper.wrapLockedToken,
-                function: 'wrapLockedToken',
-                tokenTransfers: [
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: inputToken.tokenID,
-                            nonce: BigInt(inputToken.nonce),
-                        }),
-                        amount: BigInt(inputToken.amount),
-                    }),
-                ],
-            }),
-        );
+        const contract = await this.mxProxy.getLockedTokenWrapperContract();
+        return contract.methodsExplicit
+            .wrapLockedToken()
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    inputToken.tokenID,
+                    inputToken.nonce,
+                    new BigNumber(inputToken.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.lockedTokenWrapper.wrapLockedToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 }

@@ -475,7 +475,7 @@
             "addKnownTokens": 10000000
         },
         "energyUpdate": {
-            "updateFarmsEnergyForUser": 17000000
+            "updateFarmsEnergyForUser": 15000000
         },
         "tokenUnstake": {
             "claimUnlockedTokens": {

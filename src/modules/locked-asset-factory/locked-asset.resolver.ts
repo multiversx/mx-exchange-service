@@ -89,12 +89,8 @@ export class LockedAssetResolver {
     @Query(() => TransactionModel)
     async lockAssets(
         @Args('inputToken') inputToken: InputTokenModel,
-        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.lockAssets(
-            user.address,
-            inputToken,
-        );
+        return await this.transactionsService.lockAssets(inputToken);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

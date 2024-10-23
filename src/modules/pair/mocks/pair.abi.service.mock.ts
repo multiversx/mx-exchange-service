@@ -42,9 +42,7 @@ export class PairAbiServiceMock implements IPairAbiService {
         return [];
     }
     async initialLiquidityAdder(pairAddress: string): Promise<string> {
-        return Address.newFromHex(
-            '0000000000000000000000000000000000000000000000000000000000000001',
-        ).toBech32();
+        return Address.Zero().bech32();
     }
     async state(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).state;

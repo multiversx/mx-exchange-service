@@ -236,7 +236,6 @@ export class RouterResolver {
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
         return this.routerTransaction.upgradePair(
-            user.address,
             firstTokenID,
             secondTokenID,
             fees,
@@ -249,10 +248,8 @@ export class RouterResolver {
         @Args('address') address: string,
         @Args('lpTokenName') lpTokenName: string,
         @Args('lpTokenTicker') lpTokenTicker: string,
-        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.routerTransaction.issueLpToken(
-            user.address,
             address,
             lpTokenName,
             lpTokenTicker,
@@ -263,9 +260,8 @@ export class RouterResolver {
     @Query(() => TransactionModel)
     async setLocalRoles(
         @Args('address') address: string,
-        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.routerTransaction.setLocalRoles(user.address, address);
+        return this.routerTransaction.setLocalRoles(address);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -276,7 +272,7 @@ export class RouterResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
-        return this.routerTransaction.setState(user.address, address, enable);
+        return this.routerTransaction.setState(address, enable);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -290,7 +286,6 @@ export class RouterResolver {
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
         return this.routerTransaction.setFee(
-            user.address,
             pairAddress,
             feeToAddress,
             feeTokenID,
@@ -305,10 +300,7 @@ export class RouterResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
-        return this.routerTransaction.setPairCreationEnabled(
-            user.address,
-            enabled,
-        );
+        return this.routerTransaction.setPairCreationEnabled(enabled);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -317,9 +309,7 @@ export class RouterResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
-        return this.routerTransaction.clearPairTemporaryOwnerStorage(
-            user.address,
-        );
+        return this.routerTransaction.clearPairTemporaryOwnerStorage();
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -329,10 +319,7 @@ export class RouterResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
-        return this.routerTransaction.setTemporaryOwnerPeriod(
-            user.address,
-            periodBlocks,
-        );
+        return this.routerTransaction.setTemporaryOwnerPeriod(periodBlocks);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -342,10 +329,7 @@ export class RouterResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
-        return this.routerTransaction.setPairTemplateAddress(
-            user.address,
-            address,
-        );
+        return this.routerTransaction.setPairTemplateAddress(address);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -356,7 +340,7 @@ export class RouterResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
-        return this.routerTransaction.setLocalRolesOwner(user.address, args);
+        return this.routerTransaction.setLocalRolesOwner(args);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -367,11 +351,7 @@ export class RouterResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.routerService.requireOwner(user.address);
-        return this.routerTransaction.removePair(
-            user.address,
-            firstTokenID,
-            secondTokenID,
-        );
+        return this.routerTransaction.removePair(firstTokenID, secondTokenID);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

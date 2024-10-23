@@ -1,3 +1,6 @@
+import { TimeResolution } from '@multiversx/sdk-data-api-client';
+import { DataApiHistoricalResponse } from '@multiversx/sdk-data-api-client/lib/src/responses';
+import BigNumber from 'bignumber.js';
 import moment from 'moment';
 
 export const decodeTime = (time: string): [string, moment.unitOfTime.Base] => {
@@ -22,6 +25,27 @@ export const computeTimeInterval = (
     return [startDate, endDate];
 };
 
+export const convertBinToTimeResolution = (bin: string): TimeResolution => {
+    switch (bin) {
+        case '30s':
+            return TimeResolution.INTERVAL_30_SECONDS;
+        case '30s':
+        case '1m':
+            return TimeResolution.INTERVAL_1_MINUTE;
+        case '10m':
+            return TimeResolution.INTERVAL_10_MINUTES;
+        case '30m':
+            return TimeResolution.INTERVAL_30_MINUTES;
+        case '1h':
+            return TimeResolution.INTERVAL_HOUR;
+        case '24h':
+        case '1d':
+            return TimeResolution.INTERVAL_DAY;
+    }
+
+    throw new Error('Invalid bin');
+};
+
 export const generateCacheKeysForTimeInterval = (
     intervalStart: moment.Moment,
     intervalEnd: moment.Moment,
@@ -36,6 +60,20 @@ export const generateCacheKeysForTimeInterval = (
     }
 
     return keys;
+};
+
+export const convertDataApiHistoricalResponseToHash = (
+    rows: DataApiHistoricalResponse[],
+): { field: string; value: { last: string; sum: string } }[] => {
+    const toBeInserted = rows.map((row) => {
+        const field = moment.utc(row.timestamp * 1000).format('YYYY-MM-DD');
+        const value = {
+            last: new BigNumber(row.last ?? '0').toFixed(),
+            sum: new BigNumber(row.sum ?? '0').toFixed(),
+        };
+        return { field, value };
+    });
+    return toBeInserted;
 };
 
 export const computeIntervalValues = (keys, values) => {

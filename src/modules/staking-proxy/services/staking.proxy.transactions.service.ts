@@ -1,8 +1,8 @@
-import { BigUIntValue, Token, TokenTransfer } from '@multiversx/sdk-core';
+import { Address, BigUIntValue, TokenTransfer } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { gasConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -23,7 +23,6 @@ import { StakingProxyAbiService } from './staking.proxy.abi.service';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class StakingProxyTransactionService {
@@ -60,29 +59,30 @@ export class StakingProxyTransactionService {
             throw error;
         }
 
+        const contract = await this.mxProxy.getStakingProxySmartContract(
+            args.proxyStakingAddress,
+        );
+
         const gasLimit =
             args.payments.length > 1
                 ? gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge
                 : gasConfig.stakeProxy.stakeFarmTokens.default;
-
-        return await this.mxProxy.getStakingProxySmartContractTransaction(
-            args.proxyStakingAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasLimit,
-                function: 'stakeFarmTokens',
-                tokenTransfers: args.payments.map(
-                    (payment) =>
-                        new TokenTransfer({
-                            token: new Token({
-                                identifier: payment.tokenID,
-                                nonce: BigInt(payment.nonce),
-                            }),
-                            amount: BigInt(payment.amount),
-                        }),
-                ),
-            }),
+        const mappedPayments = args.payments.map((payment) =>
+            TokenTransfer.metaEsdtFromBigInteger(
+                payment.tokenID,
+                payment.nonce,
+                new BigNumber(payment.amount),
+            ),
         );
+
+        return contract.methodsExplicit
+            .stakeFarmTokens()
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasLimit)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async claimDualYield(
@@ -98,24 +98,25 @@ export class StakingProxyTransactionService {
             }
         }
 
-        return await this.mxProxy.getStakingProxySmartContractTransaction(
+        const contract = await this.mxProxy.getStakingProxySmartContract(
             args.proxyStakingAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.stakeProxy.claimDualYield,
-                function: 'claimDualYield',
-                tokenTransfers: args.payments.map(
-                    (payment) =>
-                        new TokenTransfer({
-                            token: new Token({
-                                identifier: payment.tokenID,
-                                nonce: BigInt(payment.nonce),
-                            }),
-                            amount: BigInt(payment.amount),
-                        }),
-                ),
-            }),
         );
+        const mappedPayments = args.payments.map((payment) =>
+            TokenTransfer.metaEsdtFromBigInteger(
+                payment.tokenID,
+                payment.nonce,
+                new BigNumber(payment.amount),
+            ),
+        );
+
+        return contract.methodsExplicit
+            .claimDualYield()
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.stakeProxy.claimDualYield)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async unstakeFarmTokens(
@@ -175,27 +176,29 @@ export class StakingProxyTransactionService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        return await this.mxProxy.getStakingProxySmartContractTransaction(
+        const contract = await this.mxProxy.getStakingProxySmartContract(
             args.proxyStakingAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.stakeProxy.unstakeFarmTokens,
-                function: 'unstakeFarmTokens',
-                arguments: [
-                    new BigUIntValue(amount0Min),
-                    new BigUIntValue(amount1Min),
-                ],
-                tokenTransfers: [
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: args.payment.tokenID,
-                            nonce: BigInt(args.payment.nonce),
-                        }),
-                        amount: BigInt(args.payment.amount),
-                    }),
-                ],
-            }),
         );
+
+        const endpointArgs = [
+            new BigUIntValue(amount0Min),
+            new BigUIntValue(amount1Min),
+        ];
+
+        return contract.methodsExplicit
+            .unstakeFarmTokens(endpointArgs)
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    args.payment.tokenID,
+                    args.payment.nonce,
+                    new BigNumber(args.payment.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.stakeProxy.unstakeFarmTokens)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async migrateTotalDualFarmTokenPosition(

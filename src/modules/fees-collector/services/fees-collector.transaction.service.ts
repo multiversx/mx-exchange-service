@@ -3,7 +3,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { FeesCollectorTransactionModel } from '../models/fees-collector.model';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import { constantsConfig, gasConfig } from 'src/config';
+import { constantsConfig, gasConfig, mxConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     Address,
@@ -13,8 +13,7 @@ import {
     TokenIdentifierValue,
     VariadicType,
     VariadicValue,
-} from '@multiversx/sdk-core';
-import { TransactionOptions } from 'src/modules/common/transaction.options';
+} from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class FeesCollectorTransactionService {
@@ -41,7 +40,6 @@ export class FeesCollectorTransactionService {
             currentWeek - lastActiveWeekForUser,
         );
         const transaction = await this.claimRewards(
-            userAddress,
             weekToClaim * gasConfig.feesCollector.claimRewardsPerWeek +
                 gasConfig.feesCollector.baseClaimRewards,
         );
@@ -61,74 +59,71 @@ export class FeesCollectorTransactionService {
         return claimTransaction;
     }
 
-    async claimRewards(
-        sender: string,
-        gasLimit: number,
-    ): Promise<TransactionModel> {
-        return await this.mxProxy.getFeesCollectorSmartContractTransaction(
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasLimit,
-                function: 'claimRewards',
-            }),
-        );
+    async claimRewards(gasLimit: number): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        return contract.methodsExplicit
+            .claimRewards()
+            .withGasLimit(gasLimit)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async updateEnergyForUser(userAddress: string): Promise<TransactionModel> {
-        return await this.mxProxy.getFeesCollectorSmartContractTransaction(
-            new TransactionOptions({
-                sender: userAddress,
-                gasLimit: gasConfig.feesCollector.updateEnergyForUser,
-                function: 'updateEnergyForUser',
-                arguments: [
-                    new AddressValue(Address.newFromBech32(userAddress)),
-                ],
-            }),
-        );
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        return contract.methodsExplicit
+            .updateEnergyForUser([
+                new AddressValue(Address.fromString(userAddress)),
+            ])
+            .withGasLimit(gasConfig.feesCollector.updateEnergyForUser)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async handleKnownContracts(
-        sender: string,
         pairAddresses: string[],
         remove = false,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFeesCollectorSmartContractTransaction(
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.feesCollector.addKnownContracts,
-                function: remove ? 'removeKnownContracts' : 'addKnownContracts',
-                arguments: [
-                    new VariadicValue(
-                        new VariadicType(new AddressType(), false),
-                        pairAddresses.map(
-                            (address) =>
-                                new AddressValue(
-                                    Address.newFromBech32(address),
-                                ),
-                        ),
-                    ),
-                ],
-            }),
-        );
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const endpointArgs = [
+            new VariadicValue(
+                new VariadicType(new AddressType(), false),
+                pairAddresses.map(
+                    (address) => new AddressValue(Address.fromString(address)),
+                ),
+            ),
+        ];
+        const interaction = remove
+            ? contract.methodsExplicit.removeKnownContracts(endpointArgs)
+            : contract.methodsExplicit.addKnownContracts(endpointArgs);
+
+        return interaction
+            .withGasLimit(gasConfig.feesCollector.addKnownContracts)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async handleKnownTokens(
-        sender: string,
         tokenIDs: string[],
         remove = false,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFeesCollectorSmartContractTransaction(
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.feesCollector.addKnownTokens,
-                function: remove ? 'removeKnownTokens' : 'addKnownTokens',
-                arguments: [
-                    new VariadicValue(
-                        new VariadicType(new TokenIdentifierType(), false),
-                        tokenIDs.map((id) => new TokenIdentifierValue(id)),
-                    ),
-                ],
-            }),
-        );
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const endpointArgs = [
+            new VariadicValue(
+                new VariadicType(new TokenIdentifierType(), false),
+                tokenIDs.map((id) => new TokenIdentifierValue(id)),
+            ),
+        ];
+        const interaction = remove
+            ? contract.methodsExplicit.removeKnownTokens(endpointArgs)
+            : contract.methodsExplicit.addKnownTokens(endpointArgs);
+
+        return interaction
+            .withGasLimit(gasConfig.feesCollector.addKnownTokens)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 }

@@ -106,7 +106,7 @@ export class AnalyticsAWSGetterService {
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey('values24h', series, metric);
         const data = await this.getCachedData<HistoricDataModel[]>(cacheKey);
-        return data !== undefined ? data : [];
+        return data !== undefined ? data.slice(1) : [];
     }
 
     private getAnalyticsCacheKey(...args: any) {

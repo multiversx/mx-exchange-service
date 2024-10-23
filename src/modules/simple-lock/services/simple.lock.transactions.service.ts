@@ -1,8 +1,11 @@
 import {
+    Address,
     BigUIntValue,
+    ContractFunction,
     EnumValue,
-    Token,
+    Interaction,
     TokenTransfer,
+    TypedValue,
     U64Value,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
@@ -25,7 +28,6 @@ import { SimpleLockService } from './simple.lock.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
-import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class SimpleLockTransactionService {
@@ -41,31 +43,29 @@ export class SimpleLockTransactionService {
     ) {}
 
     async lockTokens(
-        sender: string,
         inputTokens: InputTokenModel,
         lockEpochs: number,
         simpleLockAddress: string,
     ): Promise<TransactionModel> {
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+        const [contract, currentEpoch] = await Promise.all([
+            this.mxProxy.getSimpleLockSmartContract(simpleLockAddress),
+            this.contextGetter.getCurrentEpoch(),
+        ]);
+
         const unlockEpoch = currentEpoch + lockEpochs;
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
-            simpleLockAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.simpleLock.lockTokens,
-                function: 'lockTokens',
-                arguments: [new U64Value(new BigNumber(unlockEpoch))],
-                tokenTransfers: [
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: inputTokens.tokenID,
-                        }),
-                        amount: BigInt(inputTokens.amount),
-                    }),
-                ],
-            }),
-        );
+        return contract.methodsExplicit
+            .lockTokens([new U64Value(new BigNumber(unlockEpoch))])
+            .withSingleESDTTransfer(
+                TokenTransfer.fungibleFromBigInteger(
+                    inputTokens.tokenID,
+                    new BigNumber(inputTokens.amount),
+                ),
+            )
+            .withGasLimit(gasConfig.simpleLock.lockTokens)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async unlockTokens(
@@ -73,23 +73,24 @@ export class SimpleLockTransactionService {
         sender: string,
         inputTokens: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.simpleLock.unlockTokens,
-                function: 'unlockTokens',
-                tokenTransfers: [
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: inputTokens.tokenID,
-                            nonce: BigInt(inputTokens.nonce),
-                        }),
-                        amount: BigInt(inputTokens.amount),
-                    }),
-                ],
-            }),
         );
+
+        return contract.methodsExplicit
+            .unlockTokens()
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.simpleLock.unlockTokens)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async addLiquidityLockedTokenBatch(
@@ -151,10 +152,12 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         let [firstInputToken, secondInputToken] = inputTokens;
 
-        const [pairFirstTokenID, pairSecondTokenID] = await Promise.all([
-            this.pairAbi.firstTokenID(pairAddress),
-            this.pairAbi.secondTokenID(pairAddress),
-        ]);
+        const [pairFirstTokenID, pairSecondTokenID, contract] =
+            await Promise.all([
+                this.pairAbi.firstTokenID(pairAddress),
+                this.pairAbi.secondTokenID(pairAddress),
+                this.mxProxy.getSimpleLockSmartContract(simpleLockAddress),
+            ]);
 
         let [firstTokenID, secondTokenID] = [
             firstInputToken.tokenID,
@@ -193,34 +196,30 @@ export class SimpleLockTransactionService {
         const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
         const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
-            simpleLockAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.simpleLock.addLiquidityLockedToken,
-                function: 'addLiquidityLockedToken',
-                arguments: [
-                    new BigUIntValue(amount0Min),
-                    new BigUIntValue(amount1Min),
-                ],
-                tokenTransfers: [
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: firstInputToken.tokenID,
-                            nonce: BigInt(firstInputToken.nonce),
-                        }),
-                        amount: BigInt(firstInputToken.amount),
-                    }),
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: secondInputToken.tokenID,
-                            nonce: BigInt(secondInputToken.nonce),
-                        }),
-                        amount: BigInt(secondInputToken.amount),
-                    }),
-                ],
-            }),
-        );
+        const endpointArgs: TypedValue[] = [
+            new BigUIntValue(amount0Min),
+            new BigUIntValue(amount1Min),
+        ];
+
+        return contract.methodsExplicit
+            .addLiquidityLockedToken(endpointArgs)
+            .withMultiESDTNFTTransfer([
+                TokenTransfer.metaEsdtFromBigInteger(
+                    firstInputToken.tokenID,
+                    firstInputToken.nonce,
+                    new BigNumber(firstInputToken.amount),
+                ),
+                TokenTransfer.metaEsdtFromBigInteger(
+                    secondInputToken.tokenID,
+                    secondInputToken.nonce,
+                    new BigNumber(secondInputToken.amount),
+                ),
+            ])
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.simpleLock.addLiquidityLockedToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async removeLiquidityLockedToken(
@@ -231,6 +230,9 @@ export class SimpleLockTransactionService {
         tolerance: number,
     ): Promise<TransactionModel[]> {
         const transactions = [];
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
 
         const lpProxyTokenAttributes =
             this.simpleLockService.decodeLpProxyTokenAttributes({
@@ -257,29 +259,27 @@ export class SimpleLockTransactionService {
             .multipliedBy(1 - tolerance)
             .integerValue();
 
-        const transaction =
-            await this.mxProxy.getSimpleLockSmartContractTransaction(
-                simpleLockAddress,
-                new TransactionOptions({
-                    sender: sender,
-                    gasLimit: gasConfig.simpleLock.removeLiquidityLockedToken,
-                    function: 'removeLiquidityLockedToken',
-                    arguments: [
-                        new BigUIntValue(amount0Min),
-                        new BigUIntValue(amount1Min),
-                    ],
-                    tokenTransfers: [
-                        new TokenTransfer({
-                            token: new Token({
-                                identifier: inputTokens.tokenID,
-                                nonce: BigInt(inputTokens.nonce),
-                            }),
-                            amount: BigInt(inputTokens.amount),
-                        }),
-                    ],
-                }),
-            );
-        transactions.push(transaction);
+        const endpointArgs = [
+            new BigUIntValue(amount0Min),
+            new BigUIntValue(amount1Min),
+        ];
+
+        transactions.push(
+            contract.methodsExplicit
+                .removeLiquidityLockedToken(endpointArgs)
+                .withSingleESDTNFTTransfer(
+                    TokenTransfer.metaEsdtFromBigInteger(
+                        inputTokens.tokenID,
+                        inputTokens.nonce,
+                        new BigNumber(inputTokens.amount),
+                    ),
+                )
+                .withSender(Address.fromString(sender))
+                .withGasLimit(gasConfig.simpleLock.removeLiquidityLockedToken)
+                .withChainID(mxConfig.chainID)
+                .buildTransaction()
+                .toPlainObject(),
+        );
 
         return transactions;
     }
@@ -311,35 +311,34 @@ export class SimpleLockTransactionService {
                 .name,
         );
 
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
+
         const gasLimit =
             inputTokens.length > 1
                 ? gasConfig.simpleLock.enterFarmLockedToken.withTokenMerge
                 : gasConfig.simpleLock.enterFarmLockedToken.default;
-
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
-            simpleLockAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasLimit,
-                function: 'enterFarmLockedToken',
-                arguments: [
-                    EnumValue.fromDiscriminant(
-                        FarmTypeEnumType,
-                        farmTypeDiscriminant,
-                    ),
-                ],
-                tokenTransfers: inputTokens.map(
-                    (inputToken) =>
-                        new TokenTransfer({
-                            token: new Token({
-                                identifier: inputToken.tokenID,
-                                nonce: BigInt(inputToken.nonce),
-                            }),
-                            amount: BigInt(inputToken.amount),
-                        }),
-                ),
-            }),
+        const mappedPayments = inputTokens.map((inputToken) =>
+            TokenTransfer.metaEsdtFromBigInteger(
+                inputToken.tokenID,
+                inputToken.nonce,
+                new BigNumber(inputToken.amount),
+            ),
         );
+        return contract.methodsExplicit
+            .enterFarmLockedToken([
+                EnumValue.fromDiscriminant(
+                    FarmTypeEnumType,
+                    farmTypeDiscriminant,
+                ),
+            ])
+            .withMultiESDTNFTTransfer(mappedPayments)
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasLimit)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async exitFarmLockedToken(
@@ -349,33 +348,33 @@ export class SimpleLockTransactionService {
         farmVersion: FarmVersion,
         exitAmount?: string,
     ): Promise<TransactionModel> {
+        await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
+
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
         if (!exitAmount && farmVersion === FarmVersion.V2) {
             throw new Error('Invalid exit amount!');
         }
+        const endpointArgs =
+            farmVersion === FarmVersion.V2
+                ? [new BigUIntValue(new BigNumber(exitAmount))]
+                : [];
 
-        await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
-
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
-            simpleLockAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.simpleLock.exitFarmLockedToken,
-                function: 'exitFarmLockedToken',
-                arguments:
-                    farmVersion === FarmVersion.V2
-                        ? [new BigUIntValue(new BigNumber(exitAmount))]
-                        : [],
-                tokenTransfers: [
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: inputTokens.tokenID,
-                            nonce: BigInt(inputTokens.nonce),
-                        }),
-                        amount: BigInt(inputTokens.amount),
-                    }),
-                ],
-            }),
-        );
+        return contract.methodsExplicit
+            .exitFarmLockedToken(endpointArgs)
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async farmClaimRewardsLockedToken(
@@ -385,23 +384,24 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.simpleLock.claimRewardsFarmLockedToken,
-                function: 'farmClaimRewardsLockedToken',
-                tokenTransfers: [
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: inputTokens.tokenID,
-                            nonce: BigInt(inputTokens.nonce),
-                        }),
-                        amount: BigInt(inputTokens.amount),
-                    }),
-                ],
-            }),
         );
+
+        return contract.methodsExplicit
+            .farmClaimRewardsLockedToken()
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.simpleLock.claimRewardsFarmLockedToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async exitFarmOldToken(
@@ -411,23 +411,27 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasConfig.simpleLock.exitFarmLockedToken,
-                function: 'exitFarmOldToken',
-                tokenTransfers: [
-                    new TokenTransfer({
-                        token: new Token({
-                            identifier: inputTokens.tokenID,
-                            nonce: BigInt(inputTokens.nonce),
-                        }),
-                        amount: BigInt(inputTokens.amount),
-                    }),
-                ],
-            }),
         );
+
+        return new Interaction(
+            contract,
+            new ContractFunction('exitFarmOldToken'),
+            [],
+        )
+            .withSingleESDTNFTTransfer(
+                TokenTransfer.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+            )
+            .withSender(Address.fromString(sender))
+            .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
+            .withChainID(mxConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async validateInputEnterFarmProxyToken(

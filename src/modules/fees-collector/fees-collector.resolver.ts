@@ -96,10 +96,8 @@ export class FeesCollectorResolver {
         @Args('contractAddresses', { type: () => [String] })
         contractAddresses: string[],
         @Args('remove', { nullable: true }) remove: boolean,
-        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.feesCollectorTransaction.handleKnownContracts(
-            user.address,
             contractAddresses,
             remove,
         );
@@ -112,10 +110,8 @@ export class FeesCollectorResolver {
     async handleKnownTokens(
         @Args('tokenIDs', { type: () => [String] }) tokenIDs: string[],
         @Args('remove', { nullable: true }) remove: boolean,
-        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.feesCollectorTransaction.handleKnownTokens(
-            user.address,
             tokenIDs,
             remove,
         );

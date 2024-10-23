@@ -62,7 +62,7 @@ describe('LockedTokenWrapperTransactionService', () => {
         });
 
         await expect(
-            service.unwrapLockedToken(Address.Zero().toBech32(), {
+            service.unwrapLockedToken(Address.Zero().bech32(), {
                 tokenID: 'WXMEX-123456',
                 nonce: 1,
                 amount: '1',
@@ -89,7 +89,7 @@ describe('LockedTokenWrapperTransactionService', () => {
         });
 
         const transaction = await service.unwrapLockedToken(
-            Address.Zero().toBech32(),
+            Address.Zero().bech32(),
             {
                 tokenID: 'WXMEX-123456',
                 nonce: 1,
@@ -100,8 +100,8 @@ describe('LockedTokenWrapperTransactionService', () => {
             new TransactionModel({
                 chainID: mxConfig.chainID,
                 nonce: 0,
-                receiver: Address.Zero().toBech32(),
-                sender: Address.Zero().toBech32(),
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 gasLimit: gasConfig.lockedTokenWrapper.unwrapLockedToken,
                 gasPrice: 1000000000,
                 value: '0',
@@ -110,7 +110,7 @@ describe('LockedTokenWrapperTransactionService', () => {
                 ),
                 options: undefined,
                 signature: undefined,
-                version: 2,
+                version: 1,
             }),
         );
     });
@@ -120,7 +120,7 @@ describe('LockedTokenWrapperTransactionService', () => {
             LockedTokenWrapperTransactionService,
         );
         const transaction = await service.wrapLockedToken(
-            Address.Zero().toBech32(),
+            Address.Zero().bech32(),
             {
                 tokenID: 'XMEX-123456',
                 nonce: 1,
@@ -131,8 +131,8 @@ describe('LockedTokenWrapperTransactionService', () => {
             new TransactionModel({
                 chainID: mxConfig.chainID,
                 nonce: 0,
-                receiver: Address.Zero().toBech32(),
-                sender: Address.Zero().toBech32(),
+                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().bech32(),
                 gasLimit: gasConfig.lockedTokenWrapper.wrapLockedToken,
                 gasPrice: 1000000000,
                 value: '0',
@@ -141,7 +141,7 @@ describe('LockedTokenWrapperTransactionService', () => {
                 ),
                 options: undefined,
                 signature: undefined,
-                version: 2,
+                version: 1,
             }),
         );
     });

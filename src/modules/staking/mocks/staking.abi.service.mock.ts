@@ -5,7 +5,7 @@ import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 
 export class StakingAbiServiceMock implements IStakingAbiService {
     async farmTokenID(stakeAddress: string): Promise<string> {
-        return 'STAKETOK-111111';
+        return 'STAKETOK-1111';
     }
     async farmingTokenID(stakeAddress: string): Promise<string> {
         return 'WEGLD-123456';

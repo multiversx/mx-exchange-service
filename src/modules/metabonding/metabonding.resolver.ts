@@ -62,12 +62,8 @@ export class MetabondingResolver {
     @Query(() => TransactionModel)
     async unstakeMetabonding(
         @Args('unstakeAmount') unstakeAmount: string,
-        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.metabondingTransactions.unstake(
-            user.address,
-            unstakeAmount,
-        );
+        return this.metabondingTransactions.unstake(unstakeAmount);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { gasConfig } from 'src/config';
+import BigNumber from 'bignumber.js';
+import { gasConfig, mxConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { TokenUnstakeAbiService } from './token.unstake.abi.service';
-import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class TokenUnstakeTransactionService {
@@ -13,39 +13,47 @@ export class TokenUnstakeTransactionService {
     ) {}
 
     async claimUnlockedTokens(sender: string): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getTokenUnstakeContract();
+
         const unstakedTokens = await this.tokenUnstakeAbi.unlockedTokensForUser(
             sender,
         );
-        const gasLimit =
-            gasConfig.tokenUnstake.claimUnlockedTokens.default +
-            gasConfig.tokenUnstake.claimUnlockedTokens.additionalTokens *
-                unstakedTokens.length;
-
-        return await this.mxProxy.getTokenUnstakeSmartContractTransaction(
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasLimit,
-                function: 'claimUnlockedTokens',
-            }),
+        const gasLimit = new BigNumber(
+            gasConfig.tokenUnstake.claimUnlockedTokens.default,
+        ).plus(
+            new BigNumber(
+                gasConfig.tokenUnstake.claimUnlockedTokens.additionalTokens,
+            ).multipliedBy(unstakedTokens.length),
         );
+
+        return contract.methodsExplicit
+            .claimUnlockedTokens()
+            .withChainID(mxConfig.chainID)
+            .withGasLimit(gasLimit.integerValue().toNumber())
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async cancelUnbond(sender: string): Promise<TransactionModel> {
+        const contract = await this.mxProxy.getTokenUnstakeContract();
+
         const unstakedTokens = await this.tokenUnstakeAbi.unlockedTokensForUser(
             sender,
         );
 
-        const gasLimit =
-            gasConfig.tokenUnstake.cancelUnbond.default +
-            gasConfig.tokenUnstake.cancelUnbond.additionalTokens *
-                unstakedTokens.length;
-
-        return await this.mxProxy.getTokenUnstakeSmartContractTransaction(
-            new TransactionOptions({
-                sender: sender,
-                gasLimit: gasLimit,
-                function: 'cancelUnbond',
-            }),
+        const gasLimit = new BigNumber(
+            gasConfig.tokenUnstake.cancelUnbond.default,
+        ).plus(
+            new BigNumber(
+                gasConfig.tokenUnstake.cancelUnbond.additionalTokens,
+            ).multipliedBy(unstakedTokens.length),
         );
+
+        return contract.methodsExplicit
+            .cancelUnbond()
+            .withChainID(mxConfig.chainID)
+            .withGasLimit(gasLimit.integerValue().toNumber())
+            .buildTransaction()
+            .toPlainObject();
     }
 }
