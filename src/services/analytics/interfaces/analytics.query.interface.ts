@@ -8,6 +8,12 @@ import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 export interface AnalyticsQueryInterface {
     getAggregatedValue(args: AnalyticsQueryArgs): Promise<string>;
 
+    getLastForMetric(
+        series: string,
+        metric: string,
+        time: number,
+    ): Promise<string>;
+
     getLatestCompleteValues(
         args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]>;
