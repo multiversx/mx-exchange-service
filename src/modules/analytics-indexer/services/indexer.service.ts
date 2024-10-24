@@ -67,7 +67,6 @@ export class IndexerService {
         const pairs = this.stateService.getPairsMetadata();
 
         this.filterAddresses.push(...pairs.map((pair) => pair.address));
-        this.filterAddresses.push(...scAddress.priceDiscovery);
 
         this.handleSwapEvents = eventTypes.includes(
             IndexerEventTypes.SWAP_EVENTS,
@@ -91,6 +90,9 @@ export class IndexerService {
         if (this.handleLiquidityEvents) {
             this.eventIdentifiers.push(IndexerEventIdentifiers.ADD_LIQUIDITY);
             this.eventIdentifiers.push(
+                IndexerEventIdentifiers.ADD_INITIAL_LIQUIDITY,
+            );
+            this.eventIdentifiers.push(
                 IndexerEventIdentifiers.REMOVE_LIQUIDITY,
             );
         }
@@ -102,6 +104,7 @@ export class IndexerService {
             this.eventIdentifiers.push(
                 IndexerEventIdentifiers.PRICE_DISCOVERY_WITHDRAW,
             );
+            this.filterAddresses.push(...scAddress.priceDiscovery);
         }
     }
 
@@ -201,6 +204,7 @@ export class IndexerService {
                                 new SwapEvent(rawEvent),
                             );
                         break;
+                    case IndexerEventIdentifiers.ADD_INITIAL_LIQUIDITY:
                     case IndexerEventIdentifiers.ADD_LIQUIDITY:
                         if (!this.handleLiquidityEvents) {
                             break;
