@@ -23,6 +23,7 @@ import {
     IndexerSessionSchema,
 } from './schemas/indexer.session.schema';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
+import { IndexerCronService } from './services/indexer.cron.service';
 
 @Module({
     imports: [
@@ -49,6 +50,7 @@ import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.
         IndexerPriceDiscoveryHandlerService,
         IndexerSessionRepositoryService,
         IndexerPersistenceService,
+        IndexerCronService,
     ],
     exports: [IndexerService],
     controllers: [AnalyticsIndexerController],

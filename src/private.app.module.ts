@@ -9,6 +9,7 @@ import { TokenModule } from './modules/tokens/token.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { ESTransactionsService } from './services/elastic-search/services/es.transactions.service';
 import { AnalyticsIndexerModule } from './modules/analytics-indexer/analytics.indexer.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { AnalyticsIndexerModule } from './modules/analytics-indexer/analytics.in
         RemoteConfigModule,
         DynamicModuleUtils.getCacheModule(),
         AnalyticsIndexerModule,
+        ScheduleModule.forRoot(),
     ],
     controllers: [MetricsController, TokenController, RemoteConfigController],
     providers: [ESTransactionsService],

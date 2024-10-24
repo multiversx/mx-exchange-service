@@ -2,6 +2,7 @@ export enum IndexerEventIdentifiers {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
     SWAP_FIXED_OUTPUT = 'swapTokensFixedOutput',
     ADD_LIQUIDITY = 'addLiquidity',
+    ADD_INITIAL_LIQUIDITY = 'addInitialLiquidity',
     REMOVE_LIQUIDITY = 'removeLiquidity',
     PRICE_DISCOVERY_DEPOSIT = 'deposit',
     PRICE_DISCOVERY_WITHDRAW = 'withdraw',

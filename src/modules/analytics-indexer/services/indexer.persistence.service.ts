@@ -57,6 +57,13 @@ export class IndexerPersistenceService {
         });
     }
 
+    public async updateSession(session: IndexerSession): Promise<void> {
+        await this.indexerSessionRepository.findOneAndUpdate(
+            { name: session.name },
+            session,
+        );
+    }
+
     private createSessionJobs(start: number, end: number): IndexerJob[] {
         const jobs: IndexerJob[] = [];
         const oneWeek = Constants.oneWeek();
