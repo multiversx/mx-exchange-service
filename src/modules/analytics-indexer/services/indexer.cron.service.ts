@@ -87,6 +87,10 @@ export class IndexerCronService {
 
                 await this.indexerPersistence.updateSession(session);
             } catch (error) {
+                this.logger.error(
+                    `Indexing session ${session.name} failed`,
+                    error,
+                );
                 await this.markSessionFailed(session);
                 break;
             }
@@ -134,7 +138,10 @@ export class IndexerCronService {
                 return job;
             } catch (error) {
                 job.runAttempts += 1;
-                console.log('EXTRA ATTEMPT', job.runAttempts);
+                this.logger.error(
+                    `Failed attempt #${job.runAttempts} while indexing analytics data between '${startDate}' and '${endDate}'`,
+                    error,
+                );
             }
         }
 
