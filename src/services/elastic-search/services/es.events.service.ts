@@ -243,6 +243,10 @@ export class ElasticSearchEventsService {
             '',
             elasticQueryAdapter,
             action,
+            {
+                delayBetweenScrolls: 0,
+                scrollTimeout: '5m',
+            },
         );
     }
 }
