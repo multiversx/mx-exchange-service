@@ -13,7 +13,6 @@ import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/m
 import {
     ContractType,
     OutdatedContract,
-    UserDualYiledToken,
     UserNegativeEnergyCheck,
 } from '../../models/user.model';
 import { ProxyService } from '../../../proxy/services/proxy.service';
@@ -40,6 +39,7 @@ import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/servi
 import { MetabondingAbiService } from 'src/modules/metabonding/services/metabonding.abi.service';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -51,6 +51,7 @@ export class UserEnergyComputeService {
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly stakingService: StakingService,
+        private readonly stakingCompute: StakingComputeService,
         private readonly energyAbi: EnergyAbiService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly proxyService: ProxyService,
@@ -167,6 +168,14 @@ export class UserEnergyComputeService {
         userAddress: string,
         contractAddress: string,
     ): Promise<OutdatedContract> {
+        const isProducingRewards = await this.stakingCompute.isProducingRewards(
+            contractAddress,
+        );
+
+        if (!isProducingRewards) {
+            return new OutdatedContract();
+        }
+
         const [currentClaimProgress, currentWeek, farmToken, userEnergy] =
             await Promise.all([
                 this.weeklyRewardsSplittingAbi.currentClaimProgress(
