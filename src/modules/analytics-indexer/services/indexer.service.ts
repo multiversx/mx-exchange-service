@@ -22,6 +22,8 @@ import {
     IndexerEventIdentifiers,
     IndexerEventTypes,
 } from '../entities/indexer.event.types';
+import { farmsAddresses } from 'src/utils/farm.utils';
+import { IndexerMexBurnHandlerService } from './event-handlers/indexer.mex.burn.handler.service';
 
 @Injectable()
 export class IndexerService {
@@ -31,6 +33,8 @@ export class IndexerService {
     private handleSwapEvents = false;
     private handleLiquidityEvents = false;
     private handlePriceDiscoveryEvents = false;
+    private handleMEXFeeBurnEvents = false;
+    private handleMEXPenaltyBurnEvents = false;
     private eventIdentifiers: string[];
 
     constructor(
@@ -40,6 +44,7 @@ export class IndexerService {
         private readonly swapHandlerService: IndexerSwapHandlerService,
         private readonly liquidityHandlerService: IndexerLiquidityHandlerService,
         private readonly priceDiscoveryHandlerService: IndexerPriceDiscoveryHandlerService,
+        private readonly mexBurnHandlerService: IndexerMexBurnHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -77,8 +82,14 @@ export class IndexerService {
         this.handlePriceDiscoveryEvents = eventTypes.includes(
             IndexerEventTypes.PRICE_DISCOVERY_EVENTS,
         );
+        this.handleMEXFeeBurnEvents = eventTypes.includes(
+            IndexerEventTypes.MEX_FEE_BURN_EVENTS,
+        );
+        this.handleMEXPenaltyBurnEvents = eventTypes.includes(
+            IndexerEventTypes.MEX_PENALTY_BURN_EVENTS,
+        );
 
-        if (this.handleSwapEvents) {
+        if (this.handleSwapEvents || this.handleMEXFeeBurnEvents) {
             this.eventIdentifiers.push(
                 IndexerEventIdentifiers.SWAP_FIXED_INPUT,
             );
@@ -105,6 +116,15 @@ export class IndexerService {
                 IndexerEventIdentifiers.PRICE_DISCOVERY_WITHDRAW,
             );
             this.filterAddresses.push(...scAddress.priceDiscovery);
+        }
+
+        if (this.handleMEXFeeBurnEvents || this.handleMEXPenaltyBurnEvents) {
+            this.eventIdentifiers.push(IndexerEventIdentifiers.ESDT_LOCAL_BURN);
+        }
+
+        if (this.handleMEXPenaltyBurnEvents) {
+            this.eventIdentifiers.push(IndexerEventIdentifiers.EXIT_FARM);
+            this.filterAddresses.push(...farmsAddresses());
         }
     }
 
@@ -191,11 +211,30 @@ export class IndexerService {
         let timestamp: number;
 
         let eventData: any[] = [];
+        const eventsByTransaction: Map<string, RawElasticEventType[]> =
+            new Map();
+
         for (const rawEvent of rawEvents) {
             try {
                 switch (rawEvent.identifier) {
                     case IndexerEventIdentifiers.SWAP_FIXED_INPUT:
                     case IndexerEventIdentifiers.SWAP_FIXED_OUTPUT:
+                        if (this.handleMEXFeeBurnEvents) {
+                            if (eventsByTransaction.has(rawEvent.txHash)) {
+                                const txEvents = eventsByTransaction.get(
+                                    rawEvent.txHash,
+                                );
+                                txEvents.push(rawEvent);
+                                eventsByTransaction.set(
+                                    rawEvent.txHash,
+                                    txEvents,
+                                );
+                            } else {
+                                eventsByTransaction.set(rawEvent.txHash, [
+                                    rawEvent,
+                                ]);
+                            }
+                        }
                         if (!this.handleSwapEvents) {
                             break;
                         }
@@ -241,11 +280,59 @@ export class IndexerService {
                                 new WithdrawEvent(rawEvent),
                             );
                         break;
+                    case IndexerEventIdentifiers.EXIT_FARM:
+                        if (eventsByTransaction.has(rawEvent.txHash)) {
+                            const txEvents = eventsByTransaction.get(
+                                rawEvent.txHash,
+                            );
+                            txEvents.push(rawEvent);
+                            eventsByTransaction.set(rawEvent.txHash, txEvents);
+                        } else {
+                            eventsByTransaction.set(rawEvent.txHash, [
+                                rawEvent,
+                            ]);
+                        }
+                        break;
+                    case IndexerEventIdentifiers.ESDT_LOCAL_BURN:
+                        if (eventsByTransaction.has(rawEvent.txHash)) {
+                            const txEvents = eventsByTransaction.get(
+                                rawEvent.txHash,
+                            );
+                            txEvents.push(rawEvent);
+                            eventsByTransaction.set(rawEvent.txHash, txEvents);
+                        } else {
+                            eventsByTransaction.set(rawEvent.txHash, [
+                                rawEvent,
+                            ]);
+                        }
+                        break;
                 }
                 this.updateIngestData(eventData);
             } catch (error) {
                 this.logger.error(error);
                 this.incrementErrorsCount();
+            }
+        }
+
+        if (this.handleMEXFeeBurnEvents && eventsByTransaction.size > 0) {
+            const result =
+                this.mexBurnHandlerService.handleSwapBurnEvents(
+                    eventsByTransaction,
+                );
+            if (result !== undefined) {
+                [eventData, timestamp] = result;
+                this.updateIngestData(eventData);
+            }
+        }
+
+        if (this.handleMEXPenaltyBurnEvents && eventsByTransaction.size > 0) {
+            const result =
+                this.mexBurnHandlerService.handleExitFarmBurnEvents(
+                    eventsByTransaction,
+                );
+            if (result !== undefined) {
+                [eventData, timestamp] = result;
+                this.updateIngestData(eventData);
             }
         }
 
