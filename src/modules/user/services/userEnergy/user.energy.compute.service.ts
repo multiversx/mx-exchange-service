@@ -168,30 +168,32 @@ export class UserEnergyComputeService {
         userAddress: string,
         contractAddress: string,
     ): Promise<OutdatedContract> {
-        const isProducingRewards = await this.stakingCompute.isProducingRewards(
-            contractAddress,
-        );
-
-        if (!isProducingRewards) {
-            return new OutdatedContract();
-        }
-
-        const [currentClaimProgress, currentWeek, farmToken, userEnergy] =
-            await Promise.all([
-                this.weeklyRewardsSplittingAbi.currentClaimProgress(
-                    contractAddress,
-                    userAddress,
-                ),
-                this.weekTimekeepingAbi.currentWeek(contractAddress),
-                this.stakingService.getFarmToken(contractAddress),
-                this.energyAbi.energyEntryForUser(userAddress),
-            ]);
+        const [
+            currentClaimProgress,
+            currentWeek,
+            farmToken,
+            userEnergy,
+            isProducingRewards,
+        ] = await Promise.all([
+            this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                contractAddress,
+                userAddress,
+            ),
+            this.weekTimekeepingAbi.currentWeek(contractAddress),
+            this.stakingService.getFarmToken(contractAddress),
+            this.energyAbi.energyEntryForUser(userAddress),
+            this.stakingCompute.isProducingRewards(contractAddress),
+        ]);
 
         if (currentClaimProgress.week === 0) {
             return new OutdatedContract();
         }
 
         const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
+
+        if (!isProducingRewards && !outdatedClaimProgress) {
+            return new OutdatedContract();
+        }
 
         if (
             this.isEnergyOutdated(userEnergy, currentClaimProgress) ||
