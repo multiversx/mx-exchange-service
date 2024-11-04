@@ -273,7 +273,7 @@ export class PairResolver {
 
     @ResolveField()
     async volumeUSD24h(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.volumeUSD(parent.address, '24h');
+        return this.pairComputeLoader.volumeUSD24hLoader.load(parent.address);
     }
 
     @ResolveField()

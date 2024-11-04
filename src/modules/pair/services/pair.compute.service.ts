@@ -427,8 +427,8 @@ export class PairComputeService implements IPairComputeService {
         remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
-    async volumeUSD(pairAddress: string, time: string): Promise<string> {
-        return await this.computeVolumeUSD(pairAddress, time);
+    async volumeUSD(pairAddress: string): Promise<string> {
+        return await this.computeVolumeUSD(pairAddress, '24h');
     }
 
     async computeVolumeUSD(pairAddress: string, time: string): Promise<string> {
@@ -440,6 +440,16 @@ export class PairComputeService implements IPairComputeService {
             metric: 'volumeUSD',
             time,
         });
+    }
+
+    async getAllVolumeUSD(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.volumeUSD',
+            this.volumeUSD.bind(this),
+            CacheTtlInfo.Analytics,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -456,8 +466,8 @@ export class PairComputeService implements IPairComputeService {
 
     async computePrevious24hVolumeUSD(pairAddress: string): Promise<string> {
         const [volume24h, volume48h] = await Promise.all([
-            this.volumeUSD(pairAddress, '24h'),
-            this.volumeUSD(pairAddress, '48h'),
+            this.computeVolumeUSD(pairAddress, '24h'),
+            this.computeVolumeUSD(pairAddress, '48h'),
         ]);
         return new BigNumber(volume48h).minus(volume24h).toFixed();
     }

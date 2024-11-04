@@ -122,7 +122,7 @@ export class PairCacheWarmerService {
                     secondTokenVolume24h,
                     time,
                 ),
-                this.pairSetterService.setVolumeUSD(
+                this.pairSetterService.setVolumeUSD(pairAddress, volumeUSD24h),
                     pairAddress,
                     volumeUSD24h,
                     time,

@@ -70,7 +70,7 @@ export class PairComputeServiceMock implements IPairComputeService {
     secondTokenVolume(pairAddress: string, time: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    async volumeUSD(pairAddress: string, time: string): Promise<string> {
+    async volumeUSD(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).volumeUSD;
     }
     feesUSD(pairAddress: string, time: string): Promise<string> {

@@ -175,6 +175,15 @@ export class PairComputeLoader {
         },
     );
 
+    public readonly volumeUSD24hLoader = new DataLoader<string, string>(
+        async (addresses: string[]) => {
+            return await this.pairCompute.getAllVolumeUSD(addresses);
+        },
+        {
+            cache: false,
+        },
+    );
+
     public readonly previous24hFeesUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
             return await getAllKeys(
