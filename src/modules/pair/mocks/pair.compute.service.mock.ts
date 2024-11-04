@@ -73,6 +73,9 @@ export class PairComputeServiceMock implements IPairComputeService {
     async volumeUSD(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).volumeUSD;
     }
+    async getAllVolumeUSD(pairAddresses: string[]): Promise<string[]> {
+        return pairAddresses.map((address) => PairsData(address).volumeUSD);
+    }
     feesUSD(pairAddress: string, time: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
