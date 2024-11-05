@@ -33,8 +33,10 @@ export class DistributionResolver {
 
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
-    async claimLockedAssets(): Promise<TransactionModel> {
-        return this.transactionsService.claimLockedAssets();
+    async claimLockedAssets(
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        return this.transactionsService.claimLockedAssets(user.address);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

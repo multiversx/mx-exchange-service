@@ -23,24 +23,38 @@ export class PairAbiLoader {
         async (addresses: string[]) => {
             return this.pairService.getAllFirstTokens(addresses);
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly secondTokenLoader = new DataLoader<string, EsdtToken>(
         async (addresses: string[]) => {
             return this.pairService.getAllSecondTokens(addresses);
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly liquidityPoolTokenLoader = new DataLoader<
         string,
         EsdtToken
-    >(async (addresses: string[]) => {
-        return this.pairService.getAllLpTokens(addresses);
-    });
+    >(
+        async (addresses: string[]) => {
+            return this.pairService.getAllLpTokens(addresses);
+        },
+        {
+            cache: false,
+        },
+    );
 
     public readonly infoMetadataLoader = new DataLoader<string, PairInfoModel>(
         async (addresses: string[]) => {
             return this.pairAbi.getAllPairsInfoMetadata(addresses);
+        },
+        {
+            cache: false,
         },
     );
 
@@ -54,6 +68,9 @@ export class PairAbiLoader {
                 CacheTtlInfo.ContractState,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly specialFeePercentLoader = new DataLoader<string, number>(
@@ -66,29 +83,40 @@ export class PairAbiLoader {
                 CacheTtlInfo.ContractState,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly feesCollectorCutPercentageLoader = new DataLoader<
         string,
         number
-    >(async (addresses: string[]) => {
-        const percentages = await getAllKeys<number>(
-            this.cacheService,
-            addresses,
-            'pair.feesCollectorCutPercentage',
-            this.pairAbi.feesCollectorCutPercentage.bind(this.pairAbi),
-            CacheTtlInfo.ContractState,
-        );
+    >(
+        async (addresses: string[]) => {
+            const percentages = await getAllKeys<number>(
+                this.cacheService,
+                addresses,
+                'pair.feesCollectorCutPercentage',
+                this.pairAbi.feesCollectorCutPercentage.bind(this.pairAbi),
+                CacheTtlInfo.ContractState,
+            );
 
-        return percentages.map(
-            (percentage) =>
-                percentage / constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS,
-        );
-    });
+            return percentages.map(
+                (percentage) =>
+                    percentage / constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS,
+            );
+        },
+        {
+            cache: false,
+        },
+    );
 
     public readonly stateLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
             return this.pairService.getAllStates(addresses);
+        },
+        {
+            cache: false,
         },
     );
 
@@ -96,18 +124,26 @@ export class PairAbiLoader {
         async (addresses: string[]) => {
             return this.pairService.getAllFeeStates(addresses);
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly initialLiquidityAdderLoader = new DataLoader<
         string,
         string
-    >(async (addresses: string[]) => {
-        return getAllKeys<string>(
-            this.cacheService,
-            addresses,
-            'pair.initialLiquidityAdder',
-            this.pairAbi.initialLiquidityAdder.bind(this.pairAbi),
-            CacheTtlInfo.ContractState,
-        );
-    });
+    >(
+        async (addresses: string[]) => {
+            return getAllKeys<string>(
+                this.cacheService,
+                addresses,
+                'pair.initialLiquidityAdder',
+                this.pairAbi.initialLiquidityAdder.bind(this.pairAbi),
+                CacheTtlInfo.ContractState,
+            );
+        },
+        {
+            cache: false,
+        },
+    );
 }

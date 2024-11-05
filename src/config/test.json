@@ -31,6 +31,9 @@
         "MAX_SWAP_SPREAD": 1,
         "MEX_TOKEN_ID": "MEX-123456",
         "USDC_TOKEN_ID": "USDC-123456",
-        "COMPOUND_TRANSACTION_FEE": 0.1
+        "COMPOUND_TRANSACTION_FEE": 0.1,
+        "roundedSwapEnable": {
+            "USDC-123456": "5000000"
+        }
     }
 }

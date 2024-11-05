@@ -16,16 +16,19 @@ import {
     List,
     ListType,
     Struct,
+    Token,
     TokenIdentifierValue,
     TokenTransfer,
     TypedValue,
     U64Value,
-} from '@multiversx/sdk-core/out';
+    VariadicValue,
+} from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 import { gasConfig, mxConfig } from 'src/config';
 import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { decimalToHex } from 'src/utils/token.converters';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 export type ComposableTask = {
     type: ComposableTaskType;
@@ -40,6 +43,7 @@ export class ComposableTasksTransactionService {
     ) {}
 
     async getComposeTasksTransaction(
+        sender: string,
         payment: EsdtTokenPayment,
         tokenOut: EgldOrEsdtTokenPayment,
         tasks: ComposableTask[],
@@ -66,10 +70,12 @@ export class ComposableTasksTransactionService {
             }
         }
 
-        const contract = await this.mxProxy.getComposableTasksSmartContract();
-
-        let interaction = contract.methodsExplicit
-            .composeTasks([
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasLimit,
+            function: 'composeTasks',
+            arguments: [
                 new Struct(EgldOrEsdtTokenPayment.getStructure(), [
                     new Field(
                         new TokenIdentifierValue(tokenOut.tokenIdentifier),
@@ -81,31 +87,30 @@ export class ComposableTasksTransactionService {
                         'amount',
                     ),
                 ]),
-                ...this.getRawTasks(tasks),
-            ])
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID);
+                VariadicValue.fromItems(...this.getRawTasks(tasks)),
+            ],
+        });
 
-        switch (payment.tokenIdentifier) {
-            case 'EGLD':
-                interaction = interaction.withValue(
-                    new BigUIntValue(new BigNumber(payment.amount)),
-                );
-                break;
-            default:
-                interaction = interaction.withSingleESDTTransfer(
-                    TokenTransfer.fungibleFromBigInteger(
-                        payment.tokenIdentifier,
-                        new BigNumber(payment.amount),
-                    ),
-                );
-                break;
+        if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
+            transactionOptions.nativeTransferAmount = payment.amount;
+        } else {
+            transactionOptions.tokenTransfers = [
+                new TokenTransfer({
+                    token: new Token({
+                        identifier: payment.tokenIdentifier,
+                    }),
+                    amount: BigInt(payment.amount),
+                }),
+            ];
         }
 
-        return interaction.buildTransaction().toPlainObject();
+        return await this.mxProxy.getComposableTasksContractTransaction(
+            transactionOptions,
+        );
     }
 
     async wrapEgldAndSwapTransaction(
+        sender: string,
         value: string,
         tokenOutID: string,
         tokenOutAmountMin: string,
@@ -131,6 +136,7 @@ export class ComposableTasksTransactionService {
         };
 
         return this.getComposeTasksTransaction(
+            sender,
             new EsdtTokenPayment({
                 tokenIdentifier: 'EGLD',
                 tokenNonce: 0,
@@ -145,6 +151,7 @@ export class ComposableTasksTransactionService {
     }
 
     async swapAndUnwrapEgldTransaction(
+        sender: string,
         payment: EsdtTokenPayment,
         minimumValue: string,
         swapEndpoint: string,
@@ -170,6 +177,7 @@ export class ComposableTasksTransactionService {
         };
 
         return this.getComposeTasksTransaction(
+            sender,
             payment,
             new EgldOrEsdtTokenPayment({
                 tokenIdentifier: 'EGLD',

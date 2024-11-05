@@ -465,7 +465,6 @@ export class StakingAbiService
         const interaction: Interaction =
             contract.methodsExplicit.isWhitelisted(transactionArgs);
         const response = await this.getGenericData(interaction);
-        console.log(response);
         return response.firstValue.valueOf();
     }
 

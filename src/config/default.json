@@ -393,7 +393,7 @@
             "claimRewards": 40000000,
             "claimBoostedRewards": 30000000,
             "claimRewardsWithNewValue": 7500000,
-            "compoundRewards": 10000000,
+            "compoundRewards": 40000000,
             "mergeTokens": 20000000,
             "admin": {
                 "setState": 20000000,
@@ -475,7 +475,7 @@
             "addKnownTokens": 10000000
         },
         "energyUpdate": {
-            "updateFarmsEnergyForUser": 15000000
+            "updateFarmsEnergyForUser": 17000000
         },
         "tokenUnstake": {
             "claimUnlockedTokens": {
@@ -611,7 +611,7 @@
             "SLIPPAGE_VALUES": [0.001, 0.005, 0.01],
             "MAX_SLIPPAGE": 0.05
         },
-        "MIN_SWAP_AMOUNT": 0.0005,
+        "MIN_SWAP_AMOUNT": 0,
         "roundedSwapEnable": {
             "USDC-8d4068": "5000000",
             "WEGLD-d7c6bb": "100000000000000000",

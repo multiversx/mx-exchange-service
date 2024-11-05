@@ -26,6 +26,9 @@ export class PairComputeLoader {
                 CacheTtlInfo.Price,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly secondTokenPriceLoader = new DataLoader<string, string>(
@@ -38,11 +41,17 @@ export class PairComputeLoader {
                 CacheTtlInfo.Price,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly firstTokenPriceUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
             return await this.pairCompute.getAllFirstTokensPriceUSD(addresses);
+        },
+        {
+            cache: false,
         },
     );
 
@@ -51,6 +60,9 @@ export class PairComputeLoader {
             return await this.pairCompute.getAllSecondTokensPricesUSD(
                 addresses,
             );
+        },
+        {
+            cache: false,
         },
     );
 
@@ -64,52 +76,79 @@ export class PairComputeLoader {
                 CacheTtlInfo.Price,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly firstTokenLockedValueUSDLoader = new DataLoader<
         string,
         string
-    >(async (addresses: string[]) => {
-        return await getAllKeys(
-            this.cacheService,
-            addresses,
-            'pair.firstTokenLockedValueUSD',
-            this.pairCompute.firstTokenLockedValueUSD.bind(this.pairCompute),
-            CacheTtlInfo.ContractInfo,
-        );
-    });
+    >(
+        async (addresses: string[]) => {
+            return await getAllKeys(
+                this.cacheService,
+                addresses,
+                'pair.firstTokenLockedValueUSD',
+                this.pairCompute.firstTokenLockedValueUSD.bind(
+                    this.pairCompute,
+                ),
+                CacheTtlInfo.ContractInfo,
+            );
+        },
+        {
+            cache: false,
+        },
+    );
 
     public readonly secondTokenLockedValueUSDLoader = new DataLoader<
         string,
         string
-    >(async (addresses: string[]) => {
-        return await getAllKeys(
-            this.cacheService,
-            addresses,
-            'pair.secondTokenLockedValueUSD',
-            this.pairCompute.secondTokenLockedValueUSD.bind(this.pairCompute),
-            CacheTtlInfo.ContractInfo,
-        );
-    });
+    >(
+        async (addresses: string[]) => {
+            return await getAllKeys(
+                this.cacheService,
+                addresses,
+                'pair.secondTokenLockedValueUSD',
+                this.pairCompute.secondTokenLockedValueUSD.bind(
+                    this.pairCompute,
+                ),
+                CacheTtlInfo.ContractInfo,
+            );
+        },
+        {
+            cache: false,
+        },
+    );
 
     public readonly lockedValueUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
             return await this.pairService.getAllLockedValueUSD(addresses);
+        },
+        {
+            cache: false,
         },
     );
 
     public readonly previous24hLockedValueUSDLoader = new DataLoader<
         string,
         string
-    >(async (addresses: string[]) => {
-        return await getAllKeys(
-            this.cacheService,
-            addresses,
-            'pair.previous24hLockedValueUSD',
-            this.pairCompute.previous24hLockedValueUSD.bind(this.pairCompute),
-            CacheTtlInfo.ContractInfo,
-        );
-    });
+    >(
+        async (addresses: string[]) => {
+            return await getAllKeys(
+                this.cacheService,
+                addresses,
+                'pair.previous24hLockedValueUSD',
+                this.pairCompute.previous24hLockedValueUSD.bind(
+                    this.pairCompute,
+                ),
+                CacheTtlInfo.ContractInfo,
+            );
+        },
+        {
+            cache: false,
+        },
+    );
 
     public readonly previous24hVolumeUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
@@ -120,6 +159,18 @@ export class PairComputeLoader {
                 this.pairCompute.previous24hVolumeUSD.bind(this.pairCompute),
                 CacheTtlInfo.Analytics,
             );
+        },
+        {
+            cache: false,
+        },
+    );
+
+    public readonly volumeUSD24hLoader = new DataLoader<string, string>(
+        async (addresses: string[]) => {
+            return await this.pairCompute.getAllVolumeUSD(addresses);
+        },
+        {
+            cache: false,
         },
     );
 
@@ -133,6 +184,9 @@ export class PairComputeLoader {
                 CacheTtlInfo.Analytics,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly feesAPRLoader = new DataLoader<string, string>(
@@ -144,6 +198,9 @@ export class PairComputeLoader {
                 this.pairCompute.feesAPR.bind(this.pairCompute),
                 CacheTtlInfo.ContractState,
             );
+        },
+        {
+            cache: false,
         },
     );
 
@@ -157,11 +214,17 @@ export class PairComputeLoader {
                 CacheTtlInfo.ContractState,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly hasFarmsLoader = new DataLoader<string, boolean>(
         async (addresses: string[]) => {
             return await this.pairService.getAllHasFarms(addresses);
+        },
+        {
+            cache: false,
         },
     );
 
@@ -169,11 +232,17 @@ export class PairComputeLoader {
         async (addresses: string[]) => {
             return await this.pairService.getAllHasDualFarms(addresses);
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly tradesCountLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
             return await this.pairService.getAllTradesCount(addresses);
+        },
+        {
+            cache: false,
         },
     );
 
@@ -181,11 +250,17 @@ export class PairComputeLoader {
         async (addresses: string[]) => {
             return await this.pairCompute.getAllTradesCount24h(addresses);
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly deployedAtLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
             return await this.pairService.getAllDeployedAt(addresses);
+        },
+        {
+            cache: false,
         },
     );
 }

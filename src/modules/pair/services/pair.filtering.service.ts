@@ -212,10 +212,8 @@ export class PairFilteringService {
             return pairsMetadata;
         }
 
-        const pairsVolumes = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.volumeUSD(pairMetadata.address, '24h'),
-            ),
+        const pairsVolumes = await this.pairCompute.getAllVolumeUSD(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter((_, index) => {

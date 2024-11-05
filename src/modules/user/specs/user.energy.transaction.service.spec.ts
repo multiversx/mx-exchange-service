@@ -55,11 +55,7 @@ import { StakingProxyAbiService } from '../../staking-proxy/services/staking.pro
 import { UserEnergyComputeService } from '../services/userEnergy/user.energy.compute.service';
 import { MXProxyServiceProvider } from '../../../services/multiversx-communication/mx.proxy.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
-import { scAddress } from 'src/config';
-import { ContractType } from '../models/user.model';
-import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { gasConfig, mxConfig, scAddress } from 'src/config';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -69,15 +65,26 @@ import { MetabondingAbiServiceMockProvider } from 'src/modules/metabonding/mocks
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { StakingProxyFilteringService } from 'src/modules/staking-proxy/services/staking.proxy.filtering.service';
-import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
-import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
+import { UserEnergyTransactionService } from '../services/userEnergy/user.energy.transaction.service';
+import { encodeTransactionData } from 'src/helpers/helpers';
+import { TransactionModel } from 'src/models/transaction.model';
+import { ContractType } from '../models/user.model';
 
-describe('UserEnergyComputeService', () => {
+describe('UserEnergyTransactionService', () => {
     let module: TestingModule;
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
+            imports: [
+                WinstonModule.forRoot({
+                    transports: [new winston.transports.Console({})],
+                }),
+                ConfigModule.forRoot({}),
+                DynamicModuleUtils.getCacheModule(),
+                ElasticSearchModule,
+            ],
             providers: [
+                UserEnergyTransactionService,
                 UserEnergyComputeService,
                 ContextGetterServiceProvider,
                 TokenServiceProvider,
@@ -104,10 +111,6 @@ describe('UserEnergyComputeService', () => {
                     provide: FarmAbiServiceV2,
                     useClass: FarmAbiServiceMock,
                 },
-                {
-                    provide: FarmAbiService,
-                    useClass: FarmAbiServiceMock,
-                },
                 LockedTokenWrapperAbiServiceProvider,
                 LockedAssetService,
                 FarmAbiFactory,
@@ -125,7 +128,6 @@ describe('UserEnergyComputeService', () => {
                 SimpleLockService,
                 StakingAbiServiceProvider,
                 StakingServiceProvider,
-                StakingComputeService,
                 PriceDiscoveryServiceProvider,
                 PriceDiscoveryAbiServiceProvider,
                 PriceDiscoveryComputeServiceProvider,
@@ -145,173 +147,104 @@ describe('UserEnergyComputeService', () => {
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
             ],
-            imports: [
-                WinstonModule.forRoot({
-                    transports: [new winston.transports.Console({})],
-                }),
-                ConfigModule.forRoot({}),
-                DynamicModuleUtils.getCacheModule(),
-                ElasticSearchModule,
-            ],
         }).compile();
     });
 
     it('should be defined', () => {
-        const UserEnergyCompute = module.get<UserEnergyComputeService>(
-            UserEnergyComputeService,
+        const service = module.get<UserEnergyTransactionService>(
+            UserEnergyTransactionService,
         );
 
-        expect(UserEnergyCompute).toBeDefined();
+        expect(service).toBeDefined();
     });
 
-    it('same values', () => {
-        const UserEnergyCompute = module.get<UserEnergyComputeService>(
+    it('should get update farms energy transaction - all contracts', async () => {
+        const service = module.get<UserEnergyTransactionService>(
+            UserEnergyTransactionService,
+        );
+
+        const userEnergyCompute = module.get<UserEnergyComputeService>(
             UserEnergyComputeService,
         );
 
-        expect(UserEnergyCompute).toBeDefined();
-        expect(
-            UserEnergyCompute.isEnergyOutdated(
-                {
-                    amount: '100',
-                    lastUpdateEpoch: 10,
-                    totalLockedTokens: '5',
-                },
-                {
-                    week: 10,
-                    energy: {
-                        amount: '100',
-                        lastUpdateEpoch: 10,
-                        totalLockedTokens: '5',
-                    },
-                },
-            ),
-        ).toBe(false);
-    });
-    it('current user energy values are older', () => {
-        const UserEnergyCompute = module.get<UserEnergyComputeService>(
-            UserEnergyComputeService,
+        const farmAddress = Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000041',
+        ).bech32();
+        jest.spyOn(userEnergyCompute, 'userActiveFarmsV2').mockResolvedValue([
+            farmAddress,
+        ]);
+
+        const transaction = await service.updateFarmsEnergyForUser(
+            Address.Zero().bech32(),
+            true,
         );
 
-        expect(UserEnergyCompute).toBeDefined();
-        expect(
-            UserEnergyCompute.isEnergyOutdated(
-                {
-                    amount: '105',
-                    lastUpdateEpoch: 9,
-                    totalLockedTokens: '5',
-                },
-                {
-                    week: 10,
-                    energy: {
-                        amount: '100',
-                        lastUpdateEpoch: 10,
-                        totalLockedTokens: '5',
-                    },
-                },
-            ),
-        ).toBe(false);
-    });
-    it('current user energy values are older', () => {
-        const UserEnergyCompute = module.get<UserEnergyComputeService>(
-            UserEnergyComputeService,
+        expect(transaction).toEqual(
+            new TransactionModel({
+                chainID: mxConfig.chainID,
+                nonce: 0,
+                gasLimit: gasConfig.energyUpdate.updateFarmsEnergyForUser * 2,
+                gasPrice: 1000000000,
+                value: '0',
+                sender: Address.Zero().bech32(),
+                receiver: scAddress.energyUpdate,
+                data: encodeTransactionData(
+                    `updateFarmsEnergyForUser@${Address.Zero().bech32()}@${farmAddress}@${
+                        scAddress.feesCollector
+                    }`,
+                ),
+                options: undefined,
+                signature: undefined,
+                version: 2,
+            }),
         );
-        expect(
-            UserEnergyCompute.isEnergyOutdated(
-                {
-                    amount: '100',
-                    lastUpdateEpoch: 10,
-                    totalLockedTokens: '5',
-                },
-                {
-                    week: 10,
-                    energy: {
-                        amount: '105',
-                        lastUpdateEpoch: 9,
-                        totalLockedTokens: '5',
-                    },
-                },
-            ),
-        ).toBe(false);
     });
 
-    it('should get outdated contracts on old claim progress', async () => {
-        const service = module.get<UserEnergyComputeService>(
+    it('should get update farms energy transaction - outdated contracts', async () => {
+        const service = module.get<UserEnergyTransactionService>(
+            UserEnergyTransactionService,
+        );
+
+        const userEnergyCompute = module.get<UserEnergyComputeService>(
             UserEnergyComputeService,
         );
-        const weeklyRewardsSplittingAbi =
-            module.get<WeeklyRewardsSplittingAbiService>(
-                WeeklyRewardsSplittingAbiService,
-            );
-        const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
-            WeekTimekeepingAbiService,
+
+        jest.spyOn(userEnergyCompute, 'userActiveFarmsV2').mockResolvedValue(
+            [],
         );
-        const energyAbi = module.get<EnergyAbiService>(EnergyAbiService);
-        jest.spyOn(
-            weeklyRewardsSplittingAbi,
-            'currentClaimProgress',
-        ).mockResolvedValue({
-            week: 9,
-            energy: {
-                amount: '105',
-                lastUpdateEpoch: 9,
-                totalLockedTokens: '5',
-            },
-        });
-        jest.spyOn(weekTimekeepingAbi, 'currentWeek').mockResolvedValue(10);
-        jest.spyOn(energyAbi, 'energyEntryForUser').mockResolvedValue({
-            amount: '100',
-            lastUpdateEpoch: 10,
-            totalLockedTokens: '5',
-        });
-
-        const outdatedContracts =
-            await service.computeFeesCollectorOutdatedContract(
-                Address.Zero().bech32(),
-            );
-
-        expect(outdatedContracts).toEqual({
+        jest.spyOn(userEnergyCompute, 'userActiveStakings').mockResolvedValue(
+            [],
+        );
+        jest.spyOn(userEnergyCompute, 'outdatedContract').mockResolvedValue({
             address: scAddress.feesCollector,
             type: ContractType.FeesCollector,
-            claimProgressOutdated: true,
+            claimProgressOutdated: false,
+            farmToken: null,
         });
-    });
 
-    it('should NOT get outdated contracts if no claim progress', async () => {
-        const service = module.get<UserEnergyComputeService>(
-            UserEnergyComputeService,
+        const transaction = await service.updateFarmsEnergyForUser(
+            Address.Zero().bech32(),
+            false,
         );
-        const weeklyRewardsSplittingAbi =
-            module.get<WeeklyRewardsSplittingAbiService>(
-                WeeklyRewardsSplittingAbiService,
-            );
-        const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
-            WeekTimekeepingAbiService,
+
+        expect(transaction).toEqual(
+            new TransactionModel({
+                chainID: mxConfig.chainID,
+                nonce: 0,
+                gasLimit: gasConfig.energyUpdate.updateFarmsEnergyForUser,
+                gasPrice: 1000000000,
+                value: '0',
+                sender: Address.Zero().bech32(),
+                receiver: scAddress.energyUpdate,
+                data: encodeTransactionData(
+                    `updateFarmsEnergyForUser@${Address.Zero().bech32()}@${
+                        scAddress.feesCollector
+                    }`,
+                ),
+                options: undefined,
+                signature: undefined,
+                version: 2,
+            }),
         );
-        const energyAbi = module.get<EnergyAbiService>(EnergyAbiService);
-        jest.spyOn(
-            weeklyRewardsSplittingAbi,
-            'currentClaimProgress',
-        ).mockResolvedValue({
-            week: 0,
-            energy: {
-                amount: '0',
-                lastUpdateEpoch: 0,
-                totalLockedTokens: '0',
-            },
-        });
-        jest.spyOn(weekTimekeepingAbi, 'currentWeek').mockResolvedValue(10);
-        jest.spyOn(energyAbi, 'energyEntryForUser').mockResolvedValue({
-            amount: '0',
-            lastUpdateEpoch: 0,
-            totalLockedTokens: '0',
-        });
-
-        const outdatedContracts =
-            await service.computeFeesCollectorOutdatedContract(
-                Address.Zero().bech32(),
-            );
-
-        expect(outdatedContracts).toEqual({});
     });
 });

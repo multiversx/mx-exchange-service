@@ -15,6 +15,9 @@ import winston from 'winston';
 
 describe('WrapTransactionsService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -45,10 +48,7 @@ describe('WrapTransactionsService', () => {
         const service: WrapTransactionsService =
             module.get<WrapTransactionsService>(WrapTransactionsService);
         const egldValue = '1000000000000000000';
-        const transaction = await service.wrapEgld(
-            Address.Zero().bech32(),
-            egldValue,
-        );
+        const transaction = await service.wrapEgld(senderAddress, egldValue);
 
         expect(transaction).toEqual(
             new TransactionModel({
@@ -59,12 +59,12 @@ describe('WrapTransactionsService', () => {
                 data: encodeTransactionData('wrapEgld'),
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: '',
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
                 options: undefined,
-                version: 1,
+                version: 2,
                 signature: undefined,
                 guardian: undefined,
                 guardianSignature: undefined,
@@ -76,10 +76,7 @@ describe('WrapTransactionsService', () => {
         const service: WrapTransactionsService =
             module.get<WrapTransactionsService>(WrapTransactionsService);
         const esdtValue = '1000000000000000000';
-        const transaction = await service.unwrapEgld(
-            Address.Zero().bech32(),
-            esdtValue,
-        );
+        const transaction = await service.unwrapEgld(senderAddress, esdtValue);
 
         expect(transaction).toEqual(
             new TransactionModel({
@@ -92,12 +89,12 @@ describe('WrapTransactionsService', () => {
                 ),
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender: '',
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
                 options: undefined,
-                version: 1,
+                version: 2,
                 signature: undefined,
                 guardian: undefined,
                 guardianSignature: undefined,

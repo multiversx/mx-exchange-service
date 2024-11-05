@@ -32,8 +32,10 @@ export class TransactionResolver {
         @Args('inputTokens') inputTokens: InputTokenModel,
         @Args('lockEpochs') lockEpochs: number,
         @Args('simpleLockAddress') simpleLockAddress: string,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.simpleLockTransactions.lockTokens(
+            user.address,
             inputTokens,
             lockEpochs,
             simpleLockAddress,
