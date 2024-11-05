@@ -60,7 +60,7 @@ export async function getAllKeys<T>(
 
     const missingIndexes: number[] = [];
     values.forEach((value, index) => {
-        if (value === undefined) {
+        if (value === undefined || value === null) {
             missingIndexes.push(index);
         } else {
             values[index] = parseCachedNullOrUndefined(value);
