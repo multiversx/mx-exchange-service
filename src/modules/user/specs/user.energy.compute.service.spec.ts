@@ -69,6 +69,7 @@ import { MetabondingAbiServiceMockProvider } from 'src/modules/metabonding/mocks
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { StakingProxyFilteringService } from 'src/modules/staking-proxy/services/staking.proxy.filtering.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -119,6 +120,7 @@ describe('UserEnergyComputeService', () => {
                 SimpleLockService,
                 StakingAbiServiceProvider,
                 StakingServiceProvider,
+                StakingComputeService,
                 PriceDiscoveryServiceProvider,
                 PriceDiscoveryAbiServiceProvider,
                 PriceDiscoveryComputeServiceProvider,

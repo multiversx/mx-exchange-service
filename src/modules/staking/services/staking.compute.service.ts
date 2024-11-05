@@ -211,7 +211,7 @@ export class StakingComputeService {
     async computeStakeFarmAPR(stakeAddress: string): Promise<string> {
         const isProducingRewards = await this.isProducingRewards(stakeAddress);
 
-        if (isProducingRewards) {
+        if (!isProducingRewards) {
             return '0';
         }
 
@@ -259,7 +259,7 @@ export class StakingComputeService {
     async computeStakeFarmUncappedAPR(stakeAddress: string): Promise<string> {
         const isProducingRewards = await this.isProducingRewards(stakeAddress);
 
-        if (isProducingRewards) {
+        if (!isProducingRewards) {
             return '0';
         }
 
@@ -962,7 +962,19 @@ export class StakingComputeService {
         return deployedAt ?? undefined;
     }
 
-    private async isProducingRewards(stakeAddress: string): Promise<boolean> {
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async isProducingRewards(stakeAddress: string): Promise<boolean> {
+        return await this.computeIsProducingRewards(stakeAddress);
+    }
+
+    async computeIsProducingRewards(stakeAddress: string): Promise<boolean> {
         const [accumulatedRewards, rewardsCapacity, produceRewardsEnabled] =
             await Promise.all([
                 this.stakingAbi.accumulatedRewards(stakeAddress),
@@ -974,9 +986,9 @@ export class StakingComputeService {
             !produceRewardsEnabled ||
             new BigNumber(accumulatedRewards).isEqualTo(rewardsCapacity)
         ) {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 }
