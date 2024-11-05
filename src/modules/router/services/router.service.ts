@@ -236,10 +236,8 @@ export class RouterService {
             return pairsMetadata;
         }
 
-        const pairsVolumes = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.volumeUSD(pairMetadata.address, '24h'),
-            ),
+        const pairsVolumes = await this.pairCompute.getAllVolumeUSD(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter((_, index) => {
@@ -311,10 +309,8 @@ export class RouterService {
                 );
                 break;
             case PairSortableFields.VOLUME_24:
-                sortFieldData = await Promise.all(
-                    pairsMetadata.map((pair) =>
-                        this.pairCompute.volumeUSD(pair.address, '24h'),
-                    ),
+                sortFieldData = await this.pairCompute.getAllVolumeUSD(
+                    pairsMetadata.map((pair) => pair.address),
                 );
                 break;
             case PairSortableFields.APR:

@@ -266,13 +266,9 @@ export class PairSetterService extends GenericSetterService {
         );
     }
 
-    async setVolumeUSD(
-        pairAddress: string,
-        value: string,
-        time: string,
-    ): Promise<string> {
+    async setVolumeUSD(pairAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getCacheKey('volumeUSD', pairAddress, time),
+            this.getCacheKey('volumeUSD', pairAddress),
             value,
             CacheTtlInfo.Analytics.remoteTtl,
             CacheTtlInfo.Analytics.localTtl,

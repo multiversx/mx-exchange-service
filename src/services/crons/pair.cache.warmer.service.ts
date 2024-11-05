@@ -17,6 +17,7 @@ import { Logger } from 'winston';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
+import { PairService } from 'src/modules/pair/services/pair.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -24,6 +25,7 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly pairAbi: PairAbiService,
+        private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly tokenSetter: TokenSetterService,
@@ -44,7 +46,12 @@ export class PairCacheWarmerService {
                 pairMetadata.address,
             );
 
-            const cachedKeys = await Promise.all([
+            const lpToken =
+                lpTokenID === undefined
+                    ? undefined
+                    : await this.pairService.getLpToken(pairMetadata.address);
+
+            const cacheSetPromises = [
                 this.pairSetterService.setFirstTokenID(
                     pairMetadata.address,
                     pairMetadata.firstTokenID,
@@ -57,11 +64,21 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     lpTokenID,
                 ),
-                this.tokenSetter.setEsdtTokenType(
-                    lpTokenID,
-                    EsdtTokenType.FungibleLpToken,
-                ),
-            ]);
+            ];
+
+            if (lpTokenID !== undefined) {
+                cacheSetPromises.push(
+                    this.tokenSetter.setEsdtTokenType(
+                        lpTokenID,
+                        EsdtTokenType.FungibleLpToken,
+                    ),
+                );
+                cacheSetPromises.push(
+                    this.tokenSetter.setMetadata(lpTokenID, lpToken),
+                );
+            }
+
+            const cachedKeys = await Promise.all(cacheSetPromises);
 
             await this.deleteCacheKeys(cachedKeys);
         }
@@ -122,11 +139,7 @@ export class PairCacheWarmerService {
                     secondTokenVolume24h,
                     time,
                 ),
-                this.pairSetterService.setVolumeUSD(
-                    pairAddress,
-                    volumeUSD24h,
-                    time,
-                ),
+                this.pairSetterService.setVolumeUSD(pairAddress, volumeUSD24h),
                 this.pairSetterService.setFeesUSD(
                     pairAddress,
                     feesUSD24h,

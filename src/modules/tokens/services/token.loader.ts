@@ -20,14 +20,24 @@ export class TokenLoader {
         async (tokenIDs: string[]) => {
             return await this.tokenService.getAllEsdtTokensType(tokenIDs);
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly tokenPriceDerivedEGLDLoader = new DataLoader<
         string,
         string
-    >(async (tokenIDs: string[]) => {
-        return await this.tokenCompute.getAllTokensPriceDerivedEGLD(tokenIDs);
-    });
+    >(
+        async (tokenIDs: string[]) => {
+            return await this.tokenCompute.getAllTokensPriceDerivedEGLD(
+                tokenIDs,
+            );
+        },
+        {
+            cache: false,
+        },
+    );
 
     public readonly tokenPriceDerivedUSDLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
@@ -35,14 +45,24 @@ export class TokenLoader {
                 tokenIDs,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly tokenPrevious24hPriceLoader = new DataLoader<
         string,
         string
-    >(async (tokenIDs: string[]) => {
-        return await this.tokenCompute.getAllTokensPrevious24hPrice(tokenIDs);
-    });
+    >(
+        async (tokenIDs: string[]) => {
+            return await this.tokenCompute.getAllTokensPrevious24hPrice(
+                tokenIDs,
+            );
+        },
+        {
+            cache: false,
+        },
+    );
 
     public readonly tokenPrevious7dPriceLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
@@ -50,32 +70,49 @@ export class TokenLoader {
                 tokenIDs,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly tokenVolumeUSD24hLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
             return await this.tokenCompute.getAllTokensVolumeUSD24h(tokenIDs);
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly tokenPrevious24hVolumeUSDLoader = new DataLoader<
         string,
         string
-    >(async (tokenIDs: string[]) => {
-        return await this.tokenCompute.getAllTokensPrevious24hVolumeUSD(
-            tokenIDs,
-        );
-    });
+    >(
+        async (tokenIDs: string[]) => {
+            return await this.tokenCompute.getAllTokensPrevious24hVolumeUSD(
+                tokenIDs,
+            );
+        },
+        {
+            cache: false,
+        },
+    );
 
     public readonly tokenLiquidityUSDLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
             return await this.tokenCompute.getAllTokensLiquidityUSD(tokenIDs);
+        },
+        {
+            cache: false,
         },
     );
 
     public readonly tokenCreatedAtLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
             return await this.tokenCompute.getAllTokensCreatedAt(tokenIDs);
+        },
+        {
+            cache: false,
         },
     );
 
@@ -89,24 +126,37 @@ export class TokenLoader {
                 CacheTtlInfo.Token,
             );
         },
+        {
+            cache: false,
+        },
     );
 
     public readonly tokenPrevious24hSwapCountLoader = new DataLoader<
         string,
         number
-    >(async (tokenIDs: string[]) => {
-        return await getAllKeys(
-            this.cacheService,
-            tokenIDs,
-            'token.tokenPrevious24hSwapCount',
-            this.tokenCompute.tokenPrevious24hSwapCount.bind(this.tokenCompute),
-            CacheTtlInfo.Token,
-        );
-    });
+    >(
+        async (tokenIDs: string[]) => {
+            return await getAllKeys(
+                this.cacheService,
+                tokenIDs,
+                'token.tokenPrevious24hSwapCount',
+                this.tokenCompute.tokenPrevious24hSwapCount.bind(
+                    this.tokenCompute,
+                ),
+                CacheTtlInfo.Token,
+            );
+        },
+        {
+            cache: false,
+        },
+    );
 
     public readonly tokenTrendingScoreLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
             return await this.tokenCompute.getAllTokensTrendingScore(tokenIDs);
+        },
+        {
+            cache: false,
         },
     );
 }
