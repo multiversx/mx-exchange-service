@@ -1,3 +1,4 @@
+import './tracer';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { BigNumber } from 'bignumber.js';
