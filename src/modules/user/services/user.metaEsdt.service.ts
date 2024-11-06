@@ -51,8 +51,9 @@ import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/p
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { Address } from '@multiversx/sdk-core/out';
 
 enum NftTokenType {
     FarmToken,
@@ -78,7 +79,7 @@ export class UserMetaEsdtService {
         private readonly apiService: MXApiService,
         private readonly proxyPairAbi: ProxyPairAbiService,
         private readonly proxyFarmAbi: ProxyFarmAbiService,
-        private readonly farmAbi: FarmAbiService,
+        private readonly farmAbiFactory: FarmAbiFactory,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly stakingAbi: StakingAbiService,
         private readonly proxyStakeAbi: StakingProxyAbiService,
@@ -119,9 +120,9 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
         calculateUSD = true,
     ): Promise<UserFarmToken[]> {
-        const farmTokenIDs = await this.farmAbi.getAllFarmTokenIds(
-            farmsAddresses(),
-        );
+        const farmTokenIDs = await this.farmAbiFactory
+            .useAbi(Address.Zero().bech32())
+            .getAllFarmTokenIds(farmsAddresses());
         const nfts = await this.contextGetter.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -676,9 +677,9 @@ export class UserMetaEsdtService {
             }
         }
 
-        const farmTokenIDs = await this.farmAbi.getAllFarmTokenIds(
-            farmsAddresses(),
-        );
+        const farmTokenIDs = await this.farmAbiFactory
+            .useAbi(Address.Zero().bech32())
+            .getAllFarmTokenIds(farmsAddresses());
         if (farmTokenIDs.find((farmTokenID) => farmTokenID === tokenID)) {
             return NftTokenType.FarmToken;
         }
