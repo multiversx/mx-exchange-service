@@ -21,6 +21,7 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { PairInfoModel } from '../models/pair-info.model';
 
 @Injectable()
 export class PairService {
@@ -281,6 +282,13 @@ export class PairService {
     ): Promise<LiquidityPosition> {
         const pairInfo = await this.pairAbi.pairInfoMetadata(pairAddress);
 
+        return this.computeLiquidityPosition(pairInfo, amount);
+    }
+
+    private computeLiquidityPosition(
+        pairInfo: PairInfoModel,
+        amount: string,
+    ): LiquidityPosition {
         const firstTokenAmount = getTokenForGivenPosition(
             amount,
             pairInfo.reserves0,
@@ -296,6 +304,19 @@ export class PairService {
             firstTokenAmount: firstTokenAmount.toFixed(),
             secondTokenAmount: secondTokenAmount.toFixed(),
         });
+    }
+
+    async getAllLiquidityPositions(
+        pairAddresses: string[],
+        amounts: string[],
+    ): Promise<LiquidityPosition[]> {
+        const allPairsInfo = await this.pairAbi.getAllPairsInfoMetadata(
+            pairAddresses,
+        );
+
+        return allPairsInfo.map((pairInfo, index) =>
+            this.computeLiquidityPosition(pairInfo, amounts[index]),
+        );
     }
 
     async getLiquidityPositionUSD(
@@ -330,6 +351,38 @@ export class PairService {
             .toFixed();
     }
 
+    async getAllLiquidityPositionsUSD(
+        pairAddresses: string[],
+        amounts: string[],
+    ): Promise<string[]> {
+        const allFirstTokens = await this.getAllFirstTokens(pairAddresses);
+        const allSecondTokens = await this.getAllSecondTokens(pairAddresses);
+        const allFirstTokensPriceUSD =
+            await this.pairCompute.getAllFirstTokensPriceUSD(pairAddresses);
+        const allSecondTokensPriceUSD =
+            await this.pairCompute.getAllSecondTokensPricesUSD(pairAddresses);
+        const allLiquidityPositions = await this.getAllLiquidityPositions(
+            pairAddresses,
+            amounts,
+        );
+
+        return pairAddresses.map((_, index) => {
+            return computeValueUSD(
+                allLiquidityPositions[index].firstTokenAmount,
+                allFirstTokens[index].decimals,
+                allFirstTokensPriceUSD[index],
+            )
+                .plus(
+                    computeValueUSD(
+                        allLiquidityPositions[index].secondTokenAmount,
+                        allSecondTokens[index].decimals,
+                        allSecondTokensPriceUSD[index],
+                    ),
+                )
+                .toFixed();
+        });
+    }
+
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
         const cachedValue: string = await this.cachingService.get(
             `${tokenID}.pairAddress`,
@@ -338,10 +391,8 @@ export class PairService {
             return cachedValue;
         }
         const pairsAddress = await this.routerAbi.pairsAddress();
-        const promises = pairsAddress.map(async (pairAddress) =>
-            this.pairAbi.lpTokenID(pairAddress),
-        );
-        const lpTokenIDs = await Promise.all(promises);
+        const lpTokenIDs = await this.getAllLpTokensIds(pairsAddress);
+
         let returnedData = null;
         for (let index = 0; index < lpTokenIDs.length; index++) {
             if (lpTokenIDs[index] === tokenID) {

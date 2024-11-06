@@ -15,6 +15,7 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { IFarmAbiService } from './interfaces';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 export class FarmAbiService
     extends GenericAbiService
@@ -67,6 +68,16 @@ export class FarmAbiService
             contract.methodsExplicit.getFarmTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getAllFarmTokenIds(farmAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cacheService,
+            farmAddresses,
+            'farm.farmTokenID',
+            this.farmTokenID.bind(this),
+            CacheTtlInfo.Token,
+        );
     }
 
     @ErrorLoggerAsync({

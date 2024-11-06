@@ -69,6 +69,8 @@ import { UserEnergyTransactionService } from '../services/userEnergy/user.energy
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { TransactionModel } from 'src/models/transaction.model';
 import { ContractType } from '../models/user.model';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
 
 describe('UserEnergyTransactionService', () => {
     let module: TestingModule;
@@ -104,6 +106,7 @@ describe('UserEnergyTransactionService', () => {
                 FarmComputeServiceV1_2,
                 FarmComputeServiceV1_3,
                 FarmComputeServiceV2,
+                FarmAbiService,
                 FarmAbiServiceProviderV1_2,
                 FarmAbiServiceProviderV1_3,
                 LockedTokenWrapperService,
@@ -128,6 +131,7 @@ describe('UserEnergyTransactionService', () => {
                 SimpleLockService,
                 StakingAbiServiceProvider,
                 StakingServiceProvider,
+                StakingComputeService,
                 PriceDiscoveryServiceProvider,
                 PriceDiscoveryAbiServiceProvider,
                 PriceDiscoveryComputeServiceProvider,

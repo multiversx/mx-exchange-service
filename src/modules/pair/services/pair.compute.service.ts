@@ -220,6 +220,18 @@ export class PairComputeService implements IPairComputeService {
         );
     }
 
+    async getAllFirstTokensPriceUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.firstTokenPriceUSD',
+            this.firstTokenPriceUSD.bind(this),
+            CacheTtlInfo.Price,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -253,6 +265,18 @@ export class PairComputeService implements IPairComputeService {
 
         return await this.tokenCompute.computeTokenPriceDerivedUSD(
             secondTokenID,
+        );
+    }
+
+    async getAllSecondTokensPricesUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.secondTokenPriceUSD',
+            this.secondTokenPriceUSD.bind(this),
+            CacheTtlInfo.Price,
         );
     }
 

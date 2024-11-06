@@ -70,6 +70,7 @@ import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/anal
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { StakingProxyFilteringService } from 'src/modules/staking-proxy/services/staking.proxy.filtering.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -101,6 +102,10 @@ describe('UserEnergyComputeService', () => {
                 LockedTokenWrapperService,
                 {
                     provide: FarmAbiServiceV2,
+                    useClass: FarmAbiServiceMock,
+                },
+                {
+                    provide: FarmAbiService,
                     useClass: FarmAbiServiceMock,
                 },
                 LockedTokenWrapperAbiServiceProvider,
