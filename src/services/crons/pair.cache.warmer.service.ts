@@ -17,7 +17,7 @@ import { Logger } from 'winston';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
-import { PairService } from 'src/modules/pair/services/pair.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -25,9 +25,9 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly pairAbi: PairAbiService,
-        private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly tokenService: TokenService,
         private readonly tokenSetter: TokenSetterService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -49,7 +49,7 @@ export class PairCacheWarmerService {
             const lpToken =
                 lpTokenID === undefined
                     ? undefined
-                    : await this.pairService.getLpToken(pairMetadata.address);
+                    : await this.tokenService.tokenMetadataRaw(lpTokenID);
 
             const cacheSetPromises = [
                 this.pairSetterService.setFirstTokenID(
