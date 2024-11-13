@@ -43,6 +43,18 @@ export class StakingProxyAbiService
         return response.firstValue.valueOf().toString();
     }
 
+    async getAllLpFarmAddresses(
+        stakingProxyAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakingProxyAddresses,
+            'stakeProxy.lpFarmAddress',
+            this.lpFarmAddress.bind(this),
+            new CacheTtlInfo(Constants.oneHour(), Constants.oneMinute() * 45),
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -85,6 +97,18 @@ export class StakingProxyAbiService
             contract.methodsExplicit.getPairAddress();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getAllPairAddresses(
+        stakingProxyAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakingProxyAddresses,
+            'stakeProxy.pairAddress',
+            this.pairAddress.bind(this),
+            new CacheTtlInfo(Constants.oneHour(), Constants.oneMinute() * 45),
+        );
     }
 
     @ErrorLoggerAsync({
