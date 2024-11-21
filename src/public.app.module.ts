@@ -40,6 +40,8 @@ import { PositionCreatorModule } from './modules/position-creator/position.creat
 import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
 import { TradingViewModule } from './modules/trading-view/trading.view.module';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
+import { InMemoryStoreModule } from './modules/in-memory-store/in.memory.store.module';
+import { ConditionalModule } from '@nestjs/config';
 
 @Module({
     imports: [
@@ -103,6 +105,11 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
         ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
         TradingViewModule,
+        ConditionalModule.registerWhen(
+            InMemoryStoreModule,
+            (env: NodeJS.ProcessEnv) =>
+                env['ENABLE_IN_MEMORY_STORE'] === 'true',
+        ),
     ],
     providers: [QueryMetricsPlugin],
 })
