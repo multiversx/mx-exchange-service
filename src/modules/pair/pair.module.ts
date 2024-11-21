@@ -27,6 +27,7 @@ import { EnergyModule } from '../energy/energy.module';
 import { PairAbiLoader } from './services/pair.abi.loader';
 import { PairComputeLoader } from './services/pair.compute.loader';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { PairInMemoryStoreService } from './services/pair.in.memory.store.service';
 @Module({
     imports: [
         CommonAppModule,
@@ -58,6 +59,7 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
         PairFilteringService,
         PairCompoundedAPRResolver,
         PairRewardTokensResolver,
+        PairInMemoryStoreService,
     ],
     exports: [
         PairService,
@@ -65,6 +67,7 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
         PairComputeService,
         PairAbiService,
         PairFilteringService,
+        PairInMemoryStoreService,
     ],
 })
 export class PairModule {}
