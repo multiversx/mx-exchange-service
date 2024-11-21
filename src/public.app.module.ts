@@ -42,6 +42,7 @@ import { TradingViewModule } from './modules/trading-view/trading.view.module';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 import { InMemoryStoreModule } from './modules/in-memory-store/in.memory.store.module';
 import { ConditionalModule } from '@nestjs/config';
+import { MemoryStoreMiddleware } from './modules/in-memory-store/memory.store.middleware';
 
 @Module({
     imports: [
@@ -116,7 +117,7 @@ import { ConditionalModule } from '@nestjs/config';
 export class PublicAppModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
-            .apply(GuestCachingMiddleware)
+            .apply(GuestCachingMiddleware, MemoryStoreMiddleware)
             .forRoutes({ path: 'graphql', method: RequestMethod.POST });
     }
 }
