@@ -1,5 +1,5 @@
-import { PairModel } from '../pair/models/pair.model';
-import { EsdtToken } from '../tokens/models/esdtToken.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 export enum GlobalStateInitStatus {
     NOT_STARTED = 'NOT_STARTED',

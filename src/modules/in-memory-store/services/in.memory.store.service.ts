@@ -12,7 +12,7 @@ import {
     GlobalStateInitStatus,
     GlobalState,
     PairEsdtTokens,
-} from '../global.state';
+} from '../entities/global.state';
 import { Span } from 'nestjs-ddtrace';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
