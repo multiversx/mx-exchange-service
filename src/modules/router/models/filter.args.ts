@@ -1,4 +1,5 @@
 import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
+import { Expose } from 'class-transformer';
 import { SortingOrder } from 'src/modules/common/page.data';
 
 export enum PairSortableFields {
@@ -15,65 +16,91 @@ registerEnumType(PairSortableFields, { name: 'PairSortableFields' });
 
 @ArgsType()
 export class PairFilterArgs {
+    @Expose()
     @Field(() => [String], { nullable: true })
     addresses: string[];
+    @Expose()
     @Field({ nullable: true })
     firstTokenID: string;
+    @Expose()
     @Field({ nullable: true })
     secondTokenID: string;
+    @Expose()
     @Field(() => Boolean)
     issuedLpToken = true;
+    @Expose()
     @Field({ nullable: true })
     state: string;
+    @Expose()
     @Field({ nullable: true })
     minVolume: number;
+    @Expose()
     @Field({ nullable: true })
     feeState: boolean;
+    @Expose()
     @Field({ nullable: true })
     minLockedValueUSD: number;
 }
 
 @InputType()
 export class PairsFilter {
+    @Expose()
     @Field(() => [String], { nullable: true })
     addresses: string[];
+    @Expose()
     @Field({ nullable: true })
     firstTokenID: string;
+    @Expose()
     @Field({ nullable: true })
     secondTokenID: string;
+    @Expose()
     @Field(() => Boolean)
     issuedLpToken = true;
+    @Expose()
     @Field(() => [String], { nullable: true })
     state: string[];
+    @Expose()
     @Field({ nullable: true })
     minVolume: number;
+    @Expose()
     @Field({ nullable: true })
     feeState: boolean;
+    @Expose()
     @Field({ nullable: true })
     minLockedValueUSD: number;
+    @Expose()
     @Field({ nullable: true })
     minTradesCount: number;
+    @Expose()
     @Field({ nullable: true })
     minTradesCount24h: number;
+    @Expose()
     @Field({ nullable: true })
     hasFarms: boolean;
+    @Expose()
     @Field({ nullable: true })
     hasDualFarms: boolean;
+    @Expose()
     @Field({ nullable: true })
     minDeployedAt: number;
+    @Expose()
     @Field({ nullable: true })
     searchToken: string;
+    @Expose()
     @Field(() => [String], { nullable: true })
     lpTokenIds: string[];
+    @Expose()
     @Field(() => [String], { nullable: true })
     farmTokens: string[];
 }
 
 @InputType()
 export class PairSortingArgs {
+    @Expose()
     @Field(() => PairSortableFields, { nullable: true })
     sortField?: string;
 
+    @Expose()
     @Field(() => SortingOrder, { defaultValue: SortingOrder.ASC })
-    sortOrder: string;
+    sortOrder = SortingOrder.ASC;
 }
