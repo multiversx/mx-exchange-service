@@ -71,10 +71,9 @@ export class PairInMemoryStoreService {
         const totalCount = pairs.length;
 
         return PageResponse.mapResponse<PairModel>(
-            pairs.slice(
-                pagination.offset,
-                pagination.offset + pagination.limit,
-            ),
+            pairs
+                .map((pair) => createModelFromFields(pair, fields, 'PairModel'))
+                .slice(pagination.offset, pagination.offset + pagination.limit),
             this.getConnectionFromArgs(queryArguments) ?? new ConnectionArgs(),
             totalCount,
             pagination.offset,
@@ -170,10 +169,6 @@ export class PairInMemoryStoreService {
         sortField: string,
         sortOrder: SortingOrder,
     ): PairModel[] {
-        if (!sortField) {
-            return pairs;
-        }
-
         switch (sortField) {
             case PairSortableFields.DEPLOYED_AT:
                 return pairs.sort((a, b) => {

@@ -48,6 +48,11 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         return null;
                     }
 
+                    if (!pairMemoryStore.isReady()) {
+                        console.log('resolve normally - store not ready');
+                        return null;
+                    }
+
                     const requestedFields = extractQueryFields(
                         pairsQuery.selectionSet?.selections || [],
                     );

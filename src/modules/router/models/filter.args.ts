@@ -1,5 +1,5 @@
 import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
-import { Expose } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { SortingOrder } from 'src/modules/common/page.data';
 
 export enum PairSortableFields {
@@ -94,13 +94,23 @@ export class PairsFilter {
     farmTokens: string[];
 }
 
+export function pairSortableFieldToString(value: PairSortableFields): string {
+    return PairSortableFields[value];
+}
+
+export function sortingOrderToString(value: SortingOrder): string {
+    return SortingOrder[value];
+}
+
 @InputType()
 export class PairSortingArgs {
     @Expose()
+    @Transform(({ value }) => pairSortableFieldToString(value))
     @Field(() => PairSortableFields, { nullable: true })
     sortField?: string;
 
     @Expose()
+    @Transform(({ value }) => sortingOrderToString(value))
     @Field(() => SortingOrder, { defaultValue: SortingOrder.ASC })
     sortOrder = SortingOrder.ASC;
 }
