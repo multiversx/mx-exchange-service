@@ -33,12 +33,15 @@ import {
 } from 'src/modules/tokens/models/assets.model';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 @Injectable()
 export class InMemoryStoreService {
     constructor(
         private readonly schedulerRegistry: SchedulerRegistry,
         private readonly routerAbi: RouterAbiService,
+        private readonly pairAbi: PairAbiService,
         private readonly pairService: PairService,
         private readonly pairCompute: PairComputeService,
         private readonly energyService: EnergyService,
@@ -184,17 +187,6 @@ export class InMemoryStoreService {
                 ...tokensMetadata[index],
                 type: allTokensType[index],
                 assets: assets,
-                // assets: new AssetsModel(
-                //     tokensMetadata[index].assets === undefined
-                //         ? {}
-                //         : {
-                //               social: new SocialModel(
-                //                   tokensMetadata[index].assets.social,
-                //               ),
-                //               ...tokensMetadata[index].assets,
-                //           },
-                // ),
-                // roles: new RolesModel(tokensMetadata[index].roles),
             });
         }
 
@@ -238,6 +230,17 @@ export class InMemoryStoreService {
             allLpTokensPriceUSD,
             allLockedValueUSD,
             allPrevious24hLockedValueUSD,
+            allFeesUSD,
+            allTradesCount,
+            allTradesCount24h,
+            allDeployedAt,
+            allVolumeUSD24h,
+            allStates,
+            allFeeStates,
+            allInfoMetadata,
+            allType,
+            allTotalFeePercent,
+            allSpecialFeePercent,
         } = await this.getPairData(pairAddresses);
 
         for (const [index, address] of pairAddresses.entries()) {
@@ -251,9 +254,6 @@ export class InMemoryStoreService {
             GlobalState.pairsState[address].firstToken = new EsdtToken({
                 ...GlobalState.tokensState[firstTokenID],
             });
-            // GlobalState.pairsState[address].firstToken = {
-            //     ...GlobalState.tokensState[firstTokenID],
-            // };
             GlobalState.pairsState[address].firstTokenPrice =
                 allFirstTokensPrice[index];
             GlobalState.pairsState[address].firstTokenPriceUSD =
@@ -264,9 +264,6 @@ export class InMemoryStoreService {
             GlobalState.pairsState[address].secondToken = new EsdtToken({
                 ...GlobalState.tokensState[secondTokenID],
             });
-            // GlobalState.pairsState[address].secondToken = {
-            //     ...GlobalState.tokensState[secondTokenID],
-            // };
             GlobalState.pairsState[address].secondTokenPrice =
                 allSecondTokensPrice[index];
             GlobalState.pairsState[address].secondTokenPriceUSD =
@@ -279,8 +276,7 @@ export class InMemoryStoreService {
                     ? new EsdtToken({
                           ...GlobalState.tokensState[lpTokenID],
                       })
-                    : // ? { ...GlobalState.tokensState[lpTokenID] }
-                      undefined;
+                    : undefined;
             GlobalState.pairsState[address].liquidityPoolTokenPriceUSD =
                 allLpTokensPriceUSD[index];
 
@@ -293,6 +289,22 @@ export class InMemoryStoreService {
                 GlobalState.pairsState[address].farmAddress !== undefined;
             GlobalState.pairsState[address].hasDualFarms =
                 dualFarmRewardTokenID !== undefined;
+
+            GlobalState.pairsState[address].feesUSD24h = allFeesUSD[index];
+            GlobalState.pairsState[address].tradesCount = allTradesCount[index];
+            GlobalState.pairsState[address].tradesCount24h =
+                allTradesCount24h[index];
+            GlobalState.pairsState[address].deployedAt = allDeployedAt[index];
+            GlobalState.pairsState[address].volumeUSD24h =
+                allVolumeUSD24h[index];
+            GlobalState.pairsState[address].state = allStates[index];
+            GlobalState.pairsState[address].feeState = allFeeStates[index];
+            GlobalState.pairsState[address].info = allInfoMetadata[index];
+            GlobalState.pairsState[address].type = allType[index];
+            GlobalState.pairsState[address].totalFeePercent =
+                allTotalFeePercent[index];
+            GlobalState.pairsState[address].specialFeePercent =
+                allSpecialFeePercent[index];
         }
     }
 
@@ -373,8 +385,6 @@ export class InMemoryStoreService {
                     poolRewards: [
                         GlobalState.tokensState[firstTokenID],
                         GlobalState.tokensState[secondTokenID],
-                        // { ...GlobalState.tokensState[firstTokenID] },
-                        // { ...GlobalState.tokensState[secondTokenID] },
                     ],
                     farmReward:
                         GlobalState.pairsState[address].farmAddress !==
@@ -522,6 +532,17 @@ export class InMemoryStoreService {
         allLpTokensPriceUSD: string[];
         allLockedValueUSD: string[];
         allPrevious24hLockedValueUSD: string[];
+        allFeesUSD: string[];
+        allTradesCount: number[];
+        allTradesCount24h: number[];
+        allDeployedAt: number[];
+        allVolumeUSD24h: string[];
+        allStates: string[];
+        allFeeStates: boolean[];
+        allInfoMetadata: PairInfoModel[];
+        allType: string[];
+        allTotalFeePercent: number[];
+        allSpecialFeePercent: number[];
     }> {
         const allFirstTokensPrice =
             await this.pairCompute.getAllFirstTokensPrice(pairAddresses);
@@ -552,6 +573,34 @@ export class InMemoryStoreService {
                 pairAddresses,
             );
 
+        const allFeesUSD = await this.pairCompute.getAllFeesUSD(pairAddresses);
+        const allTradesCount = await this.pairService.getAllTradesCount(
+            pairAddresses,
+        );
+        const allTradesCount24h = await this.pairCompute.getAllTradesCount24h(
+            pairAddresses,
+        );
+        const allDeployedAt = await this.pairService.getAllDeployedAt(
+            pairAddresses,
+        );
+        const allVolumeUSD24h = await this.pairCompute.getAllVolumeUSD(
+            pairAddresses,
+        );
+        const allStates = await this.pairService.getAllStates(pairAddresses);
+        const allFeeStates = await this.pairService.getAllFeeStates(
+            pairAddresses,
+        );
+        const allInfoMetadata = await this.pairAbi.getAllPairsInfoMetadata(
+            pairAddresses,
+        );
+        const allType = await this.pairCompute.getAllType(pairAddresses);
+        const allTotalFeePercent = await this.pairAbi.getAllTotalFeePercent(
+            pairAddresses,
+        );
+        const allSpecialFeePercent = await this.pairAbi.getAllSpecialFeePercent(
+            pairAddresses,
+        );
+
         return {
             allFirstTokensPrice,
             allFirstTokensPriceUSD,
@@ -562,6 +611,17 @@ export class InMemoryStoreService {
             allLpTokensPriceUSD,
             allLockedValueUSD,
             allPrevious24hLockedValueUSD,
+            allFeesUSD,
+            allTradesCount,
+            allTradesCount24h,
+            allDeployedAt,
+            allVolumeUSD24h,
+            allStates,
+            allFeeStates,
+            allInfoMetadata,
+            allType,
+            allTotalFeePercent,
+            allSpecialFeePercent,
         };
     }
 
