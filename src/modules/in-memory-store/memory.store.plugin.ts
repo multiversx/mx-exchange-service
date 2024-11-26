@@ -22,6 +22,10 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                 let pairsQuery: FieldNode;
                 let isFilteredQuery = false;
                 try {
+                    if (!pairMemoryStore.isReady()) {
+                        return null;
+                    }
+
                     const queryCanBeResolvedFromStore =
                         requestContext.operation.selectionSet.selections.every(
                             (selection) => {
@@ -37,19 +41,11 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                                     pairsQuery = selection;
                                     return true;
                                 }
-                                console.log('here');
                                 return false;
                             },
                         );
 
                     if (!queryCanBeResolvedFromStore) {
-                        console.log('resolve normally');
-
-                        return null;
-                    }
-
-                    if (!pairMemoryStore.isReady()) {
-                        console.log('resolve normally - store not ready');
                         return null;
                     }
 
