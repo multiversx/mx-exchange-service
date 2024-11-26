@@ -544,7 +544,8 @@
             },
             "v2": {
                 "unlockedRewards": "./src/abis/farms/v2/farm.abi.json",
-                "lockedRewards": "src/abis/farms/v2/farm-with-locked-rewards.abi.json"
+                "lockedRewards": "src/abis/farms/v2/farm-with-locked-rewards.abi.json",
+                "deprecated": "src/abis/farms/v2/farm-with-locked-rewards.abi.json"
             }
         },
         "staking": "./src/abis/farm-staking.abi.json",
