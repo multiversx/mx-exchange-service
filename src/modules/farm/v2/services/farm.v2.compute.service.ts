@@ -371,12 +371,6 @@ export class FarmComputeServiceV2
             farmedTokenPriceUSD,
         );
 
-        console.log({
-            rewardsPerWeekUSD: userRewardsPerWeekUSD.toFixed(),
-            totalFarmPositionUSD: userTotalFarmPositionUSD.toFixed(),
-            additionalUserEnergy,
-        });
-
         return new BigNumber(userRewardsPerWeekUSD)
             .multipliedBy(52)
             .dividedBy(userTotalFarmPositionUSD)
