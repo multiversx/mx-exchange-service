@@ -60,7 +60,7 @@ export class RouterComputeService {
         let totalFeesUSD = new BigNumber(0);
 
         const promises = pairsAddress.map((pairAddress) =>
-            this.pairCompute.feesUSD(pairAddress, time),
+            this.pairCompute.computeFeesUSD(pairAddress, time),
         );
 
         const feesUSD = await Promise.all(promises);

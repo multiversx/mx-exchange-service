@@ -174,6 +174,15 @@ export class PairComputeLoader {
         },
     );
 
+    public readonly feesUSD24hLoader = new DataLoader<string, string>(
+        async (addresses: string[]) => {
+            return await this.pairCompute.getAllFeesUSD(addresses);
+        },
+        {
+            cache: false,
+        },
+    );
+
     public readonly previous24hFeesUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
             return await getAllKeys(
@@ -206,13 +215,7 @@ export class PairComputeLoader {
 
     public readonly typeLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
-                addresses,
-                'pair.type',
-                this.pairCompute.type.bind(this.pairCompute),
-                CacheTtlInfo.ContractState,
-            );
+            return await this.pairCompute.getAllType(addresses);
         },
         {
             cache: false,

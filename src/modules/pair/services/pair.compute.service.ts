@@ -574,8 +574,8 @@ export class PairComputeService implements IPairComputeService {
         remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
-    async feesUSD(pairAddress: string, time: string): Promise<string> {
-        return await this.computeFeesUSD(pairAddress, time);
+    async feesUSD(pairAddress: string): Promise<string> {
+        return await this.computeFeesUSD(pairAddress, '24h');
     }
 
     async computeFeesUSD(pairAddress: string, time: string): Promise<string> {
@@ -588,6 +588,16 @@ export class PairComputeService implements IPairComputeService {
             metric: 'feesUSD',
             time,
         });
+    }
+
+    async getAllFeesUSD(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.feesUSD',
+            this.feesUSD.bind(this),
+            CacheTtlInfo.Analytics,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -604,8 +614,8 @@ export class PairComputeService implements IPairComputeService {
 
     async computePrevious24hFeesUSD(pairAddress: string): Promise<string> {
         const [fees24h, fees48h] = await Promise.all([
-            this.feesUSD(pairAddress, '24h'),
-            this.feesUSD(pairAddress, '48h'),
+            this.computeFeesUSD(pairAddress, '24h'),
+            this.computeFeesUSD(pairAddress, '48h'),
         ]);
         return new BigNumber(fees48h).minus(fees24h).toFixed();
     }
@@ -625,7 +635,7 @@ export class PairComputeService implements IPairComputeService {
     async computeFeesAPR(pairAddress: string): Promise<string> {
         const [fees24h, lockedValueUSD, specialFeePercent, totalFeesPercent] =
             await Promise.all([
-                this.feesUSD(pairAddress, '24h'),
+                this.feesUSD(pairAddress),
                 this.computeLockedValueUSD(pairAddress),
                 this.pairAbi.specialFeePercent(pairAddress),
                 this.pairAbi.totalFeePercent(pairAddress),
@@ -676,6 +686,16 @@ export class PairComputeService implements IPairComputeService {
         ]);
 
         return leastType(firstTokenType, secondTokenType);
+    }
+
+    async getAllType(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.type',
+            this.type.bind(this),
+            CacheTtlInfo.ContractState,
+        );
     }
 
     async computePermanentLockedValueUSD(

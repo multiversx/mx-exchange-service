@@ -261,6 +261,16 @@ export class PairAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
+    async getAllTotalFeePercent(pairAddresses: string[]): Promise<number[]> {
+        return await getAllKeys<number>(
+            this.cachingService,
+            pairAddresses,
+            'pair.totalFeePercent',
+            this.totalFeePercent.bind(this),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -285,6 +295,16 @@ export class PairAbiService
 
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
+    }
+
+    async getAllSpecialFeePercent(pairAddresses: string[]): Promise<number[]> {
+        return await getAllKeys<number>(
+            this.cachingService,
+            pairAddresses,
+            'pair.specialFeePercent',
+            this.specialFeePercent.bind(this),
+            CacheTtlInfo.ContractState,
+        );
     }
 
     @ErrorLoggerAsync({
