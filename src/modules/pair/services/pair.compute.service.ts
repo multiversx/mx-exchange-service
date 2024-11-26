@@ -14,11 +14,14 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
-import { farmsAddresses } from 'src/utils/farm.utils';
+import { farmsAddresses, farmType } from 'src/utils/farm.utils';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import {
+    FarmRewardType,
+    FarmVersion,
+} from 'src/modules/farm/models/farm.model';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
@@ -676,7 +679,9 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeHasFarms(pairAddress: string): Promise<boolean> {
-        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]).filter(
+            (address) => farmType(address) !== FarmRewardType.DEPRECATED,
+        );
         const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
 
         const farmingTokenIDs = await Promise.all(
@@ -788,7 +793,10 @@ export class PairComputeService implements IPairComputeService {
             return undefined;
         }
 
-        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]).filter(
+            (address) => farmType(address) !== FarmRewardType.DEPRECATED,
+        );
+
         const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
 
         const farmingTokenIDs = await Promise.all(

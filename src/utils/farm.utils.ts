@@ -27,6 +27,8 @@ const toRewardTypeEnum = (rewardType: string): FarmRewardType => {
             return FarmRewardType.LOCKED_REWARDS;
         case 'customRewards':
             return FarmRewardType.CUSTOM_REWARDS;
+        case 'deprecated':
+            return FarmRewardType.DEPRECATED;
     }
 };
 
@@ -83,7 +85,7 @@ export const farmType = (farmAddress: string): FarmRewardType | undefined => {
 export const farmsAddresses = (versions?: string[]): string[] => {
     const addresses = [];
     if (versions === undefined || versions.length === 0) {
-        versions = Object.keys(farmsConfig)
+        versions = Object.keys(farmsConfig);
     }
     for (const version of versions) {
         if (Array.isArray(farmsConfig[version])) {

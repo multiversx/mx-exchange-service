@@ -18,6 +18,7 @@ export enum FarmRewardType {
     UNLOCKED_REWARDS = 'unlockedRewards',
     LOCKED_REWARDS = 'lockedRewards',
     CUSTOM_REWARDS = 'customRewards',
+    DEPRECATED = 'deprecated',
 }
 
 registerEnumType(FarmVersion, { name: 'FarmVersion' });
