@@ -145,21 +145,21 @@ export class PairInMemoryStoreService {
         pairs = this.filterByIssuedLpToken(pairs, filters);
         pairs = this.filterByAddresses(pairs, filters);
         pairs = this.filterByTokens(pairs, filters);
-        // pairs = this.filterByState(pairs, filters);
-        // pairs = this.filterByFeeState(pairs, filters);
-        // pairs = this.filterByVolume(pairs, filters);
-        // pairs = this.filterByLockedValueUSD(pairs, filters);
+        pairs = this.filterByState(pairs, filters);
+        pairs = this.filterByFeeState(pairs, filters);
+        pairs = this.filterByVolume(pairs, filters);
+        pairs = this.filterByLockedValueUSD(pairs, filters);
 
         if (!isFilteredQuery) {
             return pairs;
         }
 
-        // pairs = this.filterByTradesCount(pairs, filters);
-        // pairs = this.filterByTradesCount24h(pairs, filters);
+        pairs = this.filterByTradesCount(pairs, filters as PairsFilter);
+        pairs = this.filterByTradesCount24h(pairs, filters as PairsFilter);
         pairs = this.filterByLpTokenIds(pairs, filters as PairsFilter);
         pairs = this.filterByHasFarms(pairs, filters as PairsFilter);
         pairs = this.filterByHasDualFarms(pairs, filters as PairsFilter);
-        // pairs = this.filterByDeployedAt(pairs, filters as PairsFilter);
+        pairs = this.filterByDeployedAt(pairs, filters as PairsFilter);
 
         return pairs;
     }
