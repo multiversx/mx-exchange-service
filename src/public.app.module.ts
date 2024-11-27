@@ -113,7 +113,7 @@ import { MemoryStoreApolloPlugin } from './modules/in-memory-store/memory.store.
                 env['ENABLE_IN_MEMORY_STORE'] === 'true',
         ),
     ],
-    providers: [QueryMetricsPlugin],
+    providers: [QueryMetricsPlugin, MemoryStoreApolloPlugin],
     providers: [MemoryStoreApolloPlugin],
 })
 export class PublicAppModule {
