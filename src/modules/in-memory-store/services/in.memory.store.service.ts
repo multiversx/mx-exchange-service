@@ -13,7 +13,6 @@ import {
     GlobalState,
     PairEsdtTokens,
 } from '../entities/global.state';
-import { Span } from 'nestjs-ddtrace';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
@@ -61,7 +60,6 @@ export class InMemoryStoreService {
         );
     }
 
-    @Span()
     async initData(): Promise<void> {
         if (GlobalState.initStatus !== GlobalStateInitStatus.NOT_STARTED) {
             return;
