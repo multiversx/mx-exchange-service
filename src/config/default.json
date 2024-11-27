@@ -241,6 +241,17 @@
                     },
                     "claimRewards": 30000000
                 },
+                "deprecated": {
+                    "exitFarm": {
+                        "default": 30300000,
+                        "withPenalty": {
+                            "localBurn": 36000000,
+                            "pairBurn": 33000000,
+                            "buybackAndBurn": 48300000
+                        }
+                    },
+                    "claimRewards": 30000000
+                },
                 "claimBoostedRewards": 30000000
             },
             "admin": {
@@ -377,6 +388,17 @@
                             }
                         },
                         "claimRewards": 20700000
+                    },
+                    "deprecated": {
+                        "exitFarm": {
+                            "default": 30000000,
+                            "withPenalty": {
+                                "localBurn": 32000000,
+                                "pairBurn": 51000000,
+                                "buybackAndBurn": 56000000
+                            }
+                        },
+                        "claimRewards": 41500000
                     },
                     "increaseEnergy": 20000000
                 },
