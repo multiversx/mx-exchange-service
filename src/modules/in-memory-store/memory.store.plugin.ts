@@ -27,13 +27,17 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
             async responseForOperation(
                 requestContext,
             ): Promise<GraphQLResponse | null> {
-                let pairsQuery: FieldNode;
-                let isFilteredQuery = false;
+                const allPairsQueries: {
+                    query: FieldNode;
+                    isFiltered: boolean;
+                    requestedFields: QueryField[];
+                    arguments: Record<string, any>;
+                }[] = [];
+
                 try {
                     if (!pairMemoryStore.isReady()) {
                         return null;
                     }
-                    let requestedFields: QueryField[];
 
                     const queryCanBeResolvedFromStore =
                         requestContext.operation.selectionSet.selections.every(
@@ -44,17 +48,16 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                                         selection.name.value ===
                                             'filteredPairs')
                                 ) {
-                                    isFilteredQuery =
+                                    const isFilteredQuery =
                                         selection.name.value ===
                                         'filteredPairs';
-                                    pairsQuery = selection;
 
                                     const missingFields =
                                         PairInMemoryStoreService.missingFields()[
                                             selection.name.value
                                         ];
 
-                                    requestedFields = isFilteredQuery
+                                    const requestedFields = isFilteredQuery
                                         ? parseFilteredQueryFields(
                                               extractQueryFields(
                                                   selection.selectionSet
@@ -65,6 +68,13 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                                               selection.selectionSet
                                                   ?.selections || [],
                                           );
+
+                                    allPairsQueries.push({
+                                        query: selection,
+                                        isFiltered: isFilteredQuery,
+                                        requestedFields: requestedFields,
+                                        arguments: {},
+                                    });
 
                                     if (!missingFields) {
                                         return true;
@@ -92,12 +102,19 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         return null;
                     }
 
-                    const nameOrAlias = pairsQuery.alias
-                        ? pairsQuery.alias.value
-                        : pairsQuery.name.value;
+                    let derivedQueryName = '';
+                    allPairsQueries.forEach((pairQuery) => {
+                        const separator = derivedQueryName === '' ? '' : '|';
+                        const currentName = pairQuery.query.alias
+                            ? pairQuery.query.alias
+                            : pairQuery.query.name.value;
+
+                        derivedQueryName = `${derivedQueryName}${separator}${currentName}`;
+                    });
+
                     const metricsKey = requestContext.operationName
                         ? `${requestContext.operationName}-store`
-                        : `${nameOrAlias}-store`;
+                        : `${derivedQueryName}-store`;
                     const origin =
                         requestContext.request.http?.headers.get('origin') ??
                         'Unknown';
@@ -107,15 +124,19 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
 
                     profiler.start(metricsKey);
 
-                    const parsedArguments = parseArguments(
-                        pairsQuery.arguments,
-                        requestContext.request.variables,
-                    );
+                    for (const pairQuery of allPairsQueries) {
+                        pairQuery.arguments = parseArguments(
+                            pairQuery.query.arguments,
+                            requestContext.request.variables,
+                        );
+                    }
 
-                    const result = pairMemoryStore.getSortedAndFilteredData(
-                        requestedFields,
-                        parsedArguments,
-                        isFilteredQuery,
+                    const results = allPairsQueries.map((pairQuery) =>
+                        pairMemoryStore.getSortedAndFilteredData(
+                            pairQuery.requestedFields,
+                            pairQuery.arguments,
+                            pairQuery.isFiltered,
+                        ),
                     );
 
                     profiler.stop(metricsKey);
@@ -130,7 +151,12 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     MetricsCollector.setQueryCpu(metricsKey, origin, cpuTime);
 
                     const data = {};
-                    data[nameOrAlias] = result;
+                    for (const [index, result] of results.entries()) {
+                        const nameOrAlias = allPairsQueries[index].query.alias
+                            ? allPairsQueries[index].query.alias.value
+                            : allPairsQueries[index].query.name.value;
+                        data[nameOrAlias] = result;
+                    }
 
                     return {
                         body: {
