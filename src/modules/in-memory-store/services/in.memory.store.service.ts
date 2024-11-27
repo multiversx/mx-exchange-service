@@ -176,13 +176,22 @@ export class InMemoryStoreService {
 
         for (const [index, tokenID] of uniqueTokenIDs.entries()) {
             // todo - update existing tokens without overriding computed fields
-            // if (GlobalState.tokensState[tokenID] !== undefined) {
-            //   continue;
-            // }
             const assets = new AssetsModel({
                 social: new SocialModel(tokensMetadata[index].assets.social),
                 ...tokensMetadata[index].assets,
             });
+
+            if (GlobalState.tokensState[tokenID] !== undefined) {
+                GlobalState.tokensState[tokenID] = new EsdtToken({
+                    ...GlobalState.tokensState[tokenID],
+                    ...tokensMetadata[index],
+                    type: allTokensType[index],
+                    assets: assets,
+                });
+
+                continue;
+            }
+
             GlobalState.tokensState[tokenID] = new EsdtToken({
                 ...tokensMetadata[index],
                 type: allTokensType[index],
@@ -481,11 +490,6 @@ export class InMemoryStoreService {
             } = await this.getTokensData(tokenIDs);
 
             for (const [index, tokenID] of tokenIDs.entries()) {
-                // todo - update existing tokens without overriding computed fields
-                // if (GlobalState.tokensState[tokenID] !== undefined) {
-                //   continue;
-                // }
-
                 const assets = new AssetsModel({
                     social: new SocialModel(
                         tokensMetadata[index].assets.social,
