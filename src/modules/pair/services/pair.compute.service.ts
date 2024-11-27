@@ -912,7 +912,9 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async getAllPairsFarmAddress(pairAddresses: string[]): Promise<string[]> {
-        const farmAddresses = farmsAddresses([FarmVersion.V2]);
+        const farmAddresses = farmsAddresses([FarmVersion.V2]).filter(
+            (address) => farmType(address) !== FarmRewardType.DEPRECATED,
+        );
         const farmingTokenIds = await this.farmAbi.getAllFarmingTokenIds(
             farmAddresses,
         );
