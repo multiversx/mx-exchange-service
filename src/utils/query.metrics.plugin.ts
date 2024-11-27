@@ -32,16 +32,22 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
                 profiler.start(operationName);
             },
             async willSendResponse(): Promise<void> {
-                profiler.stop(operationName);
-                const cpuTime = cpuProfiler.stop();
+                if (profiler) {
+                    profiler.stop(operationName);
+                    const cpuTime = cpuProfiler.stop();
 
-                MetricsCollector.setQueryDuration(
-                    operationName,
-                    origin,
-                    profiler.duration,
-                );
+                    MetricsCollector.setQueryDuration(
+                        operationName,
+                        origin,
+                        profiler.duration,
+                    );
 
-                MetricsCollector.setQueryCpu(operationName, origin, cpuTime);
+                    MetricsCollector.setQueryCpu(
+                        operationName,
+                        origin,
+                        cpuTime,
+                    );
+                }
             },
         };
     }

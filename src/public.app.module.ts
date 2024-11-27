@@ -42,6 +42,7 @@ import { TradingViewModule } from './modules/trading-view/trading.view.module';
 import { InMemoryStoreModule } from './modules/in-memory-store/in.memory.store.module';
 import { ConditionalModule } from '@nestjs/config';
 import { MemoryStoreApolloPlugin } from './modules/in-memory-store/memory.store.plugin';
+import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 
 @Module({
     imports: [
@@ -112,7 +113,7 @@ import { MemoryStoreApolloPlugin } from './modules/in-memory-store/memory.store.
                 env['ENABLE_IN_MEMORY_STORE'] === 'true',
         ),
     ],
-    providers: [MemoryStoreApolloPlugin],
+    providers: [MemoryStoreApolloPlugin, QueryMetricsPlugin],
 })
 export class PublicAppModule {
     configure(consumer: MiddlewareConsumer) {

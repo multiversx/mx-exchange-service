@@ -12,6 +12,9 @@ import {
     parseFilteredQueryFields,
 } from './utils/graphql.utils';
 import { QueryField } from './entities/query.field.type';
+import { CpuProfiler } from '@multiversx/sdk-nestjs-monitoring';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Plugin()
 export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
@@ -51,10 +54,6 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                                             selection.name.value
                                         ];
 
-                                    if (!missingFields) {
-                                        return true;
-                                    }
-
                                     requestedFields = isFilteredQuery
                                         ? parseFilteredQueryFields(
                                               extractQueryFields(
@@ -66,6 +65,10 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                                               selection.selectionSet
                                                   ?.selections || [],
                                           );
+
+                                    if (!missingFields) {
+                                        return true;
+                                    }
 
                                     for (const field of requestedFields) {
                                         const requestedMissingField =
@@ -89,6 +92,21 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         return null;
                     }
 
+                    const nameOrAlias = pairsQuery.alias
+                        ? pairsQuery.alias.value
+                        : pairsQuery.name.value;
+                    const metricsKey = requestContext.operationName
+                        ? `${requestContext.operationName}-store`
+                        : `${nameOrAlias}-store`;
+                    const origin =
+                        requestContext.request.http?.headers.get('origin') ??
+                        'Unknown';
+
+                    const profiler = new PerformanceProfiler();
+                    const cpuProfiler = new CpuProfiler();
+
+                    profiler.start(metricsKey);
+
                     const parsedArguments = parseArguments(
                         pairsQuery.arguments,
                         requestContext.request.variables,
@@ -100,11 +118,18 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         isFilteredQuery,
                     );
 
-                    const nameOrAlias = pairsQuery.alias
-                        ? pairsQuery.alias.value
-                        : pairsQuery.name.value;
-                    const data = {};
+                    profiler.stop(metricsKey);
+                    const cpuTime = cpuProfiler.stop();
 
+                    MetricsCollector.setQueryDuration(
+                        metricsKey,
+                        origin,
+                        profiler.duration,
+                    );
+
+                    MetricsCollector.setQueryCpu(metricsKey, origin, cpuTime);
+
+                    const data = {};
                     data[nameOrAlias] = result;
 
                     return {
