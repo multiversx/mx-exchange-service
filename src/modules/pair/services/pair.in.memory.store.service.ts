@@ -12,10 +12,7 @@ import {
 } from 'src/modules/router/models/filter.args';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { QueryField } from 'src/modules/in-memory-store/entities/query.field.type';
-import {
-    createModelFromFields,
-    parseFilteredQueryFields,
-} from 'src/modules/in-memory-store/utils/graphql.utils';
+import { createModelFromFields } from 'src/modules/in-memory-store/utils/graphql.utils';
 import { plainToInstance } from 'class-transformer';
 import ConnectionArgs, {
     getPagingParameters,
@@ -35,16 +32,43 @@ export class PairInMemoryStoreService {
         return GlobalState.getPairsArray();
     }
 
+    static missingFields(): Record<string, QueryField[]> {
+        return {
+            pairs: [
+                { name: 'firstTokenVolume24h' },
+                { name: 'secondTokenVolume24h' },
+                { name: 'previous24hVolumeUSD' },
+                { name: 'previous24hFeesUSD' },
+                { name: 'lockedTokensInfo' },
+                { name: 'whitelistedManagedAddresses' },
+                { name: 'initialLiquidityAdder' },
+                { name: 'feeDestinations' },
+                { name: 'feesCollector' },
+                { name: 'feesCollectorCutPercentage' },
+                { name: 'trustedSwapPairs' },
+            ],
+            filteredPairs: [
+                { name: 'firstTokenVolume24h' },
+                { name: 'secondTokenVolume24h' },
+                { name: 'previous24hVolumeUSD' },
+                { name: 'previous24hFeesUSD' },
+                { name: 'lockedTokensInfo' },
+                { name: 'whitelistedManagedAddresses' },
+                { name: 'initialLiquidityAdder' },
+                { name: 'feeDestinations' },
+                { name: 'feesCollector' },
+                { name: 'feesCollectorCutPercentage' },
+                { name: 'trustedSwapPairs' },
+            ],
+        };
+    }
+
     getSortedAndFilteredData(
         fields: QueryField[],
         queryArguments: Record<string, any>,
         isFilteredQuery = false,
     ): PairModel[] | PairsResponse {
         let pairs = GlobalState.getPairsArray();
-
-        if (isFilteredQuery) {
-            fields = parseFilteredQueryFields(fields);
-        }
 
         const pagination = this.getPaginationFromArgs(
             queryArguments,

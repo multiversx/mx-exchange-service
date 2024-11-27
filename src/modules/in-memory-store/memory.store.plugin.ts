@@ -6,7 +6,12 @@ import {
 import { Plugin } from '@nestjs/apollo';
 import { FieldNode, Kind } from 'graphql';
 import { PairInMemoryStoreService } from '../pair/services/pair.in.memory.store.service';
-import { extractQueryFields, parseArguments } from './utils/graphql.utils';
+import {
+    extractQueryFields,
+    parseArguments,
+    parseFilteredQueryFields,
+} from './utils/graphql.utils';
+import { QueryField } from './entities/query.field.type';
 
 @Plugin()
 export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
@@ -25,6 +30,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     if (!pairMemoryStore.isReady()) {
                         return null;
                     }
+                    let requestedFields: QueryField[];
 
                     const queryCanBeResolvedFromStore =
                         requestContext.operation.selectionSet.selections.every(
@@ -39,6 +45,40 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                                         selection.name.value ===
                                         'filteredPairs';
                                     pairsQuery = selection;
+
+                                    const missingFields =
+                                        PairInMemoryStoreService.missingFields()[
+                                            selection.name.value
+                                        ];
+
+                                    if (!missingFields) {
+                                        return true;
+                                    }
+
+                                    requestedFields = isFilteredQuery
+                                        ? parseFilteredQueryFields(
+                                              extractQueryFields(
+                                                  selection.selectionSet
+                                                      ?.selections || [],
+                                              ),
+                                          )
+                                        : extractQueryFields(
+                                              selection.selectionSet
+                                                  ?.selections || [],
+                                          );
+
+                                    for (const field of requestedFields) {
+                                        const requestedMissingField =
+                                            missingFields.find(
+                                                (missingField) =>
+                                                    missingField.name ===
+                                                    field.name,
+                                            );
+
+                                        if (requestedMissingField) {
+                                            return false;
+                                        }
+                                    }
                                     return true;
                                 }
                                 return false;
@@ -49,9 +89,6 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         return null;
                     }
 
-                    const requestedFields = extractQueryFields(
-                        pairsQuery.selectionSet?.selections || [],
-                    );
                     const parsedArguments = parseArguments(
                         pairsQuery.arguments,
                         requestContext.request.variables,
@@ -63,13 +100,18 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         isFilteredQuery,
                     );
 
+                    const nameOrAlias = pairsQuery.alias
+                        ? pairsQuery.alias.value
+                        : pairsQuery.name.value;
+                    const data = {};
+
+                    data[nameOrAlias] = result;
+
                     return {
                         body: {
                             kind: 'single',
                             singleResult: {
-                                data: {
-                                    pairs: result,
-                                },
+                                data: data,
                             },
                         },
                         http: requestContext.response.http,
