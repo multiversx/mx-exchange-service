@@ -76,6 +76,7 @@ import { MemoryStoreApolloPlugin } from './modules/in-memory-store/memory.store.
                     };
                 },
                 fieldResolverEnhancers: ['guards'],
+                documentStore: null,
             }),
             inject: [WINSTON_MODULE_NEST_PROVIDER],
         }),
