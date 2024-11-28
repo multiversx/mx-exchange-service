@@ -369,11 +369,11 @@
                     },
                     "lockedRewards": {
                         "exitFarm": {
-                            "default": 40000000,
+                            "default": 60000000,
                             "withPenalty": {
-                                "localBurn": 42000000,
-                                "pairBurn": 61000000,
-                                "buybackAndBurn": 66000000
+                                "localBurn": 72000000,
+                                "pairBurn": 81000000,
+                                "buybackAndBurn": 86000000
                             }
                         },
                         "claimRewards": 41500000
@@ -391,11 +391,11 @@
                     },
                     "deprecated": {
                         "exitFarm": {
-                            "default": 40000000,
+                            "default": 60000000,
                             "withPenalty": {
-                                "localBurn": 42000000,
-                                "pairBurn": 61000000,
-                                "buybackAndBurn": 66000000
+                                "localBurn": 72000000,
+                                "pairBurn": 81000000,
+                                "buybackAndBurn": 86000000
                             }
                         },
                         "claimRewards": 41500000
