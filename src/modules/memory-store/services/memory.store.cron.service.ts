@@ -36,7 +36,7 @@ import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 @Injectable()
-export class InMemoryStoreService {
+export class MemoryStoreCronService {
     constructor(
         private readonly schedulerRegistry: SchedulerRegistry,
         private readonly routerAbi: RouterAbiService,
@@ -54,10 +54,7 @@ export class InMemoryStoreService {
         const callback = async () => await this.initData();
 
         const initDataTimeout = setTimeout(callback, 5000);
-        this.schedulerRegistry.addTimeout(
-            'initPairGlobalState',
-            initDataTimeout,
-        );
+        this.schedulerRegistry.addTimeout('initGlobalState', initDataTimeout);
     }
 
     async initData(): Promise<void> {
@@ -68,7 +65,7 @@ export class InMemoryStoreService {
         GlobalState.initStatus = GlobalStateInitStatus.IN_PROGRESS;
 
         this.logger.info(`Starting init for in memory store`, {
-            context: 'InMemoryStoreService',
+            context: 'MemoryStoreCronService',
         });
 
         const profiler = new PerformanceProfiler();
@@ -100,7 +97,7 @@ export class InMemoryStoreService {
             GlobalState.initStatus = GlobalStateInitStatus.DONE;
         } catch (error) {
             this.logger.error(`${error.message}`, {
-                context: 'InMemoryStoreService',
+                context: 'MemoryStoreCronService',
             });
             GlobalState.initStatus = GlobalStateInitStatus.FAILED;
         } finally {
@@ -108,7 +105,7 @@ export class InMemoryStoreService {
 
             this.logger.info(
                 `initData completed with status ${GlobalState.initStatus} in ${profiler.duration}ms.`,
-                { context: 'InMemoryStoreService' },
+                { context: 'MemoryStoreCronService' },
             );
         }
     }
@@ -422,8 +419,8 @@ export class InMemoryStoreService {
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
-    @Lock({ name: 'refreshPairsInMemoryStore', verbose: true })
-    async refreshPairsInMemoryStore(): Promise<void> {
+    @Lock({ name: 'refreshPairsMemoryStore', verbose: true })
+    async refreshPairsMemoryStore(): Promise<void> {
         if (GlobalState.initStatus !== GlobalStateInitStatus.DONE) {
             return;
         }
@@ -449,9 +446,9 @@ export class InMemoryStoreService {
             await this.updatePairsRewardTokens(pairAddresses);
         } catch (error) {
             this.logger.error(
-                `refreshPairsInMemoryStore failed with error: ${error.message}`,
+                `refreshPairsMemoryStore failed with error: ${error.message}`,
                 {
-                    context: 'InMemoryStoreService',
+                    context: 'MemoryStoreCronService',
                 },
             );
             GlobalState.initStatus = GlobalStateInitStatus.FAILED;
@@ -459,8 +456,8 @@ export class InMemoryStoreService {
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
-    @Lock({ name: 'refreshTokensInMemoryStore', verbose: true })
-    async refreshTokensInMemoryStore(): Promise<void> {
+    @Lock({ name: 'refreshTokensMemoryStore', verbose: true })
+    async refreshTokensMemoryStore(): Promise<void> {
         if (GlobalState.initStatus !== GlobalStateInitStatus.DONE) {
             return;
         }
@@ -515,9 +512,9 @@ export class InMemoryStoreService {
             }
         } catch (error) {
             this.logger.error(
-                `refreshTokensInMemoryStore failed with error: ${error.message}`,
+                `refreshTokensMemoryStore failed with error: ${error.message}`,
                 {
-                    context: 'InMemoryStoreService',
+                    context: 'MemoryStoreCronService',
                 },
             );
             GlobalState.initStatus = GlobalStateInitStatus.FAILED;

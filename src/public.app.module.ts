@@ -39,8 +39,8 @@ import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { PositionCreatorModule } from './modules/position-creator/position.creator.module';
 import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
 import { TradingViewModule } from './modules/trading-view/trading.view.module';
-import { InMemoryStoreModule } from './modules/in-memory-store/in.memory.store.module';
-import { ConditionalModule } from '@nestjs/config';
+import { MemoryStoreModule } from './modules/memory-store/memory.store.module';
+import { MemoryStoreApolloPlugin } from './modules/memory-store/memory.store.plugin';
 import { MemoryStoreApolloPlugin } from './modules/in-memory-store/memory.store.plugin';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 
@@ -107,11 +107,7 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
         ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
         TradingViewModule,
-        ConditionalModule.registerWhen(
-            InMemoryStoreModule,
-            (env: NodeJS.ProcessEnv) =>
-                env['ENABLE_IN_MEMORY_STORE'] === 'true',
-        ),
+        MemoryStoreModule,
     ],
     providers: [MemoryStoreApolloPlugin, QueryMetricsPlugin],
 })

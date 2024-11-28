@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PairModel } from '../models/pair.model';
+import { PairModel } from '../../pair/models/pair.model';
 import {
     GlobalState,
     GlobalStateInitStatus,
-} from 'src/modules/in-memory-store/entities/global.state';
+} from 'src/modules/memory-store/entities/global.state';
 import {
     PairFilterArgs,
     PairsFilter,
@@ -11,19 +11,23 @@ import {
     PairSortingArgs,
 } from 'src/modules/router/models/filter.args';
 import { PaginationArgs } from 'src/modules/dex.model';
-import { QueryField } from 'src/modules/in-memory-store/entities/query.field.type';
-import { createModelFromFields } from 'src/modules/in-memory-store/utils/graphql.utils';
+import { QueryField } from 'src/modules/memory-store/entities/query.field.type';
+import { createModelFromFields } from 'src/modules/memory-store/utils/graphql.utils';
 import { plainToInstance } from 'class-transformer';
 import ConnectionArgs, {
     getPagingParameters,
 } from 'src/modules/common/filters/connection.args';
-import { PairsResponse } from '../models/pairs.response';
 import PageResponse from 'src/modules/common/page.response';
 import BigNumber from 'bignumber.js';
 import { SortingOrder } from 'src/modules/common/page.data';
+import { IMemoryStoreService } from 'src/modules/memory-store/services/interfaces';
+import { PairsResponse } from '../../pair/models/pairs.response';
 
 @Injectable()
-export class PairInMemoryStoreService {
+export class PairMemoryStoreService extends IMemoryStoreService<
+    PairModel,
+    PairsResponse
+> {
     isReady(): boolean {
         return GlobalState.initStatus === GlobalStateInitStatus.DONE;
     }
@@ -32,9 +36,13 @@ export class PairInMemoryStoreService {
         return GlobalState.getPairsArray();
     }
 
-    static missingFields(): Record<string, QueryField[]> {
-        return {
-            pairs: [
+    static targetedQueries: Record<
+        string,
+        { isFiltered: boolean; missingFields: QueryField[] }
+    > = {
+        pairs: {
+            isFiltered: false,
+            missingFields: [
                 { name: 'firstTokenVolume24h' },
                 { name: 'secondTokenVolume24h' },
                 { name: 'previous24hVolumeUSD' },
@@ -47,7 +55,10 @@ export class PairInMemoryStoreService {
                 { name: 'feesCollectorCutPercentage' },
                 { name: 'trustedSwapPairs' },
             ],
-            filteredPairs: [
+        },
+        filteredPairs: {
+            isFiltered: true,
+            missingFields: [
                 { name: 'firstTokenVolume24h' },
                 { name: 'secondTokenVolume24h' },
                 { name: 'previous24hVolumeUSD' },
@@ -60,8 +71,8 @@ export class PairInMemoryStoreService {
                 { name: 'feesCollectorCutPercentage' },
                 { name: 'trustedSwapPairs' },
             ],
-        };
-    }
+        },
+    };
 
     getSortedAndFilteredData(
         fields: QueryField[],

@@ -5,7 +5,7 @@ import {
 } from '@apollo/server';
 import { Plugin } from '@nestjs/apollo';
 import { FieldNode, Kind } from 'graphql';
-import { PairInMemoryStoreService } from '../pair/services/pair.in.memory.store.service';
+import { PairMemoryStoreService } from './services/pair.memory.store.service';
 import {
     extractQueryFields,
     parseArguments,
@@ -18,7 +18,7 @@ import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Plugin()
 export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
-    constructor(private readonly pairMemoryStore: PairInMemoryStoreService) {}
+    constructor(private readonly pairMemoryStore: PairMemoryStoreService) {}
 
     async requestDidStart(): Promise<GraphQLRequestListener<any>> {
         const pairMemoryStore = this.pairMemoryStore;
@@ -39,25 +39,25 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         return null;
                     }
 
+                    const targetedQueries = Object.keys(
+                        PairMemoryStoreService.targetedQueries,
+                    );
+
                     const queryCanBeResolvedFromStore =
                         requestContext.operation.selectionSet.selections.every(
                             (selection) => {
                                 if (
                                     selection.kind === Kind.FIELD &&
-                                    (selection.name.value === 'pairs' ||
-                                        selection.name.value ===
-                                            'filteredPairs')
+                                    targetedQueries.includes(
+                                        selection.name.value,
+                                    )
                                 ) {
-                                    const isFilteredQuery =
-                                        selection.name.value ===
-                                        'filteredPairs';
-
-                                    const missingFields =
-                                        PairInMemoryStoreService.missingFields()[
+                                    const { missingFields, isFiltered } =
+                                        PairMemoryStoreService.targetedQueries[
                                             selection.name.value
                                         ];
 
-                                    const requestedFields = isFilteredQuery
+                                    const requestedFields = isFiltered
                                         ? parseFilteredQueryFields(
                                               extractQueryFields(
                                                   selection.selectionSet
@@ -71,7 +71,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
 
                                     allPairsQueries.push({
                                         query: selection,
-                                        isFiltered: isFilteredQuery,
+                                        isFiltered: isFiltered,
                                         requestedFields: requestedFields,
                                         arguments: {},
                                     });
