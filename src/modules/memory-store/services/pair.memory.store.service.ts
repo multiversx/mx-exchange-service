@@ -36,12 +36,48 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         return GlobalState.getPairsArray();
     }
 
+    getDataByIDs(
+        queryName: string,
+        requestedFields: QueryField[],
+        identifiers?: string[],
+    ): PairModel[] {
+        if (PairMemoryStoreService.targetedQueries[queryName] === undefined) {
+            throw new Error(
+                `Data for query '${queryName}' is not solvable from the memory store.`,
+            );
+        }
+
+        const identifierField =
+            PairMemoryStoreService.targetedQueries[queryName].identifierField;
+
+        let pairs = GlobalState.getPairsArray();
+
+        if (identifiers && identifiers.length > 0) {
+            pairs = pairs.filter((pair) =>
+                identifiers.includes(pair[identifierField]),
+            );
+        }
+
+        if (requestedFields.length === 0) {
+            return pairs;
+        }
+
+        return pairs.map((pair) =>
+            createModelFromFields(pair, requestedFields, 'PairModel'),
+        );
+    }
+
     static targetedQueries: Record<
         string,
-        { isFiltered: boolean; missingFields: QueryField[] }
+        {
+            isFiltered: boolean;
+            missingFields: QueryField[];
+            identifierField: string;
+        }
     > = {
         pairs: {
             isFiltered: false,
+            identifierField: 'address',
             missingFields: [
                 { name: 'firstTokenVolume24h' },
                 { name: 'secondTokenVolume24h' },
@@ -58,6 +94,7 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         },
         filteredPairs: {
             isFiltered: true,
+            identifierField: 'address',
             missingFields: [
                 { name: 'firstTokenVolume24h' },
                 { name: 'secondTokenVolume24h' },

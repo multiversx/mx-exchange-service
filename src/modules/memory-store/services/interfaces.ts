@@ -2,7 +2,7 @@ import { QueryField } from '../entities/query.field.type';
 
 export abstract class IMemoryStoreService<T, V> {
     abstract isReady(): boolean;
-    abstract getData(): T[];
+    abstract getData(): T[] | T;
     abstract getSortedAndFilteredData(
         fields: QueryField[],
         queryArguments: Record<string, any>,
@@ -13,6 +13,7 @@ export abstract class IMemoryStoreService<T, V> {
         {
             isFiltered: boolean;
             missingFields: QueryField[];
+            identifierField: string;
         }
     >;
 }

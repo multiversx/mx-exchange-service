@@ -34,6 +34,50 @@ export function extractQueryFields(
     return fields;
 }
 
+export function extractFilteredQueryEdgeNodes(
+    selectionNodes: readonly SelectionNode[],
+): readonly SelectionNode[] {
+    for (const node of selectionNodes) {
+        if (node.kind !== Kind.FIELD || node.name.value !== 'edges') {
+            continue;
+        }
+
+        const edgesNode = node.selectionSet?.selections.find(
+            (selection) =>
+                selection.kind === Kind.FIELD &&
+                selection.name.value === 'node',
+        );
+
+        if (edgesNode) {
+            return (edgesNode as FieldNode).selectionSet.selections;
+        }
+    }
+
+    return undefined;
+}
+
+export function updateFilteredQueryEdgeNodes(
+    existingNodes: readonly SelectionNode[],
+    newNodes: readonly SelectionNode[],
+): readonly SelectionNode[] {
+    for (const node of existingNodes) {
+        if (node.kind !== Kind.FIELD || node.name.value !== 'edges') {
+            continue;
+        }
+
+        const edgesNode = node.selectionSet?.selections.find(
+            (selection) =>
+                selection.kind === Kind.FIELD &&
+                selection.name.value === 'node',
+        );
+
+        if (edgesNode) {
+            (edgesNode as FieldNode).selectionSet.selections = newNodes;
+        }
+    }
+    return existingNodes;
+}
+
 export function parseFilteredQueryFields(
     requestedFields: QueryField[],
 ): QueryField[] {
