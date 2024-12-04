@@ -1,7 +1,6 @@
 import {
     ApolloServerPlugin,
     GraphQLRequestContext,
-    GraphQLRequestExecutionListener,
     GraphQLRequestListener,
 } from '@apollo/server';
 import { Plugin } from '@nestjs/apollo';
@@ -19,9 +18,9 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
         let origin: string;
 
         return {
-            async executionDidStart(
+            async didResolveOperation(
                 requestContext: GraphQLRequestContext<any>,
-            ): Promise<void | GraphQLRequestExecutionListener<any>> {
+            ): Promise<void> {
                 operationName = deanonymizeQuery(requestContext);
                 origin =
                     requestContext.request.http?.headers.get('origin') ??
@@ -31,10 +30,14 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
                 cpuProfiler = new CpuProfiler();
                 profiler.start(operationName);
             },
-            async willSendResponse(): Promise<void> {
+            async willSendResponse(requestContext): Promise<void> {
                 if (profiler) {
                     profiler.stop(operationName);
                     const cpuTime = cpuProfiler.stop();
+
+                    if (requestContext.contextValue.storeResolve) {
+                        operationName += `-${requestContext.contextValue.storeResolve}`;
+                    }
 
                     MetricsCollector.setQueryDuration(
                         operationName,

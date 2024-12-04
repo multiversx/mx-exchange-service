@@ -132,6 +132,8 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         requestContext.operation.selectionSet.selections =
                             normalSelections;
 
+                        requestContext.contextValue.storeResolve = 'store_P';
+
                         return null;
                     }
 
@@ -160,6 +162,8 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     // empty processed queries since result is returned here
                     allPairsQueries = [];
 
+                    requestContext.contextValue.storeResolve = 'store_F';
+
                     return {
                         body: {
                             kind: 'single',
@@ -182,8 +186,6 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     // no response alteration needed
                     return;
                 }
-
-                requestContext.contextValue.sharedDatass = 'test';
 
                 const responseData =
                     requestContext.response.body.singleResult.data;
