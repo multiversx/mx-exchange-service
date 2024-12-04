@@ -10,13 +10,12 @@ import {
     extractFilteredQueryEdgeNodes,
     extractQueryFields,
     parseArguments,
-    parseFilteredQueryFields,
     updateFilteredQueryEdgeNodes,
 } from './utils/graphql.utils';
 import { QueryField } from './entities/query.field.type';
-import { CpuProfiler } from '@multiversx/sdk-nestjs-monitoring';
-import { PerformanceProfiler } from 'src/utils/performance.profiler';
-import { MetricsCollector } from 'src/utils/metrics.collector';
+// import { CpuProfiler } from '@multiversx/sdk-nestjs-monitoring';
+// import { PerformanceProfiler } from 'src/utils/performance.profiler';
+// import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Plugin()
 export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
@@ -24,11 +23,11 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
 
     async requestDidStart(): Promise<GraphQLRequestListener<any>> {
         const pairMemoryStore = this.pairMemoryStore;
-        const allPairsQueries: {
-            // query: FieldNode;
+        let allPairsQueries: {
             queryName: string;
             queryAlias: string;
             isFiltered: boolean;
+            identifierField: string;
             requestedFields: QueryField[];
             arguments: Record<string, any>;
         }[] = [];
@@ -38,15 +37,13 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                 requestContext,
             ): Promise<GraphQLResponse | null> {
                 try {
-                    // if (!pairMemoryStore.isReady()) {
-                    //     return null;
-                    // }
+                    if (!pairMemoryStore.isReady()) {
+                        return null;
+                    }
 
                     const targetedQueries = Object.keys(
                         PairMemoryStoreService.targetedQueries,
                     );
-
-                    // console.log(requestContext.operation.variableDefinitions);
 
                     const requestQueries =
                         requestContext.operation.selectionSet.selections;
@@ -61,7 +58,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                             continue;
                         }
 
-                        const { missingFields, isFiltered } =
+                        const { missingFields, isFiltered, identifierField } =
                             PairMemoryStoreService.targetedQueries[
                                 selection.name.value
                             ];
@@ -74,6 +71,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
 
                         const initialSelectionNodes: SelectionNode[] = [];
                         const storeSelectionNodes: SelectionNode[] = [];
+                        let identifierNode: FieldNode;
                         for (const node of actualNodes) {
                             if (node.kind !== Kind.FIELD) {
                                 initialSelectionNodes.push(node);
@@ -90,6 +88,10 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                                 continue;
                             }
 
+                            if (node.name.value === identifierField) {
+                                identifierNode = node;
+                            }
+
                             storeSelectionNodes.push(node);
                         }
 
@@ -104,12 +106,21 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                                     requestContext.request.variables,
                                 ),
                                 isFiltered: isFiltered,
+                                identifierField,
                             });
                         }
 
                         if (initialSelectionNodes.length > 0) {
                             // if filtered - update the edges.node field of the original set
                             // otherwise update original selection set
+
+                            if (identifierNode === undefined) {
+                                // identifier node was never requested
+                                // TODO needs to be added and removed in willSendResponse!
+                            } else {
+                                // add to normal nodes
+                                initialSelectionNodes.push(identifierNode);
+                            }
 
                             selection.selectionSet.selections = isFiltered
                                 ? updateFilteredQueryEdgeNodes(
@@ -133,11 +144,11 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     }
 
                     if (allPairsQueries.length === 0) {
-                        // shoult never reach this
+                        // shoult never reach this - log scenario
                         return null;
                     }
 
-                    return null;
+                    console.log('all queries resolved from store');
 
                     // let derivedQueryName = '';
                     // allPairsQueries.forEach((pairQuery) => {
@@ -161,18 +172,11 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
 
                     // profiler.start(metricsKey);
 
-                    // for (const pairQuery of allPairsQueries) {
-                    //     pairQuery.arguments = parseArguments(
-                    //         pairQuery.query.arguments,
-                    //         requestContext.request.variables,
-                    //     );
-                    // }
-
                     const results = allPairsQueries.map((pairQuery) =>
-                        pairMemoryStore.getSortedAndFilteredData(
-                            pairQuery.requestedFields,
+                        pairMemoryStore.getQueryResponse(
+                            pairQuery.queryName,
                             pairQuery.arguments,
-                            pairQuery.isFiltered,
+                            pairQuery.requestedFields,
                         ),
                     );
 
@@ -188,12 +192,14 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     // MetricsCollector.setQueryCpu(metricsKey, origin, cpuTime);
 
                     const data = {};
-                    // for (const [index, result] of results.entries()) {
-                    //     const nameOrAlias = allPairsQueries[index].query.alias
-                    //         ? allPairsQueries[index].query.alias.value
-                    //         : allPairsQueries[index].query.name.value;
-                    //     data[nameOrAlias] = result;
-                    // }
+                    for (const [index, result] of results.entries()) {
+                        const nameOrAlias =
+                            allPairsQueries[index].queryAlias ??
+                            allPairsQueries[index].queryName;
+                        data[nameOrAlias] = result;
+                    }
+
+                    allPairsQueries = [];
 
                     return {
                         body: {
@@ -219,60 +225,40 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     );
                     return;
                 }
+
+                requestContext.contextValue.sharedDatass = 'test';
+
                 const responseData =
                     requestContext.response.body.singleResult.data;
 
-                const results = allPairsQueries.map((pairQuery) =>
-                    pairMemoryStore.getSortedAndFilteredData(
-                        pairQuery.requestedFields,
-                        pairQuery.arguments,
-                        pairQuery.isFiltered,
-                    ),
-                );
-
-                // console.log(responseData);
-
-                for (const [index, storeQuery] of allPairsQueries.entries()) {
+                for (const storeQuery of allPairsQueries) {
                     const currentName =
                         storeQuery.queryAlias ?? storeQuery.queryName;
 
-                    if (responseData[currentName]) {
-                        console.log(
-                            `query ${currentName} resolved partially from store`,
-                        );
-                        if (Array.isArray(responseData[currentName])) {
-                            console.log('update array from store');
-                            const updatedResponse = (
-                                responseData[currentName] as Array<
-                                    Record<string, any>
-                                >
-                            ).map((elem, elemIndex) => {
-                                return {
-                                    ...elem,
-                                    ...results[index][elemIndex],
-                                };
-                            });
-
-                            responseData[currentName] = updatedResponse;
-                        } else {
-                            console.log(
-                                'update object from store',
-                                results[index],
-                            );
-                            responseData[currentName] = {
-                                ...(responseData[currentName] as Record<
-                                    string,
-                                    any
-                                >),
-                                ...results[index],
-                            };
-                        }
-                    } else {
+                    if (responseData[currentName] === undefined) {
                         console.log(
                             `query ${currentName} resolved entirely from store`,
                         );
-                        responseData[currentName] = results[index];
+                        const result = pairMemoryStore.getQueryResponse(
+                            storeQuery.queryName,
+                            storeQuery.arguments,
+                            storeQuery.requestedFields,
+                        );
+
+                        responseData[currentName] = result;
+                        continue;
                     }
+
+                    console.log(
+                        `query ${currentName} resolved partially from store`,
+                    );
+
+                    responseData[currentName] =
+                        pairMemoryStore.appendFieldsToQueryResponse(
+                            storeQuery.queryName,
+                            responseData[currentName],
+                            storeQuery.requestedFields,
+                        );
                 }
             },
         };

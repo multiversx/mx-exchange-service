@@ -2,11 +2,16 @@ import { QueryField } from '../entities/query.field.type';
 
 export abstract class IMemoryStoreService<T, V> {
     abstract isReady(): boolean;
-    abstract getData(): T[] | T;
-    abstract getSortedAndFilteredData(
-        fields: QueryField[],
+    abstract getAllData(): T[] | T;
+    abstract getQueryResponse(
+        queryName: string,
         queryArguments: Record<string, any>,
-        isFilteredQuery: boolean,
+        requestedFields: QueryField[],
+    ): T[] | V;
+    abstract appendFieldsToQueryResponse(
+        queryName: string,
+        response: T[] | V,
+        requestedFields: QueryField[],
     ): T[] | V;
     static targetedQueries: Record<
         string,

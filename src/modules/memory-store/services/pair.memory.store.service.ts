@@ -22,6 +22,7 @@ import BigNumber from 'bignumber.js';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { IMemoryStoreService } from 'src/modules/memory-store/services/interfaces';
 import { PairsResponse } from '../../pair/models/pairs.response';
+import { Connection } from 'graphql-relay';
 
 @Injectable()
 export class PairMemoryStoreService extends IMemoryStoreService<
@@ -32,39 +33,8 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         return GlobalState.initStatus === GlobalStateInitStatus.DONE;
     }
 
-    getData(): PairModel[] {
+    getAllData(): PairModel[] {
         return GlobalState.getPairsArray();
-    }
-
-    getDataByIDs(
-        queryName: string,
-        requestedFields: QueryField[],
-        identifiers?: string[],
-    ): PairModel[] {
-        if (PairMemoryStoreService.targetedQueries[queryName] === undefined) {
-            throw new Error(
-                `Data for query '${queryName}' is not solvable from the memory store.`,
-            );
-        }
-
-        const identifierField =
-            PairMemoryStoreService.targetedQueries[queryName].identifierField;
-
-        let pairs = GlobalState.getPairsArray();
-
-        if (identifiers && identifiers.length > 0) {
-            pairs = pairs.filter((pair) =>
-                identifiers.includes(pair[identifierField]),
-            );
-        }
-
-        if (requestedFields.length === 0) {
-            return pairs;
-        }
-
-        return pairs.map((pair) =>
-            createModelFromFields(pair, requestedFields, 'PairModel'),
-        );
     }
 
     static targetedQueries: Record<
@@ -111,11 +81,19 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         },
     };
 
-    getSortedAndFilteredData(
-        fields: QueryField[],
+    getQueryResponse(
+        queryName: string,
         queryArguments: Record<string, any>,
-        isFilteredQuery = false,
+        requestedFields: QueryField[],
     ): PairModel[] | PairsResponse {
+        if (PairMemoryStoreService.targetedQueries[queryName] === undefined) {
+            throw new Error(
+                `Data for query '${queryName}' is not solvable from the memory store.`,
+            );
+        }
+
+        const isFilteredQuery =
+            PairMemoryStoreService.targetedQueries[queryName].isFiltered;
         let pairs = GlobalState.getPairsArray();
 
         const pagination = this.getPaginationFromArgs(
@@ -132,7 +110,9 @@ export class PairMemoryStoreService extends IMemoryStoreService<
 
         if (!isFilteredQuery) {
             return pairs
-                .map((pair) => createModelFromFields(pair, fields, 'PairModel'))
+                .map((pair) =>
+                    createModelFromFields(pair, requestedFields, 'PairModel'),
+                )
                 .slice(pagination.offset, pagination.offset + pagination.limit);
         }
 
@@ -144,12 +124,116 @@ export class PairMemoryStoreService extends IMemoryStoreService<
 
         return PageResponse.mapResponse<PairModel>(
             pairs
-                .map((pair) => createModelFromFields(pair, fields, 'PairModel'))
+                .map((pair) =>
+                    createModelFromFields(pair, requestedFields, 'PairModel'),
+                )
                 .slice(pagination.offset, pagination.offset + pagination.limit),
             this.getConnectionFromArgs(queryArguments) ?? new ConnectionArgs(),
             totalCount,
             pagination.offset,
             pagination.limit,
+        );
+    }
+
+    appendFieldsToQueryResponse(
+        queryName: string,
+        response: PairModel[] | PairsResponse,
+        requestedFields: QueryField[],
+    ): PairModel[] | PairsResponse {
+        if (PairMemoryStoreService.targetedQueries[queryName] === undefined) {
+            throw new Error(
+                `Data for query '${queryName}' is not solvable from the memory store.`,
+            );
+        }
+
+        if (PairMemoryStoreService.targetedQueries[queryName].isFiltered) {
+            return this.appendFieldsToFilteredQueryResponse(
+                response,
+                queryName,
+                requestedFields,
+            );
+        }
+
+        const responseArray = response as PairModel[];
+
+        const identifierField =
+            PairMemoryStoreService.targetedQueries[queryName].identifierField;
+
+        const originalIdentifiers = responseArray.map(
+            (pair) => pair[identifierField],
+        );
+
+        const pairsFromStore = this.getPairsByIDs(
+            queryName,
+            requestedFields,
+            originalIdentifiers,
+        );
+
+        return responseArray.map((pair, index) => {
+            return {
+                ...pair,
+                ...pairsFromStore[index],
+            };
+        });
+    }
+
+    private appendFieldsToFilteredQueryResponse(
+        response: Record<string, any>,
+        queryName: string,
+        requestedFields: QueryField[],
+    ): PairsResponse {
+        const identifierField =
+            PairMemoryStoreService.targetedQueries[queryName].identifierField;
+
+        const connectionResponse = response as Connection<PairModel>;
+
+        const originalIdentifiers = connectionResponse.edges.map((edge) => {
+            return edge.node[identifierField];
+        });
+
+        const pairsFromStore = this.getPairsByIDs(
+            queryName,
+            requestedFields,
+            originalIdentifiers,
+        );
+
+        connectionResponse.edges = connectionResponse.edges.map(
+            (edge, index) => {
+                edge.node = {
+                    ...edge.node,
+                    ...pairsFromStore[index],
+                };
+                return edge;
+            },
+        );
+
+        return connectionResponse as PairsResponse;
+    }
+
+    private getPairsByIDs(
+        queryName: string,
+        requestedFields: QueryField[],
+        identifiers?: string[],
+    ): PairModel[] {
+        if (PairMemoryStoreService.targetedQueries[queryName] === undefined) {
+            throw new Error(
+                `Data for query '${queryName}' is not solvable from the memory store.`,
+            );
+        }
+
+        const identifierField =
+            PairMemoryStoreService.targetedQueries[queryName].identifierField;
+
+        let pairs = GlobalState.getPairsArray();
+
+        if (identifiers && identifiers.length > 0) {
+            pairs = pairs.filter((pair) =>
+                identifiers.includes(pair[identifierField]),
+            );
+        }
+
+        return pairs.map((pair) =>
+            createModelFromFields(pair, requestedFields, 'PairModel'),
         );
     }
 
