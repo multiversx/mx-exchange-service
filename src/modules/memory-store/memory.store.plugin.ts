@@ -13,9 +13,6 @@ import {
     updateFilteredQueryEdgeNodes,
 } from './utils/graphql.utils';
 import { QueryField } from './entities/query.field.type';
-// import { CpuProfiler } from '@multiversx/sdk-nestjs-monitoring';
-// import { PerformanceProfiler } from 'src/utils/performance.profiler';
-// import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Plugin()
 export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
@@ -27,7 +24,6 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
             queryName: string;
             queryAlias: string;
             isFiltered: boolean;
-            identifierField: string;
             requestedFields: QueryField[];
             arguments: Record<string, any>;
         }[] = [];
@@ -41,9 +37,10 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         return null;
                     }
 
-                    const targetedQueries = Object.keys(
-                        PairMemoryStoreService.targetedQueries,
-                    );
+                    const targetedQueries =
+                        pairMemoryStore.getTargetedQueries();
+
+                    const targetedQueryNames = Object.keys(targetedQueries);
 
                     const requestQueries =
                         requestContext.operation.selectionSet.selections;
@@ -52,16 +49,14 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     for (const selection of requestQueries) {
                         if (
                             selection.kind !== Kind.FIELD ||
-                            !targetedQueries.includes(selection.name.value)
+                            !targetedQueryNames.includes(selection.name.value)
                         ) {
                             normalSelections.push(selection);
                             continue;
                         }
 
                         const { missingFields, isFiltered, identifierField } =
-                            PairMemoryStoreService.targetedQueries[
-                                selection.name.value
-                            ];
+                            targetedQueries[selection.name.value];
 
                         const actualNodes = isFiltered
                             ? extractFilteredQueryEdgeNodes(
@@ -69,12 +64,12 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                               )
                             : selection.selectionSet?.selections;
 
-                        const initialSelectionNodes: SelectionNode[] = [];
+                        const regularSelectionNodes: SelectionNode[] = [];
                         const storeSelectionNodes: SelectionNode[] = [];
                         let identifierNode: FieldNode;
                         for (const node of actualNodes) {
                             if (node.kind !== Kind.FIELD) {
-                                initialSelectionNodes.push(node);
+                                regularSelectionNodes.push(node);
                                 continue;
                             }
 
@@ -84,7 +79,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                             );
 
                             if (requestedMissingField) {
-                                initialSelectionNodes.push(node);
+                                regularSelectionNodes.push(node);
                                 continue;
                             }
 
@@ -106,72 +101,46 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                                     requestContext.request.variables,
                                 ),
                                 isFiltered: isFiltered,
-                                identifierField,
                             });
                         }
 
-                        if (initialSelectionNodes.length > 0) {
-                            // if filtered - update the edges.node field of the original set
-                            // otherwise update original selection set
-
+                        if (regularSelectionNodes.length > 0) {
                             if (identifierNode === undefined) {
-                                // identifier node was never requested
-                                // TODO needs to be added and removed in willSendResponse!
-                            } else {
-                                // add to normal nodes
-                                initialSelectionNodes.push(identifierNode);
+                                // identifier node was never requested - cannot map store data to regular response
+                                allPairsQueries = [];
+                                return null;
                             }
 
+                            // add identifier node to regular nodes to allow appending fields from store
+                            regularSelectionNodes.push(identifierNode);
+
+                            // if filtered - update the edges.node field of the original set
+                            // otherwise completely overwrite the original set
                             selection.selectionSet.selections = isFiltered
                                 ? updateFilteredQueryEdgeNodes(
                                       selection.selectionSet.selections,
-                                      initialSelectionNodes,
+                                      regularSelectionNodes,
                                   )
-                                : initialSelectionNodes;
+                                : regularSelectionNodes;
 
                             normalSelections.push(selection);
                         }
                     }
 
+                    // resolve part of the queries normally
                     if (normalSelections.length > 0) {
-                        console.log(
-                            'needs to resolve some queries normally -> normal flow with updated selection',
-                        );
                         requestContext.operation.selectionSet.selections =
                             normalSelections;
 
                         return null;
                     }
 
+                    // shoult never reach this - log just in case
                     if (allPairsQueries.length === 0) {
-                        // shoult never reach this - log scenario
                         return null;
                     }
 
-                    console.log('all queries resolved from store');
-
-                    // let derivedQueryName = '';
-                    // allPairsQueries.forEach((pairQuery) => {
-                    //     const separator = derivedQueryName === '' ? '' : '|';
-                    //     const currentName = pairQuery.query.alias
-                    //         ? pairQuery.query.alias
-                    //         : pairQuery.query.name.value;
-
-                    //     derivedQueryName = `${derivedQueryName}${separator}${currentName}`;
-                    // });
-
-                    // const metricsKey = requestContext.operationName
-                    //     ? `${requestContext.operationName}-store`
-                    //     : `${derivedQueryName}-store`;
-                    // const origin =
-                    //     requestContext.request.http?.headers.get('origin') ??
-                    //     'Unknown';
-
-                    // const profiler = new PerformanceProfiler();
-                    // const cpuProfiler = new CpuProfiler();
-
-                    // profiler.start(metricsKey);
-
+                    // resolve fully from store
                     const results = allPairsQueries.map((pairQuery) =>
                         pairMemoryStore.getQueryResponse(
                             pairQuery.queryName,
@@ -179,17 +148,6 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                             pairQuery.requestedFields,
                         ),
                     );
-
-                    // profiler.stop(metricsKey);
-                    // const cpuTime = cpuProfiler.stop();
-
-                    // MetricsCollector.setQueryDuration(
-                    //     metricsKey,
-                    //     origin,
-                    //     profiler.duration,
-                    // );
-
-                    // MetricsCollector.setQueryCpu(metricsKey, origin, cpuTime);
 
                     const data = {};
                     for (const [index, result] of results.entries()) {
@@ -199,6 +157,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         data[nameOrAlias] = result;
                     }
 
+                    // empty processed queries since result is returned here
                     allPairsQueries = [];
 
                     return {
@@ -220,9 +179,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     allPairsQueries.length === 0 ||
                     requestContext.response.body.kind !== 'single'
                 ) {
-                    console.log(
-                        'no queries resolved from store -> no response alteration needed',
-                    );
+                    // no response alteration needed
                     return;
                 }
 
@@ -239,13 +196,13 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         console.log(
                             `query ${currentName} resolved entirely from store`,
                         );
-                        const result = pairMemoryStore.getQueryResponse(
-                            storeQuery.queryName,
-                            storeQuery.arguments,
-                            storeQuery.requestedFields,
-                        );
+                        responseData[currentName] =
+                            pairMemoryStore.getQueryResponse(
+                                storeQuery.queryName,
+                                storeQuery.arguments,
+                                storeQuery.requestedFields,
+                            );
 
-                        responseData[currentName] = result;
                         continue;
                     }
 

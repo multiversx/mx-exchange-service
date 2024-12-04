@@ -13,7 +13,7 @@ export abstract class IMemoryStoreService<T, V> {
         response: T[] | V,
         requestedFields: QueryField[],
     ): T[] | V;
-    static targetedQueries: Record<
+    abstract getTargetedQueries(): Record<
         string,
         {
             isFiltered: boolean;
@@ -21,4 +21,5 @@ export abstract class IMemoryStoreService<T, V> {
             identifierField: string;
         }
     >;
+    abstract getTypenameMapping(): Record<string, Record<string, string>>;
 }

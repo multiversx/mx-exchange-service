@@ -29,13 +29,32 @@ export class PairMemoryStoreService extends IMemoryStoreService<
     PairModel,
     PairsResponse
 > {
-    isReady(): boolean {
-        return GlobalState.initStatus === GlobalStateInitStatus.DONE;
-    }
-
-    getAllData(): PairModel[] {
-        return GlobalState.getPairsArray();
-    }
+    static typenameMappings: Record<string, Record<string, string>> = {
+        PairModel: {
+            firstToken: 'EsdtToken',
+            secondToken: 'EsdtToken',
+            liquidityPoolToken: 'EsdtToken',
+            info: 'PairInfoModel',
+            compoundedAPR: 'PairCompoundedAPRModel',
+            rewardTokens: 'PairRewardTokensModel',
+        },
+        PairRewardTokensModel: {
+            poolRewards: 'EsdtToken',
+            farmReward: 'NftCollection',
+            dualFarmReward: 'EsdtToken',
+        },
+        EsdtToken: {
+            assets: 'AssetsModel',
+            roles: 'RolesModel',
+        },
+        NftCollection: {
+            assets: 'AssetsModel',
+            roles: 'RolesModel',
+        },
+        AssetsModel: {
+            social: 'SocialModel',
+        },
+    };
 
     static targetedQueries: Record<
         string,
@@ -81,6 +100,14 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         },
     };
 
+    isReady(): boolean {
+        return GlobalState.initStatus === GlobalStateInitStatus.DONE;
+    }
+
+    getAllData(): PairModel[] {
+        return GlobalState.getPairsArray();
+    }
+
     getQueryResponse(
         queryName: string,
         queryArguments: Record<string, any>,
@@ -111,7 +138,12 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         if (!isFilteredQuery) {
             return pairs
                 .map((pair) =>
-                    createModelFromFields(pair, requestedFields, 'PairModel'),
+                    createModelFromFields(
+                        pair,
+                        requestedFields,
+                        'PairModel',
+                        this.getTypenameMapping(),
+                    ),
                 )
                 .slice(pagination.offset, pagination.offset + pagination.limit);
         }
@@ -125,7 +157,12 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         return PageResponse.mapResponse<PairModel>(
             pairs
                 .map((pair) =>
-                    createModelFromFields(pair, requestedFields, 'PairModel'),
+                    createModelFromFields(
+                        pair,
+                        requestedFields,
+                        'PairModel',
+                        this.getTypenameMapping(),
+                    ),
                 )
                 .slice(pagination.offset, pagination.offset + pagination.limit),
             this.getConnectionFromArgs(queryArguments) ?? new ConnectionArgs(),
@@ -175,6 +212,21 @@ export class PairMemoryStoreService extends IMemoryStoreService<
                 ...pairsFromStore[index],
             };
         });
+    }
+
+    getTypenameMapping(): Record<string, Record<string, string>> {
+        return PairMemoryStoreService.typenameMappings;
+    }
+
+    getTargetedQueries(): Record<
+        string,
+        {
+            isFiltered: boolean;
+            missingFields: QueryField[];
+            identifierField: string;
+        }
+    > {
+        return PairMemoryStoreService.targetedQueries;
     }
 
     private appendFieldsToFilteredQueryResponse(
@@ -233,7 +285,12 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         }
 
         return pairs.map((pair) =>
-            createModelFromFields(pair, requestedFields, 'PairModel'),
+            createModelFromFields(
+                pair,
+                requestedFields,
+                'PairModel',
+                this.getTypenameMapping(),
+            ),
         );
     }
 

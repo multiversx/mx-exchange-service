@@ -78,27 +78,67 @@ export function updateFilteredQueryEdgeNodes(
     return existingNodes;
 }
 
-export function parseFilteredQueryFields(
-    requestedFields: QueryField[],
-): QueryField[] {
-    const result = [];
-    for (const field of requestedFields) {
-        if (field.name !== 'edges') {
+export function parseArguments(
+    argumentsArray: ReadonlyArray<ArgumentNode>,
+    variables: Record<string, any>,
+): Record<string, any> {
+    const args: Record<string, any> = {};
+    for (const argNode of argumentsArray) {
+        const argName = argNode.name.value;
+        const argValue = resolveValueNode(argNode.value, variables);
+        args[argName] = argValue;
+    }
+    return args;
+}
+
+export function createModelFromFields(
+    data: any,
+    fields: QueryField[],
+    typeName: string,
+    typeMapping: Record<string, Record<string, string>>,
+): any {
+    const result: Record<string, any> = {};
+
+    for (const field of fields) {
+        if (field.name === '__typename') {
+            result[field.name] = typeName;
             continue;
         }
 
-        const nodeField = field.subfields.find(
-            (subfield) => subfield.name === 'node',
-        );
+        const fieldData = data?.[field.name];
+        const subfields = field.subfields || [];
 
-        if (nodeField) {
-            result.push(...nodeField.subfields);
+        if (subfields.length === 0) {
+            result[field.name] = fieldData ?? null;
+            continue;
+        }
+
+        if (Array.isArray(fieldData)) {
+            result[field.name] = fieldData.map((item) =>
+                createModelFromFields(
+                    item || {},
+                    subfields,
+                    typeMapping[typeName]?.[field.name] || 'UnknownType',
+                    typeMapping,
+                ),
+            );
+        } else {
+            result[field.name] =
+                fieldData !== undefined
+                    ? createModelFromFields(
+                          fieldData,
+                          subfields,
+                          typeMapping[typeName]?.[field.name] || 'UnknownType',
+                          typeMapping,
+                      )
+                    : null;
         }
     }
+
     return result;
 }
 
-export function resolveValueNode(
+function resolveValueNode(
     valueNode: ValueNode,
     variables: Record<string, any>,
 ): any {
@@ -129,100 +169,4 @@ export function resolveValueNode(
         case Kind.NULL:
             return null;
     }
-}
-
-export function parseArguments(
-    argumentsArray: ReadonlyArray<ArgumentNode>,
-    variables: Record<string, any>,
-): Record<string, any> {
-    const args: Record<string, any> = {};
-    for (const argNode of argumentsArray) {
-        const argName = argNode.name.value;
-        const argValue = resolveValueNode(argNode.value, variables);
-        args[argName] = argValue;
-    }
-    return args;
-}
-
-export function createModelFromFields(
-    data: any,
-    fields: QueryField[],
-    typeName: string,
-): any {
-    const result: Record<string, any> = {};
-
-    for (const field of fields) {
-        if (field.name === '__typename') {
-            result[field.name] = typeName;
-            continue;
-        }
-
-        const fieldData = data?.[field.name];
-        const subfields = field.subfields || [];
-
-        if (subfields.length === 0) {
-            result[field.name] = fieldData ?? null;
-            continue;
-        }
-
-        if (Array.isArray(fieldData)) {
-            result[field.name] = fieldData.map((item) =>
-                createModelFromFields(
-                    item || {},
-                    subfields,
-                    getNestedTypeName(typeName, field.name),
-                ),
-            );
-        } else {
-            result[field.name] =
-                fieldData !== undefined
-                    ? createModelFromFields(
-                          fieldData,
-                          subfields,
-                          getNestedTypeName(typeName, field.name),
-                      )
-                    : null;
-        }
-    }
-
-    return result;
-}
-
-export function getNestedTypeName(
-    parentTypeName: string,
-    fieldName: string,
-): string {
-    const typeMapping: Record<string, Record<string, string>> = {
-        PairModel: {
-            firstToken: 'EsdtToken',
-            secondToken: 'EsdtToken',
-            liquidityPoolToken: 'EsdtToken',
-            info: 'PairInfoModel',
-            lockedTokensInfo: 'LockedTokensInfo',
-            feesCollector: 'FeesCollectorModel',
-            compoundedAPR: 'PairCompoundedAPRModel',
-            rewardTokens: 'PairRewardTokensModel',
-            feeDestinations: 'FeeDestination',
-        },
-        EsdtToken: {
-            assets: 'AssetsModel',
-            roles: 'RolesModel',
-        },
-        AssetsModel: {
-            social: 'SocialModel',
-        },
-        PairRewardTokensModel: {
-            poolRewards: 'EsdtToken',
-            farmReward: 'NftCollection',
-            dualFarmReward: 'EsdtToken',
-        },
-        LockedTokensInfo: {
-            lockingSC: 'SimpleLockModel',
-        },
-        SimpleLockModel: {
-            lockedToken: 'NftCollection',
-        },
-    };
-
-    return typeMapping[parentTypeName]?.[fieldName] || 'UnknownType';
 }
