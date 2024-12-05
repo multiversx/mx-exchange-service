@@ -111,7 +111,10 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                 if (normalSelections.length > 0) {
                     requestContext.operation.selectionSet.selections =
                         normalSelections;
-                    requestContext.contextValue.storeResolve = 'partial';
+                    requestContext.contextValue.storeResolve =
+                        storeResolvableQueries.length > 0
+                            ? 'partial'
+                            : undefined;
 
                     return null;
                 }
