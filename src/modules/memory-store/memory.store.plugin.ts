@@ -220,6 +220,7 @@ function partitionSelectionNodes(
             normalNodes.push(node);
         } else if (node.name.value === identifierField) {
             identifierNode = node;
+            storeNodes.push(node);
         } else {
             storeNodes.push(node);
         }
