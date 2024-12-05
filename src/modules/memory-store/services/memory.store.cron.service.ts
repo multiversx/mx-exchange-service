@@ -481,6 +481,8 @@ export class MemoryStoreCronService {
                 allPrevious24hVolumeUSD,
                 allLiquidityUSD,
                 allCreatedAt,
+                allSwapCount24h,
+                allPrevious24hSwapCount,
                 allTrendingScore,
             } = await this.getTokensData(tokenIDs);
 
@@ -506,6 +508,8 @@ export class MemoryStoreCronService {
                         previous24hVolume: allPrevious24hVolumeUSD[index],
                         liquidityUSD: allLiquidityUSD[index],
                         createdAt: allCreatedAt[index],
+                        swapCount24h: allSwapCount24h[index],
+                        previous24hSwapCount: allPrevious24hSwapCount[index],
                         trendingScore: allTrendingScore[index],
                     },
                 };
@@ -633,8 +637,8 @@ export class MemoryStoreCronService {
         allPrevious24hVolumeUSD: string[];
         allLiquidityUSD: string[];
         allCreatedAt: string[];
-        // allSwapCount24h: number[];
-        // allPrevious24hSwapCount: number[];
+        allSwapCount24h: number[];
+        allPrevious24hSwapCount: number[];
         allTrendingScore: string[];
     }> {
         const allPriceDerivedEGLD =
@@ -663,6 +667,24 @@ export class MemoryStoreCronService {
             tokenIDs,
         );
 
+        const allTokensSwapCount =
+            await this.tokenCompute.allTokensSwapsCount();
+        const allSwapCount24h = tokenIDs.map((tokenID) => {
+            const tokenData = allTokensSwapCount.find(
+                (elem) => elem.tokenID === tokenID,
+            );
+            return tokenData ? tokenData.swapsCount : 0;
+        });
+
+        const allTokensPrev24hSwapCount =
+            await this.tokenCompute.allTokensSwapsCountPrevious24h();
+        const allPrevious24hSwapCount = tokenIDs.map((tokenID) => {
+            const tokenData = allTokensPrev24hSwapCount.find(
+                (elem) => elem.tokenID === tokenID,
+            );
+            return tokenData ? tokenData.swapsCount : 0;
+        });
+
         const allTrendingScore =
             await this.tokenCompute.getAllTokensTrendingScore(tokenIDs);
 
@@ -675,6 +697,8 @@ export class MemoryStoreCronService {
             allPrevious24hVolumeUSD,
             allLiquidityUSD,
             allCreatedAt,
+            allSwapCount24h,
+            allPrevious24hSwapCount,
             allTrendingScore,
         };
     }
