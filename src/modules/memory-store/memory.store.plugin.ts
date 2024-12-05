@@ -5,7 +5,6 @@ import {
 } from '@apollo/server';
 import { Plugin } from '@nestjs/apollo';
 import { FieldNode, Kind, SelectionNode } from 'graphql';
-import { PairMemoryStoreService } from './services/pair.memory.store.service';
 import {
     extractFilteredQueryEdgeNodes,
     extractQueryFields,
@@ -13,13 +12,17 @@ import {
     updateFilteredQueryEdgeNodes,
 } from './utils/graphql.utils';
 import { QueryField } from './entities/query.field.type';
+import { MemoryStoreFactoryService } from './services/memory.store.factory.service';
 
 @Plugin()
 export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
-    constructor(private readonly pairMemoryStore: PairMemoryStoreService) {}
+    constructor(
+        private readonly memoryStoreFactory: MemoryStoreFactoryService,
+    ) {}
 
     async requestDidStart(): Promise<GraphQLRequestListener<any>> {
-        const pairMemoryStore = this.pairMemoryStore;
+        const memoryStoreFactory = this.memoryStoreFactory;
+
         const storeResolvableQueries: Array<{
             queryName: string;
             queryAlias?: string;
@@ -32,12 +35,12 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
             async responseForOperation(
                 requestContext,
             ): Promise<GraphQLResponse | null> {
-                if (!pairMemoryStore.isReady()) {
+                if (!memoryStoreFactory.isReady()) {
                     return null;
                 }
 
-                const targetedQueries = pairMemoryStore.getTargetedQueries();
-                const targetedQueryNames = Object.keys(targetedQueries);
+                const targetedQueryNames =
+                    memoryStoreFactory.getTargetedQueryNames();
 
                 const requestSelections =
                     requestContext.operation.selectionSet.selections;
@@ -55,6 +58,10 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         normalSelections.push(selection);
                         continue;
                     }
+
+                    const targetedQueries = memoryStoreFactory
+                        .useService(queryName)
+                        .getTargetedQueries();
 
                     const { missingFields, isFiltered, identifierField } =
                         targetedQueries[queryName];
@@ -127,7 +134,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                 // Fully resolve from store
                 const data = resolveQueriesFromStore(
                     storeResolvableQueries,
-                    pairMemoryStore,
+                    memoryStoreFactory,
                 );
 
                 // Clear the processed queries since we're returning the response here
@@ -162,8 +169,9 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
 
                     if (!responseData[queryKey]) {
                         // Query was not resolved; resolve entirely from store
-                        responseData[queryKey] =
-                            pairMemoryStore.getQueryResponse(
+                        responseData[queryKey] = memoryStoreFactory
+                            .useService(storeQuery.queryName)
+                            .getQueryResponse(
                                 storeQuery.queryName,
                                 storeQuery.arguments,
                                 storeQuery.requestedFields,
@@ -172,8 +180,9 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         continue;
                     } else {
                         // Append fields from the store to the partially resolved response
-                        responseData[queryKey] =
-                            pairMemoryStore.appendFieldsToQueryResponse(
+                        responseData[queryKey] = memoryStoreFactory
+                            .useService(storeQuery.queryName)
+                            .appendFieldsToQueryResponse(
                                 storeQuery.queryName,
                                 responseData[queryKey],
                                 storeQuery.requestedFields,
@@ -229,16 +238,18 @@ function resolveQueriesFromStore(
         requestedFields: QueryField[];
         arguments: Record<string, any>;
     }>,
-    store: PairMemoryStoreService,
+    memoryStoreFactory: MemoryStoreFactoryService,
 ) {
     const data: Record<string, any> = {};
 
     for (const query of queries) {
-        const result = store.getQueryResponse(
-            query.queryName,
-            query.arguments,
-            query.requestedFields,
-        );
+        const result = memoryStoreFactory
+            .useService(query.queryName)
+            .getQueryResponse(
+                query.queryName,
+                query.arguments,
+                query.requestedFields,
+            );
         const key = query.queryAlias || query.queryName;
         data[key] = result;
     }
