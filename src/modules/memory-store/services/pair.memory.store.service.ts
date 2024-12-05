@@ -267,12 +267,6 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         requestedFields: QueryField[],
         identifiers?: string[],
     ): PairModel[] {
-        if (PairMemoryStoreService.targetedQueries[queryName] === undefined) {
-            throw new Error(
-                `Data for query '${queryName}' is not solvable from the memory store.`,
-            );
-        }
-
         const identifierField =
             PairMemoryStoreService.targetedQueries[queryName].identifierField;
 
