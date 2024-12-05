@@ -1,5 +1,5 @@
 import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
-import { Expose, Transform, Type } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import { SortingOrder } from 'src/modules/common/page.data';
 
 export enum PairSortableFields {
