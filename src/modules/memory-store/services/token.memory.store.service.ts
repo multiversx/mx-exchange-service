@@ -95,7 +95,6 @@ export class TokenMemoryStoreService extends IMemoryStoreService<
         );
         const sorting = this.getSortingFromArgs(queryArguments);
 
-        console.log({ filters });
         let tokens = GlobalState.getPairsTokens(filters.enabledSwaps);
         tokens = this.filterTokens(tokens, filters, isFilteredQuery);
 
