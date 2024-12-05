@@ -36,7 +36,7 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
                     const cpuTime = cpuProfiler.stop();
 
                     if (requestContext.contextValue.storeResolve) {
-                        operationName += `-${requestContext.contextValue.storeResolve}`;
+                        operationName += `-store_${requestContext.contextValue.storeResolve}`;
                     }
 
                     MetricsCollector.setQueryDuration(
