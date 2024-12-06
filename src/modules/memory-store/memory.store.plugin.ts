@@ -72,6 +72,11 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                           )
                         : selection.selectionSet?.selections || [];
 
+                    if (!actualNodes) {
+                        normalSelections.push(selection);
+                        continue;
+                    }
+
                     const { storeNodes, normalNodes, identifierNode } =
                         partitionSelectionNodes(
                             actualNodes,
