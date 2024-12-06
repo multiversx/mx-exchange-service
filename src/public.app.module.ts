@@ -41,7 +41,6 @@ import { ComposableTasksModule } from './modules/composable-tasks/composable.tas
 import { TradingViewModule } from './modules/trading-view/trading.view.module';
 import { MemoryStoreModule } from './modules/memory-store/memory.store.module';
 import { MemoryStoreApolloPlugin } from './modules/memory-store/memory.store.plugin';
-import { MemoryStoreApolloPlugin } from './modules/in-memory-store/memory.store.plugin';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 
 @Module({
