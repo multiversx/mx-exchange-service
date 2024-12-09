@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { XExchangeAnalyticsEntity } from './entities/timescaledb.entities';
 import { Repository } from 'typeorm';
 import { IngestRecord } from '../entities/ingest.record';
+import { constantsConfig } from 'src/config';
 
 @Injectable()
 export class TimescaleDBWriteService implements AnalyticsWriteInterface {
@@ -62,29 +63,38 @@ export class TimescaleDBWriteService implements AnalyticsWriteInterface {
     ): Promise<void> {
         const profiler = new PerformanceProfiler('ingestData');
 
-        try {
-            await this.dexAnalytics.save(records);
-        } catch (errors) {
-            const logMessage = generateLogMessage(
-                TimescaleDBWriteService.name,
-                this.writeRecords.name,
-                '',
-                {
-                    message: 'Internal Server Error',
-                    status: 500,
-                    response: errors,
-                },
-            );
-            this.logger.error(logMessage);
-        } finally {
-            profiler.stop();
+        const chunkSize = constantsConfig.TIMESCALEDB_INSERT_CHUNK_SIZE;
+        for (let i = 0; i < records.length; i += chunkSize) {
+            try {
+                const recordsChunk = records.slice(i, i + chunkSize);
 
-            MetricsCollector.setExternalCall(
-                TimescaleDBWriteService.name,
-                'ingestData',
-                profiler.duration,
-            );
+                await this.dexAnalytics.upsert(recordsChunk, [
+                    'timestamp',
+                    'series',
+                    'key',
+                ]);
+            } catch (errors) {
+                const logMessage = generateLogMessage(
+                    TimescaleDBWriteService.name,
+                    this.writeRecords.name,
+                    '',
+                    {
+                        message: 'Internal Server Error',
+                        status: 500,
+                        response: errors,
+                    },
+                );
+                this.logger.error(logMessage);
+            }
         }
+
+        profiler.stop();
+
+        MetricsCollector.setExternalCall(
+            TimescaleDBWriteService.name,
+            'ingestData',
+            profiler.duration,
+        );
     }
 
     createRecords({ data, Time }): XExchangeAnalyticsEntity[] {
