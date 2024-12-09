@@ -414,8 +414,20 @@ export class MemoryStoreCronService {
             return;
         }
 
-        const pairsMetadata = await this.routerAbi.pairsMetadata();
-        await this.updateAddressesAndTokenIDs(pairsMetadata);
+        try {
+            const pairsMetadata = await this.routerAbi.pairsMetadata();
+            await this.updateAddressesAndTokenIDs(pairsMetadata);
+
+            GlobalState.initStatus = GlobalStateInitStatus.DONE;
+        } catch (error) {
+            this.logger.error(
+                `refreshRouterData failed with error: ${error.message}`,
+                {
+                    context: 'MemoryStoreCronService',
+                },
+            );
+            GlobalState.initStatus = GlobalStateInitStatus.FAILED;
+        }
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
@@ -444,6 +456,8 @@ export class MemoryStoreCronService {
             );
 
             await this.updatePairsRewardTokens(pairAddresses);
+
+            GlobalState.initStatus = GlobalStateInitStatus.DONE;
         } catch (error) {
             this.logger.error(
                 `refreshPairsMemoryStore failed with error: ${error.message}`,
@@ -514,6 +528,8 @@ export class MemoryStoreCronService {
                     },
                 };
             }
+
+            GlobalState.initStatus = GlobalStateInitStatus.DONE;
         } catch (error) {
             this.logger.error(
                 `refreshTokensMemoryStore failed with error: ${error.message}`,
