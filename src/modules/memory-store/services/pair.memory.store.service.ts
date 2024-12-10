@@ -23,6 +23,7 @@ import { SortingOrder } from 'src/modules/common/page.data';
 import { IMemoryStoreService } from 'src/modules/memory-store/services/interfaces';
 import { PairsResponse } from '../../pair/models/pairs.response';
 import { Connection } from 'graphql-relay';
+import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 
 @Injectable()
 export class PairMemoryStoreService extends IMemoryStoreService<
@@ -133,7 +134,7 @@ export class PairMemoryStoreService extends IMemoryStoreService<
         );
         const sorting = this.getSortingFromArgs(queryArguments);
 
-        pairs = this.filterPairs(pairs, filters, isFilteredQuery);
+        pairs = this.filterPairs(pairs, filters);
 
         if (!isFilteredQuery) {
             return pairs
@@ -347,26 +348,31 @@ export class PairMemoryStoreService extends IMemoryStoreService<
     private filterPairs(
         pairs: PairModel[],
         filters: PairFilterArgs | PairsFilter,
-        isFilteredQuery: boolean,
     ): PairModel[] {
-        pairs = this.filterByIssuedLpToken(pairs, filters);
-        pairs = this.filterByAddresses(pairs, filters);
-        pairs = this.filterByTokens(pairs, filters);
-        pairs = this.filterByState(pairs, filters);
-        pairs = this.filterByFeeState(pairs, filters);
-        pairs = this.filterByVolume(pairs, filters);
-        pairs = this.filterByLockedValueUSD(pairs, filters);
+        pairs = PairFilteringService.pairsByIssuedLpToken(filters, pairs);
+        pairs = PairFilteringService.pairsByAddress(filters, pairs);
+        pairs = PairFilteringService.pairsByTokens(filters, pairs);
+        pairs = PairFilteringService.pairsByState(filters, pairs);
+        pairs = PairFilteringService.pairsByFeeState(filters, pairs);
+        pairs = PairFilteringService.pairsByVolume(filters, pairs);
+        pairs = PairFilteringService.pairsByLockedValueUSD(filters, pairs);
 
-        if (!isFilteredQuery) {
+        if (!(filters instanceof PairsFilter)) {
             return pairs;
         }
 
-        pairs = this.filterByTradesCount(pairs, filters as PairsFilter);
-        pairs = this.filterByTradesCount24h(pairs, filters as PairsFilter);
-        pairs = this.filterByLpTokenIds(pairs, filters as PairsFilter);
-        pairs = this.filterByHasFarms(pairs, filters as PairsFilter);
-        pairs = this.filterByHasDualFarms(pairs, filters as PairsFilter);
-        pairs = this.filterByDeployedAt(pairs, filters as PairsFilter);
+        pairs = PairFilteringService.pairsByLpTokenIds(filters, pairs);
+        // TODO: add pair related farm tokens to GlobalState.pairsEsdtTokens
+        pairs = PairFilteringService.pairsByFarmTokens(
+            filters,
+            pairs,
+            [], // replace with token IDs
+        );
+        pairs = PairFilteringService.pairsByTradesCount(filters, pairs);
+        pairs = PairFilteringService.pairsByTradesCount24h(filters, pairs);
+        pairs = PairFilteringService.pairsByHasFarms(filters, pairs);
+        pairs = PairFilteringService.pairsByHasDualFarms(filters, pairs);
+        pairs = PairFilteringService.pairsByDeployedAt(filters, pairs);
 
         return pairs;
     }
@@ -459,228 +465,5 @@ export class PairMemoryStoreService extends IMemoryStoreService<
             default:
                 return pairs;
         }
-    }
-
-    private filterByIssuedLpToken(
-        pairs: PairModel[],
-        filters: PairFilterArgs | PairsFilter,
-    ): PairModel[] {
-        if (!filters.issuedLpToken) {
-            return pairs;
-        }
-
-        return pairs.filter((pair) => pair.liquidityPoolToken !== undefined);
-    }
-
-    private filterByAddresses(
-        pairs: PairModel[],
-        filters: PairFilterArgs | PairsFilter,
-    ): PairModel[] {
-        if (!filters.addresses || filters.addresses.length === 0) {
-            return pairs;
-        }
-
-        return pairs.filter((pair) => filters.addresses.includes(pair.address));
-    }
-
-    private filterByTokens(
-        pairs: PairModel[],
-        filters: PairFilterArgs | PairsFilter,
-    ): PairModel[] {
-        if (filters instanceof PairsFilter) {
-            pairs = this.filterByWildcardToken(pairs, filters);
-        }
-
-        if (filters.firstTokenID) {
-            if (filters.secondTokenID) {
-                pairs = pairs.filter(
-                    (pair) =>
-                        (pair.firstToken.identifier === filters.firstTokenID &&
-                            pair.secondToken.identifier ===
-                                filters.secondTokenID) ||
-                        (pair.firstToken.identifier === filters.secondTokenID &&
-                            pair.secondToken.identifier ===
-                                filters.firstTokenID),
-                );
-            } else {
-                pairs = pairs.filter(
-                    (pair) =>
-                        pair.firstToken.identifier === filters.firstTokenID,
-                );
-            }
-        } else if (filters.secondTokenID) {
-            pairs = pairs.filter(
-                (pair) => pair.secondToken.identifier === filters.secondTokenID,
-            );
-        }
-
-        return pairs;
-    }
-
-    private filterByWildcardToken(
-        pairs: PairModel[],
-        filters: PairsFilter,
-    ): PairModel[] {
-        if (!filters.searchToken || filters.searchToken.trim().length < 3) {
-            return pairs;
-        }
-
-        const searchTerm = filters.searchToken.toUpperCase().trim();
-
-        return pairs.filter(
-            (pair) =>
-                pair.firstToken.name.toUpperCase().includes(searchTerm) ||
-                pair.firstToken.identifier.toUpperCase().includes(searchTerm) ||
-                pair.firstToken.ticker.toUpperCase().includes(searchTerm) ||
-                pair.secondToken.name.toUpperCase().includes(searchTerm) ||
-                pair.secondToken.identifier
-                    .toUpperCase()
-                    .includes(searchTerm) ||
-                pair.secondToken.ticker.toUpperCase().includes(searchTerm),
-        );
-    }
-
-    private filterByState(
-        pairs: PairModel[],
-        filters: PairFilterArgs | PairsFilter,
-    ): PairModel[] {
-        if (
-            !filters.state ||
-            (Array.isArray(filters.state) && filters.state.length === 0)
-        ) {
-            return pairs;
-        }
-
-        return pairs.filter((pair) => {
-            if (!Array.isArray(filters.state)) {
-                return pair.state === filters.state;
-            }
-
-            return filters.state.includes(pair.state);
-        });
-    }
-
-    private filterByFeeState(
-        pairs: PairModel[],
-        filters: PairFilterArgs | PairsFilter,
-    ): PairModel[] {
-        if (
-            typeof filters.feeState === 'undefined' ||
-            filters.feeState === null
-        ) {
-            return pairs;
-        }
-
-        return pairs.filter((pair) => pair.feeState === filters.feeState);
-    }
-
-    private filterByVolume(
-        pairs: PairModel[],
-        filters: PairFilterArgs | PairsFilter,
-    ): PairModel[] {
-        if (!filters.minVolume) {
-            return pairs;
-        }
-
-        return pairs.filter((pair) => {
-            const volume = new BigNumber(pair.volumeUSD24h);
-            return volume.gte(filters.minVolume);
-        });
-    }
-
-    private filterByLockedValueUSD(
-        pairs: PairModel[],
-        filters: PairFilterArgs | PairsFilter,
-    ): PairModel[] {
-        if (!filters.minLockedValueUSD) {
-            return pairs;
-        }
-
-        return pairs.filter((pair) => {
-            const lockedValueUSD = new BigNumber(pair.lockedValueUSD);
-            return lockedValueUSD.gte(filters.minLockedValueUSD);
-        });
-    }
-
-    private filterByTradesCount(
-        pairs: PairModel[],
-        filters: PairsFilter,
-    ): PairModel[] {
-        if (!filters.minTradesCount) {
-            return pairs;
-        }
-
-        return pairs.filter(
-            (pair) => pair.tradesCount >= filters.minTradesCount,
-        );
-    }
-
-    private filterByTradesCount24h(
-        pairs: PairModel[],
-        filters: PairsFilter,
-    ): PairModel[] {
-        if (!filters.minTradesCount24h) {
-            return pairs;
-        }
-
-        return pairs.filter(
-            (pair) => pair.tradesCount24h >= filters.minTradesCount24h,
-        );
-    }
-
-    private filterByHasFarms(
-        pairs: PairModel[],
-        filters: PairsFilter,
-    ): PairModel[] {
-        if (
-            typeof filters.hasFarms === 'undefined' ||
-            filters.hasFarms === null
-        ) {
-            return pairs;
-        }
-
-        return pairs.filter((pair) => pair.hasFarms === filters.hasFarms);
-    }
-
-    private filterByHasDualFarms(
-        pairs: PairModel[],
-        filters: PairsFilter,
-    ): PairModel[] {
-        if (
-            typeof filters.hasDualFarms === 'undefined' ||
-            filters.hasDualFarms === null
-        ) {
-            return pairs;
-        }
-
-        return pairs.filter(
-            (pair) => pair.hasDualFarms === filters.hasDualFarms,
-        );
-    }
-
-    private filterByLpTokenIds(
-        pairs: PairModel[],
-        filters: PairsFilter,
-    ): PairModel[] {
-        if (!filters.lpTokenIds || filters.lpTokenIds.length === 0) {
-            return pairs;
-        }
-
-        return pairs.filter(
-            (pair) =>
-                pair.liquidityPoolToken !== undefined &&
-                filters.lpTokenIds.includes(pair.liquidityPoolToken.identifier),
-        );
-    }
-
-    private filterByDeployedAt(
-        pairs: PairModel[],
-        filters: PairsFilter,
-    ): PairModel[] {
-        if (!filters.minDeployedAt) {
-            return pairs;
-        }
-
-        return pairs.filter((pair) => pair.deployedAt >= filters.minDeployedAt);
     }
 }
