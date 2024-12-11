@@ -29,6 +29,12 @@ import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenService } from './token.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { getAllKeys } from 'src/utils/get.many.utils';
+import {
+    calculateTokenPriceChange24h,
+    calculateTokenPriceChange7d,
+    calculateTokenTradeChange24h,
+    calculateTokenVolumeUSDChange24h,
+} from 'src/utils/token.utils';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -337,14 +343,7 @@ export class TokenComputeService implements ITokenComputeService {
             this.tokenPrevious24hPrice(tokenID),
         ]);
 
-        const currentPriceBN = new BigNumber(currentPrice);
-        const previous24hPriceBN = new BigNumber(previous24hPrice);
-
-        if (previous24hPriceBN.isZero() || previous24hPrice === undefined) {
-            return 0;
-        }
-
-        return currentPriceBN.dividedBy(previous24hPriceBN).toNumber();
+        return calculateTokenPriceChange24h(currentPrice, previous24hPrice);
     }
 
     async computeTokenPriceChange7d(tokenID: string): Promise<number> {
@@ -353,14 +352,7 @@ export class TokenComputeService implements ITokenComputeService {
             this.tokenPrevious7dPrice(tokenID),
         ]);
 
-        const currentPriceBN = new BigNumber(currentPrice);
-        const previous7dPriceBN = new BigNumber(previous7dPrice);
-
-        if (previous7dPriceBN.isZero()) {
-            return 0;
-        }
-
-        return currentPriceBN.dividedBy(previous7dPriceBN).toNumber();
+        return calculateTokenPriceChange7d(currentPrice, previous7dPrice);
     }
 
     @ErrorLoggerAsync({
@@ -381,19 +373,10 @@ export class TokenComputeService implements ITokenComputeService {
             this.tokenPrevious24hVolumeUSD(tokenID),
         ]);
 
-        const currentVolumeBN = new BigNumber(currentVolume);
-        const previous24hVolumeBN = new BigNumber(previous24hVolume);
-
-        if (currentVolumeBN.isZero()) {
-            return 0;
-        }
-
-        const maxPrevious24hVolume = BigNumber.maximum(
-            previous24hVolumeBN,
-            constantsConfig.trendingScore.MIN_24H_VOLUME,
+        return calculateTokenVolumeUSDChange24h(
+            currentVolume,
+            previous24hVolume,
         );
-
-        return currentVolumeBN.dividedBy(maxPrevious24hVolume).toNumber();
     }
 
     @ErrorLoggerAsync({
@@ -414,15 +397,7 @@ export class TokenComputeService implements ITokenComputeService {
             this.tokenPrevious24hSwapCount(tokenID),
         ]);
 
-        const currentSwapsBN = new BigNumber(currentSwaps);
-        const previous24hSwapsBN = new BigNumber(previous24hSwaps);
-
-        const maxPrevious24hTradeCount = BigNumber.maximum(
-            previous24hSwapsBN,
-            constantsConfig.trendingScore.MIN_24H_TRADE_COUNT,
-        );
-
-        return currentSwapsBN.dividedBy(maxPrevious24hTradeCount).toNumber();
+        return calculateTokenTradeChange24h(currentSwaps, previous24hSwaps);
     }
 
     @ErrorLoggerAsync({
