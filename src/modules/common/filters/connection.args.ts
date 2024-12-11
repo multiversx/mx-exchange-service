@@ -6,6 +6,7 @@ import {
 import { Field, Int, InputType } from '@nestjs/graphql';
 import { IsOptional, Max } from 'class-validator';
 import { PaginationArgs } from 'src/modules/dex.model';
+import { Expose } from 'class-transformer';
 
 type PagingMeta =
     | { pagingType: 'forward'; after?: string; first: number }
@@ -83,17 +84,21 @@ export function getPagingParameters(args: ConnectionArgs): PaginationArgs {
 
 @InputType()
 export default class ConnectionArgs implements ConnectionArguments {
+    @Expose()
     @Field({ nullable: true, description: 'Paginate before opaque cursor' })
     public before?: ConnectionCursor;
 
+    @Expose()
     @Field({ nullable: true, description: 'Paginate after opaque cursor' })
     public after?: ConnectionCursor;
 
+    @Expose()
     @IsOptional()
     @Max(100)
     @Field(() => Int, { nullable: true, description: 'Paginate first' })
     public first?: number;
 
+    @Expose()
     @IsOptional()
     @Max(100)
     @Field(() => Int, { nullable: true, description: 'Paginate last' })
