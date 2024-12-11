@@ -1,7 +1,6 @@
 import {
     ApolloServerPlugin,
     GraphQLRequestContext,
-    GraphQLRequestExecutionListener,
     GraphQLRequestListener,
 } from '@apollo/server';
 import { Plugin } from '@nestjs/apollo';
@@ -19,9 +18,9 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
         let origin: string;
 
         return {
-            async executionDidStart(
+            async didResolveOperation(
                 requestContext: GraphQLRequestContext<any>,
-            ): Promise<void | GraphQLRequestExecutionListener<any>> {
+            ): Promise<void> {
                 operationName = deanonymizeQuery(requestContext);
                 origin =
                     requestContext.request.http?.headers.get('origin') ??
@@ -31,17 +30,27 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
                 cpuProfiler = new CpuProfiler();
                 profiler.start(operationName);
             },
-            async willSendResponse(): Promise<void> {
-                profiler.stop(operationName);
-                const cpuTime = cpuProfiler.stop();
+            async willSendResponse(requestContext): Promise<void> {
+                if (profiler) {
+                    profiler.stop(operationName);
+                    const cpuTime = cpuProfiler.stop();
 
-                MetricsCollector.setQueryDuration(
-                    operationName,
-                    origin,
-                    profiler.duration,
-                );
+                    if (requestContext.contextValue.storeResolve) {
+                        operationName += `-store_${requestContext.contextValue.storeResolve}`;
+                    }
 
-                MetricsCollector.setQueryCpu(operationName, origin, cpuTime);
+                    MetricsCollector.setQueryDuration(
+                        operationName,
+                        origin,
+                        profiler.duration,
+                    );
+
+                    MetricsCollector.setQueryCpu(
+                        operationName,
+                        origin,
+                        cpuTime,
+                    );
+                }
             },
         };
     }
