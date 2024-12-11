@@ -91,6 +91,53 @@ export function parseArguments(
     return args;
 }
 
+export function createModelFromFields(
+    data: any,
+    fields: QueryField[],
+    typeName: string,
+    typeMapping: Record<string, Record<string, string>>,
+): any {
+    const result: Record<string, any> = {};
+
+    for (const field of fields) {
+        if (field.name === '__typename') {
+            result[field.name] = typeName;
+            continue;
+        }
+
+        const fieldData = data?.[field.name];
+        const subfields = field.subfields || [];
+
+        if (subfields.length === 0) {
+            result[field.name] = fieldData ?? null;
+            continue;
+        }
+
+        if (Array.isArray(fieldData)) {
+            result[field.name] = fieldData.map((item) =>
+                createModelFromFields(
+                    item || {},
+                    subfields,
+                    typeMapping[typeName]?.[field.name] || 'UnknownType',
+                    typeMapping,
+                ),
+            );
+        } else {
+            result[field.name] =
+                fieldData !== undefined
+                    ? createModelFromFields(
+                          fieldData,
+                          subfields,
+                          typeMapping[typeName]?.[field.name] || 'UnknownType',
+                          typeMapping,
+                      )
+                    : null;
+        }
+    }
+
+    return result;
+}
+
 function resolveValueNode(
     valueNode: ValueNode,
     variables: Record<string, any>,

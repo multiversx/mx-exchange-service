@@ -25,6 +25,10 @@ export class GlobalStateSingleton {
     public tokensState: { [key: string]: EsdtToken } = {};
     public initStatus: GlobalStateInitStatus =
         GlobalStateInitStatus.NOT_STARTED;
+
+    public getPairsArray(): PairModel[] {
+        return Object.values(this.pairsState);
+    }
 }
 
 export const GlobalState = new GlobalStateSingleton();
