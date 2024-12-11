@@ -36,7 +36,6 @@ import { constantsConfig, gasConfig, scAddress } from 'src/config';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model';
-import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 
 describe('PositionCreatorTransaction', () => {
@@ -61,7 +60,6 @@ describe('PositionCreatorTransaction', () => {
                 PairService,
                 PairComputeServiceProvider,
                 PairTransactionService,
-                PairFilteringService,
                 WrapService,
                 WrapAbiServiceProvider,
                 WrapTransactionsService,
