@@ -18,6 +18,9 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { getAllKeys } from 'src/utils/get.many.utils';
+import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 
 @Injectable()
 export class StakingComputeService {
@@ -32,6 +35,7 @@ export class StakingComputeService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
         private readonly apiService: MXApiService,
+        private readonly cachingService: CacheService,
     ) {}
 
     async computeStakeRewardsForPosition(
@@ -244,6 +248,16 @@ export class StakingComputeService {
                   .toFixed();
     }
 
+    async getAllStakeFarmAPR(stakeAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.stakeFarmAPR',
+            this.stakeFarmAPR.bind(this),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -306,17 +320,7 @@ export class StakingComputeService {
             this.stakeFarmAPR(stakeAddress),
         ]);
 
-        const bnBoostedRewardsPercentage = new BigNumber(
-            boostedYieldsRewardsPercentage,
-        )
-            .dividedBy(constantsConfig.MAX_PERCENT)
-            .multipliedBy(100);
-
-        const boostedAPR = new BigNumber(apr).multipliedBy(
-            bnBoostedRewardsPercentage.dividedBy(100),
-        );
-
-        return boostedAPR.toFixed();
+        return this.calculateBoostedApr(apr, boostedYieldsRewardsPercentage);
     }
 
     @ErrorLoggerAsync({
@@ -334,14 +338,11 @@ export class StakingComputeService {
                 this.stakingAbi.boostedYieldsRewardsPercenatage(stakeAddress),
             ]);
 
-        const bnRawMaxBoostedApr = new BigNumber(baseAPR)
-            .multipliedBy(boostedYieldsFactors.maxRewardsFactor)
-            .multipliedBy(boostedYieldsRewardsPercentage)
-            .dividedBy(
-                constantsConfig.MAX_PERCENT - boostedYieldsRewardsPercentage,
-            );
-
-        return bnRawMaxBoostedApr.toFixed();
+        return this.calculateMaxBoostedApr(
+            baseAPR,
+            boostedYieldsFactors,
+            boostedYieldsRewardsPercentage,
+        );
     }
 
     async computeRewardsRemainingDays(stakeAddress: string): Promise<number> {
@@ -990,5 +991,75 @@ export class StakingComputeService {
         }
 
         return true;
+    }
+
+    async getAllBaseAndMaxBoostedAPRs(
+        stakeAddresses: string[],
+    ): Promise<{ baseAPR: string; maxBoostedAPR: string }[]> {
+        const allAPRs = await this.getAllStakeFarmAPR(stakeAddresses);
+        const allBoostedYieldsRewardsPercentage =
+            await this.stakingAbi.getAllBoostedYieldsRewardsPercenatage(
+                stakeAddresses,
+            );
+        const allBoostedYieldsFactors =
+            await this.stakingAbi.getAllBoostedYieldsFactors(stakeAddresses);
+
+        const allBoostedAPR = allAPRs.map((apr, index) =>
+            this.calculateBoostedApr(
+                apr,
+                allBoostedYieldsRewardsPercentage[index],
+            ),
+        );
+
+        const allBaseAPR = allAPRs.map((apr, index) =>
+            new BigNumber(apr).minus(allBoostedAPR[index]).toFixed(),
+        );
+
+        const allMaxBoostedAPR = allBaseAPR.map((baseAPR, index) =>
+            this.calculateMaxBoostedApr(
+                baseAPR,
+                allBoostedYieldsFactors[index],
+                allBoostedYieldsRewardsPercentage[index],
+            ),
+        );
+
+        return allBaseAPR.map((baseAPR, index) => {
+            return {
+                baseAPR: baseAPR,
+                maxBoostedAPR: allMaxBoostedAPR[index],
+            };
+        });
+    }
+
+    private calculateBoostedApr(
+        apr: string,
+        boostedYieldsRewardsPercentage: number,
+    ): string {
+        const bnBoostedRewardsPercentage = new BigNumber(
+            boostedYieldsRewardsPercentage,
+        )
+            .dividedBy(constantsConfig.MAX_PERCENT)
+            .multipliedBy(100);
+
+        const boostedAPR = new BigNumber(apr).multipliedBy(
+            bnBoostedRewardsPercentage.dividedBy(100),
+        );
+
+        return boostedAPR.toFixed();
+    }
+
+    private calculateMaxBoostedApr(
+        baseAPR: string,
+        boostedYieldsFactors: BoostedYieldsFactors,
+        boostedYieldsRewardsPercentage: number,
+    ): string {
+        const bnRawMaxBoostedApr = new BigNumber(baseAPR)
+            .multipliedBy(boostedYieldsFactors.maxRewardsFactor)
+            .multipliedBy(boostedYieldsRewardsPercentage)
+            .dividedBy(
+                constantsConfig.MAX_PERCENT - boostedYieldsRewardsPercentage,
+            );
+
+        return bnRawMaxBoostedApr.toFixed();
     }
 }
