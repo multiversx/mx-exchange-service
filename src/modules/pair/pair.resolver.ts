@@ -285,7 +285,7 @@ export class PairResolver {
 
     @ResolveField()
     async feesUSD24h(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.feesUSD(parent.address, '24h');
+        return this.pairComputeLoader.feesUSD24hLoader.load(parent.address);
     }
 
     @ResolveField()

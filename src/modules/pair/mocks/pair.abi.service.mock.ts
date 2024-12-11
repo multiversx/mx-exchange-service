@@ -11,8 +11,18 @@ export class PairAbiServiceMock implements IPairAbiService {
     async firstTokenID(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).firstToken.identifier;
     }
+    async getAllFirstTokenID(pairAddresses: string[]): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).firstToken.identifier,
+        );
+    }
     async secondTokenID(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).secondToken.identifier;
+    }
+    async getAllSecondTokenID(pairAddresses: string[]): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).secondToken.identifier,
+        );
     }
     async lpTokenID(pairAddress: string): Promise<string> {
         return PairsData(pairAddress)?.liquidityPoolToken.identifier;
