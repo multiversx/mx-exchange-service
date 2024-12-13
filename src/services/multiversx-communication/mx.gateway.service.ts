@@ -104,6 +104,10 @@ export class MXGatewayService {
                 name,
                 profiler.duration,
             );
+
+            this.logger.info(`${resourceUrl} took ${profiler.duration}ms`, {
+                context: MXGatewayService.name,
+            });
         }
     }
 
