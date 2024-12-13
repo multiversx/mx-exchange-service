@@ -51,14 +51,14 @@ export class AutoRouterComputeService {
 
         const addressRoute = this.getAddressRoute(pairs, paths[pathIndex]);
 
-        this.logger.info(`Swap Type ${swapType}`, {
-            paths,
-            amounts,
-            bestPath: paths[pathIndex],
-            intermediaryAmounts: amounts[pathIndex],
-            addressRoute,
-            bestAmount,
-        });
+        // this.logger.info(`Swap Type ${swapType}`, {
+        //     paths,
+        //     amounts,
+        //     bestPath: paths[pathIndex],
+        //     intermediaryAmounts: amounts[pathIndex],
+        //     addressRoute,
+        //     bestAmount,
+        // });
 
         return {
             tokenRoute: paths[pathIndex],
