@@ -86,6 +86,8 @@ export class PairComputeService implements IPairComputeService {
         ]);
 
         if (
+            firstToken === undefined ||
+            secondToken === undefined ||
             firstToken.decimals === undefined ||
             secondToken.decimals === undefined
         ) {
