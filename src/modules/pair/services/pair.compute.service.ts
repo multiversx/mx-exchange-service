@@ -85,6 +85,14 @@ export class PairComputeService implements IPairComputeService {
             this.pairService.getSecondToken(pairAddress),
         ]);
 
+        if (
+            firstToken.decimals === undefined ||
+            secondToken.decimals === undefined
+        ) {
+            console.log(`First Token: ${firstToken}`);
+            console.log(`Second Token: ${secondToken}`);
+        }
+
         const firstTokenPrice =
             await this.pairService.getEquivalentForLiquidity(
                 pairAddress,
