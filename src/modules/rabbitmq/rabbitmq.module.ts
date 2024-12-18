@@ -40,6 +40,7 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingHandlerService } from './handlers/staking.handler.service';
 import { StakingModule } from '../staking/staking.module';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
     imports: [
@@ -66,6 +67,8 @@ import { StakingModule } from '../staking/staking.module';
         GovernanceModule,
         EscrowModule,
         RemoteConfigModule,
+        DynamicModuleUtils.getCommonRedisModule(),
+        DynamicModuleUtils.getRedlockModule(),
     ],
     providers: [
         RabbitMqConsumer,

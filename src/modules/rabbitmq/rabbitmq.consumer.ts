@@ -66,6 +66,10 @@ import { governanceContractsAddresses } from '../../utils/governance';
 import { GovernanceHandlerService } from './handlers/governance.handler.service';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { StakingHandlerService } from './handlers/staking.handler.service';
+import {
+    RedisCacheService,
+    RedlockService,
+} from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -91,6 +95,8 @@ export class RabbitMqConsumer {
         private readonly analyticsWrite: AnalyticsWriteService,
         private readonly governanceHandler: GovernanceHandlerService,
         private readonly remoteConfig: RemoteConfigGetterService,
+        private readonly redisService: RedisCacheService,
+        private readonly redlockService: RedlockService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -332,12 +338,62 @@ export class RabbitMqConsumer {
         }
 
         if (Object.keys(this.data).length > 0) {
-            await this.analyticsWrite.ingest({
-                data: this.data,
-                Time: timestamp,
-            });
+            await this.ingestData(this.data, timestamp);
         }
         this.logger.info('Finish Processing events...');
+    }
+
+    async ingestData(data: any, timestamp: number): Promise<void> {
+        const lastProcessedTimestamp = await this.redisService.get<number>(
+            'eventsIngester.lastProcessedTimestamp',
+        );
+
+        if (!lastProcessedTimestamp) {
+            await this.redlockService.using(
+                `eventsIngester`,
+                `eventsIngesterTimestamp:${timestamp}`,
+                async () => {
+                    await this.analyticsWrite.ingest({
+                        data: data,
+                        Time: timestamp,
+                    });
+                },
+                {
+                    keyExpiration: 120 * 1000,
+                    maxRetries: 10,
+                    retryInterval: 5000,
+                },
+            );
+            return;
+        }
+
+        if (lastProcessedTimestamp > timestamp) {
+            this.logger.info(
+                `Last processed timestamp (${lastProcessedTimestamp}) is newer than current timestamp (${timestamp})`,
+            );
+            return;
+        }
+
+        await this.redlockService.using(
+            `eventsIngester`,
+            `eventsIngesterTimestamp:${timestamp}`,
+            async () => {
+                await this.analyticsWrite.ingest({
+                    data: data,
+                    Time: timestamp,
+                });
+
+                await this.redisService.set(
+                    'eventsIngester.lastProcessedTimestamp',
+                    timestamp,
+                );
+            },
+            {
+                keyExpiration: 120 * 1000,
+                maxRetries: 10,
+                retryInterval: 5000,
+            },
+        );
     }
 
     async getFilterAddresses(): Promise<void> {
