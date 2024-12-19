@@ -90,7 +90,7 @@ export class PairComputeServiceMock implements IPairComputeService {
     async getAllVolumeUSD(pairAddresses: string[]): Promise<string[]> {
         return pairAddresses.map((address) => PairsData(address).volumeUSD);
     }
-    feesUSD(pairAddress: string, time: string): Promise<string> {
+    feesUSD(pairAddress: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
     async feesAPR(pairAddress: string): Promise<string> {

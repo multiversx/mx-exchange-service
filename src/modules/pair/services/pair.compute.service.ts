@@ -775,16 +775,8 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeHasFarms(pairAddress: string): Promise<boolean> {
-        const addresses: string[] = farmsAddresses([FarmVersion.V2]).filter(
-            (address) => farmType(address) !== FarmRewardType.DEPRECATED,
-        );
-        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
-
-        const farmingTokenIDs = await this.farmAbi.getAllFarmingTokenIds(
-            addresses,
-        );
-
-        return farmingTokenIDs.includes(lpTokenID);
+        const farmAddress = await this.getPairFarmAddress(pairAddress);
+        return farmAddress !== undefined;
     }
 
     @ErrorLoggerAsync({
@@ -800,16 +792,10 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeHasDualFarms(pairAddress: string): Promise<boolean> {
-        const stakingProxyAddresses =
-            await this.remoteConfigGetterService.getStakingProxyAddresses();
-
-        const pairAddresses = await Promise.all(
-            stakingProxyAddresses.map((address) =>
-                this.stakingProxyAbiService.pairAddress(address),
-            ),
+        const stakingProxyAddress = await this.getPairStakingProxyAddress(
+            pairAddress,
         );
-
-        return pairAddresses.includes(pairAddress);
+        return stakingProxyAddress !== undefined;
     }
 
     @ErrorLoggerAsync({
@@ -883,31 +869,8 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async getPairFarmAddress(pairAddress: string): Promise<string> {
-        const hasFarms = await this.hasFarms(pairAddress);
-
-        if (!hasFarms) {
-            return undefined;
-        }
-
-        const addresses: string[] = farmsAddresses([FarmVersion.V2]).filter(
-            (address) => farmType(address) !== FarmRewardType.DEPRECATED,
-        );
-
-        const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
-
-        const farmingTokenIDs = await this.farmAbi.getAllFarmingTokenIds(
-            addresses,
-        );
-
-        const farmAddressIndex = farmingTokenIDs.findIndex(
-            (tokenID) => tokenID === lpTokenID,
-        );
-
-        if (farmAddressIndex === -1) {
-            return undefined;
-        }
-
-        return addresses[farmAddressIndex];
+        const farmAddresses = await this.getAllPairsFarmAddress([pairAddress]);
+        return farmAddresses[0];
     }
 
     async getAllPairsFarmAddress(pairAddresses: string[]): Promise<string[]> {
@@ -926,11 +889,9 @@ export class PairComputeService implements IPairComputeService {
                 (tokenID) => tokenID === lpTokenID,
             );
 
-            if (farmAddressIndex === -1) {
-                return undefined;
-            }
-
-            return farmAddresses[farmAddressIndex];
+            return farmAddressIndex === -1
+                ? undefined
+                : farmAddresses[farmAddressIndex];
         });
     }
 
@@ -959,29 +920,9 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async getPairStakingProxyAddress(pairAddress: string): Promise<string> {
-        const hasDualFarms = await this.hasDualFarms(pairAddress);
-
-        if (!hasDualFarms) {
-            return undefined;
-        }
-
-        const stakingProxyAddresses =
-            await this.remoteConfigGetterService.getStakingProxyAddresses();
-        const farmAddress = await this.getPairFarmAddress(pairAddress);
-
-        const farmsAddresses = await Promise.all(
-            stakingProxyAddresses.map((address) =>
-                this.stakingProxyAbiService.lpFarmAddress(address),
-            ),
-        );
-
-        const stakingProxyIndex = farmsAddresses.findIndex(
-            (address) => address === farmAddress,
-        );
-
-        return stakingProxyIndex === -1
-            ? undefined
-            : stakingProxyAddresses[stakingProxyIndex];
+        const pairsStakingProxyAddresses =
+            await this.getAllPairsStakingProxyAddress([pairAddress]);
+        return pairsStakingProxyAddresses[0];
     }
 
     async getAllPairsStakingProxyAddress(
