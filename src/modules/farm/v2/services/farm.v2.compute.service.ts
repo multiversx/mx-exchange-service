@@ -21,6 +21,7 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { IFarmComputeServiceV2 } from './interfaces';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class FarmComputeServiceV2
@@ -96,6 +97,16 @@ export class FarmComputeServiceV2
         )
             .div(farmTokenSupplyUSD)
             .toFixed();
+    }
+
+    async getAllBaseAPR(farmAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            farmAddresses,
+            'farm.farmBaseAPR',
+            this.farmBaseAPR.bind(this),
+            CacheTtlInfo.ContractState,
+        );
     }
 
     async computeMintedRewards(farmAddress: string): Promise<BigNumber> {
@@ -619,5 +630,15 @@ export class FarmComputeServiceV2
             );
 
         return bnRawMaxBoostedApr.toFixed();
+    }
+
+    async getAllMaxBoostedAPR(farmAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            farmAddresses,
+            'farm.maxBoostedApr',
+            this.maxBoostedApr.bind(this),
+            CacheTtlInfo.ContractState,
+        );
     }
 }

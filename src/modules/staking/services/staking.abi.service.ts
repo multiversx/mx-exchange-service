@@ -539,6 +539,18 @@ export class StakingAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
+    async getAllBoostedYieldsRewardsPercenatage(
+        stakeAddresses: string[],
+    ): Promise<number[]> {
+        return await getAllKeys<number>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.boostedYieldsRewardsPercenatage',
+            this.boostedYieldsRewardsPercenatage.bind(this),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -574,6 +586,18 @@ export class StakingAbiService
                 rawBoostedYieldsFactors.min_energy_amount.toFixed(),
             minFarmAmount: rawBoostedYieldsFactors.min_farm_amount.toFixed(),
         });
+    }
+
+    async getAllBoostedYieldsFactors(
+        stakeAddresses: string[],
+    ): Promise<BoostedYieldsFactors[]> {
+        return await getAllKeys<BoostedYieldsFactors>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.boostedYieldsFactors',
+            this.boostedYieldsFactors.bind(this),
+            CacheTtlInfo.ContractState,
+        );
     }
 
     @ErrorLoggerAsync({

@@ -140,11 +140,7 @@ export class PairCacheWarmerService {
                     time,
                 ),
                 this.pairSetterService.setVolumeUSD(pairAddress, volumeUSD24h),
-                this.pairSetterService.setFeesUSD(
-                    pairAddress,
-                    feesUSD24h,
-                    time,
-                ),
+                this.pairSetterService.setFeesUSD(pairAddress, feesUSD24h),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }

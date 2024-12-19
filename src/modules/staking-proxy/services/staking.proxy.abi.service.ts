@@ -43,6 +43,18 @@ export class StakingProxyAbiService
         return response.firstValue.valueOf().toString();
     }
 
+    async getAllLpFarmAddresses(
+        stakingProxyAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakingProxyAddresses,
+            'stakeProxy.lpFarmAddress',
+            this.lpFarmAddress.bind(this),
+            new CacheTtlInfo(Constants.oneHour(), Constants.oneMinute() * 45),
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -66,6 +78,18 @@ export class StakingProxyAbiService
         return response.firstValue.valueOf().toString();
     }
 
+    async getAllStakingFarmAddresses(
+        stakingProxyAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakingProxyAddresses,
+            'stakeProxy.stakingFarmAddress',
+            this.stakingFarmAddress.bind(this),
+            new CacheTtlInfo(Constants.oneHour(), Constants.oneMinute() * 45),
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -87,6 +111,18 @@ export class StakingProxyAbiService
         return response.firstValue.valueOf().toString();
     }
 
+    async getAllPairAddresses(
+        stakingProxyAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakingProxyAddresses,
+            'stakeProxy.pairAddress',
+            this.pairAddress.bind(this),
+            new CacheTtlInfo(Constants.oneHour(), Constants.oneMinute() * 45),
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -106,6 +142,18 @@ export class StakingProxyAbiService
             contract.methodsExplicit.getStakingTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getAllStakingTokenIDs(
+        stakingProxyAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakingProxyAddresses,
+            'stakeProxy.stakingTokenID',
+            this.stakingTokenID.bind(this),
+            new CacheTtlInfo(Constants.oneHour(), Constants.oneMinute() * 45),
+        );
     }
 
     @ErrorLoggerAsync({

@@ -43,13 +43,7 @@ export class PairService {
     }
 
     async getAllFirstTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
-        const tokenIDs = await getAllKeys<string>(
-            this.cachingService,
-            pairAddresses,
-            'pair.firstTokenID',
-            this.pairAbi.firstTokenID.bind(this.pairAbi),
-            CacheTtlInfo.Token,
-        );
+        const tokenIDs = await this.pairAbi.getAllFirstTokenID(pairAddresses);
 
         return this.tokenService.getAllTokensMetadata(tokenIDs);
     }
@@ -60,13 +54,7 @@ export class PairService {
     }
 
     async getAllSecondTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
-        const tokenIDs = await getAllKeys<string>(
-            this.cachingService,
-            pairAddresses,
-            'pair.secondTokenID',
-            this.pairAbi.secondTokenID.bind(this.pairAbi),
-            CacheTtlInfo.Token,
-        );
+        const tokenIDs = await this.pairAbi.getAllSecondTokenID(pairAddresses);
 
         return this.tokenService.getAllTokensMetadata(tokenIDs);
     }

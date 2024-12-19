@@ -287,10 +287,8 @@ export class RouterService {
                 );
                 break;
             case PairSortableFields.FEES_24:
-                sortFieldData = await Promise.all(
-                    pairsMetadata.map((pair) =>
-                        this.pairCompute.feesUSD(pair.address, '24h'),
-                    ),
+                sortFieldData = await this.pairCompute.getAllFeesUSD(
+                    pairsMetadata.map((pair) => pair.address),
                 );
                 break;
             case PairSortableFields.TRADES_COUNT:

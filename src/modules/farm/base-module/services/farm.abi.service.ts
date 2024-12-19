@@ -100,6 +100,16 @@ export class FarmAbiService
         return response.firstValue.valueOf().toString();
     }
 
+    async getAllFarmingTokenIds(farmAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cacheService,
+            farmAddresses,
+            'farm.farmingTokenID',
+            this.farmingTokenID.bind(this),
+            CacheTtlInfo.Token,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })

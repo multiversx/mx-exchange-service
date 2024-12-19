@@ -63,13 +63,10 @@ export abstract class FarmServiceBase {
     }
 
     async getAllFarmingTokens(farmAddresses: string[]): Promise<EsdtToken[]> {
-        const farmingTokenIDs = await getAllKeys<string>(
-            this.cachingService,
+        const farmingTokenIDs = await this.farmAbi.getAllFarmingTokenIds(
             farmAddresses,
-            'farm.farmingTokenID',
-            this.farmAbi.farmingTokenID.bind(this.farmAbi),
-            CacheTtlInfo.Token,
         );
+
         return this.tokenService.getAllTokensMetadata(farmingTokenIDs);
     }
 
