@@ -76,6 +76,7 @@ import { EnergyModule } from 'src/modules/energy/energy.module';
         FeesCollectorModule,
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
+        EnergyModule,
     ],
     controllers: [],
     providers: [
@@ -96,6 +97,7 @@ import { EnergyModule } from 'src/modules/energy/energy.module';
         TokensCacheWarmerService,
         EscrowCacheWarmerService,
         FeesCollectorCacheWarmerService,
+        MemoryStoreMaintainerService,
     ],
 })
 export class CacheWarmerModule {}
