@@ -1,5 +1,6 @@
 import {
     CacheModule,
+    RedisCacheModule,
     RedisCacheModuleOptions,
 } from '@multiversx/sdk-nestjs-cache';
 import {
@@ -23,12 +24,27 @@ export class DynamicModuleUtils {
                         host: configService.getRedisUrl(),
                         port: configService.getRedisPort(),
                         password: configService.getRedisPassword(),
+                        enableAutoPipelining: true,
                     }),
             },
             {
                 maxItems: mxConfig.localCacheMaxItems,
             },
         );
+    }
+
+    static getRedisCacheModule(): DynamicModule {
+        return RedisCacheModule.forRootAsync({
+            imports: [CommonAppModule],
+            inject: [ApiConfigService],
+            useFactory: (configService: ApiConfigService) =>
+                new RedisCacheModuleOptions({
+                    host: configService.getRedisUrl(),
+                    port: configService.getRedisPort(),
+                    password: configService.getRedisPassword(),
+                    enableAutoPipelining: true,
+                }),
+        });
     }
 
     static getElasticModule(): DynamicModule {
