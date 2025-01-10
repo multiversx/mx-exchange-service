@@ -8,7 +8,6 @@ import { Address } from '@multiversx/sdk-core/out';
 import { decimalToHex } from '../../../utils/token.converters';
 import { toVoteType } from '../../../utils/governance';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
-import { RawElasticEventType } from 'src/services/elastic-search/entities/raw.elastic.event';
 
 @Injectable()
 export class GovernanceComputeService {
@@ -31,10 +30,10 @@ export class GovernanceComputeService {
             return cachedVoteType.vote;
         }
 
-        const voteEvents = await this.getVoteEvents(
+        const voteEvents = await this.elasticEventsService.getGovernanceVotes(
             scAddress,
-            userAddress,
-            proposalId,
+            Address.fromString(userAddress).hex(),
+            decimalToHex(proposalId),
         );
 
         let voteType = VoteType.NotVoted;
@@ -71,17 +70,5 @@ export class GovernanceComputeService {
         userAddress: string,
     ): Promise<{ proposalId: number; vote: VoteType }[]> {
         return [];
-    }
-
-    private async getVoteEvents(
-        scAddress: string,
-        callerAddress: string,
-        proposalId: number,
-    ): Promise<RawElasticEventType[]> {
-        return await this.elasticEventsService.getGovernanceVotes(
-            scAddress,
-            Address.fromString(callerAddress).hex(),
-            decimalToHex(proposalId),
-        );
     }
 }
