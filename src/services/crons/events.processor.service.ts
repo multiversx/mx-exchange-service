@@ -220,24 +220,24 @@ export class EventsProcessorService {
         for (const txHash of txHashes) {
             const events = transactionEvents.get(txHash);
 
-            let hasSwapEvents = false;
-            let timestamp: number;
-            const burnEvents: EsdtLocalBurnEvent[] = [];
+            const hasSwapEvents = events.findIndex(
+                (event) =>
+                    event.identifier === SWAP_IDENTIFIER.SWAP_FIXED_INPUT ||
+                    event.identifier === SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+            );
 
-            events.forEach((event) => {
-                if (event.identifier === TRANSACTION_EVENTS.ESDT_LOCAL_BURN) {
-                    burnEvents.push(new EsdtLocalBurnEvent(event));
-                } else {
-                    hasSwapEvents = true;
-                    timestamp = event.timestamp;
-                }
-            });
-
-            if (!hasSwapEvents || burnEvents.length === 0) {
+            if (hasSwapEvents === -1) {
                 continue;
             }
 
-            this.processSwapLocalBurnEvents(burnEvents, timestamp);
+            const burnEvents = events
+                .filter(
+                    (event) =>
+                        event.identifier === TRANSACTION_EVENTS.ESDT_LOCAL_BURN,
+                )
+                .map((event) => new EsdtLocalBurnEvent(event));
+
+            this.processSwapLocalBurnEvents(burnEvents, events[0].timestamp);
         }
     }
 
