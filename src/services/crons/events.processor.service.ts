@@ -251,7 +251,6 @@ export class EventsProcessorService {
             const burnEvents: EsdtLocalBurnEvent[] = [];
             let exitFarmEvent: BaseFarmEvent | ExitFarmEventV2 | undefined =
                 undefined;
-            let timestamp: number;
 
             events.forEach((event) => {
                 switch (event.identifier) {
@@ -274,7 +273,6 @@ export class EventsProcessorService {
                                 exitFarmEvent = new ExitFarmEventV2(event);
                                 break;
                         }
-                        timestamp = event.timestamp;
                         break;
                     case TRANSACTION_EVENTS.ESDT_LOCAL_BURN:
                         burnEvents.push(new EsdtLocalBurnEvent(event));
@@ -288,7 +286,11 @@ export class EventsProcessorService {
                 continue;
             }
 
-            this.processExitFarmEvents(exitFarmEvent, burnEvents, timestamp);
+            this.processExitFarmEvents(
+                exitFarmEvent,
+                burnEvents,
+                events[0].timestamp,
+            );
         }
     }
 
@@ -419,24 +421,14 @@ export class EventsProcessorService {
 
         let penalty = new BigNumber(0);
 
-        for (const localBurn of esdtLocalBurnEvents) {
-            const burnedTokenID = localBurn.getTopics().tokenID;
-            const burnedAmount = localBurn.getTopics().amount;
-
-            // Skip LP tokens burn
-            if (burnedTokenID !== constantsConfig.MEX_TOKEN_ID) {
-                continue;
-            }
-
-            if (
-                burnedAmount === exitFarmEvent.farmingToken.amount &&
-                burnedTokenID === exitFarmEvent.farmingToken.tokenIdentifier
-            ) {
-                continue;
-            }
-
-            penalty = penalty.plus(burnedAmount);
-        }
+        esdtLocalBurnEvents
+            .filter(
+                (event) =>
+                    event.getTopics().tokenID === constantsConfig.MEX_TOKEN_ID,
+            )
+            .forEach((event) => {
+                penalty = penalty.plus(event.getTopics().amount);
+            });
 
         return penalty.toFixed();
     }
