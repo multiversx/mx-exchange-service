@@ -209,17 +209,9 @@ export class StakingComputeService {
     }
 
     async computeStakeFarmAPR(stakeAddress: string): Promise<string> {
-        const [accumulatedRewards, rewardsCapacity, produceRewardsEnabled] =
-            await Promise.all([
-                this.stakingAbi.accumulatedRewards(stakeAddress),
-                this.stakingAbi.rewardCapacity(stakeAddress),
-                this.stakingAbi.produceRewardsEnabled(stakeAddress),
-            ]);
+        const isProducingRewards = await this.isProducingRewards(stakeAddress);
 
-        if (
-            !produceRewardsEnabled ||
-            new BigNumber(accumulatedRewards).isEqualTo(rewardsCapacity)
-        ) {
+        if (!isProducingRewards) {
             return '0';
         }
 
@@ -250,6 +242,37 @@ export class StakingComputeService {
             : new BigNumber(annualPercentageRewards)
                   .dividedBy(constantsConfig.MAX_PERCENT)
                   .toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async stakeFarmUncappedAPR(stakeAddress: string): Promise<string> {
+        return await this.computeStakeFarmUncappedAPR(stakeAddress);
+    }
+
+    async computeStakeFarmUncappedAPR(stakeAddress: string): Promise<string> {
+        const isProducingRewards = await this.isProducingRewards(stakeAddress);
+
+        if (!isProducingRewards) {
+            return '0';
+        }
+
+        const [perBlockRewardAmount, farmTokenSupply] = await Promise.all([
+            this.stakingAbi.perBlockRewardsAmount(stakeAddress),
+            this.stakingAbi.farmTokenSupply(stakeAddress),
+        ]);
+
+        const rewardsUnboundedBig = new BigNumber(
+            perBlockRewardAmount,
+        ).multipliedBy(constantsConfig.BLOCKS_IN_YEAR);
+
+        return rewardsUnboundedBig.dividedBy(farmTokenSupply).toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -322,6 +345,25 @@ export class StakingComputeService {
     }
 
     async computeRewardsRemainingDays(stakeAddress: string): Promise<number> {
+        const extraRewardsAPRBoundedPerBlock =
+            await this.computeExtraRewardsAPRBoundedPerBlock(stakeAddress);
+
+        return await this.computeRewardsRemainingDaysBase(
+            stakeAddress,
+            extraRewardsAPRBoundedPerBlock,
+        );
+    }
+
+    async computeRewardsRemainingDaysUncapped(
+        stakeAddress: string,
+    ): Promise<number> {
+        return await this.computeRewardsRemainingDaysBase(stakeAddress);
+    }
+
+    async computeRewardsRemainingDaysBase(
+        stakeAddress: string,
+        extraRewardsAPRBoundedPerBlock?: BigNumber,
+    ): Promise<number> {
         const [perBlockRewardAmount, accumulatedRewards, rewardsCapacity] =
             await Promise.all([
                 this.stakingAbi.perBlockRewardsAmount(stakeAddress),
@@ -329,16 +371,15 @@ export class StakingComputeService {
                 this.stakingAbi.rewardCapacity(stakeAddress),
             ]);
 
+        const perBlockRewards = extraRewardsAPRBoundedPerBlock
+            ? BigNumber.min(
+                  extraRewardsAPRBoundedPerBlock,
+                  perBlockRewardAmount,
+              )
+            : new BigNumber(perBlockRewardAmount);
+
         // 10 blocks per minute * 60 minutes per hour * 24 hours per day
         const blocksInDay = 10 * 60 * 24;
-
-        const extraRewardsAPRBoundedPerBlock =
-            await this.computeExtraRewardsAPRBoundedPerBlock(stakeAddress);
-
-        const perBlockRewards = BigNumber.min(
-            extraRewardsAPRBoundedPerBlock,
-            perBlockRewardAmount,
-        );
 
         return parseFloat(
             new BigNumber(rewardsCapacity)
@@ -919,5 +960,35 @@ export class StakingComputeService {
             stakeAddress,
         );
         return deployedAt ?? undefined;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'stake',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async isProducingRewards(stakeAddress: string): Promise<boolean> {
+        return await this.computeIsProducingRewards(stakeAddress);
+    }
+
+    async computeIsProducingRewards(stakeAddress: string): Promise<boolean> {
+        const [accumulatedRewards, rewardsCapacity, produceRewardsEnabled] =
+            await Promise.all([
+                this.stakingAbi.accumulatedRewards(stakeAddress),
+                this.stakingAbi.rewardCapacity(stakeAddress),
+                this.stakingAbi.produceRewardsEnabled(stakeAddress),
+            ]);
+
+        if (
+            !produceRewardsEnabled ||
+            new BigNumber(accumulatedRewards).isEqualTo(rewardsCapacity)
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }

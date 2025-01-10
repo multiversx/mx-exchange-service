@@ -250,6 +250,9 @@ export class FarmComputeServiceV2
                 ? await this.farmAbi.farmTokenSupply(scAddress)
                 : await this.farmAbi.farmSupplyForWeek(scAddress, week);
 
+        userEnergyForWeek.amount = new BigNumber(userEnergyForWeek.amount)
+            .plus(additionalUserEnergyAmount)
+            .toFixed();
         totalEnergyForWeek = new BigNumber(totalEnergyForWeek)
             .plus(additionalUserEnergyAmount)
             .toFixed();

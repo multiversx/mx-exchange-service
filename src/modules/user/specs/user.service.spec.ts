@@ -66,6 +66,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
 
 describe('UserService', () => {
     let module: TestingModule;
@@ -98,6 +99,10 @@ describe('UserService', () => {
                 FarmAbiServiceProviderV1_3,
                 {
                     provide: FarmAbiServiceV2,
+                    useClass: FarmAbiServiceMock,
+                },
+                {
+                    provide: FarmAbiService,
                     useClass: FarmAbiServiceMock,
                 },
                 FarmAbiFactory,

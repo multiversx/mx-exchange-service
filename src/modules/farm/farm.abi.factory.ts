@@ -25,6 +25,8 @@ export class FarmAbiFactory {
                 return this.abiServiceV1_3;
             case FarmVersion.V2:
                 return this.abiServiceV2;
+            default:
+                return this.abiServiceV1_2;
         }
     }
 

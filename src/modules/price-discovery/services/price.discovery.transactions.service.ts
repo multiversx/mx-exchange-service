@@ -1,4 +1,4 @@
-import { Address, Interaction, TokenTransfer } from '@multiversx/sdk-core';
+import { Token, TokenTransfer } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
@@ -8,6 +8,7 @@ import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.tran
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class PriceDiscoveryTransactionService {
@@ -34,6 +35,7 @@ export class PriceDiscoveryTransactionService {
             );
             transactions.push(
                 await this.deposit(
+                    sender,
                     priceDiscoveryAddress,
                     new InputTokenModel({
                         tokenID: wrappedTokenID,
@@ -43,7 +45,7 @@ export class PriceDiscoveryTransactionService {
             );
         } else {
             transactions.push(
-                await this.deposit(priceDiscoveryAddress, inputToken),
+                await this.deposit(sender, priceDiscoveryAddress, inputToken),
             );
         }
 
@@ -51,6 +53,7 @@ export class PriceDiscoveryTransactionService {
     }
 
     async deposit(
+        sender: string,
         priceDiscoveryAddress: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
@@ -59,22 +62,22 @@ export class PriceDiscoveryTransactionService {
             inputToken,
         );
 
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        return await this.mxProxy.getPriceDiscoverySmartContractTransaction(
             priceDiscoveryAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.priceDiscovery.deposit,
+                function: 'deposit',
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: inputToken.tokenID,
+                        }),
+                        amount: BigInt(inputToken.amount),
+                    }),
+                ],
+            }),
         );
-
-        return contract.methodsExplicit
-            .deposit()
-            .withSingleESDTTransfer(
-                TokenTransfer.fungibleFromBigInteger(
-                    inputToken.tokenID,
-                    new BigNumber(inputToken.amount),
-                ),
-            )
-            .withGasLimit(gasConfig.priceDiscovery.deposit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async genericBatchRedeemInteraction(
@@ -127,33 +130,23 @@ export class PriceDiscoveryTransactionService {
     ): Promise<TransactionModel> {
         await this.validateRedeemInputTokens(priceDiscoveryAddress, inputToken);
 
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        return await this.mxProxy.getPriceDiscoverySmartContractTransaction(
             priceDiscoveryAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.priceDiscovery.withdraw,
+                function: endpointName,
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: inputToken.tokenID,
+                            nonce: BigInt(inputToken.nonce),
+                        }),
+                        amount: BigInt(inputToken.amount),
+                    }),
+                ],
+            }),
         );
-
-        let interaction: Interaction;
-        switch (endpointName) {
-            case 'redeem':
-                interaction = contract.methodsExplicit.redeem();
-                break;
-            case 'withdraw':
-                interaction = contract.methodsExplicit.withdraw();
-                break;
-        }
-
-        return interaction
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    inputToken.tokenID,
-                    inputToken.nonce,
-                    new BigNumber(inputToken.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.priceDiscovery.withdraw)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     private async validateDepositInputTokens(

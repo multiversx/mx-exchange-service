@@ -3,8 +3,10 @@ import {
     AddressValue,
     BigUIntValue,
     BytesValue,
+    Token,
     TokenTransfer,
     TypedValue,
+    VariadicValue,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -19,6 +21,7 @@ import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { decimalToHex } from 'src/utils/token.converters';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class AutoRouterTransactionService {
@@ -33,7 +36,6 @@ export class AutoRouterTransactionService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const contract = await this.mxProxy.getRouterSmartContract();
 
         const amountIn = new BigNumber(args.intermediaryAmounts[0]).plus(
             new BigNumber(args.intermediaryAmounts[0]).multipliedBy(
@@ -44,6 +46,7 @@ export class AutoRouterTransactionService {
         if (args.tokenInID === mxConfig.EGLDIdentifier) {
             return [
                 await this.wrapEgldAndMultiSwapTransaction(
+                    sender,
                     amountIn.integerValue().toFixed(),
                     args,
                 ),
@@ -53,6 +56,7 @@ export class AutoRouterTransactionService {
         if (args.tokenOutID === mxConfig.EGLDIdentifier) {
             return [
                 await this.multiSwapAndUnwrapEgldTransaction(
+                    sender,
                     amountIn.integerValue().toFixed(),
                     args,
                 ),
@@ -62,25 +66,39 @@ export class AutoRouterTransactionService {
         const gasLimit =
             args.addressRoute.length * gasConfig.router.multiPairSwapMultiplier;
 
-        const transactionArgs =
-            args.swapType == SWAP_TYPE.fixedInput
-                ? this.multiPairFixedInputSwaps(args)
-                : this.multiPairFixedOutputSwaps(args);
+        const transactionOptions = new TransactionOptions({
+            sender: sender,
+            chainID: mxConfig.chainID,
+            gasLimit: gasLimit,
+            function: 'multiPairSwap',
+            arguments:
+                args.swapType == SWAP_TYPE.fixedInput
+                    ? [
+                          VariadicValue.fromItems(
+                              ...this.multiPairFixedInputSwaps(args),
+                          ),
+                      ]
+                    : [
+                          VariadicValue.fromItems(
+                              ...this.multiPairFixedOutputSwaps(args),
+                          ),
+                      ],
+            tokenTransfers: [
+                new TokenTransfer({
+                    token: new Token({
+                        identifier: args.tokenRoute[0],
+                    }),
+                    amount: BigInt(amountIn.integerValue().toFixed()),
+                }),
+            ],
+        });
 
-        transactions.push(
-            contract.methodsExplicit
-                .multiPairSwap(transactionArgs)
-                .withSingleESDTTransfer(
-                    TokenTransfer.fungibleFromBigInteger(
-                        args.tokenRoute[0],
-                        amountIn.integerValue(),
-                    ),
-                )
-                .withGasLimit(gasLimit)
-                .withChainID(mxConfig.chainID)
-                .buildTransaction()
-                .toPlainObject(),
-        );
+        const transaction =
+            await this.mxProxy.getRouterSmartContractTransaction(
+                transactionOptions,
+            );
+        transactions.push(transaction);
+
         if (args.tokenOutID === mxConfig.EGLDIdentifier) {
             transactions.push(
                 await this.transactionsWrapService.unwrapEgld(
@@ -209,6 +227,7 @@ export class AutoRouterTransactionService {
     }
 
     async wrapEgldAndMultiSwapTransaction(
+        sender: string,
         value: string,
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel> {
@@ -219,6 +238,7 @@ export class AutoRouterTransactionService {
         const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
 
         return this.composeTasksTransactionService.getComposeTasksTransaction(
+            sender,
             new EsdtTokenPayment({
                 tokenIdentifier: 'EGLD',
                 tokenNonce: 0,
@@ -245,6 +265,7 @@ export class AutoRouterTransactionService {
     }
 
     async multiSwapAndUnwrapEgldTransaction(
+        sender: string,
         value: string,
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel> {
@@ -255,6 +276,7 @@ export class AutoRouterTransactionService {
         const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
 
         return this.composeTasksTransactionService.getComposeTasksTransaction(
+            sender,
             new EsdtTokenPayment({
                 tokenIdentifier: args.tokenRoute[0],
                 tokenNonce: 0,

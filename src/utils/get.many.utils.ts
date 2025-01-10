@@ -11,7 +11,7 @@ async function getMany<T>(
 
     const missingIndexes: number[] = [];
     values.forEach((value, index) => {
-        if (!value) {
+        if (value === undefined) {
             missingIndexes.push(index);
         }
     });
@@ -38,10 +38,7 @@ async function getMany<T>(
     }
 
     for (const [index, missingIndex] of missingIndexes.entries()) {
-        const remoteValue = remoteValues[index];
-        values[missingIndex] = remoteValue
-            ? parseCachedNullOrUndefined(remoteValue)
-            : undefined;
+        values[missingIndex] = remoteValues[index];
     }
 
     return values;
@@ -63,8 +60,10 @@ export async function getAllKeys<T>(
 
     const missingIndexes: number[] = [];
     values.forEach((value, index) => {
-        if (!value) {
+        if (value === undefined || value === null) {
             missingIndexes.push(index);
+        } else {
+            values[index] = parseCachedNullOrUndefined(value);
         }
     });
 
@@ -72,5 +71,6 @@ export async function getAllKeys<T>(
         const tokenID = await getterMethod(rawKeys[missingIndex]);
         values[missingIndex] = tokenID;
     }
+
     return values;
 }

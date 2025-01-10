@@ -87,7 +87,7 @@
         },
         "v2": {
             "lockedRewards": [
-                "erd1qqqqqqqqqqqqqpgqapxdp9gjxtg60mjwhle3n6h88zch9e7kkp2s8aqhkg",
+                "erd1qqqqqqqqqqqqqpgqtdc0rzjwmp9qs0h0wj9pjwxnp5vjc9hdkp2swd4dxz",
                 "erd1qqqqqqqqqqqqqpgqv0pz5z3fkz54nml6pkzzdruuf020gqzykp2sya7kkv",
                 "erd1qqqqqqqqqqqqqpgqenvn0s3ldc94q2mlkaqx4arj3zfnvnmakp2sxca2h9",
                 "erd1qqqqqqqqqqqqqpgqrdq6zvepdxg36rey8pmluwur43q4hcx3kp2su4yltq",
@@ -105,7 +105,13 @@
                 "erd1qqqqqqqqqqqqqpgqjgtun0fhl2em5ayukvahm3myltaxc5tz2jpssz8axf",
                 "erd1qqqqqqqqqqqqqpgq4se997u3eyhjmpwaa57lvdgvmyn23yqpx9rsdzja7j",
                 "erd1qqqqqqqqqqqqqpgqhh8lke0kfch0g20jrmskczwq86d23qhex9rs5hm4uk",
-                "erd1qqqqqqqqqqqqqpgqgjqu7c0mq8a4jd4d43st44gvwhduvqaxkp2s7vsq64"
+                "erd1qqqqqqqqqqqqqpgqgjqu7c0mq8a4jd4d43st44gvwhduvqaxkp2s7vsq64",
+                "erd1qqqqqqqqqqqqqpgqzfy62c66hjuu9lm2c9mr4gcver9lmnydkp2st70eq5",
+                "erd1qqqqqqqqqqqqqpgqgg42sl557vh7rwt600w76pe48u64qngmkp2sl8mrfx",
+                "erd1qqqqqqqqqqqqqpgqu288dj3qgrelujal5wynsv5zrf7u0hwlkp2se383n7"
+            ],
+            "deprecated": [
+                "erd1qqqqqqqqqqqqqpgqapxdp9gjxtg60mjwhle3n6h88zch9e7kkp2s8aqhkg"
             ]
         }
     },

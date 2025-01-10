@@ -14,11 +14,14 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
-import { farmsAddresses } from 'src/utils/farm.utils';
+import { farmsAddresses, farmType } from 'src/utils/farm.utils';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import {
+    FarmRewardType,
+    FarmVersion,
+} from 'src/modules/farm/models/farm.model';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
@@ -220,6 +223,18 @@ export class PairComputeService implements IPairComputeService {
         );
     }
 
+    async getAllFirstTokensPriceUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.firstTokenPriceUSD',
+            this.firstTokenPriceUSD.bind(this),
+            CacheTtlInfo.Price,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -253,6 +268,18 @@ export class PairComputeService implements IPairComputeService {
 
         return await this.tokenCompute.computeTokenPriceDerivedUSD(
             secondTokenID,
+        );
+    }
+
+    async getAllSecondTokensPricesUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.secondTokenPriceUSD',
+            this.secondTokenPriceUSD.bind(this),
+            CacheTtlInfo.Price,
         );
     }
 
@@ -427,8 +454,8 @@ export class PairComputeService implements IPairComputeService {
         remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
-    async volumeUSD(pairAddress: string, time: string): Promise<string> {
-        return await this.computeVolumeUSD(pairAddress, time);
+    async volumeUSD(pairAddress: string): Promise<string> {
+        return await this.computeVolumeUSD(pairAddress, '24h');
     }
 
     async computeVolumeUSD(pairAddress: string, time: string): Promise<string> {
@@ -440,6 +467,16 @@ export class PairComputeService implements IPairComputeService {
             metric: 'volumeUSD',
             time,
         });
+    }
+
+    async getAllVolumeUSD(pairAddresses: string[]): Promise<string[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.volumeUSD',
+            this.volumeUSD.bind(this),
+            CacheTtlInfo.Analytics,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -456,8 +493,8 @@ export class PairComputeService implements IPairComputeService {
 
     async computePrevious24hVolumeUSD(pairAddress: string): Promise<string> {
         const [volume24h, volume48h] = await Promise.all([
-            this.volumeUSD(pairAddress, '24h'),
-            this.volumeUSD(pairAddress, '48h'),
+            this.computeVolumeUSD(pairAddress, '24h'),
+            this.computeVolumeUSD(pairAddress, '48h'),
         ]);
         return new BigNumber(volume48h).minus(volume24h).toFixed();
     }
@@ -642,7 +679,9 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeHasFarms(pairAddress: string): Promise<boolean> {
-        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]).filter(
+            (address) => farmType(address) !== FarmRewardType.DEPRECATED,
+        );
         const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
 
         const farmingTokenIDs = await Promise.all(
@@ -752,7 +791,10 @@ export class PairComputeService implements IPairComputeService {
             return undefined;
         }
 
-        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]).filter(
+            (address) => farmType(address) !== FarmRewardType.DEPRECATED,
+        );
+
         const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
 
         const farmingTokenIDs = await Promise.all(

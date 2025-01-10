@@ -59,6 +59,16 @@ export class StakingAbiService
         return response.firstValue.valueOf().toString();
     }
 
+    async getAllFarmTokenIds(stakeAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cachingService,
+            stakeAddresses,
+            'stake.farmTokenID',
+            this.farmTokenID.bind(this),
+            CacheTtlInfo.Token,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -455,7 +465,6 @@ export class StakingAbiService
         const interaction: Interaction =
             contract.methodsExplicit.isWhitelisted(transactionArgs);
         const response = await this.getGenericData(interaction);
-        console.log(response);
         return response.firstValue.valueOf();
     }
 

@@ -241,6 +241,17 @@
                     },
                     "claimRewards": 30000000
                 },
+                "deprecated": {
+                    "exitFarm": {
+                        "default": 30300000,
+                        "withPenalty": {
+                            "localBurn": 36000000,
+                            "pairBurn": 33000000,
+                            "buybackAndBurn": 48300000
+                        }
+                    },
+                    "claimRewards": 30000000
+                },
                 "claimBoostedRewards": 30000000
             },
             "admin": {
@@ -358,11 +369,11 @@
                     },
                     "lockedRewards": {
                         "exitFarm": {
-                            "default": 30000000,
+                            "default": 60000000,
                             "withPenalty": {
-                                "localBurn": 32000000,
-                                "pairBurn": 51000000,
-                                "buybackAndBurn": 56000000
+                                "localBurn": 72000000,
+                                "pairBurn": 81000000,
+                                "buybackAndBurn": 86000000
                             }
                         },
                         "claimRewards": 41500000
@@ -377,6 +388,17 @@
                             }
                         },
                         "claimRewards": 20700000
+                    },
+                    "deprecated": {
+                        "exitFarm": {
+                            "default": 60000000,
+                            "withPenalty": {
+                                "localBurn": 72000000,
+                                "pairBurn": 81000000,
+                                "buybackAndBurn": 86000000
+                            }
+                        },
+                        "claimRewards": 41500000
                     },
                     "increaseEnergy": 20000000
                 },
@@ -475,7 +497,7 @@
             "addKnownTokens": 10000000
         },
         "energyUpdate": {
-            "updateFarmsEnergyForUser": 15000000
+            "updateFarmsEnergyForUser": 17000000
         },
         "tokenUnstake": {
             "claimUnlockedTokens": {
@@ -544,7 +566,8 @@
             },
             "v2": {
                 "unlockedRewards": "./src/abis/farms/v2/farm.abi.json",
-                "lockedRewards": "src/abis/farms/v2/farm-with-locked-rewards.abi.json"
+                "lockedRewards": "src/abis/farms/v2/farm-with-locked-rewards.abi.json",
+                "deprecated": "src/abis/farms/v2/farm-with-locked-rewards.abi.json"
             }
         },
         "staking": "./src/abis/farm-staking.abi.json",
@@ -613,9 +636,14 @@
         },
         "MIN_SWAP_AMOUNT": 0,
         "roundedSwapEnable": {
-            "USDC-8d4068": "5000000",
-            "WEGLD-d7c6bb": "100000000000000000",
-            "MEX-a659d0": "1000000000000000000000000"
+            "USDC-350c4e": "100000",
+            "WEGLD-a28c59": "100000000000000000",
+            "MEX-a659d0": "100000000000000000000000",
+            "USDT-58d5d0": "100000",
+            "WBTC-05fd5b": "1000",
+            "WETH-bbe4ab": "100000000000000",
+            "SEGLD-cc1abc": "100000000000000000",
+            "LEGLD-e8378b": "100000000000000000"
         },
         "COMPOUND_TRANSACTION_FEE": 0.000365144,
         "trendingScore": {

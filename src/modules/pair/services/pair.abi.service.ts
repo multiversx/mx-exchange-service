@@ -29,6 +29,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { IPairAbiService } from '../interfaces';
+import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class PairAbiService
@@ -202,6 +203,18 @@ export class PairAbiService
             reserves1: response.values[1].valueOf().toFixed(),
             totalSupply: response.values[2].valueOf().toFixed(),
         });
+    }
+
+    async getAllPairsInfoMetadata(
+        pairAddresses: string[],
+    ): Promise<PairInfoModel[]> {
+        return await getAllKeys<PairInfoModel>(
+            this.cachingService,
+            pairAddresses,
+            'pair.pairInfoMetadata',
+            this.pairInfoMetadata.bind(this),
+            CacheTtlInfo.ContractBalance,
+        );
     }
 
     @ErrorLoggerAsync({

@@ -49,7 +49,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .endProduceRewards(farmAddress);
+            .endProduceRewards(user.address, farmAddress);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -64,7 +64,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .setPerBlockRewardAmount(farmAddress, amount);
+            .setPerBlockRewardAmount(user.address, farmAddress, amount);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -78,7 +78,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .startProduceRewards(farmAddress);
+            .startProduceRewards(user.address, farmAddress);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -93,7 +93,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .setPenaltyPercent(farmAddress, percent);
+            .setPenaltyPercent(user.address, farmAddress, percent);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -108,7 +108,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .setMinimumFarmingEpochs(farmAddress, epochs);
+            .setMinimumFarmingEpochs(user.address, farmAddress, epochs);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -123,7 +123,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .setTransferExecGasLimit(farmAddress, gasLimit);
+            .setTransferExecGasLimit(user.address, farmAddress, gasLimit);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -138,7 +138,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .setBurnGasLimit(farmAddress, gasLimit);
+            .setBurnGasLimit(user.address, farmAddress, gasLimit);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -152,7 +152,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .pause(farmAddress);
+            .pause(user.address, farmAddress);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -166,7 +166,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .resume(farmAddress);
+            .resume(user.address, farmAddress);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -184,6 +184,7 @@ export class FarmTransactionResolver {
         return this.transactionFactory
             .useTransaction(farmAddress)
             .registerFarmToken(
+                user.address,
                 farmAddress,
                 tokenDisplayName,
                 tokenTicker,
@@ -202,7 +203,7 @@ export class FarmTransactionResolver {
             .requireOwner(farmAddress, user.address);
         return this.transactionFactory
             .useTransaction(farmAddress)
-            .setLocalRolesFarmToken(farmAddress);
+            .setLocalRolesFarmToken(user.address, farmAddress);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -273,7 +274,10 @@ export class FarmTransactionResolver {
         await this.farmFactory
             .useService(args.oldFarmAddress)
             .requireOwner(args.oldFarmAddress, user.address);
-        return this.farmTransactionV1_2.setFarmMigrationConfig(args);
+        return this.farmTransactionV1_2.setFarmMigrationConfig(
+            user.address,
+            args,
+        );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -288,6 +292,9 @@ export class FarmTransactionResolver {
         await this.farmFactory
             .useService(farmAddress)
             .requireOwner(farmAddress, user.address);
-        return this.farmTransactionV1_2.stopRewardsAndMigrateRps(farmAddress);
+        return this.farmTransactionV1_2.stopRewardsAndMigrateRps(
+            user.address,
+            farmAddress,
+        );
     }
 }

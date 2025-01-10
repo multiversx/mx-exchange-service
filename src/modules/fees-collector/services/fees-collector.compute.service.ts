@@ -186,13 +186,6 @@ export class FeesCollectorComputeService {
             .dividedBy(userLockedTokensValueUSD)
             .multipliedBy(100);
 
-        console.log({
-            userEnergy,
-            totalRewardsForWeekUSD,
-            userRewardsForWeekUSD: userRewardsForWeekUSD.toFixed(),
-            userAPRForWeek: userAPRForWeek.toFixed(),
-        });
-
         return userAPRForWeek;
     }
 

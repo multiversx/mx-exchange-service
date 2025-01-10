@@ -13,7 +13,6 @@ import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/m
 import {
     ContractType,
     OutdatedContract,
-    UserDualYiledToken,
     UserNegativeEnergyCheck,
 } from '../../models/user.model';
 import { ProxyService } from '../../../proxy/services/proxy.service';
@@ -40,6 +39,7 @@ import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/servi
 import { MetabondingAbiService } from 'src/modules/metabonding/services/metabonding.abi.service';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -51,6 +51,7 @@ export class UserEnergyComputeService {
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyAbi: StakingProxyAbiService,
         private readonly stakingService: StakingService,
+        private readonly stakingCompute: StakingComputeService,
         private readonly energyAbi: EnergyAbiService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly proxyService: ProxyService,
@@ -132,22 +133,44 @@ export class UserEnergyComputeService {
         const farmService = this.farmService.useService(
             contractAddress,
         ) as FarmServiceV2;
-        const [currentClaimProgress, currentWeek, farmToken, userEnergy] =
-            await Promise.all([
-                this.weeklyRewardsSplittingAbi.currentClaimProgress(
-                    contractAddress,
-                    userAddress,
-                ),
-                this.weekTimekeepingAbi.currentWeek(contractAddress),
-                farmService.getFarmToken(contractAddress),
-                this.energyAbi.energyEntryForUser(userAddress),
-            ]);
+        const [
+            currentClaimProgress,
+            currentWeek,
+            farmToken,
+            userEnergy,
+            produceRewardsEnabled,
+        ] = await Promise.all([
+            this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                contractAddress,
+                userAddress,
+            ),
+            this.weekTimekeepingAbi.currentWeek(contractAddress),
+            farmService.getFarmToken(contractAddress),
+            this.energyAbi.energyEntryForUser(userAddress),
+            this.farmAbi
+                .useAbi(contractAddress)
+                .produceRewardsEnabled(contractAddress),
+        ]);
 
         if (currentClaimProgress.week === 0) {
             return new OutdatedContract();
         }
 
+        const claimProgressTotalRewards =
+            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                contractAddress,
+                currentClaimProgress.week,
+            );
+
         const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
+
+        if (
+            !produceRewardsEnabled &&
+            outdatedClaimProgress &&
+            claimProgressTotalRewards[0].amount === '0'
+        ) {
+            return new OutdatedContract();
+        }
 
         if (
             this.isEnergyOutdated(userEnergy, currentClaimProgress) ||
@@ -160,6 +183,7 @@ export class UserEnergyComputeService {
                 farmToken: farmToken.collection,
             });
         }
+
         return new OutdatedContract();
     }
 
@@ -167,22 +191,42 @@ export class UserEnergyComputeService {
         userAddress: string,
         contractAddress: string,
     ): Promise<OutdatedContract> {
-        const [currentClaimProgress, currentWeek, farmToken, userEnergy] =
-            await Promise.all([
-                this.weeklyRewardsSplittingAbi.currentClaimProgress(
-                    contractAddress,
-                    userAddress,
-                ),
-                this.weekTimekeepingAbi.currentWeek(contractAddress),
-                this.stakingService.getFarmToken(contractAddress),
-                this.energyAbi.energyEntryForUser(userAddress),
-            ]);
+        const [
+            currentClaimProgress,
+            currentWeek,
+            farmToken,
+            userEnergy,
+            isProducingRewards,
+        ] = await Promise.all([
+            this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                contractAddress,
+                userAddress,
+            ),
+            this.weekTimekeepingAbi.currentWeek(contractAddress),
+            this.stakingService.getFarmToken(contractAddress),
+            this.energyAbi.energyEntryForUser(userAddress),
+            this.stakingCompute.isProducingRewards(contractAddress),
+        ]);
 
         if (currentClaimProgress.week === 0) {
             return new OutdatedContract();
         }
 
+        const claimProgressTotalRewards =
+            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                contractAddress,
+                currentClaimProgress.week,
+            );
+
         const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
+
+        if (
+            !isProducingRewards &&
+            outdatedClaimProgress &&
+            claimProgressTotalRewards[0].amount === '0'
+        ) {
+            return new OutdatedContract();
+        }
 
         if (
             this.isEnergyOutdated(userEnergy, currentClaimProgress) ||
@@ -195,6 +239,7 @@ export class UserEnergyComputeService {
                 farmToken: farmToken.collection,
             });
         }
+
         return new OutdatedContract();
     }
 
