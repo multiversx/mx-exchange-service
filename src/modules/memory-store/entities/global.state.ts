@@ -43,6 +43,10 @@ export class GlobalStateSingleton {
     } = {};
     public initStatus: GlobalStateInitStatus =
         GlobalStateInitStatus.NOT_STARTED;
+
+    public getPairsArray(): PairModel[] {
+        return Object.values(this.pairsState);
+    }
 }
 
 export const GlobalState = new GlobalStateSingleton();
