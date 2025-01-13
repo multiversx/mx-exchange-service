@@ -23,12 +23,12 @@ import {
     QueryType,
 } from '@multiversx/sdk-nestjs-elastic';
 import moment from 'moment';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenService } from './token.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { getAllKeys } from 'src/utils/get.many.utils';
+import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -53,8 +53,8 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly elasticService: ElasticService,
-        private readonly logsElasticService: ESLogsService,
         private readonly cachingService: CacheService,
+        private readonly elasticEventsService: ElasticSearchEventsService,
     ) {
         this.swapCountExecutor = new PendingExecutor(
             async () => await this.allTokensSwapsCount(),
@@ -717,11 +717,12 @@ export class TokenComputeService implements ITokenComputeService {
     ): Promise<{ tokenID: string; swapsCount: number }[]> {
         const pairAddresses = await this.routerAbi.pairsAddress();
 
-        const allSwapsCount = await this.logsElasticService.getTokenSwapsCount(
-            start,
-            end,
-            pairAddresses,
-        );
+        const allSwapsCount =
+            await this.elasticEventsService.getTokenSwapsCount(
+                start,
+                end,
+                pairAddresses,
+            );
 
         const result = [];
 
