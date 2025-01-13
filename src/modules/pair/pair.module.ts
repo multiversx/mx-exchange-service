@@ -21,12 +21,12 @@ import { ComposableTasksModule } from '../composable-tasks/composable.tasks.modu
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
-import { PairFilteringService } from './services/pair.filtering.service';
 import { StakingModule } from '../staking/staking.module';
 import { EnergyModule } from '../energy/energy.module';
 import { PairAbiLoader } from './services/pair.abi.loader';
 import { PairComputeLoader } from './services/pair.compute.loader';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { PairsMetadataBuilder } from './services/pair.metadata.builder';
 @Module({
     imports: [
         CommonAppModule,
@@ -51,20 +51,19 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
         PairComputeService,
         PairAbiService,
         PairTransactionService,
-        PairFilteringService,
         PairAbiLoader,
         PairComputeLoader,
         PairResolver,
-        PairFilteringService,
         PairCompoundedAPRResolver,
         PairRewardTokensResolver,
+        PairsMetadataBuilder,
     ],
     exports: [
         PairService,
         PairSetterService,
         PairComputeService,
         PairAbiService,
-        PairFilteringService,
+        PairsMetadataBuilder,
     ],
 })
 export class PairModule {}
