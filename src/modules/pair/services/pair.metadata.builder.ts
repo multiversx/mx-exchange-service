@@ -55,6 +55,10 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
+        if (!filters.issuedLpToken) {
+            return pairs;
+        }
+
         const lpTokensIDs = await this.pairService.getAllLpTokensIds(
             pairs.map((pair) => pair.address),
         );
@@ -84,6 +88,13 @@ export class PairsMetadataBuilder {
         pairs: PairModel[],
     ): Promise<PairModel[]> {
         if (filters instanceof PairsFilter) {
+            if (
+                filters.searchToken === undefined ||
+                filters.searchToken.trim().length < 1
+            ) {
+                return pairs;
+            }
+
             const pairsFirstToken = await this.pairService.getAllFirstTokens(
                 pairs.map((pair) => pair.address),
             );
@@ -104,7 +115,11 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
-        if (filters instanceof PairFilterArgs) {
+        if (
+            filters instanceof PairFilterArgs ||
+            filters.lpTokenIds === undefined ||
+            filters.lpTokenIds.length === 0
+        ) {
             return pairs;
         }
 
@@ -154,6 +169,13 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
+        if (
+            !filters.state ||
+            (Array.isArray(filters.state) && filters.state.length === 0)
+        ) {
+            return pairs;
+        }
+
         const pairsStates = await this.pairService.getAllStates(
             pairs.map((pair) => pair.address),
         );
@@ -167,6 +189,13 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
+        if (
+            typeof filters.feeState === 'undefined' ||
+            filters.feeState === null
+        ) {
+            return pairs;
+        }
+
         const pairsFeeStates = await this.pairService.getAllFeeStates(
             pairs.map((pair) => pair.address),
         );
@@ -180,6 +209,10 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
+        if (filters.minVolume === undefined) {
+            return pairs;
+        }
+
         const pairsVolumes = await this.pairCompute.getAllVolumeUSD(
             pairs.map((pair) => pair.address),
         );
@@ -195,6 +228,10 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
+        if (filters.minLockedValueUSD === undefined) {
+            return pairs;
+        }
+
         const pairsLiquidityUSD = await this.pairService.getAllLockedValueUSD(
             pairs.map((pair) => pair.address),
         );
@@ -210,7 +247,10 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
-        if (filters instanceof PairFilterArgs) {
+        if (
+            filters instanceof PairFilterArgs ||
+            filters.minTradesCount === undefined
+        ) {
             return pairs;
         }
 
@@ -229,7 +269,10 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
-        if (filters instanceof PairFilterArgs) {
+        if (
+            filters instanceof PairFilterArgs ||
+            filters.minTradesCount24h === undefined
+        ) {
             return pairs;
         }
 
@@ -248,7 +291,11 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
-        if (filters instanceof PairFilterArgs) {
+        if (
+            filters instanceof PairFilterArgs ||
+            typeof filters.hasFarms === 'undefined' ||
+            filters.hasFarms === null
+        ) {
             return pairs;
         }
 
@@ -265,7 +312,11 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
-        if (filters instanceof PairFilterArgs) {
+        if (
+            filters instanceof PairFilterArgs ||
+            typeof filters.hasDualFarms === 'undefined' ||
+            filters.hasDualFarms === null
+        ) {
             return pairs;
         }
 
@@ -284,7 +335,10 @@ export class PairsMetadataBuilder {
         filters: PairsFilter | PairFilterArgs,
         pairs: PairModel[],
     ): Promise<PairModel[]> {
-        if (filters instanceof PairFilterArgs) {
+        if (
+            filters instanceof PairFilterArgs ||
+            filters.minDeployedAt === undefined
+        ) {
             return pairs;
         }
 

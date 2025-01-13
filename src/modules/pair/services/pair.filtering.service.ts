@@ -66,7 +66,10 @@ export class PairFilteringService {
         filters: PairsFilter,
         pairs: PairModel[],
     ): PairModel[] {
-        if (!filters.searchToken || filters.searchToken.trim().length < 3) {
+        if (
+            filters.searchToken === undefined ||
+            filters.searchToken.trim().length < 1
+        ) {
             return pairs;
         }
 
@@ -89,7 +92,10 @@ export class PairFilteringService {
         filters: PairsFilter,
         pairs: PairModel[],
     ): PairModel[] {
-        if (!filters.lpTokenIds || filters.lpTokenIds.length === 0) {
+        if (
+            filters.lpTokenIds === undefined ||
+            filters.lpTokenIds.length === 0
+        ) {
             return pairs;
         }
 
@@ -105,7 +111,10 @@ export class PairFilteringService {
         pairs: PairModel[],
         farmTokens: string[],
     ): PairModel[] {
-        if (!filters.farmTokens || filters.farmTokens.length === 0) {
+        if (
+            filters.farmTokens === undefined ||
+            filters.farmTokens.length === 0
+        ) {
             return pairs;
         }
 
@@ -121,7 +130,7 @@ export class PairFilteringService {
         pairs: PairModel[],
     ): PairModel[] {
         if (
-            !filters.state ||
+            filters.state === undefined ||
             (Array.isArray(filters.state) && filters.state.length === 0)
         ) {
             return pairs;
@@ -154,7 +163,7 @@ export class PairFilteringService {
         filters: PairFilterArgs | PairsFilter,
         pairs: PairModel[],
     ): PairModel[] {
-        if (!filters.minVolume) {
+        if (filters.minVolume === undefined) {
             return pairs;
         }
 
@@ -167,7 +176,7 @@ export class PairFilteringService {
         filters: PairFilterArgs | PairsFilter,
         pairs: PairModel[],
     ): PairModel[] {
-        if (!filters.minLockedValueUSD) {
+        if (filters.minLockedValueUSD === undefined) {
             return pairs;
         }
 
@@ -182,7 +191,7 @@ export class PairFilteringService {
         filters: PairsFilter,
         pairs: PairModel[],
     ): PairModel[] {
-        if (!filters.minTradesCount) {
+        if (filters.minTradesCount === undefined) {
             return pairs;
         }
 
@@ -195,7 +204,7 @@ export class PairFilteringService {
         filters: PairsFilter,
         pairs: PairModel[],
     ): PairModel[] {
-        if (!filters.minTradesCount24h) {
+        if (filters.minTradesCount24h === undefined) {
             return pairs;
         }
 
