@@ -32,6 +32,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { gasConfig, scAddress } from 'src/config';
+import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -84,6 +85,7 @@ describe('AutoRouterService', () => {
                 ComposableTasksTransactionService,
                 ApiConfigService,
                 MXApiServiceProvider,
+                PairsMetadataBuilder,
             ],
             exports: [],
         }).compile();

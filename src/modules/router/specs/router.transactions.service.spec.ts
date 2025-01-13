@@ -23,6 +23,7 @@ import { ConfigModule } from '@nestjs/config';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -59,6 +60,7 @@ describe('RouterService', () => {
                 TokenServiceProvider,
                 RouterService,
                 MXApiServiceProvider,
+                PairsMetadataBuilder,
             ],
         }).compile();
     });

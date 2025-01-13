@@ -37,6 +37,7 @@ import { StakingAbiService } from 'src/modules/staking/services/staking.abi.serv
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -81,6 +82,7 @@ describe('PositionCreatorTransaction', () => {
                 ApiConfigService,
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
+                PairsMetadataBuilder,
             ],
         }).compile();
     });
