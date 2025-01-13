@@ -653,7 +653,20 @@
           "VOLUME_WEIGHT": 0.25,
           "TRADES_COUNT_WEIGHT": 0.25
         },
-        "AWS_QUERY_CACHE_WARMER_DELAY": 100
+        "AWS_QUERY_CACHE_WARMER_DELAY": 100,
+        "memoryStore": {
+          "pairsStalenessThreshold": {
+            "tokensFarms": 240,
+            "analytics": 720,
+            "info": 180,
+            "prices": 100
+          },
+          "tokensStalenessThreshold": {
+            "metadata": 420,
+            "price": 100,
+            "extra": 420
+          }
+        }
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"

@@ -23,6 +23,7 @@ export class DynamicModuleUtils {
                         host: configService.getRedisUrl(),
                         port: configService.getRedisPort(),
                         password: configService.getRedisPassword(),
+                        enableAutoPipelining: true,
                     }),
             },
             {

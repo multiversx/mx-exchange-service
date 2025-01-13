@@ -12,6 +12,9 @@ import { TokenSetterService } from 'src/modules/tokens/services/token.setter.ser
 import moment from 'moment';
 import { TokenRepositoryService } from 'src/modules/tokens/services/token.repository.service';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { MemoryStoreMaintainerService } from './memory.store.maintainer.service';
+import { TokenFieldsType } from 'src/modules/memory-store/entities/global.state';
 
 @Injectable()
 export class TokensCacheWarmerService {
@@ -21,6 +24,7 @@ export class TokensCacheWarmerService {
         private readonly tokenSetterService: TokenSetterService,
         private readonly tokenRepository: TokenRepositoryService,
         private readonly pairSetter: PairSetterService,
+        private readonly memoryStoreMaintainer: MemoryStoreMaintainerService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -34,10 +38,18 @@ export class TokensCacheWarmerService {
 
         const tokenIDs = await this.tokenService.getUniqueTokenIDs(false);
         const profiler = new PerformanceProfiler();
+        const memoryStoreTokens: EsdtToken[] = [];
 
         for (const tokenID of tokenIDs) {
             const token = await this.tokenService.tokenMetadataRaw(tokenID);
             const tokenType = await this.tokenRepository.getTokenType(tokenID);
+
+            memoryStoreTokens.push(
+                new EsdtToken({
+                    ...token,
+                    type: tokenType,
+                }),
+            );
 
             const cachedKeys = await Promise.all([
                 this.tokenSetterService.setMetadata(tokenID, token),
@@ -46,6 +58,8 @@ export class TokensCacheWarmerService {
 
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        await this.memoryStoreMaintainer.cacheTokensMetadata(memoryStoreTokens);
 
         profiler.stop();
         this.logger.info(
@@ -87,6 +101,16 @@ export class TokensCacheWarmerService {
             ]);
 
             await this.deleteCacheKeys(cachedKeys);
+
+            await this.memoryStoreMaintainer.cacheEsdtToken(
+                tokenID,
+                new EsdtToken({
+                    derivedEGLD: priceDerivedEGLD,
+                    price: priceDerivedUSD,
+                }),
+                true,
+                [TokenFieldsType.price],
+            );
         }
 
         profiler.stop();
@@ -108,7 +132,7 @@ export class TokensCacheWarmerService {
         const tokens = await this.tokenService.getUniqueTokenIDs(false);
         const profiler = new PerformanceProfiler();
 
-        await this.cacheTokensSwapsCount();
+        await this.cacheTokensSwapsCount(tokens);
 
         for (const tokenID of tokens) {
             const volumeLast2D =
@@ -149,6 +173,19 @@ export class TokensCacheWarmerService {
                 this.tokenSetterService.setCreatedAt(tokenID, createdAt),
             ]);
             await this.deleteCacheKeys(cachedKeys);
+
+            await this.memoryStoreMaintainer.cacheEsdtToken(
+                tokenID,
+                new EsdtToken({
+                    previous24hPrice: pricePrevious24h,
+                    previous7dPrice: pricePrevious7D,
+                    volumeUSD24h: volumeLast2D.current,
+                    previous24hVolume: volumeLast2D.previous,
+                    liquidityUSD,
+                    createdAt,
+                }),
+                true,
+            );
         }
 
         await this.cacheTokensTrendingScore(tokens);
@@ -159,7 +196,7 @@ export class TokensCacheWarmerService {
         });
     }
 
-    private async cacheTokensSwapsCount(): Promise<void> {
+    private async cacheTokensSwapsCount(tokens: string[]): Promise<void> {
         const nowTimestamp = moment.utc().unix();
         const oneDayAgoTimestamp = moment
             .unix(nowTimestamp)
@@ -188,6 +225,30 @@ export class TokensCacheWarmerService {
             ),
         ]);
         await this.deleteCacheKeys(cachedKeys);
+
+        const currentSwapsMap = new Map(
+            swapsCount.map(({ tokenID, swapsCount }) => [tokenID, swapsCount]),
+        );
+        const previousSwapsMap = new Map(
+            previous24hSwapsCount.map(({ tokenID, swapsCount }) => [
+                tokenID,
+                swapsCount,
+            ]),
+        );
+
+        await Promise.all(
+            tokens.map((tokenID) =>
+                this.memoryStoreMaintainer.cacheEsdtToken(
+                    tokenID,
+                    new EsdtToken({
+                        swapCount24h: currentSwapsMap.get(tokenID) ?? 0,
+                        previous24hSwapCount:
+                            previousSwapsMap.get(tokenID) ?? 0,
+                    }),
+                    true,
+                ),
+            ),
+        );
     }
 
     private async cacheTokensTrendingScore(tokens: string[]): Promise<void> {
@@ -201,6 +262,15 @@ export class TokensCacheWarmerService {
             const cachedKey = await this.tokenSetterService.setTrendingScore(
                 tokenID,
                 trendingScore,
+            );
+
+            this.memoryStoreMaintainer.cacheEsdtToken(
+                tokenID,
+                new EsdtToken({
+                    trendingScore: trendingScore,
+                }),
+                true,
+                [TokenFieldsType.extra],
             );
 
             cachedKeys.push(cachedKey);
