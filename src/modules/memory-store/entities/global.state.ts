@@ -8,6 +8,19 @@ export enum GlobalStateInitStatus {
     FAILED = 'FAILED',
 }
 
+export enum PairFieldsType {
+    tokensFarms = 'tokensFarms',
+    analytics = 'analytics',
+    info = 'info',
+    prices = 'prices',
+}
+
+export enum TokenFieldsType {
+    metadata = 'metadata',
+    price = 'price',
+    extra = 'extra',
+}
+
 export class PairEsdtTokens {
     firstTokenID: string;
     secondTokenID: string;
@@ -22,7 +35,12 @@ export class PairEsdtTokens {
 export class GlobalStateSingleton {
     public pairsState: { [key: string]: PairModel } = {};
     public pairsEsdtTokens: { [key: string]: PairEsdtTokens } = {};
+    public pairsLastUpdate: { [key: string]: Record<PairFieldsType, number> } =
+        {};
     public tokensState: { [key: string]: EsdtToken } = {};
+    public tokensLastUpdate: {
+        [key: string]: Record<TokenFieldsType, number>;
+    } = {};
     public initStatus: GlobalStateInitStatus =
         GlobalStateInitStatus.NOT_STARTED;
 }

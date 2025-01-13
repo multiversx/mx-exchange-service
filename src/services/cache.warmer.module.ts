@@ -43,6 +43,8 @@ import { FeesCollectorCacheWarmerService } from './crons/fees.collector.cache.wa
 import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.module';
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
+import { MemoryStoreMaintainerService } from './crons/memory.store.maintainer.service';
+import { EnergyModule } from 'src/modules/energy/energy.module';
 
 @Module({
     imports: [
@@ -73,6 +75,7 @@ import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-spli
         FeesCollectorModule,
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
+        EnergyModule,
     ],
     controllers: [],
     providers: [
@@ -93,6 +96,7 @@ import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-spli
         TokensCacheWarmerService,
         EscrowCacheWarmerService,
         FeesCollectorCacheWarmerService,
+        MemoryStoreMaintainerService,
     ],
 })
 export class CacheWarmerModule {}

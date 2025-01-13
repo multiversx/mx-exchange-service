@@ -16,8 +16,17 @@ import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Logger } from 'winston';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
+import {
+    EsdtToken,
+    EsdtTokenType,
+} from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { MemoryStoreMaintainerService } from './memory.store.maintainer.service';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import {
+    PairFieldsType,
+    TokenFieldsType,
+} from 'src/modules/memory-store/entities/global.state';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -30,6 +39,7 @@ export class PairCacheWarmerService {
         private readonly tokenService: TokenService,
         private readonly tokenSetter: TokenSetterService,
         private readonly apiConfig: ApiConfigService,
+        private readonly memoryStoreMaintainer: MemoryStoreMaintainerService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -41,6 +51,8 @@ export class PairCacheWarmerService {
             context: 'CachePairs',
         });
         const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const allLpTokens: EsdtToken[] = [];
+
         for (const pairMetadata of pairsMetadata) {
             const lpTokenID = await this.pairAbi.getLpTokenIDRaw(
                 pairMetadata.address,
@@ -76,12 +88,20 @@ export class PairCacheWarmerService {
                 cacheSetPromises.push(
                     this.tokenSetter.setMetadata(lpTokenID, lpToken),
                 );
+                lpToken.type = EsdtTokenType.FungibleLpToken;
             }
+            allLpTokens.push(lpToken);
 
             const cachedKeys = await Promise.all(cacheSetPromises);
 
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        await this.memoryStoreMaintainer.cachePairsTokensAndFarms(
+            pairsMetadata,
+            allLpTokens,
+        );
+
         this.logger.info('Finished refresh cached pairs', {
             context: 'CachePairs',
         });
@@ -127,6 +147,17 @@ export class PairCacheWarmerService {
                 time,
             });
             await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const previous24hLockedValueUSD =
+                await this.pairComputeService.computePrevious24hLockedValueUSD(
+                    pairAddress,
+                );
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+            const memoryStorePair = new PairModel({
+                volumeUSD24h,
+                feesUSD24h,
+                previous24hLockedValueUSD,
+            });
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenVolume(
@@ -143,6 +174,12 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setFeesUSD(pairAddress, feesUSD24h),
             ]);
             await this.deleteCacheKeys(cachedKeys);
+
+            await this.memoryStoreMaintainer.cachePair(
+                pairAddress,
+                memoryStorePair,
+                PairFieldsType.analytics,
+            );
         }
 
         this.logger.info('Finished refresh cached pairs analytics', {
@@ -199,10 +236,35 @@ export class PairCacheWarmerService {
                 this.pairAbi.getTrustedSwapPairsRaw(pairAddress),
             ]);
 
-            const lockedValueUSD =
-                await this.pairComputeService.computeLockedValueUSD(
-                    pairAddress,
-                );
+            const [firstTokenLockedValueUSD, secondTokenLockedValueUSD] =
+                await Promise.all([
+                    this.pairComputeService.computeFirstTokenLockedValueUSD(
+                        pairAddress,
+                    ),
+                    this.pairComputeService.computeSecondTokenLockedValueUSD(
+                        pairAddress,
+                    ),
+                ]);
+
+            const lockedValueUSD = new BigNumber(firstTokenLockedValueUSD).plus(
+                secondTokenLockedValueUSD,
+            );
+
+            const memoryStorePair = new PairModel({
+                firstTokenLockedValueUSD: firstTokenLockedValueUSD.toFixed(),
+                secondTokenLockedValueUSD: secondTokenLockedValueUSD.toFixed(),
+                lockedValueUSD: lockedValueUSD.toFixed(),
+                tradesCount,
+                tradesCount24h,
+                deployedAt,
+                state,
+                feeState,
+                type,
+                totalFeePercent,
+                specialFeePercent,
+                hasFarms,
+                hasDualFarms,
+            });
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
@@ -260,8 +322,22 @@ export class PairCacheWarmerService {
                     pairAddress,
                     lockedValueUSD.toFixed(),
                 ),
+                this.pairSetterService.setFirstTokenLockedValueUSD(
+                    pairAddress,
+                    firstTokenLockedValueUSD.toFixed(),
+                ),
+                this.pairSetterService.setSecondTokenLockedValueUSD(
+                    pairAddress,
+                    secondTokenLockedValueUSD.toFixed(),
+                ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
+
+            await this.memoryStoreMaintainer.cachePair(
+                pairAddress,
+                memoryStorePair,
+                PairFieldsType.info,
+            );
         }
 
         performance.stop();
@@ -310,6 +386,13 @@ export class PairCacheWarmerService {
                 ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
+
+            await this.memoryStoreMaintainer.cachePair(
+                pairAddress.address,
+                new PairModel({
+                    info: pairInfo,
+                }),
+            );
         }
 
         for (const pairMetadata of pairsMetadata) {
@@ -340,7 +423,15 @@ export class PairCacheWarmerService {
                 ),
             ]);
 
-            const cachedKeys = await Promise.all([
+            const memoryStorePair = new PairModel({
+                firstTokenPrice,
+                firstTokenPriceUSD,
+                secondTokenPrice,
+                secondTokenPriceUSD,
+                liquidityPoolTokenPriceUSD: lpTokenPriceUSD,
+            });
+
+            const cacheSetPromises = [
                 this.pairSetterService.setFirstTokenPrice(
                     pairMetadata.address,
                     firstTokenPrice,
@@ -361,9 +452,32 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     lpTokenPriceUSD,
                 ),
-                this.tokenSetter.setDerivedUSD(lpTokenID, lpTokenPriceUSD),
-            ]);
+            ];
+
+            if (lpTokenID !== undefined) {
+                cacheSetPromises.push(
+                    this.tokenSetter.setDerivedUSD(lpTokenID, lpTokenPriceUSD),
+                );
+
+                await this.memoryStoreMaintainer.cacheEsdtToken(
+                    lpTokenID,
+                    new EsdtToken({
+                        price: lpTokenPriceUSD,
+                    }),
+                    true,
+                    [TokenFieldsType.price],
+                );
+            }
+
+            const cachedKeys = await Promise.all(cacheSetPromises);
+
             await this.deleteCacheKeys(cachedKeys);
+
+            await this.memoryStoreMaintainer.cachePair(
+                pairMetadata.address,
+                memoryStorePair,
+                PairFieldsType.prices,
+            );
         }
 
         performance.stop();
