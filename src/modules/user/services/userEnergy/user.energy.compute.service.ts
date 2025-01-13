@@ -167,7 +167,8 @@ export class UserEnergyComputeService {
         if (
             !produceRewardsEnabled &&
             outdatedClaimProgress &&
-            claimProgressTotalRewards[0].amount === '0'
+            (claimProgressTotalRewards.length === 0 ||
+                claimProgressTotalRewards[0].amount === '0')
         ) {
             return new OutdatedContract();
         }
@@ -223,7 +224,8 @@ export class UserEnergyComputeService {
         if (
             !isProducingRewards &&
             outdatedClaimProgress &&
-            claimProgressTotalRewards[0].amount === '0'
+            (claimProgressTotalRewards.length === 0 ||
+                claimProgressTotalRewards[0].amount === '0')
         ) {
             return new OutdatedContract();
         }
