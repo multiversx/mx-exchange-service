@@ -1,6 +1,5 @@
 import {
     CacheModule,
-    RedisCacheModule,
     RedisCacheModuleOptions,
 } from '@multiversx/sdk-nestjs-cache';
 import {
