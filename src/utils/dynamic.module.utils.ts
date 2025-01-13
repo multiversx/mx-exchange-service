@@ -33,20 +33,6 @@ export class DynamicModuleUtils {
         );
     }
 
-    static getRedisCacheModule(): DynamicModule {
-        return RedisCacheModule.forRootAsync({
-            imports: [CommonAppModule],
-            inject: [ApiConfigService],
-            useFactory: (configService: ApiConfigService) =>
-                new RedisCacheModuleOptions({
-                    host: configService.getRedisUrl(),
-                    port: configService.getRedisPort(),
-                    password: configService.getRedisPassword(),
-                    enableAutoPipelining: true,
-                }),
-        });
-    }
-
     static getElasticModule(): DynamicModule {
         return ElasticModule.forRootAsync({
             imports: [CommonAppModule],

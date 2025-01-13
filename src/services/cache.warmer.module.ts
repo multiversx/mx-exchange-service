@@ -71,7 +71,6 @@ import { EnergyModule } from 'src/modules/energy/energy.module';
         RemoteConfigModule,
         GovernanceModule,
         DynamicModuleUtils.getCacheModule(),
-        DynamicModuleUtils.getRedisCacheModule(),
         EscrowModule,
         FeesCollectorModule,
         WeekTimekeepingModule,
