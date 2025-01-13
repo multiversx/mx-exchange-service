@@ -40,6 +40,8 @@ import { PositionCreatorModule } from './modules/position-creator/position.creat
 import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
 import { TradingViewModule } from './modules/trading-view/trading.view.module';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
+import { MemoryStoreApolloPlugin } from './modules/memory-store/memory.store.plugin';
+import { MemoryStoreModule } from './modules/memory-store/memory.store.module';
 
 @Module({
     imports: [
@@ -73,6 +75,7 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
                     };
                 },
                 fieldResolverEnhancers: ['guards'],
+                documentStore: null,
             }),
             inject: [WINSTON_MODULE_NEST_PROVIDER],
         }),
@@ -103,8 +106,9 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
         ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
         TradingViewModule,
+        MemoryStoreModule,
     ],
-    providers: [QueryMetricsPlugin],
+    providers: [MemoryStoreApolloPlugin, QueryMetricsPlugin],
 })
 export class PublicAppModule {
     configure(consumer: MiddlewareConsumer) {
