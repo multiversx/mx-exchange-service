@@ -3,6 +3,7 @@ import { MemoryStoreFactoryService } from './services/memory.store.factory.servi
 import { ConditionalModule } from '@nestjs/config';
 import { MemoryStoreCronModule } from './memory.store.cron.module';
 import { PairMemoryStoreService } from './services/pair.memory.store.service';
+import { TokenMemoryStoreService } from './services/token.memory.store.service';
 
 @Module({
     imports: [
@@ -12,7 +13,15 @@ import { PairMemoryStoreService } from './services/pair.memory.store.service';
                 env['ENABLE_IN_MEMORY_STORE'] === 'true',
         ),
     ],
-    providers: [MemoryStoreFactoryService, PairMemoryStoreService],
-    exports: [MemoryStoreFactoryService, PairMemoryStoreService],
+    providers: [
+        MemoryStoreFactoryService,
+        PairMemoryStoreService,
+        TokenMemoryStoreService,
+    ],
+    exports: [
+        MemoryStoreFactoryService,
+        PairMemoryStoreService,
+        TokenMemoryStoreService,
+    ],
 })
 export class MemoryStoreModule {}

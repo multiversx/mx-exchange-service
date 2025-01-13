@@ -47,6 +47,29 @@ export class GlobalStateSingleton {
     public getPairsArray(): PairModel[] {
         return Object.values(this.pairsState);
     }
+
+    public getTokensArray(): EsdtToken[] {
+        return Object.values(this.tokensState);
+    }
+
+    public getPairsTokens(enabledSwaps: boolean): EsdtToken[] {
+        const pairAddresses = enabledSwaps
+            ? Object.values(this.pairsState)
+                  .filter((pair) => pair.state === 'Active')
+                  .map((pair) => pair.address)
+            : Object.values(this.pairsState).map((pair) => pair.address);
+
+        let tokenIDs = [];
+        pairAddresses.forEach((address) => {
+            tokenIDs.push(
+                this.pairsEsdtTokens[address].firstTokenID,
+                this.pairsEsdtTokens[address].secondTokenID,
+            );
+        });
+
+        tokenIDs = [...new Set(tokenIDs)];
+        return tokenIDs.map((tokenID) => this.tokensState[tokenID]);
+    }
 }
 
 export const GlobalState = new GlobalStateSingleton();
