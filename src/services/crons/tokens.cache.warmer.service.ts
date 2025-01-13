@@ -14,6 +14,7 @@ import { TokenRepositoryService } from 'src/modules/tokens/services/token.reposi
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { MemoryStoreMaintainerService } from './memory.store.maintainer.service';
+import { TokenFieldsType } from 'src/modules/memory-store/entities/global.state';
 
 @Injectable()
 export class TokensCacheWarmerService {
@@ -108,7 +109,7 @@ export class TokensCacheWarmerService {
                     price: priceDerivedUSD,
                 }),
                 true,
-                'price',
+                [TokenFieldsType.price],
             );
         }
 
@@ -269,7 +270,7 @@ export class TokensCacheWarmerService {
                     trendingScore: trendingScore,
                 }),
                 true,
-                'extra',
+                [TokenFieldsType.extra],
             );
 
             cachedKeys.push(cachedKey);

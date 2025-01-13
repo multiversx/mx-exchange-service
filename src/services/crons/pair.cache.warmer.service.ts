@@ -23,6 +23,10 @@ import {
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { MemoryStoreMaintainerService } from './memory.store.maintainer.service';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+import {
+    PairFieldsType,
+    TokenFieldsType,
+} from 'src/modules/memory-store/entities/global.state';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -174,7 +178,7 @@ export class PairCacheWarmerService {
             await this.memoryStoreMaintainer.cachePair(
                 pairAddress,
                 memoryStorePair,
-                'analytics',
+                PairFieldsType.analytics,
             );
         }
 
@@ -332,7 +336,7 @@ export class PairCacheWarmerService {
             await this.memoryStoreMaintainer.cachePair(
                 pairAddress,
                 memoryStorePair,
-                'info',
+                PairFieldsType.info,
             );
         }
 
@@ -461,7 +465,7 @@ export class PairCacheWarmerService {
                         price: lpTokenPriceUSD,
                     }),
                     true,
-                    'price',
+                    [TokenFieldsType.price],
                 );
             }
 
@@ -472,7 +476,7 @@ export class PairCacheWarmerService {
             await this.memoryStoreMaintainer.cachePair(
                 pairMetadata.address,
                 memoryStorePair,
-                'prices',
+                PairFieldsType.prices,
             );
         }
 
