@@ -67,8 +67,8 @@ export class PairFilteringService {
         pairs: PairModel[],
     ): PairModel[] {
         if (
-            filters.searchToken === undefined ||
-            filters.searchToken.trim().length < 1
+            !pairFilter.searchToken ||
+            pairFilter.searchToken.trim().length < 1
         ) {
             return pairs;
         }
