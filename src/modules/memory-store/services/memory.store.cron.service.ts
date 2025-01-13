@@ -1,721 +1,155 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
-import {
-    PairCompoundedAPRModel,
-    PairModel,
-    PairRewardTokensModel,
-} from 'src/modules/pair/models/pair.model';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { PairService } from 'src/modules/pair/services/pair.service';
-import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
-import {
-    GlobalStateInitStatus,
-    GlobalState,
-    PairEsdtTokens,
-} from '../entities/global.state';
-import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
-import { EnergyService } from 'src/modules/energy/services/energy.service';
-import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
-import { farmsAddresses } from 'src/utils/farm.utils';
-import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
-import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { GlobalState, GlobalStateInitStatus } from '../entities/global.state';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { TokenService } from 'src/modules/tokens/services/token.service';
+import moment from 'moment';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
-import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import {
-    AssetsModel,
-    SocialModel,
-} from 'src/modules/tokens/models/assets.model';
-import { RolesModel } from 'src/modules/tokens/models/roles.model';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
-import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
+import { constantsConfig } from 'src/config';
 
 @Injectable()
 export class MemoryStoreCronService {
     constructor(
-        private readonly schedulerRegistry: SchedulerRegistry,
         private readonly routerAbi: RouterAbiService,
-        private readonly pairAbi: PairAbiService,
-        private readonly pairService: PairService,
-        private readonly pairCompute: PairComputeService,
-        private readonly energyService: EnergyService,
-        private readonly stakingProxyAbi: StakingProxyAbiService,
-        private readonly stakingCompute: StakingComputeService,
-        private readonly farmCompute: FarmComputeServiceV2,
-        private readonly tokenService: TokenService,
-        private readonly tokenCompute: TokenComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        const callback = async () => await this.initData();
+    ) {}
 
-        const initDataTimeout = setTimeout(callback, 5000);
-        this.schedulerRegistry.addTimeout('initGlobalState', initDataTimeout);
-    }
-
-    async initData(): Promise<void> {
-        if (GlobalState.initStatus !== GlobalStateInitStatus.NOT_STARTED) {
-            return;
-        }
-
-        GlobalState.initStatus = GlobalStateInitStatus.IN_PROGRESS;
-
-        this.logger.info(`Starting init for in memory store`, {
-            context: 'MemoryStoreCronService',
-        });
-
+    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Lock({ name: 'updateStatus', verbose: false })
+    async updateStatus(): Promise<void> {
         const profiler = new PerformanceProfiler();
 
-        try {
-            const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const newStatus = this.determineGlobalStatus(pairsMetadata);
+        profiler.stop();
 
-            await this.updateAddressesAndTokenIDs(pairsMetadata);
-
-            const pairAddresses = [];
-            const pairStakingProxyAddresses = [];
-            for (const pair of Object.values(GlobalState.pairsState)) {
-                pairAddresses.push(pair.address);
-
-                if (pair.stakingProxyAddress !== undefined) {
-                    pairStakingProxyAddresses.push(pair.stakingProxyAddress);
-                }
-            }
-
-            await this.updatePairsData(pairAddresses);
-
-            await this.updatePairsCompoundedAPRs(
-                pairAddresses,
-                pairStakingProxyAddresses,
-            );
-
-            await this.updatePairsRewardTokens(pairAddresses);
-
-            GlobalState.initStatus = GlobalStateInitStatus.DONE;
-        } catch (error) {
-            this.logger.error(`${error.message}`, {
-                context: 'MemoryStoreCronService',
-            });
-            GlobalState.initStatus = GlobalStateInitStatus.FAILED;
-        } finally {
-            profiler.stop();
-
+        if (GlobalState.initStatus !== newStatus) {
             this.logger.info(
-                `initData completed with status ${GlobalState.initStatus} in ${profiler.duration}ms.`,
-                { context: 'MemoryStoreCronService' },
+                `Memory Store status updated (${GlobalState.initStatus} => ${newStatus}) in ${profiler.duration}ms `,
+                {
+                    context: 'MemoryStoreCronService',
+                },
             );
         }
+
+        GlobalState.initStatus = newStatus;
     }
 
-    private async updateAddressesAndTokenIDs(
+    private determineGlobalStatus(
         pairsMetadata: PairMetadata[],
-    ): Promise<void> {
-        const tokenIDs = [];
+    ): GlobalStateInitStatus {
+        let overallStatus = GlobalStateInitStatus.DONE;
 
-        const pairAddresses = pairsMetadata.map((pair) => pair.address);
+        for (const pairMetadata of pairsMetadata) {
+            const { address } = pairMetadata;
 
-        const allFarmAddresses = await this.pairCompute.getAllPairsFarmAddress(
-            pairAddresses,
-        );
-
-        const allPairsStakingProxyAddresses =
-            await this.pairCompute.getAllPairsStakingProxyAddress(
-                pairAddresses,
-            );
-
-        const pairsStakingProxies = allPairsStakingProxyAddresses.filter(
-            (address) => address !== undefined,
-        );
-
-        const stakingTokenIDs =
-            await this.stakingProxyAbi.getAllStakingTokenIDs(
-                pairsStakingProxies,
-            );
-
-        const allLpTokenIDs = await this.pairService.getAllLpTokensIds(
-            pairAddresses,
-        );
-
-        const allPairsStakingTokenIds = allPairsStakingProxyAddresses.map(
-            (address) => {
-                if (address === undefined) {
-                    return undefined;
-                }
-                const stakingProxyIndex = pairsStakingProxies.findIndex(
-                    (stakingProxyAddress) => stakingProxyAddress === address,
-                );
-                return stakingTokenIDs[stakingProxyIndex];
-            },
-        );
-
-        pairsMetadata.forEach((pair) => {
-            tokenIDs.push(...[pair.firstTokenID, pair.secondTokenID]);
-        });
-        tokenIDs.push(
-            ...allLpTokenIDs.filter((tokenID) => tokenID !== undefined),
-        );
-        tokenIDs.push(...stakingTokenIDs);
-
-        const uniqueTokenIDs = [...new Set(tokenIDs)];
-
-        const tokensMetadata = await this.tokenService.getAllTokensMetadata(
-            uniqueTokenIDs,
-        );
-
-        const allTokensType = await this.tokenService.getAllEsdtTokensType(
-            uniqueTokenIDs,
-        );
-
-        for (const [index, tokenID] of uniqueTokenIDs.entries()) {
-            // todo - update existing tokens without overriding computed fields
-            const assets = new AssetsModel({
-                social: new SocialModel(tokensMetadata[index].assets.social),
-                ...tokensMetadata[index].assets,
-            });
-
-            if (GlobalState.tokensState[tokenID] !== undefined) {
-                GlobalState.tokensState[tokenID] = new EsdtToken({
-                    ...GlobalState.tokensState[tokenID],
-                    ...tokensMetadata[index],
-                    type: allTokensType[index],
-                    assets: assets,
-                });
-
-                continue;
+            if (!this.isStorePairDataValid(address)) {
+                overallStatus = GlobalStateInitStatus.IN_PROGRESS;
+                break;
             }
 
-            GlobalState.tokensState[tokenID] = new EsdtToken({
-                ...tokensMetadata[index],
-                type: allTokensType[index],
-                assets: assets,
-            });
-        }
-
-        for (const [index, pair] of pairsMetadata.entries()) {
-            // update all pair related token IDs
-            GlobalState.pairsEsdtTokens[pair.address] = new PairEsdtTokens({
-                firstTokenID: pair.firstTokenID,
-                secondTokenID: pair.secondTokenID,
-                lpTokenID: allLpTokenIDs[index],
-                dualFarmRewardTokenID: allPairsStakingTokenIds[index],
-            });
-
-            // update farm and staking proxy addresses
-            if (GlobalState.pairsState[pair.address] !== undefined) {
-                GlobalState.pairsState[pair.address].farmAddress =
-                    allFarmAddresses[index];
-                GlobalState.pairsState[pair.address].stakingProxyAddress =
-                    allPairsStakingProxyAddresses[index];
-
-                continue;
+            if (!this.areStorePairTokensFresh(address)) {
+                overallStatus = GlobalStateInitStatus.IN_PROGRESS;
+                break;
             }
 
-            const newPair = new PairModel({
-                address: pair.address,
-                farmAddress: allFarmAddresses[index],
-                stakingProxyAddress: allPairsStakingProxyAddresses[index],
-            });
-
-            GlobalState.pairsState[pair.address] = newPair;
+            // TODO update pair tokens with the ones from store - better guarantees than doing it on cache warmer
         }
+
+        return overallStatus;
     }
 
-    private async updatePairsData(pairAddresses: string[]): Promise<void> {
-        const {
-            allFirstTokensPrice,
-            allFirstTokensPriceUSD,
-            allFirstTokensLockedValueUSD,
-            allSecondTokensPrice,
-            allSecondTokensPriceUSD,
-            allSecondTokensLockedValueUSD,
-            allLpTokensPriceUSD,
-            allLockedValueUSD,
-            allPrevious24hLockedValueUSD,
-            allFeesUSD,
-            allTradesCount,
-            allTradesCount24h,
-            allDeployedAt,
-            allVolumeUSD24h,
-            allStates,
-            allFeeStates,
-            allInfoMetadata,
-            allType,
-            allTotalFeePercent,
-            allSpecialFeePercent,
-        } = await this.getPairData(pairAddresses);
-
-        for (const [index, address] of pairAddresses.entries()) {
-            const {
-                firstTokenID,
-                secondTokenID,
-                lpTokenID,
-                dualFarmRewardTokenID,
-            } = GlobalState.pairsEsdtTokens[address];
-
-            GlobalState.pairsState[address].firstToken = new EsdtToken({
-                ...GlobalState.tokensState[firstTokenID],
-            });
-            GlobalState.pairsState[address].firstTokenPrice =
-                allFirstTokensPrice[index];
-            GlobalState.pairsState[address].firstTokenPriceUSD =
-                allFirstTokensPriceUSD[index];
-            GlobalState.pairsState[address].firstTokenLockedValueUSD =
-                allFirstTokensLockedValueUSD[index];
-
-            GlobalState.pairsState[address].secondToken = new EsdtToken({
-                ...GlobalState.tokensState[secondTokenID],
-            });
-            GlobalState.pairsState[address].secondTokenPrice =
-                allSecondTokensPrice[index];
-            GlobalState.pairsState[address].secondTokenPriceUSD =
-                allSecondTokensPriceUSD[index];
-            GlobalState.pairsState[address].secondTokenLockedValueUSD =
-                allSecondTokensLockedValueUSD[index];
-
-            GlobalState.pairsState[address].liquidityPoolToken =
-                lpTokenID !== undefined
-                    ? new EsdtToken({
-                          ...GlobalState.tokensState[lpTokenID],
-                      })
-                    : undefined;
-            GlobalState.pairsState[address].liquidityPoolTokenPriceUSD =
-                allLpTokensPriceUSD[index];
-
-            GlobalState.pairsState[address].lockedValueUSD =
-                allLockedValueUSD[index];
-            GlobalState.pairsState[address].previous24hLockedValueUSD =
-                allPrevious24hLockedValueUSD[index];
-
-            GlobalState.pairsState[address].hasFarms =
-                GlobalState.pairsState[address].farmAddress !== undefined;
-            GlobalState.pairsState[address].hasDualFarms =
-                dualFarmRewardTokenID !== undefined;
-
-            GlobalState.pairsState[address].feesUSD24h = allFeesUSD[index];
-            GlobalState.pairsState[address].tradesCount = allTradesCount[index];
-            GlobalState.pairsState[address].tradesCount24h =
-                allTradesCount24h[index];
-            GlobalState.pairsState[address].deployedAt = allDeployedAt[index];
-            GlobalState.pairsState[address].volumeUSD24h =
-                allVolumeUSD24h[index];
-            GlobalState.pairsState[address].state = allStates[index];
-            GlobalState.pairsState[address].feeState = allFeeStates[index];
-            GlobalState.pairsState[address].info = allInfoMetadata[index];
-            GlobalState.pairsState[address].type = allType[index];
-            GlobalState.pairsState[address].totalFeePercent =
-                allTotalFeePercent[index];
-            GlobalState.pairsState[address].specialFeePercent =
-                allSpecialFeePercent[index];
+    private isStorePairDataValid(address: string): boolean {
+        if (
+            !GlobalState.pairsState[address] ||
+            !GlobalState.pairsLastUpdate[address]
+        ) {
+            // console.log(`pair missing data ${address} - early exit`);
+            // console.log('missing data points', {
+            //     state: !GlobalState.pairsState[address],
+            //     lastUpdate: !GlobalState.pairsLastUpdate,
+            // });
+            return false;
         }
+
+        const lastUpdate = GlobalState.pairsLastUpdate[address];
+        const stalenessThresholds =
+            constantsConfig.memoryStore.pairsStalenessThreshold;
+        const now = moment().unix();
+
+        if (
+            now - lastUpdate.tokensFarms > stalenessThresholds.tokensFarms ||
+            now - lastUpdate.analytics > stalenessThresholds.analytics ||
+            now - lastUpdate.info > stalenessThresholds.info ||
+            now - lastUpdate.prices > stalenessThresholds.prices
+        ) {
+            // console.log(`pair stale ${address} - early exit`);
+            // console.log({
+            //     tokenFarms: now - lastUpdate.tokensFarms,
+            //     analytics: now - lastUpdate.analytics,
+            //     info: now - lastUpdate.info,
+            //     prices: now - lastUpdate.prices,
+            // });
+            return false;
+        }
+
+        return true;
     }
 
-    private async updatePairsCompoundedAPRs(
-        pairAddresses: string[],
-        pairsStakingProxyAddresses: string[],
-    ): Promise<void> {
-        const stakeFarmAddresses =
-            await this.stakingProxyAbi.getAllStakingFarmAddresses(
-                pairsStakingProxyAddresses,
-            );
+    private areStorePairTokensFresh(address: string): boolean {
+        if (!GlobalState.pairsEsdtTokens[address]) {
+            console.log(`pair missing esdtTokens ${address} - early exit`);
+            return false;
+        }
 
-        const allStakeFarmsAPRs =
-            await this.stakingCompute.getAllBaseAndMaxBoostedAPRs(
-                stakeFarmAddresses,
-            );
+        const pairTokens = GlobalState.pairsEsdtTokens[address];
+        const tokenIDs = [pairTokens.firstTokenID, pairTokens.secondTokenID];
 
-        const allFeesAPR = await this.pairCompute.getAllFeesAPR(pairAddresses);
+        if (pairTokens.lpTokenID) {
+            tokenIDs.push(pairTokens.lpTokenID);
+        }
 
-        const farmAddresses = farmsAddresses([FarmVersion.V2]);
-        const allFarmBaseAPR = await this.farmCompute.getAllBaseAPR(
-            farmAddresses,
-        );
+        if (pairTokens.dualFarmRewardTokenID) {
+            tokenIDs.push(pairTokens.dualFarmRewardTokenID);
+        }
 
-        const allFarmMaxBoostedAPR = await this.farmCompute.getAllMaxBoostedAPR(
-            farmAddresses,
-        );
-        for (const [index, address] of pairAddresses.entries()) {
-            let farmBaseAPR = '0';
-            let farmBoostedAPR = '0';
-            let dualFarmBaseAPR = '0';
-            let dualFarmBoostedAPR = '0';
+        const now = moment().unix();
+        const stalenessThresholds =
+            constantsConfig.memoryStore.tokensStalenessThreshold;
 
-            if (GlobalState.pairsState[address].hasFarms) {
-                const farmIndex = farmAddresses.findIndex(
-                    (farmAddress) =>
-                        farmAddress ===
-                        GlobalState.pairsState[address].farmAddress,
-                );
-                farmBaseAPR = allFarmBaseAPR[farmIndex];
-                farmBoostedAPR = allFarmMaxBoostedAPR[farmIndex];
+        for (const tokenID of tokenIDs) {
+            if (
+                !GlobalState.tokensLastUpdate[tokenID] ||
+                !GlobalState.tokensState[tokenID]
+            ) {
+                // console.log(`token missing data ${tokenID} - early exit`);
+                // console.log('missing data points', {
+                //     state: !GlobalState.tokensState[tokenID],
+                //     lastUpdate: !GlobalState.tokensLastUpdate[tokenID],
+                // });
+                return false;
             }
 
-            if (GlobalState.pairsState[address].hasDualFarms) {
-                const stakingProxyIndex = pairsStakingProxyAddresses.findIndex(
-                    (stakingProxyAddress) =>
-                        stakingProxyAddress ===
-                        GlobalState.pairsState[address].stakingProxyAddress,
-                );
-                dualFarmBaseAPR = allStakeFarmsAPRs[stakingProxyIndex].baseAPR;
-                dualFarmBoostedAPR =
-                    allStakeFarmsAPRs[stakingProxyIndex].maxBoostedAPR;
-            }
+            const lastUpdate = GlobalState.tokensLastUpdate[tokenID];
 
-            GlobalState.pairsState[address].feesAPR = allFeesAPR[index];
-            GlobalState.pairsState[address].compoundedAPR =
-                new PairCompoundedAPRModel({
-                    address: address,
-                    feesAPR: allFeesAPR[index],
-                    farmBaseAPR: farmBaseAPR,
-                    farmBoostedAPR: farmBoostedAPR,
-                    dualFarmBaseAPR: dualFarmBaseAPR,
-                    dualFarmBoostedAPR: dualFarmBoostedAPR,
-                });
-        }
-    }
-
-    private async updatePairsRewardTokens(pairAddresses): Promise<void> {
-        const lockedToken = await this.energyService.getLockedToken();
-
-        for (const address of pairAddresses) {
-            const { firstTokenID, secondTokenID, dualFarmRewardTokenID } =
-                GlobalState.pairsEsdtTokens[address];
-
-            GlobalState.pairsState[address].rewardTokens =
-                new PairRewardTokensModel({
-                    address: address,
-                    poolRewards: [
-                        GlobalState.tokensState[firstTokenID],
-                        GlobalState.tokensState[secondTokenID],
-                    ],
-                    farmReward:
-                        GlobalState.pairsState[address].farmAddress !==
-                        undefined
-                            ? lockedToken
-                            : undefined,
-                    dualFarmReward:
-                        dualFarmRewardTokenID !== undefined
-                            ? {
-                                  ...GlobalState.tokensState[
-                                      dualFarmRewardTokenID
-                                  ],
-                              }
-                            : undefined,
-                });
-        }
-    }
-
-    @Cron(CronExpression.EVERY_5_MINUTES)
-    @Lock({ name: 'refreshRouterData', verbose: true })
-    async refreshRouterData(): Promise<void> {
-        if (GlobalState.initStatus !== GlobalStateInitStatus.DONE) {
-            return;
-        }
-
-        try {
-            const pairsMetadata = await this.routerAbi.pairsMetadata();
-            await this.updateAddressesAndTokenIDs(pairsMetadata);
-
-            GlobalState.initStatus = GlobalStateInitStatus.DONE;
-        } catch (error) {
-            this.logger.error(
-                `refreshRouterData failed with error: ${error.message}`,
-                {
-                    context: 'MemoryStoreCronService',
-                },
-            );
-            GlobalState.initStatus = GlobalStateInitStatus.FAILED;
-        }
-    }
-
-    @Cron(CronExpression.EVERY_30_SECONDS)
-    @Lock({ name: 'refreshPairsMemoryStore', verbose: true })
-    async refreshPairsMemoryStore(): Promise<void> {
-        if (GlobalState.initStatus !== GlobalStateInitStatus.DONE) {
-            return;
-        }
-
-        const pairAddresses = [];
-        const pairStakingProxyAddresses = [];
-        for (const pair of Object.values(GlobalState.pairsState)) {
-            pairAddresses.push(pair.address);
-
-            if (pair.stakingProxyAddress !== undefined) {
-                pairStakingProxyAddresses.push(pair.stakingProxyAddress);
+            if (
+                now - lastUpdate.metadata > stalenessThresholds.metadata ||
+                now - lastUpdate.extra > stalenessThresholds.extra ||
+                now - lastUpdate.price > stalenessThresholds.price
+            ) {
+                // console.log(`token stale ${tokenID} - early exit`);
+                // console.log({
+                //     metadata: now - lastUpdate.metadata,
+                //     extra: now - lastUpdate.extra,
+                //     price: now - lastUpdate.price,
+                // });
+                return false;
             }
         }
 
-        try {
-            await this.updatePairsData(pairAddresses);
-
-            await this.updatePairsCompoundedAPRs(
-                pairAddresses,
-                pairStakingProxyAddresses,
-            );
-
-            await this.updatePairsRewardTokens(pairAddresses);
-
-            GlobalState.initStatus = GlobalStateInitStatus.DONE;
-        } catch (error) {
-            this.logger.error(
-                `refreshPairsMemoryStore failed with error: ${error.message}`,
-                {
-                    context: 'MemoryStoreCronService',
-                },
-            );
-            GlobalState.initStatus = GlobalStateInitStatus.FAILED;
-        }
-    }
-
-    @Cron(CronExpression.EVERY_30_SECONDS)
-    @Lock({ name: 'refreshTokensMemoryStore', verbose: true })
-    async refreshTokensMemoryStore(): Promise<void> {
-        if (GlobalState.initStatus !== GlobalStateInitStatus.DONE) {
-            return;
-        }
-
-        const tokenIDs = Object.keys(GlobalState.tokensState);
-        try {
-            const tokensMetadata = await this.tokenService.getAllTokensMetadata(
-                tokenIDs,
-            );
-
-            const allTokensType = await this.tokenService.getAllEsdtTokensType(
-                tokenIDs,
-            );
-
-            const {
-                allPriceDerivedEGLD,
-                allPriceUSD,
-                allPrevious24hPrice,
-                allPrevious7dPrice,
-                allVolumeUSD24h,
-                allPrevious24hVolumeUSD,
-                allLiquidityUSD,
-                allCreatedAt,
-                allSwapCount24h,
-                allPrevious24hSwapCount,
-                allTrendingScore,
-            } = await this.getTokensData(tokenIDs);
-
-            for (const [index, tokenID] of tokenIDs.entries()) {
-                const assets = new AssetsModel({
-                    social: new SocialModel(
-                        tokensMetadata[index].assets.social,
-                    ),
-                    ...tokensMetadata[index].assets,
-                });
-
-                GlobalState.tokensState[tokenID] = {
-                    ...tokensMetadata[index],
-                    ...{
-                        derivedEGLD: allPriceDerivedEGLD[index],
-                        price: allPriceUSD[index],
-                        previous24hPrice: allPrevious24hPrice[index],
-                        type: allTokensType[index],
-                        assets: assets,
-                        roles: new RolesModel(tokensMetadata[index].roles),
-                        previous7dPrice: allPrevious7dPrice[index],
-                        volumeUSD24h: allVolumeUSD24h[index],
-                        previous24hVolume: allPrevious24hVolumeUSD[index],
-                        liquidityUSD: allLiquidityUSD[index],
-                        createdAt: allCreatedAt[index],
-                        swapCount24h: allSwapCount24h[index],
-                        previous24hSwapCount: allPrevious24hSwapCount[index],
-                        trendingScore: allTrendingScore[index],
-                    },
-                };
-            }
-
-            GlobalState.initStatus = GlobalStateInitStatus.DONE;
-        } catch (error) {
-            this.logger.error(
-                `refreshTokensMemoryStore failed with error: ${error.message}`,
-                {
-                    context: 'MemoryStoreCronService',
-                },
-            );
-            GlobalState.initStatus = GlobalStateInitStatus.FAILED;
-        }
-    }
-
-    private async getPairData(pairAddresses: string[]): Promise<{
-        allFirstTokensPrice: string[];
-        allFirstTokensPriceUSD: string[];
-        allFirstTokensLockedValueUSD: string[];
-        allSecondTokensPrice: string[];
-        allSecondTokensPriceUSD: string[];
-        allSecondTokensLockedValueUSD: string[];
-        allLpTokensPriceUSD: string[];
-        allLockedValueUSD: string[];
-        allPrevious24hLockedValueUSD: string[];
-        allFeesUSD: string[];
-        allTradesCount: number[];
-        allTradesCount24h: number[];
-        allDeployedAt: number[];
-        allVolumeUSD24h: string[];
-        allStates: string[];
-        allFeeStates: boolean[];
-        allInfoMetadata: PairInfoModel[];
-        allType: string[];
-        allTotalFeePercent: number[];
-        allSpecialFeePercent: number[];
-    }> {
-        const allFirstTokensPrice =
-            await this.pairCompute.getAllFirstTokensPrice(pairAddresses);
-        const allFirstTokensPriceUSD =
-            await this.pairCompute.getAllFirstTokensPriceUSD(pairAddresses);
-        const allFirstTokensLockedValueUSD =
-            await this.pairCompute.getAllFirstTokensLockedValueUSD(
-                pairAddresses,
-            );
-
-        const allSecondTokensPrice =
-            await this.pairCompute.getAllSecondTokensPrice(pairAddresses);
-        const allSecondTokensPriceUSD =
-            await this.pairCompute.getAllSecondTokensPricesUSD(pairAddresses);
-        const allSecondTokensLockedValueUSD =
-            await this.pairCompute.getAllSecondTokensLockedValueUSD(
-                pairAddresses,
-            );
-
-        const allLpTokensPriceUSD =
-            await this.pairCompute.getAllLpTokensPriceUSD(pairAddresses);
-
-        const allLockedValueUSD = await this.pairService.getAllLockedValueUSD(
-            pairAddresses,
-        );
-        const allPrevious24hLockedValueUSD =
-            await this.pairCompute.getAllPrevious24hLockedValueUSD(
-                pairAddresses,
-            );
-
-        const allFeesUSD = await this.pairCompute.getAllFeesUSD(pairAddresses);
-        const allTradesCount = await this.pairService.getAllTradesCount(
-            pairAddresses,
-        );
-        const allTradesCount24h = await this.pairCompute.getAllTradesCount24h(
-            pairAddresses,
-        );
-        const allDeployedAt = await this.pairService.getAllDeployedAt(
-            pairAddresses,
-        );
-        const allVolumeUSD24h = await this.pairCompute.getAllVolumeUSD(
-            pairAddresses,
-        );
-        const allStates = await this.pairService.getAllStates(pairAddresses);
-        const allFeeStates = await this.pairService.getAllFeeStates(
-            pairAddresses,
-        );
-        const allInfoMetadata = await this.pairAbi.getAllPairsInfoMetadata(
-            pairAddresses,
-        );
-        const allType = await this.pairCompute.getAllType(pairAddresses);
-        const allTotalFeePercent = await this.pairAbi.getAllTotalFeePercent(
-            pairAddresses,
-        );
-        const allSpecialFeePercent = await this.pairAbi.getAllSpecialFeePercent(
-            pairAddresses,
-        );
-
-        return {
-            allFirstTokensPrice,
-            allFirstTokensPriceUSD,
-            allFirstTokensLockedValueUSD,
-            allSecondTokensPrice,
-            allSecondTokensPriceUSD,
-            allSecondTokensLockedValueUSD,
-            allLpTokensPriceUSD,
-            allLockedValueUSD,
-            allPrevious24hLockedValueUSD,
-            allFeesUSD,
-            allTradesCount,
-            allTradesCount24h,
-            allDeployedAt,
-            allVolumeUSD24h,
-            allStates,
-            allFeeStates,
-            allInfoMetadata,
-            allType,
-            allTotalFeePercent,
-            allSpecialFeePercent,
-        };
-    }
-
-    private async getTokensData(tokenIDs: string[]): Promise<{
-        allPriceDerivedEGLD: string[];
-        allPriceUSD: string[];
-        allPrevious24hPrice: string[];
-        allPrevious7dPrice: string[];
-        allVolumeUSD24h: string[];
-        allPrevious24hVolumeUSD: string[];
-        allLiquidityUSD: string[];
-        allCreatedAt: string[];
-        allSwapCount24h: number[];
-        allPrevious24hSwapCount: number[];
-        allTrendingScore: string[];
-    }> {
-        const allPriceDerivedEGLD =
-            await this.tokenCompute.getAllTokensPriceDerivedEGLD(tokenIDs);
-
-        const allPriceUSD = await this.tokenCompute.getAllTokensPriceDerivedUSD(
-            tokenIDs,
-        );
-
-        const allPrevious24hPrice =
-            await this.tokenCompute.getAllTokensPrevious24hPrice(tokenIDs);
-
-        const allPrevious7dPrice =
-            await this.tokenCompute.getAllTokensPrevious7dPrice(tokenIDs);
-
-        const allVolumeUSD24h =
-            await this.tokenCompute.getAllTokensVolumeUSD24h(tokenIDs);
-
-        const allPrevious24hVolumeUSD =
-            await this.tokenCompute.getAllTokensPrevious24hVolumeUSD(tokenIDs);
-
-        const allLiquidityUSD =
-            await this.tokenCompute.getAllTokensLiquidityUSD(tokenIDs);
-
-        const allCreatedAt = await this.tokenCompute.getAllTokensCreatedAt(
-            tokenIDs,
-        );
-
-        const allTokensSwapCount =
-            await this.tokenCompute.allTokensSwapsCount();
-        const allSwapCount24h = tokenIDs.map((tokenID) => {
-            const tokenData = allTokensSwapCount.find(
-                (elem) => elem.tokenID === tokenID,
-            );
-            return tokenData ? tokenData.swapsCount : 0;
-        });
-
-        const allTokensPrev24hSwapCount =
-            await this.tokenCompute.allTokensSwapsCountPrevious24h();
-        const allPrevious24hSwapCount = tokenIDs.map((tokenID) => {
-            const tokenData = allTokensPrev24hSwapCount.find(
-                (elem) => elem.tokenID === tokenID,
-            );
-            return tokenData ? tokenData.swapsCount : 0;
-        });
-
-        const allTrendingScore =
-            await this.tokenCompute.getAllTokensTrendingScore(tokenIDs);
-
-        return {
-            allPriceDerivedEGLD,
-            allPriceUSD,
-            allPrevious24hPrice,
-            allPrevious7dPrice,
-            allVolumeUSD24h,
-            allPrevious24hVolumeUSD,
-            allLiquidityUSD,
-            allCreatedAt,
-            allSwapCount24h,
-            allPrevious24hSwapCount,
-            allTrendingScore,
-        };
+        return true;
     }
 }
