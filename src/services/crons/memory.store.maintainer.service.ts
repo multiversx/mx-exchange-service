@@ -1,10 +1,14 @@
-import { RedisCacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import moment from 'moment';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
-import { PairEsdtTokens } from 'src/modules/memory-store/entities/global.state';
+import {
+    PairEsdtTokens,
+    PairFieldsType,
+    TokenFieldsType,
+} from 'src/modules/memory-store/entities/global.state';
 import {
     PairCompoundedAPRModel,
     PairModel,
@@ -23,6 +27,15 @@ import {
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
+import {
+    UpdatePairPayload,
+    UpdateTokenPayload,
+} from 'src/modules/memory-store/entities/update.events.payloads';
+import {
+    MEMORY_STORE_CACHE_KEYS,
+    MEMORY_STORE_CACHE_PREFIX,
+    MEMORY_STORE_UPDATE_EVENTS,
+} from 'src/modules/memory-store/entities/constants';
 
 @Injectable()
 export class MemoryStoreMaintainerService {
@@ -33,7 +46,7 @@ export class MemoryStoreMaintainerService {
         private readonly farmCompute: FarmComputeServiceV2,
         private readonly stakingProxyAbi: StakingProxyAbiService,
         private readonly stakingCompute: StakingComputeService,
-        private readonly redisService: RedisCacheService,
+        private readonly cacheService: CacheService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -91,8 +104,6 @@ export class MemoryStoreMaintainerService {
             },
         );
 
-        const statuses: Record<string, number> = {};
-
         for (const [index, pairMetadata] of pairsMetadata.entries()) {
             const pairEsdtTokens = new PairEsdtTokens({
                 firstTokenID: pairMetadata.firstTokenID,
@@ -131,6 +142,7 @@ export class MemoryStoreMaintainerService {
                 compoundedAPR.dualFarmBoostedAPR = maxBoostedAPR;
             }
 
+            // TODO remove after updating tokens in cron runnning on instance
             const [firstToken, secondToken, lpToken, dualFarmRewardToken] =
                 await Promise.all([
                     this.getMemoryStoreHash(
@@ -175,19 +187,20 @@ export class MemoryStoreMaintainerService {
 
             await Promise.all([
                 this.cachePairTokens(pairMetadata.address, pairEsdtTokens),
-                this.cachePair(pairMetadata.address, pair, 'tokensFarms'),
+                this.cachePair(
+                    pairMetadata.address,
+                    pair,
+                    PairFieldsType.tokensFarms,
+                ),
             ]);
-
-            statuses[pairMetadata.address] = moment().unix();
         }
 
         await this.cacheLpTokens(lpTokens);
     }
 
     async cacheLpTokens(tokens: EsdtToken[]): Promise<void> {
-        const statuses: Record<string, number> = {};
-
         tokens = tokens.filter((token) => token !== undefined);
+
         const allCreatedAt = await this.tokenCompute.getAllTokensCreatedAt(
             tokens.map((token) => token.identifier),
         );
@@ -202,57 +215,42 @@ export class MemoryStoreMaintainerService {
             token.previous24hSwapCount = 0;
             token.trendingScore = '-1000000000';
             token.createdAt = allCreatedAt[index];
-            await this.cacheEsdtToken(token.identifier, token, false);
-
-            statuses[token.identifier] = moment().unix();
+            await this.cacheEsdtToken(token.identifier, token, false, [
+                TokenFieldsType.metadata,
+                TokenFieldsType.extra,
+            ]);
         }
-
-        // set multi status for tokens metadata + extra
-        await Promise.all([
-            this.setMemoryStoreHash(
-                this.getHashKey('status', `tokens.metadata`),
-                statuses,
-            ),
-            this.setMemoryStoreHash(
-                this.getHashKey('status', `tokens.extra`),
-                statuses,
-            ),
-        ]);
     }
 
     async cacheTokensMetadata(tokens: EsdtToken[]): Promise<void> {
         tokens = tokens.filter((token) => token !== undefined);
         for (const token of tokens) {
-            await this.cacheEsdtToken(
-                token.identifier,
-                token,
-                false,
-                'metadata',
-            );
+            await this.cacheEsdtToken(token.identifier, token, false, [
+                TokenFieldsType.metadata,
+            ]);
         }
     }
 
     async cachePair(
         pairAddress: string,
         pair: PairModel,
-        fieldsType?: 'tokensFarms' | 'analytics' | 'info' | 'prices',
+        fieldsType?: PairFieldsType,
     ): Promise<void> {
         await this.setMemoryStoreHash(
             this.getHashKey('pairs', pairAddress),
             pair,
         );
 
-        if (fieldsType) {
-            const status = {};
-            status[pairAddress] = moment().unix();
+        const currentTimestamp = moment().unix();
 
-            this.setMemoryStoreHash(
-                this.getHashKey('status', `pairs.${fieldsType}`),
-                status,
-            );
-        }
-
-        await this.pubSub.publish('updateMemoryStorePair', pairAddress);
+        await this.pubSub.publish(
+            MEMORY_STORE_UPDATE_EVENTS.PAIR,
+            new UpdatePairPayload({
+                address: pairAddress,
+                timestamp: currentTimestamp,
+                fieldsType: fieldsType ?? undefined,
+            }),
+        );
     }
 
     async cachePairTokens(
@@ -260,12 +258,15 @@ export class MemoryStoreMaintainerService {
         pairTokens: PairEsdtTokens,
     ): Promise<void> {
         await this.setMemoryStoreHash(
-            this.getHashKey('pairsEsdtTokens', pairAddress),
+            this.getHashKey(
+                MEMORY_STORE_CACHE_KEYS.PAIRS_ESDT_TOKENS,
+                pairAddress,
+            ),
             pairTokens,
         );
 
         await this.pubSub.publish(
-            'updateMemoryStorePairEsdtTokens',
+            MEMORY_STORE_UPDATE_EVENTS.PAIR_ESDT_TOKENS,
             pairAddress,
         );
     }
@@ -274,7 +275,7 @@ export class MemoryStoreMaintainerService {
         identifier: string,
         token: EsdtToken,
         deleteAssetsAndRoles: boolean,
-        fieldsType?: 'metadata' | 'price' | 'extra',
+        fieldsTypes?: TokenFieldsType[],
     ): Promise<void> {
         if (deleteAssetsAndRoles) {
             delete token.assets;
@@ -282,21 +283,20 @@ export class MemoryStoreMaintainerService {
         }
 
         await this.setMemoryStoreHash(
-            this.getHashKey('tokens', identifier),
+            this.getHashKey(MEMORY_STORE_CACHE_KEYS.TOKENS, identifier),
             token,
         );
 
-        if (fieldsType) {
-            const status = {};
-            status[identifier] = moment().unix();
+        const currentTimestamp = moment().unix();
 
-            this.setMemoryStoreHash(
-                this.getHashKey('status', `tokens.${fieldsType}`),
-                status,
-            );
-        }
-
-        await this.pubSub.publish('updateMemoryStoreToken', identifier);
+        await this.pubSub.publish(
+            MEMORY_STORE_UPDATE_EVENTS.TOKEN,
+            new UpdateTokenPayload({
+                identifier,
+                timestamp: currentTimestamp,
+                fieldsTypes: fieldsTypes ?? undefined,
+            }),
+        );
     }
 
     private async setMemoryStoreHash(key: string, fields: object) {
@@ -304,11 +304,11 @@ export class MemoryStoreMaintainerService {
             ([key, value]) =>
                 [key, formatNullOrUndefined(value)] as [string, any],
         );
-        await this.redisService.hsetMany(key, fieldEntries, false);
+        await this.cacheService.hashSetManyRemote(key, fieldEntries, false);
     }
 
     private async getMemoryStoreHash(key: string): Promise<object> {
-        const result = await this.redisService.hgetall<string>(key);
+        const result = await this.cacheService.hashGetAllRemote(key);
 
         for (const key of Object.keys(result)) {
             result[key] = parseCachedNullOrUndefined(result[key]);
@@ -318,6 +318,6 @@ export class MemoryStoreMaintainerService {
     }
 
     private getHashKey(baseKey: string, key: string): string {
-        return `memoryStore.${baseKey}.${key}`;
+        return `${MEMORY_STORE_CACHE_PREFIX}.${baseKey}.${key}`;
     }
 }
