@@ -3,9 +3,8 @@ import { MemoryStoreController } from './memory.store.controller';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
-    imports: [DynamicModuleUtils.getRedisCacheModule()],
-    providers: [],
-    exports: [],
+    imports: [DynamicModuleUtils.getCacheModule()],
     controllers: [MemoryStoreController],
+    exports: [],
 })
-export class MemoryStoreCacheModule {}
+export class MemoryStorePubSubModule {}
