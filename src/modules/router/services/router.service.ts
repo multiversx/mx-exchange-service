@@ -25,6 +25,7 @@ export class RouterService {
         private readonly pairCompute: PairComputeService,
         private readonly cacheService: CacheService,
         private readonly pairService: PairService,
+        private readonly pairMetadataBuilder: PairsMetadataBuilder,
     ) {}
 
     async getFactory(): Promise<FactoryModel> {
@@ -46,14 +47,10 @@ export class RouterService {
     ): Promise<CollectionType<PairModel>> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
 
-        const builder = new PairsMetadataBuilder(
-            this.pairService,
-            this.pairCompute,
+        let pairs = await this.pairMetadataBuilder.applyAllFilters(
+            pairsMetadata,
+            filters,
         );
-
-        await builder.applyAllFilters(pairsMetadata, filters);
-
-        let pairs = builder.build();
 
         if (sorting) {
             pairs = await this.sortPairs(
@@ -76,14 +73,10 @@ export class RouterService {
     ): Promise<PairModel[]> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
 
-        const builder = new PairsMetadataBuilder(
-            this.pairService,
-            this.pairCompute,
+        const pairs = await this.pairMetadataBuilder.applyAllFilters(
+            pairsMetadata,
+            pairFilter,
         );
-
-        await builder.applyAllFilters(pairsMetadata, pairFilter);
-
-        const pairs = builder.build();
 
         return pairs.slice(offset, offset + limit);
     }
