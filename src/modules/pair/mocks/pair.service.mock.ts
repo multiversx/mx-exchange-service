@@ -7,6 +7,9 @@ export class PairServiceMock {
             (address) => PairsData(address).liquidityPoolToken.identifier,
         );
     }
+    async getAllStates(pairAddresses: string[]): Promise<string[]> {
+        return pairAddresses.map((address) => PairsData(address).state);
+    }
     async getAllFeeStates(pairAddresses: string[]): Promise<boolean[]> {
         return pairAddresses.map((address) => PairsData(address).feeState);
     }

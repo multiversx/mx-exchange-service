@@ -11,12 +11,20 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
-import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { PairServiceProvider } from 'src/modules/pair/mocks/pair.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
+
+const createPairFilterArgs = (fields: Record<string, any>): PairFilterArgs => {
+    const filters = new PairFilterArgs();
+    for (const key in fields) {
+        filters[key] = fields[key];
+    }
+    return filters;
+};
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -36,12 +44,12 @@ describe('RouterService', () => {
                 PairComputeServiceProvider,
                 RouterService,
                 ApiConfigService,
-                PairFilteringService,
                 PairServiceProvider,
                 WrapAbiServiceProvider,
                 TokenServiceProvider,
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
+                PairsMetadataBuilder,
             ],
         }).compile();
     });
@@ -59,7 +67,9 @@ describe('RouterService', () => {
             Number.MAX_VALUE,
             new PairFilterArgs(),
         );
-        expect(allPairs).toEqual([
+        expect(
+            allPairs.map((pair) => new PairModel({ address: pair.address })),
+        ).toEqual([
             new PairModel({
                 address: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
@@ -106,17 +116,19 @@ describe('RouterService', () => {
     it('should get filtered pairs', async () => {
         const service = module.get<RouterService>(RouterService);
 
-        const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
-            firstTokenID: 'WEGLD-123456',
-            issuedLpToken: true,
-            addresses: null,
-            secondTokenID: null,
-            state: null,
-            feeState: null,
-            minVolume: null,
-            minLockedValueUSD: null,
-        });
-        expect(filteredPairs).toEqual([
+        const filteredPairs = await service.getAllPairs(
+            0,
+            Number.MAX_VALUE,
+            createPairFilterArgs({
+                firstTokenID: 'WEGLD-123456',
+                issuedLpToken: true,
+            }),
+        );
+        expect(
+            filteredPairs.map(
+                (pair) => new PairModel({ address: pair.address }),
+            ),
+        ).toEqual([
             new PairModel({
                 address: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
@@ -143,17 +155,21 @@ describe('RouterService', () => {
     it('should get pairs filtered by fee state and volume', async () => {
         const service = module.get<RouterService>(RouterService);
 
-        const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
-            firstTokenID: 'WEGLD-123456',
-            issuedLpToken: true,
-            addresses: null,
-            secondTokenID: null,
-            state: null,
-            feeState: false,
-            minVolume: 1000,
-            minLockedValueUSD: null,
-        });
-        expect(filteredPairs).toEqual([
+        const filteredPairs = await service.getAllPairs(
+            0,
+            Number.MAX_VALUE,
+            createPairFilterArgs({
+                firstTokenID: 'WEGLD-123456',
+                issuedLpToken: true,
+                feeState: false,
+                minVolume: 1000,
+            }),
+        );
+        expect(
+            filteredPairs.map(
+                (pair) => new PairModel({ address: pair.address }),
+            ),
+        ).toEqual([
             new PairModel({
                 address: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000015',
@@ -165,17 +181,19 @@ describe('RouterService', () => {
     it('should get pairs filtered by minimum locked value USD', async () => {
         const service = module.get<RouterService>(RouterService);
 
-        const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
-            firstTokenID: null,
-            issuedLpToken: true,
-            addresses: null,
-            secondTokenID: null,
-            state: null,
-            feeState: null,
-            minVolume: null,
-            minLockedValueUSD: 300,
-        });
-        expect(filteredPairs).toEqual([
+        const filteredPairs = await service.getAllPairs(
+            0,
+            Number.MAX_VALUE,
+            createPairFilterArgs({
+                issuedLpToken: true,
+                minLockedValueUSD: 300,
+            }),
+        );
+        expect(
+            filteredPairs.map(
+                (pair) => new PairModel({ address: pair.address }),
+            ),
+        ).toEqual([
             new PairModel({
                 address: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',

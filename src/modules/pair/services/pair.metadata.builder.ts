@@ -1,21 +1,21 @@
-import { PairsFilter } from 'src/modules/router/models/filter.args';
+import {
+    PairFilterArgs,
+    PairsFilter,
+} from 'src/modules/router/models/filter.args';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { PairModel } from '../models/pair.model';
+import { PairService } from './pair.service';
+import { PairComputeService } from './pair.compute.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairFilteringService } from './pair.filtering.service';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class PairsMetadataBuilder {
-    private pairsMetadata: PairMetadata[];
-    private filters: PairsFilter;
-    private filteringService: PairFilteringService;
-
     constructor(
-        pairsMetadata: PairMetadata[],
-        filters: PairsFilter,
-        filteringService: PairFilteringService,
-    ) {
-        this.pairsMetadata = pairsMetadata;
-        this.filters = filters;
-        this.filteringService = filteringService;
-    }
+        private readonly pairService: PairService,
+        private readonly pairCompute: PairComputeService,
+    ) {}
 
     static get availableFilters() {
         return Object.getOwnPropertyNames(
@@ -27,135 +27,329 @@ export class PairsMetadataBuilder {
         );
     }
 
-    async applyAllFilters(): Promise<PairsMetadataBuilder> {
+    async applyAllFilters(
+        pairsMetadata: PairMetadata[],
+        filters: PairsFilter | PairFilterArgs,
+    ): Promise<PairModel[]> {
+        let pairs = pairsMetadata.map(
+            (pairMetadata) =>
+                new PairModel({
+                    address: pairMetadata.address,
+                    firstToken: new EsdtToken({
+                        identifier: pairMetadata.firstTokenID,
+                    }),
+                    secondToken: new EsdtToken({
+                        identifier: pairMetadata.secondTokenID,
+                    }),
+                }),
+        );
+
         for (const filterFunction of PairsMetadataBuilder.availableFilters) {
-            await this[filterFunction]();
+            pairs = await this[filterFunction](filters, pairs);
         }
 
-        return this;
+        return pairs;
     }
 
-    async filterByIssuedLpToken(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByIssuedLpToken(
-            this.filters,
-            this.pairsMetadata,
-        );
-        return this;
-    }
-
-    async filterByAddress(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByAddress(
-            this.filters,
-            this.pairsMetadata,
-        );
-        return this;
-    }
-
-    async filterByTokens(): Promise<PairsMetadataBuilder> {
-        if (this.filters.searchToken) {
-            this.pairsMetadata =
-                await this.filteringService.pairsByWildcardToken(
-                    this.filters,
-                    this.pairsMetadata,
-                );
+    async filterByIssuedLpToken(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (!filters.issuedLpToken) {
+            return pairs;
         }
 
-        this.pairsMetadata = await this.filteringService.pairsByTokens(
-            this.filters,
-            this.pairsMetadata,
+        const lpTokensIDs = await this.pairService.getAllLpTokensIds(
+            pairs.map((pair) => pair.address),
         );
-        return this;
+
+        pairs.forEach(
+            (pair, index) =>
+                (pair.liquidityPoolToken =
+                    lpTokensIDs[index] !== undefined
+                        ? new EsdtToken({
+                              identifier: lpTokensIDs[index],
+                          })
+                        : undefined),
+        );
+
+        return PairFilteringService.pairsByIssuedLpToken(filters, pairs);
     }
 
-    async filterByLpTokens(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByLpTokenIds(
-            this.filters,
-            this.pairsMetadata,
-        );
-        return this;
+    async filterByAddress(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        return PairFilteringService.pairsByAddress(filters, pairs);
     }
 
-    async filterByFarmTokens(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByFarmTokens(
-            this.filters,
-            this.pairsMetadata,
-        );
-        return this;
+    async filterByTokens(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (filters instanceof PairsFilter) {
+            if (
+                filters.searchToken === undefined ||
+                filters.searchToken.trim().length < 1
+            ) {
+                return pairs;
+            }
+
+            const pairsFirstToken = await this.pairService.getAllFirstTokens(
+                pairs.map((pair) => pair.address),
+            );
+            const pairsSecondToken = await this.pairService.getAllSecondTokens(
+                pairs.map((pair) => pair.address),
+            );
+
+            pairs.forEach((pair, index) => {
+                pair.firstToken = pairsFirstToken[index];
+                pair.secondToken = pairsSecondToken[index];
+            });
+        }
+
+        return PairFilteringService.pairsByTokens(filters, pairs);
     }
 
-    async filterByState(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByState(
-            this.filters,
-            this.pairsMetadata,
+    async filterByLpTokens(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (
+            filters instanceof PairFilterArgs ||
+            filters.lpTokenIds === undefined ||
+            filters.lpTokenIds.length === 0
+        ) {
+            return pairs;
+        }
+
+        const lpTokensIDs = await this.pairService.getAllLpTokensIds(
+            pairs.map((pair) => pair.address),
         );
-        return this;
+
+        pairs.forEach(
+            (pair, index) =>
+                (pair.liquidityPoolToken =
+                    lpTokensIDs[index] !== undefined
+                        ? new EsdtToken({
+                              identifier: lpTokensIDs[index],
+                          })
+                        : undefined),
+        );
+
+        return PairFilteringService.pairsByLpTokenIds(filters, pairs);
     }
 
-    async filterByFeeState(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByFeeState(
-            this.filters,
-            this.pairsMetadata,
+    async filterByFarmTokens(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (
+            filters instanceof PairFilterArgs ||
+            filters.farmTokens === undefined ||
+            filters.farmTokens.length === 0
+        ) {
+            return pairs;
+        }
+
+        const farmTokens = await Promise.all(
+            pairs.map((pairMetadata) =>
+                this.pairCompute.getPairFarmToken(pairMetadata.address),
+            ),
         );
-        return this;
+
+        return PairFilteringService.pairsByFarmTokens(
+            filters,
+            pairs,
+            farmTokens,
+        );
     }
 
-    async filterByVolume(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByVolume(
-            this.filters,
-            this.pairsMetadata,
+    async filterByState(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (
+            !filters.state ||
+            (Array.isArray(filters.state) && filters.state.length === 0)
+        ) {
+            return pairs;
+        }
+
+        const pairsStates = await this.pairService.getAllStates(
+            pairs.map((pair) => pair.address),
         );
-        return this;
+
+        pairs.forEach((pair, index) => (pair.state = pairsStates[index]));
+
+        return PairFilteringService.pairsByState(filters, pairs);
     }
 
-    async filterByLockedValueUSD(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByLockedValueUSD(
-            this.filters,
-            this.pairsMetadata,
+    async filterByFeeState(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (
+            typeof filters.feeState === 'undefined' ||
+            filters.feeState === null
+        ) {
+            return pairs;
+        }
+
+        const pairsFeeStates = await this.pairService.getAllFeeStates(
+            pairs.map((pair) => pair.address),
         );
-        return this;
+
+        pairs.forEach((pair, index) => (pair.feeState = pairsFeeStates[index]));
+
+        return PairFilteringService.pairsByFeeState(filters, pairs);
     }
 
-    async filterByTradesCount(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByTradesCount(
-            this.filters,
-            this.pairsMetadata,
+    async filterByVolume(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (filters.minVolume === undefined) {
+            return pairs;
+        }
+
+        const pairsVolumes = await this.pairCompute.getAllVolumeUSD(
+            pairs.map((pair) => pair.address),
         );
-        return this;
+
+        pairs.forEach(
+            (pair, index) => (pair.volumeUSD24h = pairsVolumes[index]),
+        );
+
+        return PairFilteringService.pairsByVolume(filters, pairs);
     }
 
-    async filterByTradesCount24h(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByTradesCount24h(
-            this.filters,
-            this.pairsMetadata,
+    async filterByLockedValueUSD(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (filters.minLockedValueUSD === undefined) {
+            return pairs;
+        }
+
+        const pairsLiquidityUSD = await this.pairService.getAllLockedValueUSD(
+            pairs.map((pair) => pair.address),
         );
-        return this;
+
+        pairs.forEach(
+            (pair, index) => (pair.lockedValueUSD = pairsLiquidityUSD[index]),
+        );
+
+        return PairFilteringService.pairsByLockedValueUSD(filters, pairs);
     }
 
-    async filterByHasFarms(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByHasFarms(
-            this.filters,
-            this.pairsMetadata,
+    async filterByTradesCount(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (
+            filters instanceof PairFilterArgs ||
+            filters.minTradesCount === undefined
+        ) {
+            return pairs;
+        }
+
+        const pairsTradesCount = await this.pairService.getAllTradesCount(
+            pairs.map((pair) => pair.address),
         );
-        return this;
+
+        pairs.forEach(
+            (pair, index) => (pair.tradesCount = pairsTradesCount[index]),
+        );
+
+        return PairFilteringService.pairsByTradesCount(filters, pairs);
     }
 
-    async filterByHasDualFarms(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByHasDualFarms(
-            this.filters,
-            this.pairsMetadata,
+    async filterByTradesCount24h(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (
+            filters instanceof PairFilterArgs ||
+            filters.minTradesCount24h === undefined
+        ) {
+            return pairs;
+        }
+
+        const pairsTradesCount24h = await this.pairCompute.getAllTradesCount24h(
+            pairs.map((pair) => pair.address),
         );
-        return this;
+
+        pairs.forEach(
+            (pair, index) => (pair.tradesCount24h = pairsTradesCount24h[index]),
+        );
+
+        return PairFilteringService.pairsByTradesCount24h(filters, pairs);
     }
 
-    async filterByDeployedAt(): Promise<PairsMetadataBuilder> {
-        this.pairsMetadata = await this.filteringService.pairsByDeployedAt(
-            this.filters,
-            this.pairsMetadata,
+    async filterByHasFarms(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (
+            filters instanceof PairFilterArgs ||
+            typeof filters.hasFarms === 'undefined' ||
+            filters.hasFarms === null
+        ) {
+            return pairs;
+        }
+
+        const pairsHasFarms = await this.pairService.getAllHasFarms(
+            pairs.map((pair) => pair.address),
         );
-        return this;
+
+        pairs.forEach((pair, index) => (pair.hasFarms = pairsHasFarms[index]));
+
+        return PairFilteringService.pairsByHasFarms(filters, pairs);
     }
 
-    async build(): Promise<PairMetadata[]> {
-        return this.pairsMetadata;
+    async filterByHasDualFarms(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (
+            filters instanceof PairFilterArgs ||
+            typeof filters.hasDualFarms === 'undefined' ||
+            filters.hasDualFarms === null
+        ) {
+            return pairs;
+        }
+
+        const pairsHasDualFarms = await this.pairService.getAllHasDualFarms(
+            pairs.map((pair) => pair.address),
+        );
+
+        pairs.forEach(
+            (pair, index) => (pair.hasDualFarms = pairsHasDualFarms[index]),
+        );
+
+        return PairFilteringService.pairsByHasDualFarms(filters, pairs);
+    }
+
+    async filterByDeployedAt(
+        filters: PairsFilter | PairFilterArgs,
+        pairs: PairModel[],
+    ): Promise<PairModel[]> {
+        if (
+            filters instanceof PairFilterArgs ||
+            filters.minDeployedAt === undefined
+        ) {
+            return pairs;
+        }
+
+        const pairsDeployedAt = await this.pairService.getAllDeployedAt(
+            pairs.map((pair) => pair.address),
+        );
+
+        pairs.forEach(
+            (pair, index) => (pair.deployedAt = pairsDeployedAt[index]),
+        );
+
+        return PairFilteringService.pairsByDeployedAt(filters, pairs);
     }
 }
