@@ -6,13 +6,16 @@ import {
 import { Plugin } from '@nestjs/apollo';
 import { FieldNode, Kind, SelectionNode } from 'graphql';
 import {
+    extractFilteredQueryConnectionFields,
     extractFilteredQueryEdgeNodes,
     extractQueryFields,
+    extractRequestedFields,
     parseArguments,
     updateFilteredQueryEdgeNodes,
 } from './utils/graphql.utils';
 import { QueryField } from './entities/query.field.type';
 import { MemoryStoreFactoryService } from './services/memory.store.factory.service';
+import { StoreResolvableQuery } from './entities/store.resolvable.query';
 
 @Plugin()
 export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
@@ -23,17 +26,11 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
     async requestDidStart(): Promise<GraphQLRequestListener<any>> {
         const memoryStoreFactory = this.memoryStoreFactory;
 
-        const storeResolvableQueries: Array<{
-            queryName: string;
-            queryAlias?: string;
-            isFiltered: boolean;
-            requestedFields: QueryField[];
-            arguments: Record<string, any>;
-        }> = [];
+        const storeResolvableQueries: StoreResolvableQuery[] = [];
 
         return {
             async responseForOperation(
-                requestContext,
+                context,
             ): Promise<GraphQLResponse | null> {
                 if (!memoryStoreFactory.isReady()) {
                     return null;
@@ -43,7 +40,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     memoryStoreFactory.getTargetedQueryNames();
 
                 const requestSelections =
-                    requestContext.operation.selectionSet.selections;
+                    context.operation.selectionSet.selections;
 
                 // Separate selections into those that can be resolved from the store and those that need normal resolution
                 const normalSelections: SelectionNode[] = [];
@@ -66,11 +63,16 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                     const { missingFields, isFiltered, identifierField } =
                         targetedQueries[queryName];
 
-                    const actualNodes = isFiltered
-                        ? extractFilteredQueryEdgeNodes(
-                              selection.selectionSet?.selections,
-                          )
-                        : selection.selectionSet?.selections || [];
+                    const [actualNodes, connectionFields] = isFiltered
+                        ? [
+                              extractFilteredQueryEdgeNodes(
+                                  selection.selectionSet?.selections,
+                              ),
+                              extractFilteredQueryConnectionFields(
+                                  selection.selectionSet?.selections,
+                              ),
+                          ]
+                        : [selection.selectionSet?.selections || []];
 
                     if (!actualNodes) {
                         normalSelections.push(selection);
@@ -85,16 +87,23 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                         );
 
                     if (storeNodes.length > 0) {
-                        storeResolvableQueries.push({
-                            queryName,
-                            queryAlias: selection.alias?.value,
-                            requestedFields: extractQueryFields(storeNodes),
-                            arguments: parseArguments(
-                                selection.arguments,
-                                requestContext.request.variables,
-                            ),
-                            isFiltered,
-                        });
+                        storeResolvableQueries.push(
+                            new StoreResolvableQuery({
+                                queryName,
+                                queryAlias: selection.alias?.value,
+                                requestedFields:
+                                    normalNodes.length > 0
+                                        ? extractQueryFields(storeNodes)
+                                        : extractRequestedFields(
+                                              storeNodes,
+                                              connectionFields,
+                                          ),
+                                arguments: parseArguments(
+                                    selection.arguments,
+                                    context.request.variables,
+                                ),
+                            }),
+                        );
                     }
 
                     if (normalNodes.length > 0) {
@@ -121,9 +130,9 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
 
                 // If there are normal selections, proceed with the normal request flow
                 if (normalSelections.length > 0) {
-                    requestContext.operation.selectionSet.selections =
+                    context.operation.selectionSet.selections =
                         normalSelections;
-                    requestContext.contextValue.storeResolve =
+                    context.contextValue.storeResolve =
                         storeResolvableQueries.length > 0
                             ? 'partial'
                             : undefined;
@@ -145,7 +154,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                 // Clear the processed queries since we're returning the response here
                 storeResolvableQueries.length = 0;
 
-                requestContext.contextValue.storeResolve = 'full';
+                context.contextValue.storeResolve = 'full';
 
                 return {
                     body: {
@@ -154,7 +163,7 @@ export class MemoryStoreApolloPlugin implements ApolloServerPlugin {
                             data: data,
                         },
                     },
-                    http: requestContext.response.http,
+                    http: context.response.http,
                 };
             },
             async willSendResponse(requestContext): Promise<void> {
@@ -238,12 +247,7 @@ function partitionSelectionNodes(
  * Resolves a list of queries entirely from the memory store.
  */
 function resolveQueriesFromStore(
-    queries: Array<{
-        queryName: string;
-        queryAlias?: string;
-        requestedFields: QueryField[];
-        arguments: Record<string, any>;
-    }>,
+    queries: StoreResolvableQuery[],
     memoryStoreFactory: MemoryStoreFactoryService,
 ) {
     const data: Record<string, any> = {};

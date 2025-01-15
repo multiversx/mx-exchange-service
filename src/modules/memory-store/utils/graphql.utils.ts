@@ -56,6 +56,76 @@ export function extractFilteredQueryEdgeNodes(
     return undefined;
 }
 
+export function extractRequestedFields(
+    selectionNodes: readonly SelectionNode[],
+    connectionFields: QueryField[],
+): QueryField[] {
+    let fields: QueryField[] = [];
+    const queryFields = extractQueryFields(selectionNodes);
+
+    const edgesIndex = connectionFields.findIndex(
+        (field) => field.name === 'edges',
+    );
+
+    if (queryFields.length === 0) {
+        fields = [...fields, ...connectionFields];
+
+        return fields;
+    }
+
+    if (edgesIndex === -1) {
+        fields.push({
+            name: 'edges',
+            subfields: [
+                {
+                    name: 'node',
+                    subfields: queryFields,
+                },
+            ],
+        });
+    } else {
+        connectionFields[edgesIndex].subfields.unshift({
+            name: 'node',
+            subfields: queryFields,
+        });
+    }
+
+    fields = [...fields, ...connectionFields];
+
+    return fields;
+}
+
+export function extractFilteredQueryConnectionFields(
+    selectionNodes: readonly SelectionNode[],
+): QueryField[] {
+    const queryFields = extractQueryFields(selectionNodes);
+
+    const edgesFieldIndex = queryFields.findIndex(
+        (field) => field.name === 'edges',
+    );
+
+    if (edgesFieldIndex === -1) {
+        return queryFields;
+    }
+
+    const nodeFieldIndex = queryFields[edgesFieldIndex].subfields.findIndex(
+        (field) => field.name === 'node',
+    );
+
+    if (nodeFieldIndex === -1) {
+        return queryFields;
+    }
+
+    if (queryFields[edgesFieldIndex].subfields.length === 1) {
+        queryFields.splice(edgesFieldIndex, 1);
+        return queryFields;
+    }
+
+    queryFields[edgesFieldIndex].subfields.splice(nodeFieldIndex, 1);
+
+    return queryFields;
+}
+
 export function updateFilteredQueryEdgeNodes(
     existingNodes: readonly SelectionNode[],
     newNodes: readonly SelectionNode[],
