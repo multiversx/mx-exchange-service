@@ -33,6 +33,14 @@ export class TokenMemoryStoreService extends IMemoryStoreService<
     TokensResponse
 > {
     static typenameMappings: Record<string, Record<string, string>> = {
+        TokensResponse: {
+            edges: 'EsdtTokenEdge',
+            pageInfo: 'EsdtTokenPageInfo',
+            pageData: 'PageData',
+        },
+        EsdtTokenEdge: {
+            node: 'EsdtToken',
+        },
         EsdtToken: {
             assets: 'AssetsModel',
             roles: 'RolesModel',
@@ -119,21 +127,22 @@ export class TokenMemoryStoreService extends IMemoryStoreService<
 
         const totalCount = tokens.length;
 
-        return PageResponse.mapResponse<EsdtToken>(
-            tokens
-                .map((token) =>
-                    createModelFromFields(
-                        token,
-                        requestedFields,
-                        'EsdtToken',
-                        this.getTypenameMapping(),
-                    ),
-                )
-                .slice(pagination.offset, pagination.offset + pagination.limit),
+        const response = PageResponse.mapResponse<EsdtToken>(
+            tokens.slice(
+                pagination.offset,
+                pagination.offset + pagination.limit,
+            ),
             this.getConnectionFromArgs(queryArguments) ?? new ConnectionArgs(),
             totalCount,
             pagination.offset,
             pagination.limit,
+        );
+
+        return createModelFromFields(
+            response,
+            requestedFields,
+            'TokensResponse',
+            this.getTypenameMapping(),
         );
     }
 
