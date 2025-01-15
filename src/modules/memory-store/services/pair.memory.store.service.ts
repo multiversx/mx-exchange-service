@@ -31,6 +31,14 @@ export class PairMemoryStoreService extends IMemoryStoreService<
     PairsResponse
 > {
     static typenameMappings: Record<string, Record<string, string>> = {
+        PairsResponse: {
+            edges: 'PairModelEdge',
+            pageInfo: 'PairModelPageInfo',
+            pageData: 'PageData',
+        },
+        PairModelEdge: {
+            node: 'PairModel',
+        },
         PairModel: {
             firstToken: 'EsdtToken',
             secondToken: 'EsdtToken',
@@ -155,21 +163,22 @@ export class PairMemoryStoreService extends IMemoryStoreService<
 
         const totalCount = pairs.length;
 
-        return PageResponse.mapResponse<PairModel>(
-            pairs
-                .map((pair) =>
-                    createModelFromFields(
-                        pair,
-                        requestedFields,
-                        'PairModel',
-                        this.getTypenameMapping(),
-                    ),
-                )
-                .slice(pagination.offset, pagination.offset + pagination.limit),
+        const response = PageResponse.mapResponse<PairModel>(
+            pairs.slice(
+                pagination.offset,
+                pagination.offset + pagination.limit,
+            ),
             this.getConnectionFromArgs(queryArguments) ?? new ConnectionArgs(),
             totalCount,
             pagination.offset,
             pagination.limit,
+        );
+
+        return createModelFromFields(
+            response,
+            requestedFields,
+            'PairsResponse',
+            this.getTypenameMapping(),
         );
     }
 
