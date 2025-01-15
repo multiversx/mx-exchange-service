@@ -34,7 +34,7 @@ export class MemoryStoreCronService {
                 },
             );
         }
-
+        GlobalState.routerAddresses = pairsMetadata.map((pair) => pair.address);
         GlobalState.initStatus = newStatus;
     }
 

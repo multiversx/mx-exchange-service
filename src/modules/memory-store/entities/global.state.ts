@@ -37,6 +37,7 @@ export class GlobalStateSingleton {
     public pairsEsdtTokens: { [key: string]: PairEsdtTokens } = {};
     public pairsLastUpdate: { [key: string]: Record<PairFieldsType, number> } =
         {};
+    public routerAddresses: string[] = [];
     public tokensState: { [key: string]: EsdtToken } = {};
     public tokensLastUpdate: {
         [key: string]: Record<TokenFieldsType, number>;
@@ -45,7 +46,7 @@ export class GlobalStateSingleton {
         GlobalStateInitStatus.NOT_STARTED;
 
     public getPairsArray(): PairModel[] {
-        return Object.values(this.pairsState);
+        return this.routerAddresses.map((address) => this.pairsState[address]);
     }
 
     public getTokensArray(): EsdtToken[] {
@@ -53,17 +54,15 @@ export class GlobalStateSingleton {
     }
 
     public getPairsTokens(enabledSwaps: boolean): EsdtToken[] {
-        const pairAddresses = enabledSwaps
-            ? Object.values(this.pairsState)
-                  .filter((pair) => pair.state === 'Active')
-                  .map((pair) => pair.address)
-            : Object.values(this.pairsState).map((pair) => pair.address);
+        const pairs = enabledSwaps
+            ? this.getPairsArray().filter((pair) => pair.state === 'Active')
+            : this.getPairsArray();
 
         let tokenIDs = [];
-        pairAddresses.forEach((address) => {
+        pairs.forEach((pair) => {
             tokenIDs.push(
-                this.pairsEsdtTokens[address].firstTokenID,
-                this.pairsEsdtTokens[address].secondTokenID,
+                this.pairsEsdtTokens[pair.address].firstTokenID,
+                this.pairsEsdtTokens[pair.address].secondTokenID,
             );
         });
 
