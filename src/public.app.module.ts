@@ -27,7 +27,6 @@ import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { FeesCollectorModule } from './modules/fees-collector/fees-collector.module';
-import { deprecationLoggerMiddleware } from './utils/deprecate.logger.middleware';
 import { EnergyModule } from './modules/energy/energy.module';
 import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
 import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-token-wrapper.module';
@@ -50,9 +49,6 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
             useFactory: async (logger: LoggerService) => ({
                 autoSchemaFile: 'schema.gql',
                 installSubscriptionHandlers: true,
-                buildSchemaOptions: {
-                    fieldMiddleware: [deprecationLoggerMiddleware],
-                },
                 formatError: (
                     formattedError: GraphQLFormattedError,
                     error: any,
