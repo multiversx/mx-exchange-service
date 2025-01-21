@@ -13,6 +13,9 @@ import { PUB_SUB } from '../redis.pubSub.module';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { constantsConfig } from 'src/config';
+import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import BigNumber from 'bignumber.js';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 
 @Injectable()
 export class AWSQueryCacheWarmerService {
@@ -20,6 +23,7 @@ export class AWSQueryCacheWarmerService {
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly tokenService: TokenService,
         private readonly routerAbi: RouterAbiService,
+        private readonly pairCompute: PairComputeService,
         private readonly analyticsAWSSetter: AnalyticsAWSSetterService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -121,11 +125,38 @@ export class AWSQueryCacheWarmerService {
         const pairsAddresses = await this.routerAbi.pairsAddress();
         this.logger.info('Start refresh pairs analytics');
         const profiler = new PerformanceProfiler();
+
+        const pairsLockedValueUSD24h: Record<string, HistoricDataModel[]> = {};
+        const timestampsSet24h = new Set<string>();
+
+        const pairsLockedValueUSDCompleteValues: Record<
+            string,
+            HistoricDataModel[]
+        > = {};
+        const timestampsSetCompleteValues = new Set<string>();
+
         for (const pairAddress of pairsAddresses) {
+            const index = pairsAddresses.indexOf(pairAddress);
+            console.log(`pair ${index} / ${pairsAddresses.length}`);
+
+            const currentLockedValueUSD = await this.pairCompute.lockedValueUSD(
+                pairAddress,
+            );
+
             const lockedValueUSD24h = await this.analyticsQuery.getValues24h({
                 series: pairAddress,
                 metric: 'lockedValueUSD',
             });
+
+            if (
+                new BigNumber(currentLockedValueUSD).isGreaterThanOrEqualTo(100)
+            ) {
+                pairsLockedValueUSD24h[pairAddress] = lockedValueUSD24h;
+                lockedValueUSD24h.forEach((dp) =>
+                    timestampsSet24h.add(dp.timestamp),
+                );
+            }
+
             await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const firstTokenPrice24h = await this.analyticsQuery.getValues24h({
                 series: pairAddress,
@@ -142,6 +173,17 @@ export class AWSQueryCacheWarmerService {
                     series: pairAddress,
                     metric: 'lockedValueUSD',
                 });
+
+            if (
+                new BigNumber(currentLockedValueUSD).isGreaterThanOrEqualTo(100)
+            ) {
+                pairsLockedValueUSDCompleteValues[pairAddress] =
+                    lockedValueUSDCompleteValues;
+                lockedValueUSDCompleteValues.forEach((dp) =>
+                    timestampsSetCompleteValues.add(dp.timestamp),
+                );
+            }
+
             await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const feesUSD = await this.analyticsQuery.getValues24hSum({
                 series: pairAddress,
@@ -244,17 +286,49 @@ export class AWSQueryCacheWarmerService {
                 series: 'erd1%',
                 metric: 'volumeUSD',
             });
-        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
-        const totalLockedValueUSD =
-            await this.analyticsQuery.getLatestCompleteValues({
-                series: 'factory',
-                metric: 'totalLockedValueUSD',
+
+        const totalLockedValueUSD24h: HistoricDataModel[] = Array.from(
+            timestampsSet24h,
+        )
+            .sort()
+            .map((timestamp) => {
+                let totalValue = new BigNumber(0);
+                Object.values(pairsLockedValueUSD24h).forEach((pairData) => {
+                    const dataPoint = pairData.find(
+                        (dp) => dp.timestamp === timestamp,
+                    );
+                    if (dataPoint?.value) {
+                        totalValue = totalValue.plus(dataPoint.value);
+                    }
+                });
+                return {
+                    timestamp,
+                    value: totalValue.toFixed(),
+                };
             });
-        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
-        const totalLockedValueUSD24h = await this.analyticsQuery.getValues24h({
-            series: 'factory',
-            metric: 'totalLockedValueUSD',
-        });
+
+        const totalLockedValueUSD: HistoricDataModel[] = Array.from(
+            timestampsSetCompleteValues,
+        )
+            .sort()
+            .map((timestamp) => {
+                let totalValue = new BigNumber(0);
+                Object.values(pairsLockedValueUSDCompleteValues).forEach(
+                    (pairData) => {
+                        const dataPoint = pairData.find(
+                            (dp) => dp.timestamp === timestamp,
+                        );
+                        if (dataPoint?.value) {
+                            totalValue = totalValue.plus(dataPoint.value);
+                        }
+                    },
+                );
+                return {
+                    timestamp,
+                    value: totalValue.toFixed(),
+                };
+            });
+
         const factoryKeys = await Promise.all([
             this.analyticsAWSSetter.setSumCompleteValues(
                 'factory',
