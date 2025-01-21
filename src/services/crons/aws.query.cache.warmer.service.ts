@@ -136,9 +136,6 @@ export class AWSQueryCacheWarmerService {
         const timestampsSetCompleteValues = new Set<string>();
 
         for (const pairAddress of pairsAddresses) {
-            const index = pairsAddresses.indexOf(pairAddress);
-            console.log(`pair ${index} / ${pairsAddresses.length}`);
-
             const currentLockedValueUSD = await this.pairCompute.lockedValueUSD(
                 pairAddress,
             );
