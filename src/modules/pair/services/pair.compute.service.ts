@@ -363,6 +363,18 @@ export class PairComputeService implements IPairComputeService {
                 this.computeSecondTokenLockedValueUSD(pairAddress),
             ]);
 
+        if (
+            new BigNumber(firstTokenLockedValueUSD)
+                .minus(secondTokenLockedValueUSD)
+                .abs()
+                .gt(1000000)
+        ) {
+            return BigNumber.min(
+                firstTokenLockedValueUSD,
+                secondTokenLockedValueUSD,
+            );
+        }
+
         return new BigNumber(firstTokenLockedValueUSD).plus(
             secondTokenLockedValueUSD,
         );
