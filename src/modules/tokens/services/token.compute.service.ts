@@ -26,7 +26,6 @@ import moment from 'moment';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenService } from './token.service';
-import { computeValueUSD } from 'src/utils/token.converters';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 
@@ -551,32 +550,51 @@ export class TokenComputeService implements ITokenComputeService {
 
     async computeTokenLiquidityUSD(tokenID: string): Promise<string> {
         const pairs = await this.routerAbi.pairsMetadata();
-        const priceUSD = await this.tokenPriceDerivedUSD(tokenID);
-        const tokenMetadata = await this.tokenService.tokenMetadata(tokenID);
-        const promises = [];
-        for (const pair of pairs) {
-            switch (tokenID) {
-                case pair.firstTokenID:
-                    promises.push(this.pairAbi.firstTokenReserve(pair.address));
-                    break;
-                case pair.secondTokenID:
-                    promises.push(
-                        this.pairAbi.secondTokenReserve(pair.address),
-                    );
-                    break;
-            }
-        }
-        const allLockedValues = await Promise.all(promises);
-        let newLockedValue = new BigNumber(0);
-        allLockedValues.forEach((value) => {
-            newLockedValue = newLockedValue.plus(value);
-        });
 
-        return computeValueUSD(
-            newLockedValue.toFixed(),
-            tokenMetadata.decimals,
-            priceUSD,
-        ).toFixed();
+        const relevantPairs = pairs.filter((pair) =>
+            [pair.firstTokenID, pair.secondTokenID].includes(tokenID),
+        );
+
+        const [allFirstTokensLockedValueUSD, allSecondTokensLockedValueUSD] =
+            await Promise.all([
+                this.pairCompute.getAllFirstTokensLockedValueUSD(
+                    relevantPairs.map((pair) => pair.address),
+                ),
+                this.pairCompute.getAllSecondTokensLockedValueUSD(
+                    relevantPairs.map((pair) => pair.address),
+                ),
+            ]);
+
+        let newLockedValue = new BigNumber(0);
+        for (const [index, pair] of relevantPairs.entries()) {
+            const firstTokenLockedValueUSD =
+                allFirstTokensLockedValueUSD[index];
+            const secondTokenLockedValueUSD =
+                allSecondTokensLockedValueUSD[index];
+
+            if (
+                new BigNumber(firstTokenLockedValueUSD)
+                    .minus(secondTokenLockedValueUSD)
+                    .abs()
+                    .gt(1000000)
+            ) {
+                newLockedValue = newLockedValue.plus(
+                    BigNumber.min(
+                        firstTokenLockedValueUSD,
+                        secondTokenLockedValueUSD,
+                    ),
+                );
+                continue;
+            }
+
+            const tokenLockedValueUSD =
+                tokenID === pair.firstTokenID
+                    ? firstTokenLockedValueUSD
+                    : secondTokenLockedValueUSD;
+            newLockedValue = newLockedValue.plus(tokenLockedValueUSD);
+        }
+
+        return newLockedValue.toFixed();
     }
 
     async getAllTokensLiquidityUSD(tokenIDs: string[]): Promise<string[]> {
