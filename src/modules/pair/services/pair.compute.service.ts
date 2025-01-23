@@ -313,6 +313,18 @@ export class PairComputeService implements IPairComputeService {
             .multipliedBy(firstTokenPriceUSD);
     }
 
+    async getAllFirstTokensLockedValueUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.firstTokenLockedValueUSD',
+            this.firstTokenLockedValueUSD.bind(this),
+            CacheTtlInfo.ContractInfo,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -341,6 +353,18 @@ export class PairComputeService implements IPairComputeService {
         return new BigNumber(secondTokenReserve)
             .multipliedBy(`1e-${secondToken.decimals}`)
             .multipliedBy(secondTokenPriceUSD);
+    }
+
+    async getAllSecondTokensLockedValueUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return await getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.secondTokenLockedValueUSD',
+            this.secondTokenLockedValueUSD.bind(this),
+            CacheTtlInfo.ContractInfo,
+        );
     }
 
     @ErrorLoggerAsync({
