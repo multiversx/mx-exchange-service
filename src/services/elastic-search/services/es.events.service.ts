@@ -12,6 +12,7 @@ import { Logger } from 'winston';
 import { RawElasticEventType } from '../entities/raw.elastic.event';
 import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
+import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 @Injectable()
 export class ElasticSearchEventsService {
@@ -192,6 +193,77 @@ export class ElasticSearchEventsService {
             '',
             elasticQueryAdapter,
             action,
+        );
+    }
+
+    async getPairTradingEvents(
+        pairAddress: string,
+    ): Promise<RawElasticEventType[]> {
+        const pagination = new ElasticPagination();
+        pagination.size = 10;
+
+        const elasticQueryAdapter: ElasticQuery =
+            new ElasticQuery().withPagination(pagination);
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match('address', pairAddress),
+            QueryType.Should([
+                QueryType.Match('identifier', SWAP_IDENTIFIER.SWAP_FIXED_INPUT),
+                QueryType.Match(
+                    'identifier',
+                    SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+                ),
+            ]),
+        ];
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.descending },
+        ];
+
+        return await this.elasticService.getList(
+            'events',
+            '',
+            elasticQueryAdapter,
+        );
+    }
+
+    async getTokenTradingEvents(
+        tokenID: string,
+        from: number,
+    ): Promise<RawElasticEventType[]> {
+        const pagination = new ElasticPagination();
+        pagination.size = 10;
+        pagination.from = from;
+
+        const elasticQueryAdapter: ElasticQuery =
+            new ElasticQuery().withPagination(pagination);
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match(
+                'topics',
+                Buffer.from(tokenID, 'utf8').toString('hex'),
+            ),
+            QueryType.Should([
+                QueryType.Match('identifier', SWAP_IDENTIFIER.SWAP_FIXED_INPUT),
+                QueryType.Match(
+                    'identifier',
+                    SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+                ),
+            ]),
+        ];
+        elasticQueryAdapter.condition.must_not = [
+            QueryType.Match(
+                'topics',
+                Buffer.from('jexAggSwap', 'utf8').toString('hex'),
+            ),
+        ];
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.descending },
+        ];
+
+        return await this.elasticService.getList(
+            'events',
+            '',
+            elasticQueryAdapter,
         );
     }
 }

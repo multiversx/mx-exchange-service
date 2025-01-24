@@ -7,6 +7,8 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AnalyticsSetterService } from 'src/modules/analytics/services/analytics.setter.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
@@ -14,6 +16,7 @@ export class AnalyticsCacheWarmerService {
         private readonly analyticsCompute: AnalyticsComputeService,
         private readonly analyticsSetter: AnalyticsSetterService,
         private readonly apiConfig: ApiConfigService,
+        private readonly routerAbi: RouterAbiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -36,6 +39,45 @@ export class AnalyticsCacheWarmerService {
             ),
             this.analyticsSetter.lockedValueUSDFarms(totalValueLockedUSDFarms),
         ]);
+
+        await this.deleteCacheKeys(cachedKeys);
+    }
+
+    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Lock({ name: 'cacheTradingActivity', verbose: true })
+    async cacheTradingActivity(): Promise<void> {
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const tokenIDs = new Set<string>();
+        const cachedKeys = [];
+
+        for (const pair of pairsMetadata) {
+            const tradingActivity =
+                await this.analyticsCompute.computeTradingActivity({
+                    pairAddress: pair.address,
+                });
+            const pairCachedKeys =
+                await this.analyticsSetter.pairTradingActivity(
+                    pair.address,
+                    tradingActivity,
+                );
+
+            cachedKeys.push(...pairCachedKeys);
+
+            tokenIDs.add(pair.firstTokenID);
+            tokenIDs.add(pair.secondTokenID);
+        }
+
+        for (const tokenID of tokenIDs.values()) {
+            const tradingActivity =
+                await this.analyticsCompute.computeTradingActivity({ tokenID });
+            const tokenCachedKeys =
+                await this.analyticsSetter.pairTradingActivity(
+                    tokenID,
+                    tradingActivity,
+                );
+
+            cachedKeys.push(...tokenCachedKeys);
+        }
 
         await this.deleteCacheKeys(cachedKeys);
     }

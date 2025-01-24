@@ -21,6 +21,16 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import {
+    TradingActivityAction,
+    TradingActivityModel,
+} from '../models/trading.activity.model';
+import { SWAP_IDENTIFIER } from 'src/modules/rabbitmq/handlers/pair.swap.handler.service';
+import { SwapEvent } from '@multiversx/sdk-exchange';
+import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
+import { RawElasticEventType } from 'src/services/elastic-search/entities/raw.elastic.event';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -29,6 +39,7 @@ export class AnalyticsComputeService {
         private readonly farmAbi: FarmAbiFactory,
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairAbi: PairAbiService,
+        private readonly pairService: PairService,
         private readonly pairCompute: PairComputeService,
         private readonly stakingCompute: StakingComputeService,
         private readonly tokenCompute: TokenComputeService,
@@ -37,6 +48,7 @@ export class AnalyticsComputeService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly elasticEventsService: ElasticSearchEventsService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -268,5 +280,107 @@ export class AnalyticsComputeService {
         return unfilteredPairAddresses
             .filter((pair) => pair.lpTokenId !== undefined)
             .map((pair) => pair.pairAddress);
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneMinute() * 2,
+        localTtl: Constants.oneMinute(),
+    })
+    async pairTradingActivity(
+        pairAddress: string,
+    ): Promise<TradingActivityModel[]> {
+        return await this.computeTradingActivity({ pairAddress });
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneMinute() * 2,
+        localTtl: Constants.oneMinute(),
+    })
+    async tokenTradingActivity(
+        tokenID: string,
+    ): Promise<TradingActivityModel[]> {
+        return await this.computeTradingActivity({ tokenID });
+    }
+
+    async computeTradingActivity({
+        tokenID,
+        pairAddress,
+    }: {
+        tokenID?: string;
+        pairAddress?: string;
+    }): Promise<TradingActivityModel[]> {
+        const results: TradingActivityModel[] = [];
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const filteredEvents: RawElasticEventType[] = [];
+        let from = 0;
+
+        if (pairAddress) {
+            const events = await this.elasticEventsService.getPairTradingEvents(
+                pairAddress,
+            );
+            filteredEvents.push(...events);
+        }
+
+        if (tokenID) {
+            while (filteredEvents.length < 10) {
+                const events =
+                    await this.elasticEventsService.getTokenTradingEvents(
+                        tokenID,
+                        from,
+                    );
+
+                for (const event of events) {
+                    if (event.topics.length === 5) {
+                        filteredEvents.push(event);
+                    }
+                    if (filteredEvents.length === 10) {
+                        break;
+                    }
+                }
+
+                if (events.length < 10) {
+                    break;
+                }
+                from += 10;
+            }
+        }
+
+        for (const event of filteredEvents) {
+            const eventConverted = convertEventTopicsAndDataToBase64(event);
+            const swapEvent = new SwapEvent(eventConverted);
+            const firstToken = pairsMetadata.find(
+                (pair) => pair.address === swapEvent.getAddress(),
+            ).firstTokenID;
+
+            const tokenIn = swapEvent.getTokenIn();
+            const tokenOut = swapEvent.getTokenOut();
+            const action =
+                swapEvent.getIdentifier() === SWAP_IDENTIFIER.SWAP_FIXED_INPUT &&
+                firstToken === tokenOut.tokenID
+                    ? TradingActivityAction.BUY
+                    : TradingActivityAction.SELL;
+
+            results.push({
+                hash: event.txHash,
+                input: {
+                    tokenIdentifier: tokenIn.tokenID,
+                    amount: new BigNumber(tokenIn.amount).toString(),
+                    tokenNonce: new BigNumber(tokenIn.nonce).toNumber(),
+                },
+                output: {
+                    tokenIdentifier: tokenOut.tokenID,
+                    amount: new BigNumber(tokenOut.amount).toString(),
+                    tokenNonce: new BigNumber(tokenOut.nonce).toNumber(),
+                },
+                timestamp: String(event.timestamp),
+                action,
+            });
+        }
+
+        return results;
     }
 }

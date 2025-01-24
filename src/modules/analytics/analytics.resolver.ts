@@ -12,6 +12,7 @@ import { PairComputeService } from '../pair/services/pair.compute.service';
 import { TokenService } from '../tokens/services/token.service';
 import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.validator';
+import { TradingActivityModel } from './models/trading.activity.model';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -196,5 +197,21 @@ export class AnalyticsResolver {
             args.end,
             args.resolution,
         );
+    }
+
+    @Query(() => [TradingActivityModel])
+    async tradingActivity(
+        @Args('tokenID', { nullable: true }) tokenID?: string,
+        @Args('pairAddress', { nullable: true }) pairAddress?: string,
+    ): Promise<TradingActivityModel[]> {
+        if (pairAddress && pairAddress.trim().length > 0) {
+            return this.analyticsCompute.pairTradingActivity(pairAddress);
+        }
+
+        if (tokenID && tokenID.trim().length > 0) {
+            return this.analyticsCompute.tokenTradingActivity(tokenID);
+        }
+
+        throw new Error('Invalid parameters');
     }
 }
