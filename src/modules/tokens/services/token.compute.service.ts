@@ -549,21 +549,30 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeTokenLiquidityUSD(tokenID: string): Promise<string> {
-        const pairs = await this.routerAbi.pairsMetadata();
+        const [pairs, commonTokenIDs] = await Promise.all([
+            this.routerAbi.pairsMetadata(),
+            this.routerAbi.commonTokensForUserPairs(),
+        ]);
 
         const relevantPairs = pairs.filter((pair) =>
             [pair.firstTokenID, pair.secondTokenID].includes(tokenID),
         );
 
-        const [allFirstTokensLockedValueUSD, allSecondTokensLockedValueUSD] =
-            await Promise.all([
-                this.pairCompute.getAllFirstTokensLockedValueUSD(
-                    relevantPairs.map((pair) => pair.address),
-                ),
-                this.pairCompute.getAllSecondTokensLockedValueUSD(
-                    relevantPairs.map((pair) => pair.address),
-                ),
-            ]);
+        const [
+            allFirstTokensLockedValueUSD,
+            allSecondTokensLockedValueUSD,
+            allPairsState,
+        ] = await Promise.all([
+            this.pairCompute.getAllFirstTokensLockedValueUSD(
+                relevantPairs.map((pair) => pair.address),
+            ),
+            this.pairCompute.getAllSecondTokensLockedValueUSD(
+                relevantPairs.map((pair) => pair.address),
+            ),
+            this.pairService.getAllStates(
+                relevantPairs.map((pair) => pair.address),
+            ),
+        ]);
 
         let newLockedValue = new BigNumber(0);
         for (const [index, pair] of relevantPairs.entries()) {
@@ -571,27 +580,37 @@ export class TokenComputeService implements ITokenComputeService {
                 allFirstTokensLockedValueUSD[index];
             const secondTokenLockedValueUSD =
                 allSecondTokensLockedValueUSD[index];
+            const state = allPairsState[index];
 
             if (
-                new BigNumber(firstTokenLockedValueUSD)
-                    .minus(secondTokenLockedValueUSD)
-                    .abs()
-                    .gt(1000000)
+                state === 'Active' ||
+                (commonTokenIDs.includes(pair.firstTokenID) &&
+                    commonTokenIDs.includes(pair.secondTokenID))
             ) {
-                newLockedValue = newLockedValue.plus(
-                    BigNumber.min(
-                        firstTokenLockedValueUSD,
-                        secondTokenLockedValueUSD,
-                    ),
-                );
+                const tokenLockedValueUSD =
+                    tokenID === pair.firstTokenID
+                        ? firstTokenLockedValueUSD
+                        : secondTokenLockedValueUSD;
+                newLockedValue = newLockedValue.plus(tokenLockedValueUSD);
                 continue;
             }
 
-            const tokenLockedValueUSD =
-                tokenID === pair.firstTokenID
-                    ? firstTokenLockedValueUSD
-                    : secondTokenLockedValueUSD;
-            newLockedValue = newLockedValue.plus(tokenLockedValueUSD);
+            if (
+                commonTokenIDs.includesNone([
+                    pair.firstTokenID,
+                    pair.secondTokenID,
+                ])
+            ) {
+                continue;
+            }
+
+            const commonTokenLockedValueUSD = commonTokenIDs.includes(
+                pair.firstTokenID,
+            )
+                ? new BigNumber(firstTokenLockedValueUSD)
+                : new BigNumber(secondTokenLockedValueUSD);
+
+            newLockedValue = newLockedValue.plus(commonTokenLockedValueUSD);
         }
 
         return newLockedValue.toFixed();

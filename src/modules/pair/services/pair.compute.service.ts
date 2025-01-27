@@ -29,6 +29,7 @@ import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import moment from 'moment';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -49,6 +50,7 @@ export class PairComputeService implements IPairComputeService {
         private readonly apiService: MXApiService,
         private readonly farmCompute: FarmComputeServiceV2,
         private readonly stakingCompute: StakingComputeService,
+        private readonly routerAbi: RouterAbiService,
         private readonly cachingService: CacheService,
         private readonly elasticEventsService: ElasticSearchEventsService,
     ) {}
@@ -381,27 +383,45 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeLockedValueUSD(pairAddress: string): Promise<BigNumber> {
-        const [firstTokenLockedValueUSD, secondTokenLockedValueUSD] =
-            await Promise.all([
-                this.computeFirstTokenLockedValueUSD(pairAddress),
-                this.computeSecondTokenLockedValueUSD(pairAddress),
-            ]);
+        const [
+            firstTokenLockedValueUSD,
+            secondTokenLockedValueUSD,
+            firstTokenID,
+            secondTokenID,
+            commonTokenIDs,
+        ] = await Promise.all([
+            this.computeFirstTokenLockedValueUSD(pairAddress),
+            this.computeSecondTokenLockedValueUSD(pairAddress),
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
+            this.routerAbi.commonTokensForUserPairs(),
+        ]);
 
         if (
-            new BigNumber(firstTokenLockedValueUSD)
-                .minus(secondTokenLockedValueUSD)
-                .abs()
-                .gt(1000000)
+            commonTokenIDs.includes(firstTokenID) &&
+            commonTokenIDs.includes(secondTokenID)
         ) {
-            return BigNumber.min(
-                firstTokenLockedValueUSD,
+            return new BigNumber(firstTokenLockedValueUSD).plus(
                 secondTokenLockedValueUSD,
             );
         }
 
-        return new BigNumber(firstTokenLockedValueUSD).plus(
-            secondTokenLockedValueUSD,
-        );
+        const state = await this.pairAbi.state(pairAddress);
+        if (state === 'Active') {
+            return new BigNumber(firstTokenLockedValueUSD).plus(
+                secondTokenLockedValueUSD,
+            );
+        }
+
+        if (commonTokenIDs.includesNone([firstTokenID, secondTokenID])) {
+            return new BigNumber(0);
+        }
+
+        const commonTokenLockedValueUSD = commonTokenIDs.includes(firstTokenID)
+            ? new BigNumber(firstTokenLockedValueUSD)
+            : new BigNumber(secondTokenLockedValueUSD);
+
+        return commonTokenLockedValueUSD.multipliedBy(2);
     }
 
     @ErrorLoggerAsync({
