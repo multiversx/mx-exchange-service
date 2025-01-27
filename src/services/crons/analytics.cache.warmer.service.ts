@@ -71,7 +71,7 @@ export class AnalyticsCacheWarmerService {
             const tradingActivity =
                 await this.analyticsCompute.computeTradingActivity({ tokenID });
             const tokenCachedKeys =
-                await this.analyticsSetter.pairTradingActivity(
+                await this.analyticsSetter.tokenTradingActivity(
                     tokenID,
                     tradingActivity,
                 );
