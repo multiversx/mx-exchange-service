@@ -554,8 +554,9 @@ export class TokenComputeService implements ITokenComputeService {
             this.routerAbi.commonTokensForUserPairs(),
         ]);
 
-        const relevantPairs = pairs.filter((pair) =>
-            [pair.firstTokenID, pair.secondTokenID].includes(tokenID),
+        const relevantPairs = pairs.filter(
+            (pair) =>
+                tokenID === pair.firstTokenID || pair.secondTokenID === tokenID,
         );
 
         const [
@@ -596,10 +597,8 @@ export class TokenComputeService implements ITokenComputeService {
             }
 
             if (
-                commonTokenIDs.includesNone([
-                    pair.firstTokenID,
-                    pair.secondTokenID,
-                ])
+                !commonTokenIDs.includes(pair.firstTokenID) &&
+                !commonTokenIDs.includes(pair.secondTokenID)
             ) {
                 continue;
             }
