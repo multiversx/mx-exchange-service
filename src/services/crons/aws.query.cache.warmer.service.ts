@@ -115,7 +115,7 @@ export class AWSQueryCacheWarmerService {
         );
     }
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_10_MINUTES)
     @Lock({ name: 'updateHistoricPairsData', verbose: true })
     async updateHistoricPairsData(): Promise<void> {
         if (!this.apiConfig.isAWSTimestreamRead()) {

@@ -86,14 +86,8 @@ export class PairComputeLoader {
         string
     >(
         async (addresses: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
+            return await this.pairCompute.getAllFirstTokensLockedValueUSD(
                 addresses,
-                'pair.firstTokenLockedValueUSD',
-                this.pairCompute.firstTokenLockedValueUSD.bind(
-                    this.pairCompute,
-                ),
-                CacheTtlInfo.ContractInfo,
             );
         },
         {
@@ -106,14 +100,8 @@ export class PairComputeLoader {
         string
     >(
         async (addresses: string[]) => {
-            return await getAllKeys(
-                this.cacheService,
+            return await this.pairCompute.getAllSecondTokensLockedValueUSD(
                 addresses,
-                'pair.secondTokenLockedValueUSD',
-                this.pairCompute.secondTokenLockedValueUSD.bind(
-                    this.pairCompute,
-                ),
-                CacheTtlInfo.ContractInfo,
             );
         },
         {
