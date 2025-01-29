@@ -52,9 +52,9 @@ export class AnalyticsCacheWarmerService {
 
         for (const pair of pairsMetadata) {
             const tradingActivity =
-                await this.analyticsCompute.computeTradingActivity({
-                    pairAddress: pair.address,
-                });
+                await this.analyticsCompute.computePairTradingActivity(
+                    pair.address,
+                );
             const pairCachedKeys =
                 await this.analyticsSetter.pairTradingActivity(
                     pair.address,
@@ -69,7 +69,9 @@ export class AnalyticsCacheWarmerService {
 
         for (const tokenID of tokenIDs.values()) {
             const tradingActivity =
-                await this.analyticsCompute.computeTradingActivity({ tokenID });
+                await this.analyticsCompute.computeTokenTradingActivity(
+                    tokenID,
+                );
             const tokenCachedKeys =
                 await this.analyticsSetter.tokenTradingActivity(
                     tokenID,

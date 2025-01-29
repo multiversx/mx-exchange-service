@@ -291,7 +291,7 @@ export class AnalyticsComputeService {
     async pairTradingActivity(
         pairAddress: string,
     ): Promise<TradingActivityModel[]> {
-        return await this.computeTradingActivity({ pairAddress });
+        return await this.computePairTradingActivity(pairAddress);
     }
 
     @ErrorLoggerAsync()
@@ -303,64 +303,137 @@ export class AnalyticsComputeService {
     async tokenTradingActivity(
         tokenID: string,
     ): Promise<TradingActivityModel[]> {
-        return await this.computeTradingActivity({ tokenID });
+        return await this.computeTokenTradingActivity(tokenID);
     }
 
-    async computeTradingActivity({
-        tokenID,
-        pairAddress,
-    }: {
-        tokenID?: string;
-        pairAddress?: string;
-    }): Promise<TradingActivityModel[]> {
-        const results: TradingActivityModel[] = [];
+    async determineBaseAndQuoteTokens(
+        pairAddress: string,
+    ): Promise<{ baseToken: string; quoteToken: string }> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const filteredEvents: RawElasticEventType[] = [];
-        let from = 0;
+        const commonTokens = await this.routerAbi.commonTokensForUserPairs();
+        const sortedCommonTokens = commonTokens.sort((a, b) => {
+            const order = ['USDC', 'USDT', 'EGLD', 'MEX'];
+            const indexA = order.findIndex((token) => a.includes(token));
+            const indexB = order.findIndex((token) => b.includes(token));
+            if (indexA === -1 && indexB === -1) return 0;
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
 
-        if (pairAddress) {
-            const events = await this.elasticEventsService.getPairTradingEvents(
-                pairAddress,
-            );
-            filteredEvents.push(...events);
+        const pair = pairsMetadata.find((pair) => pair.address === pairAddress);
+
+        for (const token of sortedCommonTokens) {
+            if (pair.firstTokenID === token || pair.secondTokenID === token) {
+                return {
+                    baseToken: token,
+                    quoteToken:
+                        pair.firstTokenID === token
+                            ? pair.secondTokenID
+                            : pair.firstTokenID,
+                };
+            }
         }
 
-        if (tokenID) {
-            while (filteredEvents.length < 10) {
-                const events =
-                    await this.elasticEventsService.getTokenTradingEvents(
-                        tokenID,
-                        from,
-                    );
+        return {
+            baseToken: pair.firstTokenID,
+            quoteToken: pair.secondTokenID,
+        };
+    }
 
-                for (const event of events) {
-                    if (event.topics.length === 5) {
-                        filteredEvents.push(event);
-                    }
-                    if (filteredEvents.length === 10) {
-                        break;
-                    }
+    async computePairTradingActivity(
+        pairAddress: string,
+    ): Promise<TradingActivityModel[]> {
+        const results: TradingActivityModel[] = [];
+        const events = await this.elasticEventsService.getPairTradingEvents(
+            pairAddress,
+        );
+
+        const { quoteToken } = await this.determineBaseAndQuoteTokens(
+            pairAddress,
+        );
+
+        for (const event of events) {
+            const eventConverted = convertEventTopicsAndDataToBase64(event);
+            const swapEvent = new SwapEvent(eventConverted);
+
+            const tokenIn = swapEvent.getTokenIn();
+            const tokenOut = swapEvent.getTokenOut();
+            const action =
+                quoteToken === tokenOut.tokenID
+                    ? TradingActivityAction.BUY
+                    : TradingActivityAction.SELL;
+
+            results.push({
+                hash: event.txHash,
+                input: {
+                    tokenIdentifier: tokenIn.tokenID,
+                    amount: new BigNumber(tokenIn.amount).toString(),
+                    tokenNonce: new BigNumber(tokenIn.nonce).toNumber(),
+                },
+                output: {
+                    tokenIdentifier: tokenOut.tokenID,
+                    amount: new BigNumber(tokenOut.amount).toString(),
+                    tokenNonce: new BigNumber(tokenOut.nonce).toNumber(),
+                },
+                timestamp: String(event.timestamp),
+                action,
+            });
+        }
+
+        return results;
+    }
+
+    async computeTokenTradingActivity(
+        tokenID: string,
+    ): Promise<TradingActivityModel[]> {
+        const results: TradingActivityModel[] = [];
+        const filteredEvents: RawElasticEventType[] = [];
+        const pairMetadata = await this.routerAbi.pairsMetadata();
+        let latestTimestamp = Math.floor(Date.now() / 1000);
+
+        const createUniqueIdentifier = (event: RawElasticEventType) => {
+            return `${event.txHash}-${event.shardID}-${event.order}`;
+        };
+
+        while (filteredEvents.length < 10) {
+            const events =
+                await this.elasticEventsService.getTokenTradingEvents(
+                    tokenID,
+                    latestTimestamp,
+                );
+            for (const event of events) {
+                if (
+                    pairMetadata.some(
+                        (pair) => pair.address === event.address,
+                    ) &&
+                    !filteredEvents.some(
+                        (filteredEvent) =>
+                            createUniqueIdentifier(filteredEvent) ===
+                            createUniqueIdentifier(event),
+                    )
+                ) {
+                    filteredEvents.unshift(event);
                 }
-
-                if (events.length < 10) {
+                if (filteredEvents.length === 10) {
                     break;
                 }
-                from += 10;
             }
+
+            if (events.length < 50) {
+                break;
+            }
+            latestTimestamp = filteredEvents[0].timestamp;
         }
 
         for (const event of filteredEvents) {
             const eventConverted = convertEventTopicsAndDataToBase64(event);
             const swapEvent = new SwapEvent(eventConverted);
-            const firstToken = pairsMetadata.find(
-                (pair) => pair.address === swapEvent.getAddress(),
-            ).firstTokenID;
 
             const tokenIn = swapEvent.getTokenIn();
             const tokenOut = swapEvent.getTokenOut();
             const action =
-                swapEvent.getIdentifier() === SWAP_IDENTIFIER.SWAP_FIXED_INPUT &&
-                firstToken === tokenOut.tokenID
+                tokenID === tokenOut.tokenID
                     ? TradingActivityAction.BUY
                     : TradingActivityAction.SELL;
 

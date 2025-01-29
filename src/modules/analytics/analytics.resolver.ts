@@ -13,15 +13,17 @@ import { TokenService } from '../tokens/services/token.service';
 import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.validator';
 import { TradingActivityModel } from './models/trading.activity.model';
+import { RouterAbiService } from '../router/services/router.abi.service';
 
 @Resolver()
 export class AnalyticsResolver {
     constructor(
-        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
-        private readonly analyticsCompute: AnalyticsComputeService,
         private readonly tokenService: TokenService,
+        private readonly routerAbi: RouterAbiService,
         private readonly pairCompute: PairComputeService,
+        private readonly analyticsCompute: AnalyticsComputeService,
         private readonly analyticsPairService: AnalyticsPairService,
+        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
     ) {}
 
     @Query(() => String)
@@ -201,15 +203,17 @@ export class AnalyticsResolver {
 
     @Query(() => [TradingActivityModel])
     async tradingActivity(
-        @Args('tokenID', { nullable: true }) tokenID?: string,
-        @Args('pairAddress', { nullable: true }) pairAddress?: string,
+        @Args('series') series: string,
     ): Promise<TradingActivityModel[]> {
-        if (pairAddress && pairAddress.trim().length > 0) {
-            return this.analyticsCompute.pairTradingActivity(pairAddress);
-        }
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
 
-        if (tokenID && tokenID.trim().length > 0) {
-            return this.analyticsCompute.tokenTradingActivity(tokenID);
+        for (const pair of pairsMetadata) {
+            if (pair.firstTokenID === series || pair.secondTokenID === series) {
+                return this.analyticsCompute.tokenTradingActivity(series);
+            }
+            if (pair.address === series) {
+                return this.analyticsCompute.pairTradingActivity(series);
+            }
         }
 
         throw new Error('Invalid parameters');

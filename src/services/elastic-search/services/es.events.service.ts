@@ -12,7 +12,6 @@ import { Logger } from 'winston';
 import { RawElasticEventType } from '../entities/raw.elastic.event';
 import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
-import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 @Injectable()
 export class ElasticSearchEventsService {
@@ -228,11 +227,10 @@ export class ElasticSearchEventsService {
 
     async getTokenTradingEvents(
         tokenID: string,
-        from: number,
+        timestamp: number,
     ): Promise<RawElasticEventType[]> {
         const pagination = new ElasticPagination();
-        pagination.size = 10;
-        pagination.from = from;
+        pagination.size = 50;
 
         const elasticQueryAdapter: ElasticQuery =
             new ElasticQuery().withPagination(pagination);
@@ -249,12 +247,10 @@ export class ElasticSearchEventsService {
                     SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
                 ),
             ]),
-        ];
-        elasticQueryAdapter.condition.must_not = [
-            QueryType.Match(
-                'topics',
-                Buffer.from('jexAggSwap', 'utf8').toString('hex'),
-            ),
+            QueryType.Range('timestamp', {
+                key: 'lte',
+                value: timestamp,
+            }),
         ];
         elasticQueryAdapter.sort = [
             { name: 'timestamp', order: ElasticSortOrder.descending },
