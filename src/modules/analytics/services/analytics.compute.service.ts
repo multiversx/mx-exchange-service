@@ -388,6 +388,7 @@ export class AnalyticsComputeService {
         const filteredEvents: RawElasticEventType[] = [];
         const pairsAddresses = await this.routerAbi.pairsAddress();
         let latestTimestamp = Math.floor(Date.now() / 1000);
+        const size = 50;
 
         const createUniqueIdentifier = (event: RawElasticEventType) => {
             return `${event.txHash}-${event.shardID}-${event.order}`;
@@ -398,6 +399,7 @@ export class AnalyticsComputeService {
                 await this.elasticEventsService.getTokenTradingEvents(
                     tokenID,
                     latestTimestamp,
+                    size,
                 );
             filteredEvents.push(
                 ...events
@@ -413,6 +415,9 @@ export class AnalyticsComputeService {
                     .slice(0, 10),
             );
             latestTimestamp = filteredEvents[0].timestamp;
+            if (filteredEvents.length < size) {
+                break;
+            }
         }
 
         return filteredEvents.map((event) => {

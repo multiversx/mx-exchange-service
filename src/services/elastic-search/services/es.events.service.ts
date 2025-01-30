@@ -228,9 +228,10 @@ export class ElasticSearchEventsService {
     async getTokenTradingEvents(
         tokenID: string,
         timestamp: number,
+        size: number,
     ): Promise<RawElasticEventType[]> {
         const pagination = new ElasticPagination();
-        pagination.size = 50;
+        pagination.size = size;
 
         const elasticQueryAdapter: ElasticQuery =
             new ElasticQuery().withPagination(pagination);
