@@ -39,14 +39,20 @@ export class CurrencyConverterComputeService {
             params.symbols = symbols.join(',');
         }
 
-        const response = await this.apiService.get(
-            'https://openexchangerates.org/api/latest.json',
-            { params },
-        );
+        try {
+            const response = await this.apiService.get(
+                'https://openexchangerates.org/api/latest.json',
+                { params },
+            );
 
-        return Object.entries(response.data.rates).map(([currency, rate]) => ({
-            currency,
-            rate: rate as number,
-        }));
+            return Object.entries(response.data.rates).map(
+                ([currency, rate]) => ({
+                    currency,
+                    rate: rate as number,
+                }),
+            );
+        } catch (error) {
+            throw new Error(`Failed to fetch currency rates: ${error.message}`);
+        }
     }
 }
