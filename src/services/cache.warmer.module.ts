@@ -43,6 +43,7 @@ import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-time
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { ElasticSearchModule } from './elastic-search/elastic.search.module';
 import { EventsProcessorService } from './crons/events.processor.service';
+import { CurrencyConverterCacheWarmerService } from './crons/currency.converter.cache.warmer.service';
 
 @Module({
     imports: [
@@ -93,6 +94,7 @@ import { EventsProcessorService } from './crons/events.processor.service';
         TokensCacheWarmerService,
         EscrowCacheWarmerService,
         FeesCollectorCacheWarmerService,
+        CurrencyConverterCacheWarmerService,
     ],
 })
 export class CacheWarmerModule {}
