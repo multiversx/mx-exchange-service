@@ -310,7 +310,7 @@ export class AnalyticsComputeService {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         const commonTokens = await this.routerAbi.commonTokensForUserPairs();
         const sortedCommonTokens = commonTokens.sort((a, b) => {
-            const order = ['USDC', 'EGLD'];
+            const order = ['USD', 'EGLD'];
             const indexA = order.findIndex((token) => a.includes(token));
             const indexB = order.findIndex((token) => b.includes(token));
             if (indexA === -1 && indexB === -1) return 0;
