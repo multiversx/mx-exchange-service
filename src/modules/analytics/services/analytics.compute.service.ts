@@ -283,8 +283,8 @@ export class AnalyticsComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: Constants.oneMinute() * 2,
-        localTtl: Constants.oneMinute(),
+        remoteTtl: Constants.oneMinute() * 5,
+        localTtl: Constants.oneMinute() * 3,
     })
     async pairTradingActivity(
         pairAddress: string,
@@ -295,8 +295,8 @@ export class AnalyticsComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: Constants.oneMinute() * 2,
-        localTtl: Constants.oneMinute(),
+        remoteTtl: Constants.oneMinute() * 5,
+        localTtl: Constants.oneMinute() * 3,
     })
     async tokenTradingActivity(
         tokenID: string,
@@ -385,40 +385,24 @@ export class AnalyticsComputeService {
     async computeTokenTradingActivity(
         tokenID: string,
     ): Promise<TradingActivityModel[]> {
-        const filteredEvents: RawElasticEventType[] = [];
-        const pairsAddresses = await this.routerAbi.pairsAddress();
-        let latestTimestamp = Math.floor(Date.now() / 1000);
-        const size = 50;
+        let filteredEvents: RawElasticEventType[] = [];
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
 
-        const createUniqueIdentifier = (event: RawElasticEventType) => {
-            return `${event.txHash}-${event.shardID}-${event.order}`;
-        };
+        const pairsAddresses = pairsMetadata
+            .filter(
+                (pair) =>
+                    pair.firstTokenID === tokenID ||
+                    pair.secondTokenID === tokenID,
+            )
+            .map((pair) => pair.address);
 
-        while (filteredEvents.length < 10) {
-            const events =
-                await this.elasticEventsService.getTokenTradingEvents(
-                    tokenID,
-                    latestTimestamp,
-                    size,
-                );
-            filteredEvents.push(
-                ...events
-                    .filter((event) => pairsAddresses.includes(event.address))
-                    .reduce((unique, event) => {
-                        const eventId = createUniqueIdentifier(event);
-                        return unique.some(
-                            (e) => createUniqueIdentifier(e) === eventId,
-                        )
-                            ? unique
-                            : [...unique, event];
-                    }, [] as RawElasticEventType[])
-                    .slice(0, 10),
-            );
-            if (events.length < size) {
-                break;
-            }
-            latestTimestamp = filteredEvents[0].timestamp;
-        }
+        filteredEvents = await this.elasticEventsService.getTokenTradingEvents(
+            tokenID,
+            pairsAddresses,
+            10,
+        );
+
+        filteredEvents = filteredEvents.slice(0, 10);
 
         return filteredEvents.map((event) => {
             const eventConverted = convertEventTopicsAndDataToBase64(event);
