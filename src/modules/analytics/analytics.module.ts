@@ -21,6 +21,7 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { AnalyticsSetterService } from './services/analytics.setter.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 @Module({
     imports: [
@@ -39,6 +40,7 @@ import { AnalyticsSetterService } from './services/analytics.setter.service';
         RemoteConfigModule,
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
+        ElasticSearchModule,
     ],
     providers: [
         AnalyticsResolver,

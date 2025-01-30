@@ -21,6 +21,15 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import {
+    TradingActivityAction,
+    TradingActivityModel,
+} from '../models/trading.activity.model';
+import { SwapEvent } from '@multiversx/sdk-exchange';
+import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
+import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
+import { RawElasticEventType } from 'src/services/elastic-search/entities/raw.elastic.event';
+import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -37,6 +46,7 @@ export class AnalyticsComputeService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly elasticEventsService: ElasticSearchEventsService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -268,5 +278,175 @@ export class AnalyticsComputeService {
         return unfilteredPairAddresses
             .filter((pair) => pair.lpTokenId !== undefined)
             .map((pair) => pair.pairAddress);
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneMinute() * 2,
+        localTtl: Constants.oneMinute(),
+    })
+    async pairTradingActivity(
+        pairAddress: string,
+    ): Promise<TradingActivityModel[]> {
+        return await this.computePairTradingActivity(pairAddress);
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneMinute() * 2,
+        localTtl: Constants.oneMinute(),
+    })
+    async tokenTradingActivity(
+        tokenID: string,
+    ): Promise<TradingActivityModel[]> {
+        return await this.computeTokenTradingActivity(tokenID);
+    }
+
+    async determineBaseAndQuoteTokens(
+        pairAddress: string,
+    ): Promise<{ baseToken: string; quoteToken: string }> {
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const commonTokens = await this.routerAbi.commonTokensForUserPairs();
+        const sortedCommonTokens = commonTokens.sort((a, b) => {
+            const order = ['USD', 'EGLD'];
+            const indexA = order.findIndex((token) => a.includes(token));
+            const indexB = order.findIndex((token) => b.includes(token));
+            if (indexA === -1 && indexB === -1) return 0;
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+
+        const pair = pairsMetadata.find((pair) => pair.address === pairAddress);
+
+        for (const token of sortedCommonTokens) {
+            if (pair.firstTokenID === token || pair.secondTokenID === token) {
+                return {
+                    baseToken: token,
+                    quoteToken:
+                        pair.firstTokenID === token
+                            ? pair.secondTokenID
+                            : pair.firstTokenID,
+                };
+            }
+        }
+
+        return {
+            baseToken: pair.firstTokenID,
+            quoteToken: pair.secondTokenID,
+        };
+    }
+
+    async computePairTradingActivity(
+        pairAddress: string,
+    ): Promise<TradingActivityModel[]> {
+        const results: TradingActivityModel[] = [];
+        const events = await this.elasticEventsService.getPairTradingEvents(
+            pairAddress,
+        );
+
+        const { quoteToken } = await this.determineBaseAndQuoteTokens(
+            pairAddress,
+        );
+
+        for (const event of events) {
+            const eventConverted = convertEventTopicsAndDataToBase64(event);
+            const swapEvent = new SwapEvent(eventConverted);
+
+            const tokenIn = swapEvent.getTokenIn();
+            const tokenOut = swapEvent.getTokenOut();
+            const action =
+                quoteToken === tokenOut.tokenID
+                    ? TradingActivityAction.BUY
+                    : TradingActivityAction.SELL;
+
+            results.push({
+                hash: event.txHash,
+                inputToken: {
+                    tokenIdentifier: tokenIn.tokenID,
+                    amount: new BigNumber(tokenIn.amount).toFixed(),
+                    tokenNonce: new BigNumber(tokenIn.nonce).toNumber(),
+                },
+                outputToken: {
+                    tokenIdentifier: tokenOut.tokenID,
+                    amount: new BigNumber(tokenOut.amount).toFixed(),
+                    tokenNonce: new BigNumber(tokenOut.nonce).toNumber(),
+                },
+                timestamp: String(event.timestamp),
+                action,
+            });
+        }
+
+        return results;
+    }
+
+    async computeTokenTradingActivity(
+        tokenID: string,
+    ): Promise<TradingActivityModel[]> {
+        const filteredEvents: RawElasticEventType[] = [];
+        const pairsAddresses = await this.routerAbi.pairsAddress();
+        let latestTimestamp = Math.floor(Date.now() / 1000);
+        const size = 50;
+
+        const createUniqueIdentifier = (event: RawElasticEventType) => {
+            return `${event.txHash}-${event.shardID}-${event.order}`;
+        };
+
+        while (filteredEvents.length < 10) {
+            const events =
+                await this.elasticEventsService.getTokenTradingEvents(
+                    tokenID,
+                    latestTimestamp,
+                    size,
+                );
+            filteredEvents.push(
+                ...events
+                    .filter((event) => pairsAddresses.includes(event.address))
+                    .reduce((unique, event) => {
+                        const eventId = createUniqueIdentifier(event);
+                        return unique.some(
+                            (e) => createUniqueIdentifier(e) === eventId,
+                        )
+                            ? unique
+                            : [...unique, event];
+                    }, [] as RawElasticEventType[])
+                    .slice(0, 10),
+            );
+            latestTimestamp = filteredEvents[0].timestamp;
+            if (events.length < size) {
+                break;
+            }
+        }
+
+        return filteredEvents.map((event) => {
+            const eventConverted = convertEventTopicsAndDataToBase64(event);
+            const swapEvent = new SwapEvent(eventConverted).toJSON();
+
+            const tokenIn = swapEvent.tokenIn;
+            const tokenOut = swapEvent.tokenOut;
+
+            const action =
+                tokenID === tokenOut.tokenID
+                    ? TradingActivityAction.BUY
+                    : TradingActivityAction.SELL;
+
+            return {
+                hash: event.txHash,
+                inputToken: new EsdtTokenPaymentModel({
+                    tokenIdentifier: tokenIn.tokenID,
+                    tokenNonce: tokenIn.nonce,
+                    amount: tokenIn.amount,
+                }),
+                outputToken: new EsdtTokenPaymentModel({
+                    tokenIdentifier: tokenOut.tokenID,
+                    tokenNonce: tokenOut.nonce,
+                    amount: tokenOut.amount,
+                }),
+                timestamp: String(event.timestamp),
+                action,
+            };
+        });
     }
 }

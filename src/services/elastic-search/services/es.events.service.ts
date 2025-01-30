@@ -194,4 +194,73 @@ export class ElasticSearchEventsService {
             action,
         );
     }
+
+    async getPairTradingEvents(
+        pairAddress: string,
+    ): Promise<RawElasticEventType[]> {
+        const pagination = new ElasticPagination();
+        pagination.size = 10;
+
+        const elasticQueryAdapter: ElasticQuery =
+            new ElasticQuery().withPagination(pagination);
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match('address', pairAddress),
+            QueryType.Should([
+                QueryType.Match('identifier', SWAP_IDENTIFIER.SWAP_FIXED_INPUT),
+                QueryType.Match(
+                    'identifier',
+                    SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+                ),
+            ]),
+        ];
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.descending },
+        ];
+
+        return await this.elasticService.getList(
+            'events',
+            '',
+            elasticQueryAdapter,
+        );
+    }
+
+    async getTokenTradingEvents(
+        tokenID: string,
+        timestamp: number,
+        size: number,
+    ): Promise<RawElasticEventType[]> {
+        const pagination = new ElasticPagination();
+        pagination.size = size;
+
+        const elasticQueryAdapter: ElasticQuery =
+            new ElasticQuery().withPagination(pagination);
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match(
+                'topics',
+                Buffer.from(tokenID, 'utf8').toString('hex'),
+            ),
+            QueryType.Should([
+                QueryType.Match('identifier', SWAP_IDENTIFIER.SWAP_FIXED_INPUT),
+                QueryType.Match(
+                    'identifier',
+                    SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+                ),
+            ]),
+            QueryType.Range('timestamp', {
+                key: 'lte',
+                value: timestamp,
+            }),
+        ];
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.descending },
+        ];
+
+        return await this.elasticService.getList(
+            'events',
+            '',
+            elasticQueryAdapter,
+        );
+    }
 }
