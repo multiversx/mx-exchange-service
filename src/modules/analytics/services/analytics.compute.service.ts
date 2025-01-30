@@ -415,7 +415,7 @@ export class AnalyticsComputeService {
                     .slice(0, 10),
             );
             latestTimestamp = filteredEvents[0].timestamp;
-            if (filteredEvents.length < size) {
+            if (events.length < size) {
                 break;
             }
         }
