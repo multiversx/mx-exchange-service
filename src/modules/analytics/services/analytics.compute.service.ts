@@ -414,10 +414,10 @@ export class AnalyticsComputeService {
                     }, [] as RawElasticEventType[])
                     .slice(0, 10),
             );
-            latestTimestamp = filteredEvents[0].timestamp;
             if (events.length < size) {
                 break;
             }
+            latestTimestamp = filteredEvents[0].timestamp;
         }
 
         return filteredEvents.map((event) => {
