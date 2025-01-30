@@ -25,10 +25,8 @@ import {
     TradingActivityAction,
     TradingActivityModel,
 } from '../models/trading.activity.model';
-import { SWAP_IDENTIFIER } from 'src/modules/rabbitmq/handlers/pair.swap.handler.service';
 import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
-import { PairService } from 'src/modules/pair/services/pair.service';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 import { RawElasticEventType } from 'src/services/elastic-search/entities/raw.elastic.event';
 
@@ -39,7 +37,6 @@ export class AnalyticsComputeService {
         private readonly farmAbi: FarmAbiFactory,
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairAbi: PairAbiService,
-        private readonly pairService: PairService,
         private readonly pairCompute: PairComputeService,
         private readonly stakingCompute: StakingComputeService,
         private readonly tokenCompute: TokenComputeService,
