@@ -29,6 +29,7 @@ import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 import { RawElasticEventType } from 'src/services/elastic-search/entities/raw.elastic.event';
+import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -309,7 +310,7 @@ export class AnalyticsComputeService {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         const commonTokens = await this.routerAbi.commonTokensForUserPairs();
         const sortedCommonTokens = commonTokens.sort((a, b) => {
-            const order = ['USDC', 'USDT', 'EGLD', 'MEX'];
+            const order = ['USDC', 'EGLD'];
             const indexA = order.findIndex((token) => a.includes(token));
             const indexB = order.findIndex((token) => b.includes(token));
             if (indexA === -1 && indexB === -1) return 0;
@@ -363,14 +364,14 @@ export class AnalyticsComputeService {
 
             results.push({
                 hash: event.txHash,
-                input: {
+                inputToken: {
                     tokenIdentifier: tokenIn.tokenID,
-                    amount: new BigNumber(tokenIn.amount).toString(),
+                    amount: new BigNumber(tokenIn.amount).toFixed(),
                     tokenNonce: new BigNumber(tokenIn.nonce).toNumber(),
                 },
-                output: {
+                outputToken: {
                     tokenIdentifier: tokenOut.tokenID,
-                    amount: new BigNumber(tokenOut.amount).toString(),
+                    amount: new BigNumber(tokenOut.amount).toFixed(),
                     tokenNonce: new BigNumber(tokenOut.nonce).toNumber(),
                 },
                 timestamp: String(event.timestamp),
@@ -384,9 +385,8 @@ export class AnalyticsComputeService {
     async computeTokenTradingActivity(
         tokenID: string,
     ): Promise<TradingActivityModel[]> {
-        const results: TradingActivityModel[] = [];
         const filteredEvents: RawElasticEventType[] = [];
-        const pairMetadata = await this.routerAbi.pairsMetadata();
+        const pairsAddresses = await this.routerAbi.pairsAddress();
         let latestTimestamp = Math.floor(Date.now() / 1000);
 
         const createUniqueIdentifier = (event: RawElasticEventType) => {
@@ -399,58 +399,49 @@ export class AnalyticsComputeService {
                     tokenID,
                     latestTimestamp,
                 );
-            for (const event of events) {
-                if (
-                    pairMetadata.some(
-                        (pair) => pair.address === event.address,
-                    ) &&
-                    !filteredEvents.some(
-                        (filteredEvent) =>
-                            createUniqueIdentifier(filteredEvent) ===
-                            createUniqueIdentifier(event),
-                    )
-                ) {
-                    filteredEvents.unshift(event);
-                }
-                if (filteredEvents.length === 10) {
-                    break;
-                }
-            }
-
-            if (events.length < 50) {
-                break;
-            }
+            filteredEvents.push(
+                ...events
+                    .filter((event) => pairsAddresses.includes(event.address))
+                    .reduce((unique, event) => {
+                        const eventId = createUniqueIdentifier(event);
+                        return unique.some(
+                            (e) => createUniqueIdentifier(e) === eventId,
+                        )
+                            ? unique
+                            : [...unique, event];
+                    }, [] as RawElasticEventType[])
+                    .slice(0, 10),
+            );
             latestTimestamp = filteredEvents[0].timestamp;
         }
 
-        for (const event of filteredEvents) {
+        return filteredEvents.map((event) => {
             const eventConverted = convertEventTopicsAndDataToBase64(event);
-            const swapEvent = new SwapEvent(eventConverted);
+            const swapEvent = new SwapEvent(eventConverted).toJSON();
 
-            const tokenIn = swapEvent.getTokenIn();
-            const tokenOut = swapEvent.getTokenOut();
+            const tokenIn = swapEvent.tokenIn;
+            const tokenOut = swapEvent.tokenOut;
+
             const action =
                 tokenID === tokenOut.tokenID
                     ? TradingActivityAction.BUY
                     : TradingActivityAction.SELL;
 
-            results.push({
+            return {
                 hash: event.txHash,
-                input: {
+                inputToken: new EsdtTokenPaymentModel({
                     tokenIdentifier: tokenIn.tokenID,
-                    amount: new BigNumber(tokenIn.amount).toString(),
-                    tokenNonce: new BigNumber(tokenIn.nonce).toNumber(),
-                },
-                output: {
+                    tokenNonce: tokenIn.nonce,
+                    amount: tokenIn.amount,
+                }),
+                outputToken: new EsdtTokenPaymentModel({
                     tokenIdentifier: tokenOut.tokenID,
-                    amount: new BigNumber(tokenOut.amount).toString(),
-                    tokenNonce: new BigNumber(tokenOut.nonce).toNumber(),
-                },
+                    tokenNonce: tokenOut.nonce,
+                    amount: tokenOut.amount,
+                }),
                 timestamp: String(event.timestamp),
                 action,
-            });
-        }
-
-        return results;
+            };
+        });
     }
 }

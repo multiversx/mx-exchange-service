@@ -17,9 +17,9 @@ export class TradingActivityModel {
     @Field()
     action: TradingActivityAction;
     @Field()
-    input: EsdtTokenPaymentModel;
+    inputToken: EsdtTokenPaymentModel;
     @Field()
-    output: EsdtTokenPaymentModel;
+    outputToken: EsdtTokenPaymentModel;
 
     constructor(init?: Partial<TradingActivityModel>) {
         Object.assign(this, init);
