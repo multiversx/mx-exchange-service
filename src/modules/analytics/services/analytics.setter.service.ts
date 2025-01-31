@@ -80,8 +80,8 @@ export class AnalyticsSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairTradingActivity', pairAddress),
             value,
-            Constants.oneMinute() * 2,
-            Constants.oneMinute(),
+            Constants.oneMinute() * 5,
+            Constants.oneMinute() * 3,
         );
     }
 
@@ -92,8 +92,8 @@ export class AnalyticsSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('tokenTradingActivity', tokenID),
             value,
-            Constants.oneMinute() * 2,
-            Constants.oneMinute(),
+            Constants.oneMinute() * 5,
+            Constants.oneMinute() * 3,
         );
     }
 
