@@ -57,6 +57,8 @@ export class BoostedRewardsModel {
     @Field({ nullable: true })
     accumulatedRewards: string;
     @Field({ nullable: true })
+    estimatedWeeklyRewards: string;
+    @Field({ nullable: true })
     curentBoostedAPR: number;
     @Field({ nullable: true })
     maximumBoostedAPR: number;
