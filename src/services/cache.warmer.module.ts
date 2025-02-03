@@ -44,6 +44,7 @@ import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-spli
 import { ElasticSearchModule } from './elastic-search/elastic.search.module';
 import { EventsProcessorService } from './crons/events.processor.service';
 import { CurrencyConverterCacheWarmerService } from './crons/currency.converter.cache.warmer.service';
+import { CurrencyConverterModule } from 'src/modules/currency-converter/currency.converter.module';
 
 @Module({
     imports: [
@@ -75,6 +76,7 @@ import { CurrencyConverterCacheWarmerService } from './crons/currency.converter.
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
         ElasticSearchModule,
+        CurrencyConverterModule,
     ],
     controllers: [],
     providers: [

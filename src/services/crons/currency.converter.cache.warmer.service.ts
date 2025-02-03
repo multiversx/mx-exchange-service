@@ -19,10 +19,12 @@ export class CurrencyConverterCacheWarmerService {
     async cacheCurrencyRates(): Promise<void> {
         const currencyRates =
             await this.currencyConverterCompute.fetchCurrencyRates();
+        const cryptoRates = await this.currencyConverterCompute.cryptoRates();
 
-        const cachedKeys = await this.currencyConverterSetter.allCurrencyRates(
-            currencyRates,
-        );
+        const cachedKeys = await this.currencyConverterSetter.allCurrencyRates([
+            ...currencyRates,
+            ...cryptoRates,
+        ]);
 
         await this.deleteCacheKeys([cachedKeys]);
     }

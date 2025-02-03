@@ -3,9 +3,12 @@ import { CurrencyConverterResolver } from './currency.converter.resolver';
 import { CurrencyConverterComputeService } from './services/currency.converter.compute.service';
 import { CurrencyConverterSetterService } from './services/currency.converter.setter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
-    imports: [],
+    imports: [
+        TokenModule,
+    ],
     providers: [
         ApiConfigService,
         CurrencyConverterResolver,
