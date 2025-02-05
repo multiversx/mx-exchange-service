@@ -20,10 +20,6 @@ export class TradingActivityModel {
     inputToken: EsdtToken;
     @Field()
     outputToken: EsdtToken;
-    @Field()
-    inputAmount: string;
-    @Field()
-    outputAmount: string;
 
     constructor(init?: Partial<TradingActivityModel>) {
         Object.assign(this, init);

@@ -361,10 +361,10 @@ export class AnalyticsComputeService {
 
         for (const event of events) {
             const eventConverted = convertEventTopicsAndDataToBase64(event);
-            const swapEvent = new SwapEvent(eventConverted);
+            const swapEvent = new SwapEvent(eventConverted).toJSON();
 
-            const tokenIn = swapEvent.getTokenIn();
-            const tokenOut = swapEvent.getTokenOut();
+            const tokenIn = swapEvent.tokenIn;
+            const tokenOut = swapEvent.tokenOut;
             const action =
                 quoteToken === tokenOut.tokenID
                     ? TradingActivityAction.BUY
@@ -373,19 +373,21 @@ export class AnalyticsComputeService {
             const inputToken = tokens.find(
                 (token) => token.identifier === tokenIn.tokenID,
             );
+            inputToken.balance = tokenIn.amount;
             const outputToken = tokens.find(
                 (token) => token.identifier === tokenOut.tokenID,
             );
+            outputToken.balance = tokenOut.amount;
 
-            results.push({
-                hash: event.txHash,
-                inputToken,
-                outputToken,
-                timestamp: String(event.timestamp),
-                inputAmount: new BigNumber(tokenIn.amount).toFixed(),
-                outputAmount: new BigNumber(tokenOut.amount).toFixed(),
-                action,
-            });
+            results.push(
+                new TradingActivityModel({
+                    hash: event.txHash,
+                    inputToken: { ...inputToken },
+                    outputToken: { ...outputToken },
+                    timestamp: String(event.timestamp),
+                    action,
+                }),
+            );
         }
 
         return results;
@@ -438,9 +440,12 @@ export class AnalyticsComputeService {
             const inputToken = tokens.find(
                 (token) => token.identifier === tokenIn.tokenID,
             );
+
+            inputToken.balance = tokenIn.amount;
             const outputToken = tokens.find(
                 (token) => token.identifier === tokenOut.tokenID,
             );
+            outputToken.balance = tokenOut.amount;
 
             const { quoteToken } = this.determineBaseAndQuoteTokens(
                 swapEvent.address,
@@ -453,15 +458,13 @@ export class AnalyticsComputeService {
                     ? TradingActivityAction.BUY
                     : TradingActivityAction.SELL;
 
-            return {
+            return new TradingActivityModel({
                 hash: event.txHash,
-                inputToken,
-                outputToken,
+                inputToken: { ...inputToken },
+                outputToken: { ...outputToken },
                 timestamp: String(event.timestamp),
-                inputAmount: tokenIn.amount,
-                outputAmount: tokenOut.amount,
                 action,
-            };
+            });
         });
     }
 }
