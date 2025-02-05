@@ -43,7 +43,7 @@ export class AnalyticsCacheWarmerService {
         await this.deleteCacheKeys(cachedKeys);
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_30_MINUTES)
     @Lock({ name: 'cacheTradingActivity', verbose: true })
     async cacheTradingActivity(): Promise<void> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();

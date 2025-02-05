@@ -28,8 +28,6 @@ import {
 import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
-import { RawElasticEventType } from 'src/services/elastic-search/entities/raw.elastic.event';
-import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -362,18 +360,25 @@ export class AnalyticsComputeService {
                     ? TradingActivityAction.BUY
                     : TradingActivityAction.SELL;
 
+            const tokens = await this.tokenService.getAllTokensMetadata([
+                tokenIn.tokenID,
+                tokenOut.tokenID,
+            ]);
+
+            const inputToken = tokens.find(
+                (token) => token.identifier === tokenIn.tokenID,
+            );
+            inputToken.balance = new BigNumber(tokenIn.amount).toString();
+
+            const outputToken = tokens.find(
+                (token) => token.identifier === tokenOut.tokenID,
+            );
+            outputToken.balance = new BigNumber(tokenOut.amount).toFixed();
+
             results.push({
                 hash: event.txHash,
-                inputToken: {
-                    tokenIdentifier: tokenIn.tokenID,
-                    amount: new BigNumber(tokenIn.amount).toFixed(),
-                    tokenNonce: new BigNumber(tokenIn.nonce).toNumber(),
-                },
-                outputToken: {
-                    tokenIdentifier: tokenOut.tokenID,
-                    amount: new BigNumber(tokenOut.amount).toFixed(),
-                    tokenNonce: new BigNumber(tokenOut.nonce).toNumber(),
-                },
+                inputToken,
+                outputToken,
                 timestamp: String(event.timestamp),
                 action,
             });
@@ -385,7 +390,6 @@ export class AnalyticsComputeService {
     async computeTokenTradingActivity(
         tokenID: string,
     ): Promise<TradingActivityModel[]> {
-        let filteredEvents: RawElasticEventType[] = [];
         const pairsMetadata = await this.routerAbi.pairsMetadata();
 
         const pairsAddresses = pairsMetadata
@@ -396,41 +400,56 @@ export class AnalyticsComputeService {
             )
             .map((pair) => pair.address);
 
-        filteredEvents = await this.elasticEventsService.getTokenTradingEvents(
-            tokenID,
-            pairsAddresses,
-            10,
-        );
+        let filteredEvents =
+            await this.elasticEventsService.getTokenTradingEvents(
+                tokenID,
+                pairsAddresses,
+                10,
+            );
 
         filteredEvents = filteredEvents.slice(0, 10);
 
-        return filteredEvents.map((event) => {
-            const eventConverted = convertEventTopicsAndDataToBase64(event);
-            const swapEvent = new SwapEvent(eventConverted).toJSON();
+        const formatedEvents = await Promise.all(
+            filteredEvents.map(async (event) => {
+                const eventConverted = convertEventTopicsAndDataToBase64(event);
+                const swapEvent = new SwapEvent(eventConverted).toJSON();
 
-            const tokenIn = swapEvent.tokenIn;
-            const tokenOut = swapEvent.tokenOut;
+                const tokenIn = swapEvent.tokenIn;
+                const tokenOut = swapEvent.tokenOut;
 
-            const action =
-                tokenID === tokenOut.tokenID
-                    ? TradingActivityAction.BUY
-                    : TradingActivityAction.SELL;
+                const tokens = await this.tokenService.getAllTokensMetadata([
+                    tokenIn.tokenID,
+                    tokenOut.tokenID,
+                ]);
 
-            return {
-                hash: event.txHash,
-                inputToken: new EsdtTokenPaymentModel({
-                    tokenIdentifier: tokenIn.tokenID,
-                    tokenNonce: tokenIn.nonce,
-                    amount: tokenIn.amount,
-                }),
-                outputToken: new EsdtTokenPaymentModel({
-                    tokenIdentifier: tokenOut.tokenID,
-                    tokenNonce: tokenOut.nonce,
-                    amount: tokenOut.amount,
-                }),
-                timestamp: String(event.timestamp),
-                action,
-            };
-        });
+                const inputToken = tokens.find(
+                    (token) => token.identifier === tokenIn.tokenID,
+                );
+                inputToken.balance = new BigNumber(tokenIn.amount).toFixed();
+
+                const outputToken = tokens.find(
+                    (token) => token.identifier === tokenOut.tokenID,
+                );
+                outputToken.balance = new BigNumber(tokenOut.amount).toFixed();
+
+                const { quoteToken } = await this.determineBaseAndQuoteTokens(
+                    swapEvent.address,
+                );
+
+                const action =
+                    quoteToken === tokenOut.tokenID
+                        ? TradingActivityAction.BUY
+                        : TradingActivityAction.SELL;
+
+                return {
+                    hash: event.txHash,
+                    inputToken,
+                    outputToken,
+                    timestamp: String(event.timestamp),
+                    action,
+                };
+            }),
+        );
+        return formatedEvents;
     }
 }

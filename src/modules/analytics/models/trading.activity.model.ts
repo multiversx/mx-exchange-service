@@ -1,5 +1,5 @@
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 export enum TradingActivityAction {
     'BUY' = 'BUY',
@@ -17,9 +17,9 @@ export class TradingActivityModel {
     @Field()
     action: TradingActivityAction;
     @Field()
-    inputToken: EsdtTokenPaymentModel;
+    inputToken: EsdtToken;
     @Field()
-    outputToken: EsdtTokenPaymentModel;
+    outputToken: EsdtToken;
 
     constructor(init?: Partial<TradingActivityModel>) {
         Object.assign(this, init);
