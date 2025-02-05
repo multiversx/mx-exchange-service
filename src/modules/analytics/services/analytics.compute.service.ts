@@ -28,6 +28,7 @@ import {
 import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
+import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -302,11 +303,11 @@ export class AnalyticsComputeService {
         return await this.computeTokenTradingActivity(tokenID);
     }
 
-    async determineBaseAndQuoteTokens(
+    private determineBaseAndQuoteTokens(
         pairAddress: string,
-    ): Promise<{ baseToken: string; quoteToken: string }> {
-        const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const commonTokens = await this.routerAbi.commonTokensForUserPairs();
+        pairsMetadata: PairMetadata[],
+        commonTokens: string[],
+    ): { baseToken: string; quoteToken: string } {
         const sortedCommonTokens = commonTokens.sort((a, b) => {
             const order = ['USD', 'EGLD'];
             const indexA = order.findIndex((token) => a.includes(token));
@@ -344,10 +345,19 @@ export class AnalyticsComputeService {
         const events = await this.elasticEventsService.getPairTradingEvents(
             pairAddress,
         );
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const commonTokens = await this.routerAbi.commonTokensForUserPairs();
 
-        const { quoteToken } = await this.determineBaseAndQuoteTokens(
+        const { quoteToken, baseToken } = this.determineBaseAndQuoteTokens(
             pairAddress,
+            pairsMetadata,
+            commonTokens,
         );
+
+        const tokens = await this.tokenService.getAllTokensMetadata([
+            quoteToken,
+            baseToken,
+        ]);
 
         for (const event of events) {
             const eventConverted = convertEventTopicsAndDataToBase64(event);
@@ -360,26 +370,20 @@ export class AnalyticsComputeService {
                     ? TradingActivityAction.BUY
                     : TradingActivityAction.SELL;
 
-            const tokens = await this.tokenService.getAllTokensMetadata([
-                tokenIn.tokenID,
-                tokenOut.tokenID,
-            ]);
-
             const inputToken = tokens.find(
                 (token) => token.identifier === tokenIn.tokenID,
             );
-            inputToken.balance = new BigNumber(tokenIn.amount).toString();
-
             const outputToken = tokens.find(
                 (token) => token.identifier === tokenOut.tokenID,
             );
-            outputToken.balance = new BigNumber(tokenOut.amount).toFixed();
 
             results.push({
                 hash: event.txHash,
                 inputToken,
                 outputToken,
                 timestamp: String(event.timestamp),
+                inputAmount: new BigNumber(tokenIn.amount).toFixed(),
+                outputAmount: new BigNumber(tokenOut.amount).toFixed(),
                 action,
             });
         }
@@ -391,6 +395,8 @@ export class AnalyticsComputeService {
         tokenID: string,
     ): Promise<TradingActivityModel[]> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const commonTokens = await this.routerAbi.commonTokensForUserPairs();
+        const pairsTokens = new Set<string>();
 
         const pairsAddresses = pairsMetadata
             .filter(
@@ -409,47 +415,53 @@ export class AnalyticsComputeService {
 
         filteredEvents = filteredEvents.slice(0, 10);
 
-        const formatedEvents = await Promise.all(
-            filteredEvents.map(async (event) => {
-                const eventConverted = convertEventTopicsAndDataToBase64(event);
-                const swapEvent = new SwapEvent(eventConverted).toJSON();
-
-                const tokenIn = swapEvent.tokenIn;
-                const tokenOut = swapEvent.tokenOut;
-
-                const tokens = await this.tokenService.getAllTokensMetadata([
-                    tokenIn.tokenID,
-                    tokenOut.tokenID,
-                ]);
-
-                const inputToken = tokens.find(
-                    (token) => token.identifier === tokenIn.tokenID,
-                );
-                inputToken.balance = new BigNumber(tokenIn.amount).toFixed();
-
-                const outputToken = tokens.find(
-                    (token) => token.identifier === tokenOut.tokenID,
-                );
-                outputToken.balance = new BigNumber(tokenOut.amount).toFixed();
-
-                const { quoteToken } = await this.determineBaseAndQuoteTokens(
-                    swapEvent.address,
-                );
-
-                const action =
-                    quoteToken === tokenOut.tokenID
-                        ? TradingActivityAction.BUY
-                        : TradingActivityAction.SELL;
-
-                return {
-                    hash: event.txHash,
-                    inputToken,
-                    outputToken,
-                    timestamp: String(event.timestamp),
-                    action,
-                };
-            }),
+        const matchedPairs = pairsMetadata.filter((pair) =>
+            filteredEvents.some((event) => event.address === pair.address),
         );
-        return formatedEvents;
+
+        matchedPairs.forEach((pair) => {
+            pairsTokens.add(pair.firstTokenID);
+            pairsTokens.add(pair.secondTokenID);
+        });
+
+        const tokens = await this.tokenService.getAllTokensMetadata(
+            Array.from(pairsTokens),
+        );
+
+        return filteredEvents.map((event) => {
+            const eventConverted = convertEventTopicsAndDataToBase64(event);
+            const swapEvent = new SwapEvent(eventConverted).toJSON();
+
+            const tokenIn = swapEvent.tokenIn;
+            const tokenOut = swapEvent.tokenOut;
+
+            const inputToken = tokens.find(
+                (token) => token.identifier === tokenIn.tokenID,
+            );
+            const outputToken = tokens.find(
+                (token) => token.identifier === tokenOut.tokenID,
+            );
+
+            const { quoteToken } = this.determineBaseAndQuoteTokens(
+                swapEvent.address,
+                pairsMetadata,
+                commonTokens,
+            );
+
+            const action =
+                quoteToken === tokenOut.tokenID
+                    ? TradingActivityAction.BUY
+                    : TradingActivityAction.SELL;
+
+            return {
+                hash: event.txHash,
+                inputToken,
+                outputToken,
+                timestamp: String(event.timestamp),
+                inputAmount: tokenIn.amount,
+                outputAmount: tokenOut.amount,
+                action,
+            };
+        });
     }
 }
