@@ -5,6 +5,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { CurrencyConverterComputeService } from 'src/modules/currency-converter/services/currency.converter.compute.service';
 import { CurrencyConverterSetterService } from 'src/modules/currency-converter/services/currency.converter.setter.service';
 import { PUB_SUB } from '../redis.pubSub.module';
+import { CurrencyCategory } from 'src/modules/currency-converter/models/currency.rate.model';
 
 @Injectable()
 export class CurrencyConverterCacheWarmerService {
@@ -27,6 +28,21 @@ export class CurrencyConverterCacheWarmerService {
         ]);
 
         await this.deleteCacheKeys([cachedKeys]);
+    }
+
+    @Cron(CronExpression.EVERY_2_HOURS)
+    @Lock({ name: 'cacheCurrencyRates', verbose: true })
+    async cacheCurrencySymbols(): Promise<void> {
+        const currencySymbols =
+            await this.currencyConverterCompute.fetchCurrencySymbols(
+                CurrencyCategory.ALL,
+            );
+
+        const cachedKey = await this.currencyConverterSetter.currencySymbols([
+            ...currencySymbols,
+        ]);
+
+        await this.deleteCacheKeys([cachedKey]);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

@@ -23,4 +23,13 @@ export class CurrencyConverterSetterService extends GenericSetterService {
             Constants.oneMinute() * 30,
         );
     }
+
+    async currencySymbols(value: string[]): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('currencySymbols'),
+            value,
+            Constants.oneHour(),
+            Constants.oneMinute() * 30,
+        );
+    }
 }

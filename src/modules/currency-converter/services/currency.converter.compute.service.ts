@@ -3,13 +3,14 @@ import { ApiService } from '@multiversx/sdk-nestjs-http';
 import { Injectable } from '@nestjs/common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import {
+    CurrencyCategory,
     CurrencyRateModel,
     CurrencyRateType,
 } from '../models/currency.rate.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import BigNumber from 'bignumber.js';
-import { cryptoRatesIdentifiers } from 'src/config';
+import { cryptoRatesIdentifiers, mxConfig, tokenProviderUSD } from 'src/config';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
@@ -44,14 +45,17 @@ export class CurrencyConverterComputeService {
 
         const tokenRates: CurrencyRateModel[] = cryptoRatesIdentifiers.map(
             (identifier, index) => {
-                const currency = identifier.split('-')[0];
-                const rate = tokenPrices[index];
                 const token = tokens.find((t) => t.identifier === identifier);
+                const rate = tokenPrices[index];
+                const [symbol, name] =
+                    identifier === tokenProviderUSD
+                        ? [mxConfig.EGLDIdentifier, mxConfig.EGLDIdentifier]
+                        : [identifier.split('-')[0], token.name];
                 return {
-                    currency,
+                    symbol,
                     rate: new BigNumber(rate).toNumber(),
                     category: CurrencyRateType.CRYPTO,
-                    name: token.name,
+                    name,
                 };
             },
         );
@@ -62,9 +66,15 @@ export class CurrencyConverterComputeService {
     async currencyRates(symbols: string[]): Promise<CurrencyRateModel[]> {
         const allCurrencyRates = await this.allCurrencyRates();
 
-        return allCurrencyRates.filter((rate) =>
-            symbols.includes(rate.currency),
-        );
+        return allCurrencyRates.filter((rate) => {
+            if (
+                symbols.includes(mxConfig.EGLDIdentifier) &&
+                rate.symbol === tokenProviderUSD
+            ) {
+                return true;
+            }
+            return symbols.includes(rate.symbol);
+        });
     }
 
     async fetchCurrencyRates(symbols?: string[]): Promise<CurrencyRateModel[]> {
@@ -90,13 +100,49 @@ export class CurrencyConverterComputeService {
             const currencies = currenciesRes.data;
 
             return Object.entries(latestRes.data.rates).map(
-                ([currency, rate]) => ({
-                    currency,
+                ([symbol, rate]) => ({
+                    symbol,
                     rate: rate as number,
                     category: CurrencyRateType.FIAT,
-                    name: currencies[currency] || currency,
+                    name: currencies[symbol] || symbol,
                 }),
             );
+        } catch (error) {
+            throw new Error(`Failed to fetch currency rates: ${error.message}`);
+        }
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'currencyConverter',
+        remoteTtl: Constants.oneHour() * 2,
+        localTtl: Constants.oneHour(),
+    })
+    async fetchCurrencySymbols(category: CurrencyCategory): Promise<string[]> {
+        const apiEndpoint = this.apiConfig.getOpenExchangeRateUrl();
+        try {
+            const currenciesRes = await this.apiService.get(
+                `${apiEndpoint}/currencies.json`,
+            );
+
+            const updatedCryptoIdentifiers = cryptoRatesIdentifiers.map(
+                (identifier) =>
+                    identifier === tokenProviderUSD
+                        ? mxConfig.EGLDIdentifier
+                        : identifier.split('-')[0],
+            );
+
+            const fiatSymbols = Object.keys(currenciesRes.data);
+
+            switch (category) {
+                case CurrencyCategory.FIAT:
+                    return fiatSymbols;
+                case CurrencyCategory.CRYPTO:
+                    return updatedCryptoIdentifiers;
+                case CurrencyCategory.ALL:
+                default:
+                    return [...fiatSymbols, ...updatedCryptoIdentifiers];
+            }
         } catch (error) {
             throw new Error(`Failed to fetch currency rates: ${error.message}`);
         }
