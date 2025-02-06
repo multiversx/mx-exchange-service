@@ -2,11 +2,15 @@ import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ApiService } from '@multiversx/sdk-nestjs-http';
 import { Injectable } from '@nestjs/common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { CurrencyRateModel } from '../models/currency.rate.model';
+import {
+    CurrencyRateModel,
+    CurrencyRateType,
+} from '../models/currency.rate.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import BigNumber from 'bignumber.js';
 import { cryptoRatesIdentifiers } from 'src/config';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class CurrencyConverterComputeService {
@@ -14,6 +18,7 @@ export class CurrencyConverterComputeService {
         private readonly apiService: ApiService,
         private readonly apiConfig: ApiConfigService,
         private readonly tokenCompute: TokenComputeService,
+        private readonly tokenService: TokenService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -33,12 +38,21 @@ export class CurrencyConverterComputeService {
         const tokenPrices = await this.tokenCompute.getAllTokensPriceDerivedUSD(
             cryptoRatesIdentifiers,
         );
+        const tokens = await this.tokenService.getAllTokensMetadata(
+            cryptoRatesIdentifiers,
+        );
 
         const tokenRates: CurrencyRateModel[] = cryptoRatesIdentifiers.map(
             (identifier, index) => {
                 const currency = identifier.split('-')[0];
                 const rate = tokenPrices[index];
-                return { currency, rate: new BigNumber(rate).toNumber() };
+                const token = tokens.find((t) => t.identifier === identifier);
+                return {
+                    currency,
+                    rate: new BigNumber(rate).toNumber(),
+                    category: CurrencyRateType.CRYPTO,
+                    name: token.name,
+                };
             },
         );
 
@@ -65,12 +79,22 @@ export class CurrencyConverterComputeService {
         }
 
         try {
-            const response = await this.apiService.get(apiEndpoint, { params });
+            const latestRes = await this.apiService.get(
+                `${apiEndpoint}/latest.json`,
+                { params },
+            );
+            const currenciesRes = await this.apiService.get(
+                `${apiEndpoint}/currencies.json`,
+            );
 
-            return Object.entries(response.data.rates).map(
+            const currencies = currenciesRes.data;
+
+            return Object.entries(latestRes.data.rates).map(
                 ([currency, rate]) => ({
                     currency,
                     rate: rate as number,
+                    category: CurrencyRateType.FIAT,
+                    name: currencies[currency] || currency,
                 }),
             );
         } catch (error) {

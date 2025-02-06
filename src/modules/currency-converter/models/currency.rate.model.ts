@@ -1,5 +1,10 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
+export enum CurrencyRateType {
+    'CRYPTO' = 'CRYPTO',
+    'FIAT' = 'FIAT',
+}
+
 @ObjectType()
 export class CurrencyRateModel {
     @Field()
@@ -7,4 +12,10 @@ export class CurrencyRateModel {
 
     @Field()
     rate: number;
+
+    @Field()
+    category: CurrencyRateType;
+
+    @Field()
+    name: string;
 }
