@@ -61,7 +61,7 @@ export class AnalyticsCacheWarmerService {
                     tradingActivity,
                 );
 
-            cachedKeys.push(...pairCachedKeys);
+            cachedKeys.push(pairCachedKeys);
 
             tokenIDs.add(pair.firstTokenID);
             tokenIDs.add(pair.secondTokenID);
@@ -78,7 +78,7 @@ export class AnalyticsCacheWarmerService {
                     tradingActivity,
                 );
 
-            cachedKeys.push(...tokenCachedKeys);
+            cachedKeys.push(tokenCachedKeys);
         }
 
         await this.deleteCacheKeys(cachedKeys);
