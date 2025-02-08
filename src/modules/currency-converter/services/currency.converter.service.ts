@@ -78,17 +78,17 @@ export class CurrencyConverterService {
     }
 
     async fetchCurrencyRates(symbols?: string[]): Promise<CurrencyRateModel[]> {
-        const apiEndpoint = this.apiConfig.getOpenExchangeRateUrl();
-        const params: any = {
-            app_id: this.apiConfig.getOpenExchangeRateAppID(),
-            base: 'USD',
-        };
-
-        if (symbols && symbols.length > 0) {
-            params.symbols = symbols.join(',');
-        }
-
         try {
+            const apiEndpoint = this.apiConfig.getOpenExchangeRateUrl();
+            const params: any = {
+                app_id: this.apiConfig.getOpenExchangeRateAppID(),
+                base: 'USD',
+            };
+
+            if (symbols && symbols.length > 0) {
+                params.symbols = symbols.join(',');
+            }
+
             const latestRes = await this.apiService.get(
                 `${apiEndpoint}/latest.json`,
                 { params },
@@ -119,8 +119,8 @@ export class CurrencyConverterService {
         localTtl: Constants.oneHour(),
     })
     async fetchCurrencySymbols(category: CurrencyCategory): Promise<string[]> {
-        const apiEndpoint = this.apiConfig.getOpenExchangeRateUrl();
         try {
+            const apiEndpoint = this.apiConfig.getOpenExchangeRateUrl();
             const currenciesRes = await this.apiService.get(
                 `${apiEndpoint}/currencies.json`,
             );
