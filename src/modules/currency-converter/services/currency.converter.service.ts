@@ -24,7 +24,7 @@ export class CurrencyConverterService {
 
     @ErrorLoggerAsync()
     @GetOrSetCache({
-        baseKey: 'currencyConverter',
+        baseKey: 'currency',
         remoteTtl: Constants.oneHour(),
         localTtl: Constants.oneMinute() * 30,
     })
@@ -114,7 +114,7 @@ export class CurrencyConverterService {
 
     @ErrorLoggerAsync()
     @GetOrSetCache({
-        baseKey: 'currencyConverter',
+        baseKey: 'currency',
         remoteTtl: Constants.oneHour() * 2,
         localTtl: Constants.oneHour(),
     })
