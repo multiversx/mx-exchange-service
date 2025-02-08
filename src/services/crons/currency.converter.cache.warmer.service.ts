@@ -31,7 +31,7 @@ export class CurrencyConverterCacheWarmerService {
     }
 
     @Cron(CronExpression.EVERY_HOUR)
-    @Lock({ name: 'cacheCurrencyRates', verbose: true })
+    @Lock({ name: 'cacheCurrencySymbols', verbose: true })
     async cacheCurrencySymbols(): Promise<void> {
         const currencySymbols =
             await this.currencyConverter.fetchCurrencySymbols(
