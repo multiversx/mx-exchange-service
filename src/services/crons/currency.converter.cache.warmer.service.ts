@@ -15,7 +15,7 @@ export class CurrencyConverterCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_30_MINUTES)
     @Lock({ name: 'cacheCurrencyRates', verbose: true })
     async cacheCurrencyRates(): Promise<void> {
         const currencyRates =
@@ -30,7 +30,7 @@ export class CurrencyConverterCacheWarmerService {
         await this.deleteCacheKeys([cachedKeys]);
     }
 
-    @Cron(CronExpression.EVERY_2_HOURS)
+    @Cron(CronExpression.EVERY_HOUR)
     @Lock({ name: 'cacheCurrencyRates', verbose: true })
     async cacheCurrencySymbols(): Promise<void> {
         const currencySymbols =
