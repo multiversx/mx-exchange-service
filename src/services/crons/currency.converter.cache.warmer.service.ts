@@ -2,7 +2,7 @@ import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { CurrencyConverterComputeService } from 'src/modules/currency-converter/services/currency.converter.compute.service';
+import { CurrencyConverterService } from 'src/modules/currency-converter/services/currency.converter.service';
 import { CurrencyConverterSetterService } from 'src/modules/currency-converter/services/currency.converter.setter.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { CurrencyCategory } from 'src/modules/currency-converter/models/currency.rate.model';
@@ -10,7 +10,7 @@ import { CurrencyCategory } from 'src/modules/currency-converter/models/currency
 @Injectable()
 export class CurrencyConverterCacheWarmerService {
     constructor(
-        private readonly currencyConverterCompute: CurrencyConverterComputeService,
+        private readonly currencyConverter: CurrencyConverterService,
         private readonly currencyConverterSetter: CurrencyConverterSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -19,8 +19,8 @@ export class CurrencyConverterCacheWarmerService {
     @Lock({ name: 'cacheCurrencyRates', verbose: true })
     async cacheCurrencyRates(): Promise<void> {
         const currencyRates =
-            await this.currencyConverterCompute.fetchCurrencyRates();
-        const cryptoRates = await this.currencyConverterCompute.cryptoRates();
+            await this.currencyConverter.fetchCurrencyRates();
+        const cryptoRates = await this.currencyConverter.cryptoRates();
 
         const cachedKeys = await this.currencyConverterSetter.allCurrencyRates([
             ...currencyRates,
@@ -34,7 +34,7 @@ export class CurrencyConverterCacheWarmerService {
     @Lock({ name: 'cacheCurrencyRates', verbose: true })
     async cacheCurrencySymbols(): Promise<void> {
         const currencySymbols =
-            await this.currencyConverterCompute.fetchCurrencySymbols(
+            await this.currencyConverter.fetchCurrencySymbols(
                 CurrencyCategory.ALL,
             );
 

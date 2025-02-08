@@ -3,19 +3,19 @@ import {
     CurrencyCategory,
     CurrencyRateModel,
 } from './models/currency.rate.model';
-import { CurrencyConverterComputeService } from './services/currency.converter.compute.service';
+import { CurrencyConverterService } from './services/currency.converter.service';
 
 @Resolver()
 export class CurrencyConverterResolver {
     constructor(
-        private readonly currencyConverterCompute: CurrencyConverterComputeService,
+        private readonly currencyConverter: CurrencyConverterService,
     ) {}
 
     @Query(() => [CurrencyRateModel])
     async currencyRates(
         @Args('symbols', { type: () => [String] }) symbols: string[],
     ): Promise<CurrencyRateModel[]> {
-        return this.currencyConverterCompute.currencyRates(symbols);
+        return this.currencyConverter.currencyRates(symbols);
     }
 
     @Query(() => [String])
@@ -27,6 +27,6 @@ export class CurrencyConverterResolver {
         })
         category?: CurrencyCategory,
     ): Promise<string[]> {
-        return this.currencyConverterCompute.fetchCurrencySymbols(category);
+        return this.currencyConverter.fetchCurrencySymbols(category);
     }
 }

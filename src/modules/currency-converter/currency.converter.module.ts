@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CurrencyConverterResolver } from './currency.converter.resolver';
-import { CurrencyConverterComputeService } from './services/currency.converter.compute.service';
+import { CurrencyConverterService } from './services/currency.converter.service';
 import { CurrencyConverterSetterService } from './services/currency.converter.setter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { TokenModule } from '../tokens/token.module';
@@ -12,9 +12,9 @@ import { TokenModule } from '../tokens/token.module';
     providers: [
         ApiConfigService,
         CurrencyConverterResolver,
-        CurrencyConverterComputeService,
+        CurrencyConverterService,
         CurrencyConverterSetterService,
     ],
-    exports: [CurrencyConverterComputeService, CurrencyConverterSetterService],
+    exports: [CurrencyConverterService, CurrencyConverterSetterService],
 })
 export class CurrencyConverterModule {}

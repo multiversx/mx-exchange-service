@@ -14,7 +14,7 @@ import { cryptoRatesIdentifiers, mxConfig, tokenProviderUSD } from 'src/config';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
-export class CurrencyConverterComputeService {
+export class CurrencyConverterService {
     constructor(
         private readonly apiService: ApiService,
         private readonly apiConfig: ApiConfigService,
