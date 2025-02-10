@@ -18,8 +18,7 @@ export class CurrencyConverterCacheWarmerService {
     @Cron(CronExpression.EVERY_30_MINUTES)
     @Lock({ name: 'cacheCurrencyRates', verbose: true })
     async cacheCurrencyRates(): Promise<void> {
-        const currencyRates =
-            await this.currencyConverter.fetchCurrencyRates();
+        const currencyRates = await this.currencyConverter.fetchCurrencyRates();
         const cryptoRates = await this.currencyConverter.cryptoRates();
 
         const cachedKeys = await this.currencyConverterSetter.allCurrencyRates([
@@ -33,13 +32,12 @@ export class CurrencyConverterCacheWarmerService {
     @Cron(CronExpression.EVERY_HOUR)
     @Lock({ name: 'cacheCurrencySymbols', verbose: true })
     async cacheCurrencySymbols(): Promise<void> {
-        const currencySymbols =
-            await this.currencyConverter.fetchCurrencySymbols(
-                CurrencyCategory.ALL,
-            );
+        const currencySymbols = await this.currencyConverter.fetchFiatSymbols();
+        const cryptoSymbols = this.currencyConverter.getCryptoSymbols();
 
         const cachedKey = await this.currencyConverterSetter.currencySymbols([
             ...currencySymbols,
+            ...cryptoSymbols,
         ]);
 
         await this.deleteCacheKeys([cachedKey]);

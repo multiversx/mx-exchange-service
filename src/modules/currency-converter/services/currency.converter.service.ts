@@ -113,25 +113,23 @@ export class CurrencyConverterService {
     }
 
     async currencySymbols(category: CurrencyCategory): Promise<string[]> {
-        const updatedCryptoIdentifiers = cryptoRatesIdentifiers.map(
-            (identifier) =>
-                identifier === tokenProviderUSD
-                    ? mxConfig.EGLDIdentifier
-                    : identifier.split('-')[0],
-        );
-
         switch (category) {
             case CurrencyCategory.FIAT:
                 return await this.fetchFiatSymbols();
             case CurrencyCategory.CRYPTO:
-                return updatedCryptoIdentifiers;
+                return this.getCryptoSymbols();
             case CurrencyCategory.ALL:
             default:
-                return [
-                    ...(await this.fetchFiatSymbols()),
-                    ...updatedCryptoIdentifiers,
-                ];
+                return await this.allCurrencySymbols();
         }
+    }
+
+    getCryptoSymbols(): string[] {
+        return cryptoRatesIdentifiers.map((identifier) =>
+            identifier === tokenProviderUSD
+                ? mxConfig.EGLDIdentifier
+                : identifier.split('-')[0],
+        );
     }
 
     @ErrorLoggerAsync()
@@ -140,6 +138,13 @@ export class CurrencyConverterService {
         remoteTtl: Constants.oneHour() * 2,
         localTtl: Constants.oneHour(),
     })
+    async allCurrencySymbols(): Promise<string[]> {
+        const fiatSymbols = await this.fetchFiatSymbols();
+        const cryptoSymbols = this.getCryptoSymbols();
+
+        return [...fiatSymbols, ...cryptoSymbols];
+    }
+
     async fetchFiatSymbols(): Promise<string[]> {
         try {
             const apiEndpoint = this.apiConfig.getOpenExchangeRateUrl();
