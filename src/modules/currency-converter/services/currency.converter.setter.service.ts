@@ -26,7 +26,7 @@ export class CurrencyConverterSetterService extends GenericSetterService {
 
     async currencySymbols(value: string[]): Promise<string> {
         return await this.setData(
-            this.getCacheKey('fetchFiatSymbols'),
+            this.getCacheKey('allCurrencySymbols'),
             value,
             Constants.oneHour(),
             Constants.oneMinute() * 30,

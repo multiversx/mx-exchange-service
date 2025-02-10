@@ -113,14 +113,20 @@ export class CurrencyConverterService {
     }
 
     async currencySymbols(category: CurrencyCategory): Promise<string[]> {
+        const allSymbols = await this.allCurrencySymbols();
+
         switch (category) {
             case CurrencyCategory.FIAT:
-                return await this.fetchFiatSymbols();
+                return allSymbols.filter(
+                    (symbol) => !this.getCryptoSymbols().includes(symbol),
+                );
             case CurrencyCategory.CRYPTO:
-                return this.getCryptoSymbols();
+                return allSymbols.filter((symbol) =>
+                    this.getCryptoSymbols().includes(symbol),
+                );
             case CurrencyCategory.ALL:
             default:
-                return await this.allCurrencySymbols();
+                return allSymbols;
         }
     }
 
