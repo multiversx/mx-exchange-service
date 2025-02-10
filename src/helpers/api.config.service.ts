@@ -331,6 +331,24 @@ export class ApiConfigService {
         return elasticSearchUrl;
     }
 
+    getOpenExchangeRateAppID(): string {
+        const appId = this.configService.get<string>(
+            'OPEN_EXCHANGE_RATES_APP_ID',
+        );
+        if (!appId) {
+            throw new Error('No OPEN_EXCHANGE_RATES_APP_ID present');
+        }
+        return appId;
+    }
+
+    getOpenExchangeRateUrl(): string {
+        const url = this.configService.get<string>('OPEN_EXCHANGE_RATES_URL');
+        if (!url) {
+            throw new Error('No OPEN_EXCHANGE_RATES_URL present');
+        }
+        return url;
+    }
+
     getRateLimiterSecret(): string | undefined {
         return this.configService.get<string>('RATE_LIMITER_SECRET');
     }

@@ -39,6 +39,7 @@ import { PositionCreatorModule } from './modules/position-creator/position.creat
 import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
 import { TradingViewModule } from './modules/trading-view/trading.view.module';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
+import { CurrencyConverterModule } from './modules/currency-converter/currency.converter.module';
 
 @Module({
     imports: [
@@ -99,6 +100,7 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
         ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
         TradingViewModule,
+        CurrencyConverterModule,
     ],
     providers: [QueryMetricsPlugin],
 })
