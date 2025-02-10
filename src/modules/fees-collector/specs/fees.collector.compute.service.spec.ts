@@ -250,6 +250,11 @@ describe('FeesCollectorComputeService', () => {
                 );
             const energyService = module.get<EnergyService>(EnergyService);
 
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
                 'computeTokenPriceDerivedUSD',
@@ -313,6 +318,11 @@ describe('FeesCollectorComputeService', () => {
                 );
             const energyService = module.get<EnergyService>(EnergyService);
 
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
                 'computeTokenPriceDerivedUSD',
@@ -378,6 +388,11 @@ describe('FeesCollectorComputeService', () => {
                 );
             const energyService = module.get<EnergyService>(EnergyService);
 
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
                 'computeTokenPriceDerivedUSD',
@@ -415,12 +430,6 @@ describe('FeesCollectorComputeService', () => {
             ' with 0 user energy and locked tokens',
         async () => {
             const user1 = 'erd1';
-            const mex = 'MEX-123456';
-            const priceMap = new Map<string, string>();
-            priceMap.set('WEGLD-123456', '10');
-            priceMap.set('MEX-123456', '20');
-            priceMap.set('TOK4-123456', '30');
-            priceMap.set(mex, '1');
 
             const service = module.get<FeesCollectorComputeService>(
                 FeesCollectorComputeService,
