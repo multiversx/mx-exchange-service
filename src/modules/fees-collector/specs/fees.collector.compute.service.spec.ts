@@ -261,6 +261,11 @@ describe('FeesCollectorComputeService', () => {
                 'totalEnergyForWeek',
             ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
 
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(user1Energy));
+
             jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
                 Promise.resolve(user1Energy),
             );
@@ -319,6 +324,10 @@ describe('FeesCollectorComputeService', () => {
                 'totalEnergyForWeek',
             ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
 
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(user1Energy));
             jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
                 Promise.resolve(user1Energy),
             );
@@ -326,7 +335,7 @@ describe('FeesCollectorComputeService', () => {
             const apr = await service.computeUserRewardsAPR(
                 Address.Zero().bech32(),
                 user1,
-                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+                new BigNumber(totalEnergyForWeek).dividedBy(4).toFixed(),
             );
 
             expect(apr.toFixed()).toEqual('14.872');
@@ -380,6 +389,11 @@ describe('FeesCollectorComputeService', () => {
                 'totalEnergyForWeek',
             ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
 
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(user1Energy));
+
             jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
                 Promise.resolve(user1Energy),
             );
@@ -387,7 +401,7 @@ describe('FeesCollectorComputeService', () => {
             const apr = await service.computeUserRewardsAPR(
                 Address.Zero().bech32(),
                 user1,
-                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+                new BigNumber(totalEnergyForWeek).dividedBy(4).toFixed(),
                 new BigNumber(totalLockedTokensForWeek).dividedBy(2).toFixed(),
             );
 
