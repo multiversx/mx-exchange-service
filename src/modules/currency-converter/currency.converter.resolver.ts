@@ -27,6 +27,6 @@ export class CurrencyConverterResolver {
         })
         category?: CurrencyCategory,
     ): Promise<string[]> {
-        return this.currencyConverter.fetchCurrencySymbols(category);
+        return this.currencyConverter.currencySymbols(category);
     }
 }

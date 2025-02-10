@@ -112,37 +112,43 @@ export class CurrencyConverterService {
         }
     }
 
+    async currencySymbols(category: CurrencyCategory): Promise<string[]> {
+        const updatedCryptoIdentifiers = cryptoRatesIdentifiers.map(
+            (identifier) =>
+                identifier === tokenProviderUSD
+                    ? mxConfig.EGLDIdentifier
+                    : identifier.split('-')[0],
+        );
+
+        switch (category) {
+            case CurrencyCategory.FIAT:
+                return await this.fetchFiatSymbols();
+            case CurrencyCategory.CRYPTO:
+                return updatedCryptoIdentifiers;
+            case CurrencyCategory.ALL:
+            default:
+                return [
+                    ...(await this.fetchFiatSymbols()),
+                    ...updatedCryptoIdentifiers,
+                ];
+        }
+    }
+
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'currency',
         remoteTtl: Constants.oneHour() * 2,
         localTtl: Constants.oneHour(),
     })
-    async fetchCurrencySymbols(category: CurrencyCategory): Promise<string[]> {
+    async fetchFiatSymbols(): Promise<string[]> {
         try {
             const apiEndpoint = this.apiConfig.getOpenExchangeRateUrl();
             const currenciesRes = await this.apiService.get(
                 `${apiEndpoint}/currencies.json`,
             );
 
-            const updatedCryptoIdentifiers = cryptoRatesIdentifiers.map(
-                (identifier) =>
-                    identifier === tokenProviderUSD
-                        ? mxConfig.EGLDIdentifier
-                        : identifier.split('-')[0],
-            );
-
             const fiatSymbols = Object.keys(currenciesRes.data);
-
-            switch (category) {
-                case CurrencyCategory.FIAT:
-                    return fiatSymbols;
-                case CurrencyCategory.CRYPTO:
-                    return updatedCryptoIdentifiers;
-                case CurrencyCategory.ALL:
-                default:
-                    return [...fiatSymbols, ...updatedCryptoIdentifiers];
-            }
+            return fiatSymbols;
         } catch (error) {
             throw new Error(`Failed to fetch currency rates: ${error.message}`);
         }
