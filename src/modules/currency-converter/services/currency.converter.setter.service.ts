@@ -12,7 +12,7 @@ export class CurrencyConverterSetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
-        this.baseKey = 'currencyConverter';
+        this.baseKey = 'currency';
     }
 
     async allCurrencyRates(value: CurrencyRateModel[]): Promise<string> {
