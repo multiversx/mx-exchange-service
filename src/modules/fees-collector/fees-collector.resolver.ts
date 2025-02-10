@@ -174,6 +174,19 @@ export class UserEntryFeesCollectorResolver {
         );
     }
 
+    @ResolveField()
+    async lastWeekRewardsUSD(
+        @Parent() parent: UserEntryFeesCollectorModel,
+        @Args('additionalUserEnergy', { nullable: true })
+        additionalUserEnergy: string,
+    ): Promise<string> {
+        return this.feesCollectorCompute.computeUserLastWeekRewardsUSD(
+            scAddress.feesCollector,
+            parent.userAddress,
+            additionalUserEnergy,
+        );
+    }
+
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => UserEntryFeesCollectorModel)
     async userFeesCollector(
