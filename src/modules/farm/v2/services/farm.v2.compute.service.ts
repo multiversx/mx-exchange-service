@@ -317,26 +317,15 @@ export class FarmComputeServiceV2
         return userRewardForWeek.toFixed();
     }
 
-    async computeUserCurentBoostedAPR(
+    async computeUserEstimatedWeeklyRewards(
         scAddress: string,
         userAddress: string,
         additionalUserFarmAmount = '0',
         additionalUserEnergy = '0',
-    ): Promise<number> {
-        const [
-            currentWeek,
-            boostedRewardsPerWeek,
-            farmToken,
-            farmedToken,
-            farmingTokenPriceUSD,
-            farmedTokenPriceUSD,
-        ] = await Promise.all([
+    ): Promise<string> {
+        const [currentWeek, boostedRewardsPerWeek] = await Promise.all([
             this.weekTimeKeepingAbi.currentWeek(scAddress),
             this.computeBoostedRewardsPerWeek(scAddress),
-            this.farmService.getFarmToken(scAddress),
-            this.farmService.getFarmedToken(scAddress),
-            this.farmingTokenPriceUSD(scAddress),
-            this.farmedTokenPriceUSD(scAddress),
         ]);
 
         let userTotalFarmPosition = await this.farmAbi.userTotalFarmPosition(
@@ -348,10 +337,10 @@ export class FarmComputeServiceV2
             .toFixed();
 
         if (userTotalFarmPosition === '0') {
-            return 0;
+            return '0';
         }
 
-        const userRewardsPerWeek = await this.computeUserRewardsForWeek(
+        return await this.computeUserRewardsForWeek(
             scAddress,
             userAddress,
             currentWeek,
@@ -359,6 +348,38 @@ export class FarmComputeServiceV2
             additionalUserEnergy,
             boostedRewardsPerWeek,
         );
+    }
+
+    async computeUserCurentBoostedAPR(
+        scAddress: string,
+        userAddress: string,
+        additionalUserFarmAmount = '0',
+        additionalUserEnergy = '0',
+    ): Promise<number> {
+        const [
+            userRewardsPerWeek,
+            userTotalFarmPosition,
+            farmToken,
+            farmedToken,
+            farmingTokenPriceUSD,
+            farmedTokenPriceUSD,
+        ] = await Promise.all([
+            this.computeUserEstimatedWeeklyRewards(
+                scAddress,
+                userAddress,
+                additionalUserFarmAmount,
+                additionalUserEnergy,
+            ),
+            this.farmAbi.userTotalFarmPosition(scAddress, userAddress),
+            this.farmService.getFarmToken(scAddress),
+            this.farmService.getFarmedToken(scAddress),
+            this.farmingTokenPriceUSD(scAddress),
+            this.farmedTokenPriceUSD(scAddress),
+        ]);
+
+        if (userRewardsPerWeek === '0') {
+            return 0;
+        }
 
         const userTotalFarmPositionUSD = computeValueUSD(
             userTotalFarmPosition,

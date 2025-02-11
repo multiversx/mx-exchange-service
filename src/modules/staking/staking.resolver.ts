@@ -47,6 +47,30 @@ export class StakingBoostedRewardsResolver {
     constructor(private readonly stakingCompute: StakingComputeService) {}
 
     @ResolveField()
+    async estimatedWeeklyRewards(
+        @Parent() parent: StakingBoostedRewardsModel,
+        @Args('additionalUserFarmAmount', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserFarmAmount: string,
+        @Args('additionalUserEnergy', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserEnergy: string,
+    ): Promise<string> {
+        return this.stakingCompute.computeUserEstimatedWeeklyRewards(
+            parent.farmAddress,
+            parent.userAddress,
+            additionalUserFarmAmount,
+            additionalUserEnergy,
+        );
+    }
+
+    @ResolveField()
     async curentBoostedAPR(
         @Parent() parent: StakingBoostedRewardsModel,
         @Args('additionalUserFarmAmount', {
