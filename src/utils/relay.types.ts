@@ -12,25 +12,25 @@ export default function relayTypes<T>(type: Type<T>): any {
     class Edge implements Relay.Edge<T> {
         public name = `${name}Edge`;
 
-        @Field({ nullable: true })
+        @Field({ nullable: true, complexity: 0 })
         public cursor!: Relay.ConnectionCursor;
 
-        @Field(() => type, { nullable: true })
+        @Field(() => type, { nullable: true, complexity: 0 })
         public node!: T;
     }
 
     @ObjectType(`${name}PageInfo`, { isAbstract: true })
     class PageInfo implements Relay.PageInfo {
-        @Field({ nullable: true })
+        @Field({ nullable: true, complexity: 0 })
         public startCursor!: Relay.ConnectionCursor;
 
-        @Field({ nullable: true })
+        @Field({ nullable: true, complexity: 0 })
         public endCursor!: Relay.ConnectionCursor;
 
-        @Field(() => Boolean)
+        @Field(() => Boolean, { complexity: 0 })
         public hasPreviousPage!: boolean;
 
-        @Field(() => Boolean)
+        @Field(() => Boolean, { complexity: 0 })
         public hasNextPage!: boolean;
     }
 
@@ -38,22 +38,22 @@ export default function relayTypes<T>(type: Type<T>): any {
     class Connection implements Relay.Connection<T> {
         public name = `${name}Connection`;
 
-        @Field(() => [Edge], { nullable: true })
+        @Field(() => [Edge], { nullable: true, complexity: 0 })
         public edges!: Relay.Edge<T>[];
 
-        @Field(() => PageInfo, { nullable: true })
+        @Field(() => PageInfo, { nullable: true, complexity: 0 })
         public pageInfo!: Relay.PageInfo;
     }
 
     @ObjectType(`${name}Page`, { isAbstract: true })
     abstract class Page {
-        @Field(() => [Edge], { nullable: true })
+        @Field(() => [Edge], { nullable: true, complexity: 0 })
         public edges!: Relay.Edge<T>[];
 
-        @Field(() => PageInfo, { nullable: true })
+        @Field(() => PageInfo, { nullable: true, complexity: 0 })
         public pageInfo!: Relay.PageInfo;
 
-        @Field(() => PageData, { nullable: true })
+        @Field(() => PageData, { nullable: true, complexity: 0 })
         public pageData!: PageData;
     }
 
