@@ -5,6 +5,8 @@ import { PairInfoModel } from './pair-info.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
+import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -30,7 +32,7 @@ export class LockedTokensInfo {
             'value can be obtained from lockingSC field',
     })
     lockingScAddress: string;
-    @Field(() => SimpleLockModel)
+    @Field(() => SimpleLockModel, { complexity: nestedFieldComplexity })
     lockingSC: SimpleLockModel;
     @Field(() => Int)
     unlockEpoch: number;
@@ -72,13 +74,17 @@ export class PairRewardTokensModel {
     @Field()
     address: string;
 
-    @Field(() => [EsdtToken])
+    @Field(() => [EsdtToken], {
+        complexity: (options: ComplexityEstimatorArgs) => {
+            return nestedFieldComplexity(options) * 2;
+        },
+    })
     poolRewards: EsdtToken[];
 
-    @Field({ nullable: true })
+    @Field({ nullable: true, complexity: nestedFieldComplexity })
     farmReward: NftCollection;
 
-    @Field({ nullable: true })
+    @Field({ nullable: true, complexity: nestedFieldComplexity })
     dualFarmReward: EsdtToken;
 
     constructor(init?: Partial<PairRewardTokensModel>) {
@@ -91,10 +97,10 @@ export class PairModel {
     @Field()
     address: string;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     firstToken: EsdtToken;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     secondToken: EsdtToken;
 
     @Field()
@@ -109,7 +115,7 @@ export class PairModel {
     @Field()
     secondTokenPriceUSD: string;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     liquidityPoolToken: EsdtToken;
 
     @Field()
@@ -148,7 +154,7 @@ export class PairModel {
     @Field()
     feesAPR: string;
 
-    @Field()
+    @Field(() => PairInfoModel, { complexity: nestedFieldComplexity })
     info: PairInfoModel;
 
     @Field()
@@ -174,7 +180,10 @@ export class PairModel {
     @Field()
     feeState: boolean;
 
-    @Field(() => LockedTokensInfo, { nullable: true })
+    @Field(() => LockedTokensInfo, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     lockedTokensInfo: LockedTokensInfo;
 
     @Field(() => [String])
@@ -183,12 +192,13 @@ export class PairModel {
     @Field()
     initialLiquidityAdder: string;
 
-    @Field(() => [FeeDestination])
+    @Field(() => [FeeDestination], { complexity: nestedFieldComplexity })
     feeDestinations: FeeDestination[];
 
     @Field(() => FeesCollectorModel, {
         nullable: true,
         description: 'Fees collector set for this pair',
+        complexity: nestedFieldComplexity,
     })
     feesCollector: FeesCollectorModel;
 
@@ -207,10 +217,16 @@ export class PairModel {
     @Field(() => Int, { nullable: true })
     deployedAt: number;
 
-    @Field(() => PairCompoundedAPRModel, { nullable: true })
+    @Field(() => PairCompoundedAPRModel, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     compoundedAPR: PairCompoundedAPRModel;
 
-    @Field(() => PairRewardTokensModel, { nullable: true })
+    @Field(() => PairRewardTokensModel, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     rewardTokens: PairRewardTokensModel;
 
     @Field({ nullable: true })

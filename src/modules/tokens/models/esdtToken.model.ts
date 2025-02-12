@@ -1,7 +1,8 @@
-import { ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { AssetsModel } from './assets.model';
 import { IEsdtToken } from './esdtToken.interface';
 import { RolesModel } from './roles.model';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 
 export enum EsdtTokenType {
     FungibleToken = 'FungibleESDT',
@@ -32,6 +33,10 @@ export class EsdtToken implements IEsdtToken {
     trendingScore?: string;
     supply?: string;
     circulatingSupply?: string;
+    @Field(() => AssetsModel, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     assets?: AssetsModel;
     transactions: number;
     accounts: number;
@@ -43,6 +48,10 @@ export class EsdtToken implements IEsdtToken {
     canPause: boolean;
     canFreeze: boolean;
     canWipe: boolean;
+    @Field(() => RolesModel, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     roles?: RolesModel;
     type?: string;
     balance?: string;

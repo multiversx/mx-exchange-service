@@ -5,6 +5,7 @@ import {
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmTokenAttributesUnion } from 'src/modules/farm/models/farmTokenAttributes.model';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 
 export enum FarmType {
     SIMPLE_FARM,
@@ -113,11 +114,11 @@ export class FarmProxyTokenAttributesModel {
 export class SimpleLockModel {
     @Field()
     address: string;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     lockedToken: NftCollection;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     lpProxyToken: NftCollection;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     farmProxyToken: NftCollection;
     @Field(() => [String])
     intermediatedPairs: string[];
