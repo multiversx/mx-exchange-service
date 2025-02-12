@@ -688,5 +688,14 @@
             "minEnergy": "5040000000000000000000000000000"
         }
     ],
-    "cryptoRatesIdentifiers": ["WBTC-5349b3", "WETH-b4ca29", "WEGLD-bd4d79"]
+    "cryptoRatesIdentifiers": ["WBTC-5349b3", "WETH-b4ca29", "WEGLD-bd4d79"],
+    "complexity": {
+      "maxComplexity": 3000,
+      "collectMetrics": true,
+      "exposeComplexity": true,
+      "rejectQueries": false,
+      "costModifiers": {
+        "nested": 1.5
+      }
+    }
 }
