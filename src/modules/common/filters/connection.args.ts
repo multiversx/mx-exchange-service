@@ -90,12 +90,12 @@ export default class ConnectionArgs implements ConnectionArguments {
     public after?: ConnectionCursor;
 
     @IsOptional()
-    @Max(100)
+    @Max(25)
     @Field(() => Int, { nullable: true, description: 'Paginate first' })
     public first?: number;
 
     @IsOptional()
-    @Max(100)
+    @Max(25)
     @Field(() => Int, { nullable: true, description: 'Paginate last' })
     public last?: number;
 }
