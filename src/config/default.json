@@ -691,11 +691,13 @@
     "cryptoRatesIdentifiers": ["WBTC-5349b3", "WETH-b4ca29", "WEGLD-bd4d79"],
     "complexity": {
       "maxComplexity": 3000,
+      "defaultComplexity": 1,
       "collectMetrics": true,
       "exposeComplexity": true,
       "rejectQueries": false,
       "costModifiers": {
-        "nested": 1.5
+        "nested": 1.5,
+        "exponentialBase": 5
       }
     }
 }

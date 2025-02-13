@@ -14,6 +14,7 @@ import { GraphQLSchema } from 'graphql';
 import { complexityConfig } from 'src/config';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { rootQueryEstimator } from 'src/helpers/complexity/query.estimators';
 
 @Plugin()
 export class ComplexityPlugin implements ApolloServerPlugin {
@@ -45,9 +46,11 @@ export class ComplexityPlugin implements ApolloServerPlugin {
                     query: document,
                     variables: request.variables,
                     estimators: [
+                        rootQueryEstimator(),
                         fieldExtensionsEstimator(),
-                        simpleEstimator({ defaultComplexity: 1 }),
+                        simpleEstimator({ defaultComplexity: complexityConfig.defaultComplexity }),
                     ],
+                    context: { queryCount: 1 },
                 });
 
                 if (exposeComplexity) {

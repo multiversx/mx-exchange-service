@@ -36,8 +36,8 @@ import { AnalyticsAWSGetterService } from '../analytics/services/analytics.aws.g
 import BigNumber from 'bignumber.js';
 import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
 import {
-    estimateRelayQueryComplexity,
-    estimatePaginatedQueryComplexity,
+    relayQueryEstimator,
+    paginatedQueryEstimator,
 } from 'src/helpers/complexity/query.estimators';
 
 @Resolver(() => FactoryModel)
@@ -174,7 +174,7 @@ export class RouterResolver {
     @Query(() => [PairModel], {
         deprecationReason:
             'New query (filteredPairs) following GraphQL "Connection" standard for pagination/sorting/filtering is now available.',
-        complexity: estimatePaginatedQueryComplexity,
+        complexity: paginatedQueryEstimator,
     })
     @UsePipes(new QueryArgsValidationPipe())
     async pairs(
@@ -185,7 +185,7 @@ export class RouterResolver {
     }
 
     @Query(() => PairsResponse, {
-        complexity: estimateRelayQueryComplexity,
+        complexity: relayQueryEstimator,
     })
     @UsePipes(new QueryArgsValidationPipe())
     async filteredPairs(

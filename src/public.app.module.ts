@@ -53,7 +53,7 @@ import { ComplexityModule } from './complexity.module';
                 autoSchemaFile: 'schema.gql',
                 installSubscriptionHandlers: true,
                 parseOptions: {
-                    maxTokens: 500,
+                    maxTokens: 1000,
                 },
                 formatError: (
                     formattedError: GraphQLFormattedError,
