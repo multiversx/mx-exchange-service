@@ -4,7 +4,7 @@ import {
     fromGlobalId,
 } from 'graphql-relay';
 import { Field, Int, InputType } from '@nestjs/graphql';
-import { IsOptional, Max } from 'class-validator';
+import { IsInt, IsOptional, Max } from 'class-validator';
 import { PaginationArgs } from 'src/modules/dex.model';
 
 type PagingMeta =
@@ -90,12 +90,12 @@ export default class ConnectionArgs implements ConnectionArguments {
     public after?: ConnectionCursor;
 
     @IsOptional()
-    @Max(25)
+    @Max(1000)
     @Field(() => Int, { nullable: true, description: 'Paginate first' })
     public first?: number;
 
     @IsOptional()
-    @Max(25)
+    @Max(1000)
     @Field(() => Int, { nullable: true, description: 'Paginate last' })
     public last?: number;
 }
