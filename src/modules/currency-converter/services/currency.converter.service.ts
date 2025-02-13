@@ -46,11 +46,13 @@ export class CurrencyConverterService {
         const tokenRates: CurrencyRateModel[] = cryptoRatesIdentifiers.map(
             (identifier, index) => {
                 const token = tokens.find((t) => t.identifier === identifier);
-                const rate = tokenPrices[index];
+                const price = tokenPrices[index];
                 const [symbol, name] =
                     identifier === tokenProviderUSD
                         ? [mxConfig.EGLDIdentifier, mxConfig.EGLDIdentifier]
                         : [identifier.split('-')[0], token.name];
+
+                const rate = new BigNumber(1).dividedBy(price).toNumber();
                 return {
                     symbol,
                     rate: new BigNumber(rate).toNumber(),
