@@ -397,7 +397,6 @@ export class AnalyticsComputeService {
         tokenID: string,
     ): Promise<TradingActivityModel[]> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const commonTokens = await this.routerAbi.commonTokensForUserPairs();
         const pairsTokens = new Set<string>();
 
         const pairsAddresses = pairsMetadata
@@ -447,14 +446,8 @@ export class AnalyticsComputeService {
             );
             outputToken.balance = tokenOut.amount;
 
-            const { quoteToken } = this.determineBaseAndQuoteTokens(
-                swapEvent.address,
-                pairsMetadata,
-                commonTokens,
-            );
-
             const action =
-                quoteToken === tokenOut.tokenID
+                tokenID === tokenOut.tokenID
                     ? TradingActivityAction.BUY
                     : TradingActivityAction.SELL;
 
