@@ -55,7 +55,7 @@ export class CurrencyConverterService {
                 const rate = new BigNumber(1).dividedBy(price).toNumber();
                 return {
                     symbol,
-                    rate: new BigNumber(rate).toNumber(),
+                    rate,
                     category: CurrencyRateType.CRYPTO,
                     name,
                 };
