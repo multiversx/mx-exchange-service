@@ -397,7 +397,6 @@ export class AnalyticsComputeService {
         tokenID: string,
     ): Promise<TradingActivityModel[]> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const commonTokens = await this.routerAbi.commonTokensForUserPairs();
         const pairsTokens = new Set<string>();
 
         const pairsAddresses = pairsMetadata
