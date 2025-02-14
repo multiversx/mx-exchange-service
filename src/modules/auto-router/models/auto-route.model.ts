@@ -1,4 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 import { TransactionModel } from 'src/models/transaction.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 
@@ -55,7 +56,7 @@ export class SwapRouteModel {
     @Field({ nullable: true })
     tokensPriceDeviationPercent: number;
 
-    @Field(() => [PairModel])
+    @Field(() => [PairModel], { complexity: nestedFieldComplexity })
     pairs: PairModel[];
 
     @Field()

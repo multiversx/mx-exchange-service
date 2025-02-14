@@ -1,6 +1,7 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EnergyModel } from '../../../modules/energy/models/energy.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 
 @ObjectType()
 export class TokenDistributionModel {
@@ -25,10 +26,13 @@ export class GlobalInfoByWeekModel {
     @Field()
     apr: string;
 
-    @Field(() => [EsdtTokenPayment])
+    @Field(() => [EsdtTokenPayment], { complexity: nestedFieldComplexity })
     totalRewardsForWeek: [EsdtTokenPayment];
 
-    @Field(() => [TokenDistributionModel])
+    @Field(() => [
+        TokenDistributionModel,
+        { complexity: nestedFieldComplexity },
+    ])
     rewardsDistributionForWeek: TokenDistributionModel[];
 
     @Field()
@@ -59,13 +63,15 @@ export class UserInfoByWeekModel {
     @Field({ nullable: true })
     positionAmount: string;
 
-    @Field(() => EnergyModel)
+    @Field(() => EnergyModel, { complexity: nestedFieldComplexity })
     energyForWeek: EnergyModel;
 
-    @Field(() => [EsdtTokenPayment])
+    @Field(() => [EsdtTokenPayment], { complexity: nestedFieldComplexity })
     rewardsForWeek: [EsdtTokenPayment];
 
-    @Field(() => [TokenDistributionModel])
+    @Field(() => [TokenDistributionModel], {
+        complexity: nestedFieldComplexity,
+    })
     rewardsDistributionForWeek: TokenDistributionModel[];
 
     constructor(init?: Partial<UserInfoByWeekModel>) {
@@ -75,7 +81,7 @@ export class UserInfoByWeekModel {
 
 @ObjectType()
 export class ClaimProgress {
-    @Field(() => EnergyModel)
+    @Field(() => EnergyModel, { complexity: nestedFieldComplexity })
     energy: EnergyModel;
 
     @Field(() => Int)
@@ -88,7 +94,7 @@ export class ClaimProgress {
 
 @ObjectType()
 export class UserInfoByWeekSubModel {
-    @Field(() => ClaimProgress)
+    @Field(() => ClaimProgress, { complexity: nestedFieldComplexity })
     claimProgress: ClaimProgress;
 
     @Field()
