@@ -697,7 +697,7 @@
       "rejectQueries": false,
       "costModifiers": {
         "nested": 1.5,
-        "exponentialBase": 5
+        "exponentialBase": 10
       }
     }
 }

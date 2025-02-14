@@ -14,37 +14,38 @@ export function relayQueryEstimator(options: ComplexityEstimatorArgs): number {
 export function paginatedQueryEstimator(
     options: ComplexityEstimatorArgs,
 ): number {
-    const count = options.args.page?.limit ?? 10;
+    const count = options.args.limit ?? 10;
     return count * options.childComplexity;
 }
 
 export function rootQueryEstimator(): ComplexityEstimator {
-    return (args: ComplexityEstimatorArgs): number | void => {
-        if (!args.field.extensions || args.type.name !== 'Query') {
+    return (options: ComplexityEstimatorArgs): number | void => {
+        if (!options.field.extensions || options.type.name !== 'Query') {
             return;
         }
 
-        const exponent = args.context.queryCount;
+        const exponent = options.context.queryCount;
         const exponentialComplexity = Math.pow(
             complexityConfig.costModifiers.exponentialBase,
             exponent,
         );
 
-        args.context.queryCount = args.context.queryCount + 1;
+        options.context.queryCount = options.context.queryCount + 1;
 
-        if (typeof args.field.extensions.complexity === 'number') {
-            return exponentialComplexity + args.field.extensions.complexity;
-        } else if (typeof args.field.extensions.complexity === 'function') {
+        if (typeof options.field.extensions.complexity === 'number') {
+            return exponentialComplexity * options.field.extensions.complexity;
+        } else if (typeof options.field.extensions.complexity === 'function') {
             return (
-                exponentialComplexity + args.field.extensions.complexity(args)
+                exponentialComplexity *
+                options.field.extensions.complexity(options)
             );
         }
         const baseEstimate = simpleEstimator({
             defaultComplexity: complexityConfig.defaultComplexity,
-        })(args);
+        })(options);
 
         return typeof baseEstimate === 'number'
-            ? exponentialComplexity + baseEstimate
+            ? exponentialComplexity * baseEstimate
             : exponentialComplexity;
     };
 }
