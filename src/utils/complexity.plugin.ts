@@ -48,9 +48,12 @@ export class ComplexityPlugin implements ApolloServerPlugin {
                     estimators: [
                         rootQueryEstimator(),
                         fieldExtensionsEstimator(),
-                        simpleEstimator({ defaultComplexity: complexityConfig.defaultComplexity }),
+                        simpleEstimator({
+                            defaultComplexity:
+                                complexityConfig.defaultComplexity,
+                        }),
                     ],
-                    context: { queryCount: 1 },
+                    context: { queryCount: 0 },
                 });
 
                 if (exposeComplexity) {

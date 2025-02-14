@@ -1,4 +1,4 @@
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, UsePipes } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -32,6 +32,8 @@ import ConnectionArgs, {
     getPagingParameters,
 } from '../common/filters/connection.args';
 import PageResponse from '../common/page.response';
+import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
+import { relayQueryEstimator } from 'src/helpers/complexity/query.estimators';
 
 @Resolver(() => StakingProxyModel)
 export class StakingProxyResolver {
@@ -108,7 +110,10 @@ export class StakingProxyResolver {
         return this.stakingProxyService.getStakingProxies();
     }
 
-    @Query(() => StakingProxiesResponse)
+    @Query(() => StakingProxiesResponse, {
+        complexity: relayQueryEstimator,
+    })
+    @UsePipes(new QueryArgsValidationPipe())
     async filteredStakingProxies(
         @Args({
             name: 'filters',

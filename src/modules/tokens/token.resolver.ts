@@ -16,6 +16,13 @@ import ConnectionArgs, {
 } from '../common/filters/connection.args';
 import PageResponse from '../common/page.response';
 import { TokenLoader } from './services/token.loader';
+import { UsePipes } from '@nestjs/common';
+import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
+import {
+    paginatedQueryEstimator,
+    relayQueryEstimator,
+} from 'src/helpers/complexity/query.estimators';
+import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 
 @Resolver(() => AssetsModel)
 export class AssetsResolver {
@@ -116,7 +123,14 @@ export class TokensResolver {
         );
     }
 
-    @Query(() => [EsdtToken])
+    @Query(() => [EsdtToken], {
+        complexity: (options: ComplexityEstimatorArgs) => {
+            return options.childComplexity * 400 + 1;
+        },
+        deprecationReason:
+            'Will be deprecated if favor of the  "filteredTokens" query following GraphQL "Connection" standard for pagination/sorting/filtering.',
+    })
+    @UsePipes(new QueryArgsValidationPipe())
     async tokens(@Args() filters: TokensFiltersArgs): Promise<EsdtToken[]> {
         try {
             return await this.tokenService.getTokens(filters);
@@ -129,7 +143,10 @@ export class TokensResolver {
         }
     }
 
-    @Query(() => TokensResponse)
+    @Query(() => TokensResponse, {
+        complexity: relayQueryEstimator,
+    })
+    @UsePipes(new QueryArgsValidationPipe())
     async filteredTokens(
         @Args({ name: 'filters', type: () => TokensFilter, nullable: true })
         filters: TokensFilter,
