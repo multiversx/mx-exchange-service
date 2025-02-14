@@ -1,4 +1,5 @@
 import { ObjectType, Field, registerEnumType } from '@nestjs/graphql';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
@@ -16,16 +17,16 @@ export class ProxyModel {
     @Field()
     address: string;
 
-    @Field(() => [NftCollection])
+    @Field(() => [NftCollection], { complexity: nestedFieldComplexity })
     lockedAssetTokens: NftCollection[];
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     wrappedLpToken: NftCollection;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     wrappedFarmToken: NftCollection;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     assetToken: EsdtToken;
 
     @Field(() => [String])
