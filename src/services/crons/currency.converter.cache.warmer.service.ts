@@ -15,7 +15,7 @@ export class CurrencyConverterCacheWarmerService {
     ) {}
 
     @Cron(CronExpression.EVERY_30_MINUTES)
-    @Lock({ name: 'cacheCurrencyRates', verbose: true })
+    @Lock({ name: 'cacheFiatRates', verbose: true })
     async cacheFiatRates(): Promise<void> {
         const currencyRates = await this.currencyConverter.fetchCurrencyRates();
 
@@ -27,7 +27,7 @@ export class CurrencyConverterCacheWarmerService {
     }
 
     @Cron(CronExpression.EVERY_MINUTE)
-    @Lock({ name: 'cacheCurrencyRates', verbose: true })
+    @Lock({ name: 'cacheCryptoRates', verbose: true })
     async cacheCryptoRates(): Promise<void> {
         const cryptoRates = await this.currencyConverter.computeCryptoRates();
 
