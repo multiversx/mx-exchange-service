@@ -12,6 +12,7 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import BigNumber from 'bignumber.js';
 import { cryptoRatesIdentifiers, mxConfig, tokenProviderUSD } from 'src/config';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 
 @Injectable()
 export class CurrencyConverterService {
@@ -20,6 +21,7 @@ export class CurrencyConverterService {
         private readonly apiConfig: ApiConfigService,
         private readonly tokenCompute: TokenComputeService,
         private readonly tokenService: TokenService,
+        private readonly dataApi: MXDataApiService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -28,20 +30,36 @@ export class CurrencyConverterService {
         remoteTtl: Constants.oneHour(),
         localTtl: Constants.oneMinute() * 30,
     })
+    async fiatRates(): Promise<CurrencyRateModel[]> {
+        return await this.fetchCurrencyRates();
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'currency',
+        remoteTtl: Constants.oneMinute() * 4,
+        localTtl: Constants.oneMinute() * 2,
+    })
+    async cryptoRates(): Promise<CurrencyRateModel[]> {
+        return await this.computeCryptoRates();
+    }
+
     async allCurrencyRates(): Promise<CurrencyRateModel[]> {
-        const fiatRates = await this.fetchCurrencyRates();
+        const fiatRates = await this.fiatRates();
         const cryptoRates = await this.cryptoRates();
 
         return [...fiatRates, ...cryptoRates];
     }
 
-    async cryptoRates(): Promise<CurrencyRateModel[]> {
+    async computeCryptoRates(): Promise<CurrencyRateModel[]> {
         const tokenPrices = await this.tokenCompute.getAllTokensPriceDerivedUSD(
             cryptoRatesIdentifiers,
         );
         const tokens = await this.tokenService.getAllTokensMetadata(
             cryptoRatesIdentifiers,
         );
+
+        const usdcPrice = await this.dataApi.getTokenPrice('USDC');
 
         const tokenRates: CurrencyRateModel[] = cryptoRatesIdentifiers.map(
             (identifier, index) => {
@@ -52,7 +70,10 @@ export class CurrencyConverterService {
                         ? [mxConfig.EGLDIdentifier, mxConfig.EGLDIdentifier]
                         : [identifier.split('-')[0], token.name];
 
-                const rate = new BigNumber(1).dividedBy(price).toNumber();
+                const rate = new BigNumber(usdcPrice)
+                    .dividedBy(price)
+                    .toNumber();
+
                 return {
                     symbol,
                     rate,

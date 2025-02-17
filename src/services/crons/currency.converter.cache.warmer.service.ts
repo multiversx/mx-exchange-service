@@ -5,7 +5,6 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { CurrencyConverterService } from 'src/modules/currency-converter/services/currency.converter.service';
 import { CurrencyConverterSetterService } from 'src/modules/currency-converter/services/currency.converter.setter.service';
 import { PUB_SUB } from '../redis.pubSub.module';
-import { CurrencyCategory } from 'src/modules/currency-converter/models/currency.rate.model';
 
 @Injectable()
 export class CurrencyConverterCacheWarmerService {
@@ -17,16 +16,26 @@ export class CurrencyConverterCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_MINUTES)
     @Lock({ name: 'cacheCurrencyRates', verbose: true })
-    async cacheCurrencyRates(): Promise<void> {
+    async cacheFiatRates(): Promise<void> {
         const currencyRates = await this.currencyConverter.fetchCurrencyRates();
-        const cryptoRates = await this.currencyConverter.cryptoRates();
 
-        const cachedKeys = await this.currencyConverterSetter.allCurrencyRates([
-            ...currencyRates,
-            ...cryptoRates,
-        ]);
+        const cachedKey = await this.currencyConverterSetter.fiatRates(
+            currencyRates,
+        );
 
-        await this.deleteCacheKeys([cachedKeys]);
+        await this.deleteCacheKeys([cachedKey]);
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    @Lock({ name: 'cacheCurrencyRates', verbose: true })
+    async cacheCryptoRates(): Promise<void> {
+        const cryptoRates = await this.currencyConverter.computeCryptoRates();
+
+        const cachedKey = await this.currencyConverterSetter.cryptoRates(
+            cryptoRates,
+        );
+
+        await this.deleteCacheKeys([cachedKey]);
     }
 
     @Cron(CronExpression.EVERY_HOUR)
