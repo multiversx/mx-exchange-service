@@ -7,11 +7,9 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fees-collector.abi.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { constantsConfig, scAddress } from 'src/config';
+import { scAddress } from 'src/config';
 import { FeesCollectorSetterService } from 'src/modules/fees-collector/services/fees-collector.setter.service';
-import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FeesCollectorComputeService } from 'src/modules/fees-collector/services/fees-collector.compute.service';
-import { WeeklyRewardsSplittingSetterService } from 'src/submodules/weekly-rewards-splitting/services/weekly.rewarrds.splitting.setter.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
@@ -23,8 +21,6 @@ export class FeesCollectorCacheWarmerService {
         private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly feesCollectorSetter: FeesCollectorSetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
-        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
-        private readonly weeklyRewardsSplittingSetter: WeeklyRewardsSplittingSetterService,
     ) {}
 
     @Cron(CronExpression.EVERY_MINUTE)
@@ -59,13 +55,7 @@ export class FeesCollectorCacheWarmerService {
         const tokensAccumulatedFeesCacheKeys =
             await this.cacheTokensAccumulatedFees(allTokens, currentWeek);
 
-        const claimWeeksCacheKeys = await this.cacheClaimWeeksData(
-            currentWeek,
-            scAddress.feesCollector,
-        );
-
         cachedKeys.push(...tokensAccumulatedFeesCacheKeys);
-        cachedKeys.push(...claimWeeksCacheKeys);
 
         await this.deleteCacheKeys(cachedKeys);
 
@@ -94,58 +84,6 @@ export class FeesCollectorCacheWarmerService {
             );
 
             cachedKeys.push(cacheKey);
-        }
-
-        return cachedKeys;
-    }
-
-    private async cacheClaimWeeksData(
-        currentWeek: number,
-        feesCollectorScAddress: string,
-    ): Promise<string[]> {
-        const cachedKeys = [];
-        const startWeek = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS;
-
-        for (let week = startWeek; week <= currentWeek; week++) {
-            if (week < 1) {
-                continue;
-            }
-
-            const totalEnergyForWeek =
-                await this.weeklyRewardsSplittingAbi.totalEnergyForWeekRaw(
-                    feesCollectorScAddress,
-                    week,
-                );
-            const totalRewardsForWeek =
-                await this.weeklyRewardsSplittingAbi.totalRewardsForWeekRaw(
-                    feesCollectorScAddress,
-                    week,
-                );
-            const totalLockedTokensForWeek =
-                await this.weeklyRewardsSplittingAbi.totalLockedTokensForWeekRaw(
-                    feesCollectorScAddress,
-                    week,
-                );
-
-            const keys = await Promise.all([
-                this.weeklyRewardsSplittingSetter.totalEnergyForWeek(
-                    feesCollectorScAddress,
-                    week,
-                    totalEnergyForWeek,
-                ),
-                this.weeklyRewardsSplittingSetter.totalRewardsForWeek(
-                    feesCollectorScAddress,
-                    week,
-                    totalRewardsForWeek,
-                ),
-                this.weeklyRewardsSplittingSetter.totalLockedTokensForWeek(
-                    feesCollectorScAddress,
-                    week,
-                    totalLockedTokensForWeek,
-                ),
-            ]);
-
-            cachedKeys.push(...keys);
         }
 
         return cachedKeys;
