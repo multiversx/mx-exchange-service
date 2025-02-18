@@ -163,7 +163,10 @@ export class FeesCollectorComputeService {
             .multipliedBy(userEnergyForWeek.amount)
             .dividedBy(totalEnergyForWeek);
 
-        return userRewardsForWeekUSD.toFixed();
+        return userRewardsForWeekUSD.isNaN() ||
+            !userRewardsForWeekUSD.isFinite()
+            ? '0'
+            : userRewardsForWeekUSD.toFixed();
     }
 
     async computeUserRewardsAPR(
