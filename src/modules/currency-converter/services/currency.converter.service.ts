@@ -10,9 +10,13 @@ import {
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import BigNumber from 'bignumber.js';
-import { cryptoRatesIdentifiers, mxConfig, tokenProviderUSD } from 'src/config';
+import {
+    constantsConfig,
+    cryptoRatesIdentifiers,
+    mxConfig,
+    tokenProviderUSD,
+} from 'src/config';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 
 @Injectable()
 export class CurrencyConverterService {
@@ -21,7 +25,6 @@ export class CurrencyConverterService {
         private readonly apiConfig: ApiConfigService,
         private readonly tokenCompute: TokenComputeService,
         private readonly tokenService: TokenService,
-        private readonly dataApi: MXDataApiService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -59,7 +62,9 @@ export class CurrencyConverterService {
             cryptoRatesIdentifiers,
         );
 
-        const usdcPrice = await this.dataApi.getTokenPrice('USDC');
+        const usdcPrice = await this.tokenCompute.computeTokenPriceDerivedUSD(
+            constantsConfig.USDC_TOKEN_ID,
+        );
 
         const tokenRates: CurrencyRateModel[] = cryptoRatesIdentifiers.map(
             (identifier, index) => {
