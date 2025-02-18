@@ -46,6 +46,7 @@ import { EventsProcessorService } from './crons/events.processor.service';
 import { CurrencyConverterCacheWarmerService } from './crons/currency.converter.cache.warmer.service';
 import { CurrencyConverterModule } from 'src/modules/currency-converter/currency.converter.module';
 import { WeekTimekeepingCacheWarmerService } from './crons/week.timekeeping.cache.warmer.service';
+import { WeeklyRewardsSplittingCacheWarmerService } from './crons/weekly.rewards.cache.warmer.service';
 
 @Module({
     imports: [
@@ -99,6 +100,7 @@ import { WeekTimekeepingCacheWarmerService } from './crons/week.timekeeping.cach
         FeesCollectorCacheWarmerService,
         CurrencyConverterCacheWarmerService,
         WeekTimekeepingCacheWarmerService,
+        WeeklyRewardsSplittingCacheWarmerService,
     ],
 })
 export class CacheWarmerModule {}
