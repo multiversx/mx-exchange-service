@@ -8,6 +8,7 @@ import { FarmModuleV2 } from 'src/modules/farm/v2/farm.v2.module';
 import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
+import { WeekTimekeepingSetterService } from './services/week-timekeeping.setter.service';
 
 @Module({
     imports: [
@@ -22,7 +23,12 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         WeekTimekeepingAbiService,
         WeekTimekeepingComputeService,
         WeekTimekeepingResolver,
+        WeekTimekeepingSetterService,
     ],
-    exports: [WeekTimekeepingAbiService, WeekTimekeepingComputeService],
+    exports: [
+        WeekTimekeepingAbiService,
+        WeekTimekeepingComputeService,
+        WeekTimekeepingSetterService,
+    ],
 })
 export class WeekTimekeepingModule {}

@@ -45,6 +45,7 @@ import { ElasticSearchModule } from './elastic-search/elastic.search.module';
 import { EventsProcessorService } from './crons/events.processor.service';
 import { CurrencyConverterCacheWarmerService } from './crons/currency.converter.cache.warmer.service';
 import { CurrencyConverterModule } from 'src/modules/currency-converter/currency.converter.module';
+import { WeekTimekeepingCacheWarmerService } from './crons/week.timekeeping.cache.warmer.service';
 
 @Module({
     imports: [
@@ -97,6 +98,7 @@ import { CurrencyConverterModule } from 'src/modules/currency-converter/currency
         EscrowCacheWarmerService,
         FeesCollectorCacheWarmerService,
         CurrencyConverterCacheWarmerService,
+        WeekTimekeepingCacheWarmerService,
     ],
 })
 export class CacheWarmerModule {}
