@@ -28,17 +28,17 @@ export class CurrencyConverterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('fiatRates'),
             value,
-            Constants.oneHour(),
-            Constants.oneMinute() * 30,
+            Constants.oneDay(),
+            Constants.oneHour() * 18,
         );
     }
 
-    async currencySymbols(value: string[]): Promise<string> {
+    async fiatCurrencies(value: Record<string, string>): Promise<string> {
         return await this.setData(
-            this.getCacheKey('allCurrencySymbols'),
+            this.getCacheKey('fiatCurrencies'),
             value,
-            Constants.oneHour(),
-            Constants.oneMinute() * 30,
+            Constants.oneDay(),
+            Constants.oneHour() * 18,
         );
     }
 }

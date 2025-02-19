@@ -30,8 +30,8 @@ export class CurrencyConverterService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'currency',
-        remoteTtl: Constants.oneHour(),
-        localTtl: Constants.oneMinute() * 30,
+        remoteTtl: Constants.oneDay(),
+        localTtl: Constants.oneHour() * 18,
     })
     async fiatRates(): Promise<CurrencyRateModel[]> {
         return await this.fetchCurrencyRates();
@@ -121,18 +121,14 @@ export class CurrencyConverterService {
                 `${apiEndpoint}/latest.json`,
                 { params },
             );
-            const currenciesRes = await this.apiService.get(
-                `${apiEndpoint}/currencies.json`,
-            );
-
-            const currencies = currenciesRes.data;
+            const currenciesRes = await this.fiatCurrencies();
 
             return Object.entries(latestRes.data.rates).map(
                 ([symbol, rate]) => ({
                     symbol,
                     rate: rate as number,
                     category: CurrencyRateType.FIAT,
-                    name: currencies[symbol] || symbol,
+                    name: currenciesRes[symbol] || symbol,
                 }),
             );
         } catch (error) {
@@ -166,28 +162,32 @@ export class CurrencyConverterService {
         );
     }
 
-    @ErrorLoggerAsync()
-    @GetOrSetCache({
-        baseKey: 'currency',
-        remoteTtl: Constants.oneHour() * 2,
-        localTtl: Constants.oneHour(),
-    })
     async allCurrencySymbols(): Promise<string[]> {
-        const fiatSymbols = await this.fetchFiatSymbols();
+        const fiatCurrencies = await this.fiatCurrencies();
+        const fiatSymbols = Object.keys(fiatCurrencies);
         const cryptoSymbols = this.getCryptoSymbols();
 
         return [...fiatSymbols, ...cryptoSymbols];
     }
 
-    async fetchFiatSymbols(): Promise<string[]> {
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'currency',
+        remoteTtl: Constants.oneDay(),
+        localTtl: Constants.oneHour() * 18,
+    })
+    async fiatCurrencies(): Promise<Record<string, string>> {
+        return await this.fetchFiatCurrencies();
+    }
+
+    async fetchFiatCurrencies(): Promise<Record<string, string>> {
         try {
             const apiEndpoint = this.apiConfig.getOpenExchangeRateUrl();
             const currenciesRes = await this.apiService.get(
                 `${apiEndpoint}/currencies.json`,
             );
 
-            const fiatSymbols = Object.keys(currenciesRes.data);
-            return fiatSymbols;
+            return currenciesRes.data;
         } catch (error) {
             throw new Error(`Failed to fetch currency rates: ${error.message}`);
         }

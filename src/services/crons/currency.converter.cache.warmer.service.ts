@@ -14,7 +14,7 @@ export class CurrencyConverterCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_5_HOURS)
     @Lock({ name: 'cacheFiatRates', verbose: true })
     async cacheFiatRates(): Promise<void> {
         const currencyRates = await this.currencyConverter.fetchCurrencyRates();
@@ -38,16 +38,15 @@ export class CurrencyConverterCacheWarmerService {
         await this.deleteCacheKeys([cachedKey]);
     }
 
-    @Cron(CronExpression.EVERY_HOUR)
-    @Lock({ name: 'cacheCurrencySymbols', verbose: true })
-    async cacheCurrencySymbols(): Promise<void> {
-        const currencySymbols = await this.currencyConverter.fetchFiatSymbols();
-        const cryptoSymbols = this.currencyConverter.getCryptoSymbols();
+    @Cron(CronExpression.EVERY_6_HOURS)
+    @Lock({ name: 'cacheFiatCurrencies', verbose: true })
+    async cacheFiatCurrencies(): Promise<void> {
+        const fiatCurrencies =
+            await this.currencyConverter.fetchFiatCurrencies();
 
-        const cachedKey = await this.currencyConverterSetter.currencySymbols([
-            ...currencySymbols,
-            ...cryptoSymbols,
-        ]);
+        const cachedKey = await this.currencyConverterSetter.fiatCurrencies(
+            fiatCurrencies,
+        );
 
         await this.deleteCacheKeys([cachedKey]);
     }
