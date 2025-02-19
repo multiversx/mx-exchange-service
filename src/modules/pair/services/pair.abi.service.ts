@@ -48,8 +48,8 @@ export class PairAbiService
     })
     @GetOrSetCache({
         baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
+        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
     })
     async firstTokenID(pairAddress: string): Promise<string> {
         return await this.getFirstTokenIDRaw(pairAddress);
@@ -69,8 +69,8 @@ export class PairAbiService
     })
     @GetOrSetCache({
         baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
+        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
     })
     async secondTokenID(pairAddress: string): Promise<string> {
         return await this.getSecondTokenIDRaw(pairAddress);

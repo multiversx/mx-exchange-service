@@ -23,8 +23,8 @@ export class ProxyFarmAbiService
     })
     @GetOrSetCache({
         baseKey: 'proxyFarm',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
+        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
     })
     async wrappedFarmTokenID(proxyAddress: string): Promise<string> {
         return this.getWrappedFarmTokenIDRaw(proxyAddress);

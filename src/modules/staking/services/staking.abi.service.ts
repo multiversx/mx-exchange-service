@@ -42,8 +42,8 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
+        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
     })
     async farmTokenID(stakeAddress: string): Promise<string> {
         return await this.getFarmTokenIDRaw(stakeAddress);
@@ -74,8 +74,8 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
+        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
     })
     async farmingTokenID(stakeAddress: string): Promise<string> {
         return await this.getFarmingTokenIDRaw(stakeAddress);
@@ -105,8 +105,8 @@ export class StakingAbiService
     })
     @GetOrSetCache({
         baseKey: 'stake',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
+        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
     })
     async rewardTokenID(stakeAddress: string): Promise<string> {
         return await this.getRewardTokenIDRaw(stakeAddress);

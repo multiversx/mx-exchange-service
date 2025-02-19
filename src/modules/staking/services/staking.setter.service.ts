@@ -21,8 +21,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('farmTokenID', stakeAddress),
             value,
-            CacheTtlInfo.Token.remoteTtl,
-            CacheTtlInfo.Token.localTtl,
+            CacheTtlInfo.TokenIdentifier.remoteTtl,
+            CacheTtlInfo.TokenIdentifier.localTtl,
         );
     }
 
@@ -33,8 +33,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('farmingTokenID', stakeAddress),
             value,
-            CacheTtlInfo.Token.remoteTtl,
-            CacheTtlInfo.Token.localTtl,
+            CacheTtlInfo.TokenIdentifier.remoteTtl,
+            CacheTtlInfo.TokenIdentifier.localTtl,
         );
     }
 
@@ -45,8 +45,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('rewardTokenID', stakeAddress),
             value,
-            CacheTtlInfo.Token.remoteTtl,
-            CacheTtlInfo.Token.localTtl,
+            CacheTtlInfo.TokenIdentifier.remoteTtl,
+            CacheTtlInfo.TokenIdentifier.localTtl,
         );
     }
 
