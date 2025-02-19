@@ -48,8 +48,8 @@ export class FeesCollectorAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
-        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
-        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
+        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
     })
     async lockedTokenID(): Promise<string> {
         return await this.getLockedTokenIDRaw();
