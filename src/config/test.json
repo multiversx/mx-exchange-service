@@ -4,8 +4,10 @@
         "MEX-123456": "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfqktvqkr",
         "WEGLD_USDC": "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfsr2ycrs",
         "proxyDexAddress": {
-            "v1": "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl"
-        }
+            "v1": "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl",
+            "v2": "erd1qqqqqqqqqqqqqpgqt6ltx52ukss9d2qag2k67at28a36xc9lkp2sr06394"
+        },
+        "composableTasks": "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu"
     },
     "farms": {
         "v1.2": [
@@ -17,6 +19,11 @@
             "customRewards": [
                 "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht"
             ]
+        },
+        "v2": {
+            "lockedRewards": [
+                "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh"
+            ]
         }
     },
     "tokenProviderUSD": "WEGLD-123456",
@@ -24,6 +31,9 @@
         "MAX_SWAP_SPREAD": 1,
         "MEX_TOKEN_ID": "MEX-123456",
         "USDC_TOKEN_ID": "USDC-123456",
-        "COMPOUND_TRANSACTION_FEE": 0.1
+        "COMPOUND_TRANSACTION_FEE": 0.1,
+        "roundedSwapEnable": {
+            "USDC-123456": "5000000"
+        }
     }
 }

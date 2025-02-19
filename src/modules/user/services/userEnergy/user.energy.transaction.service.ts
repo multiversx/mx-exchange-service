@@ -1,9 +1,15 @@
-import { Address, AddressValue, TypedValue } from '@multiversx/sdk-core/out';
+import {
+    Address,
+    AddressValue,
+    TypedValue,
+    VariadicValue,
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
-import { gasConfig, mxConfig, scAddress } from 'src/config';
+import { gasConfig, scAddress } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { UserEnergyComputeService } from './user.energy.compute.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class UserEnergyTransactionService {
@@ -18,20 +24,23 @@ export class UserEnergyTransactionService {
         skipFeesCollector = false,
     ): Promise<TransactionModel | null> {
         const endpointArgs: TypedValue[] = [
-            new AddressValue(Address.fromString(userAddress)),
+            new AddressValue(Address.newFromBech32(userAddress)),
         ];
+        const farmAddresses: TypedValue[] = [];
 
         if (includeAllContracts) {
             const farms = await this.userEnergyCompute.userActiveFarmsV2(
                 userAddress,
             );
             farms.forEach((farm) => {
-                endpointArgs.push(new AddressValue(Address.fromString(farm)));
+                farmAddresses.push(
+                    new AddressValue(Address.newFromBech32(farm)),
+                );
             });
             if (!skipFeesCollector) {
-                endpointArgs.push(
+                farmAddresses.push(
                     new AddressValue(
-                        Address.fromString(scAddress.feesCollector),
+                        Address.newFromBech32(scAddress.feesCollector),
                     ),
                 );
             }
@@ -43,25 +52,30 @@ export class UserEnergyTransactionService {
                 );
             contracts.forEach((contract) => {
                 if (contract !== undefined && !contract.claimProgressOutdated) {
-                    endpointArgs.push(
-                        new AddressValue(Address.fromString(contract.address)),
+                    farmAddresses.push(
+                        new AddressValue(
+                            Address.newFromBech32(contract.address),
+                        ),
                     );
                 }
             });
         }
-        if (endpointArgs.length === 1) {
+
+        if (farmAddresses.length === 0) {
             return null;
         }
 
-        const contract = await this.mxProxy.getEnergyUpdateContract();
-        return contract.methodsExplicit
-            .updateFarmsEnergyForUser(endpointArgs)
-            .withGasLimit(
-                gasConfig.energyUpdate.updateFarmsEnergyForUser *
-                    endpointArgs.length,
-            )
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        endpointArgs.push(VariadicValue.fromItems(...farmAddresses));
+
+        return await this.mxProxy.getEnergyUpdateSmartContractTransaction(
+            new TransactionOptions({
+                sender: userAddress,
+                gasLimit:
+                    gasConfig.energyUpdate.updateFarmsEnergyForUser *
+                    farmAddresses.length,
+                function: 'updateFarmsEnergyForUser',
+                arguments: endpointArgs,
+            }),
+        );
     }
 }

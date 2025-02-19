@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { PairModule } from '../pair/pair.module';
@@ -21,13 +21,14 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { AnalyticsSetterService } from './services/analytics.setter.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 @Module({
     imports: [
         AnalyticsServicesModule,
         MXCommunicationModule,
         ContextModule,
-        RouterModule,
+        forwardRef(() => RouterModule),
         PairModule,
         FarmModule,
         ProxyModule,
@@ -39,6 +40,7 @@ import { AnalyticsSetterService } from './services/analytics.setter.service';
         RemoteConfigModule,
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
+        ElasticSearchModule,
     ],
     providers: [
         AnalyticsResolver,

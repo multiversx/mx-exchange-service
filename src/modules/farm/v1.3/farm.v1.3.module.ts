@@ -10,6 +10,8 @@ import { FarmTransactionServiceV1_3 } from './services/farm.v1.3.transaction.ser
 import { FarmServiceV1_3 } from './services/farm.v1.3.service';
 import { FarmSetterService } from '../base-module/services/farm.setter.service';
 import { FarmSetterServiceV1_3 } from './services/farm.v1.3.setter.service';
+import { FarmAbiLoaderV1_3 } from './services/farm.v1.3.abi.loader';
+import { FarmComputeLoaderV1_3 } from './services/farm.v1.3.compute.loader';
 
 @Module({
     imports: [
@@ -19,6 +21,8 @@ import { FarmSetterServiceV1_3 } from './services/farm.v1.3.setter.service';
         forwardRef(() => PairModule),
     ],
     providers: [
+        FarmAbiLoaderV1_3,
+        FarmComputeLoaderV1_3,
         FarmServiceV1_3,
         FarmAbiServiceV1_3,
         {

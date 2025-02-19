@@ -266,13 +266,9 @@ export class PairSetterService extends GenericSetterService {
         );
     }
 
-    async setVolumeUSD(
-        pairAddress: string,
-        value: string,
-        time: string,
-    ): Promise<string> {
+    async setVolumeUSD(pairAddress: string, value: string): Promise<string> {
         return await this.setData(
-            this.getCacheKey('volumeUSD', pairAddress, time),
+            this.getCacheKey('volumeUSD', pairAddress),
             value,
             CacheTtlInfo.Analytics.remoteTtl,
             CacheTtlInfo.Analytics.localTtl,
@@ -394,9 +390,45 @@ export class PairSetterService extends GenericSetterService {
         );
     }
 
+    async setTradesCount24h(
+        pairAddress: string,
+        value: number,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('tradesCount24h', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
     async setDeployedAt(pairAddress: string, value: number): Promise<string> {
         return await this.setData(
             this.getCacheKey('deployedAt', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async setInitialLiquidityAdder(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('initialLiquidityAdder', pairAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async setTrustedSwapPairs(
+        pairAddress: string,
+        value: string[],
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('trustedSwapPairs', pairAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,

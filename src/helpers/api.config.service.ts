@@ -132,6 +132,14 @@ export class ApiConfigService {
         return apiUrl;
     }
 
+    getGatewayUrl(): string {
+        const gatewayUrl = this.configService.get<string>('MX_GATEWAY_URL');
+        if (!gatewayUrl) {
+            throw new Error('No gatewayUrl present');
+        }
+        return gatewayUrl;
+    }
+
     getKeepAliveTimeoutDownstream(): number {
         const keepAliveTimeoutDownstream = this.configService.get<string>(
             'KEEPALIVE_TIMEOUT_DOWNSTREAM',
@@ -321,6 +329,24 @@ export class ApiConfigService {
         }
 
         return elasticSearchUrl;
+    }
+
+    getOpenExchangeRateAppID(): string {
+        const appId = this.configService.get<string>(
+            'OPEN_EXCHANGE_RATES_APP_ID',
+        );
+        if (!appId) {
+            throw new Error('No OPEN_EXCHANGE_RATES_APP_ID present');
+        }
+        return appId;
+    }
+
+    getOpenExchangeRateUrl(): string {
+        const url = this.configService.get<string>('OPEN_EXCHANGE_RATES_URL');
+        if (!url) {
+            throw new Error('No OPEN_EXCHANGE_RATES_URL present');
+        }
+        return url;
     }
 
     getRateLimiterSecret(): string | undefined {

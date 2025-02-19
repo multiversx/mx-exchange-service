@@ -12,7 +12,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
-import { PairService } from 'src/modules/pair/services/pair.service';
+import { PairServiceProvider } from 'src/modules/pair/mocks/pair.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
@@ -37,7 +37,7 @@ describe('RouterService', () => {
                 RouterService,
                 ApiConfigService,
                 PairFilteringService,
-                PairService,
+                PairServiceProvider,
                 WrapAbiServiceProvider,
                 TokenServiceProvider,
                 ContextGetterServiceProvider,
@@ -109,7 +109,7 @@ describe('RouterService', () => {
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
             firstTokenID: 'WEGLD-123456',
             issuedLpToken: true,
-            address: null,
+            addresses: null,
             secondTokenID: null,
             state: null,
             feeState: null,
@@ -146,7 +146,7 @@ describe('RouterService', () => {
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
             firstTokenID: 'WEGLD-123456',
             issuedLpToken: true,
-            address: null,
+            addresses: null,
             secondTokenID: null,
             state: null,
             feeState: false,
@@ -168,7 +168,7 @@ describe('RouterService', () => {
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
             firstTokenID: null,
             issuedLpToken: true,
-            address: null,
+            addresses: null,
             secondTokenID: null,
             state: null,
             feeState: null,

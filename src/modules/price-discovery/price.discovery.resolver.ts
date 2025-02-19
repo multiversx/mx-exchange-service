@@ -220,8 +220,10 @@ export class PriceDiscoveryResolver {
     async depositOnPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
         @Args('inputTokens') inputTokens: InputTokenModel,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.priceDiscoveryTransactions.deposit(
+            user.address,
             priceDiscoveryAddress,
             inputTokens,
         );

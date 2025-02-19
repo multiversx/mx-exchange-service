@@ -56,6 +56,7 @@ export class MXApiService {
                 headers: {
                     origin: 'xExchangeService',
                 },
+                clientName: 'xExchangeService',
             },
         );
         this.genericGetExecutor = new PendingExecutor(
@@ -139,8 +140,8 @@ export class MXApiService {
     async getShardBlockCountInEpoch(
         epoch: number,
         shardId: number,
-    ): Promise<Stats> {
-        return await this.doGetGeneric<Stats>(
+    ): Promise<number> {
+        return await this.doGetGeneric<number>(
             this.getStats.name,
             `blocks/count?epoch=${epoch}&shard=${shardId}`,
         );
@@ -285,6 +286,23 @@ export class MXApiService {
         }
 
         return nfts;
+    }
+
+    async getNftsAttributesForUser(
+        address: string,
+        type = 'MetaESDT',
+        identifiers: string[],
+    ): Promise<string[]> {
+        if (identifiers.length === 0) {
+            return [];
+        }
+        const nfts = await this.genericGetExecutor.execute({
+            methodName: this.getNftsAttributesForUser.name,
+            resourceUrl: `accounts/${address}/nfts?type=${type}&fields=attributes&identifiers=${identifiers.join(
+                ',',
+            )}`,
+        });
+        return nfts.map((nft) => nft.attributes);
     }
 
     async getNftByTokenIdentifier(

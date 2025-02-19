@@ -33,7 +33,10 @@
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqg48z8qfm028ze6y3d6tamdfaw6vn774tkp2shg5dt5",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgqxv0y4p6vvszrknaztatycac77yvsxqrrkp2sghd86c",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqu64gygjs5ted4rupaewaszyhaxl9lv7m2jpsw47nzr",
-        "escrow": "erd1qqqqqqqqqqqqqpgqeh4yv09rmyg4xgn5ma03mvm4v5gndu8w2jpsglz3cn"
+        "escrow": "erd1qqqqqqqqqqqqqpgqeh4yv09rmyg4xgn5ma03mvm4v5gndu8w2jpsglz3cn",
+        "positionCreator": "erd1qqqqqqqqqqqqqpgq43cyf9yjfy79ey0cax55kenxgpefhayk2jps6zt793",
+        "lockedTokenPositionCreator": "erd1qqqqqqqqqqqqqpgqwtyu7d5qw322smp0kjq789ua0wtz5cfa2jpsu999xr",
+        "composableTasks": "erd1qqqqqqqqqqqqqpgqsytkvnexypp7argk02l0rasnj57sxa542jpshkl7df"
     },
     "governance": {
         "oldEnergy": {
@@ -84,7 +87,7 @@
         },
         "v2": {
             "lockedRewards": [
-                "erd1qqqqqqqqqqqqqpgqapxdp9gjxtg60mjwhle3n6h88zch9e7kkp2s8aqhkg",
+                "erd1qqqqqqqqqqqqqpgqtdc0rzjwmp9qs0h0wj9pjwxnp5vjc9hdkp2swd4dxz",
                 "erd1qqqqqqqqqqqqqpgqv0pz5z3fkz54nml6pkzzdruuf020gqzykp2sya7kkv",
                 "erd1qqqqqqqqqqqqqpgqenvn0s3ldc94q2mlkaqx4arj3zfnvnmakp2sxca2h9",
                 "erd1qqqqqqqqqqqqqpgqrdq6zvepdxg36rey8pmluwur43q4hcx3kp2su4yltq",
@@ -102,7 +105,13 @@
                 "erd1qqqqqqqqqqqqqpgqjgtun0fhl2em5ayukvahm3myltaxc5tz2jpssz8axf",
                 "erd1qqqqqqqqqqqqqpgq4se997u3eyhjmpwaa57lvdgvmyn23yqpx9rsdzja7j",
                 "erd1qqqqqqqqqqqqqpgqhh8lke0kfch0g20jrmskczwq86d23qhex9rs5hm4uk",
-                "erd1qqqqqqqqqqqqqpgqgjqu7c0mq8a4jd4d43st44gvwhduvqaxkp2s7vsq64"
+                "erd1qqqqqqqqqqqqqpgqgjqu7c0mq8a4jd4d43st44gvwhduvqaxkp2s7vsq64",
+                "erd1qqqqqqqqqqqqqpgqzfy62c66hjuu9lm2c9mr4gcver9lmnydkp2st70eq5",
+                "erd1qqqqqqqqqqqqqpgqgg42sl557vh7rwt600w76pe48u64qngmkp2sl8mrfx",
+                "erd1qqqqqqqqqqqqqpgqu288dj3qgrelujal5wynsv5zrf7u0hwlkp2se383n7"
+            ],
+            "deprecated": [
+                "erd1qqqqqqqqqqqqqpgqapxdp9gjxtg60mjwhle3n6h88zch9e7kkp2s8aqhkg"
             ]
         }
     },
@@ -114,9 +123,17 @@
         "USDC_TOKEN_ID": "USDC-c76f1f",
         "MAINTENANCE": false,
         "roundedSwapEnable": {
-            "USDC-c76f1f": "5000000",
+            "USDC-c76f1f": "100000",
             "WEGLD-bd4d79": "100000000000000000",
-            "MEX-455c57": "1000000000000000000000000"
+            "MEX-455c57": "100000000000000000000000",
+            "USDT-f8c08c": "100000",
+            "WBTC-5349b3": "1000",
+            "WETH-b4ca29": "100000000000000",
+            "SEGLD-3ad2d0": "100000000000000000",
+            "LEGLD-d74da9": "100000000000000000",
+            "XEGLD-e413ed": "100000000000000000",
+            "WDAI-9eeb54": "100000000000000000",
+            "WSDAI-277fee": "100000000000000000"
         }
     }
 }

@@ -11,10 +11,10 @@ import { CommonAppModule } from 'src/common.app.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
-import { ElasticService } from 'src/helpers/elastic.service';
 import { SwapEnableConfigResolver } from './swap.enable.config.resolver';
 import { SimpleLockModule } from '../simple-lock/simple.lock.module';
 import { ESTransactionsService } from 'src/services/elastic-search/services/es.transactions.service';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
     imports: [
@@ -22,6 +22,7 @@ import { ESTransactionsService } from 'src/services/elastic-search/services/es.t
         MXCommunicationModule,
         PairModule,
         SimpleLockModule,
+        AnalyticsModule,
         ContextModule,
         WrappingModule,
         RemoteConfigModule,
@@ -33,7 +34,6 @@ import { ESTransactionsService } from 'src/services/elastic-search/services/es.t
         RouterComputeService,
         RouterTransactionService,
         ESTransactionsService,
-        ElasticService,
         SwapEnableConfigResolver,
         RouterResolver,
     ],

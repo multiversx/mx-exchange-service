@@ -32,6 +32,11 @@ export class PairAbiServiceMock implements IPairAbiService {
     async pairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         return PairsData(pairAddress).info;
     }
+    async getAllPairsInfoMetadata(
+        pairAddresses: string[],
+    ): Promise<PairInfoModel[]> {
+        return pairAddresses.map((pairAddress) => PairsData(pairAddress).info);
+    }
     async totalFeePercent(pairAddress: string): Promise<number> {
         return PairsData(pairAddress).totalFeePercent;
     }
@@ -42,7 +47,9 @@ export class PairAbiServiceMock implements IPairAbiService {
         return [];
     }
     async initialLiquidityAdder(pairAddress: string): Promise<string> {
-        return Address.Zero().bech32();
+        return Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000001',
+        ).toBech32();
     }
     async state(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).state;

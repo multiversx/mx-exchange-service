@@ -27,7 +27,6 @@ import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { FeesCollectorModule } from './modules/fees-collector/fees-collector.module';
-import { deprecationLoggerMiddleware } from './utils/deprecate.logger.middleware';
 import { EnergyModule } from './modules/energy/energy.module';
 import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
 import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-token-wrapper.module';
@@ -36,6 +35,11 @@ import { EscrowModule } from './modules/escrow/escrow.module';
 import { GovernanceModule } from './modules/governance/governance.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
+import { PositionCreatorModule } from './modules/position-creator/position.creator.module';
+import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
+import { TradingViewModule } from './modules/trading-view/trading.view.module';
+import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
+import { CurrencyConverterModule } from './modules/currency-converter/currency.converter.module';
 
 @Module({
     imports: [
@@ -46,9 +50,6 @@ import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
             useFactory: async (logger: LoggerService) => ({
                 autoSchemaFile: 'schema.gql',
                 installSubscriptionHandlers: true,
-                buildSchemaOptions: {
-                    fieldMiddleware: [deprecationLoggerMiddleware],
-                },
                 formatError: (
                     formattedError: GraphQLFormattedError,
                     error: any,
@@ -95,8 +96,13 @@ import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
         LockedTokenWrapperModule,
         EscrowModule,
         GovernanceModule,
+        PositionCreatorModule,
+        ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
+        TradingViewModule,
+        CurrencyConverterModule,
     ],
+    providers: [QueryMetricsPlugin],
 })
 export class PublicAppModule {
     configure(consumer: MiddlewareConsumer) {

@@ -77,6 +77,7 @@ export class LockedAssetService {
                 return new UnlockMileStoneModel({
                     percent: unlockPercent.toNumber(),
                     epochs: remainingEpochs > 0 ? remainingEpochs : 0,
+                    unlockEpoch: unlockEpoch,
                 });
             }),
         );

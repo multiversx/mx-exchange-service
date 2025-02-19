@@ -12,6 +12,10 @@ import { AnalyticsQueryService } from '../analytics/services/analytics.query.ser
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
+import { constantsConfig } from 'src/config';
+import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import BigNumber from 'bignumber.js';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 
 @Injectable()
 export class AWSQueryCacheWarmerService {
@@ -19,6 +23,7 @@ export class AWSQueryCacheWarmerService {
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly tokenService: TokenService,
         private readonly routerAbi: RouterAbiService,
+        private readonly pairCompute: PairComputeService,
         private readonly analyticsAWSSetter: AnalyticsAWSSetterService,
         private readonly apiConfig: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -40,35 +45,35 @@ export class AWSQueryCacheWarmerService {
                 series: tokenID,
                 metric: 'priceUSD',
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const priceUSDCompleteValues =
                 await this.analyticsQuery.getLatestCompleteValues({
                     series: tokenID,
                     metric: 'priceUSD',
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const lockedValueUSD24h = await this.analyticsQuery.getValues24h({
                 series: tokenID,
                 metric: 'lockedValueUSD',
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const lockedValueUSDCompleteValues =
                 await this.analyticsQuery.getLatestCompleteValues({
                     series: tokenID,
                     metric: 'lockedValueUSD',
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSD24hSum = await this.analyticsQuery.getValues24hSum({
                 series: tokenID,
                 metric: 'volumeUSD',
             });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSDCompleteValuesSum =
                 await this.analyticsQuery.getSumCompleteValues({
                     series: tokenID,
                     metric: 'volumeUSD',
                 });
-            await delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
 
             const cachedKeys = await Promise.all([
                 this.analyticsAWSSetter.setValues24h(
@@ -110,7 +115,7 @@ export class AWSQueryCacheWarmerService {
         );
     }
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_10_MINUTES)
     @Lock({ name: 'updateHistoricPairsData', verbose: true })
     async updateHistoricPairsData(): Promise<void> {
         if (!this.apiConfig.isAWSTimestreamRead()) {
@@ -120,40 +125,97 @@ export class AWSQueryCacheWarmerService {
         const pairsAddresses = await this.routerAbi.pairsAddress();
         this.logger.info('Start refresh pairs analytics');
         const profiler = new PerformanceProfiler();
+
+        const pairsLockedValueUSD24h: Record<string, HistoricDataModel[]> = {};
+        const timestampsSet24h = new Set<string>();
+
+        const pairsLockedValueUSDCompleteValues: Record<
+            string,
+            HistoricDataModel[]
+        > = {};
+        const timestampsSetCompleteValues = new Set<string>();
+
         for (const pairAddress of pairsAddresses) {
+            const currentLockedValueUSD = await this.pairCompute.lockedValueUSD(
+                pairAddress,
+            );
+
             const lockedValueUSD24h = await this.analyticsQuery.getValues24h({
                 series: pairAddress,
                 metric: 'lockedValueUSD',
             });
-            delay(1000);
+
+            if (
+                new BigNumber(currentLockedValueUSD).isGreaterThanOrEqualTo(100)
+            ) {
+                pairsLockedValueUSD24h[pairAddress] = lockedValueUSD24h;
+                lockedValueUSD24h.forEach((dp) =>
+                    timestampsSet24h.add(dp.timestamp),
+                );
+            }
+
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const firstTokenPrice24h = await this.analyticsQuery.getValues24h({
+                series: pairAddress,
+                metric: 'firstTokenPrice',
+            });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const secondTokenPrice24h = await this.analyticsQuery.getValues24h({
+                series: pairAddress,
+                metric: 'secondTokenPrice',
+            });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const lockedValueUSDCompleteValues =
                 await this.analyticsQuery.getLatestCompleteValues({
                     series: pairAddress,
                     metric: 'lockedValueUSD',
                 });
-            delay(1000);
+
+            if (
+                new BigNumber(currentLockedValueUSD).isGreaterThanOrEqualTo(100)
+            ) {
+                pairsLockedValueUSDCompleteValues[pairAddress] =
+                    lockedValueUSDCompleteValues;
+                lockedValueUSDCompleteValues.forEach((dp) =>
+                    timestampsSetCompleteValues.add(dp.timestamp),
+                );
+            }
+
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const feesUSD = await this.analyticsQuery.getValues24hSum({
                 series: pairAddress,
                 metric: 'feesUSD',
             });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSD24hSum = await this.analyticsQuery.getValues24hSum({
                 series: pairAddress,
                 metric: 'volumeUSD',
             });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const volumeUSDCompleteValuesSum =
                 await this.analyticsQuery.getSumCompleteValues({
                     series: pairAddress,
                     metric: 'volumeUSD',
                 });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const feesUSDCompleteValuesSum =
                 await this.analyticsQuery.getSumCompleteValues({
                     series: pairAddress,
                     metric: 'feesUSD',
                 });
-            delay(1000);
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const firstTokenPriceCompleteValues =
+                await this.analyticsQuery.getLatestCompleteValues({
+                    series: pairAddress,
+                    metric: 'firstTokenPrice',
+                });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const secondTokenPriceCompleteValues =
+                await this.analyticsQuery.getLatestCompleteValues({
+                    series: pairAddress,
+                    metric: 'secondTokenPrice',
+                });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
 
             const cachedKeys = await Promise.all([
                 this.analyticsAWSSetter.setValues24h(
@@ -186,6 +248,26 @@ export class AWSQueryCacheWarmerService {
                     'feesUSD',
                     feesUSDCompleteValuesSum,
                 ),
+                this.analyticsAWSSetter.setValues24h(
+                    pairAddress,
+                    'firstTokenPrice',
+                    firstTokenPrice24h,
+                ),
+                this.analyticsAWSSetter.setValues24h(
+                    pairAddress,
+                    'secondTokenPrice',
+                    secondTokenPrice24h,
+                ),
+                this.analyticsAWSSetter.setLatestCompleteValues(
+                    pairAddress,
+                    'firstTokenPrice',
+                    firstTokenPriceCompleteValues,
+                ),
+                this.analyticsAWSSetter.setLatestCompleteValues(
+                    pairAddress,
+                    'secondTokenPrice',
+                    secondTokenPriceCompleteValues,
+                ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
@@ -195,17 +277,53 @@ export class AWSQueryCacheWarmerService {
                 series: 'erd1%',
                 metric: 'volumeUSD',
             });
-        await delay(1000);
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
         const allPairsVolumeUSD24hSum =
             await this.analyticsQuery.getValues24hSum({
                 series: 'erd1%',
                 metric: 'volumeUSD',
             });
-        await delay(1000);
-        const totalLockedValueUSD =
-            await this.analyticsQuery.getLatestCompleteValues({
-                series: 'factory',
-                metric: 'totalLockedValueUSD',
+
+        const totalLockedValueUSD24h: HistoricDataModel[] = Array.from(
+            timestampsSet24h,
+        )
+            .sort()
+            .map((timestamp) => {
+                let totalValue = new BigNumber(0);
+                Object.values(pairsLockedValueUSD24h).forEach((pairData) => {
+                    const dataPoint = pairData.find(
+                        (dp) => dp.timestamp === timestamp,
+                    );
+                    if (dataPoint?.value) {
+                        totalValue = totalValue.plus(dataPoint.value);
+                    }
+                });
+                return {
+                    timestamp,
+                    value: totalValue.toFixed(),
+                };
+            });
+
+        const totalLockedValueUSD: HistoricDataModel[] = Array.from(
+            timestampsSetCompleteValues,
+        )
+            .sort()
+            .map((timestamp) => {
+                let totalValue = new BigNumber(0);
+                Object.values(pairsLockedValueUSDCompleteValues).forEach(
+                    (pairData) => {
+                        const dataPoint = pairData.find(
+                            (dp) => dp.timestamp === timestamp,
+                        );
+                        if (dataPoint?.value) {
+                            totalValue = totalValue.plus(dataPoint.value);
+                        }
+                    },
+                );
+                return {
+                    timestamp,
+                    value: totalValue.toFixed(),
+                };
             });
 
         const factoryKeys = await Promise.all([
@@ -223,6 +341,11 @@ export class AWSQueryCacheWarmerService {
                 'factory',
                 'totalLockedValueUSD',
                 totalLockedValueUSD,
+            ),
+            this.analyticsAWSSetter.setValues24h(
+                'factory',
+                'totalLockedValueUSD',
+                totalLockedValueUSD24h,
             ),
         ]);
 

@@ -15,6 +15,7 @@ import { DualYieldTokenAttributesModel } from './models/dualYieldTokenAttributes
 import {
     ClaimDualYieldArgs,
     ProxyStakeFarmArgs,
+    StakingProxiesFilter,
     UnstakeFarmTokensArgs,
 } from './models/staking.proxy.args.model';
 import {
@@ -25,6 +26,12 @@ import {
 import { StakingProxyService } from './services/staking.proxy.service';
 import { StakingProxyTransactionService } from './services/staking.proxy.transactions.service';
 import { StakingProxyAbiService } from './services/staking.proxy.abi.service';
+import { StakingProxyAddressValidationPipe } from './validators/staking.proxy.address.validator';
+import { StakingProxiesResponse } from './models/staking.proxies.response';
+import ConnectionArgs, {
+    getPagingParameters,
+} from '../common/filters/connection.args';
+import PageResponse from '../common/page.response';
 
 @Resolver(() => StakingProxyModel)
 export class StakingProxyResolver {
@@ -44,6 +51,15 @@ export class StakingProxyResolver {
         @Parent() parent: StakingProxyModel,
     ): Promise<string> {
         return this.stakingProxyAbi.stakingFarmAddress(parent.address);
+    }
+
+    @ResolveField()
+    async stakingMinUnboundEpochs(
+        @Parent() parent: StakingProxyModel,
+    ): Promise<number> {
+        return this.stakingProxyService.getStakingFarmMinUnboundEpochs(
+            parent.address,
+        );
     }
 
     @ResolveField()
@@ -92,6 +108,38 @@ export class StakingProxyResolver {
         return this.stakingProxyService.getStakingProxies();
     }
 
+    @Query(() => StakingProxiesResponse)
+    async filteredStakingProxies(
+        @Args({
+            name: 'filters',
+            type: () => StakingProxiesFilter,
+            nullable: true,
+        })
+        filters: StakingProxiesFilter,
+        @Args({
+            name: 'pagination',
+            type: () => ConnectionArgs,
+            nullable: true,
+        })
+        pagination: ConnectionArgs,
+    ): Promise<StakingProxiesResponse> {
+        const pagingParams = getPagingParameters(pagination);
+
+        const response =
+            await this.stakingProxyService.getFilteredStakingProxies(
+                pagingParams,
+                filters,
+            );
+
+        return PageResponse.mapResponse<StakingProxyModel>(
+            response?.items || [],
+            pagination ?? new ConnectionArgs(),
+            response?.count || 0,
+            pagingParams.offset,
+            pagingParams.limit,
+        );
+    }
+
     @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async stakeFarmTokens(
@@ -137,5 +185,29 @@ export class StakingProxyResolver {
         @Args('position') position: CalculateRewardsArgs,
     ): Promise<UnstakeFarmTokensReceiveModel> {
         return this.stakingProxyService.getUnstakeTokensReceived(position);
+    }
+
+    @UseGuards(JwtOrNativeAuthGuard)
+    @Query(() => [TransactionModel], {
+        description:
+            'Update staking / farm positions for total farm position from dual yield token',
+    })
+    async migrateTotalDualFarmTokenPosition(
+        @Args(
+            'dualFarmsAddresses',
+            { type: () => [String] },
+            StakingProxyAddressValidationPipe,
+        )
+        dualFarmsAddresses: string[],
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel[]> {
+        const promises = dualFarmsAddresses.map((address) =>
+            this.stakingProxyTransaction.migrateTotalDualFarmTokenPosition(
+                address,
+                user.address,
+            ),
+        );
+
+        return (await Promise.all(promises)).flat();
     }
 }

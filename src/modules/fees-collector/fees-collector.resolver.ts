@@ -96,8 +96,10 @@ export class FeesCollectorResolver {
         @Args('contractAddresses', { type: () => [String] })
         contractAddresses: string[],
         @Args('remove', { nullable: true }) remove: boolean,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.feesCollectorTransaction.handleKnownContracts(
+            user.address,
             contractAddresses,
             remove,
         );
@@ -110,8 +112,10 @@ export class FeesCollectorResolver {
     async handleKnownTokens(
         @Args('tokenIDs', { type: () => [String] }) tokenIDs: string[],
         @Args('remove', { nullable: true }) remove: boolean,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.feesCollectorTransaction.handleKnownTokens(
+            user.address,
             tokenIDs,
             remove,
         );
@@ -167,6 +171,19 @@ export class UserEntryFeesCollectorResolver {
         return this.weeklyRewardsSplittingAbi.currentClaimProgress(
             parent.address,
             parent.userAddress,
+        );
+    }
+
+    @ResolveField()
+    async lastWeekRewardsUSD(
+        @Parent() parent: UserEntryFeesCollectorModel,
+        @Args('additionalUserEnergy', { nullable: true })
+        additionalUserEnergy: string,
+    ): Promise<string> {
+        return this.feesCollectorCompute.computeUserLastWeekRewardsUSD(
+            scAddress.feesCollector,
+            parent.userAddress,
+            additionalUserEnergy,
         );
     }
 

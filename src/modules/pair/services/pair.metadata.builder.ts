@@ -67,6 +67,22 @@ export class PairsMetadataBuilder {
         return this;
     }
 
+    async filterByLpTokens(): Promise<PairsMetadataBuilder> {
+        this.pairsMetadata = await this.filteringService.pairsByLpTokenIds(
+            this.filters,
+            this.pairsMetadata,
+        );
+        return this;
+    }
+
+    async filterByFarmTokens(): Promise<PairsMetadataBuilder> {
+        this.pairsMetadata = await this.filteringService.pairsByFarmTokens(
+            this.filters,
+            this.pairsMetadata,
+        );
+        return this;
+    }
+
     async filterByState(): Promise<PairsMetadataBuilder> {
         this.pairsMetadata = await this.filteringService.pairsByState(
             this.filters,
@@ -101,6 +117,14 @@ export class PairsMetadataBuilder {
 
     async filterByTradesCount(): Promise<PairsMetadataBuilder> {
         this.pairsMetadata = await this.filteringService.pairsByTradesCount(
+            this.filters,
+            this.pairsMetadata,
+        );
+        return this;
+    }
+
+    async filterByTradesCount24h(): Promise<PairsMetadataBuilder> {
+        this.pairsMetadata = await this.filteringService.pairsByTradesCount24h(
             this.filters,
             this.pairsMetadata,
         );

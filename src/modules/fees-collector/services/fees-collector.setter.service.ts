@@ -47,4 +47,26 @@ export class FeesCollectorSetterService extends GenericSetterService {
             CacheTtlInfo.ContractInfo.localTtl,
         );
     }
+
+    async allTokens(tokens: string[]): Promise<string> {
+        return this.setData(
+            this.getCacheKey('allTokens'),
+            tokens,
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
+        );
+    }
+
+    async accumulatedFeesUntilNow(
+        scAddress: string,
+        week: number,
+        value: string,
+    ): Promise<string> {
+        return this.setData(
+            this.getCacheKey('accumulatedFeesUntilNow', scAddress, week),
+            value,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        );
+    }
 }

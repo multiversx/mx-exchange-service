@@ -115,14 +115,7 @@ export class EscrowAbiService
     }
 
     async getAllReceiversRaw(senderAddress: string): Promise<string[]> {
-        let hexValues = await this.cachingService.get<object>(`escrow.scKeys`);
-        if (!hexValues || hexValues === undefined) {
-            hexValues = await this.mxGateway.getSCStorageKeys(
-                scAddress.escrow,
-                [],
-            );
-            await this.escrowSetter.setSCStorageKeys(hexValues);
-        }
+        const hexValues = await this.scKeys();
 
         const receivers = [];
         const allSendersHex = Buffer.from('allSenders').toString('hex');
@@ -311,14 +304,7 @@ export class EscrowAbiService
     }
 
     async getAllAddressesWithPermissionsRaw(): Promise<string[]> {
-        let hexValues = await this.cachingService.get<object>(`escrow.scKeys`);
-        if (!hexValues || hexValues === undefined) {
-            hexValues = await this.mxGateway.getSCStorageKeys(
-                scAddress.escrow,
-                [],
-            );
-            await this.escrowSetter.setSCStorageKeys(hexValues);
-        }
+        const hexValues = await this.scKeys();
 
         const addresses = [];
         const permissionsHex = Buffer.from('permissions').toString('hex');
@@ -330,5 +316,21 @@ export class EscrowAbiService
         });
 
         return addresses;
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'escrow',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async scKeys(): Promise<object> {
+        return await this.scKeysRaw();
+    }
+
+    async scKeysRaw(): Promise<object> {
+        return await this.mxGateway.getSCStorageKeys(scAddress.escrow, []);
     }
 }

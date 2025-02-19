@@ -149,10 +149,6 @@ export class EnergyAbiService
     }
 
     @ErrorLoggerAsync()
-    @GetOrSetCache({
-        baseKey: 'energy',
-        remoteTtl: Constants.oneMinute(),
-    })
     async energyEntryForUser(userAddress: string): Promise<EnergyType> {
         return await this.getEnergyEntryForUserRaw(userAddress);
     }
@@ -170,11 +166,6 @@ export class EnergyAbiService
     }
 
     @ErrorLoggerAsync()
-    @GetOrSetCache({
-        baseKey: 'energy',
-        remoteTtl: Constants.oneSecond(),
-        localTtl: Constants.oneSecond(),
-    })
     async energyAmountForUser(userAddress: string): Promise<string> {
         return await this.getEnergyAmountForUserRaw(userAddress);
     }

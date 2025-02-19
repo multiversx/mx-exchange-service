@@ -1,28 +1,25 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.60.0-nightly",
-            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
-            "commitDate": "2022-01-29",
+            "version": "1.80.0-nightly",
+            "commitHash": "84b40fc908c3adc7e0e470b3fbaa264df0e122b8",
+            "commitDate": "2024-05-27",
             "channel": "Nightly",
-            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
+            "short": "rustc 1.80.0-nightly (84b40fc90 2024-05-27)"
         },
         "contractCrate": {
             "name": "farm-staking",
-            "version": "0.0.0"
+            "version": "0.0.0",
+            "gitVersion": "v1.6.0-1831-g81b6253f"
         },
         "framework": {
-            "name": "elrond-wasm",
-            "version": "0.27.4"
+            "name": "multiversx-sc",
+            "version": "0.50.5"
         }
     },
-    "name": "Farm",
+    "name": "FarmStaking",
     "constructor": {
         "inputs": [
-            {
-                "name": "reward_token_id",
-                "type": "TokenIdentifier"
-            },
             {
                 "name": "farming_token_id",
                 "type": "TokenIdentifier"
@@ -38,69 +35,26 @@
             {
                 "name": "min_unbond_epochs",
                 "type": "u64"
+            },
+            {
+                "name": "owner",
+                "type": "Address"
+            },
+            {
+                "name": "admins",
+                "type": "variadic<Address>",
+                "multi_arg": true
             }
         ],
         "outputs": []
     },
+    "upgradeConstructor": {
+        "inputs": [],
+        "outputs": []
+    },
     "endpoints": [
         {
-            "name": "stakeFarmThroughProxy",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "staked_token_amount",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "stakeFarm",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "unstakeFarm",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                },
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "unstakeFarmThroughProxy",
+            "name": "mergeFarmTokens",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -116,92 +70,22 @@
             ]
         },
         {
-            "name": "unbondFarm",
+            "name": "setBoostedYieldsRewardsPercentage",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
             "inputs": [
                 {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
+                    "name": "percentage",
+                    "type": "u64"
                 }
             ],
-            "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "claimRewards",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                },
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "claimRewardsWithNewValue",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "new_values",
-                    "type": "List<BigUint>"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                },
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "compoundRewards",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
+            "outputs": []
         },
         {
             "name": "calculateRewardsForGivenPosition",
             "mutability": "readonly",
             "inputs": [
                 {
-                    "name": "amount",
+                    "name": "farm_token_amount",
                     "type": "BigUint"
                 },
                 {
@@ -217,7 +101,6 @@
         },
         {
             "name": "topUpRewards",
-            "onlyOwner": true,
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -226,15 +109,27 @@
             "outputs": []
         },
         {
-            "name": "end_produce_rewards",
-            "onlyOwner": true,
+            "name": "withdrawRewards",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "withdraw_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "endProduceRewards",
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "setPerBlockRewardAmount",
-            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -246,7 +141,6 @@
         },
         {
             "name": "setMaxApr",
-            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -258,7 +152,6 @@
         },
         {
             "name": "setMinUnbondEpochs",
-            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -270,20 +163,9 @@
         },
         {
             "name": "startProduceRewards",
-            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
-        },
-        {
-            "name": "getRewardPerShare",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
         },
         {
             "name": "getAccumulatedRewards",
@@ -326,69 +208,7 @@
             ]
         },
         {
-            "name": "set_penalty_percent",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "percent",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "set_minimum_farming_epochs",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "epochs",
-                    "type": "u8"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "set_transfer_exec_gas_limit",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "gas_limit",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "set_burn_gas_limit",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "gas_limit",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "pause",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "resume",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "getFarmTokenSupply",
+            "name": "getRewardPerShare",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -398,24 +218,25 @@
             ]
         },
         {
-            "name": "getLastErrorMessage",
+            "name": "getRewardReserve",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "bytes"
+                    "type": "BigUint"
                 }
             ]
         },
         {
-            "name": "getState",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
+            "name": "setAllowExternalClaimBoostedRewards",
+            "mutability": "mutable",
+            "inputs": [
                 {
-                    "type": "State"
+                    "name": "allow_external_claim",
+                    "type": "bool"
                 }
-            ]
+            ],
+            "outputs": []
         },
         {
             "name": "getFarmingTokenId",
@@ -434,26 +255,6 @@
             "outputs": [
                 {
                     "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getPenaltyPercent",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getMinimumFarmingEpoch",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u8"
                 }
             ]
         },
@@ -478,16 +279,6 @@
             ]
         },
         {
-            "name": "getFarmTokenId",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
             "name": "getDivisionSafetyConstant",
             "mutability": "readonly",
             "inputs": [],
@@ -498,37 +289,37 @@
             ]
         },
         {
-            "name": "getPairContractManagedAddress",
+            "name": "getUserTotalFarmPosition",
             "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
+            "inputs": [
                 {
+                    "name": "user",
                     "type": "Address"
                 }
-            ]
-        },
-        {
-            "name": "getBurnGasLimit",
-            "mutability": "readonly",
-            "inputs": [],
+            ],
             "outputs": [
                 {
-                    "type": "u64"
+                    "type": "BigUint"
                 }
             ]
         },
         {
-            "name": "getLockedAssetFactoryManagedAddress",
+            "name": "getAllowExternalClaim",
             "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
+            "inputs": [
                 {
+                    "name": "user",
                     "type": "Address"
                 }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
             ]
         },
         {
-            "name": "getTransferExecGasLimit",
+            "name": "getFarmPositionMigrationNonce",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -539,7 +330,6 @@
         },
         {
             "name": "registerFarmToken",
-            "onlyOwner": true,
             "mutability": "mutable",
             "payableInTokens": [
                 "EGLD"
@@ -561,33 +351,27 @@
             "outputs": []
         },
         {
-            "name": "setLocalRolesFarmToken",
-            "onlyOwner": true,
-            "mutability": "mutable",
+            "name": "getFarmTokenId",
+            "mutability": "readonly",
             "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "mergeFarmTokens",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
             "outputs": [
                 {
-                    "type": "EsdtTokenPayment"
+                    "type": "TokenIdentifier"
                 }
             ]
         },
         {
-            "name": "addAddressToWhitelist",
+            "name": "getFarmTokenSupply",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "addSCAddressToWhitelist",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
@@ -599,7 +383,7 @@
             "outputs": []
         },
         {
-            "name": "removeAddressFromWhitelist",
+            "name": "removeSCAddressFromWhitelist",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
@@ -611,7 +395,7 @@
             "outputs": []
         },
         {
-            "name": "isWhitelisted",
+            "name": "isSCAddressWhitelisted",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -624,17 +408,937 @@
                     "type": "bool"
                 }
             ]
+        },
+        {
+            "name": "addToPauseWhitelist",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address_list",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeFromPauseWhitelist",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address_list",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "pause",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "resume",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getState",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "State"
+                }
+            ]
+        },
+        {
+            "name": "addAdmin",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeAdmin",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "updateOwnerOrAdmin",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "previous_owner",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getPermissions",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "setBurnRoleForAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "stakeFarmThroughProxy",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "staked_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "original_caller",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "stakeFarm",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "opt_original_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "claimRewards",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "opt_original_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "claimRewardsWithNewValue",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "new_farming_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "original_caller",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "compoundRewards",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "unstakeFarm",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "opt_original_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "unstakeFarmThroughProxy",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "original_caller",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "unbondFarm",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "claimBoostedRewards",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "opt_user",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "collectUndistributedBoostedRewards",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getBoostedYieldsRewardsPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getAccumulatedRewardsForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getFarmSupplyForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getRemainingBoostedRewardsToDistribute",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getUndistributedBoostedRewards",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "setBoostedYieldsFactors",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "max_rewards_factor",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "user_rewards_energy_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "user_rewards_farm_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_energy_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_farm_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getBoostedYieldsFactors",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BoostedYieldsFactors"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Week starts from 1"
+            ],
+            "name": "getCurrentWeek",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getFirstWeekStartEpoch",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getLastActiveWeekForUser",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getUserEnergyForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                },
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "optional<Energy>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getLastGlobalUpdateWeek",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getTotalRewardsForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "getTotalEnergyForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getTotalLockedTokensForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "updateEnergyForUser",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getCurrentClaimProgress",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "ClaimProgress"
+                }
+            ]
+        },
+        {
+            "name": "setEnergyFactoryAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sc_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getEnergyFactoryAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
         }
     ],
+    "events": [
+        {
+            "identifier": "enter_farm",
+            "inputs": [
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "block",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "farming_token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "enter_farm_event",
+                    "type": "EnterFarmEvent"
+                }
+            ]
+        },
+        {
+            "identifier": "exit_farm",
+            "inputs": [
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "block",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "farm_token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "exit_farm_event",
+                    "type": "ExitFarmEvent"
+                }
+            ]
+        },
+        {
+            "identifier": "claim_rewards",
+            "inputs": [
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "block",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "farm_token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "claim_rewards_event",
+                    "type": "ClaimRewardsEvent"
+                }
+            ]
+        },
+        {
+            "identifier": "compound_rewards",
+            "inputs": [
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "block",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "farm_token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                },
+                {
+                    "name": "compound_rewards_event",
+                    "type": "CompoundRewardsEvent"
+                }
+            ]
+        },
+        {
+            "identifier": "claim_multi_event",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "current_week",
+                    "type": "u32",
+                    "indexed": true
+                },
+                {
+                    "name": "energy",
+                    "type": "Energy",
+                    "indexed": true
+                },
+                {
+                    "name": "all_payments",
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "identifier": "update_user_energy_event",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "current_week",
+                    "type": "u32",
+                    "indexed": true
+                },
+                {
+                    "name": "energy",
+                    "type": "Energy",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "identifier": "update_global_amounts_event",
+            "inputs": [
+                {
+                    "name": "current_week",
+                    "type": "u32",
+                    "indexed": true
+                },
+                {
+                    "name": "total_locked_tokens",
+                    "type": "BigUint",
+                    "indexed": true
+                },
+                {
+                    "name": "total_energy",
+                    "type": "BigUint",
+                    "indexed": true
+                }
+            ]
+        }
+    ],
+    "esdtAttributes": [],
     "hasCallback": true,
     "types": {
-        "EsdtTokenPayment": {
+        "BoostedYieldsFactors": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "token_type",
-                    "type": "EsdtTokenType"
+                    "name": "max_rewards_factor",
+                    "type": "BigUint"
                 },
+                {
+                    "name": "user_rewards_energy_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "user_rewards_farm_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_energy_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_farm_amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "ClaimProgress": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "energy",
+                    "type": "Energy"
+                },
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ]
+        },
+        "ClaimRewardsEvent": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "old_farm_token",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "new_farm_token",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "farm_supply",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "reward_tokens",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "reward_reserve",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "old_farm_attributes",
+                    "type": "bytes"
+                },
+                {
+                    "name": "new_farm_attributes",
+                    "type": "bytes"
+                },
+                {
+                    "name": "created_with_merge",
+                    "type": "bool"
+                }
+            ]
+        },
+        "CompoundRewardsEvent": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "old_farm_token",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "new_farm_token",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "farm_supply",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "reward_tokens",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "reward_reserve",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "old_farm_attributes",
+                    "type": "bytes"
+                },
+                {
+                    "name": "new_farm_attributes",
+                    "type": "bytes"
+                },
+                {
+                    "name": "created_with_merge",
+                    "type": "bool"
+                }
+            ]
+        },
+        "Energy": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "amount",
+                    "type": "BigInt"
+                },
+                {
+                    "name": "last_update_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "total_locked_tokens",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "EnterFarmEvent": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "farming_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "farming_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "farm_token",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "farm_supply",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "reward_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "reward_token_reserve",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "farm_attributes",
+                    "type": "bytes"
+                },
+                {
+                    "name": "created_with_merge",
+                    "type": "bool"
+                }
+            ]
+        },
+        "EsdtTokenPayment": {
+            "type": "struct",
+            "fields": [
                 {
                     "name": "token_identifier",
                     "type": "TokenIdentifier"
@@ -649,28 +1353,36 @@
                 }
             ]
         },
-        "EsdtTokenType": {
-            "type": "enum",
-            "variants": [
+        "ExitFarmEvent": {
+            "type": "struct",
+            "fields": [
                 {
-                    "name": "Fungible",
-                    "discriminant": 0
+                    "name": "farming_token_id",
+                    "type": "TokenIdentifier"
                 },
                 {
-                    "name": "NonFungible",
-                    "discriminant": 1
+                    "name": "farming_token_amount",
+                    "type": "BigUint"
                 },
                 {
-                    "name": "SemiFungible",
-                    "discriminant": 2
+                    "name": "farm_token",
+                    "type": "EsdtTokenPayment"
                 },
                 {
-                    "name": "Meta",
-                    "discriminant": 3
+                    "name": "farm_supply",
+                    "type": "BigUint"
                 },
                 {
-                    "name": "Invalid",
-                    "discriminant": 4
+                    "name": "reward_tokens",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "reward_reserve",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "farm_attributes",
+                    "type": "bytes"
                 }
             ]
         },
@@ -682,16 +1394,16 @@
                     "type": "BigUint"
                 },
                 {
-                    "name": "last_claim_block",
-                    "type": "u64"
-                },
-                {
                     "name": "compounded_reward",
                     "type": "BigUint"
                 },
                 {
                     "name": "current_farm_amount",
                     "type": "BigUint"
+                },
+                {
+                    "name": "original_owner",
+                    "type": "Address"
                 }
             ]
         },
@@ -705,6 +1417,10 @@
                 {
                     "name": "Active",
                     "discriminant": 1
+                },
+                {
+                    "name": "PartialActive",
+                    "discriminant": 2
                 }
             ]
         }

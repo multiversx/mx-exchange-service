@@ -29,6 +29,10 @@ export const tokensSupplyConfig = config.get('tokensSupply');
 
 export const cachedTokensPriceConfig = config.get('cachedTokensPrice');
 
+export const cryptoRatesIdentifiers = config.get('cryptoRatesIdentifiers');
+
 export const constantsConfig = config.get('constants');
 
 export const dataApiConfig = config.get('dataApi');
+
+export const leaguesConfig = config.get('leagues');

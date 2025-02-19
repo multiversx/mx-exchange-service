@@ -27,6 +27,9 @@ import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.s
 
 describe('RouterService', () => {
     let module: TestingModule;
+    const senderAddress = Address.newFromHex(
+        '0000000000000000000000000000000000000000000000000000000000000001',
+    ).toBech32();
 
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
@@ -76,26 +79,60 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.createPair(
-            Address.Zero().bech32(),
+            senderAddress,
             'TOK3-3333',
             'TOK4-123456',
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.createPair,
             data: encodeTransactionData(
-                'createPair@TOK3-3333@TOK4-123456@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                `createPair@TOK3-3333@TOK4-123456@${senderAddress}`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
+            options: undefined,
+            signature: undefined,
+            guardian: undefined,
+            guardianSignature: undefined,
+        });
+    });
+
+    it('should get upgrade pair transaction', async () => {
+        const service = module.get<RouterTransactionService>(
+            RouterTransactionService,
+        );
+
+        const transaction = await service.upgradePair(
+            senderAddress,
+            'WEGLD-123456',
+            'USDC-123456',
+            [300, 100],
+        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver: Address.newFromHex(
+                '0000000000000000000000000000000000000000000000000000000000000011',
+            ).toBech32(),
+            sender: senderAddress,
+            receiverUsername: undefined,
+            senderUsername: undefined,
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.admin.upgradePair,
+            data: encodeTransactionData(
+                `upgradePair@WEGLD-123456@USDC-123456@${senderAddress}@300@100`,
+            ),
+            chainID: mxConfig.chainID,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -109,6 +146,7 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.issueLpToken(
+            senderAddress,
             'erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2',
             'LiquidityPoolToken3',
             'LPT-3333',
@@ -116,10 +154,10 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '50000000000000000',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -128,7 +166,7 @@ describe('RouterService', () => {
                 'issueLpToken@erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2@LiquidityPoolToken3@LPT-3333',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -143,9 +181,10 @@ describe('RouterService', () => {
 
         try {
             await service.issueLpToken(
-                Address.fromHex(
+                senderAddress,
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
                 'LiquidityPoolTokenT1T4',
                 'EGLDMEXLP-abcdef',
             );
@@ -159,29 +198,28 @@ describe('RouterService', () => {
             RouterTransactionService,
         );
 
+        const pairAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000012',
+        ).toBech32();
+
         const transaction = await service.setLocalRoles(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            senderAddress,
+            pairAddress,
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.setLocalRoles,
-            data: encodeTransactionData(
-                `setLocalRoles@${Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32()}`,
-            ),
+            data: encodeTransactionData(`setLocalRoles@${pairAddress}`),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -195,16 +233,17 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setState(
+            senderAddress,
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             false,
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -213,7 +252,7 @@ describe('RouterService', () => {
                 'pause@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -227,29 +266,30 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setState(
-            Address.fromHex(
+            senderAddress,
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
             true,
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setState,
             data: encodeTransactionData(
-                `resume@${Address.fromHex(
+                `resume@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32()}`,
+                ).toBech32()}`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -261,33 +301,32 @@ describe('RouterService', () => {
         const service = module.get<RouterTransactionService>(
             RouterTransactionService,
         );
-
+        const pairAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000012',
+        ).toBech32();
         const transaction = await service.setFee(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-            Address.Zero().bech32(),
+            senderAddress,
+            pairAddress,
+            Address.Zero().toBech32(),
             'WEGLD-123456',
             false,
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
-                `setFeeOff@${Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32()}@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456`,
+                `setFeeOff@${pairAddress}@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -299,11 +338,12 @@ describe('RouterService', () => {
         const service = module.get<RouterTransactionService>(
             RouterTransactionService,
         );
-
+        const pairAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000012',
+        ).toBech32();
         const transaction = await service.setFee(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            senderAddress,
+            pairAddress,
             Address.Zero().bech32(),
             'WEGLD-123456',
             true,
@@ -311,21 +351,19 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
-                `setFeeOn@${Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32()}@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456`,
+                `setFeeOn@${pairAddress}@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@WEGLD-123456`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -338,7 +376,7 @@ describe('RouterService', () => {
             RouterTransactionService,
         );
 
-        const transaction = await service.setLocalRolesOwner({
+        const transaction = await service.setLocalRolesOwner(senderAddress, {
             tokenID: 'WEGLD-123456',
             address: Address.Zero().bech32(),
             roles: [EsdtLocalRole.Mint],
@@ -346,10 +384,10 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -358,7 +396,7 @@ describe('RouterService', () => {
                 'setLocalRolesOwner@WEGLD-123456@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -372,23 +410,24 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.removePair(
+            senderAddress,
             'WEGLD-123456',
             'USDC-123456',
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.removePair,
             data: encodeTransactionData('removePair@WEGLD-123456@USDC-123456'),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -401,21 +440,24 @@ describe('RouterService', () => {
             RouterTransactionService,
         );
 
-        const transaction = await service.setPairCreationEnabled(true);
+        const transaction = await service.setPairCreationEnabled(
+            senderAddress,
+            true,
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@01'),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -428,21 +470,24 @@ describe('RouterService', () => {
             RouterTransactionService,
         );
 
-        const transaction = await service.setPairCreationEnabled(false);
+        const transaction = await service.setPairCreationEnabled(
+            senderAddress,
+            false,
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@'),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -455,21 +500,23 @@ describe('RouterService', () => {
             RouterTransactionService,
         );
 
-        const transaction = await service.clearPairTemporaryOwnerStorage();
+        const transaction = await service.clearPairTemporaryOwnerStorage(
+            senderAddress,
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.clearPairTemporaryOwnerStorage,
             data: 'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -483,15 +530,16 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setTemporaryOwnerPeriod(
+            senderAddress,
             '1000000000000000000000000000000000',
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -500,7 +548,7 @@ describe('RouterService', () => {
                 'setTemporaryOwnerPeriod@1000000000000000000000000000000000',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -514,15 +562,16 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setPairTemplateAddress(
+            senderAddress,
             Address.Zero().bech32(),
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000011',
-            ).bech32(),
-            sender: '',
+            ).toBech32(),
+            sender: senderAddress,
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
@@ -531,7 +580,7 @@ describe('RouterService', () => {
                 'setPairTemplateAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
             guardian: undefined,
@@ -545,9 +594,9 @@ describe('RouterService', () => {
         );
 
         const transaction = await service.setSwapEnabledByUser(
-            Address.Zero().bech32(),
+            senderAddress,
             new InputTokenModel({
-                tokenID: 'LKESDT-1234',
+                tokenID: 'LKESDT-123456',
                 nonce: 1,
                 amount: '10000000000',
                 attributes:
@@ -558,19 +607,19 @@ describe('RouterService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.Zero().bech32(),
-            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            receiver: senderAddress,
+            sender: senderAddress,
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.swapEnableByUser,
             data: encodeTransactionData(
-                `ESDTNFTTransfer@LKESDT-1234@01@10000000000@${Address.fromHex(
+                `ESDTNFTTransfer@LKESDT-123456@01@10000000000@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000011',
-                ).bech32()}@setSwapEnabledByUser@${Address.fromHex(
+                ).toBech32()}@setSwapEnabledByUser@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',
-                ).bech32()}`,
+                ).toBech32()}`,
             ),
             chainID: mxConfig.chainID,
-            version: 1,
+            version: 2,
             options: undefined,
             signature: undefined,
         });
@@ -587,7 +636,7 @@ describe('RouterService', () => {
                 service.setSwapEnabledByUser(
                     Address.Zero().bech32(),
                     new InputTokenModel({
-                        tokenID: 'LKESDT-1234',
+                        tokenID: 'LKESDT-123456',
                         nonce: 1,
                         amount: '1000000000000000000',
                         attributes:
@@ -655,11 +704,11 @@ describe('RouterService', () => {
                 service.setSwapEnabledByUser(
                     Address.Zero().bech32(),
                     new InputTokenModel({
-                        tokenID: 'LKESDT-1234',
+                        tokenID: 'LKESDT-123456',
                         nonce: 1,
                         amount: '1000000000000000000',
                         attributes:
-                            'AAAAEEVHTERNRVhMUC1hYmNkZWYAAAAAAAAAAAAAAAAAAAAB',
+                            'AAAAEVRPSzVUT0s2TFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAQ==',
                     }),
                 ),
             ).rejects.toThrow('Not a valid user defined pair');
@@ -678,11 +727,11 @@ describe('RouterService', () => {
                 service.setSwapEnabledByUser(
                     Address.Zero().bech32(),
                     new InputTokenModel({
-                        tokenID: 'LKESDT-1234',
+                        tokenID: 'LKESDT-123456',
                         nonce: 1,
                         amount: '1000',
                         attributes:
-                            'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
+                            'AAAAEVRPSzVVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
                     }),
                 ),
             ).rejects.toThrow('Not enough value locked');

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { EnergyModel } from '../models/energy.model';
+import { UserEnergyModel } from '../models/energy.model';
 import { EnergyAbiService } from './energy.abi.service';
 import { EnergyComputeService } from './energy.compute.service';
 import { constantsConfig } from '../../../config';
@@ -22,7 +22,7 @@ export class EnergyService {
 
     async getBaseAssetToken(): Promise<EsdtToken> {
         const tokenID = await this.energyAbi.baseAssetTokenID();
-        return await this.tokenService.getTokenMetadata(tokenID);
+        return await this.tokenService.tokenMetadata(tokenID);
     }
 
     async getLockedToken(): Promise<NftCollection> {
@@ -38,11 +38,11 @@ export class EnergyService {
     async getUserEnergy(
         userAddress: string,
         vmQuery = false,
-    ): Promise<EnergyModel> {
+    ): Promise<UserEnergyModel> {
         if (vmQuery) {
             const userEnergyEntry =
                 await this.energyAbi.getEnergyEntryForUserRaw(userAddress);
-            return new EnergyModel(userEnergyEntry);
+            return new UserEnergyModel(userEnergyEntry);
         }
         const [userEnergyEntry, currentEpoch] = await Promise.all([
             this.energyAbi.energyEntryForUser(userAddress),
@@ -54,7 +54,7 @@ export class EnergyService {
             currentEpoch,
         );
 
-        return new EnergyModel(depletedEnergy);
+        return new UserEnergyModel(depletedEnergy);
     }
 
     async getPenaltyAmount(

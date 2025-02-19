@@ -38,15 +38,13 @@ export class TokenFilteringService {
             return tokenIDs;
         }
 
-        const filteredIDs = [];
-        for (const tokenID of tokenIDs) {
-            const tokenType = await this.tokenService.getEsdtTokenType(tokenID);
+        const tokenTypes = await this.tokenService.getAllEsdtTokensType(
+            tokenIDs,
+        );
 
-            if (tokenType === tokensFilter.type) {
-                filteredIDs.push(tokenID);
-            }
-        }
-        return filteredIDs;
+        return tokenIDs.filter(
+            (_, index) => tokenTypes[index] === tokensFilter.type,
+        );
     }
 
     async tokensBySearchTerm(
@@ -55,7 +53,7 @@ export class TokenFilteringService {
     ): Promise<EsdtToken[]> {
         if (
             !tokensFilter.searchToken ||
-            tokensFilter.searchToken.trim().length < 3
+            tokensFilter.searchToken.trim().length < 1
         ) {
             return tokens;
         }
@@ -84,17 +82,12 @@ export class TokenFilteringService {
             return tokenIDs;
         }
 
-        const filteredIDs = [];
-        for (const tokenID of tokenIDs) {
-            const liquidity = await this.tokenCompute.tokenLiquidityUSD(
-                tokenID,
-            );
+        const tokensLiquidityUSD =
+            await this.tokenCompute.getAllTokensLiquidityUSD(tokenIDs);
 
-            const liquidityBN = new BigNumber(liquidity);
-            if (liquidityBN.gte(tokensFilter.minLiquidity)) {
-                filteredIDs.push(tokenID);
-            }
-        }
-        return filteredIDs;
+        return tokenIDs.filter((_, index) => {
+            const liquidity = new BigNumber(tokensLiquidityUSD[index]);
+            return liquidity.gte(tokensFilter.minLiquidity);
+        });
     }
 }

@@ -42,7 +42,7 @@ export class TokenSetterService extends GenericSetterService {
 
     async setEsdtTokenType(tokenID: string, type: string): Promise<string> {
         return await this.setData(
-            this.getTokenCacheKey(tokenID, 'type'),
+            this.getTokenCacheKey(tokenID, 'getEsdtTokenType'),
             type,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -51,7 +51,7 @@ export class TokenSetterService extends GenericSetterService {
 
     async setDerivedEGLD(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            this.getTokenCacheKey(tokenID, 'derivedEGLD'),
+            this.getTokenCacheKey(tokenID, 'tokenPriceDerivedEGLD'),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -60,7 +60,7 @@ export class TokenSetterService extends GenericSetterService {
 
     async setDerivedUSD(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            this.getTokenCacheKey(tokenID, 'derivedUSD'),
+            this.getTokenCacheKey(tokenID, 'tokenPriceDerivedUSD'),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -72,37 +72,37 @@ export class TokenSetterService extends GenericSetterService {
         value: { current: string; previous: string },
     ): Promise<string> {
         return await this.setData(
-            `token.tokenLast2DaysVolumeUSD.${tokenID}`,
+            this.getTokenCacheKey(tokenID, 'tokenLast2DaysVolumeUSD'),
             value,
-            CacheTtlInfo.Token.remoteTtl,
-            CacheTtlInfo.Token.localTtl,
+            CacheTtlInfo.TokenAnalytics.remoteTtl,
+            CacheTtlInfo.TokenAnalytics.localTtl,
         );
     }
 
     async setPricePrevious24h(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            `token.tokenPrevious24hPrice.${tokenID}`,
+            this.getTokenCacheKey(tokenID, 'tokenPrevious24hPrice'),
             value,
-            CacheTtlInfo.Price.remoteTtl,
-            CacheTtlInfo.Price.localTtl,
+            CacheTtlInfo.TokenAnalytics.remoteTtl,
+            CacheTtlInfo.TokenAnalytics.localTtl,
         );
     }
 
     async setPricePrevious7d(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            `token.tokenPrevious7dPrice.${tokenID}`,
+            this.getTokenCacheKey(tokenID, 'tokenPrevious7dPrice'),
             value,
-            CacheTtlInfo.Price.remoteTtl,
-            CacheTtlInfo.Price.localTtl,
+            CacheTtlInfo.TokenAnalytics.remoteTtl,
+            CacheTtlInfo.TokenAnalytics.localTtl,
         );
     }
 
     async setLiquidityUSD(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            `token.tokenLiquidityUSD.${tokenID}`,
+            this.getTokenCacheKey(tokenID, 'tokenLiquidityUSD'),
             value,
-            CacheTtlInfo.Price.remoteTtl,
-            CacheTtlInfo.Price.localTtl,
+            CacheTtlInfo.TokenAnalytics.remoteTtl,
+            CacheTtlInfo.TokenAnalytics.localTtl,
         );
     }
 
@@ -130,7 +130,25 @@ export class TokenSetterService extends GenericSetterService {
 
     async setTrendingScore(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            `token.tokenTrendingScore.${tokenID}`,
+            this.getTokenCacheKey(tokenID, 'tokenTrendingScore'),
+            value,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+    }
+
+    async setMetadata(tokenID: string, value: EsdtToken): Promise<string> {
+        return await this.setData(
+            this.getTokenCacheKey(tokenID, 'tokenMetadata'),
+            value,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
+        );
+    }
+
+    async setCreatedAt(tokenID: string, value: string): Promise<string> {
+        return await this.setData(
+            this.getTokenCacheKey(tokenID, 'tokenCreatedAt'),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -138,6 +156,6 @@ export class TokenSetterService extends GenericSetterService {
     }
 
     private getTokenCacheKey(tokenID: string, ...args: any): string {
-        return generateCacheKeyFromParams('token', tokenID, args);
+        return generateCacheKeyFromParams('token', ...args, tokenID);
     }
 }

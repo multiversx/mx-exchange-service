@@ -7,6 +7,7 @@ import {
     Field,
     FieldDefinition,
     Interaction,
+    ReturnCode,
     Struct,
     StructType,
     U32Value,
@@ -28,6 +29,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IFarmAbiServiceV2 } from './interfaces';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class FarmAbiServiceV2
@@ -38,8 +40,9 @@ export class FarmAbiServiceV2
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,
         protected readonly mxApi: MXApiService,
+        protected readonly cacheService: CacheService,
     ) {
-        super(mxProxy, gatewayService, mxApi);
+        super(mxProxy, gatewayService, mxApi, cacheService);
     }
 
     async getLastErrorMessageRaw(farmAddress: string): Promise<string> {
@@ -250,15 +253,10 @@ export class FarmAbiServiceV2
         scAddress: string,
         week: number,
     ): Promise<string> {
-        const hexValue = await this.gatewayService.getSCStorageKeys(scAddress, [
-            'accumulatedRewardsForWeek',
-            week,
-        ]);
-        return new BigNumber(hexValue, 16).integerValue().toFixed();
         // TODO: remove the code above after the contracts are upgraded with the required view
         const contract = await this.mxProxy.getFarmSmartContract(scAddress);
         const interaction: Interaction =
-            contract.methodsExplicit.getAccumulatedFees([
+            contract.methodsExplicit.getAccumulatedRewardsForWeek([
                 new U32Value(new BigNumber(week)),
             ]);
         const response = await this.getGenericData(interaction);
@@ -289,10 +287,6 @@ export class FarmAbiServiceV2
     async calculateRewardsForGivenPosition(
         args: CalculateRewardsArgs,
     ): Promise<BigNumber> {
-        console.log({
-            service: FarmAbiServiceV2.name,
-            method: this.calculateRewardsForGivenPosition.name,
-        });
         const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );
@@ -379,6 +373,92 @@ export class FarmAbiServiceV2
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getBurnGasLimit();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async userTotalFarmPosition(
+        farmAddress: string,
+        userAddress: string,
+    ): Promise<string> {
+        return await this.getUserTotalFarmPositionRaw(farmAddress, userAddress);
+    }
+
+    async getUserTotalFarmPositionRaw(
+        farmAddress: string,
+        userAddress: string,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getUserTotalFarmPosition([
+                new AddressValue(Address.fromString(userAddress)),
+            ]);
+        const response = await this.getGenericData(interaction);
+
+        if (
+            response.returnCode.equals(ReturnCode.FunctionNotFound) ||
+            response.returnCode.equals(ReturnCode.UserError)
+        ) {
+            return '0';
+        }
+
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmPositionMigrationNonce(farmAddress: string): Promise<number> {
+        return this.getFarmPositionMigrationNonceRaw(farmAddress);
+    }
+
+    async getFarmPositionMigrationNonceRaw(
+        farmAddress: string,
+    ): Promise<number> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmPositionMigrationNonce();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async farmSupplyForWeek(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        return this.getFarmSupplyForWeekRaw(farmAddress, week);
+    }
+
+    async getFarmSupplyForWeekRaw(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmSupplyForWeek([
+                new U32Value(new BigNumber(week)),
+            ]);
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }

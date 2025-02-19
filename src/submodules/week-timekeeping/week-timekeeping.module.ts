@@ -7,6 +7,7 @@ import { WeekTimekeepingResolver } from './week-timekeeping.resolver';
 import { FarmModuleV2 } from 'src/modules/farm/v2/farm.v2.module';
 import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.module';
 import { ContextModule } from 'src/services/context/context.module';
+import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { ContextModule } from 'src/services/context/context.module';
         ContextModule,
         forwardRef(() => FarmModuleV2),
         forwardRef(() => FeesCollectorModule),
+        RemoteConfigModule,
     ],
     providers: [
         ApiConfigService,

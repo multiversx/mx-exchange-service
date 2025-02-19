@@ -2,8 +2,14 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { FarmToken } from 'src/modules/tokens/models/farmToken.model';
-import { LockedLpToken, LockedLpTokenV2 } from 'src/modules/tokens/models/lockedLpToken.model';
-import { LockedFarmToken, LockedFarmTokenV2 } from 'src/modules/tokens/models/lockedFarmToken.model';
+import {
+    LockedLpToken,
+    LockedLpTokenV2,
+} from 'src/modules/tokens/models/lockedLpToken.model';
+import {
+    LockedFarmToken,
+    LockedFarmTokenV2,
+} from 'src/modules/tokens/models/lockedFarmToken.model';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
@@ -14,15 +20,16 @@ import { LockedSimpleLpToken } from 'src/modules/tokens/models/lockedSimpleLpTok
 import { PaginationArgs } from 'src/modules/dex.model';
 import { WrappedLockedTokenAttributesModel } from 'src/modules/simple-lock/models/simple.lock.model';
 
-
 export enum ContractType {
     Farm = 'Farm',
-    FeesCollector = 'FeesCollector'
+    FeesCollector = 'FeesCollector',
+    StakingFarm = 'StakingFarm',
 }
 
 @ObjectType()
 export class UserToken extends EsdtToken {
     @Field() valueUSD: string;
+    @Field({ nullable: true }) pairAddress: string;
 
     constructor(init?: Partial<UserToken>) {
         super(init);
@@ -53,6 +60,7 @@ export class UserLockedAssetToken extends LockedAssetToken {
 @ObjectType()
 export class UserFarmToken extends FarmToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserFarmToken>) {
         super(init);
@@ -63,6 +71,7 @@ export class UserFarmToken extends FarmToken {
 @ObjectType()
 export class UserLockedLPToken extends LockedLpToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedLPToken>) {
         super(init);
@@ -73,6 +82,7 @@ export class UserLockedLPToken extends LockedLpToken {
 @ObjectType()
 export class UserLockedFarmToken extends LockedFarmToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedFarmToken>) {
         super(init);
@@ -83,6 +93,7 @@ export class UserLockedFarmToken extends LockedFarmToken {
 @ObjectType()
 export class UserLockedLPTokenV2 extends LockedLpTokenV2 {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedLPTokenV2>) {
         super(init);
@@ -93,6 +104,7 @@ export class UserLockedLPTokenV2 extends LockedLpTokenV2 {
 @ObjectType()
 export class UserLockedFarmTokenV2 extends LockedFarmTokenV2 {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedFarmTokenV2>) {
         super(init);
@@ -123,6 +135,7 @@ export class UserUnbondFarmToken extends UnbondFarmToken {
 @ObjectType()
 export class UserDualYiledToken extends DualYieldToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserDualYiledToken>) {
         super(init);
@@ -151,6 +164,7 @@ export class UserLockedEsdtToken extends LockedEsdtToken {
 @ObjectType()
 export class UserLockedSimpleLpToken extends LockedSimpleLpToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedSimpleLpToken>) {
         super(init);
@@ -161,6 +175,7 @@ export class UserLockedSimpleLpToken extends LockedSimpleLpToken {
 @ObjectType()
 export class UserLockedSimpleFarmToken extends LockedSimpleFarmToken {
     @Field() valueUSD: string;
+    @Field() pairAddress: string;
 
     constructor(init?: Partial<UserLockedSimpleFarmToken>) {
         super(init);
@@ -239,6 +254,21 @@ export class OutdatedContract {
     @Field({ nullable: true }) farmToken: string;
 
     constructor(init?: Partial<OutdatedContract>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserNegativeEnergyCheck {
+    @Field() LKMEX: boolean;
+    @Field() XMEX: boolean;
+    @Field() lockedLPTokenV1: boolean;
+    @Field() lockedLPTokenV2: boolean;
+    @Field() lockedFarmTokenV2: boolean;
+    @Field() lockedFarmTokenV1: boolean;
+    @Field() metabonding: boolean;
+
+    constructor(init?: Partial<UserNegativeEnergyCheck>) {
         Object.assign(this, init);
     }
 }

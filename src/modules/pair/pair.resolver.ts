@@ -5,7 +5,9 @@ import {
     FeeDestination,
     LiquidityPosition,
     LockedTokensInfo,
+    PairCompoundedAPRModel,
     PairModel,
+    PairRewardTokensModel,
 } from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
 import {
@@ -26,7 +28,143 @@ import { PairAbiService } from './services/pair.abi.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
-import { constantsConfig } from 'src/config';
+import { GenericResolver } from 'src/services/generics/generic.resolver';
+import { FarmComputeServiceV2 } from '../farm/v2/services/farm.v2.compute.service';
+import { StakingComputeService } from '../staking/services/staking.compute.service';
+import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
+import { NftCollection } from '../tokens/models/nftCollection.model';
+import { EnergyService } from '../energy/services/energy.service';
+import { PairAbiLoader } from './services/pair.abi.loader';
+import { PairComputeLoader } from './services/pair.compute.loader';
+
+@Resolver(() => PairRewardTokensModel)
+export class PairRewardTokensResolver extends GenericResolver {
+    constructor(
+        private readonly pairCompute: PairComputeService,
+        private readonly pairService: PairService,
+        private readonly stakingProxyService: StakingProxyService,
+        private readonly energyService: EnergyService,
+    ) {
+        super();
+    }
+
+    @ResolveField()
+    async poolRewards(
+        @Parent() parent: PairRewardTokensModel,
+    ): Promise<EsdtToken[]> {
+        return await Promise.all([
+            this.pairService.getFirstToken(parent.address),
+            this.pairService.getSecondToken(parent.address),
+        ]);
+    }
+
+    @ResolveField()
+    async farmReward(
+        @Parent() parent: PairRewardTokensModel,
+    ): Promise<NftCollection> {
+        const farmAddress = await this.pairCompute.getPairFarmAddress(
+            parent.address,
+        );
+
+        if (!farmAddress) {
+            return undefined;
+        }
+
+        return await this.energyService.getLockedToken();
+    }
+
+    @ResolveField()
+    async dualFarmReward(
+        @Parent() parent: PairRewardTokensModel,
+    ): Promise<EsdtToken> {
+        const stakingProxyAddress =
+            await this.pairCompute.getPairStakingProxyAddress(parent.address);
+
+        if (!stakingProxyAddress) {
+            return undefined;
+        }
+
+        return await this.stakingProxyService.getStakingToken(
+            stakingProxyAddress,
+        );
+    }
+}
+
+@Resolver(() => PairCompoundedAPRModel)
+export class PairCompoundedAPRResolver extends GenericResolver {
+    constructor(
+        private readonly pairCompute: PairComputeService,
+        private readonly farmCompute: FarmComputeServiceV2,
+        private readonly stakingCompute: StakingComputeService,
+    ) {
+        super();
+    }
+
+    @ResolveField(() => String)
+    async feesAPR(@Parent() parent: PairCompoundedAPRModel): Promise<string> {
+        return await this.pairCompute.feesAPR(parent.address);
+    }
+
+    @ResolveField(() => String)
+    async farmBaseAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
+        const farmAddress = await this.pairCompute.getPairFarmAddress(
+            parent.address,
+        );
+
+        if (!farmAddress) {
+            return '0';
+        }
+
+        return await this.farmCompute.farmBaseAPR(farmAddress);
+    }
+
+    @ResolveField(() => String)
+    async farmBoostedAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
+        const farmAddress = await this.pairCompute.getPairFarmAddress(
+            parent.address,
+        );
+
+        if (!farmAddress) {
+            return '0';
+        }
+
+        return await this.farmCompute.maxBoostedApr(farmAddress);
+    }
+
+    @ResolveField(() => String)
+    async dualFarmBaseAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
+        const stakingAddress = await this.pairCompute.getPairStakingFarmAddress(
+            parent.address,
+        );
+
+        if (!stakingAddress) {
+            return '0';
+        }
+
+        return await this.stakingCompute.stakeFarmBaseAPR(stakingAddress);
+    }
+
+    @ResolveField(() => String)
+    async dualFarmBoostedAPR(
+        @Parent() parent: PairCompoundedAPRModel,
+    ): Promise<string> {
+        const stakingAddress = await this.pairCompute.getPairStakingFarmAddress(
+            parent.address,
+        );
+
+        if (!stakingAddress) {
+            return '0';
+        }
+
+        return await this.stakingCompute.maxBoostedAPR(stakingAddress);
+    }
+}
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -35,67 +173,92 @@ export class PairResolver {
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly transactionService: PairTransactionService,
+        private readonly pairAbiLoader: PairAbiLoader,
+        private readonly pairComputeLoader: PairComputeLoader,
     ) {}
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel): Promise<EsdtToken> {
-        return this.pairService.getFirstToken(parent.address);
+        return this.pairAbiLoader.firstTokenLoader.load(parent.address);
     }
 
     @ResolveField()
     async secondToken(@Parent() parent: PairModel): Promise<EsdtToken> {
-        return this.pairService.getSecondToken(parent.address);
+        return this.pairAbiLoader.secondTokenLoader.load(parent.address);
     }
 
     @ResolveField()
     async liquidityPoolToken(@Parent() parent: PairModel): Promise<EsdtToken> {
-        return this.pairService.getLpToken(parent.address);
+        return this.pairAbiLoader.liquidityPoolTokenLoader.load(parent.address);
     }
 
     @ResolveField()
     async firstTokenPrice(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.firstTokenPrice(parent.address);
+        return this.pairComputeLoader.firstTokenPriceLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async firstTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.firstTokenPriceUSD(parent.address);
+        return this.pairComputeLoader.firstTokenPriceUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async secondTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.secondTokenPriceUSD(parent.address);
+        return this.pairComputeLoader.secondTokenPriceUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async secondTokenPrice(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.secondTokenPrice(parent.address);
+        return this.pairComputeLoader.secondTokenPriceLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async liquidityPoolTokenPriceUSD(
         @Parent() parent: PairModel,
     ): Promise<string> {
-        return this.pairCompute.lpTokenPriceUSD(parent.address);
+        return this.pairComputeLoader.lpTokenPriceUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async firstTokenLockedValueUSD(
         @Parent() parent: PairModel,
     ): Promise<string> {
-        return this.pairCompute.firstTokenLockedValueUSD(parent.address);
+        return this.pairComputeLoader.firstTokenLockedValueUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async secondTokenLockedValueUSD(
         @Parent() parent: PairModel,
     ): Promise<string> {
-        return this.pairCompute.secondTokenLockedValueUSD(parent.address);
+        return this.pairComputeLoader.secondTokenLockedValueUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async lockedValueUSD(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.lockedValueUSD(parent.address);
+        return this.pairComputeLoader.lockedValueUSDLoader.load(parent.address);
+    }
+
+    @ResolveField()
+    async previous24hLockedValueUSD(
+        @Parent() parent: PairModel,
+    ): Promise<string> {
+        return this.pairComputeLoader.previous24hLockedValueUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
@@ -110,7 +273,14 @@ export class PairResolver {
 
     @ResolveField()
     async volumeUSD24h(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.volumeUSD(parent.address, '24h');
+        return this.pairComputeLoader.volumeUSD24hLoader.load(parent.address);
+    }
+
+    @ResolveField()
+    async previous24hVolumeUSD(@Parent() parent: PairModel): Promise<string> {
+        return this.pairComputeLoader.previous24hVolumeUSDLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
@@ -119,38 +289,44 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async previous24hFeesUSD(@Parent() parent: PairModel): Promise<string> {
+        return this.pairComputeLoader.previous24hFeesUSDLoader.load(
+            parent.address,
+        );
+    }
+
+    @ResolveField()
     async feesAPR(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.feesAPR(parent.address);
+        return this.pairComputeLoader.feesAPRLoader.load(parent.address);
     }
 
     @ResolveField()
     async info(@Parent() parent: PairModel): Promise<PairInfoModel> {
-        return this.pairAbi.pairInfoMetadata(parent.address);
+        return this.pairAbiLoader.infoMetadataLoader.load(parent.address);
     }
 
     @ResolveField()
     async totalFeePercent(@Parent() parent: PairModel): Promise<number> {
-        return this.pairAbi.totalFeePercent(parent.address);
+        return this.pairAbiLoader.totalFeePercentLoader.load(parent.address);
     }
 
     @ResolveField()
     async specialFeePercent(@Parent() parent: PairModel): Promise<number> {
-        return this.pairAbi.specialFeePercent(parent.address);
+        return this.pairAbiLoader.specialFeePercentLoader.load(parent.address);
     }
 
     @ResolveField()
     async feesCollectorCutPercentage(
         @Parent() parent: PairModel,
     ): Promise<number> {
-        const fees = await this.pairAbi.feesCollectorCutPercentage(
+        return this.pairAbiLoader.feesCollectorCutPercentageLoader.load(
             parent.address,
         );
-        return fees / constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
     }
 
     @ResolveField()
     async type(@Parent() parent: PairModel): Promise<string> {
-        return this.pairCompute.type(parent.address);
+        return this.pairComputeLoader.typeLoader.load(parent.address);
     }
 
     @ResolveField()
@@ -160,12 +336,12 @@ export class PairResolver {
 
     @ResolveField()
     async state(@Parent() parent: PairModel): Promise<string> {
-        return this.pairAbi.state(parent.address);
+        return this.pairAbiLoader.stateLoader.load(parent.address);
     }
 
     @ResolveField()
     async feeState(@Parent() parent: PairModel): Promise<boolean> {
-        return this.pairAbi.feeState(parent.address);
+        return this.pairAbiLoader.feeStateLoader.load(parent.address);
     }
 
     @ResolveField()
@@ -211,22 +387,53 @@ export class PairResolver {
 
     @ResolveField()
     async hasFarms(@Parent() parent: PairModel): Promise<boolean> {
-        return this.pairCompute.hasFarms(parent.address);
+        return this.pairComputeLoader.hasFarmsLoader.load(parent.address);
     }
 
     @ResolveField()
     async hasDualFarms(@Parent() parent: PairModel): Promise<boolean> {
-        return this.pairCompute.hasDualFarms(parent.address);
+        return this.pairComputeLoader.hasDualFarmsLoader.load(parent.address);
     }
 
     @ResolveField()
     async tradesCount(@Parent() parent: PairModel): Promise<number> {
-        return this.pairCompute.tradesCount(parent.address);
+        return this.pairComputeLoader.tradesCountLoader.load(parent.address);
+    }
+
+    @ResolveField()
+    async tradesCount24h(@Parent() parent: PairModel): Promise<number> {
+        return this.pairComputeLoader.tradesCount24hLoader.load(parent.address);
     }
 
     @ResolveField()
     async deployedAt(@Parent() parent: PairModel): Promise<number> {
-        return this.pairCompute.deployedAt(parent.address);
+        return this.pairComputeLoader.deployedAtLoader.load(parent.address);
+    }
+
+    @ResolveField(() => PairCompoundedAPRModel, { nullable: true })
+    async compoundedAPR(
+        @Parent() parent: PairModel,
+    ): Promise<PairCompoundedAPRModel> {
+        return new PairCompoundedAPRModel({ address: parent.address });
+    }
+
+    @ResolveField(() => PairRewardTokensModel, { nullable: true })
+    async rewardTokens(
+        @Parent() parent: PairModel,
+    ): Promise<PairRewardTokensModel> {
+        return new PairRewardTokensModel({ address: parent.address });
+    }
+
+    @ResolveField()
+    async farmAddress(@Parent() parent: PairModel): Promise<string> {
+        return await this.pairCompute.getPairFarmAddress(parent.address);
+    }
+
+    @ResolveField()
+    async stakingProxyAddress(@Parent() parent: PairModel): Promise<string> {
+        return await this.pairCompute.getPairStakingProxyAddress(
+            parent.address,
+        );
     }
 
     @Query(() => String)
@@ -340,20 +547,20 @@ export class PairResolver {
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => [TransactionModel])
+    @Query(() => TransactionModel)
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
         @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel[]> {
+    ): Promise<TransactionModel> {
         return this.transactionService.swapTokensFixedInput(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
-    @Query(() => [TransactionModel])
+    @Query(() => TransactionModel)
     async swapTokensFixedOutput(
         @Args() args: SwapTokensFixedOutputArgs,
         @AuthUser() user: UserAuthResult,
-    ): Promise<TransactionModel[]> {
+    ): Promise<TransactionModel> {
         return this.transactionService.swapTokensFixedOutput(
             user.address,
             args,
@@ -367,7 +574,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.whitelist(args);
+        return this.transactionService.whitelist(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -377,7 +584,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.removeWhitelist(args);
+        return this.transactionService.removeWhitelist(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -391,6 +598,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.addTrustedSwapPair(
+            user.address,
             pairAddress,
             swapPairAddress,
             firstTokenID,
@@ -408,6 +616,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.removeTrustedSwapPair(
+            user.address,
             pairAddress,
             firstTokenID,
             secondTokenID,
@@ -421,7 +630,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.pause(pairAddress);
+        return this.transactionService.pause(user.address, pairAddress);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -431,7 +640,7 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.resume(pairAddress);
+        return this.transactionService.resume(user.address, pairAddress);
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -441,7 +650,10 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.setStateActiveNoSwaps(pairAddress);
+        return this.transactionService.setStateActiveNoSwaps(
+            user.address,
+            pairAddress,
+        );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -454,6 +666,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.setFeePercents(
+            user.address,
             pairAddress,
             totalFeePercent,
             specialFeePercent,
@@ -469,6 +682,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.setLockingDeadlineEpoch(
+            user.address,
             pairAddress,
             newDeadline,
         );
@@ -483,6 +697,7 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
         return this.transactionService.setLockingScAddress(
+            user.address,
             pairAddress,
             newAddress,
         );
@@ -496,7 +711,11 @@ export class PairResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.pairService.requireOwner(user.address);
-        return this.transactionService.setUnlockEpoch(pairAddress, newEpoch);
+        return this.transactionService.setUnlockEpoch(
+            user.address,
+            pairAddress,
+            newEpoch,
+        );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -506,7 +725,11 @@ export class PairResolver {
     })
     async setupFeesCollector(
         @Args('pairAddress') pairAddress: string,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.transactionService.setupFeesCollector(pairAddress);
+        return this.transactionService.setupFeesCollector(
+            user.address,
+            pairAddress,
+        );
     }
 }

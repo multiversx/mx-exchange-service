@@ -4,7 +4,7 @@ import { EsdtToken } from '../models/esdtToken.model';
 import { TokenService } from '../services/token.service';
 
 export class TokenServiceMock {
-    async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
+    async tokenMetadata(tokenID: string): Promise<EsdtToken> {
         return Tokens(tokenID);
     }
 
@@ -20,6 +20,10 @@ export class TokenServiceMock {
         }
 
         return [...new Set(tokenIDs)];
+    }
+
+    async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
+        return tokenIDs.map((tokenID) => Tokens(tokenID));
     }
 }
 

@@ -14,6 +14,10 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { TokenComputeServiceProvider } from '../mocks/token.compute.service.mock';
 import { TokenFilteringService } from '../services/token.filtering.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
+import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
+import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 
 describe('TokenService', () => {
     let module: TestingModule;
@@ -29,13 +33,17 @@ describe('TokenService', () => {
             ],
             providers: [
                 PairAbiServiceProvider,
+                PairComputeServiceProvider,
+                PairService,
                 RouterAbiServiceProvider,
+                WrapAbiServiceProvider,
                 TokenRepositoryServiceProvider,
                 MXApiServiceProvider,
                 TokenService,
                 ApiConfigService,
                 TokenComputeServiceProvider,
                 TokenFilteringService,
+                ContextGetterServiceProvider,
             ],
         }).compile();
     });
@@ -52,18 +60,15 @@ describe('TokenService', () => {
 
         const tokenID = 'WEGLD-123456';
         const expectedToken = Tokens(tokenID);
-        const cacheKey = `token.${tokenID}`;
+        const cacheKey = `token.tokenMetadata.${tokenID}`;
         await cachingService.deleteInCache(cacheKey);
 
-        let token = await service.getTokenMetadata(tokenID);
+        let token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(expectedToken);
 
         jest.spyOn(apiService, 'getToken').mockResolvedValueOnce(undefined);
         await cachingService.deleteInCache(cacheKey);
-        token = await service.getTokenMetadata(tokenID);
+        token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(undefined);
-
-        token = await service.getTokenMetadata(tokenID);
-        expect(token).toEqual(expectedToken);
     });
 });

@@ -55,6 +55,20 @@ export class PairComputeServiceMock implements IPairComputeService {
     async secondTokenPriceUSD(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).secondTokenPriceUSD;
     }
+    async getAllFirstTokensPriceUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).firstTokenPriceUSD,
+        );
+    }
+    async getAllSecondTokensPricesUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).secondTokenPriceUSD,
+        );
+    }
     async firstTokenLockedValueUSD(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).firstTokenLockedValueUSD;
     }
@@ -70,8 +84,11 @@ export class PairComputeServiceMock implements IPairComputeService {
     secondTokenVolume(pairAddress: string, time: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    async volumeUSD(pairAddress: string, time: string): Promise<string> {
+    async volumeUSD(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).volumeUSD;
+    }
+    async getAllVolumeUSD(pairAddresses: string[]): Promise<string[]> {
+        return pairAddresses.map((address) => PairsData(address).volumeUSD);
     }
     feesUSD(pairAddress: string, time: string): Promise<string> {
         throw new Error('Method not implemented.');

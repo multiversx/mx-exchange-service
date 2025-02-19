@@ -9,6 +9,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { Address } from '@multiversx/sdk-core';
 
 describe('DistributionTransactionsService', () => {
     let module: TestingModule;
@@ -43,7 +44,11 @@ describe('DistributionTransactionsService', () => {
             module.get<DistributionTransactionsService>(
                 DistributionTransactionsService,
             );
-        const transaction = await service.claimLockedAssets();
+        const senderAddress = Address.newFromHex(
+            '0000000000000000000000000000000000000000000000000000000000000001',
+        ).toBech32();
+
+        const transaction = await service.claimLockedAssets(senderAddress);
         expect(transaction).toEqual(
             new TransactionModel({
                 chainID: mxConfig.chainID,
@@ -54,12 +59,12 @@ describe('DistributionTransactionsService', () => {
                 options: undefined,
                 receiver:
                     'erd1qqqqqqqqqqqqqpgq29s98mhxwyknmxcpdtdx6nm0wkvnkvwe0n4sjpdhyq',
-                sender: '',
+                sender: senderAddress,
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 signature: undefined,
                 value: '0',
-                version: 1,
+                version: 2,
                 guardian: undefined,
                 guardianSignature: undefined,
             }),

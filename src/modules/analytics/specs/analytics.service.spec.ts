@@ -126,6 +126,6 @@ describe('AnalyticsService', () => {
 
         const totalLockedValueUSDFarms =
             await service.computeLockedValueUSDFarms();
-        expect(totalLockedValueUSDFarms.toString()).toEqual('90');
+        expect(totalLockedValueUSDFarms.toString()).toEqual('110');
     });
 });

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
@@ -30,9 +30,11 @@ export class SwapEventHandler {
         private readonly pairAbi: PairAbiService,
         private readonly pairService: PairService,
         private readonly pairSetter: PairSetterService,
+        @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
         private readonly routerAbi: RouterAbiService,
         private readonly routerCompute: RouterComputeService,
+        @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly tokenSetter: TokenSetterService,
         private readonly pairHandler: PairHandler,

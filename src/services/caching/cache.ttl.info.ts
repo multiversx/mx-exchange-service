@@ -11,7 +11,12 @@ export class CacheTtlInfo {
 
     static Token: CacheTtlInfo = new CacheTtlInfo(
         Constants.oneMinute() * 10,
-        Constants.oneMinute() * 5,
+        Constants.oneMinute() * 7,
+    );
+
+    static TokenAnalytics: CacheTtlInfo = new CacheTtlInfo(
+        Constants.oneMinute() * 30,
+        Constants.oneMinute() * 10,
     );
 
     static ContractState: CacheTtlInfo = new CacheTtlInfo(
@@ -25,13 +30,13 @@ export class CacheTtlInfo {
     );
 
     static ContractBalance: CacheTtlInfo = new CacheTtlInfo(
-        Constants.oneMinute(),
-        Constants.oneSecond() * 30,
+        Constants.oneMinute() * 2,
+        Constants.oneMinute() * 1,
     );
 
     static Price: CacheTtlInfo = new CacheTtlInfo(
-        Constants.oneMinute(),
-        Constants.oneSecond() * 30,
+        Constants.oneMinute() * 2,
+        Constants.oneMinute() * 1,
     );
 
     static Analytics: CacheTtlInfo = new CacheTtlInfo(
@@ -42,5 +47,10 @@ export class CacheTtlInfo {
     static Attributes: CacheTtlInfo = new CacheTtlInfo(
         Constants.oneHour(),
         Constants.oneMinute() * 45,
+    );
+
+    static NullValue: CacheTtlInfo = new CacheTtlInfo(
+        Constants.oneMinute() * 2,
+        Constants.oneMinute(),
     );
 }

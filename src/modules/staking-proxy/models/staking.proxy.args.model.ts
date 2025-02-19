@@ -1,4 +1,4 @@
-import { ArgsType, Field } from '@nestjs/graphql';
+import { ArgsType, Field, InputType } from '@nestjs/graphql';
 import { InputTokenModel } from 'src/models/inputToken.model';
 
 @ArgsType()
@@ -27,4 +27,18 @@ export class UnstakeFarmTokensArgs {
     attributes: string;
     @Field()
     tolerance: number;
+}
+
+@InputType()
+export class StakingProxiesFilter {
+    @Field(() => [String], { nullable: true })
+    addresses: string[];
+    @Field(() => [String], { nullable: true })
+    pairAddresses: string[];
+    @Field(() => [String], { nullable: true })
+    stakingFarmAddresses: string[];
+    @Field(() => [String], { nullable: true })
+    lpFarmAddresses: string[];
+    @Field(() => String, { nullable: true })
+    searchToken?: string;
 }

@@ -4,6 +4,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -37,6 +38,50 @@ export class LockedTokensInfo {
     lockingDeadlineEpoch: number;
 
     constructor(init?: Partial<LockedTokensInfo>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class PairCompoundedAPRModel {
+    @Field()
+    address: string;
+
+    @Field({ nullable: true })
+    feesAPR: string;
+
+    @Field({ nullable: true })
+    farmBaseAPR: string;
+
+    @Field({ nullable: true })
+    farmBoostedAPR: string;
+
+    @Field({ nullable: true })
+    dualFarmBaseAPR: string;
+
+    @Field({ nullable: true })
+    dualFarmBoostedAPR: string;
+
+    constructor(init?: Partial<PairCompoundedAPRModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class PairRewardTokensModel {
+    @Field()
+    address: string;
+
+    @Field(() => [EsdtToken])
+    poolRewards: EsdtToken[];
+
+    @Field({ nullable: true })
+    farmReward: NftCollection;
+
+    @Field({ nullable: true })
+    dualFarmReward: EsdtToken;
+
+    constructor(init?: Partial<PairRewardTokensModel>) {
         Object.assign(this, init);
     }
 }
@@ -80,6 +125,9 @@ export class PairModel {
     lockedValueUSD: string;
 
     @Field()
+    previous24hLockedValueUSD: string;
+
+    @Field()
     firstTokenVolume24h: string;
 
     @Field()
@@ -89,7 +137,13 @@ export class PairModel {
     volumeUSD24h: string;
 
     @Field()
+    previous24hVolumeUSD: string;
+
+    @Field()
     feesUSD24h: string;
+
+    @Field()
+    previous24hFeesUSD: string;
 
     @Field()
     feesAPR: string;
@@ -144,11 +198,26 @@ export class PairModel {
     @Field()
     hasDualFarms: boolean;
 
-    @Field()
+    @Field(() => Int)
     tradesCount: number;
 
-    @Field()
+    @Field(() => Int)
+    tradesCount24h: number;
+
+    @Field(() => Int, { nullable: true })
     deployedAt: number;
+
+    @Field(() => PairCompoundedAPRModel, { nullable: true })
+    compoundedAPR: PairCompoundedAPRModel;
+
+    @Field(() => PairRewardTokensModel, { nullable: true })
+    rewardTokens: PairRewardTokensModel;
+
+    @Field({ nullable: true })
+    farmAddress: string;
+
+    @Field({ nullable: true })
+    stakingProxyAddress: string;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);

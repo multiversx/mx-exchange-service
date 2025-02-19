@@ -1,41 +1,52 @@
-import { Address, AddressValue, TokenTransfer } from '@multiversx/sdk-core/out';
+import {
+    Address,
+    AddressValue,
+    Token,
+    TokenTransfer,
+} from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
-import BigNumber from 'bignumber.js';
-import { gasConfig, mxConfig } from 'src/config';
+import { gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 
 @Injectable()
 export class EscrowTransactionService {
     constructor(private readonly mxProxy: MXProxyService) {}
 
-    async withdraw(senderAddress: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getEscrowContract();
-
-        return contract.methodsExplicit
-            .withdraw([new AddressValue(Address.fromString(senderAddress))])
-            .withChainID(mxConfig.chainID)
-            .withGasLimit(gasConfig.escrow.withdraw)
-            .buildTransaction()
-            .toPlainObject();
+    async withdraw(
+        senderAddress: string,
+        userAddress: string,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getEscrowSmartContractTransaction(
+            new TransactionOptions({
+                sender: userAddress,
+                gasLimit: gasConfig.escrow.withdraw,
+                function: 'withdraw',
+                arguments: [
+                    new AddressValue(Address.newFromBech32(senderAddress)),
+                ],
+            }),
+        );
     }
 
     async cancelTransfer(
         senderAddress: string,
         receiverAddress: string,
+        userAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getEscrowContract();
-
-        return contract.methodsExplicit
-            .cancelTransfer([
-                new AddressValue(Address.fromString(senderAddress)),
-                new AddressValue(Address.fromString(receiverAddress)),
-            ])
-            .withChainID(mxConfig.chainID)
-            .withGasLimit(gasConfig.escrow.cancelTransfer)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getEscrowSmartContractTransaction(
+            new TransactionOptions({
+                sender: userAddress,
+                gasLimit: gasConfig.escrow.cancelTransfer,
+                function: 'cancelTransfer',
+                arguments: [
+                    new AddressValue(Address.newFromBech32(senderAddress)),
+                    new AddressValue(Address.newFromBech32(receiverAddress)),
+                ],
+            }),
+        );
     }
 
     async lockFunds(
@@ -47,23 +58,25 @@ export class EscrowTransactionService {
             throw new Error('Sender and receiver cannot be the same');
         }
 
-        const contract = await this.mxProxy.getEscrowContract();
-
-        return contract.methodsExplicit
-            .lockFunds([new AddressValue(Address.fromString(receiverAddress))])
-            .withMultiESDTNFTTransfer(
-                payments.map((payment) =>
-                    TokenTransfer.metaEsdtFromBigInteger(
-                        payment.tokenID,
-                        payment.nonce,
-                        new BigNumber(payment.amount),
-                    ),
+        return await this.mxProxy.getEscrowSmartContractTransaction(
+            new TransactionOptions({
+                sender: senderAddress,
+                gasLimit: gasConfig.escrow.lockFunds,
+                function: 'lockFunds',
+                arguments: [
+                    new AddressValue(Address.newFromBech32(receiverAddress)),
+                ],
+                tokenTransfers: payments.map(
+                    (payment) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: payment.tokenID,
+                                nonce: BigInt(payment.nonce),
+                            }),
+                            amount: BigInt(payment.amount),
+                        }),
                 ),
-            )
-            .withSender(Address.fromString(senderAddress))
-            .withChainID(mxConfig.chainID)
-            .withGasLimit(gasConfig.escrow.lockFunds)
-            .buildTransaction()
-            .toPlainObject();
+            }),
+        );
     }
 }

@@ -21,6 +21,14 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import {
+    TradingActivityAction,
+    TradingActivityModel,
+} from '../models/trading.activity.model';
+import { SwapEvent } from '@multiversx/sdk-exchange';
+import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
+import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
+import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -37,6 +45,7 @@ export class AnalyticsComputeService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly elasticEventsService: ElasticSearchEventsService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -208,9 +217,7 @@ export class AnalyticsComputeService {
                 this.tokenCompute.tokenPriceDerivedUSD(
                     constantsConfig.MEX_TOKEN_ID,
                 ),
-                this.tokenService.getTokenMetadata(
-                    constantsConfig.MEX_TOKEN_ID,
-                ),
+                this.tokenService.tokenMetadata(constantsConfig.MEX_TOKEN_ID),
                 this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
                     scAddress.feesCollector,
                     currentWeek,
@@ -270,5 +277,187 @@ export class AnalyticsComputeService {
         return unfilteredPairAddresses
             .filter((pair) => pair.lpTokenId !== undefined)
             .map((pair) => pair.pairAddress);
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneMinute() * 5,
+        localTtl: Constants.oneMinute() * 3,
+    })
+    async pairTradingActivity(
+        pairAddress: string,
+    ): Promise<TradingActivityModel[]> {
+        return await this.computePairTradingActivity(pairAddress);
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneMinute() * 5,
+        localTtl: Constants.oneMinute() * 3,
+    })
+    async tokenTradingActivity(
+        tokenID: string,
+    ): Promise<TradingActivityModel[]> {
+        return await this.computeTokenTradingActivity(tokenID);
+    }
+
+    private determineBaseAndQuoteTokens(
+        pairAddress: string,
+        pairsMetadata: PairMetadata[],
+        commonTokens: string[],
+    ): { baseToken: string; quoteToken: string } {
+        const sortedCommonTokens = commonTokens.sort((a, b) => {
+            const order = ['USD', 'EGLD'];
+            const indexA = order.findIndex((token) => a.includes(token));
+            const indexB = order.findIndex((token) => b.includes(token));
+            if (indexA === -1 && indexB === -1) return 0;
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+
+        const pair = pairsMetadata.find((pair) => pair.address === pairAddress);
+
+        for (const token of sortedCommonTokens) {
+            if (pair.firstTokenID === token || pair.secondTokenID === token) {
+                return {
+                    baseToken: token,
+                    quoteToken:
+                        pair.firstTokenID === token
+                            ? pair.secondTokenID
+                            : pair.firstTokenID,
+                };
+            }
+        }
+
+        return {
+            baseToken: pair.firstTokenID,
+            quoteToken: pair.secondTokenID,
+        };
+    }
+
+    async computePairTradingActivity(
+        pairAddress: string,
+    ): Promise<TradingActivityModel[]> {
+        const results: TradingActivityModel[] = [];
+        const events = await this.elasticEventsService.getPairTradingEvents(
+            pairAddress,
+        );
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const commonTokens = await this.routerAbi.commonTokensForUserPairs();
+
+        const { quoteToken, baseToken } = this.determineBaseAndQuoteTokens(
+            pairAddress,
+            pairsMetadata,
+            commonTokens,
+        );
+
+        const tokens = await this.tokenService.getAllTokensMetadata([
+            quoteToken,
+            baseToken,
+        ]);
+
+        for (const event of events) {
+            const eventConverted = convertEventTopicsAndDataToBase64(event);
+            const swapEvent = new SwapEvent(eventConverted).toJSON();
+
+            const tokenIn = swapEvent.tokenIn;
+            const tokenOut = swapEvent.tokenOut;
+            const action =
+                quoteToken === tokenOut.tokenID
+                    ? TradingActivityAction.BUY
+                    : TradingActivityAction.SELL;
+
+            const inputToken = tokens.find(
+                (token) => token.identifier === tokenIn.tokenID,
+            );
+            inputToken.balance = tokenIn.amount;
+            const outputToken = tokens.find(
+                (token) => token.identifier === tokenOut.tokenID,
+            );
+            outputToken.balance = tokenOut.amount;
+
+            results.push(
+                new TradingActivityModel({
+                    hash: event.txHash,
+                    inputToken: { ...inputToken },
+                    outputToken: { ...outputToken },
+                    timestamp: String(event.timestamp),
+                    action,
+                }),
+            );
+        }
+
+        return results;
+    }
+
+    async computeTokenTradingActivity(
+        tokenID: string,
+    ): Promise<TradingActivityModel[]> {
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const pairsTokens = new Set<string>();
+
+        const pairsAddresses = pairsMetadata
+            .filter(
+                (pair) =>
+                    pair.firstTokenID === tokenID ||
+                    pair.secondTokenID === tokenID,
+            )
+            .map((pair) => pair.address);
+
+        let filteredEvents =
+            await this.elasticEventsService.getTokenTradingEvents(
+                tokenID,
+                pairsAddresses,
+                10,
+            );
+
+        filteredEvents = filteredEvents.slice(0, 10);
+
+        const matchedPairs = pairsMetadata.filter((pair) =>
+            filteredEvents.some((event) => event.address === pair.address),
+        );
+
+        matchedPairs.forEach((pair) => {
+            pairsTokens.add(pair.firstTokenID);
+            pairsTokens.add(pair.secondTokenID);
+        });
+
+        const tokens = await this.tokenService.getAllTokensMetadata(
+            Array.from(pairsTokens),
+        );
+
+        return filteredEvents.map((event) => {
+            const eventConverted = convertEventTopicsAndDataToBase64(event);
+            const swapEvent = new SwapEvent(eventConverted).toJSON();
+
+            const tokenIn = swapEvent.tokenIn;
+            const tokenOut = swapEvent.tokenOut;
+
+            const inputToken = tokens.find(
+                (token) => token.identifier === tokenIn.tokenID,
+            );
+
+            inputToken.balance = tokenIn.amount;
+            const outputToken = tokens.find(
+                (token) => token.identifier === tokenOut.tokenID,
+            );
+            outputToken.balance = tokenOut.amount;
+
+            const action =
+                tokenID === tokenOut.tokenID
+                    ? TradingActivityAction.BUY
+                    : TradingActivityAction.SELL;
+
+            return new TradingActivityModel({
+                hash: event.txHash,
+                inputToken: { ...inputToken },
+                outputToken: { ...outputToken },
+                timestamp: String(event.timestamp),
+                action,
+            });
+        });
     }
 }

@@ -14,6 +14,7 @@ import { FarmModuleV2 } from '../../modules/farm/v2/farm.v2.module';
 import { ContextModule } from '../../services/context/context.module';
 import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.module';
 import { WeeklyRewardsSplittingSetterService } from './services/weekly.rewarrds.splitting.setter.service';
+import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { WeeklyRewardsSplittingSetterService } from './services/weekly.rewarrds.
         forwardRef(() => FeesCollectorModule),
         forwardRef(() => ContextModule),
         forwardRef(() => WeekTimekeepingModule),
+        RemoteConfigModule,
     ],
     providers: [
         ApiConfigService,

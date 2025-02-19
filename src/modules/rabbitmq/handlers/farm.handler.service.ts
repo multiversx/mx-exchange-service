@@ -22,12 +22,16 @@ import { Logger } from 'winston';
 import { FarmVersion } from '../../farm/models/farm.model';
 import { FarmSetterFactory } from '../../farm/farm.setter.factory';
 import { FarmAbiFactory } from '../../farm/farm.abi.factory';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { FarmSetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.setter.service';
 
 @Injectable()
 export class FarmHandlerService {
     constructor(
         private readonly farmAbiFactory: FarmAbiFactory,
+        private readonly farmAbiV2: FarmAbiServiceV2,
         private readonly farmSetterFactory: FarmSetterFactory,
+        private readonly farmSetterV2: FarmSetterServiceV2,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -134,26 +138,62 @@ export class FarmHandlerService {
     private async handleEnterFarmEventV2(
         event: EnterFarmEventV2,
     ): Promise<void> {
-        const cacheKey = await this.farmSetterFactory
-            .useSetter(event.address)
-            .setFarmTokenSupply(event.address, event.farmSupply.toFixed());
-        await this.deleteCacheKeys([cacheKey]);
+        const userTotalFarmPosition =
+            await this.farmAbiV2.getUserTotalFarmPositionRaw(
+                event.address,
+                event.decodedTopics.caller.bech32(),
+            );
+        const cacheKeys = await Promise.all([
+            this.farmSetterFactory
+                .useSetter(event.address)
+                .setFarmTokenSupply(event.address, event.farmSupply.toFixed()),
+            this.farmSetterV2.setUserTotalFarmPosition(
+                event.address,
+                event.decodedTopics.caller.bech32(),
+                userTotalFarmPosition,
+            ),
+        ]);
+        await this.deleteCacheKeys(cacheKeys);
     }
 
     private async handleExitFarmEventV2(event: ExitFarmEventV2): Promise<void> {
-        const cacheKey = await this.farmSetterFactory
-            .useSetter(event.address)
-            .setFarmTokenSupply(event.address, event.farmSupply.toFixed());
-        await this.deleteCacheKeys([cacheKey]);
+        const userTotalFarmPosition =
+            await this.farmAbiV2.getUserTotalFarmPositionRaw(
+                event.address,
+                event.decodedTopics.caller.bech32(),
+            );
+        const cacheKeys = await Promise.all([
+            this.farmSetterFactory
+                .useSetter(event.address)
+                .setFarmTokenSupply(event.address, event.farmSupply.toFixed()),
+            this.farmSetterV2.setUserTotalFarmPosition(
+                event.address,
+                event.decodedTopics.caller.bech32(),
+                userTotalFarmPosition,
+            ),
+        ]);
+        await this.deleteCacheKeys(cacheKeys);
     }
 
     private async handleClaimRewardsEventV2(
         event: ClaimRewardsEventV2,
     ): Promise<void> {
-        const cacheKey = await this.farmSetterFactory
-            .useSetter(event.address)
-            .setFarmTokenSupply(event.address, event.farmSupply.toFixed());
-        await this.deleteCacheKeys([cacheKey]);
+        const userTotalFarmPosition =
+            await this.farmAbiV2.getUserTotalFarmPositionRaw(
+                event.address,
+                event.decodedTopics.caller.bech32(),
+            );
+        const cacheKeys = await Promise.all([
+            this.farmSetterFactory
+                .useSetter(event.address)
+                .setFarmTokenSupply(event.address, event.farmSupply.toFixed()),
+            this.farmSetterV2.setUserTotalFarmPosition(
+                event.address,
+                event.decodedTopics.caller.bech32(),
+                userTotalFarmPosition,
+            ),
+        ]);
+        await this.deleteCacheKeys(cacheKeys);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

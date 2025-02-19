@@ -15,6 +15,13 @@ export class ContextGetterServiceMock {
         return 111;
     }
 
+    async getBlocksCountInEpoch(
+        epoch: number,
+        shardId: number,
+    ): Promise<number> {
+        return 10 * 60 * 24;
+    }
+
     async getNftsForUser(
         address: string,
         from = 0,

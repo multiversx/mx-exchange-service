@@ -55,12 +55,14 @@ export class StakingCacheWarmerService {
                 minUnboundEpochs,
                 divisionSafetyConstant,
                 state,
+                boostedYieldsFactors,
                 apr,
             ] = await Promise.all([
                 this.stakingAbi.getAnnualPercentageRewardsRaw(address),
                 this.stakingAbi.getMinUnbondEpochsRaw(address),
                 this.stakingAbi.getDivisionSafetyConstantRaw(address),
                 this.stakingAbi.getStateRaw(address),
+                this.stakingAbi.getBoostedYieldsFactorsRaw(address),
                 this.stakeCompute.computeStakeFarmAPR(address),
             ]);
 
@@ -78,6 +80,10 @@ export class StakingCacheWarmerService {
                     divisionSafetyConstant,
                 ),
                 this.stakeSetterService.setState(address, state),
+                this.stakeSetterService.setBoostedYieldsFactors(
+                    address,
+                    boostedYieldsFactors,
+                ),
                 this.stakeSetterService.setStakeFarmAPR(address, apr),
             ]);
 

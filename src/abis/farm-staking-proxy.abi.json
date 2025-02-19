@@ -1,19 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.60.0-nightly",
-            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
-            "commitDate": "2022-01-29",
+            "version": "1.73.0-nightly",
+            "commitHash": "4c8bb79d9f565115637cc6da739f8389e79f3a29",
+            "commitDate": "2023-07-15",
             "channel": "Nightly",
-            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
+            "short": "rustc 1.73.0-nightly (4c8bb79d9 2023-07-15)"
         },
         "contractCrate": {
             "name": "farm-staking-proxy",
-            "version": "0.0.0"
+            "version": "0.0.0",
+            "gitVersion": "v1.6.0-1527-g9534cc41"
         },
         "framework": {
-            "name": "elrond-wasm",
-            "version": "0.27.4"
+            "name": "multiversx-sc",
+            "version": "0.43.3"
         }
     },
     "name": "FarmStakingProxy",
@@ -42,49 +43,51 @@
             {
                 "name": "staking_farm_token_id",
                 "type": "TokenIdentifier"
+            },
+            {
+                "name": "lp_token_id",
+                "type": "TokenIdentifier"
             }
         ],
         "outputs": []
     },
     "endpoints": [
         {
-            "name": "stakeFarmTokens",
+            "name": "upgrade",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
             "inputs": [],
-            "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
+            "outputs": []
         },
         {
-            "name": "claimDualYield",
+            "name": "registerDualYieldToken",
+            "onlyOwner": true,
             "mutability": "mutable",
             "payableInTokens": [
-                "*"
+                "EGLD"
             ],
-            "inputs": [],
-            "outputs": [
+            "inputs": [
                 {
-                    "type": "variadic<EsdtTokenPayment>",
-                    "multi_result": true
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                },
+                {
+                    "name": "num_decimals",
+                    "type": "u32"
                 }
-            ]
+            ],
+            "outputs": []
         },
         {
-            "name": "unstakeFarmTokens",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "name": "getDualYieldTokenId",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "variadic<EsdtTokenPayment>",
-                    "multi_result": true
+                    "type": "TokenIdentifier"
                 }
             ]
         },
@@ -139,30 +142,7 @@
             ]
         },
         {
-            "name": "issueDualYieldToken",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "payableInTokens": [
-                "EGLD"
-            ],
-            "inputs": [
-                {
-                    "name": "token_display_name",
-                    "type": "bytes"
-                },
-                {
-                    "name": "token_ticker",
-                    "type": "bytes"
-                },
-                {
-                    "name": "num_decimals",
-                    "type": "u32"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "getDualYieldTokenId",
+            "name": "getLpTokenId",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -180,17 +160,135 @@
                     "type": "TokenIdentifier"
                 }
             ]
+        },
+        {
+            "name": "addSCAddressToWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeSCAddressFromWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "isSCAddressWhitelisted",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "stakeFarmTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "StakeProxyResult"
+                }
+            ]
+        },
+        {
+            "name": "claimDualYield",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "ClaimDualYieldResult"
+                }
+            ]
+        },
+        {
+            "name": "unstakeFarmTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "pair_first_token_min_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "pair_second_token_min_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "UnstakeResult"
+                }
+            ]
         }
     ],
+    "events": [],
     "hasCallback": true,
     "types": {
-        "EsdtTokenPayment": {
+        "ClaimDualYieldResult": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "token_type",
-                    "type": "EsdtTokenType"
+                    "name": "lp_farm_rewards",
+                    "type": "EsdtTokenPayment"
                 },
+                {
+                    "name": "staking_farm_rewards",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "new_dual_yield_tokens",
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        "EsdtTokenPayment": {
+            "type": "struct",
+            "fields": [
                 {
                     "name": "token_identifier",
                     "type": "TokenIdentifier"
@@ -205,28 +303,37 @@
                 }
             ]
         },
-        "EsdtTokenType": {
-            "type": "enum",
-            "variants": [
+        "StakeProxyResult": {
+            "type": "struct",
+            "fields": [
                 {
-                    "name": "Fungible",
-                    "discriminant": 0
+                    "name": "dual_yield_tokens",
+                    "type": "EsdtTokenPayment"
                 },
                 {
-                    "name": "NonFungible",
-                    "discriminant": 1
+                    "name": "boosted_rewards",
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        "UnstakeResult": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "other_token_payment",
+                    "type": "EsdtTokenPayment"
                 },
                 {
-                    "name": "SemiFungible",
-                    "discriminant": 2
+                    "name": "lp_farm_rewards",
+                    "type": "EsdtTokenPayment"
                 },
                 {
-                    "name": "Meta",
-                    "discriminant": 3
+                    "name": "staking_rewards",
+                    "type": "EsdtTokenPayment"
                 },
                 {
-                    "name": "Invalid",
-                    "discriminant": 4
+                    "name": "unbond_staking_farm_token",
+                    "type": "EsdtTokenPayment"
                 }
             ]
         }

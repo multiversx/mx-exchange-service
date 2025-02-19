@@ -1,5 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { EsdtToken } from '../models/esdtToken.model';
+import { EsdtToken, EsdtTokenType } from '../models/esdtToken.model';
 import {
     TokenSortingArgs,
     TokensFilter,
@@ -21,12 +21,16 @@ import BigNumber from 'bignumber.js';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { TokenFilteringService } from './token.filtering.service';
 import { PaginationArgs } from 'src/modules/dex.model';
+import { getAllKeys } from 'src/utils/get.many.utils';
+import { PairService } from 'src/modules/pair/services/pair.service';
 
 @Injectable()
 export class TokenService {
     constructor(
         private readonly tokenRepository: TokenRepositoryService,
         private readonly pairAbi: PairAbiService,
+        @Inject(forwardRef(() => PairService))
+        private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
         protected readonly cachingService: CacheService,
@@ -44,15 +48,13 @@ export class TokenService {
             );
         }
 
-        const promises = tokenIDs.map((tokenID) =>
-            this.getTokenMetadata(tokenID),
-        );
-        let tokens = await Promise.all(promises);
+        let tokens = await this.getAllTokensMetadata(tokenIDs);
 
         if (filters.type) {
-            for (const token of tokens) {
-                token.type = await this.getEsdtTokenType(token.identifier);
-            }
+            const tokenTypes = await this.getAllEsdtTokensType(tokenIDs);
+            tokens.forEach((token, index) => {
+                token.type = tokenTypes[index];
+            });
             tokens = tokens.filter((token) => token.type === filters.type);
         }
 
@@ -85,9 +87,7 @@ export class TokenService {
             tokenIDs = await this.sortTokens(tokenIDs, sorting);
         }
 
-        let tokens = await Promise.all(
-            tokenIDs.map((tokenID) => this.getTokenMetadata(tokenID)),
-        );
+        let tokens = await this.getAllTokensMetadata(tokenIDs);
 
         tokens = await this.tokenFilteringService.tokensBySearchTerm(
             filters,
@@ -108,95 +108,104 @@ export class TokenService {
     })
     @GetOrSetCache({
         baseKey: 'token',
-        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
-        localTtl: CacheTtlInfo.ContractState.localTtl,
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
     })
     async getEsdtTokenType(tokenID: string): Promise<string> {
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            tokenID,
+        );
+        if (pairAddress) {
+            return EsdtTokenType.FungibleLpToken;
+        }
+
         return await this.tokenRepository.getTokenType(tokenID);
     }
 
-    async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
-        if (tokenID === undefined) {
-            return undefined;
-        }
-        const cacheKey = `token.${tokenID}`;
-        const cachedToken = await this.cachingService.get<EsdtToken>(cacheKey);
-        if (cachedToken && cachedToken !== undefined) {
-            await this.cachingService.set<EsdtToken>(
-                cacheKey,
-                cachedToken,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            );
-            return cachedToken;
-        }
-
-        const token = await this.apiService.getToken(tokenID);
-
-        if (token !== undefined) {
-            await this.cachingService.set<EsdtToken>(
-                cacheKey,
-                token,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            );
-
-            return token;
-        }
-
-        return undefined;
+    async getAllEsdtTokensType(tokenIDs: string[]): Promise<string[]> {
+        return getAllKeys<string>(
+            this.cachingService,
+            tokenIDs,
+            'token.getEsdtTokenType',
+            this.getEsdtTokenType.bind(this),
+            CacheTtlInfo.Token,
+        );
     }
 
-    async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
-        if (collection === undefined) {
-            return undefined;
-        }
-        const cacheKey = `token.${collection}`;
-        const cachedToken = await this.cachingService.get<NftCollection>(
-            cacheKey,
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async tokenMetadata(tokenID: string): Promise<EsdtToken> {
+        return this.tokenMetadataRaw(tokenID);
+    }
+
+    async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
+        return getAllKeys<EsdtToken>(
+            this.cachingService,
+            tokenIDs,
+            'token.tokenMetadata',
+            this.tokenMetadata.bind(this),
+            CacheTtlInfo.Token,
         );
-        if (cachedToken && cachedToken !== undefined) {
-            await this.cachingService.set<NftCollection>(
-                cacheKey,
-                cachedToken,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            );
-            return cachedToken;
-        }
+    }
 
-        const token = await this.apiService.getNftCollection(collection);
+    async tokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
+        return this.apiService.getToken(tokenID);
+    }
 
-        if (token !== undefined) {
-            await this.cachingService.set<NftCollection>(
-                cacheKey,
-                token,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            );
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
+        return this.getNftCollectionMetadataRaw(collection);
+    }
 
-            return token;
-        }
+    async getAllNftsCollectionMetadata(
+        collections: string[],
+    ): Promise<NftCollection[]> {
+        return getAllKeys<NftCollection>(
+            this.cachingService,
+            collections,
+            'token.getNftCollectionMetadata',
+            this.getNftCollectionMetadata.bind(this),
+            CacheTtlInfo.Token,
+        );
+    }
 
-        return undefined;
+    async getNftCollectionMetadataRaw(
+        collection: string,
+    ): Promise<NftCollection> {
+        return this.apiService.getNftCollection(collection);
     }
 
     async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         const tokenIDs: string[] = [];
-        await Promise.all(
-            pairsMetadata.map(async (iterator) => {
-                if (activePool) {
-                    const state = await this.pairAbi.state(iterator.address);
-                    if (state !== 'Active') {
-                        return;
-                    }
+        const pairStates = activePool
+            ? await this.pairService.getAllStates(
+                  pairsMetadata.map((pair) => pair.address),
+              )
+            : [];
+
+        for (const [index, pair] of pairsMetadata.entries()) {
+            if (activePool) {
+                if (pairStates[index] !== 'Active') {
+                    continue;
                 }
-                tokenIDs.push(
-                    ...[iterator.firstTokenID, iterator.secondTokenID],
-                );
-            }),
-        );
+            }
+            tokenIDs.push(...[pair.firstTokenID, pair.secondTokenID]);
+        }
+
         return [...new Set(tokenIDs)];
     }
 
@@ -208,23 +217,27 @@ export class TokenService {
 
         switch (tokenSorting.sortField) {
             case TokensSortableFields.PRICE:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenPriceDerivedUSD(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensPriceDerivedUSD(
+                        tokenIDs,
+                    );
                 break;
             case TokensSortableFields.PREVIOUS_24H_PRICE:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenPrevious24hPrice(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensPrevious24hPrice(
+                        tokenIDs,
+                    );
                 break;
             case TokensSortableFields.PREVIOUS_7D_PRICE:
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensPrevious7dPrice(
+                        tokenIDs,
+                    );
+                break;
+            case TokensSortableFields.PRICE_CHANGE_7D:
                 sortFieldData = await Promise.all(
                     tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenPrevious7dPrice(tokenID),
+                        this.tokenCompute.computeTokenPriceChange7d(tokenID),
                     ),
                 );
                 break;
@@ -250,32 +263,23 @@ export class TokenService {
                 );
                 break;
             case TokensSortableFields.CREATED_AT:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenCreatedAt(tokenID),
-                    ),
+                sortFieldData = await this.tokenCompute.getAllTokensCreatedAt(
+                    tokenIDs,
                 );
                 break;
             case TokensSortableFields.LIQUIDITY:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenLiquidityUSD(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensLiquidityUSD(tokenIDs);
                 break;
             case TokensSortableFields.VOLUME:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenVolumeUSD24h(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensVolumeUSD24h(tokenIDs);
                 break;
             case TokensSortableFields.PREVIOUS_24H_VOLUME:
-                sortFieldData = await Promise.all(
-                    tokenIDs.map((tokenID) =>
-                        this.tokenCompute.tokenPrevious24hVolumeUSD(tokenID),
-                    ),
-                );
+                sortFieldData =
+                    await this.tokenCompute.getAllTokensPrevious24hVolumeUSD(
+                        tokenIDs,
+                    );
                 break;
             case TokensSortableFields.TRADES_COUNT:
                 sortFieldData = await Promise.all(

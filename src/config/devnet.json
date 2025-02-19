@@ -9,10 +9,10 @@
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
         "proxyDexAddress": {
             "v1": "erd1qqqqqqqqqqqqqpgqj45ksc9zln3ss9r46qn0uxvmavyqxm2e0n4smptzsg",
-            "v2": "erd1qqqqqqqqqqqqqpgqxtujvf7w6rag29f39f7yrqsuv09m232r0n4sf7qs79"
+            "v2": "erd1qqqqqqqqqqqqqpgqp8c763u69ctvshmjtp06qzzcwmleqcpu0n4s2e893l"
         },
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqxsy4k8fkqvllcvyrwhf80t97kyd32qfx0n4stue7cn",
-        "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
+        "metabondingStakingAddress": "",
         "simpleLockAddress": [
             "erd1qqqqqqqqqqqqqpgq2l97gw2j4wnlem4y2rx7dudqlssjtwpu0n4sd0u3w2"
         ],
@@ -23,12 +23,15 @@
         },
         "priceDiscovery": [
         ],
-        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgqs7qnuvj2t0m40xmgrrh88wc7qdx286c60n4spvrzzk",
-        "feesCollector": "erd1qqqqqqqqqqqqqpgqw88ux2l44eufvwz2uhvduhq03g8pxc4j0n4s0frzjz",
+        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgqfsdhdyyuyxlflc43axlvderg84ry7cfr0n4sf0nw6v",
+        "feesCollector": "erd1qqqqqqqqqqqqqpgquq94exc0fs6x8tvzyzsmj2v643vmclct0n4shkztah",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqz2ctz77j9we0r99mnhehv24he3pxmsmq0n4sntf4n7",
-        "tokenUnstake": "erd1qqqqqqqqqqqqqpgqu6s4e5mndgf37psxw9mdlmjavp2er3f00n4snwyk3q",
-        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqasr2asq07e6ur274eecx3vd0pnej2vxs0n4sqqyp52",
-        "escrow": "erd1qqqqqqqqqqqqqpgqnx4t9kwy5n9atuumvnrluv5yrwmpxzx60n4sj497ms"
+        "tokenUnstake": "erd1qqqqqqqqqqqqqpgqnp7xfy65s6q9y3ud9x7rmc69f07789wq0n4s535697",
+        "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgqn27jupfvzms4ret4cft0p29jx6s5ch2f0n4sfps3as",
+        "escrow": "erd1qqqqqqqqqqqqqpgqjtuw2ss3cgdsa99z6ggtclzplt4v3f0c0n4satu8aw",
+        "positionCreator": "erd1qqqqqqqqqqqqqpgqs8wsasgkf29ze8van2c57j85lrkqn0q20n4sc08ghn",
+        "lockedTokenPositionCreator": "erd1qqqqqqqqqqqqqpgqnxhksf0jtp5pdqvqev3tcx5cu3m4cl8u0n4sljf6uu",
+        "composableTasks": "erd1qqqqqqqqqqqqqpgq6wg9syswgy09knrw2tg6q7qew2n8zjwx0n4s377sfe"
     },
     "governance": {
         "oldEnergy": {
@@ -37,7 +40,7 @@
         },
         "energy": {
             "cvadratic": [
-                "erd1qqqqqqqqqqqqqpgqzzcu2cgz48d4zh8czrrxzyc7c3x0ynx3czfs8n4ppn"
+                "erd1qqqqqqqqqqqqqpgqr632pd7r5wwflhcd4x9nlct2p3t56ss90n4sddca0m"
             ]
         },
         "tokenSnapshot": {
@@ -60,19 +63,21 @@
                 "unlockedRewards": [
                 ],
                 "lockedRewards": [
-                    "erd1qqqqqqqqqqqqqpgq3chrzjdg3gu40zt6kes6w62cyz8tes6k0n4ssk3hj4",
-                    "erd1qqqqqqqqqqqqqpgqalcjd05y3uazuw79k4vdnheq825x8e400n4s09ymcr",
-                    "erd1qqqqqqqqqqqqqpgqyd7uaxe9sctfxsev0u3mntekxqlu6ntt0n4s8a6thz",
-                    "erd1qqqqqqqqqqqqqpgqtmg6xzef8k6z4885qhehgvu4zlf3g5zf0n4snencta",
-                    "erd1qqqqqqqqqqqqqpgq7mq58gjqzawtzy9y5v2rawpawx03a6ny0n4sv5mzr6",
-                    "erd1qqqqqqqqqqqqqpgqauyawadp2eex5kd30z5ehrrprgksjpyp0n4s00cy97",
-                    "erd1qqqqqqqqqqqqqpgqlsq7r58fn05emy66456hunfvlm03vzh00n4s5pqfqc"
+                    "erd1qqqqqqqqqqqqqpgqmye3xq9p8x0g3hqawz22txsyw07nnv9e0n4swdrvqc",
+                    "erd1qqqqqqqqqqqqqpgqtukp628k04vg93peq8k3ngrh0k2rs3nm0n4sjkcz95",
+                    "erd1qqqqqqqqqqqqqpgql7rysqgxxzhykg3j6vccnx4003z2mcl80n4ste3jh8",
+                    "erd1qqqqqqqqqqqqqpgqrrghrmzzq3vczqpx2quaza4yyke5fudh0n4sxdhv67",
+                    "erd1qqqqqqqqqqqqqpgqjxazy2gwxv4m8tat6vsen56hhpsdff2f0n4srjdw3h"
+                ],
+                "deprecated": [
+                    "erd1qqqqqqqqqqqqqpgqqjpfmappkpzq6kdju3mkqepk3d2kcymu0n4srd45sa"
                 ]
         }
     },
     "tokenProviderUSD": "WEGLD-a28c59",
     "tokensSupply": ["MEX-a659d0"],
     "cachedTokensPrice": ["MEX-a659d0"],
+    "cryptoRatesIdentifiers": ["WBTC-05fd5b", "WETH-bbe4ab", "WEGLD-a28c59"], 
     "constants": {
         "MAX_SWAP_SPREAD": 0.9,
         "MEX_TOKEN_ID": "MEX-a659d0",
@@ -80,9 +85,14 @@
         "MAINTENANCE": false,
         "EPOCHS_IN_WEEK": 7,
         "roundedSwapEnable": {
-            "USDC-350c4e": "5000000",
+            "USDC-350c4e": "100000",
             "WEGLD-a28c59": "100000000000000000",
-            "MEX-a659d0": "10000000000000000000000"
+            "MEX-a659d0": "100000000000000000000000",
+            "USDT-58d5d0": "100000",
+            "WBTC-05fd5b": "1000",
+            "WETH-bbe4ab": "100000000000000",
+            "SEGLD-cc1abc": "100000000000000000",
+            "LEGLD-e8378b": "100000000000000000"
         }
     }
 }

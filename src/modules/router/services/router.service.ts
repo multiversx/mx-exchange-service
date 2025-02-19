@@ -9,16 +9,16 @@ import {
     PairSortingArgs,
     PairsFilter,
 } from '../models/filter.args';
-import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from './router.abi.service';
-import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import BigNumber from 'bignumber.js';
 import { CollectionType } from 'src/modules/common/collection.type';
 import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { SortingOrder } from 'src/modules/common/page.data';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { PairService } from 'src/modules/pair/services/pair.service';
 
 @Injectable()
 export class RouterService {
@@ -27,6 +27,8 @@ export class RouterService {
         private readonly routerAbi: RouterAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly pairFilteringService: PairFilteringService,
+        private readonly cacheService: CacheService,
+        private readonly pairService: PairService,
     ) {}
 
     async getFactory(): Promise<FactoryModel> {
@@ -122,9 +124,9 @@ export class RouterService {
         pairFilter: PairFilterArgs,
         pairsMetadata: PairMetadata[],
     ): PairMetadata[] {
-        if (pairFilter.address) {
-            pairsMetadata = pairsMetadata.filter(
-                (pair) => pairFilter.address === pair.address,
+        if (pairFilter.addresses) {
+            pairsMetadata = pairsMetadata.filter((pair) =>
+                pairFilter.addresses.includes(pair.address),
             );
         }
         return pairsMetadata;
@@ -156,11 +158,6 @@ export class RouterService {
         return pairsMetadata;
     }
 
-    @GetOrSetCache({
-        baseKey: 'router',
-        remoteTtl: Constants.oneSecond() * 30,
-        localTtl: Constants.oneSecond() * 6,
-    })
     private async pairsByIssuedLpToken(
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
@@ -170,10 +167,9 @@ export class RouterService {
     private async filterPairsByIssuedLpTokenRaw(
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        const promises = pairsMetadata.map((pairMetadata) =>
-            this.pairAbi.lpTokenID(pairMetadata.address),
+        const lpTokensIDs = await this.pairService.getAllLpTokensIds(
+            pairsMetadata.map((pair) => pair.address),
         );
-        const lpTokensIDs = await Promise.all(promises);
 
         const filteredPairsMetadata = [];
         for (let index = 0; index < lpTokensIDs.length; index++) {
@@ -198,10 +194,9 @@ export class RouterService {
             return pairsMetadata;
         }
 
-        const promises = pairsMetadata.map((pairMetadata) =>
-            this.pairAbi.state(pairMetadata.address),
+        const pairsStates = await this.pairService.getAllStates(
+            pairsMetadata.map((pair) => pair.address),
         );
-        const pairsStates = await Promise.all(promises);
 
         const filteredPairsMetadata = [];
         for (let index = 0; index < pairsStates.length; index++) {
@@ -224,10 +219,8 @@ export class RouterService {
             return pairsMetadata;
         }
 
-        const pairsFeeStates = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairAbi.feeState(pairMetadata.address),
-            ),
+        const pairsFeeStates = await this.pairService.getAllFeeStates(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter(
@@ -243,10 +236,8 @@ export class RouterService {
             return pairsMetadata;
         }
 
-        const pairsVolumes = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.volumeUSD(pairMetadata.address, '24h'),
-            ),
+        const pairsVolumes = await this.pairCompute.getAllVolumeUSD(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter((_, index) => {
@@ -263,10 +254,8 @@ export class RouterService {
             return pairsMetadata;
         }
 
-        const pairsLiquidityUSD = await Promise.all(
-            pairsMetadata.map((pairMetadata) =>
-                this.pairCompute.lockedValueUSD(pairMetadata.address),
-            ),
+        const pairsLiquidityUSD = await this.pairService.getAllLockedValueUSD(
+            pairsMetadata.map((pair) => pair.address),
         );
 
         return pairsMetadata.filter((_, index) => {
@@ -287,12 +276,14 @@ export class RouterService {
     ): Promise<PairMetadata[]> {
         let sortFieldData = [];
 
+        if (!sortField) {
+            return pairsMetadata;
+        }
+
         switch (sortField) {
             case PairSortableFields.DEPLOYED_AT:
-                sortFieldData = await Promise.all(
-                    pairsMetadata.map((pair) =>
-                        this.pairCompute.deployedAt(pair.address),
-                    ),
+                sortFieldData = await this.pairService.getAllDeployedAt(
+                    pairsMetadata.map((pair) => pair.address),
                 );
                 break;
             case PairSortableFields.FEES_24:
@@ -303,23 +294,29 @@ export class RouterService {
                 );
                 break;
             case PairSortableFields.TRADES_COUNT:
-                sortFieldData = await Promise.all(
-                    pairsMetadata.map((pair) =>
-                        this.pairCompute.tradesCount(pair.address),
-                    ),
+                sortFieldData = await this.pairService.getAllTradesCount(
+                    pairsMetadata.map((pair) => pair.address),
+                );
+                break;
+            case PairSortableFields.TRADES_COUNT_24:
+                sortFieldData = await this.pairCompute.getAllTradesCount24h(
+                    pairsMetadata.map((pair) => pair.address),
                 );
                 break;
             case PairSortableFields.TVL:
-                sortFieldData = await Promise.all(
-                    pairsMetadata.map((pair) =>
-                        this.pairCompute.lockedValueUSD(pair.address),
-                    ),
+                sortFieldData = await this.pairService.getAllLockedValueUSD(
+                    pairsMetadata.map((pair) => pair.address),
                 );
                 break;
             case PairSortableFields.VOLUME_24:
+                sortFieldData = await this.pairCompute.getAllVolumeUSD(
+                    pairsMetadata.map((pair) => pair.address),
+                );
+                break;
+            case PairSortableFields.APR:
                 sortFieldData = await Promise.all(
                     pairsMetadata.map((pair) =>
-                        this.pairCompute.volumeUSD(pair.address, '24h'),
+                        this.pairCompute.computeCompoundedApr(pair.address),
                     ),
                 );
                 break;

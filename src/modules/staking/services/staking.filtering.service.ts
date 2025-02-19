@@ -1,12 +1,14 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { StakingFarmsFilter } from '../models/staking.args';
 import { StakingService } from './staking.service';
+import { StakingAbiService } from './staking.abi.service';
 
 @Injectable()
 export class StakingFilteringService {
     constructor(
         @Inject(forwardRef(() => StakingService))
         private readonly stakingService: StakingService,
+        private readonly stakingAbi: StakingAbiService,
     ) {}
 
     async stakingFarmsByToken(
@@ -22,10 +24,8 @@ export class StakingFilteringService {
 
         const searchTerm = stakingFilter.searchToken.toUpperCase().trim();
 
-        const farmingTokens = await Promise.all(
-            stakeAddresses.map((address) =>
-                this.stakingService.getFarmingToken(address),
-            ),
+        const farmingTokens = await this.stakingService.getAllFarmingTokens(
+            stakeAddresses,
         );
 
         const filteredAddresses: string[] = [];
@@ -42,5 +42,35 @@ export class StakingFilteringService {
         }
 
         return filteredAddresses;
+    }
+
+    async stakingFarmsByRewardsDepleted(
+        stakingFilter: StakingFarmsFilter,
+        stakeAddresses: string[],
+    ): Promise<string[]> {
+        if (
+            typeof stakingFilter.rewardsEnded === 'undefined' ||
+            stakingFilter.rewardsEnded === null
+        ) {
+            return stakeAddresses;
+        }
+
+        const allProduceRewardsEnabled =
+            await this.stakingAbi.getAllProduceRewardsEnabled(stakeAddresses);
+        const allAccumulatedRewards =
+            await this.stakingAbi.getAllAccumulatedRewards(stakeAddresses);
+        const allRewardCapacity = await this.stakingAbi.getAllRewardCapacity(
+            stakeAddresses,
+        );
+
+        const rewardsDepleted = stakeAddresses.map(
+            (_, index) =>
+                allAccumulatedRewards[index] === allRewardCapacity[index] ||
+                !allProduceRewardsEnabled[index],
+        );
+
+        return stakeAddresses.filter(
+            (_, index) => rewardsDepleted[index] === stakingFilter.rewardsEnded,
+        );
     }
 }

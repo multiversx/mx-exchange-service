@@ -5,9 +5,11 @@ import {
     BigUIntValue,
     BooleanValue,
     BytesValue,
+    Token,
     TokenIdentifierValue,
     TokenTransfer,
     TypedValue,
+    VariadicValue,
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -23,6 +25,7 @@ import { SetLocalRoleOwnerArgs } from '../models/router.args';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from './router.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class RouterTransactionService {
@@ -40,88 +43,104 @@ export class RouterTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        const checkPairExists = await this.checkPairExists(
+        const pairAddress = await this.getPairAddressByTokens(
             firstTokenID,
             secondTokenID,
         );
 
-        if (checkPairExists) {
+        if (pairAddress) {
             throw new Error('Pair already exists');
         }
 
-        const contract = await this.mxProxy.getRouterSmartContract();
-
-        return contract.methodsExplicit
-            .createPair([
-                BytesValue.fromUTF8(firstTokenID),
-                BytesValue.fromUTF8(secondTokenID),
-                new AddressValue(Address.fromString(sender)),
-            ])
-            .withGasLimit(gasConfig.router.createPair)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.createPair,
+                function: 'createPair',
+                arguments: [
+                    BytesValue.fromUTF8(firstTokenID),
+                    BytesValue.fromUTF8(secondTokenID),
+                    new AddressValue(Address.newFromBech32(sender)),
+                ],
+            }),
+        );
     }
 
     async upgradePair(
+        sender: string,
         firstTokenID: string,
         secondTokenID: string,
         fees: number[],
     ): Promise<TransactionModel> {
-        const checkPairExists = await this.checkPairExists(
+        const pairAddress = await this.getPairAddressByTokens(
             firstTokenID,
             secondTokenID,
         );
 
-        if (!checkPairExists) {
+        if (!pairAddress) {
             throw new Error('Pair does not exist');
         }
 
-        const contract = await this.mxProxy.getRouterSmartContract();
+        const initialLiquidityAdder = await this.pairAbi.initialLiquidityAdder(
+            pairAddress,
+        );
+
+        if (sender !== initialLiquidityAdder) {
+            throw new Error('Invalid sender address');
+        }
+
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
+            new AddressValue(Address.newFromBech32(initialLiquidityAdder)),
         ];
 
         for (const fee of fees) {
             endpointArgs.push(new BigUIntValue(new BigNumber(fee)));
         }
 
-        return contract.methodsExplicit
-            .upgradePair(endpointArgs)
-            .withGasLimit(gasConfig.router.admin.upgradePair)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.admin.upgradePair,
+                function: 'upgradePair',
+                arguments: endpointArgs,
+            }),
+        );
     }
 
     async removePair(
+        sender: string,
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        const checkPairExists = await this.checkPairExists(
+        const pairAddress = await this.getPairAddressByTokens(
             firstTokenID,
             secondTokenID,
         );
 
-        if (!checkPairExists) {
+        if (!pairAddress) {
             throw new Error('Pair does not exist');
         }
 
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const endpointArgs: TypedValue[] = [
-            BytesValue.fromUTF8(firstTokenID),
-            BytesValue.fromUTF8(secondTokenID),
-        ];
-        return contract.methodsExplicit
-            .removePair(endpointArgs)
-            .withGasLimit(gasConfig.router.admin.removePair)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.admin.removePair,
+                function: 'removePair',
+                arguments: [
+                    BytesValue.fromUTF8(firstTokenID),
+                    BytesValue.fromUTF8(secondTokenID),
+                ],
+            }),
+        );
     }
 
     async issueLpToken(
+        sender: string,
         pairAddress: string,
         lpTokenName: string,
         lpTokenTicker: string,
@@ -131,99 +150,113 @@ export class RouterTransactionService {
             throw new Error('LP Token already issued');
         }
 
-        const contract = await this.mxProxy.getRouterSmartContract();
-        return contract.methodsExplicit
-            .issueLpToken([
-                new AddressValue(Address.fromString(pairAddress)),
-                BytesValue.fromUTF8(lpTokenName),
-                BytesValue.fromUTF8(lpTokenTicker),
-            ])
-            .withValue(constantsConfig.ISSUE_LP_TOKEN_COST)
-            .withGasLimit(gasConfig.router.issueToken)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.issueToken,
+                function: 'issueLpToken',
+                arguments: [
+                    new AddressValue(Address.newFromBech32(pairAddress)),
+                    BytesValue.fromUTF8(lpTokenName),
+                    BytesValue.fromUTF8(lpTokenTicker),
+                ],
+                nativeTransferAmount: BigInt(
+                    constantsConfig.ISSUE_LP_TOKEN_COST,
+                ).toString(),
+            }),
+        );
     }
 
-    async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        return contract.methodsExplicit
-            .setLocalRoles([BytesValue.fromHex(new Address(pairAddress).hex())])
-            .withGasLimit(gasConfig.router.setLocalRoles)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+    async setLocalRoles(
+        sender: string,
+        pairAddress: string,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.setLocalRoles,
+                function: 'setLocalRoles',
+                arguments: [BytesValue.fromHex(new Address(pairAddress).hex())],
+            }),
+        );
     }
 
     async setLocalRolesOwner(
+        sender: string,
         args: SetLocalRoleOwnerArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const endpointArgs: TypedValue[] = [
-            BytesValue.fromUTF8(args.tokenID),
-            new AddressValue(Address.fromString(args.address)),
-        ];
-        for (const role of args.roles) {
-            endpointArgs.push(...[new BigUIntValue(new BigNumber(role))]);
-        }
-        return contract.methodsExplicit
-            .setLocalRolesOwner(endpointArgs)
-            .withGasLimit(gasConfig.router.admin.setLocalRolesOwner)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.admin.setLocalRolesOwner,
+                function: 'setLocalRolesOwner',
+                arguments: [
+                    BytesValue.fromUTF8(args.tokenID),
+                    new AddressValue(Address.newFromBech32(args.address)),
+                    VariadicValue.fromItems(
+                        ...args.roles.map(
+                            (role) => new BigUIntValue(new BigNumber(role)),
+                        ),
+                    ),
+                ],
+            }),
+        );
     }
 
     async setState(
+        sender: string,
         address: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const args = [new AddressValue(Address.fromString(address))];
-
-        const interaction = enable
-            ? contract.methodsExplicit.resume(args)
-            : contract.methodsExplicit.pause(args);
-
-        return interaction
-            .withGasLimit(gasConfig.router.admin.setState)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.admin.setState,
+                function: enable ? 'resume' : 'pause',
+                arguments: [new AddressValue(Address.newFromBech32(address))],
+            }),
+        );
     }
 
-    async setPairCreationEnabled(enable: boolean): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        return contract.methodsExplicit
-            .setPairCreationEnabled([new BooleanValue(enable)])
-            .withGasLimit(gasConfig.router.admin.setPairCreationEnabled)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+    async setPairCreationEnabled(
+        sender: string,
+        enable: boolean,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.admin.setPairCreationEnabled,
+                function: 'setPairCreationEnabled',
+                arguments: [new BooleanValue(enable)],
+            }),
+        );
     }
 
     async setFee(
+        sender: string,
         pairAddress: string,
         feeToAddress: string,
         feeTokenID: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const args: TypedValue[] = [
-            new AddressValue(Address.fromString(pairAddress)),
-            new AddressValue(Address.fromString(feeToAddress)),
-            new TokenIdentifierValue(feeTokenID),
-        ];
-
-        const interaction = enable
-            ? contract.methodsExplicit.setFeeOn(args)
-            : contract.methodsExplicit.setFeeOff(args);
-
-        return interaction
-            .withGasLimit(gasConfig.router.admin.setFee)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.admin.setFee,
+                function: enable ? 'setFeeOn' : 'setFeeOff',
+                arguments: [
+                    new AddressValue(Address.newFromBech32(pairAddress)),
+                    new AddressValue(Address.newFromBech32(feeToAddress)),
+                    new TokenIdentifierValue(feeTokenID),
+                ],
+            }),
+        );
     }
 
     @ErrorLoggerAsync({
@@ -244,59 +277,69 @@ export class RouterTransactionService {
             throw new Error('Invalid sender address');
         }
 
-        const contract = await this.mxProxy.getRouterSmartContract();
-        return contract.methodsExplicit
-            .setSwapEnabledByUser([
-                new AddressValue(Address.fromString(pairAddress)),
-            ])
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    inputTokens.tokenID,
-                    inputTokens.nonce,
-                    new BigNumber(inputTokens.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.router.swapEnableByUser)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.swapEnableByUser,
+                function: 'setSwapEnabledByUser',
+                arguments: [
+                    new AddressValue(Address.newFromBech32(pairAddress)),
+                ],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: inputTokens.tokenID,
+                            nonce: BigInt(inputTokens.nonce),
+                        }),
+                        amount: BigInt(inputTokens.amount),
+                    }),
+                ],
+            }),
+        );
     }
 
-    async clearPairTemporaryOwnerStorage(): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        return contract.methodsExplicit
-            .clearPairTemporaryOwnerStorage()
-            .withGasLimit(gasConfig.router.admin.clearPairTemporaryOwnerStorage)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+    async clearPairTemporaryOwnerStorage(
+        sender: string,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.admin.clearPairTemporaryOwnerStorage,
+                function: 'clearPairTemporaryOwnerStorage',
+            }),
+        );
     }
 
     async setTemporaryOwnerPeriod(
+        sender: string,
         periodBlocks: string,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        return contract.methodsExplicit
-            .setTemporaryOwnerPeriod([
-                new BigUIntValue(new BigNumber(periodBlocks)),
-            ])
-            .withGasLimit(gasConfig.router.admin.setTemporaryOwnerPeriod)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.admin.setTemporaryOwnerPeriod,
+                function: 'setTemporaryOwnerPeriod',
+                arguments: [new BigUIntValue(new BigNumber(periodBlocks))],
+            }),
+        );
     }
 
-    async setPairTemplateAddress(address: string): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        return contract.methodsExplicit
-            .setPairTemplateAddress([
-                new AddressValue(Address.fromString(address)),
-            ])
-            .withGasLimit(gasConfig.router.admin.setPairTemplateAddress)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+    async setPairTemplateAddress(
+        sender: string,
+        address: string,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getRouterSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.router.admin.setPairTemplateAddress,
+                function: 'setPairTemplateAddress',
+                arguments: [new AddressValue(Address.newFromBech32(address))],
+            }),
+        );
     }
 
     async multiPairSwap(
@@ -357,10 +400,10 @@ export class RouterTransactionService {
         return transactions;
     }
 
-    private async checkPairExists(
+    private async getPairAddressByTokens(
         firstTokenID: string,
         secondTokenID: string,
-    ): Promise<boolean> {
+    ): Promise<string> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         for (const pair of pairsMetadata) {
             if (
@@ -369,10 +412,10 @@ export class RouterTransactionService {
                 (pair.firstTokenID === secondTokenID &&
                     pair.secondTokenID === firstTokenID)
             ) {
-                return true;
+                return pair.address;
             }
         }
-        return false;
+        return undefined;
     }
 
     async wrapIfNeeded(
@@ -404,7 +447,6 @@ export class RouterTransactionService {
         const lockedTokensAttributes = LockedTokenAttributes.fromAttributes(
             inputTokens.attributes,
         );
-        console.log(lockedTokensAttributes);
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             lockedTokensAttributes.originalTokenID,
         );
@@ -463,7 +505,9 @@ export class RouterTransactionService {
         }
         if (
             new BigNumber(commonTokenValue).isLessThan(
-                swapEnableConfig.minLockedTokenValue,
+                new BigNumber(swapEnableConfig.minLockedTokenValue).minus(
+                    constantsConfig.roundedSwapEnable[commonToken],
+                ),
             )
         ) {
             throw new Error('Not enough value locked');

@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { constantsConfig, mxConfig, gasConfig } from '../../../../config';
+import { constantsConfig, gasConfig } from '../../../../config';
 import {
-    BigUIntValue,
+    Address,
     BytesValue,
-    TypedValue,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
-import { Address, Interaction, TokenTransfer } from '@multiversx/sdk-core';
+    Token,
+    TokenTransfer,
+    U64Value,
+} from '@multiversx/sdk-core';
 import { TransactionModel } from '../../../../models/transaction.model';
 import BigNumber from 'bignumber.js';
 
@@ -26,14 +27,27 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { proxyVersion } from 'src/utils/proxy.utils';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { ProxyFarmAbiService } from './proxy.farm.abi.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import {
+    WrappedFarmTokenAttributes,
+    WrappedFarmTokenAttributesV2,
+} from '@multiversx/sdk-exchange';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { TransactionOptions } from 'src/modules/common/transaction.options';
 
 @Injectable()
 export class ProxyFarmTransactionsService {
     constructor(
         private readonly mxProxy: MXProxyService,
+        private readonly mxApi: MXApiService,
         private readonly farmAbi: FarmAbiFactory,
+        private readonly farmAbiV2: FarmAbiServiceV2,
         private readonly pairService: PairService,
         private readonly pairAbi: PairAbiService,
+        private readonly proxyFarmAbi: ProxyFarmAbiService,
+        private readonly contextGetter: ContextGetterService,
     ) {}
 
     async enterFarmProxy(
@@ -41,41 +55,41 @@ export class ProxyFarmTransactionsService {
         proxyAddress: string,
         args: EnterFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
-            proxyAddress,
-        );
         const version = farmVersion(args.farmAddress);
 
-        const endpointArgs = [
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-        ];
-        const interaction: Interaction =
-            version === FarmVersion.V1_2
-                ? args.lockRewards
-                    ? contract.methodsExplicit.enterFarmAndLockRewardsProxy(
-                          endpointArgs,
-                      )
-                    : contract.methodsExplicit.enterFarmProxy(endpointArgs)
-                : contract.methodsExplicit.enterFarmProxy(endpointArgs);
+        const functionName =
+            version === FarmVersion.V1_2 && args.lockRewards
+                ? 'enterFarmAndLockRewardsProxy'
+                : 'enterFarmProxy';
 
         const gasLimit =
             args.tokens.length > 1
                 ? gasConfig.proxy.farms[version].enterFarm.withTokenMerge
                 : gasConfig.proxy.farms[version].enterFarm.default;
-        const mappedPayments = args.tokens.map((token) =>
-            TokenTransfer.metaEsdtFromBigInteger(
-                token.tokenID,
-                token.nonce,
-                new BigNumber(token.amount),
-            ),
+
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
+            proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasLimit,
+                function: functionName,
+                arguments: [
+                    BytesValue.fromHex(
+                        Address.newFromBech32(args.farmAddress).toHex(),
+                    ),
+                ],
+                tokenTransfers: args.tokens.map(
+                    (token) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: token.tokenID,
+                                nonce: BigInt(token.nonce),
+                            }),
+                            amount: BigInt(token.amount),
+                        }),
+                ),
+            }),
         );
-        return interaction
-            .withMultiESDTNFTTransfer(mappedPayments)
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
     }
 
     async exitFarmProxy(
@@ -83,41 +97,30 @@ export class ProxyFarmTransactionsService {
         proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const version = proxyVersion(proxyAddress);
-        if (
-            version === 'v2' &&
-            !args.exitAmount &&
-            !new BigNumber(args.exitAmount).isPositive()
-        ) {
-            throw new Error('Invalid exit amount');
-        }
-        const contract = await this.mxProxy.getProxyDexSmartContract(
-            proxyAddress,
-        );
-
-        const endpointArgs: TypedValue[] = [
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-        ];
-        if (version === 'v2') {
-            endpointArgs.push(new BigUIntValue(new BigNumber(args.exitAmount)));
-        }
-
         const gasLimit = await this.getExitFarmProxyGasLimit(args);
 
-        return contract.methodsExplicit
-            .exitFarmProxy(endpointArgs)
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    args.wrappedFarmTokenID,
-                    args.wrappedFarmTokenNonce,
-                    new BigNumber(args.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
+            proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasLimit,
+                function: 'exitFarmProxy',
+                arguments: [
+                    BytesValue.fromHex(
+                        Address.newFromBech32(args.farmAddress).toHex(),
+                    ),
+                ],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.wrappedFarmTokenID,
+                            nonce: BigInt(args.wrappedFarmTokenNonce),
+                        }),
+                        amount: BigInt(args.amount),
+                    }),
+                ],
+            }),
+        );
     }
 
     async claimFarmRewardsProxy(
@@ -125,14 +128,6 @@ export class ProxyFarmTransactionsService {
         proxyAddress: string,
         args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
-            proxyAddress,
-        );
-
-        const endpointArgs = [
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-        ];
-
         const version = farmVersion(args.farmAddress);
         const type =
             version === FarmVersion.V1_2
@@ -148,20 +143,28 @@ export class ProxyFarmTransactionsService {
             gasConfig.proxy.farms[version][type].claimRewards +
             lockedAssetCreateGas;
 
-        return contract.methodsExplicit
-            .claimRewardsProxy(endpointArgs)
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    args.wrappedFarmTokenID,
-                    args.wrappedFarmTokenNonce,
-                    new BigNumber(args.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
+            proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasLimit,
+                function: 'claimRewardsProxy',
+                arguments: [
+                    BytesValue.fromHex(
+                        Address.newFromBech32(args.farmAddress).toHex(),
+                    ),
+                ],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.wrappedFarmTokenID,
+                            nonce: BigInt(args.wrappedFarmTokenNonce),
+                        }),
+                        amount: BigInt(args.amount),
+                    }),
+                ],
+            }),
+        );
     }
 
     async compoundRewardsProxy(
@@ -169,30 +172,30 @@ export class ProxyFarmTransactionsService {
         proxyAddress: string,
         args: CompoundRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
-            proxyAddress,
-        );
-
-        const endpointArgs = [
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-        ];
-
         const version = farmVersion(args.farmAddress);
 
-        return contract.methodsExplicit
-            .compoundRewardsProxy(endpointArgs)
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    args.tokenID,
-                    args.tokenNonce,
-                    new BigNumber(args.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.proxy.farms[version].compoundRewards)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
+            proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.proxy.farms[version].compoundRewards,
+                function: 'compoundRewardsProxy',
+                arguments: [
+                    BytesValue.fromHex(
+                        Address.newFromBech32(args.farmAddress).toHex(),
+                    ),
+                ],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.tokenID,
+                            nonce: BigInt(args.tokenNonce),
+                        }),
+                        amount: BigInt(args.amount),
+                    }),
+                ],
+            }),
+        );
     }
 
     async migrateToNewFarmProxy(
@@ -200,29 +203,30 @@ export class ProxyFarmTransactionsService {
         proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
-            proxyAddress,
-        );
-
-        const endpointArgs = [
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-        ];
         const version = farmVersion(args.farmAddress);
 
-        return contract.methodsExplicit
-            .migrateV1_2Position(endpointArgs)
-            .withSingleESDTNFTTransfer(
-                TokenTransfer.metaEsdtFromBigInteger(
-                    args.wrappedFarmTokenID,
-                    args.wrappedFarmTokenNonce,
-                    new BigNumber(args.amount),
-                ),
-            )
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasConfig.proxy.farms[version].migrateToNewFarm)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
+            proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.proxy.farms[version].migrateToNewFarm,
+                function: 'migrateV1_2Position',
+                arguments: [
+                    BytesValue.fromHex(
+                        Address.newFromBech32(args.farmAddress).toHex(),
+                    ),
+                ],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: args.wrappedFarmTokenID,
+                            nonce: BigInt(args.wrappedFarmTokenNonce),
+                        }),
+                        amount: BigInt(args.amount),
+                    }),
+                ],
+            }),
+        );
     }
 
     async mergeWrappedFarmTokens(
@@ -238,30 +242,113 @@ export class ProxyFarmTransactionsService {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
         }
 
-        const contract = await this.mxProxy.getProxyDexSmartContract(
+        const gasLimit = gasConfig.proxy.farms.defaultMergeWFMT * tokens.length;
+
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
+            proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasLimit,
+                function: 'mergeWrappedFarmTokens',
+                arguments: [
+                    BytesValue.fromHex(
+                        Address.newFromBech32(farmAddress).toHex(),
+                    ),
+                ],
+                tokenTransfers: tokens.map(
+                    (token) =>
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: token.tokenID,
+                                nonce: BigInt(token.nonce),
+                            }),
+                            amount: BigInt(token.amount),
+                        }),
+                ),
+            }),
+        );
+    }
+
+    async migrateTotalFarmPosition(
+        sender: string,
+        proxyAddress: string,
+    ): Promise<TransactionModel[]> {
+        const wrappedFarmTokenID = await this.proxyFarmAbi.wrappedFarmTokenID(
             proxyAddress,
         );
-
-        const endpointArgs = [
-            BytesValue.fromHex(new Address(farmAddress).hex()),
-        ];
-        const gasLimit = gasConfig.proxy.farms.defaultMergeWFMT * tokens.length;
-        const mappedPayments = tokens.map((token) =>
-            TokenTransfer.metaEsdtFromBigInteger(
-                token.tokenID,
-                token.nonce,
-                new BigNumber(token.amount),
-            ),
+        const userNftsCount = await this.mxApi.getNftsCountForUser(sender);
+        const userNfts = await this.contextGetter.getNftsForUser(
+            sender,
+            0,
+            userNftsCount > 0 ? userNftsCount : 100,
+            'MetaESDT',
+            [wrappedFarmTokenID],
         );
+        const promises: Promise<TransactionModel>[] = [];
+        for (const nft of userNfts) {
+            const version = proxyVersion(proxyAddress);
 
-        return contract.methodsExplicit
-            .mergeWrappedFarmTokens(endpointArgs)
-            .withMultiESDTNFTTransfer(mappedPayments)
-            .withSender(Address.fromString(sender))
-            .withGasLimit(gasLimit)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+            let farmTokenID: string;
+            let farmTokenNonce: number;
+            if (version === 'v2') {
+                const decodedAttributes =
+                    WrappedFarmTokenAttributesV2.fromAttributes(nft.attributes);
+                farmTokenID = decodedAttributes.farmToken.tokenIdentifier;
+                farmTokenNonce = decodedAttributes.farmToken.tokenNonce;
+            } else {
+                const decodedAttributes =
+                    WrappedFarmTokenAttributes.fromAttributes(nft.attributes);
+                farmTokenID = decodedAttributes.farmTokenID;
+                farmTokenNonce = decodedAttributes.farmTokenNonce;
+            }
+
+            const farmAddress = await this.farmAbi.getFarmAddressByFarmTokenID(
+                farmTokenID,
+            );
+
+            const migrationNonce =
+                await this.farmAbiV2.farmPositionMigrationNonce(farmAddress);
+
+            if (farmTokenNonce < migrationNonce) {
+                promises.push(
+                    this.claimFarmRewardsProxy(sender, proxyAddress, {
+                        farmAddress,
+                        wrappedFarmTokenID: nft.collection,
+                        wrappedFarmTokenNonce: nft.nonce,
+                        amount: nft.balance,
+                        lockRewards: true,
+                    }),
+                );
+            }
+        }
+
+        return Promise.all(promises);
+    }
+
+    async increaseProxyFarmTokenEnergy(
+        sender: string,
+        proxyAddress: string,
+        payment: InputTokenModel,
+        lockEpochs: number,
+    ): Promise<TransactionModel> {
+        return await this.mxProxy.getProxyDexSmartContractTransaction(
+            proxyAddress,
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.proxy.pairs.increaseEnergy,
+                function: 'increaseProxyFarmTokenEnergy',
+                arguments: [new U64Value(new BigNumber(lockEpochs))],
+                tokenTransfers: [
+                    new TokenTransfer({
+                        token: new Token({
+                            identifier: payment.tokenID,
+                            nonce: BigInt(payment.nonce),
+                        }),
+                        amount: BigInt(payment.amount),
+                    }),
+                ],
+            }),
+        );
     }
 
     private async getExitFarmProxyGasLimit(

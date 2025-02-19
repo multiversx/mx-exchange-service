@@ -11,6 +11,8 @@ export class MetricsCollector {
     private static guestQueriesGauge: Gauge<string>;
     private static currentNonceGauge: Gauge<string>;
     private static lastProcessedNonceGauge: Gauge<string>;
+    private static localCacheHitGauge: Gauge<string>;
+    private static cacheMissGauge: Gauge<string>;
 
     private static baseMetrics = new MetricsService();
 
@@ -90,6 +92,22 @@ export class MetricsCollector {
                 name: 'guest_queries',
                 help: 'Guest queries by operation',
                 labelNames: ['operation'],
+            });
+        }
+
+        if (!MetricsCollector.localCacheHitGauge) {
+            MetricsCollector.localCacheHitGauge = new Gauge({
+                name: 'local_cached_hits',
+                help: 'Number of hits for local cached data',
+                labelNames: ['key'],
+            });
+        }
+
+        if (!MetricsCollector.cacheMissGauge) {
+            MetricsCollector.cacheMissGauge = new Gauge({
+                name: 'cache_misses',
+                help: 'Number of cache misses',
+                labelNames: ['key'],
             });
         }
     }
@@ -194,6 +212,21 @@ export class MetricsCollector {
     static setGuestHitQueries(count: number) {
         MetricsCollector.ensureIsInitialized();
         MetricsService.setGuestHitQueries(count);
+    }
+
+    static incrementLocalCacheHit(key: string) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.localCacheHitGauge.inc({ key });
+    }
+
+    static incrementCachedApiHit(endpoint: string) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.baseMetrics.incrementCachedApiHit(endpoint);
+    }
+
+    static incrementCacheMiss(key: string) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.cacheMissGauge.inc({ key });
     }
 
     static async getMetrics(): Promise<string> {

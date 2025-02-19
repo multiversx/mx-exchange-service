@@ -2,6 +2,12 @@ import { Inject } from '@nestjs/common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { ContextTracker } from '@multiversx/sdk-nestjs-common';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import {
+    formatNullOrUndefined,
+    parseCachedNullOrUndefined,
+} from 'src/utils/cache.utils';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 export interface ICachingOptions {
     baseKey: string;
@@ -29,18 +35,55 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
                 ...args,
             );
 
+            const genericCacheKey = generateCacheKeyFromParams(
+                cachingOptions.baseKey,
+                propertyKey,
+            );
+
             if (context && context.deepHistoryTimestamp) {
                 cacheKey = `${cacheKey}.${context.deepHistoryTimestamp}`;
             }
 
             const cachingService: CacheService = this.cachingService;
 
-            return await cachingService.getOrSet(
+            const locallyCachedValue = await cachingService.getLocal(cacheKey);
+            if (locallyCachedValue !== undefined) {
+                MetricsCollector.incrementLocalCacheHit(genericCacheKey);
+
+                return parseCachedNullOrUndefined(locallyCachedValue);
+            }
+
+            const cachedValue = await cachingService.getRemote(cacheKey);
+            if (cachedValue !== undefined) {
+                MetricsCollector.incrementCachedApiHit(genericCacheKey);
+
+                cachingService.setLocal(
+                    cacheKey,
+                    cachedValue,
+                    cachingOptions.localTtl,
+                );
+                return parseCachedNullOrUndefined(cachedValue);
+            }
+
+            const value = await originalMethod.apply(this, args);
+
+            let { remoteTtl, localTtl } = cachingOptions;
+
+            if (typeof value === 'undefined' || value === null) {
+                remoteTtl = CacheTtlInfo.NullValue.remoteTtl;
+                localTtl = CacheTtlInfo.NullValue.localTtl;
+            }
+
+            await cachingService.set(
                 cacheKey,
-                () => originalMethod.apply(this, args),
-                cachingOptions.remoteTtl,
-                cachingOptions.localTtl,
+                formatNullOrUndefined(value),
+                remoteTtl,
+                localTtl,
             );
+
+            MetricsCollector.incrementCacheMiss(genericCacheKey);
+
+            return value;
         };
         return descriptor;
     };

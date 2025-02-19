@@ -17,6 +17,10 @@ import { TokenModule } from '../tokens/token.module';
         LockedAssetGetterService,
         LockedAssetResolver,
     ],
-    exports: [LockedAssetService, LockedAssetGetterService],
+    exports: [
+        LockedAssetService,
+        LockedAssetGetterService,
+        AbiLockedAssetService,
+    ],
 })
 export class LockedAssetModule {}

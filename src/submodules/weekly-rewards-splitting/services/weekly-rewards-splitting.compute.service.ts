@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { TokenDistributionModel } from '../models/weekly-rewards-splitting.model';
@@ -20,7 +20,9 @@ export class WeeklyRewardsSplittingComputeService
     constructor(
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly energyAbi: EnergyAbiService,
+        @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
+        @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
     ) {}
 
@@ -33,9 +35,7 @@ export class WeeklyRewardsSplittingComputeService
         const tokenDistributions = await Promise.all(
             payments.map(async (token) => {
                 const tokenPriceUSD =
-                    await this.tokenCompute.computeTokenPriceDerivedUSD(
-                        token.tokenID,
-                    );
+                    await this.tokenCompute.tokenPriceDerivedUSD(token.tokenID);
                 const rewardsPriceUSD = new BigNumber(
                     tokenPriceUSD,
                 ).multipliedBy(new BigNumber(token.amount));
@@ -183,7 +183,7 @@ export class WeeklyRewardsSplittingComputeService
                         ? baseAssetTokenID
                         : reward.tokenID;
                 const [token, rewardsPriceUSD] = await Promise.all([
-                    this.tokenService.getTokenMetadata(tokenID),
+                    this.tokenService.tokenMetadata(tokenID),
                     this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
                 ]);
                 return computeValueUSD(

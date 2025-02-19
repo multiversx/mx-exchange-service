@@ -13,6 +13,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IFarmComputeServiceV1_2 } from './interfaces';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class FarmComputeServiceV1_2
@@ -27,6 +28,7 @@ export class FarmComputeServiceV1_2
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
+        protected readonly cacheService: CacheService,
     ) {
         super(
             farmAbi,
@@ -35,6 +37,7 @@ export class FarmComputeServiceV1_2
             pairCompute,
             contextGetter,
             tokenCompute,
+            cacheService,
         );
     }
 

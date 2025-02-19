@@ -6,6 +6,7 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { FarmCustomService } from './farm.custom.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class FarmCustomComputeService extends FarmComputeService {
@@ -17,6 +18,7 @@ export class FarmCustomComputeService extends FarmComputeService {
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly tokenCompute: TokenComputeService,
+        protected readonly cacheService: CacheService,
     ) {
         super(
             farmAbi,
@@ -25,6 +27,7 @@ export class FarmCustomComputeService extends FarmComputeService {
             pairCompute,
             contextGetter,
             tokenCompute,
+            cacheService,
         );
     }
 }

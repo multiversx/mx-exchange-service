@@ -22,7 +22,10 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
-import { EnergyModel } from 'src/modules/energy/models/energy.model';
+import {
+    EnergyModel,
+    UserEnergyModel,
+} from 'src/modules/energy/models/energy.model';
 import BigNumber from 'bignumber.js';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';
@@ -228,11 +231,12 @@ describe('FeesCollectorComputeService', () => {
             const totalLockedTokensForWeek = '1000000000000000000000000';
             const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
 
-            const user1Energy = new EnergyModel({
+            const user1Energy = new UserEnergyModel({
                 amount: user1EnergyAmount.toFixed(),
                 totalLockedTokens: new BigNumber(
                     totalLockedTokensForWeek,
                 ).toFixed(),
+                league: 'Bronze',
             });
 
             const service = module.get<FeesCollectorComputeService>(
@@ -246,6 +250,11 @@ describe('FeesCollectorComputeService', () => {
                 );
             const energyService = module.get<EnergyService>(EnergyService);
 
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
                 'computeTokenPriceDerivedUSD',
@@ -256,6 +265,11 @@ describe('FeesCollectorComputeService', () => {
                 weeklyRewardsSplittingAbi,
                 'totalEnergyForWeek',
             ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(user1Energy));
 
             jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
                 Promise.resolve(user1Energy),
@@ -285,11 +299,12 @@ describe('FeesCollectorComputeService', () => {
             const totalLockedTokensForWeek = '1000000000000000000000000';
             const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
 
-            const user1Energy = new EnergyModel({
+            const user1Energy = new UserEnergyModel({
                 amount: user1EnergyAmount.dividedBy(4).toFixed(),
                 totalLockedTokens: new BigNumber(
                     totalLockedTokensForWeek,
                 ).toFixed(),
+                league: 'Bronze',
             });
 
             const service = module.get<FeesCollectorComputeService>(
@@ -303,6 +318,11 @@ describe('FeesCollectorComputeService', () => {
                 );
             const energyService = module.get<EnergyService>(EnergyService);
 
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
                 'computeTokenPriceDerivedUSD',
@@ -314,6 +334,10 @@ describe('FeesCollectorComputeService', () => {
                 'totalEnergyForWeek',
             ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
 
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(user1Energy));
             jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
                 Promise.resolve(user1Energy),
             );
@@ -321,7 +345,7 @@ describe('FeesCollectorComputeService', () => {
             const apr = await service.computeUserRewardsAPR(
                 Address.Zero().bech32(),
                 user1,
-                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+                new BigNumber(totalEnergyForWeek).dividedBy(4).toFixed(),
             );
 
             expect(apr.toFixed()).toEqual('14.872');
@@ -345,11 +369,12 @@ describe('FeesCollectorComputeService', () => {
             const totalLockedTokensForWeek = '1000000000000000000000000';
             const user1EnergyAmount = new BigNumber(totalEnergyForWeek);
 
-            const user1Energy = new EnergyModel({
+            const user1Energy = new UserEnergyModel({
                 amount: user1EnergyAmount.dividedBy(4).toFixed(),
                 totalLockedTokens: new BigNumber(totalLockedTokensForWeek)
                     .dividedBy(4)
                     .toFixed(),
+                league: 'Bronze',
             });
 
             const service = module.get<FeesCollectorComputeService>(
@@ -363,6 +388,11 @@ describe('FeesCollectorComputeService', () => {
                 );
             const energyService = module.get<EnergyService>(EnergyService);
 
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
                 'computeTokenPriceDerivedUSD',
@@ -374,6 +404,11 @@ describe('FeesCollectorComputeService', () => {
                 'totalEnergyForWeek',
             ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
 
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(user1Energy));
+
             jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
                 Promise.resolve(user1Energy),
             );
@@ -381,7 +416,7 @@ describe('FeesCollectorComputeService', () => {
             const apr = await service.computeUserRewardsAPR(
                 Address.Zero().bech32(),
                 user1,
-                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+                new BigNumber(totalEnergyForWeek).dividedBy(4).toFixed(),
                 new BigNumber(totalLockedTokensForWeek).dividedBy(2).toFixed(),
             );
 
@@ -395,12 +430,6 @@ describe('FeesCollectorComputeService', () => {
             ' with 0 user energy and locked tokens',
         async () => {
             const user1 = 'erd1';
-            const mex = 'MEX-123456';
-            const priceMap = new Map<string, string>();
-            priceMap.set('WEGLD-123456', '10');
-            priceMap.set('MEX-123456', '20');
-            priceMap.set('TOK4-123456', '30');
-            priceMap.set(mex, '1');
 
             const service = module.get<FeesCollectorComputeService>(
                 FeesCollectorComputeService,

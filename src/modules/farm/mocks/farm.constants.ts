@@ -49,4 +49,16 @@ export const farms = [
         rewardsPerBlock: '2000000000000000000',
         rewardPerShare: '0',
     },
+    {
+        address: Address.fromHex(
+            '0000000000000000000000000000000000000000000000000000000000000041',
+        ).bech32(),
+        farmedTokenID: 'MEX-123456',
+        farmTokenID: 'EGLDMEXFL-ghijkl',
+        farmingTokenID: 'EGLDMEXLP-abcdef',
+        farmTotalSupply: '1000000000000000000',
+        farmingTokenReserve: '1000000000000000000',
+        rewardsPerBlock: '2000000000000000000',
+        rewardPerShare: '0',
+    },
 ];
