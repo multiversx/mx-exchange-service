@@ -4,6 +4,7 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
+import { TradingActivityModel } from '../models/trading.activity.model';
 
 export class AnalyticsSetterService extends GenericSetterService {
     constructor(
@@ -69,6 +70,30 @@ export class AnalyticsSetterService extends GenericSetterService {
             value,
             Constants.oneMinute() * 10,
             Constants.oneMinute() * 5,
+        );
+    }
+
+    async pairTradingActivity(
+        pairAddress: string,
+        value: TradingActivityModel[],
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('pairTradingActivity', pairAddress),
+            value,
+            Constants.oneMinute() * 5,
+            Constants.oneMinute() * 3,
+        );
+    }
+
+    async tokenTradingActivity(
+        tokenID: string,
+        value: TradingActivityModel[],
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('tokenTradingActivity', tokenID),
+            value,
+            Constants.oneMinute() * 5,
+            Constants.oneMinute() * 3,
         );
     }
 

@@ -126,6 +126,46 @@ export class FeesCollectorComputeService {
             .toFixed();
     }
 
+    async computeUserLastWeekRewardsUSD(
+        scAddress: string,
+        userAddress: string,
+        additionalUserEnergy = '0',
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            scAddress,
+        );
+        const lastWeek = currentWeek - 1;
+        const [totalRewardsForWeekUSD, userEnergyForWeek] = await Promise.all([
+            this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
+                scAddress,
+                lastWeek,
+            ),
+            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                scAddress,
+                userAddress,
+                lastWeek,
+            ),
+        ]);
+        let totalEnergyForWeek =
+            await this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+                scAddress,
+                lastWeek,
+            );
+
+        userEnergyForWeek.amount = new BigNumber(userEnergyForWeek.amount)
+            .plus(additionalUserEnergy)
+            .toFixed();
+        totalEnergyForWeek = new BigNumber(totalEnergyForWeek)
+            .plus(additionalUserEnergy)
+            .toFixed();
+
+        const userRewardsForWeekUSD = new BigNumber(totalRewardsForWeekUSD)
+            .multipliedBy(userEnergyForWeek.amount)
+            .dividedBy(totalEnergyForWeek);
+
+        return userRewardsForWeekUSD.toFixed();
+    }
+
     async computeUserRewardsAPR(
         scAddress: string,
         userAddress: string,
@@ -139,49 +179,31 @@ export class FeesCollectorComputeService {
             return new BigNumber(0);
         }
 
-        const [currentWeek, baseAssetTokenID] = await Promise.all([
-            this.weekTimekeepingAbi.currentWeek(scAddress),
-            this.energyAbi.baseAssetTokenID(),
-        ]);
-        const lastWeek = currentWeek - 1;
+        const baseAssetTokenID = await this.energyAbi.baseAssetTokenID();
 
-        const [baseToken, userEnergy, totalRewardsForWeekUSD] =
-            await Promise.all([
-                this.tokenService.tokenMetadata(baseAssetTokenID),
-                this.energyService.getUserEnergy(userAddress),
-                this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
-                    scAddress,
-                    lastWeek,
-                ),
-            ]);
-
-        let totalEnergyForWeek =
-            await this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+        const [
+            baseToken,
+            userEnergy,
+            baseAssetTokenPriceUSD,
+            userRewardsForWeekUSD,
+        ] = await Promise.all([
+            this.tokenService.tokenMetadata(baseAssetTokenID),
+            this.energyService.getUserEnergy(userAddress),
+            this.tokenCompute.tokenPriceDerivedUSD(baseAssetTokenID),
+            this.computeUserLastWeekRewardsUSD(
                 scAddress,
-                lastWeek,
-            );
+                userAddress,
+                customEnergyAmount,
+            ),
+        ]);
 
-        if (customEnergyAmount) {
-            totalEnergyForWeek = new BigNumber(totalEnergyForWeek)
-                .minus(userEnergy.amount)
-                .plus(customEnergyAmount)
-                .toFixed();
-        }
-
-        const baseAssetTokenPriceUSD =
-            await this.tokenCompute.computeTokenPriceDerivedUSD(
-                baseToken.identifier,
-            );
         const userLockedTokensValueUSD = computeValueUSD(
             customLockedTokens ?? userEnergy.totalLockedTokens,
             baseToken.decimals,
             baseAssetTokenPriceUSD,
         );
 
-        const userRewardsForWeekUSD = new BigNumber(totalRewardsForWeekUSD)
-            .multipliedBy(customEnergyAmount ?? userEnergy.amount)
-            .dividedBy(totalEnergyForWeek);
-        const userAPRForWeek = userRewardsForWeekUSD
+        const userAPRForWeek = new BigNumber(userRewardsForWeekUSD)
             .multipliedBy(52)
             .dividedBy(userLockedTokensValueUSD)
             .multipliedBy(100);

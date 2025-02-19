@@ -12,15 +12,18 @@ import { PairComputeService } from '../pair/services/pair.compute.service';
 import { TokenService } from '../tokens/services/token.service';
 import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.validator';
+import { TradingActivityModel } from './models/trading.activity.model';
+import { RouterAbiService } from '../router/services/router.abi.service';
 
 @Resolver()
 export class AnalyticsResolver {
     constructor(
-        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
-        private readonly analyticsCompute: AnalyticsComputeService,
         private readonly tokenService: TokenService,
+        private readonly routerAbi: RouterAbiService,
         private readonly pairCompute: PairComputeService,
+        private readonly analyticsCompute: AnalyticsComputeService,
         private readonly analyticsPairService: AnalyticsPairService,
+        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
     ) {}
 
     @Query(() => String)
@@ -196,5 +199,23 @@ export class AnalyticsResolver {
             args.end,
             args.resolution,
         );
+    }
+
+    @Query(() => [TradingActivityModel])
+    async tradingActivity(
+        @Args('series') series: string,
+    ): Promise<TradingActivityModel[]> {
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+
+        for (const pair of pairsMetadata) {
+            if (pair.firstTokenID === series || pair.secondTokenID === series) {
+                return this.analyticsCompute.tokenTradingActivity(series);
+            }
+            if (pair.address === series) {
+                return this.analyticsCompute.pairTradingActivity(series);
+            }
+        }
+
+        throw new Error('Invalid parameters');
     }
 }

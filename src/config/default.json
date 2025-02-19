@@ -474,7 +474,7 @@
         "simpleLockEnergy": {
             "lockTokens": 13000000,
             "unlockTokens": {
-                "unlockEarly": 30000000,
+                "unlockEarly": 40000000,
                 "reduceLockPeriod": 25000000,
                 "default": 10000000
             },
@@ -643,7 +643,8 @@
             "WBTC-05fd5b": "1000",
             "WETH-bbe4ab": "100000000000000",
             "SEGLD-cc1abc": "100000000000000000",
-            "LEGLD-e8378b": "100000000000000000"
+            "LEGLD-e8378b": "100000000000000000",
+            "XEGLD-23b511": "100000000000000000"
         },
         "COMPOUND_TRANSACTION_FEE": 0.000365144,
         "trendingScore": {

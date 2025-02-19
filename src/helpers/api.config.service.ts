@@ -132,6 +132,14 @@ export class ApiConfigService {
         return apiUrl;
     }
 
+    getGatewayUrl(): string {
+        const gatewayUrl = this.configService.get<string>('MX_GATEWAY_URL');
+        if (!gatewayUrl) {
+            throw new Error('No gatewayUrl present');
+        }
+        return gatewayUrl;
+    }
+
     getKeepAliveTimeoutDownstream(): number {
         const keepAliveTimeoutDownstream = this.configService.get<string>(
             'KEEPALIVE_TIMEOUT_DOWNSTREAM',

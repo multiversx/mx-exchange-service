@@ -704,12 +704,12 @@ export class StakingComputeService {
         return userRewardForWeek.toFixed();
     }
 
-    async computeUserCurentBoostedAPR(
+    async computeUserEstimatedWeeklyRewards(
         scAddress: string,
         userAddress: string,
         additionalUserStakeAmount = '0',
         additionalUserEnergy = '0',
-    ): Promise<number> {
+    ): Promise<string> {
         const [produceRewardsEnabled, accumulatedRewards, rewardsCapacity] =
             await Promise.all([
                 this.stakingAbi.produceRewardsEnabled(scAddress),
@@ -721,7 +721,7 @@ export class StakingComputeService {
             !produceRewardsEnabled ||
             new BigNumber(accumulatedRewards).isEqualTo(rewardsCapacity)
         ) {
-            return 0;
+            return '0';
         }
 
         const [currentWeek, boostedRewardsPerWeek] = await Promise.all([
@@ -731,6 +731,34 @@ export class StakingComputeService {
                 additionalUserStakeAmount,
             ),
         ]);
+
+        return await this.computeUserRewardsForWeek(
+            scAddress,
+            userAddress,
+            currentWeek,
+            additionalUserStakeAmount,
+            additionalUserEnergy,
+            boostedRewardsPerWeek,
+        );
+    }
+
+    async computeUserCurentBoostedAPR(
+        scAddress: string,
+        userAddress: string,
+        additionalUserStakeAmount = '0',
+        additionalUserEnergy = '0',
+    ): Promise<number> {
+        const userRewardsPerWeek = await this.computeUserEstimatedWeeklyRewards(
+            scAddress,
+            userAddress,
+            additionalUserStakeAmount,
+            additionalUserEnergy,
+        );
+
+        if (userRewardsPerWeek === '0') {
+            return 0;
+        }
+
         let userTotalStakePosition =
             await this.stakingAbi.userTotalStakePosition(
                 scAddress,
@@ -739,19 +767,6 @@ export class StakingComputeService {
         userTotalStakePosition = new BigNumber(userTotalStakePosition)
             .plus(additionalUserStakeAmount)
             .toFixed();
-
-        if (userTotalStakePosition === '0') {
-            return 0;
-        }
-
-        const userRewardsPerWeek = await this.computeUserRewardsForWeek(
-            scAddress,
-            userAddress,
-            currentWeek,
-            additionalUserStakeAmount,
-            additionalUserEnergy,
-            boostedRewardsPerWeek,
-        );
 
         return new BigNumber(userRewardsPerWeek)
             .multipliedBy(52)

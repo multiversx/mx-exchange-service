@@ -12,6 +12,7 @@ import { Logger } from 'winston';
 import { RawElasticEventType } from '../entities/raw.elastic.event';
 import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
+import { CustomTermsQuery } from '../entities/terms.query';
 
 @Injectable()
 export class ElasticSearchEventsService {
@@ -192,6 +193,76 @@ export class ElasticSearchEventsService {
             '',
             elasticQueryAdapter,
             action,
+        );
+    }
+
+    async getPairTradingEvents(
+        pairAddress: string,
+    ): Promise<RawElasticEventType[]> {
+        const pagination = new ElasticPagination();
+        pagination.size = 10;
+
+        const elasticQueryAdapter: ElasticQuery =
+            new ElasticQuery().withPagination(pagination);
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match('address', pairAddress),
+            QueryType.Should([
+                QueryType.Match('identifier', SWAP_IDENTIFIER.SWAP_FIXED_INPUT),
+                QueryType.Match(
+                    'identifier',
+                    SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+                ),
+            ]),
+        ];
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.descending },
+        ];
+
+        return await this.elasticService.getList(
+            'events',
+            '',
+            elasticQueryAdapter,
+        );
+    }
+
+    async getTokenTradingEvents(
+        tokenID: string,
+        pairsAddresses: string[],
+        size: number,
+    ): Promise<RawElasticEventType[]> {
+        const pagination = new ElasticPagination();
+        pagination.size = size;
+
+        const elasticQueryAdapter: ElasticQuery =
+            new ElasticQuery().withPagination(pagination);
+
+        elasticQueryAdapter.condition.must = [
+            QueryType.Match(
+                'topics',
+                Buffer.from(tokenID, 'utf8').toString('hex'),
+            ),
+            QueryType.Should([
+                QueryType.Match('identifier', SWAP_IDENTIFIER.SWAP_FIXED_INPUT),
+                QueryType.Match(
+                    'identifier',
+                    SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+                ),
+            ]),
+        ];
+
+        elasticQueryAdapter.filter = [
+            new CustomTermsQuery('address', pairsAddresses),
+        ];
+
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.descending },
+        ];
+
+        return await this.elasticService.getList(
+            'events',
+            '',
+            elasticQueryAdapter,
         );
     }
 }

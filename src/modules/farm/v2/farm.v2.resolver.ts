@@ -31,6 +31,30 @@ export class FarmBoostedRewardsResolver {
     constructor(private readonly farmCompute: FarmComputeServiceV2) {}
 
     @ResolveField()
+    async estimatedWeeklyRewards(
+        @Parent() parent: BoostedRewardsModel,
+        @Args('additionalUserFarmAmount', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserFarmAmount: string,
+        @Args('additionalUserEnergy', {
+            type: () => String,
+            nullable: true,
+            defaultValue: '0',
+        })
+        additionalUserEnergy: string,
+    ): Promise<string> {
+        return this.farmCompute.computeUserEstimatedWeeklyRewards(
+            parent.farmAddress,
+            parent.userAddress,
+            additionalUserFarmAmount,
+            additionalUserEnergy,
+        );
+    }
+
+    @ResolveField()
     async curentBoostedAPR(
         @Parent() parent: BoostedRewardsModel,
         @Args('additionalUserFarmAmount', {
