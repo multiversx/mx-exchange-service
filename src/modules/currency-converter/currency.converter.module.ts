@@ -4,18 +4,14 @@ import { CurrencyConverterService } from './services/currency.converter.service'
 import { CurrencyConverterSetterService } from './services/currency.converter.setter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { TokenModule } from '../tokens/token.module';
-import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 
 @Module({
-    imports: [
-        TokenModule,
-    ],
+    imports: [TokenModule],
     providers: [
         ApiConfigService,
         CurrencyConverterResolver,
         CurrencyConverterService,
         CurrencyConverterSetterService,
-        MXDataApiService,
     ],
     exports: [CurrencyConverterService, CurrencyConverterSetterService],
 })
