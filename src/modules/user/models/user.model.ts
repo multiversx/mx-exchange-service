@@ -239,10 +239,18 @@ export class UserNftsModel {
     userLockedTokenEnergy: UserLockedTokenEnergy[];
     @Field(() => [UserWrappedLockedToken])
     userWrappedLockedToken: UserWrappedLockedToken[];
+    rawNfts?: NftToken[];
 
-    constructor(address: string, pagination: PaginationArgs) {
+    constructor(
+        address: string,
+        pagination: PaginationArgs,
+        nfts?: NftToken[],
+    ) {
         this.address = address;
         this.pagination = pagination;
+        if (nfts) {
+            this.rawNfts = nfts;
+        }
     }
 }
 

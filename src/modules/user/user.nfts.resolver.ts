@@ -23,10 +23,14 @@ import {
     UserWrappedLockedToken,
 } from './models/user.model';
 import { UserMetaEsdtService } from './services/user.metaEsdt.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Resolver(() => UserNftsModel)
 export class UserNftsResolver {
-    constructor(private readonly userMetaEsdts: UserMetaEsdtService) {}
+    constructor(
+        private readonly userMetaEsdts: UserMetaEsdtService,
+        private readonly contextGetter: ContextGetterService,
+    ) {}
 
     @ResolveField()
     async userLockedAssetToken(
@@ -35,6 +39,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserLockedAssetTokens(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -45,6 +50,8 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserFarmTokens(
             parent.address,
             parent.pagination,
+            true,
+            parent.rawNfts,
         );
     }
 
@@ -55,6 +62,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserLockedLpTokens(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -65,6 +73,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserLockedFarmTokens(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -75,6 +84,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserLockedLpTokensV2(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -85,6 +95,8 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserLockedFarmTokensV2(
             parent.address,
             parent.pagination,
+            true,
+            parent.rawNfts,
         );
     }
 
@@ -95,6 +107,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserStakeFarmTokens(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -105,6 +118,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserUnbondFarmTokens(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -115,6 +129,8 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserDualYieldTokens(
             parent.address,
             parent.pagination,
+            true,
+            parent.rawNfts,
         );
     }
 
@@ -125,6 +141,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserRedeemToken(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -135,6 +152,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserLockedEsdtToken(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -145,6 +163,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserLockedSimpleLpToken(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -155,6 +174,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserLockedSimpleFarmToken(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -165,6 +185,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserLockedTokenEnergy(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -175,6 +196,7 @@ export class UserNftsResolver {
         return this.userMetaEsdts.getUserWrappedLockedTokenEnergy(
             parent.address,
             parent.pagination,
+            parent.rawNfts,
         );
     }
 
@@ -184,6 +206,13 @@ export class UserNftsResolver {
         @Args() pagination: PaginationArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<UserNftsModel> {
-        return new UserNftsModel(user.address, pagination);
+        const nfts = await this.contextGetter.getNftsForUser(
+            user.address,
+            pagination.offset,
+            pagination.limit,
+            'MetaESDT',
+        );
+
+        return new UserNftsModel(user.address, pagination, nfts);
     }
 }
