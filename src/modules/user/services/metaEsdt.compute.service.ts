@@ -63,6 +63,7 @@ import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { Address } from '@multiversx/sdk-core/out';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()
 export class UserMetaEsdtComputeService {
@@ -308,13 +309,12 @@ export class UserMetaEsdtComputeService {
                 attributes: nftToken.attributes,
             });
 
-        let farmToken: NftToken;
-        try {
-            farmToken = await this.apiService.getNftByTokenIdentifier(
-                nftToken.creator,
-                decodedWFMTAttributes.farmTokenIdentifier,
-            );
-        } catch (error) {
+        const farmToken = await this.getNftByTokenIdentifier(
+            nftToken.creator,
+            decodedWFMTAttributes.farmTokenIdentifier,
+        );
+
+        if (farmToken === undefined) {
             return undefined;
         }
 
@@ -354,16 +354,14 @@ export class UserMetaEsdtComputeService {
                 });
             }
 
-            let farmToken: NftToken;
-            try {
-                farmToken = await this.apiService.getNftByTokenIdentifier(
-                    nftToken.creator,
-                    tokenIdentifier(
-                        decodedWFMTAttributes.farmToken.tokenIdentifier,
-                        decodedWFMTAttributes.farmToken.tokenNonce,
-                    ),
-                );
-            } catch (error) {
+            const farmToken = await this.getNftByTokenIdentifier(
+                nftToken.creator,
+                tokenIdentifier(
+                    decodedWFMTAttributes.farmToken.tokenIdentifier,
+                    decodedWFMTAttributes.farmToken.tokenNonce,
+                ),
+            );
+            if (farmToken === undefined) {
                 return undefined;
             }
 
@@ -476,13 +474,11 @@ export class UserMetaEsdtComputeService {
             decodedAttributes[0].lpFarmTokenNonce,
         );
 
-        let farmToken: NftToken;
-        try {
-            farmToken = await this.apiService.getNftByTokenIdentifier(
-                nftToken.creator,
-                farmTokenIdentifier,
-            );
-        } catch (error) {
+        const farmToken = await this.getNftByTokenIdentifier(
+            nftToken.creator,
+            farmTokenIdentifier,
+        );
+        if (farmToken === undefined) {
             return undefined;
         }
 
@@ -642,13 +638,11 @@ export class UserMetaEsdtComputeService {
             decodedAttributes.farmTokenID,
             decodedAttributes.farmTokenNonce,
         );
-        let farmToken: NftToken;
-        try {
-            farmToken = await this.apiService.getNftByTokenIdentifier(
-                nftToken.creator,
-                farmTokenIdentifier,
-            );
-        } catch (error) {
+        const farmToken = await this.getNftByTokenIdentifier(
+            nftToken.creator,
+            farmTokenIdentifier,
+        );
+        if (farmToken === undefined) {
             return undefined;
         }
 
@@ -709,16 +703,15 @@ export class UserMetaEsdtComputeService {
 
         const originalTokenID = await this.energyAbi.lockedTokenID();
 
-        let nftLockedToken: NftToken;
-        try {
-            nftLockedToken = await this.apiService.getNftByTokenIdentifier(
-                scAddress.lockedTokenWrapper,
-                tokenIdentifier(
-                    originalTokenID,
-                    decodedAttributes.lockedTokenNonce,
-                ),
-            );
-        } catch (error) {
+        const nftLockedToken = await this.getNftByTokenIdentifier(
+            scAddress.lockedTokenWrapper,
+            tokenIdentifier(
+                originalTokenID,
+                decodedAttributes.lockedTokenNonce,
+            ),
+        );
+
+        if (nftLockedToken === undefined) {
             return undefined;
         }
 
@@ -733,5 +726,31 @@ export class UserMetaEsdtComputeService {
             decodedAttributes,
             valueUSD: userNftLockedToken.valueUSD,
         });
+    }
+
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.Token.remoteTtl,
+        localTtl: CacheTtlInfo.Token.localTtl,
+    })
+    private async getNftByTokenIdentifier(
+        address: string,
+        nftIdentifier: string,
+    ): Promise<NftToken> {
+        return this.getNftByTokenIdentifierRaw(address, nftIdentifier);
+    }
+
+    private async getNftByTokenIdentifierRaw(
+        address: string,
+        nftIdentifier: string,
+    ): Promise<NftToken> {
+        try {
+            return await this.apiService.getNftByTokenIdentifier(
+                address,
+                nftIdentifier,
+            );
+        } catch (error) {
+            return undefined;
+        }
     }
 }
