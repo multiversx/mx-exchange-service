@@ -10,16 +10,17 @@ import {
 } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 import { BoostedRewardsModel } from 'src/modules/farm/models/farm.model';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 
 @ObjectType()
 export class StakingModel {
     @Field()
     address: string;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     farmToken: NftCollection;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     farmingToken: EsdtToken;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     rewardToken: EsdtToken;
     @Field()
     farmTokenSupply: string;
@@ -59,14 +60,19 @@ export class StakingModel {
     boostedYieldsRewardsPercenatage: number;
     @Field(() => BoostedYieldsFactors, {
         description: 'Factors used to compute boosted rewards',
+        complexity: nestedFieldComplexity,
     })
     boostedYieldsFactors: BoostedYieldsFactors;
     @Field({ description: 'Optimal energy for staking position' })
     optimalEnergyPerStaking: string;
-    @Field({ description: 'Timekeeping for boosted rewards' })
+    @Field({
+        description: 'Timekeeping for boosted rewards',
+        complexity: nestedFieldComplexity,
+    })
     time: WeekTimekeepingModel;
     @Field(() => [GlobalInfoByWeekModel], {
         description: 'Global info for boosted rewards',
+        complexity: nestedFieldComplexity,
     })
     boosterRewards: [GlobalInfoByWeekModel];
     @Field()
@@ -96,15 +102,23 @@ export class StakingModel {
 
 @ObjectType()
 export class StakingRewardsModel {
-    @Field(() => StakingTokenAttributesModel)
+    @Field(() => StakingTokenAttributesModel, {
+        complexity: nestedFieldComplexity,
+    })
     decodedAttributes: StakingTokenAttributesModel;
     @Field()
     rewards: string;
     @Field(() => Int, { nullable: true })
     remainingFarmingEpochs?: number;
-    @Field(() => [UserInfoByWeekModel], { nullable: true })
+    @Field(() => [UserInfoByWeekModel], {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     boostedRewardsWeeklyInfo: UserInfoByWeekModel[];
-    @Field(() => ClaimProgress, { nullable: true })
+    @Field(() => ClaimProgress, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     claimProgress: ClaimProgress;
     @Field({ nullable: true })
     accumulatedRewards: string;

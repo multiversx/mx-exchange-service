@@ -5,6 +5,7 @@ export class MetricsCollector {
     private static fieldDurationHistogram: Histogram<string>;
     private static queryDurationHistogram: Histogram<string>;
     private static queryCpuHistogram: Histogram<string>;
+    private static queryComplexityHistogram: Histogram<string>;
     private static awsQueryDurationHistogram: Histogram<string>;
     private static dataApiQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
@@ -39,6 +40,15 @@ export class MetricsCollector {
             MetricsCollector.queryCpuHistogram = new Histogram({
                 name: 'query_cpu',
                 help: 'The CPU time it takes to resolve a query',
+                labelNames: ['query', 'origin'],
+                buckets: [],
+            });
+        }
+
+        if (!MetricsCollector.queryComplexityHistogram) {
+            MetricsCollector.queryComplexityHistogram = new Histogram({
+                name: 'query_complexity',
+                help: 'The estimated complexity of a query',
                 labelNames: ['query', 'origin'],
                 buckets: [],
             });
@@ -131,6 +141,17 @@ export class MetricsCollector {
         MetricsCollector.queryCpuHistogram
             .labels(query, origin)
             .observe(duration);
+    }
+
+    static setQueryComplexity(
+        query: string,
+        origin: string,
+        complexity: number,
+    ) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.queryComplexityHistogram
+            .labels(query, origin)
+            .observe(complexity);
     }
 
     static setRedisDuration(action: string, duration: number) {

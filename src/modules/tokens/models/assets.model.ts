@@ -1,5 +1,6 @@
-import { ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { IAssets, ISocial } from './assets.interface';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 
 @ObjectType({
     implements: () => [ISocial],
@@ -22,6 +23,10 @@ export class SocialModel implements ISocial {
 export class AssetsModel implements IAssets {
     website?: string;
     description?: string;
+    @Field(() => SocialModel, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     social?: SocialModel;
     status?: string;
     pngUrl?: string;

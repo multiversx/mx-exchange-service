@@ -1,6 +1,7 @@
-import { ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { AssetsModel } from './assets.model';
 import { INFTToken } from './nft.interface';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 
 @ObjectType({
     implements: () => [INFTToken],
@@ -21,6 +22,10 @@ export class NftToken implements INFTToken {
     url?: string;
     tags?: string[];
     balance: string;
+    @Field(() => AssetsModel, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     assets?: AssetsModel;
 
     constructor(init?: Partial<NftToken>) {

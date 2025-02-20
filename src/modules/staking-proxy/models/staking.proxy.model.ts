@@ -4,6 +4,7 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { RewardsModel } from 'src/modules/farm/models/farm.model';
 import { LiquidityPosition } from 'src/modules/pair/models/pair.model';
 import { StakingRewardsModel } from 'src/modules/staking/models/staking.model';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 
 @ObjectType()
 export class StakingProxyModel {
@@ -17,13 +18,13 @@ export class StakingProxyModel {
     stakingMinUnboundEpochs: number;
     @Field()
     pairAddress: string;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     stakingToken: EsdtToken;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     farmToken: NftCollection;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     dualYieldToken: NftCollection;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     lpFarmToken: NftCollection;
 
     constructor(init?: Partial<StakingProxyModel>) {
@@ -37,9 +38,9 @@ export class DualYieldRewardsModel {
     identifier?: string;
     @Field({ nullable: true })
     attributes?: string;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     stakingRewards: StakingRewardsModel;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     farmRewards: RewardsModel;
 
     constructor(init?: Partial<DualYieldRewardsModel>) {
@@ -49,7 +50,7 @@ export class DualYieldRewardsModel {
 
 @ObjectType()
 export class UnstakeFarmTokensReceiveModel {
-    @Field(() => LiquidityPosition)
+    @Field(() => LiquidityPosition, { complexity: nestedFieldComplexity })
     liquidityPosition: LiquidityPosition;
     @Field()
     farmRewards: string;
