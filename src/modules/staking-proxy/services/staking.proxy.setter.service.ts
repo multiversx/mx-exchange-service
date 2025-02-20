@@ -59,8 +59,8 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'stakingTokenID'),
             value,
-            CacheTtlInfo.TokenIdentifier.remoteTtl,
-            CacheTtlInfo.TokenIdentifier.localTtl,
+            CacheTtlInfo.TokenID.remoteTtl,
+            CacheTtlInfo.TokenID.localTtl,
         );
     }
 
@@ -71,8 +71,8 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'farmTokenID'),
             value,
-            CacheTtlInfo.TokenIdentifier.remoteTtl,
-            CacheTtlInfo.TokenIdentifier.localTtl,
+            CacheTtlInfo.TokenID.remoteTtl,
+            CacheTtlInfo.TokenID.localTtl,
         );
     }
 
@@ -83,8 +83,8 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'dualYieldTokenID'),
             value,
-            CacheTtlInfo.TokenIdentifier.remoteTtl,
-            CacheTtlInfo.TokenIdentifier.localTtl,
+            CacheTtlInfo.TokenID.remoteTtl,
+            CacheTtlInfo.TokenID.localTtl,
         );
     }
 
@@ -95,8 +95,8 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'lpFarmTokenID'),
             value,
-            CacheTtlInfo.TokenIdentifier.remoteTtl,
-            CacheTtlInfo.TokenIdentifier.localTtl,
+            CacheTtlInfo.TokenID.remoteTtl,
+            CacheTtlInfo.TokenID.localTtl,
         );
     }
 

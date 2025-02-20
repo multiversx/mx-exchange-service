@@ -21,8 +21,8 @@ export class SimpleLockAbiService
     })
     @GetOrSetCache({
         baseKey: 'simpleLock',
-        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
-        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async lockedTokenID(simpleLockAddress: string): Promise<string> {
         return this.getlockedTokenIDRaw(simpleLockAddress);
@@ -44,8 +44,8 @@ export class SimpleLockAbiService
     })
     @GetOrSetCache({
         baseKey: 'simpleLock',
-        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
-        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async lpProxyTokenID(simpleLockAddress: string): Promise<string> {
         return this.getLpProxyTokenIDRaw(simpleLockAddress);
@@ -67,8 +67,8 @@ export class SimpleLockAbiService
     })
     @GetOrSetCache({
         baseKey: 'simpleLock',
-        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
-        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async farmProxyTokenID(simpleLockAddress: string): Promise<string> {
         return this.getFarmProxyTokenIDRaw(simpleLockAddress);

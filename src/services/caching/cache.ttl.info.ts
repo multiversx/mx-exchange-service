@@ -9,7 +9,7 @@ export class CacheTtlInfo {
         this.localTtl = localTtl ? localTtl : this.remoteTtl / 2;
     }
 
-    static TokenIdentifier: CacheTtlInfo = new CacheTtlInfo(
+    static TokenID: CacheTtlInfo = new CacheTtlInfo(
         Constants.oneDay(),
         Constants.oneDay(),
     );

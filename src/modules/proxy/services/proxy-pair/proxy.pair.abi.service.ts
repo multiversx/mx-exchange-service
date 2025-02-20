@@ -23,8 +23,8 @@ export class ProxyPairAbiService
     })
     @GetOrSetCache({
         baseKey: 'proxyPair',
-        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
-        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async wrappedLpTokenID(proxyAddress: string): Promise<string> {
         return this.getWrappedLpTokenIDRaw(proxyAddress);

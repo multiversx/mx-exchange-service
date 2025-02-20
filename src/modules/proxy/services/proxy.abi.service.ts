@@ -21,8 +21,8 @@ export class ProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'proxy',
-        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
-        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async assetTokenID(proxyAddress: string): Promise<string> {
         return this.getAssetTokenIDRaw(proxyAddress);
@@ -43,8 +43,8 @@ export class ProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'proxy',
-        remoteTtl: CacheTtlInfo.TokenIdentifier.remoteTtl,
-        localTtl: CacheTtlInfo.TokenIdentifier.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async lockedAssetTokenID(proxyAddress: string): Promise<string[]> {
         return this.getLockedAssetTokenIDRaw(proxyAddress);

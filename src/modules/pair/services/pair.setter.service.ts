@@ -22,8 +22,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('firstTokenID', pairAddress),
             value,
-            CacheTtlInfo.TokenIdentifier.remoteTtl,
-            CacheTtlInfo.TokenIdentifier.localTtl,
+            CacheTtlInfo.TokenID.remoteTtl,
+            CacheTtlInfo.TokenID.localTtl,
         );
     }
 
@@ -34,8 +34,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('secondTokenID', pairAddress),
             value,
-            CacheTtlInfo.TokenIdentifier.remoteTtl,
-            CacheTtlInfo.TokenIdentifier.localTtl,
+            CacheTtlInfo.TokenID.remoteTtl,
+            CacheTtlInfo.TokenID.localTtl,
         );
     }
 
