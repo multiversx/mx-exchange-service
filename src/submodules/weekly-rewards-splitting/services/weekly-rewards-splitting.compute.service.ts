@@ -92,10 +92,11 @@ export class WeeklyRewardsSplittingComputeService
         const totalRewardsForWeekPriceUSD =
             await this.computeTotalRewardsForWeekUSD(scAddress, week);
 
-        return new BigNumber(totalRewardsForWeekPriceUSD)
+        const weekAPR = new BigNumber(totalRewardsForWeekPriceUSD)
             .times(52)
-            .div(totalLockedTokensForWeekPriceUSD)
-            .toFixed();
+            .div(totalLockedTokensForWeekPriceUSD);
+
+        return weekAPR.isNaN() || !weekAPR.isFinite() ? '0' : weekAPR.toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -141,9 +142,9 @@ export class WeeklyRewardsSplittingComputeService
             .multipliedBy(new BigNumber(userEnergyForWeek.amount))
             .multipliedBy(new BigNumber(totalLockedTokensForWeek))
             .div(new BigNumber(totalEnergyForWeek))
-            .div(new BigNumber(userEnergyForWeek.totalLockedTokens))
-            .toFixed();
-        return apr;
+            .div(new BigNumber(userEnergyForWeek.totalLockedTokens));
+
+        return apr.isNaN() || !apr.isFinite() ? '0' : apr.toFixed();
     }
 
     @ErrorLoggerAsync({
