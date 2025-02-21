@@ -32,13 +32,4 @@ export class CurrencyConverterSetterService extends GenericSetterService {
             Constants.oneHour() * 18,
         );
     }
-
-    async fiatCurrencies(value: Record<string, string>): Promise<string> {
-        return await this.setData(
-            this.getCacheKey('fiatCurrencies'),
-            value,
-            Constants.oneDay(),
-            Constants.oneHour() * 18,
-        );
-    }
 }

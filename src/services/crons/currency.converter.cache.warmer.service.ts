@@ -38,19 +38,6 @@ export class CurrencyConverterCacheWarmerService {
         await this.deleteCacheKeys([cachedKey]);
     }
 
-    @Cron(CronExpression.EVERY_6_HOURS)
-    @Lock({ name: 'cacheFiatCurrencies', verbose: true })
-    async cacheFiatCurrencies(): Promise<void> {
-        const fiatCurrencies =
-            await this.currencyConverter.fetchFiatCurrencies();
-
-        const cachedKey = await this.currencyConverterSetter.fiatCurrencies(
-            fiatCurrencies,
-        );
-
-        await this.deleteCacheKeys([cachedKey]);
-    }
-
     private async deleteCacheKeys(invalidatedKeys: string[]) {
         await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
