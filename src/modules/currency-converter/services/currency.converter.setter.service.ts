@@ -15,21 +15,21 @@ export class CurrencyConverterSetterService extends GenericSetterService {
         this.baseKey = 'currency';
     }
 
-    async allCurrencyRates(value: CurrencyRateModel[]): Promise<string> {
+    async cryptoRates(value: CurrencyRateModel[]): Promise<string> {
         return await this.setData(
-            this.getCacheKey('allCurrencyRates'),
+            this.getCacheKey('cryptoRates'),
             value,
-            Constants.oneHour(),
-            Constants.oneMinute() * 30,
+            Constants.oneMinute() * 4,
+            Constants.oneMinute() * 2,
         );
     }
 
-    async currencySymbols(value: string[]): Promise<string> {
+    async fiatRates(value: CurrencyRateModel[]): Promise<string> {
         return await this.setData(
-            this.getCacheKey('allCurrencySymbols'),
+            this.getCacheKey('fiatRates'),
             value,
-            Constants.oneHour(),
-            Constants.oneMinute() * 30,
+            Constants.oneDay(),
+            Constants.oneHour() * 18,
         );
     }
 }
