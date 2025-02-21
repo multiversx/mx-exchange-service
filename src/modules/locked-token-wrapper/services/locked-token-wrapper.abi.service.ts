@@ -15,8 +15,8 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'lockedTokenWrapper',
-        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
-        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async wrappedTokenId(): Promise<string> {
         return await this.wrappedTokenIdRaw();

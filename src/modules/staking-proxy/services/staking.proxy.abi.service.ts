@@ -92,7 +92,8 @@ export class StakingProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'stakeProxy',
-        remoteTtl: Constants.oneHour(),
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async stakingTokenID(stakingProxyAddress: string): Promise<string> {
         return await this.getStakingTokenIDRaw(stakingProxyAddress);
@@ -113,8 +114,8 @@ export class StakingProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'stakeProxy',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async farmTokenID(stakingProxyAddress: string): Promise<string> {
         return await this.getFarmTokenIDRaw(stakingProxyAddress);
@@ -135,8 +136,8 @@ export class StakingProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'stakeProxy',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async dualYieldTokenID(stakingProxyAddress: string): Promise<string> {
         return await this.getDualYieldTokenIDRaw(stakingProxyAddress);
@@ -169,8 +170,8 @@ export class StakingProxyAbiService
     })
     @GetOrSetCache({
         baseKey: 'stakeProxy',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async lpFarmTokenID(stakingProxyAddress: string): Promise<string> {
         return await this.getLpFarmTokenIDRaw(stakingProxyAddress);

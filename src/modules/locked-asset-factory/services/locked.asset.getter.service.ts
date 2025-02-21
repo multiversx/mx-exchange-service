@@ -27,8 +27,8 @@ export class LockedAssetGetterService extends GenericGetterService {
         return await this.getData(
             this.getCacheKey('assetTokenID'),
             () => this.abiService.getAssetTokenID(),
-            CacheTtlInfo.Token.remoteTtl,
-            CacheTtlInfo.Token.localTtl,
+            CacheTtlInfo.TokenID.remoteTtl,
+            CacheTtlInfo.TokenID.localTtl,
         );
     }
 
@@ -36,8 +36,8 @@ export class LockedAssetGetterService extends GenericGetterService {
         return await this.getData(
             this.getCacheKey('lockedTokenID'),
             () => this.abiService.getLockedTokenID(),
-            CacheTtlInfo.Token.remoteTtl,
-            CacheTtlInfo.Token.localTtl,
+            CacheTtlInfo.TokenID.remoteTtl,
+            CacheTtlInfo.TokenID.localTtl,
         );
     }
 
