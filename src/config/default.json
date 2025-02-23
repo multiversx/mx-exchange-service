@@ -523,9 +523,9 @@
         },
         "positionCreator": {
             "singleToken": {
-                "liquidityPosition": 10000000,
-                "farmPosition": 15000000,
-                "dualFarmPosition": 20000000,
+                "liquidityPosition": 20000000,
+                "farmPosition": 25000000,
+                "dualFarmPosition": 30000000,
                 "stakingPosition": 10000000
             },
             "dualTokens": {
