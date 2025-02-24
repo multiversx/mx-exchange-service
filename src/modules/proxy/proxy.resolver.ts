@@ -1,4 +1,4 @@
-import { Resolver, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, ResolveField } from '@nestjs/graphql';
 import { ProxyModel } from './models/proxy.model';
 import { ProxyService } from './services/proxy.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -15,36 +15,32 @@ export class ProxyResolver {
     ) {}
 
     @ResolveField()
-    async lockedAssetTokens(
-        @Parent() parent: ProxyModel,
-    ): Promise<NftCollection[]> {
+    async lockedAssetTokens(parent: ProxyModel): Promise<NftCollection[]> {
         return this.proxyService.getlockedAssetToken(parent.address);
     }
 
     @ResolveField()
-    async wrappedLpToken(@Parent() parent: ProxyModel): Promise<NftCollection> {
+    async wrappedLpToken(parent: ProxyModel): Promise<NftCollection> {
         return this.proxyService.getwrappedLpToken(parent.address);
     }
 
     @ResolveField()
-    async wrappedFarmToken(
-        @Parent() parent: ProxyModel,
-    ): Promise<NftCollection> {
+    async wrappedFarmToken(parent: ProxyModel): Promise<NftCollection> {
         return this.proxyService.getwrappedFarmToken(parent.address);
     }
 
     @ResolveField()
-    async assetToken(@Parent() parent: ProxyModel): Promise<EsdtToken> {
+    async assetToken(parent: ProxyModel): Promise<EsdtToken> {
         return this.proxyService.getAssetToken(parent.address);
     }
 
     @ResolveField()
-    async intermediatedPairs(@Parent() parent: ProxyModel): Promise<string[]> {
+    async intermediatedPairs(parent: ProxyModel): Promise<string[]> {
         return this.proxyPairAbi.intermediatedPairs(parent.address);
     }
 
     @ResolveField()
-    async intermediatedFarms(@Parent() parent: ProxyModel): Promise<string[]> {
+    async intermediatedFarms(parent: ProxyModel): Promise<string[]> {
         return this.proxyFarmAbi.intermediatedFarms(parent.address);
     }
 }
