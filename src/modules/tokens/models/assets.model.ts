@@ -36,5 +36,7 @@ export class AssetsModel implements IAssets {
 
     constructor(init?: Partial<AssetsModel>) {
         Object.assign(this, init);
+
+        this.social = new SocialModel(init?.social ?? {});
     }
 }

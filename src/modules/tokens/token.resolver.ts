@@ -1,7 +1,5 @@
 import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { AssetsModel, SocialModel } from './models/assets.model';
 import { EsdtToken } from './models/esdtToken.model';
-import { RolesModel } from './models/roles.model';
 import {
     TokenSortingArgs,
     TokensFilter,
@@ -23,14 +21,6 @@ import {
     relayQueryEstimator,
 } from 'src/helpers/complexity/query.estimators';
 import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
-
-@Resolver(() => AssetsModel)
-export class AssetsResolver {
-    @ResolveField(() => SocialModel, { nullable: true })
-    async social(parent: AssetsModel): Promise<SocialModel> {
-        return new SocialModel(parent.social);
-    }
-}
 
 @Resolver(() => EsdtToken)
 export class TokensResolver {
@@ -63,16 +53,6 @@ export class TokensResolver {
     @ResolveField(() => String)
     async type(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenTypeLoader.load(parent.identifier);
-    }
-
-    @ResolveField(() => AssetsModel, { nullable: true })
-    async assets(parent: EsdtToken): Promise<AssetsModel> {
-        return new AssetsModel(parent.assets);
-    }
-
-    @ResolveField(() => RolesModel, { nullable: true })
-    async roles(parent: EsdtToken): Promise<RolesModel> {
-        return new RolesModel(parent.roles);
     }
 
     @ResolveField(() => String, { nullable: true })
