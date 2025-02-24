@@ -7,12 +7,12 @@ import { RolesModel } from './models/roles.model';
 @Resolver(NftCollection)
 export class NftCollectionResolver extends GenericResolver {
     @ResolveField(() => AssetsModel, { nullable: true })
-    async assets(@Parent() parent: NftCollection): Promise<AssetsModel> {
+    async assets(parent: NftCollection): Promise<AssetsModel> {
         return new AssetsModel(parent.assets);
     }
 
     @ResolveField(() => RolesModel, { nullable: true })
-    async roles(@Parent() parent: NftCollection): Promise<RolesModel> {
+    async roles(parent: NftCollection): Promise<RolesModel> {
         return new RolesModel(parent.roles);
     }
 }

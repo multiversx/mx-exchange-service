@@ -8,7 +8,7 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 @Resolver(NftToken)
 export class NftTokenResolver extends GenericResolver {
     @ResolveField(() => AssetsModel, { nullable: true })
-    async assets(@Parent() parent: NftToken): Promise<AssetsModel> {
+    async assets(parent: NftToken): Promise<AssetsModel> {
         return new AssetsModel(parent.assets);
     }
 
