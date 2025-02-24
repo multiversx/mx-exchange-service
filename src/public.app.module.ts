@@ -42,6 +42,12 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 import { CurrencyConverterModule } from './modules/currency-converter/currency.converter.module';
 import { ConditionalModule } from '@nestjs/config';
 import { ComplexityModule } from './complexity.module';
+import {
+    ApolloServerPluginCacheControlDisabled,
+    ApolloServerPluginInlineTraceDisabled,
+    ApolloServerPluginSchemaReportingDisabled,
+    ApolloServerPluginUsageReportingDisabled,
+} from '@apollo/server/plugin/disabled';
 
 @Module({
     imports: [
@@ -75,6 +81,12 @@ import { ComplexityModule } from './complexity.module';
                     };
                 },
                 fieldResolverEnhancers: ['guards'],
+                plugins: [
+                    ApolloServerPluginUsageReportingDisabled(),
+                    ApolloServerPluginSchemaReportingDisabled(),
+                    ApolloServerPluginInlineTraceDisabled(),
+                    ApolloServerPluginCacheControlDisabled(),
+                ],
             }),
             inject: [WINSTON_MODULE_NEST_PROVIDER],
         }),
