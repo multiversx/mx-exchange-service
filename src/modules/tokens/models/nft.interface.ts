@@ -4,24 +4,26 @@ import { IRoles } from './roles.interface';
 
 @InterfaceType()
 export abstract class INFTCollection {
-    @Field() collection: string;
-    @Field() name: string;
-    @Field() ticker: string;
-    @Field(() => Int) decimals: number;
-    @Field() issuer: string;
-    @Field() timestamp: number;
-    @Field() canUpgrade: boolean;
-    @Field() canMint: boolean;
-    @Field() canBurn: boolean;
-    @Field() canChangeOwner: boolean;
-    @Field() canPause: boolean;
-    @Field() canFreeze: boolean;
-    @Field() canWipe: boolean;
-    @Field() canAddSpecialRoles: boolean;
-    @Field() canTransferNFTCreateRole: boolean;
-    @Field() NFTCreateStopped: boolean;
-    @Field(() => IAssets, { nullable: true }) assets?: IAssets;
-    @Field(() => IRoles, { nullable: true }) roles?: IRoles;
+    @Field({ complexity: 0 }) collection: string;
+    @Field({ complexity: 0 }) name: string;
+    @Field({ complexity: 0 }) ticker: string;
+    @Field(() => Int, { complexity: 0 }) decimals: number;
+    @Field({ complexity: 0 }) issuer: string;
+    @Field({ complexity: 0 }) timestamp: number;
+    @Field({ complexity: 0 }) canUpgrade: boolean;
+    @Field({ complexity: 0 }) canMint: boolean;
+    @Field({ complexity: 0 }) canBurn: boolean;
+    @Field({ complexity: 0 }) canChangeOwner: boolean;
+    @Field({ complexity: 0 }) canPause: boolean;
+    @Field({ complexity: 0 }) canFreeze: boolean;
+    @Field({ complexity: 0 }) canWipe: boolean;
+    @Field({ complexity: 0 }) canAddSpecialRoles: boolean;
+    @Field({ complexity: 0 }) canTransferNFTCreateRole: boolean;
+    @Field({ complexity: 0 }) NFTCreateStopped: boolean;
+    @Field(() => IAssets, { nullable: true })
+    assets?: IAssets;
+    @Field(() => IRoles, { nullable: true })
+    roles?: IRoles;
 }
 
 @InterfaceType()

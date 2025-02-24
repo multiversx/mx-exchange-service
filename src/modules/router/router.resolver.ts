@@ -7,7 +7,7 @@ import {
     Int,
     Float,
 } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, UsePipes } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { EnableSwapByUserConfig, FactoryModel } from './models/factory.model';
@@ -34,6 +34,11 @@ import ConnectionArgs, {
 import PageResponse from '../common/page.response';
 import { AnalyticsAWSGetterService } from '../analytics/services/analytics.aws.getter.service';
 import BigNumber from 'bignumber.js';
+import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
+import {
+    relayQueryEstimator,
+    paginatedQueryEstimator,
+} from 'src/helpers/complexity/query.estimators';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -169,7 +174,9 @@ export class RouterResolver {
     @Query(() => [PairModel], {
         deprecationReason:
             'New query (filteredPairs) following GraphQL "Connection" standard for pagination/sorting/filtering is now available.',
+        complexity: paginatedQueryEstimator,
     })
+    @UsePipes(new QueryArgsValidationPipe())
     async pairs(
         @Args() page: GetPairsArgs,
         @Args() filter: PairFilterArgs,
@@ -177,7 +184,10 @@ export class RouterResolver {
         return this.routerService.getAllPairs(page.offset, page.limit, filter);
     }
 
-    @Query(() => PairsResponse)
+    @Query(() => PairsResponse, {
+        complexity: relayQueryEstimator,
+    })
+    @UsePipes(new QueryArgsValidationPipe())
     async filteredPairs(
         @Args({ name: 'filters', type: () => PairsFilter, nullable: true })
         filters: PairsFilter,

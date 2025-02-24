@@ -40,6 +40,8 @@ import { ComposableTasksModule } from './modules/composable-tasks/composable.tas
 import { TradingViewModule } from './modules/trading-view/trading.view.module';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 import { CurrencyConverterModule } from './modules/currency-converter/currency.converter.module';
+import { ConditionalModule } from '@nestjs/config';
+import { ComplexityModule } from './complexity.module';
 
 @Module({
     imports: [
@@ -50,6 +52,9 @@ import { CurrencyConverterModule } from './modules/currency-converter/currency.c
             useFactory: async (logger: LoggerService) => ({
                 autoSchemaFile: 'schema.gql',
                 installSubscriptionHandlers: true,
+                parseOptions: {
+                    maxTokens: 1000,
+                },
                 formatError: (
                     formattedError: GraphQLFormattedError,
                     error: any,
@@ -101,6 +106,10 @@ import { CurrencyConverterModule } from './modules/currency-converter/currency.c
         DynamicModuleUtils.getCacheModule(),
         TradingViewModule,
         CurrencyConverterModule,
+        ConditionalModule.registerWhen(
+            ComplexityModule,
+            (env: NodeJS.ProcessEnv) => env['ENABLE_COMPLEXITY'] === 'true',
+        ),
     ],
     providers: [QueryMetricsPlugin],
 })

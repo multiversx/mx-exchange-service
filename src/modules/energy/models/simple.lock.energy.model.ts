@@ -1,4 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
@@ -18,13 +19,13 @@ export class LockOption {
 export class SimpleLockEnergyModel {
     @Field()
     address: string;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     baseAssetToken: EsdtToken;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     lockedToken: NftCollection;
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     legacyLockedToken: NftCollection;
-    @Field(() => [LockOption])
+    @Field(() => [LockOption], { complexity: nestedFieldComplexity })
     lockOptions: LockOption[];
     @Field()
     tokenUnstakeAddress: string;

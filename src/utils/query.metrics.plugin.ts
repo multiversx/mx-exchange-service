@@ -31,7 +31,11 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
                 cpuProfiler = new CpuProfiler();
                 profiler.start(operationName);
             },
-            async willSendResponse(): Promise<void> {
+            async willSendResponse({ contextValue }): Promise<void> {
+                if (profiler === undefined) {
+                    return;
+                }
+
                 profiler.stop(operationName);
                 const cpuTime = cpuProfiler.stop();
 
@@ -42,6 +46,14 @@ export class QueryMetricsPlugin implements ApolloServerPlugin {
                 );
 
                 MetricsCollector.setQueryCpu(operationName, origin, cpuTime);
+
+                if (contextValue.complexity) {
+                    MetricsCollector.setQueryComplexity(
+                        operationName,
+                        origin,
+                        contextValue.complexity,
+                    );
+                }
             },
         };
     }

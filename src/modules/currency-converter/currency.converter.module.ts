@@ -6,9 +6,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { TokenModule } from '../tokens/token.module';
 
 @Module({
-    imports: [
-        TokenModule,
-    ],
+    imports: [TokenModule],
     providers: [
         ApiConfigService,
         CurrencyConverterResolver,

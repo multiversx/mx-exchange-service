@@ -34,8 +34,8 @@ export class EnergyAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async baseAssetTokenID(): Promise<string> {
         return await this.getBaseAssetTokenIDRaw();
@@ -53,8 +53,8 @@ export class EnergyAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async lockedTokenID(): Promise<string> {
         return await this.getLockedTokenIDRaw();
@@ -72,8 +72,8 @@ export class EnergyAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'energy',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async legacyLockedTokenID(): Promise<string> {
         return await this.getLegacyLockedTokenIDRaw();
