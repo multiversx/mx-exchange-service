@@ -1,4 +1,4 @@
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import {
     WeekForEpochModel,
     WeekTimekeepingModel,
@@ -14,21 +14,17 @@ export class WeekTimekeepingResolver {
     ) {}
 
     @ResolveField()
-    async firstWeekStartEpoch(
-        @Parent() parent: WeekTimekeepingModel,
-    ): Promise<number> {
+    async firstWeekStartEpoch(parent: WeekTimekeepingModel): Promise<number> {
         return this.weekTimekeepingAbi.firstWeekStartEpoch(parent.scAddress);
     }
 
     @ResolveField()
-    async currentWeek(@Parent() parent: WeekTimekeepingModel): Promise<number> {
+    async currentWeek(parent: WeekTimekeepingModel): Promise<number> {
         return this.weekTimekeepingAbi.currentWeek(parent.scAddress);
     }
 
     @ResolveField()
-    async startEpochForWeek(
-        @Parent() parent: WeekTimekeepingModel,
-    ): Promise<number> {
+    async startEpochForWeek(parent: WeekTimekeepingModel): Promise<number> {
         return this.weekTimekeepingCompute.startEpochForWeek(
             parent.scAddress,
             parent.currentWeek,
@@ -36,9 +32,7 @@ export class WeekTimekeepingResolver {
     }
 
     @ResolveField()
-    async endEpochForWeek(
-        @Parent() parent: WeekTimekeepingModel,
-    ): Promise<number> {
+    async endEpochForWeek(parent: WeekTimekeepingModel): Promise<number> {
         return this.weekTimekeepingCompute.endEpochForWeek(
             parent.scAddress,
             parent.currentWeek,
