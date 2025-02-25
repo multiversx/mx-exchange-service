@@ -126,109 +126,109 @@ export class StakingResolver {
     ) {}
 
     @ResolveField()
-    async farmToken(@Parent() parent: StakingModel) {
+    async farmToken(parent: StakingModel) {
         return this.stakingService.getFarmToken(parent.address);
     }
 
     @ResolveField()
-    async farmingToken(@Parent() parent: StakingModel) {
+    async farmingToken(parent: StakingModel) {
         return this.stakingService.getFarmingToken(parent.address);
     }
 
     @ResolveField()
-    async rewardToken(@Parent() parent: StakingModel) {
+    async rewardToken(parent: StakingModel) {
         return this.stakingService.getRewardToken(parent.address);
     }
 
     @ResolveField()
-    async farmTokenSupply(@Parent() parent: StakingModel) {
+    async farmTokenSupply(parent: StakingModel) {
         return this.stakingAbi.farmTokenSupply(parent.address);
     }
 
     @ResolveField()
-    async rewardPerShare(@Parent() parent: StakingModel) {
+    async rewardPerShare(parent: StakingModel) {
         return this.stakingAbi.rewardPerShare(parent.address);
     }
 
     @ResolveField()
-    async accumulatedRewards(@Parent() parent: StakingModel) {
+    async accumulatedRewards(parent: StakingModel) {
         return this.stakingAbi.accumulatedRewards(parent.address);
     }
 
     @ResolveField()
-    async rewardCapacity(@Parent() parent: StakingModel) {
+    async rewardCapacity(parent: StakingModel) {
         return this.stakingAbi.rewardCapacity(parent.address);
     }
 
     @ResolveField()
-    async annualPercentageRewards(@Parent() parent: StakingModel) {
+    async annualPercentageRewards(parent: StakingModel) {
         return this.stakingAbi.annualPercentageRewards(parent.address);
     }
 
     @ResolveField()
-    async apr(@Parent() parent: StakingModel) {
+    async apr(parent: StakingModel) {
         return this.stakingCompute.stakeFarmAPR(parent.address);
     }
 
     @ResolveField()
-    async aprUncapped(@Parent() parent: StakingModel) {
+    async aprUncapped(parent: StakingModel) {
         return this.stakingCompute.stakeFarmUncappedAPR(parent.address);
     }
 
     @ResolveField()
-    async boostedApr(@Parent() parent: StakingModel) {
+    async boostedApr(parent: StakingModel) {
         return this.stakingCompute.boostedAPR(parent.address);
     }
 
     @ResolveField()
-    async minUnboundEpochs(@Parent() parent: StakingModel) {
+    async minUnboundEpochs(parent: StakingModel) {
         return this.stakingAbi.minUnbondEpochs(parent.address);
     }
 
     @ResolveField()
-    async perBlockRewards(@Parent() parent: StakingModel) {
+    async perBlockRewards(parent: StakingModel) {
         return this.stakingAbi.perBlockRewardsAmount(parent.address);
     }
 
     @ResolveField()
-    async lastRewardBlockNonce(@Parent() parent: StakingModel) {
+    async lastRewardBlockNonce(parent: StakingModel) {
         return this.stakingAbi.lastRewardBlockNonce(parent.address);
     }
 
     @ResolveField()
-    async rewardsRemainingDays(@Parent() parent: StakingModel) {
+    async rewardsRemainingDays(parent: StakingModel) {
         return this.stakingCompute.computeRewardsRemainingDays(parent.address);
     }
 
     @ResolveField()
-    async rewardsRemainingDaysUncapped(@Parent() parent: StakingModel) {
+    async rewardsRemainingDaysUncapped(parent: StakingModel) {
         return this.stakingCompute.computeRewardsRemainingDaysUncapped(
             parent.address,
         );
     }
 
     @ResolveField()
-    async divisionSafetyConstant(@Parent() parent: StakingModel) {
+    async divisionSafetyConstant(parent: StakingModel) {
         return this.stakingAbi.divisionSafetyConstant(parent.address);
     }
 
     @ResolveField()
-    async produceRewardsEnabled(@Parent() parent: StakingModel) {
+    async produceRewardsEnabled(parent: StakingModel) {
         return this.stakingAbi.produceRewardsEnabled(parent.address);
     }
 
     @ResolveField()
-    async lockedAssetFactoryManagedAddress(@Parent() parent: StakingModel) {
+    async lockedAssetFactoryManagedAddress(parent: StakingModel) {
         return this.stakingAbi.lockedAssetFactoryAddress(parent.address);
     }
 
     @ResolveField()
-    async state(@Parent() parent: StakingModel) {
+    async state(parent: StakingModel) {
         return this.stakingAbi.state(parent.address);
     }
 
     @ResolveField()
-    async time(@Parent() parent: StakingModel): Promise<WeekTimekeepingModel> {
+    async time(parent: StakingModel): Promise<WeekTimekeepingModel> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
@@ -240,7 +240,7 @@ export class StakingResolver {
 
     @ResolveField()
     async boosterRewards(
-        @Parent() parent: StakingModel,
+        parent: StakingModel,
     ): Promise<GlobalInfoByWeekModel[]> {
         const modelsList = [];
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
@@ -265,47 +265,39 @@ export class StakingResolver {
     }
 
     @ResolveField()
-    async lastGlobalUpdateWeek(
-        @Parent() parent: StakingModel,
-    ): Promise<number> {
+    async lastGlobalUpdateWeek(parent: StakingModel): Promise<number> {
         return this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(
             parent.address,
         );
     }
 
     @ResolveField()
-    async farmTokenSupplyCurrentWeek(
-        @Parent() parent: StakingModel,
-    ): Promise<string> {
+    async farmTokenSupplyCurrentWeek(parent: StakingModel): Promise<string> {
         const week = await this.weekTimekeepingAbi.currentWeek(parent.address);
         return this.stakingAbi.farmSupplyForWeek(parent.address, week);
     }
 
     @ResolveField()
-    async energyFactoryAddress(
-        @Parent() parent: StakingModel,
-    ): Promise<string> {
+    async energyFactoryAddress(parent: StakingModel): Promise<string> {
         return this.stakingAbi.energyFactoryAddress(parent.address);
     }
 
     @ResolveField()
     async boostedYieldsRewardsPercenatage(
-        @Parent() parent: StakingModel,
+        parent: StakingModel,
     ): Promise<number> {
         return this.stakingAbi.boostedYieldsRewardsPercenatage(parent.address);
     }
 
     @ResolveField()
     async boostedYieldsFactors(
-        @Parent() parent: StakingModel,
+        parent: StakingModel,
     ): Promise<BoostedYieldsFactors> {
         return this.stakingAbi.boostedYieldsFactors(parent.address);
     }
 
     @ResolveField()
-    async optimalEnergyPerStaking(
-        @Parent() parent: StakingModel,
-    ): Promise<string> {
+    async optimalEnergyPerStaking(parent: StakingModel): Promise<string> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
@@ -330,9 +322,7 @@ export class StakingResolver {
     }
 
     @ResolveField()
-    async undistributedBoostedRewards(
-        @Parent() parent: StakingModel,
-    ): Promise<string> {
+    async undistributedBoostedRewards(parent: StakingModel): Promise<string> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
@@ -344,20 +334,18 @@ export class StakingResolver {
 
     @ResolveField()
     async undistributedBoostedRewardsClaimed(
-        @Parent() parent: StakingModel,
+        parent: StakingModel,
     ): Promise<string> {
         return this.stakingAbi.undistributedBoostedRewards(parent.address);
     }
 
     @ResolveField()
-    async stakingPositionMigrationNonce(
-        @Parent() parent: StakingModel,
-    ): Promise<number> {
+    async stakingPositionMigrationNonce(parent: StakingModel): Promise<number> {
         return this.stakingAbi.farmPositionMigrationNonce(parent.address);
     }
 
     @ResolveField()
-    async deployedAt(@Parent() parent: StakingModel) {
+    async deployedAt(parent: StakingModel) {
         return this.stakingCompute.deployedAt(parent.address);
     }
 

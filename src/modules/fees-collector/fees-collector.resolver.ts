@@ -33,9 +33,7 @@ export class FeesCollectorResolver {
     ) {}
 
     @ResolveField()
-    async lastGlobalUpdateWeek(
-        @Parent() parent: FeesCollectorModel,
-    ): Promise<number> {
+    async lastGlobalUpdateWeek(parent: FeesCollectorModel): Promise<number> {
         return this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(
             parent.address,
         );
@@ -43,7 +41,7 @@ export class FeesCollectorResolver {
 
     @ResolveField(() => [GlobalInfoByWeekModel])
     async undistributedRewards(
-        @Parent() parent: FeesCollectorModel,
+        parent: FeesCollectorModel,
     ): Promise<GlobalInfoByWeekModel[]> {
         return this.feesCollectorService.getWeeklyRewardsSplit(
             parent.address,
@@ -54,7 +52,7 @@ export class FeesCollectorResolver {
 
     @ResolveField(() => [EsdtTokenPayment])
     async accumulatedFees(
-        @Parent() parent: FeesCollectorModel,
+        parent: FeesCollectorModel,
     ): Promise<EsdtTokenPayment[]> {
         return this.feesCollectorService.getAccumulatedFees(
             parent.address,
@@ -133,7 +131,7 @@ export class UserEntryFeesCollectorResolver {
 
     @ResolveField(() => [UserInfoByWeekModel])
     async undistributedRewards(
-        @Parent() parent: UserEntryFeesCollectorModel,
+        parent: UserEntryFeesCollectorModel,
     ): Promise<UserInfoByWeekModel[]> {
         return this.feesCollectorService.getUserWeeklyRewardsSplit(
             parent.address,
@@ -145,7 +143,7 @@ export class UserEntryFeesCollectorResolver {
 
     @ResolveField(() => [EsdtTokenPayment])
     async accumulatedRewards(
-        @Parent() parent: UserEntryFeesCollectorModel,
+        parent: UserEntryFeesCollectorModel,
     ): Promise<EsdtTokenPayment[]> {
         return this.feesCollectorService.getUserAccumulatedRewards(
             parent.address,
@@ -156,7 +154,7 @@ export class UserEntryFeesCollectorResolver {
 
     @ResolveField()
     async lastActiveWeekForUser(
-        @Parent() parent: UserEntryFeesCollectorModel,
+        parent: UserEntryFeesCollectorModel,
     ): Promise<number> {
         return this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
             parent.address,
@@ -166,7 +164,7 @@ export class UserEntryFeesCollectorResolver {
 
     @ResolveField(() => ClaimProgress)
     async claimProgress(
-        @Parent() parent: UserEntryFeesCollectorModel,
+        parent: UserEntryFeesCollectorModel,
     ): Promise<ClaimProgress> {
         return this.weeklyRewardsSplittingAbi.currentClaimProgress(
             parent.address,

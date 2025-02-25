@@ -133,7 +133,7 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
-    async optimalEnergyPerLp(@Parent() parent: FarmModelV2): Promise<string> {
+    async optimalEnergyPerLp(parent: FarmModelV2): Promise<string> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
@@ -141,18 +141,18 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
-    async baseApr(@Parent() parent: FarmModelV2): Promise<string> {
+    async baseApr(parent: FarmModelV2): Promise<string> {
         return this.farmCompute.farmBaseAPR(parent.address);
     }
 
     @ResolveField()
-    async boostedApr(@Parent() parent: FarmModelV2): Promise<string> {
+    async boostedApr(parent: FarmModelV2): Promise<string> {
         return this.farmCompute.maxBoostedApr(parent.address);
     }
 
     @ResolveField()
     async boosterRewards(
-        @Parent() parent: FarmModelV2,
+        parent: FarmModelV2,
     ): Promise<GlobalInfoByWeekModel[]> {
         const modelsList = [];
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
@@ -177,7 +177,7 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
-    async time(@Parent() parent: FarmModelV2): Promise<WeekTimekeepingModel> {
+    async time(parent: FarmModelV2): Promise<WeekTimekeepingModel> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
@@ -189,32 +189,30 @@ export class FarmResolverV2 extends FarmResolver {
 
     @ResolveField()
     async boostedYieldsRewardsPercenatage(
-        @Parent() parent: FarmModelV2,
+        parent: FarmModelV2,
     ): Promise<number> {
         return this.farmAbi.boostedYieldsRewardsPercenatage(parent.address);
     }
 
     @ResolveField()
     async boostedYieldsFactors(
-        @Parent() parent: FarmModelV2,
+        parent: FarmModelV2,
     ): Promise<BoostedYieldsFactors> {
         return this.farmAbi.boostedYieldsFactors(parent.address);
     }
 
     @ResolveField()
-    async lockingScAddress(@Parent() parent: FarmModelV2): Promise<string> {
+    async lockingScAddress(parent: FarmModelV2): Promise<string> {
         return this.farmAbi.lockingScAddress(parent.address);
     }
 
     @ResolveField()
-    async lockEpochs(@Parent() parent: FarmModelV2): Promise<number> {
+    async lockEpochs(parent: FarmModelV2): Promise<number> {
         return this.farmAbi.lockEpochs(parent.address);
     }
 
     @ResolveField()
-    async undistributedBoostedRewards(
-        @Parent() parent: FarmModelV2,
-    ): Promise<string> {
+    async undistributedBoostedRewards(parent: FarmModelV2): Promise<string> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             parent.address,
         );
@@ -226,27 +224,25 @@ export class FarmResolverV2 extends FarmResolver {
 
     @ResolveField()
     async undistributedBoostedRewardsClaimed(
-        @Parent() parent: FarmModelV2,
+        parent: FarmModelV2,
     ): Promise<string> {
         return this.farmAbi.undistributedBoostedRewards(parent.address);
     }
 
     @ResolveField()
-    async lastGlobalUpdateWeek(@Parent() parent: FarmModelV2): Promise<number> {
+    async lastGlobalUpdateWeek(parent: FarmModelV2): Promise<number> {
         return this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(
             parent.address,
         );
     }
 
     @ResolveField()
-    async energyFactoryAddress(@Parent() parent: FarmModelV2): Promise<string> {
+    async energyFactoryAddress(parent: FarmModelV2): Promise<string> {
         return this.farmAbi.energyFactoryAddress(parent.address);
     }
 
     @ResolveField()
-    async farmTokenSupplyCurrentWeek(
-        @Parent() parent: FarmModelV2,
-    ): Promise<string> {
+    async farmTokenSupplyCurrentWeek(parent: FarmModelV2): Promise<string> {
         const week = await this.weekTimekeepingAbi.currentWeek(parent.address);
         return this.farmAbi.farmSupplyForWeek(parent.address, week);
     }

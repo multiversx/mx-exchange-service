@@ -1,4 +1,4 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { ResolveField, Resolver } from '@nestjs/graphql';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmMigrationConfig } from '../models/farm.model';
 import { FarmModelV1_2 } from '../models/farm.v1.2.model';
@@ -33,9 +33,7 @@ export class FarmResolverV1_2 extends FarmResolver {
     }
 
     @ResolveField()
-    async lockedAssetFactory(
-        @Parent() parent: FarmModelV1_2,
-    ): Promise<LockedAssetModel> {
+    async lockedAssetFactory(parent: FarmModelV1_2): Promise<LockedAssetModel> {
         const address = await this.farmAbi.lockedAssetFactoryAddress(
             parent.address,
         );
@@ -43,34 +41,32 @@ export class FarmResolverV1_2 extends FarmResolver {
     }
 
     @ResolveField()
-    async farmingTokenReserve(
-        @Parent() parent: FarmModelV1_2,
-    ): Promise<string> {
+    async farmingTokenReserve(parent: FarmModelV1_2): Promise<string> {
         return this.farmAbi.farmingTokenReserve(parent.address);
     }
 
     @ResolveField()
-    async undistributedFees(@Parent() parent: FarmModelV1_2): Promise<string> {
+    async undistributedFees(parent: FarmModelV1_2): Promise<string> {
         return this.farmAbi.undistributedFees(parent.address);
     }
 
     @ResolveField()
-    async currentBlockFee(@Parent() parent: FarmModelV1_2): Promise<string> {
+    async currentBlockFee(parent: FarmModelV1_2): Promise<string> {
         return this.farmAbi.currentBlockFee(parent.address);
     }
 
     @ResolveField()
-    async aprMultiplier(@Parent() parent: FarmModelV1_2): Promise<number> {
+    async aprMultiplier(parent: FarmModelV1_2): Promise<number> {
         return this.farmAbi.lockedRewardAprMuliplier(parent.address);
     }
 
     @ResolveField()
-    async unlockedRewardsAPR(@Parent() parent: FarmModelV1_2): Promise<string> {
+    async unlockedRewardsAPR(parent: FarmModelV1_2): Promise<string> {
         return this.farmCompute.unlockedRewardsAPR(parent.address);
     }
 
     @ResolveField()
-    async lockedRewardsAPR(@Parent() parent: FarmModelV1_2): Promise<string> {
+    async lockedRewardsAPR(parent: FarmModelV1_2): Promise<string> {
         return this.farmCompute.lockedRewardsAPR(parent.address);
     }
 
@@ -97,9 +93,7 @@ export class FarmResolverV1_2 extends FarmResolver {
     }
 
     @ResolveField()
-    async migrationConfig(
-        @Parent() parent: FarmModelV1_2,
-    ): Promise<FarmMigrationConfig> {
+    async migrationConfig(parent: FarmModelV1_2): Promise<FarmMigrationConfig> {
         return this.farmAbi.farmMigrationConfiguration(parent.address);
     }
 }

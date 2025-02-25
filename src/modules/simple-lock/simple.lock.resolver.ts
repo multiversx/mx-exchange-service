@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
@@ -19,37 +19,27 @@ export class SimpleLockResolver {
     ) {}
 
     @ResolveField()
-    async lockedToken(
-        @Parent() parent: SimpleLockModel,
-    ): Promise<NftCollection> {
+    async lockedToken(parent: SimpleLockModel): Promise<NftCollection> {
         return this.simpleLockService.getLockedToken(parent.address);
     }
 
     @ResolveField()
-    async lpProxyToken(
-        @Parent() parent: SimpleLockModel,
-    ): Promise<NftCollection> {
+    async lpProxyToken(parent: SimpleLockModel): Promise<NftCollection> {
         return this.simpleLockService.getLpProxyToken(parent.address);
     }
 
     @ResolveField()
-    async farmProxyToken(
-        @Parent() parent: SimpleLockModel,
-    ): Promise<NftCollection> {
+    async farmProxyToken(parent: SimpleLockModel): Promise<NftCollection> {
         return this.simpleLockService.getFarmProxyToken(parent.address);
     }
 
     @ResolveField()
-    async intermediatedPairs(
-        @Parent() parent: SimpleLockModel,
-    ): Promise<string[]> {
+    async intermediatedPairs(parent: SimpleLockModel): Promise<string[]> {
         return this.simpleLockAbi.intermediatedPairs(parent.address);
     }
 
     @ResolveField()
-    async intermediatedFarms(
-        @Parent() parent: SimpleLockModel,
-    ): Promise<string[]> {
+    async intermediatedFarms(parent: SimpleLockModel): Promise<string[]> {
         return this.simpleLockAbi.intermediatedFarms(parent.address);
     }
 

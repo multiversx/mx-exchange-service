@@ -30,5 +30,8 @@ export class NftToken implements INFTToken {
 
     constructor(init?: Partial<NftToken>) {
         Object.assign(this, init);
+        if (init.assets) {
+            this.assets = new AssetsModel(init.assets);
+        }
     }
 }

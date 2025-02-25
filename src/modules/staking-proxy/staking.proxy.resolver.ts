@@ -1,5 +1,5 @@
 import { UseGuards, UsePipes } from '@nestjs/common';
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -44,56 +44,44 @@ export class StakingProxyResolver {
     ) {}
 
     @ResolveField()
-    async lpFarmAddress(@Parent() parent: StakingProxyModel): Promise<string> {
+    async lpFarmAddress(parent: StakingProxyModel): Promise<string> {
         return this.stakingProxyAbi.lpFarmAddress(parent.address);
     }
 
     @ResolveField()
-    async stakingFarmAddress(
-        @Parent() parent: StakingProxyModel,
-    ): Promise<string> {
+    async stakingFarmAddress(parent: StakingProxyModel): Promise<string> {
         return this.stakingProxyAbi.stakingFarmAddress(parent.address);
     }
 
     @ResolveField()
-    async stakingMinUnboundEpochs(
-        @Parent() parent: StakingProxyModel,
-    ): Promise<number> {
+    async stakingMinUnboundEpochs(parent: StakingProxyModel): Promise<number> {
         return this.stakingProxyService.getStakingFarmMinUnboundEpochs(
             parent.address,
         );
     }
 
     @ResolveField()
-    async pairAddress(@Parent() parent: StakingProxyModel): Promise<string> {
+    async pairAddress(parent: StakingProxyModel): Promise<string> {
         return this.stakingProxyAbi.pairAddress(parent.address);
     }
 
     @ResolveField()
-    async stakingToken(
-        @Parent() parent: StakingProxyModel,
-    ): Promise<EsdtToken> {
+    async stakingToken(parent: StakingProxyModel): Promise<EsdtToken> {
         return this.stakingProxyService.getStakingToken(parent.address);
     }
 
     @ResolveField()
-    async farmToken(
-        @Parent() parent: StakingProxyModel,
-    ): Promise<NftCollection> {
+    async farmToken(parent: StakingProxyModel): Promise<NftCollection> {
         return this.stakingProxyService.getFarmToken(parent.address);
     }
 
     @ResolveField()
-    async dualYieldToken(
-        @Parent() parent: StakingProxyModel,
-    ): Promise<NftCollection> {
+    async dualYieldToken(parent: StakingProxyModel): Promise<NftCollection> {
         return this.stakingProxyService.getDualYieldToken(parent.address);
     }
 
     @ResolveField()
-    async lpFarmToken(
-        @Parent() parent: StakingProxyModel,
-    ): Promise<NftCollection> {
+    async lpFarmToken(parent: StakingProxyModel): Promise<NftCollection> {
         return this.stakingProxyService.getLpFarmToken(parent.address);
     }
 

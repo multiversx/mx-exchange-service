@@ -1,4 +1,4 @@
-import { Resolver, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, ResolveField } from '@nestjs/graphql';
 import { BaseFarmModel } from '../models/farm.model';
 import { PairModel } from '../../pair/models/pair.model';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
@@ -25,101 +25,89 @@ export class FarmResolver {
     ) {}
 
     @ResolveField()
-    async farmedToken(@Parent() parent: BaseFarmModel): Promise<EsdtToken> {
+    async farmedToken(parent: BaseFarmModel): Promise<EsdtToken> {
         return this.farmAbiLoader.farmedTokenLoader.load(parent.address);
     }
 
     @ResolveField()
-    async farmToken(@Parent() parent: BaseFarmModel): Promise<NftCollection> {
+    async farmToken(parent: BaseFarmModel): Promise<NftCollection> {
         return this.farmAbiLoader.farmTokenLoader.load(parent.address);
     }
 
     @ResolveField()
-    async farmingToken(@Parent() parent: BaseFarmModel): Promise<EsdtToken> {
+    async farmingToken(parent: BaseFarmModel): Promise<EsdtToken> {
         return this.farmAbiLoader.farmingTokenLoader.load(parent.address);
     }
 
     @ResolveField()
-    async produceRewardsEnabled(
-        @Parent() parent: BaseFarmModel,
-    ): Promise<boolean> {
+    async produceRewardsEnabled(parent: BaseFarmModel): Promise<boolean> {
         return this.farmAbiLoader.produceRewardsEnabledLoader.load(
             parent.address,
         );
     }
 
     @ResolveField()
-    async perBlockRewards(@Parent() parent: BaseFarmModel): Promise<string> {
+    async perBlockRewards(parent: BaseFarmModel): Promise<string> {
         return this.farmAbiLoader.perBlockRewardsLoader.load(parent.address);
     }
 
     @ResolveField()
-    async farmTokenSupply(@Parent() parent: BaseFarmModel): Promise<string> {
+    async farmTokenSupply(parent: BaseFarmModel): Promise<string> {
         return this.farmAbiLoader.farmTokenSupplyLoader.load(parent.address);
     }
 
     @ResolveField()
-    async farmedTokenPriceUSD(
-        @Parent() parent: BaseFarmModel,
-    ): Promise<string> {
+    async farmedTokenPriceUSD(parent: BaseFarmModel): Promise<string> {
         return this.farmComputeLoader.farmedTokenPriceUSDLoader.load(
             parent.address,
         );
     }
 
     @ResolveField()
-    async farmTokenPriceUSD(@Parent() parent: BaseFarmModel): Promise<string> {
+    async farmTokenPriceUSD(parent: BaseFarmModel): Promise<string> {
         return this.farmComputeLoader.farmingTokenPriceUSDLoader.load(
             parent.address,
         );
     }
 
     @ResolveField()
-    async farmingTokenPriceUSD(
-        @Parent() parent: BaseFarmModel,
-    ): Promise<string> {
+    async farmingTokenPriceUSD(parent: BaseFarmModel): Promise<string> {
         return this.farmComputeLoader.farmingTokenPriceUSDLoader.load(
             parent.address,
         );
     }
 
     @ResolveField()
-    async penaltyPercent(@Parent() parent: BaseFarmModel): Promise<number> {
+    async penaltyPercent(parent: BaseFarmModel): Promise<number> {
         return this.farmAbiLoader.penaltyPercentLoader.load(parent.address);
     }
 
     @ResolveField()
-    async minimumFarmingEpochs(
-        @Parent() parent: BaseFarmModel,
-    ): Promise<number> {
+    async minimumFarmingEpochs(parent: BaseFarmModel): Promise<number> {
         return this.farmAbiLoader.minimumFarmingEpochsLoader.load(
             parent.address,
         );
     }
 
     @ResolveField()
-    async rewardPerShare(@Parent() parent: BaseFarmModel): Promise<string> {
+    async rewardPerShare(parent: BaseFarmModel): Promise<string> {
         return this.farmAbiLoader.rewardPerShareLoader.load(parent.address);
     }
 
     @ResolveField()
-    async rewardReserve(@Parent() parent: BaseFarmModel): Promise<string> {
+    async rewardReserve(parent: BaseFarmModel): Promise<string> {
         return this.farmAbiLoader.rewardReserveLoader.load(parent.address);
     }
 
     @ResolveField()
-    async lastRewardBlockNonce(
-        @Parent() parent: BaseFarmModel,
-    ): Promise<number> {
+    async lastRewardBlockNonce(parent: BaseFarmModel): Promise<number> {
         return this.farmAbiLoader.lastRewardBlockNonceLoader.load(
             parent.address,
         );
     }
 
     @ResolveField()
-    async divisionSafetyConstant(
-        @Parent() parent: BaseFarmModel,
-    ): Promise<string> {
+    async divisionSafetyConstant(parent: BaseFarmModel): Promise<string> {
         return this.farmAbiLoader.divisionSafetyConstantLoader.load(
             parent.address,
         );
@@ -133,17 +121,17 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async state(@Parent() parent: BaseFarmModel): Promise<string> {
+    async state(parent: BaseFarmModel): Promise<string> {
         return this.farmAbiLoader.stateLoader.load(parent.address);
     }
 
     @ResolveField()
-    async burnGasLimit(@Parent() parent: BaseFarmModel): Promise<string> {
+    async burnGasLimit(parent: BaseFarmModel): Promise<string> {
         return this.farmAbi.burnGasLimit(parent.address);
     }
 
     @ResolveField()
-    async pair(@Parent() parent: BaseFarmModel): Promise<PairModel> {
+    async pair(parent: BaseFarmModel): Promise<PairModel> {
         const address = await this.farmAbi.pairContractAddress(parent.address);
         return Address.fromString(address).equals(Address.Zero())
             ? undefined
@@ -151,14 +139,12 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async transferExecGasLimit(
-        @Parent() parent: BaseFarmModel,
-    ): Promise<string> {
+    async transferExecGasLimit(parent: BaseFarmModel): Promise<string> {
         return this.farmAbi.transferExecGasLimit(parent.address);
     }
 
     @ResolveField()
-    async lastErrorMessage(@Parent() parent: BaseFarmModel): Promise<string> {
+    async lastErrorMessage(parent: BaseFarmModel): Promise<string> {
         return this.farmAbi.lastErrorMessage(parent.address);
     }
 }

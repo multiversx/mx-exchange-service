@@ -15,7 +15,7 @@ export class SwapRouteResolver {
     constructor(protected readonly autoRouterService: AutoRouterService) {}
 
     @ResolveField(() => [String])
-    fees(@Parent() parent: AutoRouteModel): string[] {
+    fees(parent: AutoRouteModel): string[] {
         const fees = this.autoRouterService.getFeesDenom(
             parent.intermediaryAmounts,
             parent.tokenRoute,
@@ -26,7 +26,7 @@ export class SwapRouteResolver {
     }
 
     @ResolveField(() => [String])
-    pricesImpact(@Parent() parent: AutoRouteModel): string[] {
+    pricesImpact(parent: AutoRouteModel): string[] {
         return this.autoRouterService.getPriceImpactPercents(
             parent.intermediaryAmounts,
             parent.tokenRoute,

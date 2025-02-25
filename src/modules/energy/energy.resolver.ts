@@ -1,12 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import {
-    Args,
-    Int,
-    Parent,
-    Query,
-    ResolveField,
-    Resolver,
-} from '@nestjs/graphql';
+import { Args, Int, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { leaguesConfig, scAddress } from 'src/config';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -42,7 +35,7 @@ export class UserEnergyResolver {
     ) {}
 
     @ResolveField()
-    async league(@Parent() parent: UserEnergyModel): Promise<string> {
+    async league(parent: UserEnergyModel): Promise<string> {
         return this.energyCompute.computeLeagueByEnergy(parent.amount);
     }
 

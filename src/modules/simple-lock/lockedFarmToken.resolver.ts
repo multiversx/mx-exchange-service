@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UserInputError } from '@nestjs/apollo';
 import { tokenCollection } from 'src/utils/token.converters';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
@@ -19,7 +19,7 @@ export class LockedFarmTokenResolver {
 
     @ResolveField()
     async farmingTokenAttributes(
-        @Parent() parent: FarmProxyTokenAttributesModel,
+        parent: FarmProxyTokenAttributesModel,
     ): Promise<LpProxyTokenAttributesModel> {
         try {
             return await this.simpleLockService.getLpTokenProxyAttributes(
@@ -37,7 +37,7 @@ export class LockedFarmTokenResolver {
 
     @ResolveField()
     async farmTokenAttributes(
-        @Parent() parent: FarmProxyTokenAttributesModel,
+        parent: FarmProxyTokenAttributesModel,
     ): Promise<typeof FarmTokenAttributesUnion> {
         const simpleLockAddress =
             await this.simpleLockService.getSimpleLockAddressByTokenID(

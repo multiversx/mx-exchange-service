@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { tokenCollection } from 'src/utils/token.converters';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { LockedAssetAttributesModel } from '../locked-asset-factory/models/locked-asset.model';
@@ -17,7 +17,7 @@ export class WrappedLpTokenResolver {
 
     @ResolveField()
     async lockedAssetsAttributes(
-        @Parent() parent: WrappedLpTokenAttributesModel,
+        parent: WrappedLpTokenAttributesModel,
     ): Promise<LockedAssetAttributesModel> {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             tokenCollection(parent.identifier),

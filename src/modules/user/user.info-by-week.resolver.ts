@@ -1,4 +1,4 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { ResolveField, Resolver } from '@nestjs/graphql';
 import {
     TokenDistributionModel,
     UserInfoByWeekModel,
@@ -25,9 +25,7 @@ export class UserInfoByWeekResolver {
     ) {}
 
     @ResolveField(() => EnergyModel)
-    async energyForWeek(
-        @Parent() parent: UserInfoByWeekModel,
-    ): Promise<EnergyModel> {
+    async energyForWeek(parent: UserInfoByWeekModel): Promise<EnergyModel> {
         return this.weeklyRewardsSplittingAbi.userEnergyForWeek(
             parent.scAddress,
             parent.userAddress,
@@ -36,7 +34,7 @@ export class UserInfoByWeekResolver {
     }
 
     @ResolveField()
-    async apr(@Parent() parent: UserInfoByWeekModel): Promise<string> {
+    async apr(parent: UserInfoByWeekModel): Promise<string> {
         return this.weeklyRewardsSplittingCompute.userApr(
             parent.scAddress,
             parent.userAddress,
@@ -46,7 +44,7 @@ export class UserInfoByWeekResolver {
 
     @ResolveField(() => [EsdtTokenPayment])
     async rewardsForWeek(
-        @Parent() parent: UserInfoByWeekModel,
+        parent: UserInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
         if (parent.scAddress === scAddress.feesCollector) {
             return this.feesCollectorCompute.computeUserRewardsForWeek(
@@ -74,7 +72,7 @@ export class UserInfoByWeekResolver {
 
     @ResolveField(() => [TokenDistributionModel])
     async rewardsDistributionForWeek(
-        @Parent() parent: UserInfoByWeekModel,
+        parent: UserInfoByWeekModel,
     ): Promise<TokenDistributionModel[]> {
         if (parent.scAddress === scAddress.feesCollector) {
             return this.feesCollectorCompute.computeUserRewardsDistributionForWeek(

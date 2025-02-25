@@ -1,4 +1,4 @@
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { scAddress } from 'src/config';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
@@ -17,7 +17,7 @@ export class WrappedFarmTokenResolverV2 {
 
     @ResolveField()
     async farmTokenAttributes(
-        @Parent() parent: WrappedFarmTokenAttributesModelV2,
+        parent: WrappedFarmTokenAttributesModelV2,
     ): Promise<typeof FarmTokenAttributesUnion> {
         return this.proxyService.getFarmTokenAttributes(
             scAddress.proxyDexAddress.v2,
@@ -28,7 +28,7 @@ export class WrappedFarmTokenResolverV2 {
 
     @ResolveField()
     async lockedLpProxyTokenAttributes(
-        @Parent() parent: WrappedFarmTokenAttributesModelV2,
+        parent: WrappedFarmTokenAttributesModelV2,
     ): Promise<WrappedLpTokenAttributesModelV2> {
         const wrappedLpToken = await this.apiService.getNftByTokenIdentifier(
             scAddress.proxyDexAddress.v2,

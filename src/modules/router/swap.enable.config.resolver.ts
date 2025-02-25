@@ -1,4 +1,4 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { ResolveField, Resolver } from '@nestjs/graphql';
 import { SimpleLockModel } from '../simple-lock/models/simple.lock.model';
 import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
 import { EnableSwapByUserConfig } from './models/factory.model';
@@ -10,9 +10,7 @@ export class SwapEnableConfigResolver {
     constructor(private readonly simpleLockService: SimpleLockService) {}
 
     @ResolveField()
-    async lockingSC(
-        @Parent() parent: EnableSwapByUserConfig,
-    ): Promise<SimpleLockModel> {
+    async lockingSC(parent: EnableSwapByUserConfig): Promise<SimpleLockModel> {
         const address =
             await this.simpleLockService.getSimpleLockAddressByTokenID(
                 parent.lockedTokenID,

@@ -5,12 +5,11 @@ import { RouterModule } from '../router/router.module';
 import { EsdtTokenDbModel, EsdtTokenSchema } from './schemas/token.schema';
 import { TokenRepositoryService } from './services/token.repository.service';
 import { TokenService } from './services/token.service';
-import { AssetsResolver, TokensResolver } from './token.resolver';
+import { TokensResolver } from './token.resolver';
 import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenComputeService } from './services/token.compute.service';
 import { TokenSetterService } from './services/token.setter.service';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
-import { NftCollectionResolver } from './nftCollection.resolver';
 import { NftTokenResolver } from './nftToken.resolver';
 import { AnalyticsModule } from 'src/services/analytics/analytics.module';
 import { TokenFilteringService } from './services/token.filtering.service';
@@ -35,9 +34,7 @@ import { TokenLoader } from './services/token.loader';
         TokenSetterService,
         TokenComputeService,
         TokenRepositoryService,
-        AssetsResolver,
         TokensResolver,
-        NftCollectionResolver,
         NftTokenResolver,
         TokenFilteringService,
     ],

@@ -1,4 +1,4 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { ResolveField, Resolver } from '@nestjs/graphql';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmCustomModel } from '../models/farm.custom.model';
 import { FarmCustomAbiService } from './services/farm.custom.abi.service';
@@ -31,9 +31,7 @@ export class FarmCustomResolver extends FarmResolver {
     }
 
     @ResolveField()
-    async requireWhitelist(
-        @Parent() parent: FarmCustomModel,
-    ): Promise<boolean> {
+    async requireWhitelist(parent: FarmCustomModel): Promise<boolean> {
         const whitelists = await this.farmAbi.whitelist(parent.address);
         return whitelists ? whitelists.length > 0 : false;
     }
