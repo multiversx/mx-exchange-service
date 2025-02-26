@@ -1,21 +1,20 @@
-import LRU from 'lru-cache';
 import { Injectable } from '@nestjs/common';
+import TTLCache from '@isaacs/ttlcache';
 
 @Injectable()
 export class InMemoryCacheService {
-    private static localCache: LRU<any, any>;
+    private static localCache: TTLCache<any, any>;
     constructor() {
         if (!InMemoryCacheService.localCache) {
-            InMemoryCacheService.localCache = new LRU({
-                max: 10000,
-                allowStale: false,
+            InMemoryCacheService.localCache = new TTLCache({
+                max: 50000,
+                ttl: 6000,
                 updateAgeOnGet: false,
-                updateAgeOnHas: false,
             });
         }
     }
 
-    get<T>(key: string): Promise<T | undefined> {
+    get<T>(key: string): T | undefined {
         const data = InMemoryCacheService.localCache.get(key);
 
         const parsedData = data
@@ -27,8 +26,12 @@ export class InMemoryCacheService {
         return parsedData;
     }
 
-    getMany<T>(keys: string[]): Promise<(T | undefined)[]> {
-        return Promise.all(keys.map((key) => this.get<T>(key)));
+    getMany<T>(keys: string[]): (T | undefined)[] {
+        return keys.map((key) => this.get<T>(key));
+    }
+
+    getKeyCount(): number {
+        return InMemoryCacheService.localCache.size;
     }
 
     set<T>(key: string, value: T, ttl: number, cacheNullable = true): void {
@@ -61,19 +64,19 @@ export class InMemoryCacheService {
         }
     }
 
-    async setMany<T>(
+    setMany<T>(
         keys: string[],
         values: T[],
         ttl: number,
         cacheNullable = true,
-    ): Promise<void> {
+    ): void {
         for (const [index, key] of keys.entries()) {
             this.set(key, values[index], ttl, cacheNullable);
         }
     }
 
-    async delete(key: string): Promise<void> {
-        await InMemoryCacheService.localCache.delete(key);
+    delete(key: string): void {
+        InMemoryCacheService.localCache.delete(key);
     }
 
     async getOrSet<T>(
@@ -82,7 +85,7 @@ export class InMemoryCacheService {
         ttl: number,
         cacheNullable = true,
     ): Promise<T> {
-        const cachedData = await this.get<any>(key);
+        const cachedData = this.get<any>(key);
         if (cachedData !== undefined) {
             return cachedData;
         }
@@ -90,20 +93,7 @@ export class InMemoryCacheService {
         const internalCreateValueFunc =
             this.buildInternalCreateValueFunc<T>(createValueFunc);
         const value = await internalCreateValueFunc();
-        await this.set<T>(key, value, ttl, cacheNullable);
-        return value;
-    }
-
-    async setOrUpdate<T>(
-        key: string,
-        createValueFunc: () => Promise<T>,
-        ttl: number,
-        cacheNullable = true,
-    ): Promise<T> {
-        const internalCreateValueFunc =
-            this.buildInternalCreateValueFunc(createValueFunc);
-        const value = await internalCreateValueFunc();
-        await this.set<T>(key, value, ttl, cacheNullable);
+        this.set<T>(key, value, ttl, cacheNullable);
         return value;
     }
 
