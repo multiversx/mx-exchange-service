@@ -1,4 +1,4 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { ResolveField, Resolver } from '@nestjs/graphql';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmModelV1_3 } from '../models/farm.v1.3.model';
 import { FarmServiceV1_3 } from './services/farm.v1.3.service';
@@ -32,14 +32,12 @@ export class FarmResolverV1_3 extends FarmResolver {
     }
 
     @ResolveField()
-    async apr(@Parent() parent: FarmModelV1_3): Promise<string> {
+    async apr(parent: FarmModelV1_3): Promise<string> {
         return this.farmCompute.farmAPR(parent.address);
     }
 
     @ResolveField()
-    async lockedAssetFactory(
-        @Parent() parent: FarmModelV1_3,
-    ): Promise<LockedAssetModel> {
+    async lockedAssetFactory(parent: FarmModelV1_3): Promise<LockedAssetModel> {
         const address = await this.farmAbi.lockedAssetFactoryAddress(
             parent.address,
         );

@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenCollection, tokenIdentifier } from 'src/utils/token.converters';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
@@ -23,7 +23,7 @@ export class WrappedFarmTokenResolver {
 
     @ResolveField()
     async farmTokenAttributes(
-        @Parent() parent: WrappedFarmTokenAttributesModel,
+        parent: WrappedFarmTokenAttributesModel,
     ): Promise<typeof FarmTokenAttributesUnion> {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             tokenCollection(parent.identifier),
@@ -37,7 +37,7 @@ export class WrappedFarmTokenResolver {
 
     @ResolveField()
     async lockedAssetsAttributes(
-        @Parent() parent: WrappedFarmTokenAttributesModel,
+        parent: WrappedFarmTokenAttributesModel,
     ): Promise<LockedAssetAttributesModel> {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             tokenCollection(parent.identifier),
@@ -56,7 +56,7 @@ export class WrappedFarmTokenResolver {
 
     @ResolveField()
     async lockedLpProxyTokenAttributes(
-        @Parent() parent: WrappedFarmTokenAttributesModel,
+        parent: WrappedFarmTokenAttributesModel,
     ): Promise<WrappedLpTokenAttributesModel> {
         const proxyAddress = await this.proxyService.getProxyAddressByToken(
             tokenCollection(parent.identifier),
