@@ -90,8 +90,8 @@ export class PairAbiService
     })
     @GetOrSetCache({
         baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async lpTokenID(pairAddress: string): Promise<string> {
         return await this.getLpTokenIDRaw(pairAddress);

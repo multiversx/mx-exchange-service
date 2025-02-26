@@ -48,7 +48,7 @@ export class PairService {
             pairAddresses,
             'pair.firstTokenID',
             this.pairAbi.firstTokenID.bind(this.pairAbi),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
 
         return this.tokenService.getAllTokensMetadata(tokenIDs);
@@ -65,7 +65,7 @@ export class PairService {
             pairAddresses,
             'pair.secondTokenID',
             this.pairAbi.secondTokenID.bind(this.pairAbi),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
 
         return this.tokenService.getAllTokensMetadata(tokenIDs);
@@ -84,7 +84,7 @@ export class PairService {
             pairAddresses,
             'pair.lpTokenID',
             this.pairAbi.lpTokenID.bind(this.pairAbi),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
     }
 
