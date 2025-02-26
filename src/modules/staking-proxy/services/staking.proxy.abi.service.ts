@@ -161,7 +161,7 @@ export class StakingProxyAbiService
             stakingProxyAddresses,
             'stakeProxy.dualYieldTokenID',
             this.dualYieldTokenID.bind(this),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
     }
 
