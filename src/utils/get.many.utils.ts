@@ -7,7 +7,7 @@ async function getMany<T>(
     keys: string[],
     localTtl: number,
 ): Promise<(T | undefined)[]> {
-    const values = await cacheService.getManyLocal<T>(keys);
+    const values = cacheService.getManyLocal<T>(keys);
 
     const missingIndexes: number[] = [];
     values.forEach((value, index) => {
@@ -28,7 +28,7 @@ async function getMany<T>(
     const remoteValues = await cacheService.getManyRemote<T>(missingKeys);
 
     if (localTtl > 0) {
-        await cacheService.setManyLocal<T>(
+        cacheService.setManyLocal<T>(
             missingKeys,
             remoteValues.map((value) =>
                 value ? parseCachedNullOrUndefined(value) : undefined,
