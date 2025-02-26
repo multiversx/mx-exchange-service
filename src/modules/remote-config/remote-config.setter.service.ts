@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';

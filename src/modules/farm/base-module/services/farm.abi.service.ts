@@ -14,7 +14,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { IFarmAbiService } from './interfaces';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 
 export class FarmAbiService

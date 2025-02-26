@@ -20,7 +20,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IStakingAbiService } from './interfaces';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()

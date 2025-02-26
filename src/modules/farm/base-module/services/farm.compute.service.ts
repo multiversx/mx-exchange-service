@@ -13,7 +13,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { FarmServiceBase } from './farm.base.service';
 import { Inject, forwardRef } from '@nestjs/common';
 import { IFarmComputeService } from './interfaces';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 
 export abstract class FarmComputeService implements IFarmComputeService {
     constructor(

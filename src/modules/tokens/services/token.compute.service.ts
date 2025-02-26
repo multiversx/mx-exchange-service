@@ -24,7 +24,7 @@ import {
 } from '@multiversx/sdk-nestjs-elastic';
 import moment from 'moment';
 import { PendingExecutor } from 'src/utils/pending.executor';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { TokenService } from './token.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';

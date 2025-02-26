@@ -9,7 +9,7 @@ import {
     getTokenForGivenPosition,
 } from '../pair.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';

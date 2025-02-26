@@ -4,7 +4,7 @@ import DataLoader from 'dataloader';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmAbiService } from './farm.abi.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 

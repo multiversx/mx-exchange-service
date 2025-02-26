@@ -1,4 +1,4 @@
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { parseCachedNullOrUndefined } from './cache.utils';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 

@@ -9,7 +9,7 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingService } from 'src/modules/staking/services/staking.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';

@@ -1,6 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { PairComputeService } from './pair.compute.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import DataLoader from 'dataloader';
 import { PairService } from './pair.service';

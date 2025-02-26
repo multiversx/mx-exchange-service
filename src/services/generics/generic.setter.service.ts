@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateSetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { CacheTtlInfo } from '../caching/cache.ttl.info';
 import { formatNullOrUndefined } from 'src/utils/cache.utils';
