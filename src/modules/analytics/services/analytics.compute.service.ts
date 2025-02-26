@@ -28,7 +28,7 @@ import {
 import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
-import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -303,41 +303,6 @@ export class AnalyticsComputeService {
         return await this.computeTokenTradingActivity(tokenID);
     }
 
-    private determineBaseAndQuoteTokens(
-        pairAddress: string,
-        pairsMetadata: PairMetadata[],
-        commonTokens: string[],
-    ): { baseToken: string; quoteToken: string } {
-        const sortedCommonTokens = commonTokens.sort((a, b) => {
-            const order = ['USD', 'EGLD'];
-            const indexA = order.findIndex((token) => a.includes(token));
-            const indexB = order.findIndex((token) => b.includes(token));
-            if (indexA === -1 && indexB === -1) return 0;
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-        });
-
-        const pair = pairsMetadata.find((pair) => pair.address === pairAddress);
-
-        for (const token of sortedCommonTokens) {
-            if (pair.firstTokenID === token || pair.secondTokenID === token) {
-                return {
-                    baseToken: token,
-                    quoteToken:
-                        pair.firstTokenID === token
-                            ? pair.secondTokenID
-                            : pair.firstTokenID,
-                };
-            }
-        }
-
-        return {
-            baseToken: pair.firstTokenID,
-            quoteToken: pair.secondTokenID,
-        };
-    }
-
     async computePairTradingActivity(
         pairAddress: string,
     ): Promise<TradingActivityModel[]> {
@@ -348,7 +313,7 @@ export class AnalyticsComputeService {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         const commonTokens = await this.routerAbi.commonTokensForUserPairs();
 
-        const { quoteToken, baseToken } = this.determineBaseAndQuoteTokens(
+        const { quoteToken, baseToken } = determineBaseAndQuoteTokens(
             pairAddress,
             pairsMetadata,
             commonTokens,
