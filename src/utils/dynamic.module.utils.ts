@@ -12,22 +12,17 @@ import { CacheModule } from 'src/services/caching/cache.module';
 
 export class DynamicModuleUtils {
     static getCacheModule(): DynamicModule {
-        return CacheModule.forRootAsync(
-            {
-                imports: [CommonAppModule],
-                inject: [ApiConfigService],
-                useFactory: (configService: ApiConfigService) =>
-                    new RedisCacheModuleOptions({
-                        host: configService.getRedisUrl(),
-                        port: configService.getRedisPort(),
-                        password: configService.getRedisPassword(),
-                        enableAutoPipelining: true,
-                    }),
-            },
-            {
-                maxItems: mxConfig.localCacheMaxItems,
-            },
-        );
+        return CacheModule.forRootAsync({
+            imports: [CommonAppModule],
+            inject: [ApiConfigService],
+            useFactory: (configService: ApiConfigService) =>
+                new RedisCacheModuleOptions({
+                    host: configService.getRedisUrl(),
+                    port: configService.getRedisPort(),
+                    password: configService.getRedisPassword(),
+                    enableAutoPipelining: true,
+                }),
+        });
     }
 
     static getElasticModule(): DynamicModule {

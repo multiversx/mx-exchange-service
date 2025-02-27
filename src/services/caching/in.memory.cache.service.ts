@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import TTLCache from '@isaacs/ttlcache';
+import { mxConfig } from 'src/config';
 
 @Injectable()
 export class InMemoryCacheService {
@@ -7,7 +8,7 @@ export class InMemoryCacheService {
     constructor() {
         if (!InMemoryCacheService.localCache) {
             InMemoryCacheService.localCache = new TTLCache({
-                max: 50000,
+                max: mxConfig.localCacheMaxItems,
                 ttl: 6000,
                 updateAgeOnGet: false,
             });
