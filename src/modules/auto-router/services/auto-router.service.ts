@@ -55,7 +55,7 @@ export class AutoRouterService {
             destination,
         );
         try {
-            return this.cacheService.getOrSet(
+            return await this.cacheService.getOrSet(
                 cacheKey,
                 async () =>
                     GraphService.getInstance(pairs).getAllPaths(
