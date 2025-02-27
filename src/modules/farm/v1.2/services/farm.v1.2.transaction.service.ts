@@ -50,7 +50,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
                 ? gasConfig.farms[FarmVersion.V1_2].enterFarm.withTokenMerge
                 : gasConfig.farms[FarmVersion.V1_2].enterFarm.default;
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -87,7 +87,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
             type,
         );
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -123,7 +123,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
             gasConfig.farms[FarmVersion.V1_2][type].claimRewards +
             lockedAssetCreateGas;
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -156,7 +156,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
             throw new Error('failed to compound different tokens');
         }
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -180,7 +180,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         sender: string,
         args: ExitFarmArgs,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -205,7 +205,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         sender: string,
         farmAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -220,7 +220,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         sender: string,
         args: FarmMigrationConfigArgs,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.oldFarmAddress,
             new TransactionOptions({
                 sender: sender,

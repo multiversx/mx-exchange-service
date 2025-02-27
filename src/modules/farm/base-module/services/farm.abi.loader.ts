@@ -20,19 +20,19 @@ export class FarmAbiLoader {
 
     public readonly farmedTokenLoader = new DataLoader<string, EsdtToken>(
         async (addresses: string[]) => {
-            return await this.farmService.getAllFarmedTokens(addresses);
+            return this.farmService.getAllFarmedTokens(addresses);
         },
     );
 
     public readonly farmTokenLoader = new DataLoader<string, NftCollection>(
         async (addresses: string[]) => {
-            return await this.farmService.getAllFarmTokens(addresses);
+            return this.farmService.getAllFarmTokens(addresses);
         },
     );
 
     public readonly farmingTokenLoader = new DataLoader<string, EsdtToken>(
         async (addresses: string[]) => {
-            return await this.farmService.getAllFarmingTokens(addresses);
+            return this.farmService.getAllFarmingTokens(addresses);
         },
     );
 
@@ -40,7 +40,7 @@ export class FarmAbiLoader {
         string,
         boolean
     >(async (addresses: string[]) => {
-        return await getAllKeys<boolean>(
+        return getAllKeys<boolean>(
             this.cacheService,
             addresses,
             'farm.produceRewardsEnabled',
@@ -51,7 +51,7 @@ export class FarmAbiLoader {
 
     public readonly perBlockRewardsLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys<string>(
+            return getAllKeys<string>(
                 this.cacheService,
                 addresses,
                 'farm.perBlockRewards',
@@ -63,7 +63,7 @@ export class FarmAbiLoader {
 
     public readonly farmTokenSupplyLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys<string>(
+            return getAllKeys<string>(
                 this.cacheService,
                 addresses,
                 'farm.farmTokenSupply',
@@ -75,7 +75,7 @@ export class FarmAbiLoader {
 
     public readonly penaltyPercentLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
-            return await getAllKeys<number>(
+            return getAllKeys<number>(
                 this.cacheService,
                 addresses,
                 'farm.penaltyPercent',
@@ -87,7 +87,7 @@ export class FarmAbiLoader {
 
     public readonly minimumFarmingEpochsLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
-            return await getAllKeys<number>(
+            return getAllKeys<number>(
                 this.cacheService,
                 addresses,
                 'farm.minimumFarmingEpochs',
@@ -99,7 +99,7 @@ export class FarmAbiLoader {
 
     public readonly rewardPerShareLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys<string>(
+            return getAllKeys<string>(
                 this.cacheService,
                 addresses,
                 'farm.rewardPerShare',
@@ -111,7 +111,7 @@ export class FarmAbiLoader {
 
     public readonly rewardReserveLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys<string>(
+            return getAllKeys<string>(
                 this.cacheService,
                 addresses,
                 'farm.rewardReserve',
@@ -123,7 +123,7 @@ export class FarmAbiLoader {
 
     public readonly lastRewardBlockNonceLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
-            return await getAllKeys<number>(
+            return getAllKeys<number>(
                 this.cacheService,
                 addresses,
                 'farm.lastRewardBlockNonce',
@@ -137,7 +137,7 @@ export class FarmAbiLoader {
         string,
         string
     >(async (addresses: string[]) => {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cacheService,
             addresses,
             'farm.divisionSafetyConstant',
@@ -148,7 +148,7 @@ export class FarmAbiLoader {
 
     public readonly stateLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys<string>(
+            return getAllKeys<string>(
                 this.cacheService,
                 addresses,
                 'farm.state',
