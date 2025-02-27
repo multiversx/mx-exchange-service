@@ -140,7 +140,7 @@ export class PositionCreatorTransactionService {
             VariadicValue.fromItems(...swapRouteArgs),
         ];
 
-        return await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+        return this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
             transactionOptions,
         );
     }
@@ -160,7 +160,7 @@ export class PositionCreatorTransactionService {
             VariadicValue.fromItems(...swapRouteArgs),
         ];
 
-        return await this.mxProxy.getPositionCreatorContractTransaction(
+        return this.mxProxy.getPositionCreatorContractTransaction(
             transactionOptions,
         );
     }
@@ -287,7 +287,7 @@ export class PositionCreatorTransactionService {
             VariadicValue.fromItems(...swapRouteArgs),
         ];
 
-        return await this.mxProxy.getPositionCreatorContractTransaction(
+        return this.mxProxy.getPositionCreatorContractTransaction(
             transactionOptions,
         );
     }
@@ -306,7 +306,7 @@ export class PositionCreatorTransactionService {
             VariadicValue.fromItems(...swapRouteArgs),
         ];
 
-        return await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+        return this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
             transactionOptions,
         );
     }
@@ -817,7 +817,7 @@ export class PositionCreatorTransactionService {
             ],
         });
 
-        return await this.mxProxy.getPositionCreatorContractTransaction(
+        return this.mxProxy.getPositionCreatorContractTransaction(
             transactionOptions,
         );
     }

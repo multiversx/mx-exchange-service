@@ -37,7 +37,7 @@ export class FarmAbiServiceV1_3
     async lockedAssetFactoryAddress(
         farmAddress: string,
     ): Promise<string | undefined> {
-        return await this.getLockedAssetFactoryAddressRaw(farmAddress);
+        return this.getLockedAssetFactoryAddressRaw(farmAddress);
     }
 
     async getLockedAssetFactoryAddressRaw(
@@ -66,7 +66,7 @@ export class FarmAbiServiceV1_3
     async farmMigrationConfiguration(
         farmAddress: string,
     ): Promise<FarmMigrationConfig> {
-        return await this.getFarmMigrationConfigurationRaw(farmAddress);
+        return this.getFarmMigrationConfigurationRaw(farmAddress);
     }
 
     async getFarmMigrationConfigurationRaw(

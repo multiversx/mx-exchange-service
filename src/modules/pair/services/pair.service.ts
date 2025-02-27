@@ -39,7 +39,7 @@ export class PairService {
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         const firstTokenID = await this.pairAbi.firstTokenID(pairAddress);
-        return await this.tokenService.tokenMetadata(firstTokenID);
+        return this.tokenService.tokenMetadata(firstTokenID);
     }
 
     async getAllFirstTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
@@ -56,7 +56,7 @@ export class PairService {
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.pairAbi.secondTokenID(pairAddress);
-        return await this.tokenService.tokenMetadata(secondTokenID);
+        return this.tokenService.tokenMetadata(secondTokenID);
     }
 
     async getAllSecondTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
@@ -75,11 +75,11 @@ export class PairService {
         const lpTokenID = await this.pairAbi.lpTokenID(pairAddress);
         return lpTokenID === undefined
             ? undefined
-            : await this.tokenService.tokenMetadata(lpTokenID);
+            : this.tokenService.tokenMetadata(lpTokenID);
     }
 
     async getAllLpTokensIds(pairAddresses: string[]): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cachingService,
             pairAddresses,
             'pair.lpTokenID',
@@ -95,7 +95,7 @@ export class PairService {
     }
 
     async getAllStates(pairAddresses: string[]): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cachingService,
             pairAddresses,
             'pair.state',
@@ -105,7 +105,7 @@ export class PairService {
     }
 
     async getAllFeeStates(pairAddresses: string[]): Promise<boolean[]> {
-        return await getAllKeys<boolean>(
+        return getAllKeys<boolean>(
             this.cachingService,
             pairAddresses,
             'pair.feeState',
@@ -115,7 +115,7 @@ export class PairService {
     }
 
     async getAllLockedValueUSD(pairAddresses: string[]): Promise<string[]> {
-        return await getAllKeys(
+        return getAllKeys(
             this.cachingService,
             pairAddresses,
             'pair.lockedValueUSD',
@@ -125,7 +125,7 @@ export class PairService {
     }
 
     async getAllDeployedAt(pairAddresses: string[]): Promise<number[]> {
-        return await getAllKeys(
+        return getAllKeys(
             this.cachingService,
             pairAddresses,
             'pair.deployedAt',
@@ -135,7 +135,7 @@ export class PairService {
     }
 
     async getAllTradesCount(pairAddresses: string[]): Promise<number[]> {
-        return await getAllKeys(
+        return getAllKeys(
             this.cachingService,
             pairAddresses,
             'pair.tradesCount',
@@ -145,7 +145,7 @@ export class PairService {
     }
 
     async getAllHasFarms(pairAddresses: string[]): Promise<boolean[]> {
-        return await getAllKeys(
+        return getAllKeys(
             this.cachingService,
             pairAddresses,
             'pair.hasFarms',
@@ -155,7 +155,7 @@ export class PairService {
     }
 
     async getAllHasDualFarms(pairAddresses: string[]): Promise<boolean[]> {
-        return await getAllKeys(
+        return getAllKeys(
             this.cachingService,
             pairAddresses,
             'pair.hasDualFarms',

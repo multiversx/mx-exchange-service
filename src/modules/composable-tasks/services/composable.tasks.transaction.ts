@@ -104,7 +104,7 @@ export class ComposableTasksTransactionService {
             ];
         }
 
-        return await this.mxProxy.getComposableTasksContractTransaction(
+        return this.mxProxy.getComposableTasksContractTransaction(
             transactionOptions,
         );
     }

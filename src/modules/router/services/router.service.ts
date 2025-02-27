@@ -161,7 +161,7 @@ export class RouterService {
     private async pairsByIssuedLpToken(
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        return await this.filterPairsByIssuedLpTokenRaw(pairsMetadata);
+        return this.filterPairsByIssuedLpTokenRaw(pairsMetadata);
     }
 
     private async filterPairsByIssuedLpTokenRaw(

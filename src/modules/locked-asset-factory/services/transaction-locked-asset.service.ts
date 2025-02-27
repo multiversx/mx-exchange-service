@@ -24,7 +24,7 @@ export class TransactionsLockedAssetService {
         sender: string,
         args: UnlockAssetsArgs,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getLockedAssetFactorySmartContractTransaction(
+        return this.mxProxy.getLockedAssetFactorySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.lockedAssetFactory.unlockAssets,
@@ -48,7 +48,7 @@ export class TransactionsLockedAssetService {
     ): Promise<TransactionModel> {
         await this.validateLockAssetsInputTokens(token);
 
-        return await this.mxProxy.getLockedAssetFactorySmartContractTransaction(
+        return this.mxProxy.getLockedAssetFactorySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.lockedAssetFactory.lockAssets,
@@ -97,7 +97,7 @@ export class TransactionsLockedAssetService {
             .plus(gasConfig.lockedAssetFactory.defaultMergeLockedAssets)
             .toNumber();
 
-        return await this.mxProxy.getLockedAssetFactorySmartContractTransaction(
+        return this.mxProxy.getLockedAssetFactorySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasLimit,

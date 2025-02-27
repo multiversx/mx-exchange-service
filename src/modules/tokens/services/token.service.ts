@@ -119,7 +119,7 @@ export class TokenService {
             return EsdtTokenType.FungibleLpToken;
         }
 
-        return await this.tokenRepository.getTokenType(tokenID);
+        return this.tokenRepository.getTokenType(tokenID);
     }
 
     async getAllEsdtTokensType(tokenIDs: string[]): Promise<string[]> {

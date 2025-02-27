@@ -48,21 +48,21 @@ export class SimpleLockService {
         const tokenID = await this.simpleLockAbi.lockedTokenID(
             simpleLockAddress,
         );
-        return await this.tokenService.getNftCollectionMetadata(tokenID);
+        return this.tokenService.getNftCollectionMetadata(tokenID);
     }
 
     async getLpProxyToken(simpleLockAddress: string): Promise<NftCollection> {
         const tokenID = await this.simpleLockAbi.lpProxyTokenID(
             simpleLockAddress,
         );
-        return await this.tokenService.getNftCollectionMetadata(tokenID);
+        return this.tokenService.getNftCollectionMetadata(tokenID);
     }
 
     async getFarmProxyToken(simpleLockAddress: string): Promise<NftCollection> {
         const tokenID = await this.simpleLockAbi.farmProxyTokenID(
             simpleLockAddress,
         );
-        return await this.tokenService.getNftCollectionMetadata(tokenID);
+        return this.tokenService.getNftCollectionMetadata(tokenID);
     }
 
     async getLockedTokenAttributes(

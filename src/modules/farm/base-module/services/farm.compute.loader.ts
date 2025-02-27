@@ -16,7 +16,7 @@ export class FarmComputeLoader {
 
     public readonly farmLockedValueUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys(
+            return getAllKeys(
                 this.cacheService,
                 addresses,
                 'farm.farmLockedValueUSD',
@@ -28,7 +28,7 @@ export class FarmComputeLoader {
 
     public readonly farmedTokenPriceUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys(
+            return getAllKeys(
                 this.cacheService,
                 addresses,
                 'farm.farmedTokenPriceUSD',
@@ -40,7 +40,7 @@ export class FarmComputeLoader {
 
     public readonly farmingTokenPriceUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return await getAllKeys(
+            return getAllKeys(
                 this.cacheService,
                 addresses,
                 'farm.farmingTokenPriceUSD',

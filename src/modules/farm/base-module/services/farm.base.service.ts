@@ -91,10 +91,10 @@ export abstract class FarmServiceBase {
     async getBatchRewardsForPosition(
         positions: CalculateRewardsArgs[],
     ): Promise<RewardsModel[]> {
-        const promises = positions.map(async (position) => {
-            return await this.getRewardsForPosition(position);
-        });
-        return await Promise.all(promises);
+        const promises = positions.map((position) =>
+            this.getRewardsForPosition(position),
+        );
+        return Promise.all(promises);
     }
 
     abstract getRewardsForPosition(

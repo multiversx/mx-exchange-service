@@ -43,7 +43,7 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
                 ? gasConfig.farms[FarmVersion.V1_3].enterFarm.withTokenMerge
                 : gasConfig.farms[FarmVersion.V1_3].enterFarm.default;
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -74,7 +74,7 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
             farmType(args.farmAddress),
         );
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -108,7 +108,7 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
             gasConfig.farms[FarmVersion.V1_3][type].claimRewards +
             lockedAssetCreateGas;
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -142,7 +142,7 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
             throw new Error('failed to compound different tokens');
         }
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,

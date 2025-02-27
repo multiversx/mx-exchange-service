@@ -118,7 +118,7 @@ export abstract class TransactionsFarmService {
         sender: string,
         farmAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -133,7 +133,7 @@ export abstract class TransactionsFarmService {
         sender: string,
         farmAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -149,7 +149,7 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         amount: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -166,7 +166,7 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         percent: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -183,7 +183,7 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         epochs: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -200,7 +200,7 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -217,7 +217,7 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -233,7 +233,7 @@ export abstract class TransactionsFarmService {
         sender: string,
         farmAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -248,7 +248,7 @@ export abstract class TransactionsFarmService {
         sender: string,
         farmAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -266,7 +266,7 @@ export abstract class TransactionsFarmService {
         tokenTicker: string,
         decimals: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -286,7 +286,7 @@ export abstract class TransactionsFarmService {
         sender: string,
         farmAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -302,7 +302,7 @@ export abstract class TransactionsFarmService {
         farmAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,

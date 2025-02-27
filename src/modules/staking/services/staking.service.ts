@@ -117,14 +117,14 @@ export class StakingService {
 
     async getFarmToken(stakeAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.stakingAbi.farmTokenID(stakeAddress);
-        return await this.tokenService.getNftCollectionMetadata(farmTokenID);
+        return this.tokenService.getNftCollectionMetadata(farmTokenID);
     }
 
     async getFarmingToken(stakeAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.stakingAbi.farmingTokenID(
             stakeAddress,
         );
-        return await this.tokenService.tokenMetadata(farmingTokenID);
+        return this.tokenService.tokenMetadata(farmingTokenID);
     }
 
     async getAllFarmingTokens(stakeAddresses: string[]): Promise<EsdtToken[]> {
@@ -132,12 +132,12 @@ export class StakingService {
             stakeAddresses,
         );
 
-        return await this.tokenService.getAllTokensMetadata(farmingTokenIDs);
+        return this.tokenService.getAllTokensMetadata(farmingTokenIDs);
     }
 
     async getRewardToken(stakeAddress: string): Promise<EsdtToken> {
         const rewardTokenID = await this.stakingAbi.rewardTokenID(stakeAddress);
-        return await this.tokenService.tokenMetadata(rewardTokenID);
+        return this.tokenService.tokenMetadata(rewardTokenID);
     }
 
     decodeStakingTokenAttributes(
@@ -179,10 +179,10 @@ export class StakingService {
         positions: CalculateRewardsArgs[],
         computeBoosted = false,
     ): Promise<StakingRewardsModel[]> {
-        const promises = positions.map(async (position) => {
-            return await this.getRewardsForPosition(position, computeBoosted);
-        });
-        return await Promise.all(promises);
+        const promises = positions.map((position) =>
+            this.getRewardsForPosition(position, computeBoosted),
+        );
+        return Promise.all(promises);
     }
 
     async getRewardsForPosition(
@@ -273,9 +273,9 @@ export class StakingService {
         stakingAddresses: string[],
         userAddress: string,
     ): Promise<StakingBoostedRewardsModel[]> {
-        const promises = stakingAddresses.map(async (address) => {
-            return await this.getStakingBoostedRewards(address, userAddress);
-        });
+        const promises = stakingAddresses.map((address) =>
+            this.getStakingBoostedRewards(address, userAddress),
+        );
         return Promise.all(promises);
     }
 
@@ -363,7 +363,7 @@ export class StakingService {
         stakeAddress: string,
         address: string,
     ): Promise<boolean> {
-        return await this.stakingAbi.isWhitelisted(stakeAddress, address);
+        return this.stakingAbi.isWhitelisted(stakeAddress, address);
     }
 
     async requireWhitelist(
