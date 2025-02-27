@@ -1,7 +1,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { FarmComputeService } from './farm.compute.service';
 import DataLoader from 'dataloader';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { HistoricDataModel } from '../models/analytics.model';
 import moment from 'moment';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';

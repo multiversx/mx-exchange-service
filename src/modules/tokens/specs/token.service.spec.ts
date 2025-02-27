@@ -11,7 +11,7 @@ import { TokenRepositoryServiceProvider } from '../mocks/token.repository.servic
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { TokenComputeServiceProvider } from '../mocks/token.compute.service.mock';
 import { TokenFilteringService } from '../services/token.filtering.service';
 import { PairService } from 'src/modules/pair/services/pair.service';

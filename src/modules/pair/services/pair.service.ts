@@ -9,7 +9,7 @@ import {
     getTokenForGivenPosition,
 } from '../pair.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
@@ -48,7 +48,7 @@ export class PairService {
             pairAddresses,
             'pair.firstTokenID',
             this.pairAbi.firstTokenID.bind(this.pairAbi),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
 
         return this.tokenService.getAllTokensMetadata(tokenIDs);
@@ -65,7 +65,7 @@ export class PairService {
             pairAddresses,
             'pair.secondTokenID',
             this.pairAbi.secondTokenID.bind(this.pairAbi),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
 
         return this.tokenService.getAllTokensMetadata(tokenIDs);
@@ -84,7 +84,7 @@ export class PairService {
             pairAddresses,
             'pair.lpTokenID',
             this.pairAbi.lpTokenID.bind(this.pairAbi),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
     }
 

@@ -11,7 +11,7 @@ import {
     FarmTokenAttributesModelV1_3,
     FarmTokenAttributesModelV2,
 } from '../../models/farmTokenAttributes.model';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Inject, forwardRef } from '@nestjs/common';

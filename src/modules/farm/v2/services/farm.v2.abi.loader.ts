@@ -2,7 +2,7 @@ import { Injectable, Scope } from '@nestjs/common';
 import { FarmAbiLoader } from '../../base-module/services/farm.abi.loader';
 import { FarmServiceV2 } from './farm.v2.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 
 @Injectable({
     scope: Scope.REQUEST,
