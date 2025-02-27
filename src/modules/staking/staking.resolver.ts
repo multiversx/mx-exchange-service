@@ -663,7 +663,7 @@ export class StakingResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return await this.stakingTransactionService.setState(
+        return this.stakingTransactionService.setState(
             user.address,
             farmStakeAddress,
             false,

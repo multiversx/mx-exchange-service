@@ -119,14 +119,14 @@ export class StakingProxyService {
         const stakingTokenID = await this.stakingProxyAbi.stakingTokenID(
             stakingProxyAddress,
         );
-        return await this.tokenService.tokenMetadata(stakingTokenID);
+        return this.tokenService.tokenMetadata(stakingTokenID);
     }
 
     async getFarmToken(stakingProxyAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.stakingProxyAbi.farmTokenID(
             stakingProxyAddress,
         );
-        return await this.tokenService.getNftCollectionMetadata(farmTokenID);
+        return this.tokenService.getNftCollectionMetadata(farmTokenID);
     }
 
     async getDualYieldToken(
@@ -135,16 +135,14 @@ export class StakingProxyService {
         const dualYieldTokenID = await this.stakingProxyAbi.dualYieldTokenID(
             stakingProxyAddress,
         );
-        return await this.tokenService.getNftCollectionMetadata(
-            dualYieldTokenID,
-        );
+        return this.tokenService.getNftCollectionMetadata(dualYieldTokenID);
     }
 
     async getLpFarmToken(stakingProxyAddress: string): Promise<NftCollection> {
         const lpFarmTokenID = await this.stakingProxyAbi.lpFarmTokenID(
             stakingProxyAddress,
         );
-        return await this.tokenService.getNftCollectionMetadata(lpFarmTokenID);
+        return this.tokenService.getNftCollectionMetadata(lpFarmTokenID);
     }
 
     async getBatchRewardsForPosition(
@@ -153,7 +151,7 @@ export class StakingProxyService {
         const promises = positions.map((position) => {
             return this.getRewardsForPosition(position);
         });
-        return await Promise.all(promises);
+        return Promise.all(promises);
     }
 
     async getUnstakeTokensReceived(
@@ -314,6 +312,6 @@ export class StakingProxyService {
         const stakingFarmAddress =
             await this.stakingProxyAbi.stakingFarmAddress(stakingProxyAddress);
 
-        return await this.stakingAbiService.minUnbondEpochs(stakingFarmAddress);
+        return this.stakingAbiService.minUnbondEpochs(stakingFarmAddress);
     }
 }
