@@ -17,7 +17,6 @@ export class CacheModule {
             imports: [
                 InMemoryCacheModule,
                 RedisCacheModule.forRootAsync(redisCacheModuleAsyncOptions),
-                // ...(redisCacheModuleAsyncOptions.imports || []),
             ],
             providers: [CacheService],
             exports: [CacheService],
