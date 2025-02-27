@@ -55,7 +55,7 @@ export class AutoRouterService {
             destination,
         );
         try {
-            return await this.cacheService.getOrSet(
+            return this.cacheService.getOrSet(
                 cacheKey,
                 async () =>
                     GraphService.getInstance(pairs).getAllPaths(
@@ -97,7 +97,7 @@ export class AutoRouterService {
             );
 
             if (directPair !== undefined) {
-                return await this.singleSwap(
+                return this.singleSwap(
                     args,
                     tokenInID,
                     tokenOutID,
@@ -111,7 +111,7 @@ export class AutoRouterService {
             }
         }
 
-        return await this.multiSwap(
+        return this.multiSwap(
             args,
             tokenInID,
             tokenOutID,
@@ -348,7 +348,7 @@ export class AutoRouterService {
             this.getPair(address),
         );
 
-        return await Promise.all(pairsPromises);
+        return Promise.all(pairsPromises);
     }
 
     private async getPair(pairAddress: string): Promise<PairModel> {
@@ -490,7 +490,7 @@ export class AutoRouterService {
             throw new Error('Spread too big!');
         }
 
-        return await this.autoRouterTransactionService.multiPairSwap(sender, {
+        return this.autoRouterTransactionService.multiPairSwap(sender, {
             swapType: parent.swapType,
             tokenInID: parent.tokenInID,
             tokenOutID: parent.tokenOutID,
