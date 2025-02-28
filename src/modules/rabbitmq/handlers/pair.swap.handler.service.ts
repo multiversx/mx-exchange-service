@@ -18,6 +18,7 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -39,6 +40,7 @@ export class SwapEventHandler {
         private readonly tokenSetter: TokenSetterService,
         private readonly pairHandler: PairHandler,
         private readonly dataApi: MXDataApiService,
+        private readonly tokenService: TokenService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -286,9 +288,17 @@ export class SwapEventHandler {
             ],
         );
 
+        const token = await this.tokenService.tokenMetadata(tokenID);
+        const updatedToken = {
+            ...token,
+            price: tokenPriceDerivedUSD,
+        };
+        console.log(token.identifier, token.price, tokenPriceDerivedUSD);
+
         const cacheKeys = await Promise.all([
             this.tokenSetter.setDerivedEGLD(tokenID, tokenPriceDerivedEGLD),
             this.tokenSetter.setDerivedUSD(tokenID, tokenPriceDerivedUSD),
+            this.tokenSetter.setMetadata(tokenID, updatedToken),
         ]);
 
         await this.deleteCacheKeys(cacheKeys);
