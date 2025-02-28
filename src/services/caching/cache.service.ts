@@ -1,27 +1,44 @@
-import { Injectable } from '@nestjs/common';
-import { OriginLogger, PendingExecuter } from '@multiversx/sdk-nestjs-common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
-import { RedisCacheService } from '@multiversx/sdk-nestjs-cache';
+import {
+    RedisCacheService,
+    CacheService as SdkCacheService,
+    InMemoryCacheService as InMemoryLruCacheService,
+} from '@multiversx/sdk-nestjs-cache';
 import { InMemoryCacheService } from './in.memory.cache.service';
+import { CachingModuleOptions } from '@multiversx/sdk-nestjs-cache/lib/entities/caching.module.options';
+import { OriginLogger, PendingExecuter } from '@multiversx/sdk-nestjs-common';
+import { ADDITIONAL_CACHING_OPTIONS } from './cache.module';
 
 @Injectable()
-export class CacheService {
-    private readonly pendingExecuter: PendingExecuter;
-    private readonly logger = new OriginLogger(CacheService.name);
+export class CacheService extends SdkCacheService {
+    private readonly customPendingExecuter: PendingExecuter;
+    private readonly originLogger = new OriginLogger(CacheService.name);
 
     constructor(
-        private readonly inMemoryCacheService: InMemoryCacheService,
-        private readonly redisCacheService: RedisCacheService,
+        @Optional()
+        @Inject(ADDITIONAL_CACHING_OPTIONS)
+        private readonly remoteCacheOptions: CachingModuleOptions,
+        private readonly inMemoryLruCacheService: InMemoryLruCacheService,
+        private readonly remoteCacheService: RedisCacheService,
+        private readonly inMemoryTtlCacheService: InMemoryCacheService,
     ) {
-        this.pendingExecuter = new PendingExecuter();
+        super(remoteCacheOptions, inMemoryLruCacheService, remoteCacheService);
+        this.customPendingExecuter = new PendingExecuter();
     }
 
-    getLocal<T>(key: string): T | undefined {
-        return this.inMemoryCacheService.get<T>(key);
+    getLocal<T>(key: string): T | undefined;
+    getLocal<T>(key: string): Promise<T | undefined>;
+    getLocal<T>(key: string): T | undefined | Promise<T | undefined> {
+        return this.inMemoryTtlCacheService.get<T>(key);
     }
 
-    getManyLocal<T>(keys: string[]): (T | undefined)[] {
-        return this.inMemoryCacheService.getMany<T>(keys);
+    getManyLocal<T>(keys: string[]): (T | undefined)[];
+    getManyLocal<T>(keys: string[]): Promise<(T | undefined)[]>;
+    getManyLocal<T>(
+        keys: string[],
+    ): (T | undefined)[] | Promise<(T | undefined)[]> {
+        return this.inMemoryTtlCacheService.getMany<T>(keys);
     }
 
     setLocal<T>(
@@ -30,16 +47,33 @@ export class CacheService {
         ttl: number,
         cacheNullable = true,
     ): void {
-        return this.inMemoryCacheService.set<T>(key, value, ttl, cacheNullable);
+        return this.inMemoryTtlCacheService.set<T>(
+            key,
+            value,
+            ttl,
+            cacheNullable,
+        );
     }
 
     setManyLocal<T>(
         keys: string[],
         values: T[],
         ttl: number,
+        cacheNullable?: boolean,
+    ): void;
+    setManyLocal<T>(
+        keys: string[],
+        values: T[],
+        ttl: number,
+        cacheNullable?: boolean,
+    ): Promise<void>;
+    setManyLocal<T>(
+        keys: string[],
+        values: T[],
+        ttl: number,
         cacheNullable = true,
-    ): void {
-        return this.inMemoryCacheService.setMany(
+    ): void | Promise<void> {
+        return this.inMemoryTtlCacheService.setMany(
             keys,
             values,
             ttl,
@@ -47,104 +81,54 @@ export class CacheService {
         );
     }
 
-    deleteLocal(key: string): void {
-        return this.inMemoryCacheService.delete(key);
+    deleteLocal(key: string): void;
+    deleteLocal(key: string): Promise<void>;
+    deleteLocal(key: string): void | Promise<void> {
+        return this.inMemoryTtlCacheService.delete(key);
     }
 
-    deleteManyLocal(keys: string[]): void {
-        for (const key of keys) {
-            this.inMemoryCacheService.delete(key);
-        }
+    deleteManyLocal(keys: string[]): void;
+    deleteManyLocal(keys: string[]): Promise<void>;
+    deleteManyLocal(keys: string[]): void | Promise<void> {
+        return this.inMemoryTtlCacheService.deleteMany(keys);
     }
 
-    getRemote<T>(key: string): Promise<T | undefined> {
-        return this.buildInternalCreateValueFunc<T>(`getRemote.${key}`, () =>
-            this.redisCacheService.get<T>(key),
-        )();
-    }
-
-    getManyRemote<T>(keys: string[]): Promise<(T | undefined | null)[]> {
-        return this.redisCacheService.getMany(keys);
-    }
-
-    setRemote<T>(
-        key: string,
-        value: T,
-        ttl: number | null = null,
-        cacheNullable = true,
-    ): Promise<void> {
-        return this.redisCacheService.set<T>(key, value, ttl, cacheNullable);
-    }
-
-    async setManyRemote<T>(
-        keys: string[],
-        values: T[],
-        ttl: number,
-        cacheNullable = true,
-    ): Promise<void> {
-        await this.redisCacheService.setMany(keys, values, ttl, cacheNullable);
-    }
-
-    setTtlRemote(key: string, ttl: number): Promise<void> {
-        return this.redisCacheService.expire(key, ttl);
-    }
-
-    deleteRemote(key: string): Promise<void> {
-        return this.redisCacheService.delete(key);
-    }
-
-    deleteManyRemote(keys: string[]): Promise<void> {
-        return this.redisCacheService.deleteMany(keys);
-    }
-
-    getKeys(key: string): Promise<string[]> {
-        return this.redisCacheService.keys(key);
-    }
-
-    getOrSetRemote<T>(
+    getOrSetLocal<T>(
         key: string,
         createValueFunc: () => Promise<T>,
         ttl: number,
         cacheNullable = true,
     ): Promise<T> {
-        return this.redisCacheService.getOrSet<T>(
+        return this.inMemoryTtlCacheService.getOrSet<T>(
             key,
             () => {
-                return this.executeWithPendingPromise(key, createValueFunc);
+                return this.executeWithPromise(key, createValueFunc);
             },
             ttl,
             cacheNullable,
         );
     }
 
-    incrementRemote(key: string, ttl: number | null = null): Promise<number> {
-        return this.redisCacheService.increment(key, ttl);
-    }
-
-    zIncrementRemote(
+    setOrUpdateLocal<T>(
         key: string,
-        increment: number,
-        member: string,
-    ): Promise<string> {
-        return this.redisCacheService.zincrby(key, member, increment);
-    }
-
-    zRangeByScoreRemote(
-        key: string,
-        from: number,
-        to: number,
-    ): Promise<string[]> {
-        return this.redisCacheService.zrangebyscore(key, from, to, {
-            withScores: true,
-        });
+        createValueFunc: () => Promise<T>,
+        ttl: number,
+        cacheNullable = true,
+    ): Promise<T> {
+        return this.inMemoryTtlCacheService.setOrUpdate<T>(
+            key,
+            createValueFunc,
+            ttl,
+            cacheNullable,
+        );
     }
 
     async get<T>(key: string): Promise<T | undefined> {
-        const inMemoryCacheValue = this.inMemoryCacheService.get<T>(key);
+        const inMemoryCacheValue = this.getLocal<T>(key);
         if (inMemoryCacheValue) {
             return inMemoryCacheValue;
         }
-        return this.redisCacheService.get<T>(key);
+        return this.getRemote<T>(key);
     }
 
     async getMany<T>(keys: string[]): Promise<(T | undefined)[]> {
@@ -172,40 +156,35 @@ export class CacheService {
         return values;
     }
 
-    async set<T>(
+    set<T>(
         key: string,
         value: T,
         ttl: number,
         inMemoryTtl: number = ttl,
         cacheNullable = true,
     ): Promise<void> {
-        this.inMemoryCacheService.set<T>(
-            key,
-            value,
-            inMemoryTtl,
-            cacheNullable,
-        );
-        await this.redisCacheService.set<T>(key, value, ttl, cacheNullable);
+        this.setLocal<T>(key, value, inMemoryTtl, cacheNullable);
+        return this.setRemote<T>(key, value, ttl, cacheNullable);
     }
 
-    async setMany<T>(
+    setMany<T>(
         keys: string[],
         values: T[],
         ttl: number,
         cacheNullable = true,
     ): Promise<void> {
         this.setManyLocal(keys, values, ttl, cacheNullable);
-        await this.setManyRemote(keys, values, ttl, cacheNullable);
+        return this.setManyRemote(keys, values, ttl, cacheNullable);
     }
 
-    async delete(key: string): Promise<void> {
-        this.inMemoryCacheService.delete(key);
-        await this.redisCacheService.delete(key);
+    delete(key: string): Promise<void> {
+        this.deleteLocal(key);
+        return this.deleteRemote(key);
     }
 
-    async deleteMany(keys: string[]): Promise<void> {
+    deleteMany(keys: string[]): Promise<void> {
         this.deleteManyLocal(keys);
-        await this.deleteManyRemote(keys);
+        return this.deleteManyRemote(keys);
     }
 
     async getOrSet<T>(
@@ -215,12 +194,10 @@ export class CacheService {
         inMemoryTtl: number = ttl,
         cacheNullable = true,
     ): Promise<T> {
-        const internalCreateValueFunc = this.buildInternalCreateValueFunc<T>(
-            key,
-            createValueFunc,
-        );
+        const internalCreateValueFunc =
+            this.buildInternalCreateValueFunction<T>(key, createValueFunc);
         const getOrAddFromRedisFunc = async (): Promise<T> => {
-            return await this.redisCacheService.getOrSet<T>(
+            return await this.getOrSetRemote<T>(
                 key,
                 internalCreateValueFunc,
                 ttl,
@@ -228,7 +205,7 @@ export class CacheService {
             );
         };
 
-        return this.inMemoryCacheService.getOrSet<T>(
+        return this.getOrSetLocal<T>(
             key,
             getOrAddFromRedisFunc,
             inMemoryTtl,
@@ -236,27 +213,27 @@ export class CacheService {
         );
     }
 
-    private executeWithPendingPromise<T>(
+    private executeWithPromise<T>(
         key: string,
         promise: () => Promise<T>,
     ): Promise<T> {
-        return this.pendingExecuter.execute(key, promise);
+        return this.customPendingExecuter.execute(key, promise);
     }
 
-    private buildInternalCreateValueFunc<T>(
+    private buildInternalCreateValueFunction<T>(
         key: string,
         createValueFunc: () => Promise<T>,
     ): () => Promise<T> {
         return async () => {
             try {
-                const data = await this.executeWithPendingPromise(
+                const data = await this.executeWithPromise(
                     key,
                     createValueFunc,
                 );
                 return data;
             } catch (error) {
                 if (error instanceof Error) {
-                    this.logger.error(
+                    this.originLogger.error(
                         'Caching - An error occurred while trying to load value.',
                         {
                             error: error?.toString(),
@@ -274,15 +251,13 @@ export class CacheService {
 
         if (key.includes('*')) {
             const allKeys = await this.getKeys(key);
-            for (const key of allKeys) {
-                this.deleteLocal(key);
-                await this.redisCacheService.delete(key);
 
-                invalidatedKeys.push(key);
-            }
+            this.deleteManyLocal(allKeys);
+            await this.deleteManyRemote(allKeys);
+            invalidatedKeys.push(allKeys);
         } else {
             this.deleteLocal(key);
-            await this.redisCacheService.delete(key);
+            await this.deleteRemote(key);
             invalidatedKeys.push(key);
         }
 

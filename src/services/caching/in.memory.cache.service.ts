@@ -31,10 +31,6 @@ export class InMemoryCacheService {
         return keys.map((key) => this.get<T>(key));
     }
 
-    getKeyCount(): number {
-        return InMemoryCacheService.localCache.size;
-    }
-
     set<T>(key: string, value: T, ttl: number, cacheNullable = true): void {
         if (value === undefined) {
             return;
@@ -80,6 +76,12 @@ export class InMemoryCacheService {
         InMemoryCacheService.localCache.delete(key);
     }
 
+    deleteMany(keys: string[]): void {
+        for (const key of keys) {
+            this.delete(key);
+        }
+    }
+
     async getOrSet<T>(
         key: string,
         createValueFunc: () => Promise<T>,
@@ -93,6 +95,19 @@ export class InMemoryCacheService {
 
         const internalCreateValueFunc =
             this.buildInternalCreateValueFunc<T>(createValueFunc);
+        const value = await internalCreateValueFunc();
+        this.set<T>(key, value, ttl, cacheNullable);
+        return value;
+    }
+
+    async setOrUpdate<T>(
+        key: string,
+        createValueFunc: () => Promise<T>,
+        ttl: number,
+        cacheNullable = true,
+    ): Promise<T> {
+        const internalCreateValueFunc =
+            this.buildInternalCreateValueFunc(createValueFunc);
         const value = await internalCreateValueFunc();
         this.set<T>(key, value, ttl, cacheNullable);
         return value;
