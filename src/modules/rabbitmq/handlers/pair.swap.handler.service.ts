@@ -293,7 +293,6 @@ export class SwapEventHandler {
             ...token,
             price: tokenPriceDerivedUSD,
         };
-        console.log(token.identifier, token.price, tokenPriceDerivedUSD);
 
         const cacheKeys = await Promise.all([
             this.tokenSetter.setDerivedEGLD(tokenID, tokenPriceDerivedEGLD),
