@@ -23,10 +23,18 @@ import { ExitFarmProxyEventModel } from './models/proxy/exitFarmProxy.event.mode
 import { PairProxyEventModel } from './models/proxy/pairProxy.event.model';
 import { RewardsProxyEventModel } from './models/proxy/rewardsProxy.event.model';
 import { SWAP_IDENTIFIER } from '../rabbitmq/handlers/pair.swap.handler.service';
+import { EsdtToken } from '../tokens/models/esdtToken.model';
 
 @Resolver()
 export class SubscriptionsResolver {
     constructor(@Inject(PUB_SUB) private pubSub: RedisPubSub) {}
+
+    @Subscription(() => EsdtToken, {
+        resolve: (event) => event,
+    })
+    tokenMetadataChanged() {
+        return this.pubSub.asyncIterator('TOKEN_METADATA_CHANGED');
+    }
 
     @Subscription(() => SwapFixedInputEventModel, {
         resolve: (event) =>
