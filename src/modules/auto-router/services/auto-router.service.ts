@@ -26,7 +26,6 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TransactionModel } from 'src/models/transaction.model';
-import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 @Injectable()
 export class AutoRouterService {
