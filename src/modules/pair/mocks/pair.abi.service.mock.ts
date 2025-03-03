@@ -40,6 +40,13 @@ export class PairAbiServiceMock implements IPairAbiService {
     async totalFeePercent(pairAddress: string): Promise<number> {
         return PairsData(pairAddress).totalFeePercent;
     }
+    async getAllPairsTotalFeePercent(
+        pairAddresses: string[],
+    ): Promise<number[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).totalFeePercent,
+        );
+    }
     specialFeePercent(pairAddress: string): Promise<number> {
         throw new Error('Method not implemented.');
     }

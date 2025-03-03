@@ -60,13 +60,7 @@ export class PairAbiLoader {
 
     public readonly totalFeePercentLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
-            return getAllKeys<number>(
-                this.cacheService,
-                addresses,
-                'pair.totalFeePercent',
-                this.pairAbi.totalFeePercent.bind(this.pairAbi),
-                CacheTtlInfo.ContractState,
-            );
+            return this.pairAbi.getAllPairsTotalFeePercent(addresses);
         },
         {
             cache: false,
