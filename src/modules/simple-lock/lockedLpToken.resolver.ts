@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { tokenCollection } from 'src/utils/token.converters';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
@@ -17,7 +17,7 @@ export class LockedLpTokenResolver {
 
     @ResolveField()
     async firstTokenLockedAttributes(
-        @Parent() parent: LpProxyTokenAttributesModel,
+        parent: LpProxyTokenAttributesModel,
     ): Promise<LockedTokenAttributesModel> {
         try {
             if (parent.firstTokenLockedNonce === 0) {
@@ -38,7 +38,7 @@ export class LockedLpTokenResolver {
 
     @ResolveField()
     async secondTokenLockedAttributes(
-        @Parent() parent: LpProxyTokenAttributesModel,
+        parent: LpProxyTokenAttributesModel,
     ): Promise<LockedTokenAttributesModel> {
         try {
             if (parent.secondTokenLockedNonce === 0) {

@@ -37,5 +37,11 @@ export class NftCollection implements INFTCollection {
 
     constructor(init?: Partial<NftCollection>) {
         Object.assign(this, init);
+        if (init.assets) {
+            this.assets = new AssetsModel(init.assets);
+        }
+        if (init.roles) {
+            this.roles = new RolesModel(init.roles);
+        }
     }
 }

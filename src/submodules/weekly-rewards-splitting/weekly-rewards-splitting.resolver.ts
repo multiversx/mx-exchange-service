@@ -1,4 +1,4 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { ResolveField, Resolver } from '@nestjs/graphql';
 import {
     ClaimProgress,
     GlobalInfoByWeekModel,
@@ -19,7 +19,7 @@ export class GlobalInfoByWeekResolver {
 
     @ResolveField()
     async totalRewardsForWeek(
-        @Parent() parent: GlobalInfoByWeekModel,
+        parent: GlobalInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
         return this.weekyRewardsSplittingAbi.totalRewardsForWeek(
             parent.scAddress,
@@ -28,9 +28,7 @@ export class GlobalInfoByWeekResolver {
     }
 
     @ResolveField()
-    async totalEnergyForWeek(
-        @Parent() parent: GlobalInfoByWeekModel,
-    ): Promise<string> {
+    async totalEnergyForWeek(parent: GlobalInfoByWeekModel): Promise<string> {
         return this.weekyRewardsSplittingAbi.totalEnergyForWeek(
             parent.scAddress,
             parent.week,
@@ -39,7 +37,7 @@ export class GlobalInfoByWeekResolver {
 
     @ResolveField(() => [TokenDistributionModel])
     async rewardsDistributionForWeek(
-        @Parent() parent: GlobalInfoByWeekModel,
+        parent: GlobalInfoByWeekModel,
     ): Promise<TokenDistributionModel[]> {
         const totalRewardsForWeek =
             await this.weekyRewardsSplittingAbi.totalRewardsForWeek(
@@ -53,7 +51,7 @@ export class GlobalInfoByWeekResolver {
 
     @ResolveField()
     async totalLockedTokensForWeek(
-        @Parent() parent: GlobalInfoByWeekModel,
+        parent: GlobalInfoByWeekModel,
     ): Promise<string> {
         return this.weekyRewardsSplittingAbi.totalLockedTokensForWeek(
             parent.scAddress,
@@ -62,7 +60,7 @@ export class GlobalInfoByWeekResolver {
     }
 
     @ResolveField()
-    async apr(@Parent() parent: GlobalInfoByWeekModel): Promise<string> {
+    async apr(parent: GlobalInfoByWeekModel): Promise<string> {
         return this.weeklyRewardsSplittingCompute.weekAPR(
             parent.scAddress,
             parent.week,
@@ -78,7 +76,7 @@ export class UserInfoByWeekSubResolver {
 
     @ResolveField()
     async lastActiveWeekForUser(
-        @Parent() parent: UserEntryFeesCollectorModel,
+        parent: UserEntryFeesCollectorModel,
     ): Promise<number> {
         return this.weekyRewardsSplittingAbi.lastActiveWeekForUser(
             parent.address,
@@ -88,7 +86,7 @@ export class UserInfoByWeekSubResolver {
 
     @ResolveField(() => ClaimProgress)
     async claimProgress(
-        @Parent() parent: UserEntryFeesCollectorModel,
+        parent: UserEntryFeesCollectorModel,
     ): Promise<ClaimProgress> {
         return this.weekyRewardsSplittingAbi.currentClaimProgress(
             parent.address,
