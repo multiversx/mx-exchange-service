@@ -1,3 +1,4 @@
+import { constantsConfig } from 'src/config';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 
 export class GraphService {
@@ -51,6 +52,10 @@ export class GraphService {
     ) {
         if (node === destination) {
             paths.push([...localPathList]);
+            return;
+        }
+
+        if (localPathList.length > constantsConfig.MAX_SWAP_ROUTE_DEPTH) {
             return;
         }
 
