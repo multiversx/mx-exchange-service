@@ -49,14 +49,13 @@ export class GraphService {
         isVisited: Map<string, boolean>,
         localPathList: Array<string>,
         paths: Array<string[]>,
-        maxDepth: number,
     ) {
         if (node === destination) {
             paths.push([...localPathList]);
             return;
         }
 
-        if (localPathList.length >= maxDepth) {
+        if (localPathList.length >= constantsConfig.MAX_SWAP_ROUTE_DEPTH) {
             return;
         }
 
@@ -76,7 +75,6 @@ export class GraphService {
                     isVisited,
                     localPathList,
                     paths,
-                    maxDepth,
                 );
                 localPathList.splice(localPathList.indexOf(adjNode), 1);
             }
@@ -84,11 +82,7 @@ export class GraphService {
         isVisited.set(node, false);
     }
 
-    getAllPaths(
-        source: string,
-        destination: string,
-        maxDepth: number = constantsConfig.MAX_SWAP_ROUTE_DEPTH,
-    ) {
+    getAllPaths(source: string, destination: string) {
         const isVisited = new Map<string, boolean>();
         const nodes = this.adjList.keys();
         const paths = new Array<string[]>();
@@ -100,14 +94,7 @@ export class GraphService {
         const pathList = new Array<string>();
         pathList.push(source);
 
-        this.getAllPathsUtil(
-            source,
-            destination,
-            isVisited,
-            pathList,
-            paths,
-            maxDepth,
-        );
+        this.getAllPathsUtil(source, destination, isVisited, pathList, paths);
 
         return paths;
     }
