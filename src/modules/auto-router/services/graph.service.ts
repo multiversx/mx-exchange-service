@@ -1,3 +1,4 @@
+import { constantsConfig } from 'src/config';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 
 export class GraphService {
@@ -48,9 +49,14 @@ export class GraphService {
         isVisited: Map<string, boolean>,
         localPathList: Array<string>,
         paths: Array<string[]>,
+        maxDepth: number,
     ) {
         if (node === destination) {
             paths.push([...localPathList]);
+            return;
+        }
+
+        if (localPathList.length >= maxDepth) {
             return;
         }
 
@@ -70,6 +76,7 @@ export class GraphService {
                     isVisited,
                     localPathList,
                     paths,
+                    maxDepth,
                 );
                 localPathList.splice(localPathList.indexOf(adjNode), 1);
             }
@@ -77,7 +84,11 @@ export class GraphService {
         isVisited.set(node, false);
     }
 
-    getAllPaths(source: string, destination: string) {
+    getAllPaths(
+        source: string,
+        destination: string,
+        maxDepth: number = constantsConfig.MAX_SWAP_ROUTE_DEPTH,
+    ) {
         const isVisited = new Map<string, boolean>();
         const nodes = this.adjList.keys();
         const paths = new Array<string[]>();
@@ -89,7 +100,14 @@ export class GraphService {
         const pathList = new Array<string>();
         pathList.push(source);
 
-        this.getAllPathsUtil(source, destination, isVisited, pathList, paths);
+        this.getAllPathsUtil(
+            source,
+            destination,
+            isVisited,
+            pathList,
+            paths,
+            maxDepth,
+        );
 
         return paths;
     }
