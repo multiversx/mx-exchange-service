@@ -55,7 +55,7 @@ export class GraphService {
             return;
         }
 
-        if (localPathList.length >= constantsConfig.MAX_SWAP_ROUTE_DEPTH) {
+        if (localPathList.length > constantsConfig.MAX_SWAP_ROUTE_DEPTH) {
             return;
         }
 
