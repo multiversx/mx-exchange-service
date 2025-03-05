@@ -9,6 +9,11 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AnalyticsSetterService } from 'src/modules/analytics/services/analytics.setter.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
+import { AnalyticsPairService } from 'src/modules/analytics/services/analytics.pair.service';
+import { AnalyticsPairSetterService } from 'src/modules/analytics/services/analytics.pair.setter.service';
+import { alignTimestampTo4HourInterval } from 'src/utils/analytics.utils';
+import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
+import moment from 'moment';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
@@ -17,6 +22,8 @@ export class AnalyticsCacheWarmerService {
         private readonly analyticsSetter: AnalyticsSetterService,
         private readonly apiConfig: ApiConfigService,
         private readonly routerAbi: RouterAbiService,
+        private readonly analyticsPairService: AnalyticsPairService,
+        private readonly analyticsPairSetter: AnalyticsPairSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -115,6 +122,73 @@ export class AnalyticsCacheWarmerService {
             ),
         ]);
         await this.deleteCacheKeys(cachedKeys);
+    }
+
+    @Cron(CronExpression.EVERY_2_HOURS)
+    @Lock({ name: 'cachePriceCandles', verbose: true })
+    async cachePriceCandles(): Promise<void> {
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const metrics = ['firstTokenPrice', 'secondTokenPrice'];
+        const resolution = PriceCandlesResolutions.HOUR_4;
+
+        const endTimestamp = moment().unix().toString();
+        const startTimestamp = moment()
+            .subtract(7, 'days')
+            .unix()
+            .toString();
+
+        const alignedStart = alignTimestampTo4HourInterval(startTimestamp);
+        const alignedEnd = alignTimestampTo4HourInterval(endTimestamp);
+
+        for (const pair of pairsMetadata) {
+            for (const metric of metrics) {
+                const candles = await this.analyticsPairService.priceCandles(
+                    pair.address,
+                    metric,
+                    alignedStart,
+                    alignedEnd,
+                    resolution,
+                );
+
+                const cacheKey = await this.analyticsPairSetter.setPriceCandles(
+                    pair.address,
+                    metric,
+                    alignedStart,
+                    alignedEnd,
+                    resolution,
+                    candles,
+                );
+
+                await this.deleteCacheKeys([cacheKey]);
+            }
+        }
+
+        const tokenIDs = new Set<string>();
+        for (const pair of pairsMetadata) {
+            tokenIDs.add(pair.firstTokenID);
+            tokenIDs.add(pair.secondTokenID);
+        }
+
+        for (const tokenID of tokenIDs) {
+            const candles = await this.analyticsPairService.priceCandles(
+                tokenID,
+                'priceUSD',
+                alignedStart,
+                alignedEnd,
+                resolution,
+            );
+
+            const cacheKey = await this.analyticsPairSetter.setPriceCandles(
+                tokenID,
+                'priceUSD',
+                alignedStart,
+                alignedEnd,
+                resolution,
+                candles,
+            );
+
+            await this.deleteCacheKeys([cacheKey]);
+        }
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

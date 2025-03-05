@@ -14,6 +14,7 @@ import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.validator';
 import { TradingActivityModel } from './models/trading.activity.model';
 import { RouterAbiService } from '../router/services/router.abi.service';
+import { alignTimestampTo4HourInterval } from 'src/utils/analytics.utils';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -192,11 +193,14 @@ export class AnalyticsResolver {
         @Args(PriceCandlesArgsValidationPipe)
         args: PriceCandlesQueryArgs,
     ): Promise<CandleDataModel[]> {
-        return this.analyticsPairService.getPriceCandles(
+        const adjustedStart = alignTimestampTo4HourInterval(args.start);
+        const adjustedEnd = alignTimestampTo4HourInterval(args.end);
+
+        return this.analyticsPairService.priceCandles(
             args.series,
             args.metric,
-            args.start,
-            args.end,
+            adjustedStart,
+            adjustedEnd,
             args.resolution,
         );
     }

@@ -10,6 +10,8 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { PriceCandlesResolutions } from '../models/query.args';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class AnalyticsPairService {
@@ -128,7 +130,7 @@ export class AnalyticsPairService {
         return pairsDayDatas;
     }
 
-    async getPriceCandles(
+    async gueryPriceCandles(
         series: string,
         metric: string,
         start: string,
@@ -142,5 +144,26 @@ export class AnalyticsPairService {
             start,
             end,
         });
+    }
+
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneHour() * 3,
+        localTtl: Constants.oneHour(),
+    })
+    async priceCandles(
+        series: string,
+        metric: string,
+        start: string,
+        end: string,
+        resolution: PriceCandlesResolutions,
+    ): Promise<CandleDataModel[]> {
+        return await this.gueryPriceCandles(
+            series,
+            metric,
+            start,
+            end,
+            resolution,
+        );
     }
 }
