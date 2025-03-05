@@ -1,6 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { TokenComputeService } from './token.compute.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import DataLoader from 'dataloader';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { TokenService } from './token.service';

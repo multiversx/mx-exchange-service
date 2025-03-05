@@ -23,7 +23,7 @@ import {
     LockedTokenAttributesModel,
     LpProxyTokenAttributesModel,
 } from '../models/simple.lock.model';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { farmVersion } from 'src/utils/farm.utils';

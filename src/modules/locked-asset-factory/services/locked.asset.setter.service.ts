@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 
 @Injectable()

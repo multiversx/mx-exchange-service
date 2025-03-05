@@ -10,7 +10,7 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { UrlUtils } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
