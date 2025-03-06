@@ -133,8 +133,8 @@ jobs:
       mongodb:
         image: mongo:latest
         env:
-          MONGO_INITDB_ROOT_USERNAME: mongodb
-          MONGO_INITDB_ROOT_PASSWORD: password
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: admin
         ports:
           - 27017:27017
         options: >-
