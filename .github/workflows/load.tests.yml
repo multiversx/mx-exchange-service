@@ -74,7 +74,7 @@ jobs:
       run: npm run build
 
     - name: Start Node.js API
-      run: GH_ACTIONS=true node ./dist/main.js &
+      run: GH_ACTIONS=true node ./dist/main.js
 
     - name: Install k6
       run: |
