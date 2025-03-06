@@ -241,6 +241,18 @@ export class PairAbiService
         return response.firstValue.valueOf().toNumber();
     }
 
+    async getAllPairsTotalFeePercent(
+        pairAddresses: string[],
+    ): Promise<number[]> {
+        return getAllKeys<number>(
+            this.cachingService,
+            pairAddresses,
+            'pair.totalFeePercent',
+            this.totalFeePercent.bind(this),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
