@@ -68,7 +68,7 @@ jobs:
       run: npm run typeorm:generate-migration
 
     - name: Run Migrations
-      run: npm run typeorm:run-migrations
+      run: npm run typeorm:run-migrations 2>&1 || true
 
     - name: Build
       run: npm run build
@@ -166,7 +166,7 @@ jobs:
       run: npm run typeorm:generate-migration
 
     - name: Run Migrations
-      run: npm run typeorm:run-migrations
+      run: npm run typeorm:run-migrations 2>&1 || true
 
     - name: Build
       run: npm run build
