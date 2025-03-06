@@ -60,15 +60,6 @@ jobs:
 
     - name: Copy config
       run: npm run copy-env
-    
-    - name: Create Migrations
-      run: npm run typeorm:create-migration
-
-    - name: Generate Migrations
-      run: npm run typeorm:generate-migration
-
-    - name: Run Migrations
-      run: npm run typeorm:run-migrations 2>&1 || true
 
     - name: Build
       run: npm run build
@@ -158,15 +149,6 @@ jobs:
 
     - name: Copy config
       run: npm run copy-env
-    
-    - name: Create Migrations
-      run: npm run typeorm:create-migration
-
-    - name: Generate Migrations
-      run: npm run typeorm:generate-migration
-
-    - name: Run Migrations
-      run: npm run typeorm:run-migrations 2>&1 || true
 
     - name: Build
       run: npm run build
