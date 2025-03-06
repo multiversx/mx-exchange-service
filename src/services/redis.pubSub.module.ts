@@ -20,11 +20,17 @@ export const PUB_SUB = 'PUB_SUB';
                 const publisher = new Redis.default({
                     host: configService.getRedisUrl() || 'localhost',
                     port: Number(configService.getRedisPort()) || 6379,
+                    retryStrategy: function () {
+                        return 1000;
+                    },
                 });
 
                 const subscriber = new Redis.default({
                     host: configService.getRedisUrl() || 'localhost',
                     port: Number(configService.getRedisPort()) || 6379,
+                    retryStrategy: function () {
+                        return 1000;
+                    },
                 });
 
                 return new RedisPubSub({ publisher, subscriber });
@@ -35,4 +41,4 @@ export const PUB_SUB = 'PUB_SUB';
     ],
     exports: [PUB_SUB],
 })
-export class RedisPubSubModule { }
+export class RedisPubSubModule {}

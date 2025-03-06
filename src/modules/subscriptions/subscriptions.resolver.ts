@@ -35,10 +35,13 @@ export class SubscriptionsResolver {
             const { series } = variables;
             const { tradingActivityEvent } = event;
 
+            if (series === tradingActivityEvent.address) {
+                return tradingActivityEvent;
+            }
+
             if (
-                series !== tradingActivityEvent.address &&
-                (tradingActivityEvent.inputToken.identifier === series ||
-                    tradingActivityEvent.outputToken.identifier === series)
+                tradingActivityEvent.inputToken.identifier === series ||
+                tradingActivityEvent.outputToken.identifier === series
             ) {
                 const action =
                     series === tradingActivityEvent.outputToken.identifier
@@ -47,8 +50,6 @@ export class SubscriptionsResolver {
 
                 return { ...tradingActivityEvent, action };
             }
-
-            return tradingActivityEvent;
         },
         filter: (payload, variables) => {
             const { series } = variables;
