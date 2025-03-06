@@ -3,6 +3,7 @@ import { OriginLogger, PendingExecuter } from '@multiversx/sdk-nestjs-common';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { RedisCacheService } from '@multiversx/sdk-nestjs-cache';
 import { InMemoryCacheService } from './in.memory.cache.service';
+import { parseCachedNullOrUndefined } from 'src/utils/cache.utils';
 
 @Injectable()
 export class CacheService {
@@ -147,7 +148,10 @@ export class CacheService {
         return this.redisCacheService.get<T>(key);
     }
 
-    async getMany<T>(keys: string[]): Promise<(T | undefined)[]> {
+    async getMany<T>(
+        keys: string[],
+        localTtl: number,
+    ): Promise<(T | undefined)[]> {
         const values = this.getManyLocal<T>(keys);
 
         const missingIndexes: number[] = [];
@@ -162,7 +166,21 @@ export class CacheService {
             missingKeys.push(keys[missingIndex]);
         }
 
+        if (missingKeys.length === 0) {
+            return values.map((value) => parseCachedNullOrUndefined(value));
+        }
+
         const remoteValues = await this.getManyRemote<T>(missingKeys);
+
+        if (localTtl > 0) {
+            this.setManyLocal<T>(
+                missingKeys,
+                remoteValues.map((value) =>
+                    value ? parseCachedNullOrUndefined(value) : undefined,
+                ),
+                localTtl,
+            );
+        }
 
         for (const [index, missingIndex] of missingIndexes.entries()) {
             const remoteValue = remoteValues[index];
