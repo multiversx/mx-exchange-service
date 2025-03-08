@@ -461,7 +461,10 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         start,
         end,
     }): Promise<CandleDataModel[]> {
-        const candleRepository = this.getCandleModelByResolution(resolution);
+        const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
+            resolution,
+            metric,
+        );
 
         const startDate = moment.unix(start).utc().toString();
         const endDate = moment.unix(end).utc().toString();
@@ -474,7 +477,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             .addSelect('locf(min(low)) as low')
             .addSelect('locf(max(high)) as high')
             .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
             .andWhere('time between :startDate and :endDate', {
                 startDate,
                 endDate,
@@ -502,7 +504,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             .createQueryBuilder()
             .select('open, close, high, low')
             .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
             .andWhere('time < :startDate', { startDate })
             .orderBy('time', 'DESC')
             .limit(1)
