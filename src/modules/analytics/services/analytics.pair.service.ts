@@ -130,7 +130,7 @@ export class AnalyticsPairService {
         return pairsDayDatas;
     }
 
-    async gueryPriceCandles(
+    async queryPriceCandles(
         series: string,
         metric: string,
         start: string,
@@ -158,7 +158,7 @@ export class AnalyticsPairService {
         end: string,
         resolution: PriceCandlesResolutions,
     ): Promise<CandleDataModel[]> {
-        return await this.gueryPriceCandles(
+        return await this.queryPriceCandles(
             series,
             metric,
             start,

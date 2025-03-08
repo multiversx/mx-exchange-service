@@ -162,33 +162,6 @@ export class AnalyticsCacheWarmerService {
                 await this.deleteCacheKeys([cacheKey]);
             }
         }
-
-        const tokenIDs = new Set<string>();
-        for (const pair of pairsMetadata) {
-            tokenIDs.add(pair.firstTokenID);
-            tokenIDs.add(pair.secondTokenID);
-        }
-
-        for (const tokenID of tokenIDs) {
-            const candles = await this.analyticsPairService.priceCandles(
-                tokenID,
-                'priceUSD',
-                alignedStart,
-                alignedEnd,
-                resolution,
-            );
-
-            const cacheKey = await this.analyticsPairSetter.setPriceCandles(
-                tokenID,
-                'priceUSD',
-                alignedStart,
-                alignedEnd,
-                resolution,
-                candles,
-            );
-
-            await this.deleteCacheKeys([cacheKey]);
-        }
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
