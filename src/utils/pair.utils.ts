@@ -6,7 +6,7 @@ export const determineBaseAndQuoteTokens = (
     commonTokens: string[],
 ): { baseToken: string; quoteToken: string } => {
     const sortedCommonTokens = commonTokens.sort((a, b) => {
-        const order = ['USD', 'EGLD'];
+        const order = ['USD', 'USH', 'EGLD'];
         const indexA = order.findIndex((token) => a.includes(token));
         const indexB = order.findIndex((token) => b.includes(token));
         if (indexA === -1 && indexB === -1) return 0;
