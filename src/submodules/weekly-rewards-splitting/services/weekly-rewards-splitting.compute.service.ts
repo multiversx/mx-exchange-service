@@ -81,10 +81,8 @@ export class WeeklyRewardsSplittingComputeService
             await this.computeTotalLockedTokensForWeekPriceUSD(
                 totalLockedTokensForWeek,
             );
-        const totalRewardsForWeekPriceUSD = await this.totalRewardsForWeekUSD(
-            scAddress,
-            week,
-        );
+        const totalRewardsForWeekPriceUSD =
+            await this.computeTotalRewardsForWeekUSD(scAddress, week);
 
         const weekAPR = new BigNumber(totalRewardsForWeekPriceUSD)
             .times(52)

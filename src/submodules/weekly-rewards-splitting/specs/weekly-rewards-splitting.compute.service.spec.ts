@@ -103,9 +103,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
 
         jest.spyOn(
             tokenCompute,
-            'computeTokenPriceDerivedUSD',
-        ).mockImplementation((tokenID) => {
-            return Promise.resolve(priceMap.get(tokenID));
+            'getAllTokensPriceDerivedUSD',
+        ).mockImplementation((tokenIDs: string[]) => {
+            return Promise.resolve(
+                tokenIDs.map((tokenID) => priceMap.get(tokenID)),
+            );
         });
         jest.spyOn(
             weeklyRewardsSplittingAbi,
@@ -143,10 +145,9 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             );
             const tokenCompute =
                 module.get<TokenComputeService>(TokenComputeService);
-            jest.spyOn(
-                tokenCompute,
-                'computeTokenPriceDerivedUSD',
-            ).mockReturnValue(Promise.resolve('10'));
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockReturnValue(
+                Promise.resolve('10'),
+            );
 
             let usdValue =
                 await service.computeTotalLockedTokensForWeekPriceUSD('0');
@@ -182,11 +183,18 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 module.get<WeeklyRewardsSplittingAbiService>(
                     WeeklyRewardsSplittingAbiService,
                 );
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
-                'computeTokenPriceDerivedUSD',
-            ).mockImplementation((tokenID) => {
-                return Promise.resolve(priceMap.get(tokenID));
+                'getAllTokensPriceDerivedUSD',
+            ).mockImplementation((tokenIDs: string[]) => {
+                return Promise.resolve(
+                    tokenIDs.map((tokenID) => priceMap.get(tokenID)),
+                );
             });
             jest.spyOn(
                 weeklyRewardsSplittingAbi,
@@ -226,12 +234,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         const tokenCompute =
             module.get<TokenComputeService>(TokenComputeService);
 
-        jest.spyOn(
-            tokenCompute,
-            'computeTokenPriceDerivedUSD',
-        ).mockImplementation((tokenID) => {
-            return Promise.resolve(priceMap.get(tokenID));
-        });
+        jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+            (tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            },
+        );
 
         const apr = await service.computeWeekAPR(Address.Zero().bech32(), 1);
         expect(apr).toEqual('371.8'); // 100 * 10 + 200 * 30
@@ -258,12 +265,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             module.get<WeeklyRewardsSplittingAbiService>(
                 WeeklyRewardsSplittingAbiService,
             );
-        jest.spyOn(
-            tokenCompute,
-            'computeTokenPriceDerivedUSD',
-        ).mockImplementation((tokenID) => {
-            return Promise.resolve(priceMap.get(tokenID));
-        });
+        jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+            (tokenID) => {
+                return Promise.resolve(priceMap.get(tokenID));
+            },
+        );
         jest.spyOn(
             weeklyRewardsSplittingAbi,
             'userEnergyForWeek',
@@ -307,12 +313,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 module.get<WeeklyRewardsSplittingAbiService>(
                     WeeklyRewardsSplittingAbiService,
                 );
-            jest.spyOn(
-                tokenCompute,
-                'computeTokenPriceDerivedUSD',
-            ).mockImplementation((tokenID) => {
-                return Promise.resolve(priceMap.get(tokenID));
-            });
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
 
             jest.spyOn(
                 weeklyRewardsSplittingAbi,
@@ -381,12 +386,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 module.get<WeeklyRewardsSplittingAbiService>(
                     WeeklyRewardsSplittingAbiService,
                 );
-            jest.spyOn(
-                tokenCompute,
-                'computeTokenPriceDerivedUSD',
-            ).mockImplementation((tokenID) => {
-                return Promise.resolve(priceMap.get(tokenID));
-            });
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 weeklyRewardsSplittingAbi,
                 'totalEnergyForWeek',
@@ -458,12 +462,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 module.get<WeeklyRewardsSplittingAbiService>(
                     WeeklyRewardsSplittingAbiService,
                 );
-            jest.spyOn(
-                tokenCompute,
-                'computeTokenPriceDerivedUSD',
-            ).mockImplementation((tokenID) => {
-                return Promise.resolve(priceMap.get(tokenID));
-            });
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 weeklyRewardsSplittingAbi,
                 'totalEnergyForWeek',
