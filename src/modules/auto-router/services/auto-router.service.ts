@@ -334,38 +334,42 @@ export class AutoRouterService {
     }
 
     private async getAllActivePairs() {
-        const pairAddresses = await this.routerAbi.pairsAddress();
-        const statesPromises = pairAddresses.map((address) =>
-            this.pairAbi.state(address),
+        const pairMetadata = await this.routerAbi.pairsMetadata();
+
+        const states = await this.pairService.getAllStates(
+            pairMetadata.map((pair) => pair.address),
         );
-        const states = await Promise.all(statesPromises);
-        const activePairs: string[] = [];
-        states.forEach((value, index) => {
-            if (value === 'Active') activePairs.push(pairAddresses[index]);
+
+        const activePairs = pairMetadata.filter(
+            (_pair, index) => states[index] === 'Active',
+        );
+
+        const pairAddresses: string[] = [];
+        let tokenIDs: string[] = [];
+        activePairs.forEach((pair) => {
+            pairAddresses.push(pair.address);
+            tokenIDs.push(...[pair.firstTokenID, pair.secondTokenID]);
         });
+        tokenIDs = [...new Set(tokenIDs)];
 
-        const pairsPromises = activePairs.map((address) =>
-            this.getPair(address),
+        const [allInfo, allTotalFeePercent, allTokens] = await Promise.all([
+            this.pairAbi.getAllPairsInfoMetadata(pairAddresses),
+            this.pairAbi.getAllPairsTotalFeePercent(pairAddresses),
+            this.tokenService.getAllTokensMetadata(tokenIDs),
+        ]);
+
+        const tokenMap = new Map(
+            allTokens.map((token) => [token.identifier, token]),
         );
 
-        return Promise.all(pairsPromises);
-    }
-
-    private async getPair(pairAddress: string): Promise<PairModel> {
-        const [info, totalFeePercent, firstToken, secondToken] =
-            await Promise.all([
-                this.pairAbi.pairInfoMetadata(pairAddress),
-                this.pairAbi.totalFeePercent(pairAddress),
-                this.pairService.getFirstToken(pairAddress),
-                this.pairService.getSecondToken(pairAddress),
-            ]);
-
-        return new PairModel({
-            address: pairAddress,
-            firstToken,
-            secondToken,
-            info,
-            totalFeePercent,
+        return activePairs.map((pair, index) => {
+            return new PairModel({
+                address: pair.address,
+                firstToken: tokenMap.get(pair.firstTokenID),
+                secondToken: tokenMap.get(pair.secondTokenID),
+                info: allInfo[index],
+                totalFeePercent: allTotalFeePercent[index],
+            });
         });
     }
 

@@ -8,6 +8,7 @@ export class MetricsCollector {
     private static queryComplexityHistogram: Histogram<string>;
     private static awsQueryDurationHistogram: Histogram<string>;
     private static dataApiQueryDurationHistogram: Histogram<string>;
+    private static vmQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
     private static guestQueriesGauge: Gauge<string>;
     private static currentNonceGauge: Gauge<string>;
@@ -67,6 +68,15 @@ export class MetricsCollector {
             MetricsCollector.dataApiQueryDurationHistogram = new Histogram({
                 name: 'data_api_query',
                 help: 'Data API Queries',
+                labelNames: ['query'],
+                buckets: [],
+            });
+        }
+
+        if (!MetricsCollector.vmQueryDurationHistogram) {
+            MetricsCollector.vmQueryDurationHistogram = new Histogram({
+                name: 'vm_query_duration',
+                help: 'VM Queries',
                 labelNames: ['query'],
                 buckets: [],
             });
@@ -177,6 +187,11 @@ export class MetricsCollector {
 
     static setExternalCall(system: string, func: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
+        if (system === 'vm.query') {
+            MetricsCollector.vmQueryDurationHistogram
+                .labels(func)
+                .observe(duration);
+        }
         MetricsCollector.baseMetrics.setExternalCall(system, duration);
     }
 
