@@ -456,9 +456,11 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     @TimescaleDBQuery()
     async getPriceCandles({ series, start, end }): Promise<CandleDataModel[]> {
         const resolution = PriceCandlesResolutions.HOUR_4;
+        const metric = 'priceUSD';
+
         const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
             resolution,
-            'priceUSD',
+            metric,
         );
 
         const startDate = moment.unix(start).utc().toString();
@@ -489,7 +491,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             return query.map(
                 (row) =>
                     new CandleDataModel({
-                        time: row.bucket,
+                        time: moment(row.bucket).valueOf().toString(),
                         ohlc: [row.open, row.high, row.low, row.close],
                     }),
             );
@@ -510,7 +512,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .map(
                     (row) =>
                         new CandleDataModel({
-                            time: row.bucket,
+                            time: moment(row.bucket).valueOf().toString(),
                             ohlc: [row.open, row.high, row.low, row.close],
                         }),
                 );
@@ -519,7 +521,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         return query.map(
             (row) =>
                 new CandleDataModel({
-                    time: row.bucket,
+                    time: moment(row.bucket).valueOf().toString(),
                     ohlc: [
                         row.open ?? previousCandle.open,
                         row.high ?? previousCandle.high,
