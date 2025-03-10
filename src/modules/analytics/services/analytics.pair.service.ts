@@ -148,8 +148,8 @@ export class AnalyticsPairService {
 
     @GetOrSetCache({
         baseKey: 'analytics',
-        remoteTtl: Constants.oneHour() * 3,
-        localTtl: Constants.oneHour(),
+        remoteTtl: Constants.oneHour() * 4,
+        localTtl: Constants.oneHour() * 3,
     })
     async priceCandles(
         series: string,
