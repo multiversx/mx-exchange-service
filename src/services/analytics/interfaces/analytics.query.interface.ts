@@ -30,7 +30,7 @@ export interface AnalyticsQueryInterface {
         endDate,
     }): Promise<HistoricDataModel[]>;
 
-    getPriceCandles({
+    getTokenMiniChartPriceCandles({
         series,
         start,
         end,

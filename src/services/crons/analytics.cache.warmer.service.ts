@@ -124,8 +124,8 @@ export class AnalyticsCacheWarmerService {
     }
 
     @Cron(CronExpression.EVERY_2_HOURS)
-    @Lock({ name: 'cachePriceCandles', verbose: true })
-    async cachePriceCandles(): Promise<void> {
+    @Lock({ name: 'cacheTokenMiniChartPriceCandles', verbose: true })
+    async cacheTokenMiniChartPriceCandles(): Promise<void> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
 
         const endTimestamp = moment().unix().toString();
@@ -141,13 +141,13 @@ export class AnalyticsCacheWarmerService {
         }
 
         for (const tokenID of tokenIDs) {
-            const candles = await this.analyticsQueryService.getPriceCandles({
+            const candles = await this.analyticsQueryService.getTokenMiniChartPriceCandles({
                 series: tokenID,
                 start: alignedStart,
                 end: alignedEnd,
             });
 
-            const cacheKey = await this.analyticsPairSetter.setPriceCandles(
+            const cacheKey = await this.analyticsPairSetter.setTokenMiniChartPriceCandles(
                 tokenID,
                 alignedStart,
                 alignedEnd,

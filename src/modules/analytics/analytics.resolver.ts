@@ -201,7 +201,7 @@ export class AnalyticsResolver {
         const adjustedStart = alignTimestampTo4HourInterval(args.start);
         const adjustedEnd = alignTimestampTo4HourInterval(args.end);
 
-        return this.analyticsPairService.priceCandles(
+        return this.analyticsPairService.tokenMiniChartPriceCandles(
             args.series,
             adjustedStart,
             adjustedEnd,
@@ -223,7 +223,7 @@ export class AnalyticsResolver {
         const adjustedStart = alignTimestampTo4HourInterval(args.start);
         const adjustedEnd = alignTimestampTo4HourInterval(args.end);
 
-        return this.analyticsPairService.priceCandles(
+        return this.analyticsPairService.tokenMiniChartPriceCandles(
             args.series,
             adjustedStart,
             adjustedEnd,

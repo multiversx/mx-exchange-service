@@ -135,12 +135,12 @@ export class AnalyticsPairService {
         remoteTtl: Constants.oneHour() * 4,
         localTtl: Constants.oneHour() * 3,
     })
-    async priceCandles(
+    async tokenMiniChartPriceCandles(
         series: string,
         start: string,
         end: string,
     ): Promise<CandleDataModel[]> {
-        return await this.analyticsQueryService.getPriceCandles({
+        return await this.analyticsQueryService.getTokenMiniChartPriceCandles({
             series,
             start,
             end,

@@ -81,13 +81,13 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
         });
     }
 
-    async getPriceCandles({
+    async getTokenMiniChartPriceCandles({
         series,
         start,
         end,
     }): Promise<CandleDataModel[]> {
         const service = await this.getService();
-        return await service.getPriceCandles({
+        return await service.getTokenMiniChartPriceCandles({
             series,
             start,
             end,

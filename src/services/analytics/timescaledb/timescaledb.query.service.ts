@@ -454,7 +454,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
-    async getPriceCandles({ series, start, end }): Promise<CandleDataModel[]> {
+    async getTokenMiniChartPriceCandles({ series, start, end }): Promise<CandleDataModel[]> {
         const resolution = PriceCandlesResolutions.HOUR_4;
         const metric = 'priceUSD';
 

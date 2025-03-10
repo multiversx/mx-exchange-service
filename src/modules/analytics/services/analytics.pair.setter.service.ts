@@ -16,14 +16,14 @@ export class AnalyticsPairSetterService extends GenericSetterService {
         this.baseKey = 'analytics';
     }
 
-    async setPriceCandles(
+    async setTokenMiniChartPriceCandles(
         series: string,
         start: string,
         end: string,
         candles: CandleDataModel[],
     ): Promise<string> {
         return await this.setData(
-            this.getCacheKey('priceCandles', series, start, end),
+            this.getCacheKey('tokenMiniChartPriceCandles', series, start, end),
             candles,
             Constants.oneHour() * 4,
             Constants.oneHour() * 3,
