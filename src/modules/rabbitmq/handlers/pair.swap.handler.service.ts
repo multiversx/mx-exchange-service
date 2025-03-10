@@ -272,9 +272,9 @@ export class SwapEventHandler {
                 balance: event.getTokenIn().amount.toFixed(),
             },
             outputToken: {
-                ...(event.getTokenIn().tokenID === firstToken.identifier
-                    ? secondToken
-                    : firstToken),
+                ...(event.getTokenOut().tokenID === firstToken.identifier
+                    ? firstToken
+                    : secondToken),
                 balance: event.getTokenOut().amount.toFixed(),
             },
         };
