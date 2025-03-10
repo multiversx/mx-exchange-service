@@ -6,7 +6,6 @@ import {
 } from 'src/modules/analytics/models/analytics.model';
 import { TimescaleDBQueryService } from '../timescaledb/timescaledb.query.service';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
-import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 
 @Injectable()
 export class AnalyticsQueryService implements AnalyticsQueryInterface {
@@ -84,16 +83,12 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
 
     async getPriceCandles({
         series,
-        metric,
-        resolution,
         start,
         end,
     }): Promise<CandleDataModel[]> {
         const service = await this.getService();
         return await service.getPriceCandles({
             series,
-            metric,
-            resolution,
             start,
             end,
         });

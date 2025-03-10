@@ -43,7 +43,6 @@ export class AnalyticsQueryServiceMock implements AnalyticsQueryInterface {
     }
     getPriceCandles({
         series,
-        metric,
         start,
         end,
     }): Promise<CandleDataModel[]> {

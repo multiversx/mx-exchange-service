@@ -130,22 +130,6 @@ export class AnalyticsPairService {
         return pairsDayDatas;
     }
 
-    async queryPriceCandles(
-        series: string,
-        metric: string,
-        start: string,
-        end: string,
-        resolution: PriceCandlesResolutions,
-    ): Promise<CandleDataModel[]> {
-        return await this.analyticsQueryService.getPriceCandles({
-            series,
-            metric,
-            resolution,
-            start,
-            end,
-        });
-    }
-
     @GetOrSetCache({
         baseKey: 'analytics',
         remoteTtl: Constants.oneHour() * 4,
@@ -153,17 +137,13 @@ export class AnalyticsPairService {
     })
     async priceCandles(
         series: string,
-        metric: string,
         start: string,
         end: string,
-        resolution: PriceCandlesResolutions,
     ): Promise<CandleDataModel[]> {
-        return await this.queryPriceCandles(
+        return await this.analyticsQueryService.getPriceCandles({
             series,
-            metric,
             start,
             end,
-            resolution,
-        );
+        });
     }
 }

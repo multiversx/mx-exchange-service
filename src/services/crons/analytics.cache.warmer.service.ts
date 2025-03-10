@@ -9,10 +9,9 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AnalyticsSetterService } from 'src/modules/analytics/services/analytics.setter.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
-import { AnalyticsPairService } from 'src/modules/analytics/services/analytics.pair.service';
 import { AnalyticsPairSetterService } from 'src/modules/analytics/services/analytics.pair.setter.service';
 import { alignTimestampTo4HourInterval } from 'src/utils/analytics.utils';
-import { PriceCandlesResolutions } from 'src/modules/analytics/models/query.args';
+import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import moment from 'moment';
 
 @Injectable()
@@ -22,8 +21,8 @@ export class AnalyticsCacheWarmerService {
         private readonly analyticsSetter: AnalyticsSetterService,
         private readonly apiConfig: ApiConfigService,
         private readonly routerAbi: RouterAbiService,
-        private readonly analyticsPairService: AnalyticsPairService,
         private readonly analyticsPairSetter: AnalyticsPairSetterService,
+        private readonly analyticsQueryService: AnalyticsQueryService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -128,39 +127,34 @@ export class AnalyticsCacheWarmerService {
     @Lock({ name: 'cachePriceCandles', verbose: true })
     async cachePriceCandles(): Promise<void> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const metrics = ['firstTokenPrice', 'secondTokenPrice'];
-        const resolution = PriceCandlesResolutions.HOUR_4;
 
         const endTimestamp = moment().unix().toString();
-        const startTimestamp = moment()
-            .subtract(7, 'days')
-            .unix()
-            .toString();
+        const startTimestamp = moment().subtract(7, 'days').unix().toString();
 
         const alignedStart = alignTimestampTo4HourInterval(startTimestamp);
         const alignedEnd = alignTimestampTo4HourInterval(endTimestamp);
 
+        const tokenIDs = new Set<string>();
         for (const pair of pairsMetadata) {
-            for (const metric of metrics) {
-                const candles = await this.analyticsPairService.priceCandles(
-                    pair.address,
-                    metric,
-                    alignedStart,
-                    alignedEnd,
-                    resolution,
-                );
+            tokenIDs.add(pair.firstTokenID);
+            tokenIDs.add(pair.secondTokenID);
+        }
 
-                const cacheKey = await this.analyticsPairSetter.setPriceCandles(
-                    pair.address,
-                    metric,
-                    alignedStart,
-                    alignedEnd,
-                    resolution,
-                    candles,
-                );
+        for (const tokenID of tokenIDs) {
+            const candles = await this.analyticsQueryService.getPriceCandles({
+                series: tokenID,
+                start: alignedStart,
+                end: alignedEnd,
+            });
 
-                await this.deleteCacheKeys([cacheKey]);
-            }
+            const cacheKey = await this.analyticsPairSetter.setPriceCandles(
+                tokenID,
+                alignedStart,
+                alignedEnd,
+                candles,
+            );
+
+            await this.deleteCacheKeys([cacheKey]);
         }
     }
 

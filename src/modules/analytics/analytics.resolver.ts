@@ -198,10 +198,8 @@ export class AnalyticsResolver {
 
         return this.analyticsPairService.priceCandles(
             args.series,
-            args.metric,
             adjustedStart,
             adjustedEnd,
-            args.resolution,
         );
     }
 

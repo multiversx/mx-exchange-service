@@ -454,16 +454,11 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
-    async getPriceCandles({
-        series,
-        metric,
-        resolution,
-        start,
-        end,
-    }): Promise<CandleDataModel[]> {
+    async getPriceCandles({ series, start, end }): Promise<CandleDataModel[]> {
+        const resolution = PriceCandlesResolutions.HOUR_4;
         const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
             resolution,
-            metric,
+            'priceUSD',
         );
 
         const startDate = moment.unix(start).utc().toString();
@@ -596,20 +591,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                     ],
                 }),
         );
-    }
-
-    private getCandleModelByResolution(
-        resolution: PriceCandlesResolutions,
-    ): Repository<PriceCandleMinute | PriceCandleHourly | PriceCandleDaily> {
-        if (resolution.includes('minute')) {
-            return this.priceCandleMinute;
-        }
-
-        if (resolution.includes('hour')) {
-            return this.priceCandleHourly;
-        }
-
-        return this.priceCandleDaily;
     }
 
     private getCandleRepositoryByResolutionAndMetric(
