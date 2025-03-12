@@ -1,5 +1,9 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { EsdtToken, EsdtTokenType } from '../models/esdtToken.model';
+import {
+    BaseEsdtToken,
+    EsdtToken,
+    EsdtTokenType,
+} from '../models/esdtToken.model';
 import {
     TokenSortingArgs,
     TokensFilter,
@@ -156,6 +160,39 @@ export class TokenService {
 
     async tokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
         return this.apiService.getToken(tokenID);
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'token',
+        remoteTtl: CacheTtlInfo.BaseToken.remoteTtl,
+        localTtl: CacheTtlInfo.BaseToken.localTtl,
+    })
+    async baseTokenMetadata(tokenID: string): Promise<BaseEsdtToken> {
+        return this.baseTokenMetadataRaw(tokenID);
+    }
+
+    async getAllBaseTokensMetadata(
+        tokenIDs: string[],
+    ): Promise<BaseEsdtToken[]> {
+        return getAllKeys<BaseEsdtToken>(
+            this.cachingService,
+            tokenIDs,
+            'token.baseTokenMetadata',
+            this.baseTokenMetadata.bind(this),
+            CacheTtlInfo.BaseToken,
+        );
+    }
+
+    async baseTokenMetadataRaw(tokenID: string): Promise<BaseEsdtToken> {
+        const token = await this.apiService.getToken(tokenID);
+
+        return new BaseEsdtToken({
+            identifier: tokenID,
+            decimals: token.decimals,
+        });
     }
 
     @ErrorLoggerAsync({

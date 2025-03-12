@@ -9,18 +9,25 @@ export enum EsdtTokenType {
     FungibleLpToken = 'FungibleESDT-LP',
 }
 
+export class BaseEsdtToken {
+    identifier: string;
+    decimals: number;
+
+    constructor(init?: Partial<BaseEsdtToken>) {
+        Object.assign(this, init);
+    }
+}
+
 @ObjectType({
     implements: () => [IEsdtToken],
 })
-export class EsdtToken implements IEsdtToken {
-    identifier: string;
+export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
     name: string;
     ticker: string;
     owner: string;
     minted?: string;
     burnt?: string;
     initialMinted?: string;
-    decimals: number;
     derivedEGLD: string;
     price?: string;
     previous24hPrice?: string;
@@ -58,6 +65,7 @@ export class EsdtToken implements IEsdtToken {
     createdAt?: string;
 
     constructor(init?: Partial<EsdtToken>) {
+        super(init);
         Object.assign(this, init);
         if (init.assets) {
             this.assets = new AssetsModel(init.assets);
