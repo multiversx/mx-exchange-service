@@ -17,7 +17,7 @@ import { PairTransactionService } from 'src/modules/pair/services/pair.transacti
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { GraphService } from './graph.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
@@ -99,7 +99,7 @@ export class AutoRouterService {
             );
 
             if (directPair !== undefined) {
-                return await this.singleSwap(
+                return this.singleSwap(
                     args,
                     tokenInID,
                     tokenOutID,
@@ -113,7 +113,7 @@ export class AutoRouterService {
             }
         }
 
-        return await this.multiSwap(
+        return this.multiSwap(
             args,
             tokenInID,
             tokenOutID,
@@ -496,7 +496,7 @@ export class AutoRouterService {
             throw new Error('Spread too big!');
         }
 
-        return await this.autoRouterTransactionService.multiPairSwap(sender, {
+        return this.autoRouterTransactionService.multiPairSwap(sender, {
             swapType: parent.swapType,
             tokenInID: parent.tokenInID,
             tokenOutID: parent.tokenOutID,

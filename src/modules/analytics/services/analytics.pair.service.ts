@@ -23,7 +23,7 @@ export class AnalyticsPairService {
     async getClosingLockedValueUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestCompleteValues(
+        return this.analyticsAWSGetter.getLatestCompleteValues(
             pairAddress,
             'lockedValueUSD',
         );
@@ -32,21 +32,21 @@ export class AnalyticsPairService {
     async getDailyVolumesUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getSumCompleteValues(
+        return this.analyticsAWSGetter.getSumCompleteValues(
             pairAddress,
             'volumeUSD',
         );
     }
 
     async getDailyFeesUSD(pairAddress: string): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getSumCompleteValues(
+        return this.analyticsAWSGetter.getSumCompleteValues(
             pairAddress,
             'feesUSD',
         );
     }
 
     async getClosingPriceUSD(tokenID: string): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestCompleteValues(
+        return this.analyticsAWSGetter.getLatestCompleteValues(
             tokenID,
             'priceUSD',
         );
@@ -135,7 +135,7 @@ export class AnalyticsPairService {
         end: string,
         resolution: PriceCandlesResolutions,
     ): Promise<CandleDataModel[]> {
-        return await this.analyticsQueryService.getPriceCandles({
+        return this.analyticsQueryService.getPriceCandles({
             series,
             metric,
             resolution,

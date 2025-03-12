@@ -92,7 +92,7 @@ export class FeesCollectorComputeService {
             userAddress,
             week,
         );
-        return await this.weeklyRewardsSplittingCompute.computeDistribution(
+        return this.weeklyRewardsSplittingCompute.computeDistribution(
             userRewardsForWeek,
         );
     }
@@ -109,7 +109,7 @@ export class FeesCollectorComputeService {
         scAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.computeAccumulatedFeesUntilNow(scAddress, week);
+        return this.computeAccumulatedFeesUntilNow(scAddress, week);
     }
 
     async computeAccumulatedFeesUntilNow(

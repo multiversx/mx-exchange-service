@@ -65,7 +65,7 @@ export class FeesCollectorTransactionService {
         sender: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFeesCollectorSmartContractTransaction(
+        return this.mxProxy.getFeesCollectorSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasLimit,
@@ -75,7 +75,7 @@ export class FeesCollectorTransactionService {
     }
 
     async updateEnergyForUser(userAddress: string): Promise<TransactionModel> {
-        return await this.mxProxy.getFeesCollectorSmartContractTransaction(
+        return this.mxProxy.getFeesCollectorSmartContractTransaction(
             new TransactionOptions({
                 sender: userAddress,
                 gasLimit: gasConfig.feesCollector.updateEnergyForUser,
@@ -92,7 +92,7 @@ export class FeesCollectorTransactionService {
         pairAddresses: string[],
         remove = false,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFeesCollectorSmartContractTransaction(
+        return this.mxProxy.getFeesCollectorSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.feesCollector.addKnownContracts,
@@ -117,7 +117,7 @@ export class FeesCollectorTransactionService {
         tokenIDs: string[],
         remove = false,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFeesCollectorSmartContractTransaction(
+        return this.mxProxy.getFeesCollectorSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.feesCollector.addKnownTokens,

@@ -52,7 +52,7 @@ export class RouterTransactionService {
             throw new Error('Pair already exists');
         }
 
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -100,7 +100,7 @@ export class RouterTransactionService {
             endpointArgs.push(new BigUIntValue(new BigNumber(fee)));
         }
 
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -125,7 +125,7 @@ export class RouterTransactionService {
             throw new Error('Pair does not exist');
         }
 
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -150,7 +150,7 @@ export class RouterTransactionService {
             throw new Error('LP Token already issued');
         }
 
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -172,7 +172,7 @@ export class RouterTransactionService {
         sender: string,
         pairAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -187,7 +187,7 @@ export class RouterTransactionService {
         sender: string,
         args: SetLocalRoleOwnerArgs,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -211,7 +211,7 @@ export class RouterTransactionService {
         address: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -226,7 +226,7 @@ export class RouterTransactionService {
         sender: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -244,7 +244,7 @@ export class RouterTransactionService {
         feeTokenID: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -277,7 +277,7 @@ export class RouterTransactionService {
             throw new Error('Invalid sender address');
         }
 
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -302,7 +302,7 @@ export class RouterTransactionService {
     async clearPairTemporaryOwnerStorage(
         sender: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -316,7 +316,7 @@ export class RouterTransactionService {
         sender: string,
         periodBlocks: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -331,7 +331,7 @@ export class RouterTransactionService {
         sender: string,
         address: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getRouterSmartContractTransaction(
+        return this.mxProxy.getRouterSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 chainID: mxConfig.chainID,
@@ -424,7 +424,7 @@ export class RouterTransactionService {
         amount: string,
     ): Promise<TransactionModel> {
         if (tokenID === mxConfig.EGLDIdentifier) {
-            return await this.transactionsWrapService.wrapEgld(sender, amount);
+            return this.transactionsWrapService.wrapEgld(sender, amount);
         }
     }
 
@@ -434,10 +434,7 @@ export class RouterTransactionService {
         amount: string,
     ): Promise<TransactionModel> {
         if (tokenID === mxConfig.EGLDIdentifier) {
-            return await this.transactionsWrapService.unwrapEgld(
-                sender,
-                amount,
-            );
+            return this.transactionsWrapService.unwrapEgld(sender, amount);
         }
     }
 

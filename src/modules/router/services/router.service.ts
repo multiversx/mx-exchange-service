@@ -17,7 +17,7 @@ import { CollectionType } from 'src/modules/common/collection.type';
 import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { SortingOrder } from 'src/modules/common/page.data';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 
 @Injectable()
@@ -161,7 +161,7 @@ export class RouterService {
     private async pairsByIssuedLpToken(
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        return await this.filterPairsByIssuedLpTokenRaw(pairsMetadata);
+        return this.filterPairsByIssuedLpTokenRaw(pairsMetadata);
     }
 
     private async filterPairsByIssuedLpTokenRaw(

@@ -28,7 +28,7 @@ import {
 import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
-import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -55,7 +55,7 @@ export class AnalyticsComputeService {
         localTtl: Constants.oneMinute() * 5,
     })
     async lockedValueUSDFarms(): Promise<string> {
-        return await this.computeLockedValueUSDFarms();
+        return this.computeLockedValueUSDFarms();
     }
 
     async computeLockedValueUSDFarms(): Promise<string> {
@@ -87,7 +87,7 @@ export class AnalyticsComputeService {
         localTtl: Constants.oneMinute() * 5,
     })
     async totalValueLockedUSD(): Promise<string> {
-        return await this.computeTotalValueLockedUSD();
+        return this.computeTotalValueLockedUSD();
     }
 
     async computeTotalValueLockedUSD(): Promise<string> {
@@ -120,7 +120,7 @@ export class AnalyticsComputeService {
         localTtl: Constants.oneMinute() * 5,
     })
     async totalValueStakedUSD(): Promise<string> {
-        return await this.computeTotalValueStakedUSD();
+        return this.computeTotalValueStakedUSD();
     }
 
     async computeTotalValueStakedUSD(): Promise<string> {
@@ -168,7 +168,7 @@ export class AnalyticsComputeService {
         localTtl: Constants.oneMinute() * 5,
     })
     async totalAggregatedRewards(days: number): Promise<string> {
-        return await this.computeTotalAggregatedRewards(days);
+        return this.computeTotalAggregatedRewards(days);
     }
 
     async computeTotalAggregatedRewards(days: number): Promise<string> {
@@ -205,7 +205,7 @@ export class AnalyticsComputeService {
         localTtl: Constants.oneMinute() * 5,
     })
     async totalLockedMexStakedUSD(): Promise<string> {
-        return await this.computeTotalLockedMexStakedUSD();
+        return this.computeTotalLockedMexStakedUSD();
     }
 
     async computeTotalLockedMexStakedUSD(): Promise<string> {
@@ -237,7 +237,7 @@ export class AnalyticsComputeService {
         localTtl: Constants.oneMinute() * 10,
     })
     async feeTokenBurned(tokenID: string, time: string): Promise<string> {
-        return await this.computeTokenBurned(tokenID, time, 'feeBurned');
+        return this.computeTokenBurned(tokenID, time, 'feeBurned');
     }
 
     @ErrorLoggerAsync()
@@ -247,7 +247,7 @@ export class AnalyticsComputeService {
         localTtl: Constants.oneMinute() * 10,
     })
     async penaltyTokenBurned(tokenID: string, time: string): Promise<string> {
-        return await this.computeTokenBurned(tokenID, time, 'penaltyBurned');
+        return this.computeTokenBurned(tokenID, time, 'penaltyBurned');
     }
 
     async computeTokenBurned(
@@ -255,7 +255,7 @@ export class AnalyticsComputeService {
         time: string,
         metric: string,
     ): Promise<string> {
-        return await this.analyticsQuery.getAggregatedValue({
+        return this.analyticsQuery.getAggregatedValue({
             series: tokenID,
             metric,
             time,
@@ -288,7 +288,7 @@ export class AnalyticsComputeService {
     async pairTradingActivity(
         pairAddress: string,
     ): Promise<TradingActivityModel[]> {
-        return await this.computePairTradingActivity(pairAddress);
+        return this.computePairTradingActivity(pairAddress);
     }
 
     @ErrorLoggerAsync()
@@ -300,42 +300,7 @@ export class AnalyticsComputeService {
     async tokenTradingActivity(
         tokenID: string,
     ): Promise<TradingActivityModel[]> {
-        return await this.computeTokenTradingActivity(tokenID);
-    }
-
-    private determineBaseAndQuoteTokens(
-        pairAddress: string,
-        pairsMetadata: PairMetadata[],
-        commonTokens: string[],
-    ): { baseToken: string; quoteToken: string } {
-        const sortedCommonTokens = commonTokens.sort((a, b) => {
-            const order = ['USD', 'EGLD'];
-            const indexA = order.findIndex((token) => a.includes(token));
-            const indexB = order.findIndex((token) => b.includes(token));
-            if (indexA === -1 && indexB === -1) return 0;
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-        });
-
-        const pair = pairsMetadata.find((pair) => pair.address === pairAddress);
-
-        for (const token of sortedCommonTokens) {
-            if (pair.firstTokenID === token || pair.secondTokenID === token) {
-                return {
-                    baseToken: token,
-                    quoteToken:
-                        pair.firstTokenID === token
-                            ? pair.secondTokenID
-                            : pair.firstTokenID,
-                };
-            }
-        }
-
-        return {
-            baseToken: pair.firstTokenID,
-            quoteToken: pair.secondTokenID,
-        };
+        return this.computeTokenTradingActivity(tokenID);
     }
 
     async computePairTradingActivity(
@@ -348,7 +313,7 @@ export class AnalyticsComputeService {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         const commonTokens = await this.routerAbi.commonTokensForUserPairs();
 
-        const { quoteToken, baseToken } = this.determineBaseAndQuoteTokens(
+        const { quoteToken, baseToken } = determineBaseAndQuoteTokens(
             pairAddress,
             pairsMetadata,
             commonTokens,
