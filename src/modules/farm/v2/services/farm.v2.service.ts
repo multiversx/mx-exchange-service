@@ -56,13 +56,13 @@ export class FarmServiceV2 extends FarmServiceBase {
             boostedPositions.set(position.farmAddress, boostedPosition);
         });
 
-        const promises = positions.map(async (position) => {
-            return await this.getRewardsForPosition(
+        const promises = positions.map((position) =>
+            this.getRewardsForPosition(
                 position,
                 boostedPositions.get(position.farmAddress) === position,
-            );
-        });
-        return await Promise.all(promises);
+            ),
+        );
+        return Promise.all(promises);
     }
 
     async getRewardsForPosition(

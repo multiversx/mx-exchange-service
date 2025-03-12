@@ -75,7 +75,7 @@ export class WeeklyRewardsSplittingComputeService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async weekAPR(scAddress: string, week: number): Promise<string> {
-        return await this.computeWeekAPR(scAddress, week);
+        return this.computeWeekAPR(scAddress, week);
     }
 
     async computeWeekAPR(scAddress: string, week: number): Promise<string> {
@@ -112,7 +112,7 @@ export class WeeklyRewardsSplittingComputeService
         userAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.computeUserApr(scAddress, userAddress, week);
+        return this.computeUserApr(scAddress, userAddress, week);
     }
 
     async computeUserApr(
@@ -159,7 +159,7 @@ export class WeeklyRewardsSplittingComputeService
         scAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.computeTotalRewardsForWeekUSD(scAddress, week);
+        return this.computeTotalRewardsForWeekUSD(scAddress, week);
     }
 
     async computeTotalRewardsForWeekUSD(

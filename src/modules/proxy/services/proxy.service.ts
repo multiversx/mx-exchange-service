@@ -72,7 +72,7 @@ export class ProxyService {
             version === 'v1'
                 ? await this.proxyAbi.lockedAssetTokenID(proxyAddress)
                 : await this.proxyAbiV2.lockedAssetTokenID(proxyAddress);
-        return await Promise.all(
+        return Promise.all(
             lockedAssetTokenIDs.map((tokenID: string) =>
                 this.tokenService.getNftCollectionMetadata(tokenID),
             ),
@@ -83,9 +83,7 @@ export class ProxyService {
         const wrappedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             proxyAddress,
         );
-        return await this.tokenService.getNftCollectionMetadata(
-            wrappedLpTokenID,
-        );
+        return this.tokenService.getNftCollectionMetadata(wrappedLpTokenID);
     }
 
     async getwrappedFarmToken(proxyAddress: string): Promise<NftCollection> {

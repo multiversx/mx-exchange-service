@@ -36,7 +36,7 @@ export abstract class FarmComputeService implements IFarmComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async farmLockedValueUSD(farmAddress: string): Promise<string> {
-        return await this.computeFarmLockedValueUSD(farmAddress);
+        return this.computeFarmLockedValueUSD(farmAddress);
     }
 
     async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
@@ -57,13 +57,13 @@ export abstract class FarmComputeService implements IFarmComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async farmingTokenPriceUSD(farmAddress: string): Promise<string> {
-        return await this.computeFarmingTokenPriceUSD(farmAddress);
+        return this.computeFarmingTokenPriceUSD(farmAddress);
     }
 
     async computeFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
         const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
         if (scAddress.has(farmingTokenID)) {
-            return await this.tokenCompute.tokenPriceDerivedUSD(farmingTokenID);
+            return this.tokenCompute.tokenPriceDerivedUSD(farmingTokenID);
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(

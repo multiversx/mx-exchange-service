@@ -97,7 +97,7 @@ export class AutoRouterService {
             );
 
             if (directPair !== undefined) {
-                return await this.singleSwap(
+                return this.singleSwap(
                     args,
                     tokenInID,
                     tokenOutID,
@@ -111,7 +111,7 @@ export class AutoRouterService {
             }
         }
 
-        return await this.multiSwap(
+        return this.multiSwap(
             args,
             tokenInID,
             tokenOutID,
@@ -494,7 +494,7 @@ export class AutoRouterService {
             throw new Error('Spread too big!');
         }
 
-        return await this.autoRouterTransactionService.multiPairSwap(sender, {
+        return this.autoRouterTransactionService.multiPairSwap(sender, {
             swapType: parent.swapType,
             tokenInID: parent.tokenInID,
             tokenOutID: parent.tokenOutID,

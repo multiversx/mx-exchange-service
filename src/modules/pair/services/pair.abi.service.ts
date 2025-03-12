@@ -52,7 +52,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async firstTokenID(pairAddress: string): Promise<string> {
-        return await this.getFirstTokenIDRaw(pairAddress);
+        return this.getFirstTokenIDRaw(pairAddress);
     }
 
     async getFirstTokenIDRaw(pairAddress: string): Promise<string> {
@@ -73,7 +73,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async secondTokenID(pairAddress: string): Promise<string> {
-        return await this.getSecondTokenIDRaw(pairAddress);
+        return this.getSecondTokenIDRaw(pairAddress);
     }
 
     async getSecondTokenIDRaw(pairAddress: string): Promise<string> {
@@ -94,7 +94,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async lpTokenID(pairAddress: string): Promise<string> {
-        return await this.getLpTokenIDRaw(pairAddress);
+        return this.getLpTokenIDRaw(pairAddress);
     }
 
     async getLpTokenIDRaw(pairAddress: string): Promise<string> {
@@ -118,7 +118,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async tokenReserve(pairAddress: string, tokenID: string): Promise<string> {
-        return await this.getTokenReserveRaw(pairAddress, tokenID);
+        return this.getTokenReserveRaw(pairAddress, tokenID);
     }
 
     @ErrorLoggerAsync({
@@ -131,7 +131,7 @@ export class PairAbiService
     })
     async firstTokenReserve(pairAddress: string): Promise<string> {
         const firstTokenID = await this.firstTokenID(pairAddress);
-        return await this.getTokenReserveRaw(pairAddress, firstTokenID);
+        return this.getTokenReserveRaw(pairAddress, firstTokenID);
     }
 
     @ErrorLoggerAsync({
@@ -144,7 +144,7 @@ export class PairAbiService
     })
     async secondTokenReserve(pairAddress: string): Promise<string> {
         const secondTokenID = await this.secondTokenID(pairAddress);
-        return await this.getTokenReserveRaw(pairAddress, secondTokenID);
+        return this.getTokenReserveRaw(pairAddress, secondTokenID);
     }
 
     async getTokenReserveRaw(
@@ -168,7 +168,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async totalSupply(pairAddress: string): Promise<string> {
-        return await this.getTotalSupplyRaw(pairAddress);
+        return this.getTotalSupplyRaw(pairAddress);
     }
 
     async getTotalSupplyRaw(pairAddress: string): Promise<string> {
@@ -189,7 +189,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async pairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        return await this.getPairInfoMetadataRaw(pairAddress);
+        return this.getPairInfoMetadataRaw(pairAddress);
     }
 
     async getPairInfoMetadataRaw(pairAddress: string): Promise<PairInfoModel> {
@@ -208,7 +208,7 @@ export class PairAbiService
     async getAllPairsInfoMetadata(
         pairAddresses: string[],
     ): Promise<PairInfoModel[]> {
-        return await getAllKeys<PairInfoModel>(
+        return getAllKeys<PairInfoModel>(
             this.cachingService,
             pairAddresses,
             'pair.pairInfoMetadata',
@@ -288,7 +288,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async trustedSwapPairs(pairAddress: string): Promise<string[]> {
-        return await this.getTrustedSwapPairsRaw(pairAddress);
+        return this.getTrustedSwapPairsRaw(pairAddress);
     }
 
     async getTrustedSwapPairsRaw(pairAddress: string): Promise<string[]> {
@@ -311,7 +311,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async initialLiquidityAdder(pairAddress: string): Promise<string> {
-        return await this.getInitialLiquidityAdderRaw(pairAddress);
+        return this.getInitialLiquidityAdderRaw(pairAddress);
     }
 
     async getInitialLiquidityAdderRaw(pairAddress: string): Promise<string> {
@@ -356,7 +356,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async state(pairAddress: string): Promise<string> {
-        return await this.getStateRaw(pairAddress);
+        return this.getStateRaw(pairAddress);
     }
 
     async getStateRaw(pairAddress: string): Promise<string> {
@@ -376,7 +376,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async feeState(pairAddress: string): Promise<boolean> {
-        return await this.getFeeStateRaw(pairAddress);
+        return this.getFeeStateRaw(pairAddress);
     }
 
     async getFeeStateRaw(pairAddress: string): Promise<boolean> {
@@ -571,7 +571,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async feeDestinations(pairAddress: string): Promise<FeeDestination[]> {
-        return await this.getFeeDestinationsRaw(pairAddress);
+        return this.getFeeDestinationsRaw(pairAddress);
     }
 
     async getFeeDestinationsRaw(
@@ -601,7 +601,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async whitelistedAddresses(pairAddress: string): Promise<string[]> {
-        return await this.getWhitelistedAddressesRaw(pairAddress);
+        return this.getWhitelistedAddressesRaw(pairAddress);
     }
 
     async getWhitelistedAddressesRaw(pairAddress: string): Promise<string[]> {
@@ -623,7 +623,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async routerAddress(pairAddress: string): Promise<string> {
-        return await this.getRouterAddressRaw(pairAddress);
+        return this.getRouterAddressRaw(pairAddress);
     }
 
     async getRouterAddressRaw(address: string): Promise<string> {
@@ -646,7 +646,7 @@ export class PairAbiService
         pairAddress: string,
         esdtTokenPayment: EsdtTokenPayment,
     ): Promise<EsdtTokenPayment> {
-        return await this.updateAndGetSafePrice(pairAddress, esdtTokenPayment);
+        return this.updateAndGetSafePrice(pairAddress, esdtTokenPayment);
     }
 
     async updateAndGetSafePrice(
@@ -711,7 +711,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async feesCollectorAddress(pairAddress: string): Promise<string> {
-        return await this.getFeesCollectorAddressRaw(pairAddress);
+        return this.getFeesCollectorAddressRaw(pairAddress);
     }
 
     async getFeesCollectorAddressRaw(address: string): Promise<string> {
@@ -736,7 +736,7 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async feesCollectorCutPercentage(pairAddress: string): Promise<number> {
-        return await this.getFeesCollectorCutPercentageRaw(pairAddress);
+        return this.getFeesCollectorCutPercentageRaw(pairAddress);
     }
 
     async getFeesCollectorCutPercentageRaw(address: string): Promise<number> {

@@ -19,7 +19,7 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async wrappedTokenId(): Promise<string> {
-        return await this.wrappedTokenIdRaw();
+        return this.wrappedTokenIdRaw();
     }
 
     async wrappedTokenIdRaw(): Promise<string> {
@@ -37,7 +37,7 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async energyFactoryAddress(): Promise<string> {
-        return await this.energyFactoryAddressRaw();
+        return this.energyFactoryAddressRaw();
     }
 
     async energyFactoryAddressRaw(): Promise<string> {
