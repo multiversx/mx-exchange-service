@@ -1,6 +1,9 @@
 import { ObjectType, Field, ArgsType, Int } from '@nestjs/graphql';
 import { PaginationArgs } from '../../dex.model';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import {
+    BaseEsdtToken,
+    EsdtToken,
+} from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
@@ -262,5 +265,27 @@ export class FeeDestination {
 
     constructor(init?: Partial<FeeDestination>) {
         Object.assign(this, init);
+    }
+}
+
+export class SwapPairModel {
+    address: string;
+    firstToken: BaseEsdtToken;
+    secondToken: BaseEsdtToken;
+    info: PairInfoModel;
+    totalFeePercent: number;
+
+    constructor(init?: Partial<SwapPairModel>) {
+        Object.assign(this, init);
+    }
+
+    static toPairModel(swapPair: SwapPairModel): PairModel {
+        return new PairModel({
+            address: swapPair.address,
+            firstToken: new EsdtToken({ ...swapPair.firstToken }),
+            secondToken: new EsdtToken({ ...swapPair.secondToken }),
+            info: swapPair.info,
+            totalFeePercent: swapPair.totalFeePercent,
+        });
     }
 }
