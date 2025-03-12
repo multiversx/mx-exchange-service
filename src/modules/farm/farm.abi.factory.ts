@@ -5,7 +5,7 @@ import { FarmVersion } from './models/farm.model';
 import { FarmAbiServiceV1_2 } from './v1.2/services/farm.v1.2.abi.service';
 import { FarmAbiServiceV1_3 } from './v1.3/services/farm.v1.3.abi.service';
 import { FarmAbiServiceV2 } from './v2/services/farm.v2.abi.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()

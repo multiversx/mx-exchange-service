@@ -20,7 +20,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IStakingAbiService } from './interfaces';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
@@ -65,7 +65,7 @@ export class StakingAbiService
             stakeAddresses,
             'stake.farmTokenID',
             this.farmTokenID.bind(this),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
     }
 
@@ -97,6 +97,7 @@ export class StakingAbiService
             stakeAddresses,
             'stake.farmingTokenID',
             this.farmingTokenID.bind(this),
+            CacheTtlInfo.TokenID,
         );
     }
 
@@ -196,6 +197,7 @@ export class StakingAbiService
             stakeAddresses,
             'stake.accumulatedRewards',
             this.accumulatedRewards.bind(this),
+            CacheTtlInfo.ContractInfo,
         );
     }
 
@@ -227,6 +229,7 @@ export class StakingAbiService
             stakeAddresses,
             'stake.rewardCapacity',
             this.rewardCapacity.bind(this),
+            CacheTtlInfo.ContractInfo,
         );
     }
 
@@ -368,6 +371,7 @@ export class StakingAbiService
             stakeAddresses,
             'stake.produceRewardsEnabled',
             this.produceRewardsEnabled.bind(this),
+            CacheTtlInfo.ContractState,
         );
     }
 

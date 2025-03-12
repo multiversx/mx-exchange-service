@@ -14,7 +14,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { NftCollection } from '../models/nftCollection.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { CollectionType } from 'src/modules/common/collection.type';
 import { TokenComputeService } from './token.compute.service';
 import BigNumber from 'bignumber.js';
