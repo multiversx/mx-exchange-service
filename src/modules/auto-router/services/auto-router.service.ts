@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { PairModel, SwapPairModel } from 'src/modules/pair/models/pair.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { BaseEsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -47,7 +47,7 @@ export class AutoRouterService {
     ) {}
 
     private async getAllPaths(
-        pairs: SwapPairModel[],
+        pairs: PairModel[],
         source: string,
         destination: string,
     ): Promise<string[][]> {
@@ -128,7 +128,7 @@ export class AutoRouterService {
         args: AutoRouterArgs,
         tokenInID: string,
         tokenOutID: string,
-        pair: SwapPairModel,
+        pair: PairModel,
         tokenInMetadata: BaseEsdtToken,
         tokenOutMetadata: BaseEsdtToken,
         swapType: SWAP_TYPE,
@@ -193,7 +193,7 @@ export class AutoRouterService {
             amountOut: amountOut,
             intermediaryAmounts: [amountIn, amountOut],
             tokenRoute: [tokenInID, tokenOutID],
-            pairs: [SwapPairModel.toPairModel(pair)],
+            pairs: [pair],
             tolerance: args.tolerance,
             maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
             tokensPriceDeviationPercent: priceDeviationPercent,
@@ -204,7 +204,7 @@ export class AutoRouterService {
         args: AutoRouterArgs,
         tokenInID: string,
         tokenOutID: string,
-        pairs: SwapPairModel[],
+        pairs: PairModel[],
         tokenInMetadata: BaseEsdtToken,
         tokenOutMetadata: BaseEsdtToken,
         swapType: SWAP_TYPE,
@@ -335,7 +335,7 @@ export class AutoRouterService {
             .toFixed();
     }
 
-    private async getAllActivePairs(): Promise<SwapPairModel[]> {
+    private async getAllActivePairs(): Promise<PairModel[]> {
         const pairMetadata = await this.routerAbi.pairsMetadata();
 
         const states = await this.pairService.getAllStates(
@@ -365,10 +365,14 @@ export class AutoRouterService {
         );
 
         return activePairs.map((pair, index) => {
-            return new SwapPairModel({
+            return new PairModel({
                 address: pair.address,
-                firstToken: tokenMap.get(pair.firstTokenID),
-                secondToken: tokenMap.get(pair.secondTokenID),
+                firstToken: BaseEsdtToken.toEsdtToken(
+                    tokenMap.get(pair.firstTokenID),
+                ),
+                secondToken: BaseEsdtToken.toEsdtToken(
+                    tokenMap.get(pair.secondTokenID),
+                ),
                 info: allInfo[index],
                 totalFeePercent: allTotalFeePercent[index],
             });
@@ -440,13 +444,13 @@ export class AutoRouterService {
 
     private getPairsRoute(
         addresses: string[],
-        pairs: SwapPairModel[],
+        pairs: PairModel[],
     ): PairModel[] {
         const routePairs: PairModel[] = [];
         for (const address of addresses) {
             const pair = pairs.find((pair) => pair.address === address);
             if (pair !== undefined) {
-                routePairs.push(SwapPairModel.toPairModel(pair));
+                routePairs.push(pair);
             }
         }
 

@@ -16,6 +16,13 @@ export class BaseEsdtToken {
     constructor(init?: Partial<BaseEsdtToken>) {
         Object.assign(this, init);
     }
+
+    static toEsdtToken(baseEsdtToken: BaseEsdtToken): EsdtToken {
+        return new EsdtToken({
+            identifier: baseEsdtToken.identifier,
+            decimals: baseEsdtToken.decimals,
+        });
+    }
 }
 
 @ObjectType({

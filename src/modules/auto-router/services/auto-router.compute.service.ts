@@ -1,7 +1,7 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { SwapPairModel } from 'src/modules/pair/models/pair.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 import { getAmountIn, getAmountOut } from 'src/modules/pair/pair.utils';
 import { denominateAmount } from 'src/utils/token.converters';
 import { Logger } from 'winston';
@@ -21,7 +21,7 @@ export class AutoRouterComputeService {
 
     async computeBestSwapRoute(
         paths: string[][],
-        pairs: SwapPairModel[],
+        pairs: PairModel[],
         amount: string,
         swapType: SWAP_TYPE,
     ): Promise<BestSwapRoute> {
@@ -60,10 +60,10 @@ export class AutoRouterComputeService {
     }
 
     private getPairByTokens(
-        pairs: SwapPairModel[],
+        pairs: PairModel[],
         tokenIn: string,
         tokenOut: string,
-    ): SwapPairModel | undefined {
+    ): PairModel | undefined {
         for (const pair of pairs) {
             if (
                 (tokenIn === pair.firstToken.identifier &&
@@ -80,7 +80,7 @@ export class AutoRouterComputeService {
 
     private getOrderedReserves(
         tokenInID: string,
-        pair: SwapPairModel,
+        pair: PairModel,
     ): [string, string] {
         return tokenInID === pair.firstToken.identifier
             ? [pair.info.reserves0, pair.info.reserves1]
@@ -89,7 +89,7 @@ export class AutoRouterComputeService {
 
     private computeIntermediaryAmountsFixedInput(
         paths: string[][],
-        pairs: SwapPairModel[],
+        pairs: PairModel[],
         initialAmountIn: string,
     ): Array<string[]> {
         const intermediaryAmounts: Array<string[]> = [];
@@ -122,7 +122,7 @@ export class AutoRouterComputeService {
 
     private computeIntermediaryAmountsFixedOutput(
         paths: string[][],
-        pairs: SwapPairModel[],
+        pairs: PairModel[],
         fixedAmountOut: string,
     ): Array<string[]> {
         const intermediaryAmounts: Array<string[]> = [];
@@ -186,7 +186,7 @@ export class AutoRouterComputeService {
     }
 
     private getAddressRoute(
-        pairs: SwapPairModel[],
+        pairs: PairModel[],
         tokensRoute: string[],
     ): string[] {
         const addressRoute: string[] = [];

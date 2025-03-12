@@ -1,5 +1,5 @@
 import { constantsConfig } from 'src/config';
-import { SwapPairModel } from 'src/modules/pair/models/pair.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 
 export class GraphService {
     private static pairsLength = 0;
@@ -7,7 +7,7 @@ export class GraphService {
 
     private adjList: Map<string, string[]>;
 
-    private constructor(pairs: SwapPairModel[]) {
+    private constructor(pairs: PairModel[]) {
         GraphService.pairsLength = pairs.length;
 
         this.adjList = new Map<string, string[]>();
@@ -24,7 +24,7 @@ export class GraphService {
         }
     }
 
-    static getInstance(pairs: SwapPairModel[]): GraphService {
+    static getInstance(pairs: PairModel[]): GraphService {
         if (
             !GraphService.instance ||
             GraphService.pairsLength !== pairs.length
