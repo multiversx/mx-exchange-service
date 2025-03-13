@@ -5,7 +5,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
-import { EsdtToken } from '../models/esdtToken.model';
+import { BaseEsdtToken, EsdtToken } from '../models/esdtToken.model';
 import { NftCollection } from '../models/nftCollection.model';
 
 @Injectable()
@@ -143,6 +143,18 @@ export class TokenSetterService extends GenericSetterService {
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
+        );
+    }
+
+    async setBaseMetadata(tokenID: string, value: EsdtToken): Promise<string> {
+        return await this.setData(
+            this.getTokenCacheKey(tokenID, 'baseTokenMetadata'),
+            new BaseEsdtToken({
+                identifier: tokenID,
+                decimals: value.decimals,
+            }),
+            CacheTtlInfo.BaseToken.remoteTtl,
+            CacheTtlInfo.BaseToken.localTtl,
         );
     }
 

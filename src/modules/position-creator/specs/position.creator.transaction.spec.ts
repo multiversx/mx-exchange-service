@@ -38,6 +38,7 @@ import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.a
 import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -74,6 +75,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingAbiServiceProvider,
                 StakingProxyAbiServiceProvider,
                 TokenServiceProvider,
+                TokenComputeServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 ComposableTasksTransactionService,
                 ProxyFarmAbiServiceProvider,

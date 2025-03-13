@@ -33,6 +33,8 @@ import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { gasConfig, scAddress } from 'src/config';
+import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -70,6 +72,7 @@ describe('AutoRouterService', () => {
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
                 TokenServiceProvider,
+                TokenComputeServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 PairService,
@@ -124,8 +127,14 @@ describe('AutoRouterService', () => {
                         address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
                         ).toBech32(),
-                        firstToken: Tokens('WEGLD-123456'),
-                        secondToken: Tokens('USDC-123456'),
+                        firstToken: new EsdtToken({
+                            identifier: Tokens('WEGLD-123456').identifier,
+                            decimals: Tokens('WEGLD-123456').decimals,
+                        }),
+                        secondToken: new EsdtToken({
+                            identifier: Tokens('USDC-123456').identifier,
+                            decimals: Tokens('USDC-123456').decimals,
+                        }),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000000',
                             reserves1: '10000000000',
@@ -168,8 +177,14 @@ describe('AutoRouterService', () => {
                         address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
                         ).toBech32(),
-                        firstToken: Tokens('WEGLD-123456'),
-                        secondToken: Tokens('USDC-123456'),
+                        firstToken: new EsdtToken({
+                            identifier: Tokens('WEGLD-123456').identifier,
+                            decimals: Tokens('WEGLD-123456').decimals,
+                        }),
+                        secondToken: new EsdtToken({
+                            identifier: Tokens('USDC-123456').identifier,
+                            decimals: Tokens('USDC-123456').decimals,
+                        }),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000000',
                             reserves1: '10000000000',
@@ -217,8 +232,14 @@ describe('AutoRouterService', () => {
                         address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
                         ).toBech32(),
-                        firstToken: Tokens('WEGLD-123456'),
-                        secondToken: Tokens('USDC-123456'),
+                        firstToken: new EsdtToken({
+                            identifier: Tokens('WEGLD-123456').identifier,
+                            decimals: Tokens('WEGLD-123456').decimals,
+                        }),
+                        secondToken: new EsdtToken({
+                            identifier: Tokens('USDC-123456').identifier,
+                            decimals: Tokens('USDC-123456').decimals,
+                        }),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000000',
                             reserves1: '10000000000',
@@ -230,8 +251,14 @@ describe('AutoRouterService', () => {
                         address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000012',
                         ).toBech32(),
-                        firstToken: Tokens('WEGLD-123456'),
-                        secondToken: Tokens('MEX-123456'),
+                        firstToken: new EsdtToken({
+                            identifier: Tokens('WEGLD-123456').identifier,
+                            decimals: Tokens('WEGLD-123456').decimals,
+                        }),
+                        secondToken: new EsdtToken({
+                            identifier: Tokens('MEX-123456').identifier,
+                            decimals: Tokens('MEX-123456').decimals,
+                        }),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000000',
                             reserves1: '1000000000000000000000000',
