@@ -113,4 +113,17 @@ export class WeeklyRewardsSplittingSetterService
             CacheTtlInfo.ContractState.localTtl,
         );
     }
+
+    async weekAPR(
+        scAddress: string,
+        week: number,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('weekAPR', scAddress, week),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
 }
