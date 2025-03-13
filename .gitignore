@@ -32,3 +32,6 @@ workspace-dex-service.code-workspace
 
 # Env
 .env
+
+# k6 output
+k6/output/
