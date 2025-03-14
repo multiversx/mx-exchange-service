@@ -18,6 +18,7 @@ import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.
 import { TradingActivityModel } from './models/trading.activity.model';
 import { RouterAbiService } from '../router/services/router.abi.service';
 import { alignTimestampTo4HourInterval } from 'src/utils/analytics.utils';
+import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -209,13 +210,7 @@ export class AnalyticsResolver {
     }
 
     @Query(() => [CandleDataModel])
-    @UsePipes(
-        new ValidationPipe({
-            skipNullProperties: true,
-            skipMissingProperties: true,
-            skipUndefinedProperties: true,
-        }),
-    )
+    @UsePipes(new QueryArgsValidationPipe())
     async tokenMiniChartPriceCandles(
         @Args(PriceCandlesArgsValidationPipe)
         args: TokenMiniChartPriceCandlesQueryArgs,

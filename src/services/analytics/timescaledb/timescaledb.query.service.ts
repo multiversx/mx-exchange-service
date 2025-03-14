@@ -12,9 +12,6 @@ import {
     CloseDaily,
     CloseHourly,
     PDCloseMinute,
-    PriceCandleHourly,
-    PriceCandleMinute,
-    PriceCandleDaily,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -55,12 +52,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
         @InjectRepository(PDCloseMinute)
         private readonly pdCloseMinute: Repository<PDCloseMinute>,
-        @InjectRepository(PriceCandleMinute)
-        private readonly priceCandleMinute: Repository<PriceCandleMinute>,
-        @InjectRepository(PriceCandleHourly)
-        private readonly priceCandleHourly: Repository<PriceCandleHourly>,
-        @InjectRepository(PriceCandleDaily)
-        private readonly priceCandleDaily: Repository<PriceCandleDaily>,
         @InjectRepository(TokenCandlesMinute)
         private readonly tokenCandlesMinute: Repository<TokenCandlesMinute>,
         @InjectRepository(TokenCandlesHourly)
@@ -454,7 +445,11 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
-    async getTokenMiniChartPriceCandles({ series, start, end }): Promise<CandleDataModel[]> {
+    async getTokenMiniChartPriceCandles({
+        series,
+        start,
+        end,
+    }): Promise<CandleDataModel[]> {
         const resolution = PriceCandlesResolutions.HOUR_4;
         const metric = 'priceUSD';
 
