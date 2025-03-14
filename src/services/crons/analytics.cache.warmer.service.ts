@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { constantsConfig } from 'src/config';
 import { AnalyticsComputeService } from 'src/modules/analytics/services/analytics.compute.service';
@@ -9,14 +9,18 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AnalyticsSetterService } from 'src/modules/analytics/services/analytics.setter.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
+import { GlobalRewardsService } from 'src/modules/analytics/services/global.rewards.service';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
+    private readonly logger = new Logger(AnalyticsCacheWarmerService.name);
+
     constructor(
         private readonly analyticsCompute: AnalyticsComputeService,
         private readonly analyticsSetter: AnalyticsSetterService,
         private readonly apiConfig: ApiConfigService,
         private readonly routerAbi: RouterAbiService,
+        private readonly globalRewardsService: GlobalRewardsService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -115,6 +119,56 @@ export class AnalyticsCacheWarmerService {
             ),
         ]);
         await this.deleteCacheKeys(cachedKeys);
+    }
+
+    @Cron(CronExpression.EVERY_3_HOURS)
+    @Lock({ name: 'cacheGlobalRewards', verbose: true })
+    async cacheGlobalRewards(): Promise<void> {
+        const weekOffsets = [0, 1, 2, 3, 4];
+
+        const allData = await Promise.all(
+            weekOffsets.map(async (weekOffset) => {
+                await this.globalRewardsService.getGlobalRewards(weekOffset);
+
+                const feesRewards =
+                    await this.globalRewardsService.feesCollectorRewards(
+                        weekOffset,
+                    );
+                const farmsRewards =
+                    await this.globalRewardsService.farmRewards(weekOffset);
+                const stakingRewards =
+                    await this.globalRewardsService.stakingRewards(weekOffset);
+
+                return {
+                    weekOffset,
+                    feesRewards,
+                    farmsRewards,
+                    stakingRewards,
+                };
+            }),
+        );
+
+        const allCacheKeysPromises = allData.map(async (data) => {
+            const cacheKeys = await Promise.all([
+                this.analyticsSetter.feesCollectorRewards(
+                    data.weekOffset,
+                    data.feesRewards,
+                ),
+                this.analyticsSetter.farmRewards(
+                    data.weekOffset,
+                    data.farmsRewards,
+                ),
+                this.analyticsSetter.stakingRewards(
+                    data.weekOffset,
+                    data.stakingRewards,
+                ),
+            ]);
+
+            return cacheKeys;
+        });
+
+        const allCacheKeys = (await Promise.all(allCacheKeysPromises)).flat();
+        await this.deleteCacheKeys(allCacheKeys);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

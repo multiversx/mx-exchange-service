@@ -5,7 +5,7 @@ import {
     CandleDataModel,
     HistoricDataModel,
 } from 'src/modules/analytics/models/analytics.model';
-import { AnalyticsQueryArgs, PriceCandlesQueryArgs } from './models/query.args';
+import { AnalyticsQueryArgs, GlobalRewardsArgs, PriceCandlesQueryArgs } from './models/query.args';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
@@ -14,6 +14,8 @@ import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.validator';
 import { TradingActivityModel } from './models/trading.activity.model';
 import { RouterAbiService } from '../router/services/router.abi.service';
+import { GlobalRewardsModel } from './models/global.rewards.model';
+import { GlobalRewardsService } from './services/global.rewards.service';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -24,6 +26,7 @@ export class AnalyticsResolver {
         private readonly analyticsCompute: AnalyticsComputeService,
         private readonly analyticsPairService: AnalyticsPairService,
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
+        private readonly globalRewardsService: GlobalRewardsService,
     ) {}
 
     @Query(() => String)
@@ -217,5 +220,13 @@ export class AnalyticsResolver {
         }
 
         throw new Error('Invalid parameters');
+    }
+
+    @Query(() => GlobalRewardsModel)
+    async globalRewards(
+        @Args() args: GlobalRewardsArgs,
+    ): Promise<GlobalRewardsModel> {
+        const model = await this.globalRewardsService.getGlobalRewards(args.weekOffset);
+        return Object.assign(model, { weekOffset: args.weekOffset });
     }
 }
