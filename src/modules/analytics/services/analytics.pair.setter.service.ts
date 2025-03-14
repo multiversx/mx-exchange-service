@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { CandleDataModel } from '../models/analytics.model';
 import { Constants } from '@multiversx/sdk-nestjs-common';
+import { CacheService } from 'src/services/caching/cache.service';
 
 @Injectable()
 export class AnalyticsPairSetterService extends GenericSetterService {
