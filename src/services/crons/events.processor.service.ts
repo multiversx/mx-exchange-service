@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { cacheConfig, constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';

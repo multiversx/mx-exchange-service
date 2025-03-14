@@ -101,7 +101,7 @@ export class ProxyPairTransactionsService {
                 ? gasConfig.proxy.pairs.addLiquidity.withTokenMerge
                 : gasConfig.proxy.pairs.addLiquidity.default;
 
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,
@@ -218,7 +218,7 @@ export class ProxyPairTransactionsService {
 
         const gasLimit = gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length;
 
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,
@@ -244,7 +244,7 @@ export class ProxyPairTransactionsService {
         payment: InputTokenModel,
         lockEpochs: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,

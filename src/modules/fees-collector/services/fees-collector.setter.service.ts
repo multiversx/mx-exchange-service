@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';

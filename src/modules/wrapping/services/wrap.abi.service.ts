@@ -19,7 +19,7 @@ export class WrapAbiService extends GenericAbiService {
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async wrappedEgldTokenID(): Promise<string> {
-        return await this.getWrappedEgldTokenIDRaw();
+        return this.getWrappedEgldTokenIDRaw();
     }
 
     async getWrappedEgldTokenIDRaw(): Promise<string> {

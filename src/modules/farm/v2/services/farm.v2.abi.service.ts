@@ -29,7 +29,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IFarmAbiServiceV2 } from './interfaces';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 
 @Injectable()
 export class FarmAbiServiceV2
@@ -64,7 +64,7 @@ export class FarmAbiServiceV2
     async boostedYieldsRewardsPercenatage(
         farmAddress: string,
     ): Promise<number> {
-        return await this.getBoostedYieldsRewardsPercenatageRaw(farmAddress);
+        return this.getBoostedYieldsRewardsPercenatageRaw(farmAddress);
     }
 
     async getBoostedYieldsRewardsPercenatageRaw(
@@ -87,7 +87,7 @@ export class FarmAbiServiceV2
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async lockingScAddress(farmAddress: string): Promise<string> {
-        return await this.getLockingScAddressRaw(farmAddress);
+        return this.getLockingScAddressRaw(farmAddress);
     }
 
     async getLockingScAddressRaw(farmAddress: string): Promise<string> {
@@ -112,7 +112,7 @@ export class FarmAbiServiceV2
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async lockEpochs(farmAddress: string): Promise<number> {
-        return await this.getLockEpochsRaw(farmAddress);
+        return this.getLockEpochsRaw(farmAddress);
     }
 
     async getLockEpochsRaw(farmAddress: string): Promise<number> {
@@ -140,7 +140,7 @@ export class FarmAbiServiceV2
         farmAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.getRemainingBoostedRewardsToDistributeRaw(
+        return this.getRemainingBoostedRewardsToDistributeRaw(
             farmAddress,
             week,
         );
@@ -168,7 +168,7 @@ export class FarmAbiServiceV2
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async undistributedBoostedRewards(farmAddress: string): Promise<string> {
-        return await this.getUndistributedBoostedRewardsRaw(farmAddress);
+        return this.getUndistributedBoostedRewardsRaw(farmAddress);
     }
 
     async getUndistributedBoostedRewardsRaw(
@@ -210,7 +210,7 @@ export class FarmAbiServiceV2
     async boostedYieldsFactors(
         farmAddress: string,
     ): Promise<BoostedYieldsFactors> {
-        return await this.getBoostedYieldsFactorsRaw(farmAddress);
+        return this.getBoostedYieldsFactorsRaw(farmAddress);
     }
 
     async getBoostedYieldsFactorsRaw(
@@ -246,7 +246,7 @@ export class FarmAbiServiceV2
         scAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.getAccumulatedRewardsForWeekRaw(scAddress, week);
+        return this.getAccumulatedRewardsForWeekRaw(scAddress, week);
     }
 
     async getAccumulatedRewardsForWeekRaw(
@@ -272,7 +272,7 @@ export class FarmAbiServiceV2
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async energyFactoryAddress(farmAddress: string): Promise<string> {
-        return await this.getEnergyFactoryAddressRaw(farmAddress);
+        return this.getEnergyFactoryAddressRaw(farmAddress);
     }
 
     async getEnergyFactoryAddressRaw(farmAddress: string): Promise<string> {
@@ -389,7 +389,7 @@ export class FarmAbiServiceV2
         farmAddress: string,
         userAddress: string,
     ): Promise<string> {
-        return await this.getUserTotalFarmPositionRaw(farmAddress, userAddress);
+        return this.getUserTotalFarmPositionRaw(farmAddress, userAddress);
     }
 
     async getUserTotalFarmPositionRaw(

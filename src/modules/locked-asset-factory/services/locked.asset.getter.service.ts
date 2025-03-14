@@ -3,7 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
@@ -24,7 +24,7 @@ export class LockedAssetGetterService extends GenericGetterService {
     }
 
     async getAssetTokenID(): Promise<string> {
-        return await this.getData(
+        return this.getData(
             this.getCacheKey('assetTokenID'),
             () => this.abiService.getAssetTokenID(),
             CacheTtlInfo.TokenID.remoteTtl,
@@ -33,7 +33,7 @@ export class LockedAssetGetterService extends GenericGetterService {
     }
 
     async getLockedTokenID(): Promise<string> {
-        return await this.getData(
+        return this.getData(
             this.getCacheKey('lockedTokenID'),
             () => this.abiService.getLockedTokenID(),
             CacheTtlInfo.TokenID.remoteTtl,
@@ -43,16 +43,16 @@ export class LockedAssetGetterService extends GenericGetterService {
 
     async getAssetToken(): Promise<EsdtToken> {
         const assetTokenID = await this.getAssetTokenID();
-        return await this.tokenService.tokenMetadata(assetTokenID);
+        return this.tokenService.tokenMetadata(assetTokenID);
     }
 
     async getLockedToken(): Promise<NftCollection> {
         const lockedTokenID = await this.getLockedTokenID();
-        return await this.tokenService.getNftCollectionMetadata(lockedTokenID);
+        return this.tokenService.getNftCollectionMetadata(lockedTokenID);
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
-        return await this.getData(
+        return this.getData(
             this.getCacheKey('defaultUnlockPeriod'),
             () => this.abiService.getDefaultUnlockPeriod(),
             Constants.oneHour(),
@@ -60,7 +60,7 @@ export class LockedAssetGetterService extends GenericGetterService {
     }
 
     async getInitEpoch(): Promise<number> {
-        return await this.getData(
+        return this.getData(
             this.getCacheKey('initEpoch'),
             () => this.abiService.getInitEpoch(),
             Constants.oneHour(),
@@ -68,7 +68,7 @@ export class LockedAssetGetterService extends GenericGetterService {
     }
 
     async getExtendedAttributesActivationNonce(): Promise<number> {
-        return await this.getData(
+        return this.getData(
             this.getCacheKey('extendedAttributesActivationNonce'),
             () => this.abiService.getExtendedAttributesActivationNonce(),
             Constants.oneHour(),

@@ -21,7 +21,7 @@ export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
     async queryContract(query: IContractQuery): Promise<ContractQueryResponse> {
         const profiler = new PerformanceProfiler();
 
-        const result = super.queryContract(query);
+        const result = await super.queryContract(query);
 
         profiler.stop();
 

@@ -14,7 +14,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { IFarmAbiService } from './interfaces';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 
 export class FarmAbiService
@@ -39,7 +39,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async farmedTokenID(farmAddress: string): Promise<string> {
-        return await this.getFarmedTokenIDRaw(farmAddress);
+        return this.getFarmedTokenIDRaw(farmAddress);
     }
 
     async getFarmedTokenIDRaw(farmAddress: string): Promise<string> {
@@ -59,7 +59,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async farmTokenID(farmAddress: string): Promise<string> {
-        return await this.getFarmTokenIDRaw(farmAddress);
+        return this.getFarmTokenIDRaw(farmAddress);
     }
 
     async getFarmTokenIDRaw(farmAddress: string): Promise<string> {
@@ -71,7 +71,7 @@ export class FarmAbiService
     }
 
     async getAllFarmTokenIds(farmAddresses: string[]): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cacheService,
             farmAddresses,
             'farm.farmTokenID',
@@ -89,7 +89,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async farmingTokenID(farmAddress: string): Promise<string> {
-        return await this.getFarmingTokenIDRaw(farmAddress);
+        return this.getFarmingTokenIDRaw(farmAddress);
     }
 
     async getFarmingTokenIDRaw(farmAddress: string): Promise<string> {
@@ -109,7 +109,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async farmTokenSupply(farmAddress: string): Promise<string> {
-        return await this.getFarmTokenSupplyRaw(farmAddress);
+        return this.getFarmTokenSupplyRaw(farmAddress);
     }
 
     async getFarmTokenSupplyRaw(farmAddress: string): Promise<string> {
@@ -130,7 +130,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async rewardsPerBlock(farmAddress: string): Promise<string> {
-        return await this.getRewardsPerBlockRaw(farmAddress);
+        return this.getRewardsPerBlockRaw(farmAddress);
     }
 
     async getRewardsPerBlockRaw(farmAddress: string): Promise<string> {
@@ -150,7 +150,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async penaltyPercent(farmAddress: string): Promise<number> {
-        return await this.getPenaltyPercentRaw(farmAddress);
+        return this.getPenaltyPercentRaw(farmAddress);
     }
 
     async getPenaltyPercentRaw(farmAddress: string): Promise<number> {
@@ -170,7 +170,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async minimumFarmingEpochs(farmAddress: string): Promise<number> {
-        return await this.getMinimumFarmingEpochsRaw(farmAddress);
+        return this.getMinimumFarmingEpochsRaw(farmAddress);
     }
 
     async getMinimumFarmingEpochsRaw(farmAddress: string): Promise<number> {
@@ -190,7 +190,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async rewardPerShare(farmAddress: string): Promise<string> {
-        return await this.getRewardPerShareRaw(farmAddress);
+        return this.getRewardPerShareRaw(farmAddress);
     }
 
     async getRewardPerShareRaw(farmAddress: string): Promise<string> {
@@ -210,7 +210,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async rewardReserve(farmAddress: string): Promise<string> {
-        return await this.getRewardReserveRaw(farmAddress);
+        return this.getRewardReserveRaw(farmAddress);
     }
 
     async getRewardReserveRaw(farmAddress: string): Promise<string> {
@@ -230,7 +230,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async lastRewardBlockNonce(farmAddress: string): Promise<number> {
-        return await this.getLastRewardBlockNonceRaw(farmAddress);
+        return this.getLastRewardBlockNonceRaw(farmAddress);
     }
 
     async getLastRewardBlockNonceRaw(farmAddress: string): Promise<number> {
@@ -249,7 +249,7 @@ export class FarmAbiService
         remoteTtl: Constants.oneHour(),
     })
     async divisionSafetyConstant(farmAddress: string): Promise<string> {
-        return await this.getDivisionSafetyConstantRaw(farmAddress);
+        return this.getDivisionSafetyConstantRaw(farmAddress);
     }
 
     async getDivisionSafetyConstantRaw(farmAddress: string): Promise<string> {
@@ -286,7 +286,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async state(farmAddress: string): Promise<string> {
-        return await this.getStateRaw(farmAddress);
+        return this.getStateRaw(farmAddress);
     }
 
     async getStateRaw(farmAddress: string): Promise<string> {
@@ -305,7 +305,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async produceRewardsEnabled(farmAddress: string): Promise<boolean> {
-        return await this.getProduceRewardsEnabledRaw(farmAddress);
+        return this.getProduceRewardsEnabledRaw(farmAddress);
     }
 
     async getProduceRewardsEnabledRaw(farmAddress: string): Promise<boolean> {
@@ -325,7 +325,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async burnGasLimit(farmAddress: string): Promise<string | undefined> {
-        return await this.getBurnGasLimitRaw(farmAddress);
+        return this.getBurnGasLimitRaw(farmAddress);
     }
 
     async getBurnGasLimitRaw(farmAddress: string): Promise<string | undefined> {
@@ -341,7 +341,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async transferExecGasLimit(farmAddress: string): Promise<string> {
-        return await this.getTransferExecGasLimitRaw(farmAddress);
+        return this.getTransferExecGasLimitRaw(farmAddress);
     }
 
     async getTransferExecGasLimitRaw(farmAddress: string): Promise<string> {
@@ -361,7 +361,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async pairContractAddress(farmAddress: string): Promise<string> {
-        return await this.getPairContractAddressRaw(farmAddress);
+        return this.getPairContractAddressRaw(farmAddress);
     }
 
     async getPairContractAddressRaw(farmAddress: string): Promise<string> {
@@ -390,7 +390,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async lastErrorMessage(farmAddress: string): Promise<string> {
-        return await this.getLastErrorMessageRaw(farmAddress);
+        return this.getLastErrorMessageRaw(farmAddress);
     }
 
     async getLastErrorMessageRaw(farmAddress: string): Promise<string> {
@@ -410,7 +410,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async ownerAddress(farmAddress: string): Promise<string> {
-        return await this.getOwnerAddressRaw(farmAddress);
+        return this.getOwnerAddressRaw(farmAddress);
     }
 
     async getOwnerAddressRaw(farmAddress: string): Promise<string> {
@@ -427,7 +427,7 @@ export class FarmAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async farmShard(farmAddress: string): Promise<number> {
-        return await this.getFarmShardRaw(farmAddress);
+        return this.getFarmShardRaw(farmAddress);
     }
 
     async getFarmShardRaw(farmAddress: string): Promise<number> {

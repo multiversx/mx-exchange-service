@@ -11,7 +11,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { EscrowSetterService } from '../services/escrow.setter.service';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 
 describe('EscrowAbiService', () => {
     let service: EscrowAbiService;

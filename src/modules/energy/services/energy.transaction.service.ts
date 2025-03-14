@@ -28,7 +28,7 @@ export class EnergyTransactionService {
         inputTokens: InputTokenModel,
         lockEpochs: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
+        return this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.simpleLockEnergy.lockTokens,
@@ -87,7 +87,7 @@ export class EnergyTransactionService {
                 break;
         }
 
-        return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
+        return this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             transactionOptions,
         );
     }
@@ -96,7 +96,7 @@ export class EnergyTransactionService {
         sender: string,
         inputTokens: InputTokenModel[],
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
+        return this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit:
@@ -121,7 +121,7 @@ export class EnergyTransactionService {
         sender: string,
         args: InputTokenModel[],
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
+        return this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit:
@@ -146,7 +146,7 @@ export class EnergyTransactionService {
         sender: string,
         lockOptions: number[],
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getSimpleLockEnergySmartContractTransaction(
+        return this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.simpleLockEnergy.admin.updateLockOptions,

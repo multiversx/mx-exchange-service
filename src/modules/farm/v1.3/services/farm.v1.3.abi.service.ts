@@ -10,7 +10,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IFarmAbiServiceV1_3 } from './interfaces';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 
 @Injectable()
 export class FarmAbiServiceV1_3
@@ -37,7 +37,7 @@ export class FarmAbiServiceV1_3
     async lockedAssetFactoryAddress(
         farmAddress: string,
     ): Promise<string | undefined> {
-        return await this.getLockedAssetFactoryAddressRaw(farmAddress);
+        return this.getLockedAssetFactoryAddressRaw(farmAddress);
     }
 
     async getLockedAssetFactoryAddressRaw(
@@ -66,7 +66,7 @@ export class FarmAbiServiceV1_3
     async farmMigrationConfiguration(
         farmAddress: string,
     ): Promise<FarmMigrationConfig> {
-        return await this.getFarmMigrationConfigurationRaw(farmAddress);
+        return this.getFarmMigrationConfigurationRaw(farmAddress);
     }
 
     async getFarmMigrationConfigurationRaw(

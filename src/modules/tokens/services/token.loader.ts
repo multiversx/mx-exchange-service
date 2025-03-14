@@ -1,6 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { TokenComputeService } from './token.compute.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import DataLoader from 'dataloader';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { TokenService } from './token.service';
@@ -18,7 +18,7 @@ export class TokenLoader {
 
     public readonly tokenTypeLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await this.tokenService.getAllEsdtTokensType(tokenIDs);
+            return this.tokenService.getAllEsdtTokensType(tokenIDs);
         },
         {
             cache: false,
@@ -30,9 +30,7 @@ export class TokenLoader {
         string
     >(
         async (tokenIDs: string[]) => {
-            return await this.tokenCompute.getAllTokensPriceDerivedEGLD(
-                tokenIDs,
-            );
+            return this.tokenCompute.getAllTokensPriceDerivedEGLD(tokenIDs);
         },
         {
             cache: false,
@@ -41,9 +39,7 @@ export class TokenLoader {
 
     public readonly tokenPriceDerivedUSDLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await this.tokenCompute.getAllTokensPriceDerivedUSD(
-                tokenIDs,
-            );
+            return this.tokenCompute.getAllTokensPriceDerivedUSD(tokenIDs);
         },
         {
             cache: false,
@@ -55,9 +51,7 @@ export class TokenLoader {
         string
     >(
         async (tokenIDs: string[]) => {
-            return await this.tokenCompute.getAllTokensPrevious24hPrice(
-                tokenIDs,
-            );
+            return this.tokenCompute.getAllTokensPrevious24hPrice(tokenIDs);
         },
         {
             cache: false,
@@ -66,9 +60,7 @@ export class TokenLoader {
 
     public readonly tokenPrevious7dPriceLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await this.tokenCompute.getAllTokensPrevious7dPrice(
-                tokenIDs,
-            );
+            return this.tokenCompute.getAllTokensPrevious7dPrice(tokenIDs);
         },
         {
             cache: false,
@@ -77,7 +69,7 @@ export class TokenLoader {
 
     public readonly tokenVolumeUSD24hLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await this.tokenCompute.getAllTokensVolumeUSD24h(tokenIDs);
+            return this.tokenCompute.getAllTokensVolumeUSD24h(tokenIDs);
         },
         {
             cache: false,
@@ -89,9 +81,7 @@ export class TokenLoader {
         string
     >(
         async (tokenIDs: string[]) => {
-            return await this.tokenCompute.getAllTokensPrevious24hVolumeUSD(
-                tokenIDs,
-            );
+            return this.tokenCompute.getAllTokensPrevious24hVolumeUSD(tokenIDs);
         },
         {
             cache: false,
@@ -100,7 +90,7 @@ export class TokenLoader {
 
     public readonly tokenLiquidityUSDLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await this.tokenCompute.getAllTokensLiquidityUSD(tokenIDs);
+            return this.tokenCompute.getAllTokensLiquidityUSD(tokenIDs);
         },
         {
             cache: false,
@@ -109,7 +99,7 @@ export class TokenLoader {
 
     public readonly tokenCreatedAtLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await this.tokenCompute.getAllTokensCreatedAt(tokenIDs);
+            return this.tokenCompute.getAllTokensCreatedAt(tokenIDs);
         },
         {
             cache: false,
@@ -118,7 +108,7 @@ export class TokenLoader {
 
     public readonly tokenSwapCountLoader = new DataLoader<string, number>(
         async (tokenIDs: string[]) => {
-            return await getAllKeys(
+            return getAllKeys(
                 this.cacheService,
                 tokenIDs,
                 'token.tokenSwapCount',
@@ -136,7 +126,7 @@ export class TokenLoader {
         number
     >(
         async (tokenIDs: string[]) => {
-            return await getAllKeys(
+            return getAllKeys(
                 this.cacheService,
                 tokenIDs,
                 'token.tokenPrevious24hSwapCount',
@@ -153,7 +143,7 @@ export class TokenLoader {
 
     public readonly tokenTrendingScoreLoader = new DataLoader<string, string>(
         async (tokenIDs: string[]) => {
-            return await this.tokenCompute.getAllTokensTrendingScore(tokenIDs);
+            return this.tokenCompute.getAllTokensTrendingScore(tokenIDs);
         },
         {
             cache: false,

@@ -35,7 +35,7 @@ import { LockedAssetService } from 'src/modules/locked-asset-factory/services/lo
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { LockedTokenAttributesModel } from 'src/modules/simple-lock/models/simple.lock.model';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ProxyAbiService } from './proxy.abi.service';
@@ -72,7 +72,7 @@ export class ProxyService {
             version === 'v1'
                 ? await this.proxyAbi.lockedAssetTokenID(proxyAddress)
                 : await this.proxyAbiV2.lockedAssetTokenID(proxyAddress);
-        return await Promise.all(
+        return Promise.all(
             lockedAssetTokenIDs.map((tokenID: string) =>
                 this.tokenService.getNftCollectionMetadata(tokenID),
             ),
@@ -83,9 +83,7 @@ export class ProxyService {
         const wrappedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             proxyAddress,
         );
-        return await this.tokenService.getNftCollectionMetadata(
-            wrappedLpTokenID,
-        );
+        return this.tokenService.getNftCollectionMetadata(wrappedLpTokenID);
     }
 
     async getwrappedFarmToken(proxyAddress: string): Promise<NftCollection> {

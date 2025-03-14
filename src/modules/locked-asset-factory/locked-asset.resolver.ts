@@ -82,7 +82,7 @@ export class LockedAssetResolver {
 
     @Query(() => LockedAssetModel)
     async lockedAssetFactory(): Promise<LockedAssetModel> {
-        return await this.lockedAssetService.getLockedAssetInfo();
+        return this.lockedAssetService.getLockedAssetInfo();
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -91,10 +91,7 @@ export class LockedAssetResolver {
         @Args('inputToken') inputToken: InputTokenModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.lockAssets(
-            user.address,
-            inputToken,
-        );
+        return this.transactionsService.lockAssets(user.address, inputToken);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -103,7 +100,7 @@ export class LockedAssetResolver {
         @Args() args: UnlockAssetsArgs,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.unlockAssets(user.address, args);
+        return this.transactionsService.unlockAssets(user.address, args);
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

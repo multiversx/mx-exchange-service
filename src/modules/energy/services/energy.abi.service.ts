@@ -38,7 +38,7 @@ export class EnergyAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async baseAssetTokenID(): Promise<string> {
-        return await this.getBaseAssetTokenIDRaw();
+        return this.getBaseAssetTokenIDRaw();
     }
 
     async getBaseAssetTokenIDRaw(): Promise<string> {
@@ -57,7 +57,7 @@ export class EnergyAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async lockedTokenID(): Promise<string> {
-        return await this.getLockedTokenIDRaw();
+        return this.getLockedTokenIDRaw();
     }
 
     async getLockedTokenIDRaw(): Promise<string> {
@@ -76,7 +76,7 @@ export class EnergyAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async legacyLockedTokenID(): Promise<string> {
-        return await this.getLegacyLockedTokenIDRaw();
+        return this.getLegacyLockedTokenIDRaw();
     }
 
     async getLegacyLockedTokenIDRaw(): Promise<string> {
@@ -95,7 +95,7 @@ export class EnergyAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async lockOptions(): Promise<LockOption[]> {
-        return await this.getLockOptionsRaw();
+        return this.getLockOptionsRaw();
     }
 
     async getLockOptionsRaw(): Promise<LockOption[]> {
@@ -121,7 +121,7 @@ export class EnergyAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async tokenUnstakeScAddress(): Promise<string> {
-        return await this.getTokenUnstakeScAddressRaw();
+        return this.getTokenUnstakeScAddressRaw();
     }
 
     async getTokenUnstakeScAddressRaw(): Promise<string> {
@@ -140,7 +140,7 @@ export class EnergyAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async ownerAddress(): Promise<string> {
-        return await this.getOwnerAddressRaw();
+        return this.getOwnerAddressRaw();
     }
 
     async getOwnerAddressRaw(): Promise<string> {
@@ -150,7 +150,7 @@ export class EnergyAbiService
 
     @ErrorLoggerAsync()
     async energyEntryForUser(userAddress: string): Promise<EnergyType> {
-        return await this.getEnergyEntryForUserRaw(userAddress);
+        return this.getEnergyEntryForUserRaw(userAddress);
     }
 
     async getEnergyEntryForUserRaw(userAddress: string): Promise<EnergyType> {
@@ -167,7 +167,7 @@ export class EnergyAbiService
 
     @ErrorLoggerAsync()
     async energyAmountForUser(userAddress: string): Promise<string> {
-        return await this.getEnergyAmountForUserRaw(userAddress);
+        return this.getEnergyAmountForUserRaw(userAddress);
     }
 
     async getEnergyAmountForUserRaw(userAddress: string): Promise<string> {
@@ -206,7 +206,7 @@ export class EnergyAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async isPaused(): Promise<boolean> {
-        return await this.isPausedRaw();
+        return this.isPausedRaw();
     }
 
     async isPausedRaw(): Promise<boolean> {

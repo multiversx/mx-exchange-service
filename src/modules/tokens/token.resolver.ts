@@ -16,10 +16,7 @@ import PageResponse from '../common/page.response';
 import { TokenLoader } from './services/token.loader';
 import { UsePipes } from '@nestjs/common';
 import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
-import {
-    paginatedQueryEstimator,
-    relayQueryEstimator,
-} from 'src/helpers/complexity/query.estimators';
+import { relayQueryEstimator } from 'src/helpers/complexity/query.estimators';
 import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 
 @Resolver(() => EsdtToken)

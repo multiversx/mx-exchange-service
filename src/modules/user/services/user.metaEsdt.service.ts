@@ -109,7 +109,7 @@ export class UserMetaEsdtService {
                   'MetaESDT',
                   [lockedMEXTokenID],
               );
-        return await Promise.all(
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedAssetTokenUSD(
                     new LockedAssetToken(nft),
@@ -167,7 +167,7 @@ export class UserMetaEsdtService {
                   [lockedLpTokenID],
               );
 
-        return await Promise.all(
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedLpTokenUSD(
                     new LockedLpToken(nft),
@@ -221,7 +221,7 @@ export class UserMetaEsdtService {
                   'MetaESDT',
                   [lockedLpTokenID],
               );
-        return await Promise.all(
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedLpTokenV2USD(
                     new LockedLpTokenV2(nft),
@@ -300,7 +300,7 @@ export class UserMetaEsdtService {
                 );
             }
         });
-        return await Promise.all(promises);
+        return Promise.all(promises);
     }
 
     async getUserUnbondFarmTokens(
@@ -336,7 +336,7 @@ export class UserMetaEsdtService {
                 );
             }
         });
-        return await Promise.all(promises);
+        return Promise.all(promises);
     }
 
     async getUserDualYieldTokens(
@@ -394,7 +394,7 @@ export class UserMetaEsdtService {
                   'MetaESDT',
                   redeemTokenIDs,
               );
-        return await Promise.all(
+        return Promise.all(
             nfts.map((nft) => this.userComputeService.redeemTokenUSD(nft)),
         );
     }
@@ -421,7 +421,7 @@ export class UserMetaEsdtService {
                   'MetaESDT',
                   lockedEsdtTokenIDs,
               );
-        return await Promise.all(
+        return Promise.all(
             nfts.map((nft) => this.userComputeService.lockedEsdtTokenUSD(nft)),
         );
     }
@@ -448,7 +448,7 @@ export class UserMetaEsdtService {
                   'MetaESDT',
                   lockedSimpleLpTokenIDs,
               );
-        return await Promise.all(
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedSimpleLpTokenUSD(nft),
             ),
@@ -500,7 +500,7 @@ export class UserMetaEsdtService {
                   'MetaESDT',
                   [lockedTokenEnergyID],
               );
-        return await Promise.all(
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedTokenEnergyUSD(nft),
             ),
@@ -658,7 +658,7 @@ export class UserMetaEsdtService {
             }
         }
 
-        return await Promise.all(promises);
+        return Promise.all(promises);
     }
 
     @ErrorLoggerAsync({
@@ -669,7 +669,7 @@ export class UserMetaEsdtService {
         remoteTtl: Constants.oneHour(),
     })
     private async nftTokenType(tokenID: string): Promise<NftTokenType> {
-        return await this.getNftTokenTypeRaw(tokenID);
+        return this.getNftTokenTypeRaw(tokenID);
     }
 
     private async getNftTokenTypeRaw(tokenID: string): Promise<NftTokenType> {

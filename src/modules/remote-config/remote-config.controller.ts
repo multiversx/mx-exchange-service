@@ -21,7 +21,7 @@ import mongoose from 'mongoose';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { CacheKeysArgs } from './args/cacheKeys.args';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
 import { AnalyticsModel } from './models/analytics.model';
 import { AnalyticsArgs } from './args/analytics.args';

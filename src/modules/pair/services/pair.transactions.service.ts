@@ -148,7 +148,7 @@ export class PairTransactionService {
             throw new Error('Permanent locked amount must be less than 1 USD');
         }
 
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -195,7 +195,7 @@ export class PairTransactionService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -348,7 +348,7 @@ export class PairTransactionService {
                 ? gasConfig.pairs.swapTokensFixedInput.default
                 : gasConfig.pairs.swapTokensFixedInput.withFeeSwap;
 
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -424,7 +424,7 @@ export class PairTransactionService {
                 ? gasConfig.pairs.swapTokensFixedOutput.default
                 : gasConfig.pairs.swapTokensFixedOutput.withFeeSwap;
 
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -464,11 +464,7 @@ export class PairTransactionService {
             tokens[0].tokenID === mxConfig.EGLDIdentifier ||
             tokens[1].tokenID === mxConfig.EGLDIdentifier
         ) {
-            return await this.getTokensWithEGLD(
-                tokens,
-                firstTokenID,
-                secondTokenID,
-            );
+            return this.getTokensWithEGLD(tokens, firstTokenID, secondTokenID);
         }
 
         if (
@@ -495,14 +491,14 @@ export class PairTransactionService {
     ): Promise<InputTokenModel[]> {
         switch (mxConfig.EGLDIdentifier) {
             case tokens[0].tokenID:
-                return await this.getTokensInOrder(
+                return this.getTokensInOrder(
                     tokens[1],
                     tokens[0],
                     firstTokenID,
                     secondTokenID,
                 );
             case tokens[1].tokenID:
-                return await this.getTokensInOrder(
+                return this.getTokensInOrder(
                     tokens[0],
                     tokens[1],
                     firstTokenID,
@@ -546,7 +542,7 @@ export class PairTransactionService {
         sender: string,
         args: WhitelistArgs,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -564,7 +560,7 @@ export class PairTransactionService {
         sender: string,
         args: WhitelistArgs,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -585,7 +581,7 @@ export class PairTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -609,7 +605,7 @@ export class PairTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -628,7 +624,7 @@ export class PairTransactionService {
         sender: string,
         pairAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -643,7 +639,7 @@ export class PairTransactionService {
         sender: string,
         pairAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -658,7 +654,7 @@ export class PairTransactionService {
         sender: string,
         pairAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -675,7 +671,7 @@ export class PairTransactionService {
         totalFeePercent: number,
         specialFeePercent: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -695,7 +691,7 @@ export class PairTransactionService {
         pairAddress: string,
         newDeadline: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -712,7 +708,7 @@ export class PairTransactionService {
         pairAddress: string,
         newEpoch: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -729,7 +725,7 @@ export class PairTransactionService {
         pairAddress: string,
         newAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,
@@ -749,7 +745,7 @@ export class PairTransactionService {
         sender: string,
         pairAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getPairSmartContractTransaction(
+        return this.mxProxy.getPairSmartContractTransaction(
             pairAddress,
             new TransactionOptions({
                 sender: sender,

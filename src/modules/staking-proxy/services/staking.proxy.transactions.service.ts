@@ -65,7 +65,7 @@ export class StakingProxyTransactionService {
                 ? gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge
                 : gasConfig.stakeProxy.stakeFarmTokens.default;
 
-        return await this.mxProxy.getStakingProxySmartContractTransaction(
+        return this.mxProxy.getStakingProxySmartContractTransaction(
             args.proxyStakingAddress,
             new TransactionOptions({
                 sender: sender,
@@ -98,7 +98,7 @@ export class StakingProxyTransactionService {
             }
         }
 
-        return await this.mxProxy.getStakingProxySmartContractTransaction(
+        return this.mxProxy.getStakingProxySmartContractTransaction(
             args.proxyStakingAddress,
             new TransactionOptions({
                 sender: sender,
@@ -175,7 +175,7 @@ export class StakingProxyTransactionService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        return await this.mxProxy.getStakingProxySmartContractTransaction(
+        return this.mxProxy.getStakingProxySmartContractTransaction(
             args.proxyStakingAddress,
             new TransactionOptions({
                 sender: sender,

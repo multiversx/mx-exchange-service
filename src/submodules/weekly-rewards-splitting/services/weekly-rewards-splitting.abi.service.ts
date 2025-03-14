@@ -42,7 +42,7 @@ export class WeeklyRewardsSplittingAbiService
         scAddress: string,
         user: string,
     ): Promise<ClaimProgress> {
-        return await this.currentClaimProgressRaw(scAddress, user);
+        return this.currentClaimProgressRaw(scAddress, user);
     }
 
     async currentClaimProgressRaw(
@@ -85,7 +85,7 @@ export class WeeklyRewardsSplittingAbiService
         user: string,
         week: number,
     ): Promise<EnergyType> {
-        return await this.userEnergyForWeekRaw(scAddress, user, week);
+        return this.userEnergyForWeekRaw(scAddress, user, week);
     }
 
     async userEnergyForWeekRaw(
@@ -151,7 +151,7 @@ export class WeeklyRewardsSplittingAbiService
         scAddress: string,
         user: string,
     ): Promise<number> {
-        return await this.lastActiveWeekForUserRaw(scAddress, user);
+        return this.lastActiveWeekForUserRaw(scAddress, user);
     }
 
     async lastActiveWeekForUserRaw(
@@ -176,7 +176,7 @@ export class WeeklyRewardsSplittingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async lastGlobalUpdateWeek(scAddress: string): Promise<number> {
-        return await this.lastGlobalUpdateWeekRaw(scAddress);
+        return this.lastGlobalUpdateWeekRaw(scAddress);
     }
 
     async lastGlobalUpdateWeekRaw(scAddress: string): Promise<number> {
@@ -199,7 +199,7 @@ export class WeeklyRewardsSplittingAbiService
         scAddress: string,
         week: number,
     ): Promise<EsdtTokenPayment[]> {
-        return await this.totalRewardsForWeekRaw(scAddress, week);
+        return this.totalRewardsForWeekRaw(scAddress, week);
     }
 
     async totalRewardsForWeekRaw(
@@ -234,7 +234,7 @@ export class WeeklyRewardsSplittingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
-        return await this.totalEnergyForWeekRaw(scAddress, week);
+        return this.totalEnergyForWeekRaw(scAddress, week);
     }
 
     async totalEnergyForWeekRaw(
@@ -262,7 +262,7 @@ export class WeeklyRewardsSplittingAbiService
         scAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.totalLockedTokensForWeekRaw(scAddress, week);
+        return this.totalLockedTokensForWeekRaw(scAddress, week);
     }
 
     async totalLockedTokensForWeekRaw(

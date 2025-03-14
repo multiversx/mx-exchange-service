@@ -31,7 +31,7 @@ export class FeesCollectorAbiService
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async accumulatedFees(week: number, token: string): Promise<string> {
-        return await this.getAccumulatedFeesRaw(week, token);
+        return this.getAccumulatedFeesRaw(week, token);
     }
 
     async getAccumulatedFeesRaw(week: number, token: string): Promise<string> {
@@ -52,7 +52,7 @@ export class FeesCollectorAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async lockedTokenID(): Promise<string> {
-        return await this.getLockedTokenIDRaw();
+        return this.getLockedTokenIDRaw();
     }
 
     async getLockedTokenIDRaw(): Promise<string> {
@@ -70,7 +70,7 @@ export class FeesCollectorAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async lockedTokensPerBlock(): Promise<string> {
-        return await this.getLockedTokensPerBlockRaw();
+        return this.getLockedTokensPerBlockRaw();
     }
 
     async getLockedTokensPerBlockRaw(): Promise<string> {
@@ -88,7 +88,7 @@ export class FeesCollectorAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async allTokens(): Promise<string[]> {
-        return await this.getAllTokensRaw();
+        return this.getAllTokensRaw();
     }
 
     async getAllTokensRaw(): Promise<string[]> {
@@ -106,7 +106,7 @@ export class FeesCollectorAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async knownContracts(): Promise<string[]> {
-        return await this.getKnownContractsRaw();
+        return this.getKnownContractsRaw();
     }
 
     async getKnownContractsRaw(): Promise<string[]> {

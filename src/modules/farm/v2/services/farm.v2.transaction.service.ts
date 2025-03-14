@@ -48,7 +48,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
                 ? gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge
                 : gasConfig.farms[FarmVersion.V2].enterFarm.default;
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -83,7 +83,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             farmType(args.farmAddress),
         );
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -117,7 +117,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             gasConfig.farms[FarmVersion.V2][type].claimRewards +
             lockedAssetCreateGas;
 
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
             new TransactionOptions({
                 sender: sender,
@@ -141,7 +141,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         sender: string,
         farmAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getFarmSmartContractTransaction(
+        return this.mxProxy.getFarmSmartContractTransaction(
             farmAddress,
             new TransactionOptions({
                 sender: sender,

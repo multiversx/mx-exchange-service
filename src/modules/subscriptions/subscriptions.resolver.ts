@@ -5,7 +5,7 @@ import {
     SIMPLE_LOCK_ENERGY_EVENTS,
 } from '@multiversx/sdk-exchange';
 import { Inject } from '@nestjs/common';
-import { Resolver, Subscription } from '@nestjs/graphql';
+import { Args, Resolver, Subscription } from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { UpdatedEnergyEventModel } from './models/energy/updated.energy.event.model';
@@ -23,10 +23,55 @@ import { ExitFarmProxyEventModel } from './models/proxy/exitFarmProxy.event.mode
 import { PairProxyEventModel } from './models/proxy/pairProxy.event.model';
 import { RewardsProxyEventModel } from './models/proxy/rewardsProxy.event.model';
 import { SWAP_IDENTIFIER } from '../rabbitmq/handlers/pair.swap.handler.service';
+import { TradingActivityModel } from '../analytics/models/trading.activity.model';
+import { TradingActivityAction } from '../analytics/models/trading.activity.model';
 
 @Resolver()
 export class SubscriptionsResolver {
     constructor(@Inject(PUB_SUB) private pubSub: RedisPubSub) {}
+
+    @Subscription(() => TradingActivityModel, {
+        resolve: (event, variables) => {
+            const { series } = variables;
+            const { tradingActivityEvent } = event;
+
+            if (series === tradingActivityEvent.address) {
+                return tradingActivityEvent;
+            }
+
+            if (
+                tradingActivityEvent.inputToken.identifier === series ||
+                tradingActivityEvent.outputToken.identifier === series
+            ) {
+                const action =
+                    series === tradingActivityEvent.outputToken.identifier
+                        ? TradingActivityAction.BUY
+                        : TradingActivityAction.SELL;
+
+                return { ...tradingActivityEvent, action };
+            }
+        },
+        filter: (payload, variables) => {
+            const { series } = variables;
+            const { tradingActivityEvent } = payload;
+
+            if (series === tradingActivityEvent.address) {
+                return true;
+            }
+
+            if (
+                tradingActivityEvent.inputToken.identifier === series ||
+                tradingActivityEvent.outputToken.identifier === series
+            ) {
+                return true;
+            }
+
+            return false;
+        },
+    })
+    tradingActivityEvent(@Args('series') series: string) {
+        return this.pubSub.asyncIterator('tradingActivityEvent');
+    }
 
     @Subscription(() => SwapFixedInputEventModel, {
         resolve: (event) =>

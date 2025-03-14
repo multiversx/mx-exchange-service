@@ -1,7 +1,7 @@
 import { Controller, Inject } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { Logger } from 'winston';
 
 @Controller()
@@ -13,8 +13,6 @@ export class CacheController {
 
     @EventPattern('deleteCacheKeys')
     async deleteCacheKey(keys: string[]) {
-        for (const key of keys) {
-            await this.cachingService.deleteLocal(key);
-        }
+        this.cachingService.deleteManyLocal(keys);
     }
 }

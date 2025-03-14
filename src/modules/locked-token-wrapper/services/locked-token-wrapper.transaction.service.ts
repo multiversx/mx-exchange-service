@@ -58,7 +58,7 @@ export class LockedTokenWrapperTransactionService {
             throw new Error('Cannot unwrap token after unlock epoch');
         }
 
-        return await this.mxProxy.getLockedTokenWrapperSmartContractTransaction(
+        return this.mxProxy.getLockedTokenWrapperSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.lockedTokenWrapper.unwrapLockedToken,
@@ -80,7 +80,7 @@ export class LockedTokenWrapperTransactionService {
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getLockedTokenWrapperSmartContractTransaction(
+        return this.mxProxy.getLockedTokenWrapperSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.lockedTokenWrapper.wrapLockedToken,

@@ -11,7 +11,7 @@ import {
     FarmTokenAttributesModelV1_3,
     FarmTokenAttributesModelV2,
 } from '../../models/farmTokenAttributes.model';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Inject, forwardRef } from '@nestjs/common';
@@ -91,10 +91,10 @@ export abstract class FarmServiceBase {
     async getBatchRewardsForPosition(
         positions: CalculateRewardsArgs[],
     ): Promise<RewardsModel[]> {
-        const promises = positions.map(async (position) => {
-            return await this.getRewardsForPosition(position);
-        });
-        return await Promise.all(promises);
+        const promises = positions.map((position) =>
+            this.getRewardsForPosition(position),
+        );
+        return Promise.all(promises);
     }
 
     abstract getRewardsForPosition(

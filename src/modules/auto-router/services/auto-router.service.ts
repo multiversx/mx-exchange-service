@@ -17,7 +17,7 @@ import { PairTransactionService } from 'src/modules/pair/services/pair.transacti
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { GraphService } from './graph.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
@@ -97,7 +97,7 @@ export class AutoRouterService {
             );
 
             if (directPair !== undefined) {
-                return await this.singleSwap(
+                return this.singleSwap(
                     args,
                     tokenInID,
                     tokenOutID,
@@ -111,7 +111,7 @@ export class AutoRouterService {
             }
         }
 
-        return await this.multiSwap(
+        return this.multiSwap(
             args,
             tokenInID,
             tokenOutID,
@@ -334,38 +334,42 @@ export class AutoRouterService {
     }
 
     private async getAllActivePairs() {
-        const pairAddresses = await this.routerAbi.pairsAddress();
-        const statesPromises = pairAddresses.map((address) =>
-            this.pairAbi.state(address),
+        const pairMetadata = await this.routerAbi.pairsMetadata();
+
+        const states = await this.pairService.getAllStates(
+            pairMetadata.map((pair) => pair.address),
         );
-        const states = await Promise.all(statesPromises);
-        const activePairs: string[] = [];
-        states.forEach((value, index) => {
-            if (value === 'Active') activePairs.push(pairAddresses[index]);
+
+        const activePairs = pairMetadata.filter(
+            (_pair, index) => states[index] === 'Active',
+        );
+
+        const pairAddresses: string[] = [];
+        let tokenIDs: string[] = [];
+        activePairs.forEach((pair) => {
+            pairAddresses.push(pair.address);
+            tokenIDs.push(...[pair.firstTokenID, pair.secondTokenID]);
         });
+        tokenIDs = [...new Set(tokenIDs)];
 
-        const pairsPromises = activePairs.map((address) =>
-            this.getPair(address),
+        const [allInfo, allTotalFeePercent, allTokens] = await Promise.all([
+            this.pairAbi.getAllPairsInfoMetadata(pairAddresses),
+            this.pairAbi.getAllPairsTotalFeePercent(pairAddresses),
+            this.tokenService.getAllTokensMetadata(tokenIDs),
+        ]);
+
+        const tokenMap = new Map(
+            allTokens.map((token) => [token.identifier, token]),
         );
 
-        return await Promise.all(pairsPromises);
-    }
-
-    private async getPair(pairAddress: string): Promise<PairModel> {
-        const [info, totalFeePercent, firstToken, secondToken] =
-            await Promise.all([
-                this.pairAbi.pairInfoMetadata(pairAddress),
-                this.pairAbi.totalFeePercent(pairAddress),
-                this.pairService.getFirstToken(pairAddress),
-                this.pairService.getSecondToken(pairAddress),
-            ]);
-
-        return new PairModel({
-            address: pairAddress,
-            firstToken,
-            secondToken,
-            info,
-            totalFeePercent,
+        return activePairs.map((pair, index) => {
+            return new PairModel({
+                address: pair.address,
+                firstToken: tokenMap.get(pair.firstTokenID),
+                secondToken: tokenMap.get(pair.secondTokenID),
+                info: allInfo[index],
+                totalFeePercent: allTotalFeePercent[index],
+            });
         });
     }
 
@@ -490,7 +494,7 @@ export class AutoRouterService {
             throw new Error('Spread too big!');
         }
 
-        return await this.autoRouterTransactionService.multiPairSwap(sender, {
+        return this.autoRouterTransactionService.multiPairSwap(sender, {
             swapType: parent.swapType,
             tokenInID: parent.tokenInID,
             tokenOutID: parent.tokenOutID,
