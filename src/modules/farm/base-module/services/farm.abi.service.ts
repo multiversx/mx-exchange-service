@@ -381,6 +381,16 @@ export class FarmAbiService
         }
     }
 
+    async getAllPairContractAddresses(farmAddresses: string[]): Promise<string[]> {
+        return await getAllKeys<string>(
+            this.cacheService,
+            farmAddresses,
+            'farm.pairContractAddress',
+            this.pairContractAddress.bind(this),
+            CacheTtlInfo.ContractState,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
