@@ -19,7 +19,7 @@ export class FarmCustomAbiService
         remoteTtl: Constants.oneHour(),
     })
     async whitelist(farmAddress: string): Promise<string[]> {
-        return await this.getWhitelistRaw(farmAddress);
+        return this.getWhitelistRaw(farmAddress);
     }
 
     async getWhitelistRaw(farmAddress: string): Promise<string[]> {

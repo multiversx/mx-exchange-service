@@ -67,7 +67,7 @@ export class UserEnergyTransactionService {
 
         endpointArgs.push(VariadicValue.fromItems(...farmAddresses));
 
-        return await this.mxProxy.getEnergyUpdateSmartContractTransaction(
+        return this.mxProxy.getEnergyUpdateSmartContractTransaction(
             new TransactionOptions({
                 sender: userAddress,
                 gasLimit:

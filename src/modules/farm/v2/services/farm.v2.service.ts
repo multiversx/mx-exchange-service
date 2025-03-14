@@ -1,5 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
@@ -56,13 +56,13 @@ export class FarmServiceV2 extends FarmServiceBase {
             boostedPositions.set(position.farmAddress, boostedPosition);
         });
 
-        const promises = positions.map(async (position) => {
-            return await this.getRewardsForPosition(
+        const promises = positions.map((position) =>
+            this.getRewardsForPosition(
                 position,
                 boostedPositions.get(position.farmAddress) === position,
-            );
-        });
-        return await Promise.all(promises);
+            ),
+        );
+        return Promise.all(promises);
     }
 
     async getRewardsForPosition(

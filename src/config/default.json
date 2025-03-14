@@ -611,6 +611,7 @@
         "USER_MAX_CLAIM_WEEKS": 4,
         "STAKING_UNBOND_ATTRIBUTES_LEN": 12,
         "MAX_USER_NFTS": 10000,
+        "MAX_SWAP_ROUTE_DEPTH": 4,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",

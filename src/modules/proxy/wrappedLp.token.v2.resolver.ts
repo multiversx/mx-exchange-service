@@ -21,7 +21,7 @@ export class WrappedLpTokenAttributesResolverV2 {
             await this.lockedAssetsGetter.getLockedTokenID();
 
         if (parent.lockedTokens.tokenIdentifier === oldLockedAssetID) {
-            return await this.proxyService.getLockedAssetsAttributes(
+            return this.proxyService.getLockedAssetsAttributes(
                 scAddress.proxyDexAddress.v2,
                 parent.lockedTokens.tokenIdentifier,
                 parent.lockedTokens.tokenNonce,

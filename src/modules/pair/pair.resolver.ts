@@ -50,7 +50,7 @@ export class PairRewardTokensResolver extends GenericResolver {
 
     @ResolveField()
     async poolRewards(parent: PairRewardTokensModel): Promise<EsdtToken[]> {
-        return await Promise.all([
+        return Promise.all([
             this.pairService.getFirstToken(parent.address),
             this.pairService.getSecondToken(parent.address),
         ]);
@@ -66,7 +66,7 @@ export class PairRewardTokensResolver extends GenericResolver {
             return undefined;
         }
 
-        return await this.energyService.getLockedToken();
+        return this.energyService.getLockedToken();
     }
 
     @ResolveField()
@@ -78,9 +78,7 @@ export class PairRewardTokensResolver extends GenericResolver {
             return undefined;
         }
 
-        return await this.stakingProxyService.getStakingToken(
-            stakingProxyAddress,
-        );
+        return this.stakingProxyService.getStakingToken(stakingProxyAddress);
     }
 }
 
@@ -96,7 +94,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
 
     @ResolveField(() => String)
     async feesAPR(parent: PairCompoundedAPRModel): Promise<string> {
-        return await this.pairCompute.feesAPR(parent.address);
+        return this.pairCompute.feesAPR(parent.address);
     }
 
     @ResolveField(() => String)
@@ -109,7 +107,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
             return '0';
         }
 
-        return await this.farmCompute.farmBaseAPR(farmAddress);
+        return this.farmCompute.farmBaseAPR(farmAddress);
     }
 
     @ResolveField(() => String)
@@ -122,7 +120,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
             return '0';
         }
 
-        return await this.farmCompute.maxBoostedApr(farmAddress);
+        return this.farmCompute.maxBoostedApr(farmAddress);
     }
 
     @ResolveField(() => String)
@@ -135,7 +133,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
             return '0';
         }
 
-        return await this.stakingCompute.stakeFarmBaseAPR(stakingAddress);
+        return this.stakingCompute.stakeFarmBaseAPR(stakingAddress);
     }
 
     @ResolveField(() => String)
@@ -148,7 +146,7 @@ export class PairCompoundedAPRResolver extends GenericResolver {
             return '0';
         }
 
-        return await this.stakingCompute.maxBoostedAPR(stakingAddress);
+        return this.stakingCompute.maxBoostedAPR(stakingAddress);
     }
 }
 
@@ -390,14 +388,12 @@ export class PairResolver {
 
     @ResolveField()
     async farmAddress(parent: PairModel): Promise<string> {
-        return await this.pairCompute.getPairFarmAddress(parent.address);
+        return this.pairCompute.getPairFarmAddress(parent.address);
     }
 
     @ResolveField()
     async stakingProxyAddress(parent: PairModel): Promise<string> {
-        return await this.pairCompute.getPairStakingProxyAddress(
-            parent.address,
-        );
+        return this.pairCompute.getPairStakingProxyAddress(parent.address);
     }
 
     @Query(() => String)
