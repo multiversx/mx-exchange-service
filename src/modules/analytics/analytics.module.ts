@@ -22,6 +22,7 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { AnalyticsSetterService } from './services/analytics.setter.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { AnalyticsPairSetterService } from './services/analytics.pair.setter.service';
 
 @Module({
     imports: [
@@ -50,12 +51,15 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
         AnalyticsSetterService,
         AnalyticsPairService,
         PairDayDataResolver,
+        AnalyticsPairSetterService,
     ],
     exports: [
         AnalyticsAWSGetterService,
         AnalyticsAWSSetterService,
         AnalyticsComputeService,
         AnalyticsSetterService,
+        AnalyticsPairSetterService,
+        AnalyticsPairService,
     ],
 })
 export class AnalyticsModule {}

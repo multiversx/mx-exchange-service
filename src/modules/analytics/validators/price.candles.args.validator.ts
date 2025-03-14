@@ -1,7 +1,8 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import {
     PriceCandlesQueryArgs,
     PriceCandlesResolutions,
+    TokenMiniChartPriceCandlesQueryArgs,
 } from '../models/query.args';
 import moment from 'moment';
 import { UserInputError } from '@nestjs/apollo';
@@ -32,26 +33,26 @@ const resolutionToMaxDuration = {
 
 @Injectable()
 export class PriceCandlesArgsValidationPipe implements PipeTransform {
-    async transform(value: PriceCandlesQueryArgs, metadata: ArgumentMetadata) {
-        const { start, end, resolution } = value;
+    async transform(
+        value: PriceCandlesQueryArgs | TokenMiniChartPriceCandlesQueryArgs,
+    ) {
+        const { start } = value;
 
         if (!this.isValidTimestamp(start)) {
             throw new UserInputError('Invalid timestamp format for start.');
         }
 
         const startDate = moment.unix(parseInt(start));
-        const maxDuration = resolutionToMaxDuration[resolution];
+        const maxDuration =
+            resolutionToMaxDuration[PriceCandlesResolutions.HOUR_4];
+        const endValue =
+            value.end || this.computeEndTime(startDate, maxDuration);
 
-        if (!end) {
-            value.end = this.computeEndTime(startDate, maxDuration);
-            return value;
-        }
-
-        if (!this.isValidTimestamp(end)) {
+        if (!this.isValidTimestamp(endValue)) {
             throw new UserInputError('Invalid timestamp format for end.');
         }
 
-        const endDate = moment.unix(parseInt(end));
+        const endDate = moment.unix(parseInt(endValue));
 
         if (endDate.isBefore(startDate)) {
             throw new UserInputError(
@@ -70,6 +71,9 @@ export class PriceCandlesArgsValidationPipe implements PipeTransform {
             );
         }
 
+        if (value instanceof PriceCandlesQueryArgs && !value.end) {
+            value.end = endValue;
+        }
         return value;
     }
 
