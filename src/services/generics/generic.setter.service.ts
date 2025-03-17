@@ -5,7 +5,10 @@ import { Logger } from 'winston';
 import { CacheService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { CacheTtlInfo } from '../caching/cache.ttl.info';
-import { formatNullOrUndefined } from 'src/utils/cache.utils';
+import {
+    formatNullOrUndefined,
+    parseCachedNullOrUndefined,
+} from 'src/utils/cache.utils';
 
 @Injectable()
 export class GenericSetterService {
@@ -33,6 +36,29 @@ export class GenericSetterService {
             localTtl,
         );
         return cacheKey;
+    }
+
+    protected async setDataOrUpdateTtl(
+        cacheKey: string,
+        value: any,
+        remoteTtl: number,
+        localTtl?: number,
+    ): Promise<string> {
+        const cachedValue = await this.cachingService.getRemote(cacheKey);
+
+        if (
+            cachedValue !== undefined &&
+            parseCachedNullOrUndefined(cachedValue) === value
+        ) {
+            if (typeof value === 'undefined' || value === null) {
+                remoteTtl = CacheTtlInfo.NullValue.remoteTtl;
+            }
+            await this.cachingService.setTtlRemote(cacheKey, remoteTtl);
+
+            return undefined;
+        }
+
+        return this.setData(cacheKey, value, remoteTtl, localTtl);
     }
 
     protected async delData(cacheKey: string): Promise<string> {
