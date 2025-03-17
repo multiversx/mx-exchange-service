@@ -81,16 +81,16 @@ export class WeekTimekeepingCacheWarmerService {
                 continue;
             }
 
-            const [startEpochForWeek, endEpochForWeek] = await Promise.all([
-                this.weekTimekeepingCompute.computeStartEpochForWeek(
+            const startEpochForWeek =
+                await this.weekTimekeepingCompute.computeStartEpochForWeek(
                     address,
                     week,
-                ),
-                this.weekTimekeepingCompute.computeEndEpochForWeek(
-                    address,
-                    week,
-                ),
-            ]);
+                );
+
+            const endEpochForWeek =
+                startEpochForWeek +
+                this.weekTimekeepingCompute.epochsInWeek -
+                1;
 
             const computeCacheKeys = await Promise.all([
                 this.weekTimekeepingSetter.startEpochForWeek(
