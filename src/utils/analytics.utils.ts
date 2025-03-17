@@ -53,7 +53,7 @@ export const alignTimestampTo4HourInterval = (timestamp: string): string => {
     const momentTimestamp = moment.unix(parseInt(timestamp));
 
     return momentTimestamp
-        .subtract(momentTimestamp.minutes() % (4 * 60), 'minutes')
+        .startOf('hour')
         .subtract(momentTimestamp.hours() % 4, 'hours')
         .unix()
         .toString();
