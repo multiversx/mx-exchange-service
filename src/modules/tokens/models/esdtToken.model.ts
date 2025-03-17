@@ -18,10 +18,7 @@ export class BaseEsdtToken {
     }
 
     static toEsdtToken(baseEsdtToken: BaseEsdtToken): EsdtToken {
-        return new EsdtToken({
-            identifier: baseEsdtToken.identifier,
-            decimals: baseEsdtToken.decimals,
-        });
+        return new EsdtToken(baseEsdtToken);
     }
 }
 
