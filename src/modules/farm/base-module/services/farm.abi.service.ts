@@ -35,8 +35,8 @@ export class FarmAbiService
     })
     @GetOrSetCache({
         baseKey: 'farm',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async farmedTokenID(farmAddress: string): Promise<string> {
         return this.getFarmedTokenIDRaw(farmAddress);
@@ -55,8 +55,8 @@ export class FarmAbiService
     })
     @GetOrSetCache({
         baseKey: 'farm',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async farmTokenID(farmAddress: string): Promise<string> {
         return this.getFarmTokenIDRaw(farmAddress);
@@ -85,8 +85,8 @@ export class FarmAbiService
     })
     @GetOrSetCache({
         baseKey: 'farm',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async farmingTokenID(farmAddress: string): Promise<string> {
         return this.getFarmingTokenIDRaw(farmAddress);

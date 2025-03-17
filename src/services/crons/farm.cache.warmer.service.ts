@@ -257,6 +257,14 @@ export class FarmCacheWarmerService {
     }
 
     private async deleteCacheKeys() {
+        this.invalidatedKeys = this.invalidatedKeys.filter(
+            (key) => key !== undefined,
+        );
+
+        if (this.invalidatedKeys.length === 0) {
+            return;
+        }
+
         await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
         this.invalidatedKeys = [];
     }
