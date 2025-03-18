@@ -47,7 +47,8 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('totalLockedValueUSD'),
             value,
-            Constants.oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -55,7 +56,8 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('totalFeesUSD', time),
             value,
-            Constants.oneMinute(),
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
