@@ -101,6 +101,7 @@ import { WeeklyRewardsSplittingCacheWarmerService } from './crons/weekly.rewards
         CurrencyConverterCacheWarmerService,
         WeekTimekeepingCacheWarmerService,
         WeeklyRewardsSplittingCacheWarmerService,
+        RouterCacheWarmerService,
     ],
 })
 export class CacheWarmerModule {}

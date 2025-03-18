@@ -15,6 +15,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IRouterAbiService } from './interfaces';
 import { constantsConfig } from 'src/config';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class RouterAbiService
@@ -28,7 +29,8 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: Constants.oneMinute(),
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async pairsAddress(): Promise<string[]> {
         return this.getAllPairsAddressRaw();
@@ -48,7 +50,8 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: Constants.oneMinute(),
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async pairsMetadata(): Promise<PairMetadata[]> {
         return this.getPairsMetadataRaw();

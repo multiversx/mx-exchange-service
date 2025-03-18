@@ -5,6 +5,7 @@ import { CacheService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
 import { PairMetadata } from '../models/pair.metadata.model';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class RouterSetterService extends GenericSetterService {
@@ -20,7 +21,8 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairsAddress'),
             value,
-            Constants.oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -28,7 +30,8 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairsMetadata'),
             value,
-            Constants.oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -59,6 +62,22 @@ export class RouterSetterService extends GenericSetterService {
     async setPairCount(value: number): Promise<string> {
         return await this.setData(
             this.getCacheKey('pairCount'),
+            value,
+            Constants.oneHour(),
+        );
+    }
+
+    async setOwner(value: string): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('owner'),
+            value,
+            Constants.oneHour(),
+        );
+    }
+
+    async setCommonTokensForUserPairs(value: string[]): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('commonTokensForUserPairs'),
             value,
             Constants.oneHour(),
         );
