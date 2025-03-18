@@ -23,6 +23,7 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
+import { constantsConfig } from 'src/config';
 
 @Injectable()
 export class GlobalRewardsService {
@@ -98,7 +99,6 @@ export class GlobalRewardsService {
     private async processFeesCollectorRewards(
         weekOffset: number,
     ): Promise<FeesCollectorGlobalRewards> {
-        let energyRewardsUSD = new BigNumber(0);
         const feesCollectorAddress = scAddress.feesCollector;
 
         const currentWeek =
@@ -108,23 +108,43 @@ export class GlobalRewardsService {
 
         const targetWeek = Math.max(0, currentWeek - weekOffset);
 
-        const weekRewardsUSD =
+        const energyRewardsUSD =
             await this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
                 feesCollectorAddress,
                 targetWeek,
             );
 
-        if (weekRewardsUSD && weekRewardsUSD !== '0') {
-            energyRewardsUSD = energyRewardsUSD.plus(
-                new BigNumber(weekRewardsUSD),
+        const weeklyRewards =
+            await this.weeklyRewardsSplitting.totalRewardsForWeek(
+                feesCollectorAddress,
+                targetWeek,
             );
-        }
 
-        const totalRewardsUSD = energyRewardsUSD.dividedBy(0.6);
+        const totalEnergyAmount =
+            await this.weeklyRewardsSplitting.totalEnergyForWeek(
+                feesCollectorAddress,
+                targetWeek,
+            );
+
+        const mexRewards = weeklyRewards.filter(
+            (reward) => reward.tokenID === constantsConfig.MEX_TOKEN_ID,
+        );
+        const totalMexAmount = mexRewards
+            .reduce(
+                (sum, reward) => sum.plus(new BigNumber(reward.amount)),
+                new BigNumber(0),
+            )
+            .toFixed();
+
+        const totalRewardsUSD = new BigNumber(energyRewardsUSD)
+            .dividedBy(0.6)
+            .toFixed();
 
         return new FeesCollectorGlobalRewards({
-            totalRewardsUSD: totalRewardsUSD.toFixed(),
-            energyRewardsUSD: energyRewardsUSD.toFixed(),
+            totalRewardsUSD: totalRewardsUSD,
+            energyRewardsUSD: energyRewardsUSD,
+            totalEnergyAmount,
+            totalMexAmount,
         });
     }
 
@@ -160,6 +180,23 @@ export class GlobalRewardsService {
                     weekToCheck,
                 );
 
+            const totalEnergyAmount =
+                await this.weeklyRewardsSplitting.totalEnergyForWeek(
+                    farmAddress,
+                    weekToCheck,
+                );
+
+            const mexRewards = rewards.filter(
+                (reward) => reward.tokenID === constantsConfig.MEX_TOKEN_ID,
+            );
+
+            const totalMexAmount = mexRewards
+                .reduce(
+                    (sum, reward) => sum.plus(new BigNumber(reward.amount)),
+                    new BigNumber(0),
+                )
+                .toFixed();
+
             const rewardTokenIDs = rewards.map((reward) => reward.tokenID);
             const tokensMetadata = allPairsTokens.filter((token) =>
                 rewardTokenIDs.includes(token.identifier),
@@ -193,8 +230,10 @@ export class GlobalRewardsService {
                     pairAddress: pairAddresses[i],
                     firstToken: firstTokens[i],
                     secondToken: secondTokens[i],
-                    totalRewardsUSD: totalRewardsUSD.toString(),
-                    energyRewardsUSD: energyRewardsUSD.toString(),
+                    totalRewardsUSD: totalRewardsUSD.toFixed(),
+                    energyRewardsUSD: energyRewardsUSD.toFixed(),
+                    totalEnergyAmount,
+                    totalMexAmount,
                 }),
             );
         }
@@ -225,6 +264,23 @@ export class GlobalRewardsService {
                     address,
                     targetWeek,
                 );
+
+            const totalEnergyAmount =
+                await this.weeklyRewardsSplitting.totalEnergyForWeek(
+                    address,
+                    targetWeek,
+                );
+
+            const mexRewards = weeklyRewards.filter(
+                (reward) => reward.tokenID === constantsConfig.MEX_TOKEN_ID,
+            );
+
+            const totalMexAmount = mexRewards
+                .reduce(
+                    (sum, reward) => sum.plus(new BigNumber(reward.amount)),
+                    new BigNumber(0),
+                )
+                .toFixed();
 
             const rewardTokenIDs = weeklyRewards.map(
                 (reward) => reward.tokenID,
@@ -258,6 +314,8 @@ export class GlobalRewardsService {
                 farmingToken: farmingTokens[i],
                 totalRewardsUSD,
                 energyRewardsUSD,
+                totalEnergyAmount,
+                totalMexAmount,
             });
         }
 

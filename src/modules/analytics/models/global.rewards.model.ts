@@ -9,6 +9,12 @@ export class FeesCollectorGlobalRewards {
     @Field()
     energyRewardsUSD: string;
 
+    @Field()
+    totalEnergyAmount: string;
+
+    @Field()
+    totalMexAmount: string;
+
     constructor(init?: Partial<FeesCollectorGlobalRewards>) {
         Object.assign(this, init);
     }
@@ -31,6 +37,12 @@ export class FarmsGlobalRewards {
     @Field()
     energyRewardsUSD: string;
 
+    @Field()
+    totalEnergyAmount: string;
+
+    @Field()
+    totalMexAmount: string;
+
     constructor(init?: Partial<FarmsGlobalRewards>) {
         Object.assign(this, init);
         if (init?.firstToken) {
@@ -52,6 +64,12 @@ export class StakingGlobalRewards {
 
     @Field()
     energyRewardsUSD: string;
+
+    @Field()
+    totalEnergyAmount: string;
+
+    @Field()
+    totalMexAmount: string;
 
     constructor(init?: Partial<StakingGlobalRewards>) {
         Object.assign(this, init);
