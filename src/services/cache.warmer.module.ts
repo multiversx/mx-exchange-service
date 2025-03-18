@@ -47,6 +47,7 @@ import { CurrencyConverterCacheWarmerService } from './crons/currency.converter.
 import { CurrencyConverterModule } from 'src/modules/currency-converter/currency.converter.module';
 import { WeekTimekeepingCacheWarmerService } from './crons/week.timekeeping.cache.warmer.service';
 import { WeeklyRewardsSplittingCacheWarmerService } from './crons/weekly.rewards.cache.warmer.service';
+import { RouterCacheWarmerService } from './crons/router.cache.warmer.service';
 
 @Module({
     imports: [
