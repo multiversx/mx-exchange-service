@@ -9,7 +9,7 @@ import { WeekTimekeepingSetterService } from 'src/submodules/week-timekeeping/se
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
-import { scAddress } from 'src/config';
+import { constantsConfig, scAddress } from 'src/config';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
@@ -56,32 +56,9 @@ export class WeekTimekeepingCacheWarmerService {
                     firstWeekStartEpoch,
                 ),
             ]);
+            await this.deleteCacheKeys(abiCacheKeys);
 
-            const [startEpochForWeek, endEpochForWeek] = await Promise.all([
-                this.weekTimekeepingCompute.computeStartEpochForWeek(
-                    address,
-                    currentWeek,
-                ),
-                this.weekTimekeepingCompute.computeEndEpochForWeek(
-                    address,
-                    currentWeek,
-                ),
-            ]);
-
-            const computeCacheKeys = await Promise.all([
-                this.weekTimekeepingSetter.startEpochForWeek(
-                    address,
-                    currentWeek,
-                    startEpochForWeek,
-                ),
-                this.weekTimekeepingSetter.endEpochForWeek(
-                    address,
-                    currentWeek,
-                    endEpochForWeek,
-                ),
-            ]);
-
-            await this.deleteCacheKeys([...abiCacheKeys, ...computeCacheKeys]);
+            await this.cacheWeekTimekeepingWeeklyEpochs(address, currentWeek);
         }
 
         profiler.stop();
@@ -91,6 +68,45 @@ export class WeekTimekeepingCacheWarmerService {
                 context: 'WeekTimekeepingCacheWarmer',
             },
         );
+    }
+
+    private async cacheWeekTimekeepingWeeklyEpochs(
+        address: string,
+        currentWeek: number,
+    ): Promise<void> {
+        const startWeek = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS;
+
+        for (let week = startWeek; week <= currentWeek; week++) {
+            if (week < 1) {
+                continue;
+            }
+
+            const startEpochForWeek =
+                await this.weekTimekeepingCompute.computeStartEpochForWeek(
+                    address,
+                    week,
+                );
+
+            const endEpochForWeek =
+                startEpochForWeek +
+                this.weekTimekeepingCompute.epochsInWeek -
+                1;
+
+            const computeCacheKeys = await Promise.all([
+                this.weekTimekeepingSetter.startEpochForWeek(
+                    address,
+                    week,
+                    startEpochForWeek,
+                ),
+                this.weekTimekeepingSetter.endEpochForWeek(
+                    address,
+                    week,
+                    endEpochForWeek,
+                ),
+            ]);
+
+            await this.deleteCacheKeys(computeCacheKeys);
+        }
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
