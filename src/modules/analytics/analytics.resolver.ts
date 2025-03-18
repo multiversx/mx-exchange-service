@@ -1,11 +1,14 @@
 import { UsePipes, ValidationPipe } from '@nestjs/common';
-import { Int, Query } from '@nestjs/graphql';
-import { Args, Resolver } from '@nestjs/graphql';
+import { Int, Query, Resolver, Args } from '@nestjs/graphql';
 import {
     CandleDataModel,
     HistoricDataModel,
 } from 'src/modules/analytics/models/analytics.model';
-import { AnalyticsQueryArgs, PriceCandlesQueryArgs } from './models/query.args';
+import {
+    AnalyticsQueryArgs,
+    PriceCandlesQueryArgs,
+    TokenMiniChartPriceCandlesQueryArgs,
+} from './models/query.args';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
@@ -14,6 +17,8 @@ import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PriceCandlesArgsValidationPipe } from './validators/price.candles.args.validator';
 import { TradingActivityModel } from './models/trading.activity.model';
 import { RouterAbiService } from '../router/services/router.abi.service';
+import { alignTimestampTo4HourInterval } from 'src/utils/analytics.utils';
+import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -180,7 +185,9 @@ export class AnalyticsResolver {
         return [];
     }
 
-    @Query(() => [CandleDataModel])
+    @Query(() => [CandleDataModel], {
+        deprecationReason: 'Use tokenMiniChartPriceCandles instead',
+    })
     @UsePipes(
         new ValidationPipe({
             skipNullProperties: true,
@@ -192,12 +199,29 @@ export class AnalyticsResolver {
         @Args(PriceCandlesArgsValidationPipe)
         args: PriceCandlesQueryArgs,
     ): Promise<CandleDataModel[]> {
-        return this.analyticsPairService.getPriceCandles(
+        const adjustedStart = alignTimestampTo4HourInterval(args.start);
+        const adjustedEnd = alignTimestampTo4HourInterval(args.end);
+
+        return this.analyticsPairService.tokenMiniChartPriceCandles(
             args.series,
-            args.metric,
-            args.start,
-            args.end,
-            args.resolution,
+            adjustedStart,
+            adjustedEnd,
+        );
+    }
+
+    @Query(() => [CandleDataModel])
+    @UsePipes(new QueryArgsValidationPipe())
+    async tokenMiniChartPriceCandles(
+        @Args(PriceCandlesArgsValidationPipe)
+        args: TokenMiniChartPriceCandlesQueryArgs,
+    ): Promise<CandleDataModel[]> {
+        const adjustedStart = alignTimestampTo4HourInterval(args.start);
+        const adjustedEnd = alignTimestampTo4HourInterval(args.end);
+
+        return this.analyticsPairService.tokenMiniChartPriceCandles(
+            args.series,
+            adjustedStart,
+            adjustedEnd,
         );
     }
 

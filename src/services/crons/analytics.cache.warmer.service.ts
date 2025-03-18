@@ -9,6 +9,10 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AnalyticsSetterService } from 'src/modules/analytics/services/analytics.setter.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
+import { AnalyticsPairSetterService } from 'src/modules/analytics/services/analytics.pair.setter.service';
+import { alignTimestampTo4HourInterval } from 'src/utils/analytics.utils';
+import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
+import moment from 'moment';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
@@ -17,6 +21,8 @@ export class AnalyticsCacheWarmerService {
         private readonly analyticsSetter: AnalyticsSetterService,
         private readonly apiConfig: ApiConfigService,
         private readonly routerAbi: RouterAbiService,
+        private readonly analyticsPairSetter: AnalyticsPairSetterService,
+        private readonly analyticsQueryService: AnalyticsQueryService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -115,6 +121,41 @@ export class AnalyticsCacheWarmerService {
             ),
         ]);
         await this.deleteCacheKeys(cachedKeys);
+    }
+
+    @Cron(CronExpression.EVERY_2_HOURS)
+    @Lock({ name: 'cacheTokenMiniChartPriceCandles', verbose: true })
+    async cacheTokenMiniChartPriceCandles(): Promise<void> {
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+
+        const endTimestamp = moment().unix().toString();
+        const startTimestamp = moment().subtract(7, 'days').unix().toString();
+
+        const alignedStart = alignTimestampTo4HourInterval(startTimestamp);
+        const alignedEnd = alignTimestampTo4HourInterval(endTimestamp);
+
+        const tokenIDs = new Set<string>();
+        for (const pair of pairsMetadata) {
+            tokenIDs.add(pair.firstTokenID);
+            tokenIDs.add(pair.secondTokenID);
+        }
+
+        for (const tokenID of tokenIDs) {
+            const candles = await this.analyticsQueryService.getTokenMiniChartPriceCandles({
+                series: tokenID,
+                start: alignedStart,
+                end: alignedEnd,
+            });
+
+            const cacheKey = await this.analyticsPairSetter.setTokenMiniChartPriceCandles(
+                tokenID,
+                alignedStart,
+                alignedEnd,
+                candles,
+            );
+
+            await this.deleteCacheKeys([cacheKey]);
+        }
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
