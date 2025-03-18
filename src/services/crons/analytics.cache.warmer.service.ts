@@ -128,8 +128,6 @@ export class AnalyticsCacheWarmerService {
 
         const allData = await Promise.all(
             weekOffsets.map(async (weekOffset) => {
-                await this.globalRewardsService.getGlobalRewards(weekOffset);
-
                 const feesRewards =
                     await this.globalRewardsService.feesCollectorRewards(
                         weekOffset,

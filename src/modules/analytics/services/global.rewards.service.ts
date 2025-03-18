@@ -1,8 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { GlobalRewardsModel } from '../models/global.rewards.model';
 import {
     FarmsGlobalRewards,
     FeesCollectorGlobalRewards,
@@ -10,60 +8,48 @@ import {
 } from '../models/global.rewards.model';
 import { BigNumber } from 'bignumber.js';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
-import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingService } from 'src/modules/staking/services/staking.service';
-import { scAddress } from 'src/config';
+import { scAddress, constantsConfig } from 'src/config';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
-import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { Constants } from '@multiversx/sdk-nestjs-common';
-import { constantsConfig } from 'src/config';
+import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fees-collector.abi.service';
 
 @Injectable()
 export class GlobalRewardsService {
-    private readonly logger = new Logger(GlobalRewardsService.name);
-
     constructor(
         private readonly weeklyRewardsSplitting: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
         private readonly farmAbiV2: FarmAbiServiceV2,
-        private readonly stakingAbi: StakingAbiService,
         private readonly tokenService: TokenService,
-        private readonly pairCompute: PairComputeService,
         private readonly pairService: PairService,
         private readonly remoteConfig: RemoteConfigGetterService,
-        private readonly farmFactory: FarmFactoryService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly tokenCompute: TokenComputeService,
         private readonly stakingService: StakingService,
+        private readonly stakingAbi: StakingAbiService,
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
     ) {}
-
-    async getGlobalRewards(weekOffset: number): Promise<GlobalRewardsModel> {
-        return new GlobalRewardsModel({});
-    }
 
     @GetOrSetCache({
         baseKey: 'analytics',
         remoteTtl: Constants.oneHour() * 6,
         localTtl: Constants.oneHour() * 4,
     })
+    @ErrorLoggerAsync()
     async feesCollectorRewards(
         weekOffset: number,
     ): Promise<FeesCollectorGlobalRewards> {
-        try {
-            return await this.processFeesCollectorRewards(weekOffset);
-        } catch (error) {
-            this.logger.error(
-                `Error getting fees collector rewards: ${error.message}`,
-            );
-            throw new Error('Error getting fees collector rewards');
-        }
+        return await this.processFeesCollectorRewards(weekOffset);
     }
 
     @GetOrSetCache({
@@ -71,13 +57,9 @@ export class GlobalRewardsService {
         remoteTtl: Constants.oneHour() * 6,
         localTtl: Constants.oneHour() * 4,
     })
+    @ErrorLoggerAsync()
     async farmRewards(weekOffset: number): Promise<FarmsGlobalRewards[]> {
-        try {
-            return await this.processFarmsRewards(weekOffset);
-        } catch (error) {
-            this.logger.error(`Error getting farms rewards: ${error.message}`);
-            throw new Error('Error getting farms rewards');
-        }
+        return await this.processFarmsRewards(weekOffset);
     }
 
     @GetOrSetCache({
@@ -85,15 +67,9 @@ export class GlobalRewardsService {
         remoteTtl: Constants.oneHour() * 6,
         localTtl: Constants.oneHour() * 4,
     })
+    @ErrorLoggerAsync()
     async stakingRewards(weekOffset: number): Promise<StakingGlobalRewards[]> {
-        try {
-            return await this.processStakingRewards(weekOffset);
-        } catch (error) {
-            this.logger.error(
-                `Error getting staking rewards: ${error.message}`,
-            );
-            throw new Error('Error getting staking rewards');
-        }
+        return await this.processStakingRewards(weekOffset);
     }
 
     private async processFeesCollectorRewards(
@@ -101,10 +77,9 @@ export class GlobalRewardsService {
     ): Promise<FeesCollectorGlobalRewards> {
         const feesCollectorAddress = scAddress.feesCollector;
 
-        const currentWeek =
-            await this.weeklyRewardsSplitting.lastGlobalUpdateWeek(
-                feesCollectorAddress,
-            );
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            feesCollectorAddress,
+        );
 
         const targetWeek = Math.max(0, currentWeek - weekOffset);
 
@@ -114,37 +89,9 @@ export class GlobalRewardsService {
                 targetWeek,
             );
 
-        const weeklyRewards =
-            await this.weeklyRewardsSplitting.totalRewardsForWeek(
-                feesCollectorAddress,
-                targetWeek,
-            );
-
-        const totalEnergyAmount =
-            await this.weeklyRewardsSplitting.totalEnergyForWeek(
-                feesCollectorAddress,
-                targetWeek,
-            );
-
-        const mexRewards = weeklyRewards.filter(
-            (reward) => reward.tokenID === constantsConfig.MEX_TOKEN_ID,
-        );
-        const totalMexAmount = mexRewards
-            .reduce(
-                (sum, reward) => sum.plus(new BigNumber(reward.amount)),
-                new BigNumber(0),
-            )
-            .toFixed();
-
-        const totalRewardsUSD = new BigNumber(energyRewardsUSD)
-            .dividedBy(0.6)
-            .toFixed();
-
         return new FeesCollectorGlobalRewards({
-            totalRewardsUSD: totalRewardsUSD,
+            totalRewardsUSD: energyRewardsUSD,
             energyRewardsUSD: energyRewardsUSD,
-            totalEnergyAmount,
-            totalMexAmount,
         });
     }
 
@@ -164,81 +111,114 @@ export class GlobalRewardsService {
         const secondTokens = await this.pairService.getAllSecondTokens(
             pairAddresses,
         );
-        const allPairsTokens = [...firstTokens, ...secondTokens];
+
+        // Create a deduplicated array of tokens
+        const uniqueTokensMap = new Map();
+        [...firstTokens, ...secondTokens].forEach((token) => {
+            if (!uniqueTokensMap.has(token.identifier)) {
+                uniqueTokensMap.set(token.identifier, token);
+            }
+        });
+        const allPairsTokens = Array.from(uniqueTokensMap.values());
 
         for (let i = 0; i < farmAddresses.length; i++) {
-            const farmAddress = farmAddresses[i];
-
-            const currentWeek = await this.weekTimekeepingAbi.currentWeek(
-                farmAddress,
-            );
-            const weekToCheck = Math.max(0, currentWeek - weekOffset);
-
-            const rewards =
-                await this.weeklyRewardsSplitting.totalRewardsForWeek(
-                    farmAddress,
-                    weekToCheck,
-                );
-
-            const totalEnergyAmount =
-                await this.weeklyRewardsSplitting.totalEnergyForWeek(
-                    farmAddress,
-                    weekToCheck,
-                );
-
-            const mexRewards = rewards.filter(
-                (reward) => reward.tokenID === constantsConfig.MEX_TOKEN_ID,
+            const farmReward = await this.computeSingleFarmRewards(
+                farmAddresses[i],
+                weekOffset,
+                pairAddresses[i],
+                firstTokens[i],
+                secondTokens[i],
+                allPairsTokens,
             );
 
-            const totalMexAmount = mexRewards
-                .reduce(
-                    (sum, reward) => sum.plus(new BigNumber(reward.amount)),
-                    new BigNumber(0),
-                )
-                .toFixed();
-
-            const rewardTokenIDs = rewards.map((reward) => reward.tokenID);
-            const tokensMetadata = allPairsTokens.filter((token) =>
-                rewardTokenIDs.includes(token.identifier),
-            );
-
-            const tokenPrices =
-                await this.tokenCompute.getAllTokensPriceDerivedUSD(
-                    rewardTokenIDs,
-                );
-
-            const energyRewardsUSD = rewards.reduce((acc, reward, j) => {
-                const rewardTokenMetadata = tokensMetadata.find(
-                    (token) => token.identifier === reward.tokenID,
-                );
-                const tokenDecimals = rewardTokenMetadata.decimals;
-                const tokenPrice = tokenPrices[j];
-
-                const tokenAmount = new BigNumber(reward.amount).dividedBy(
-                    new BigNumber(10).pow(tokenDecimals),
-                );
-
-                const rewardUSD = tokenAmount.multipliedBy(tokenPrice);
-
-                return acc.plus(rewardUSD);
-            }, new BigNumber(0));
-
-            const totalRewardsUSD = energyRewardsUSD.dividedBy(0.6);
-
-            farmsData.push(
-                new FarmsGlobalRewards({
-                    pairAddress: pairAddresses[i],
-                    firstToken: firstTokens[i],
-                    secondToken: secondTokens[i],
-                    totalRewardsUSD: totalRewardsUSD.toFixed(),
-                    energyRewardsUSD: energyRewardsUSD.toFixed(),
-                    totalEnergyAmount,
-                    totalMexAmount,
-                }),
-            );
+            farmsData.push(farmReward);
         }
 
         return farmsData;
+    }
+
+    private async computeSingleFarmRewards(
+        farmAddress: string,
+        weekOffset: number,
+        pairAddress: string,
+        firstToken: any,
+        secondToken: any,
+        allPairsTokens: any[],
+    ): Promise<FarmsGlobalRewards> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            farmAddress,
+        );
+        const targetWeek = Math.max(0, currentWeek - weekOffset);
+
+        if (weekOffset === 0) {
+            const amount = await this.farmAbiV2.accumulatedRewardsForWeek(
+                farmAddress,
+                targetWeek,
+            );
+            const mexTokenID = constantsConfig.MEX_TOKEN_ID;
+
+            const mexMetadata = await this.tokenService.tokenMetadata(
+                mexTokenID,
+            );
+            const mexPrice = await this.tokenCompute.tokenPriceDerivedUSD(
+                mexTokenID,
+            );
+
+            const energyRewardsUSD = new BigNumber(amount)
+                .dividedBy(new BigNumber(10).pow(mexMetadata.decimals))
+                .multipliedBy(mexPrice)
+                .toFixed();
+            const totalRewardsUSD = new BigNumber(energyRewardsUSD)
+                .dividedBy(0.6)
+                .toFixed();
+
+            return new FarmsGlobalRewards({
+                pairAddress,
+                firstToken,
+                secondToken,
+                totalRewardsUSD,
+                energyRewardsUSD,
+            });
+        }
+
+        const rewards = await this.weeklyRewardsSplitting.totalRewardsForWeek(
+            farmAddress,
+            targetWeek,
+        );
+        if (!rewards.length) {
+            return new FarmsGlobalRewards({
+                pairAddress,
+                firstToken,
+                secondToken,
+                totalRewardsUSD: '0',
+                energyRewardsUSD: '0',
+            });
+        }
+
+        const reward = rewards[0] as EsdtTokenPayment;
+        const tokenMetadata =
+            allPairsTokens.find((t) => t.identifier === reward.tokenID) ||
+            (await this.tokenService.tokenMetadata(reward.tokenID));
+
+        const tokenPrice = await this.tokenCompute.tokenPriceDerivedUSD(
+            reward.tokenID,
+        );
+        const tokenAmount = new BigNumber(reward.amount).dividedBy(
+            new BigNumber(10).pow(tokenMetadata.decimals),
+        );
+
+        const energyRewardsUSD = tokenAmount.multipliedBy(tokenPrice).toFixed();
+        const totalRewardsUSD = new BigNumber(energyRewardsUSD)
+            .dividedBy(0.6)
+            .toFixed();
+
+        return new FarmsGlobalRewards({
+            pairAddress,
+            firstToken,
+            secondToken,
+            totalRewardsUSD,
+            energyRewardsUSD,
+        });
     }
 
     private async processStakingRewards(
@@ -253,72 +233,68 @@ export class GlobalRewardsService {
         );
 
         for (let i = 0; i < stakingFarmsAddresses.length; i++) {
-            const address = stakingFarmsAddresses[i];
-            const currentWeek = await this.weekTimekeepingAbi.currentWeek(
-                address,
+            const stakingReward = await this.computeSingleStakingRewards(
+                stakingFarmsAddresses[i],
+                weekOffset,
+                farmingTokens[i],
             );
-            const targetWeek = Math.max(0, currentWeek - weekOffset);
-
-            const weeklyRewards =
-                await this.weeklyRewardsSplitting.totalRewardsForWeek(
-                    address,
-                    targetWeek,
-                );
-
-            const totalEnergyAmount =
-                await this.weeklyRewardsSplitting.totalEnergyForWeek(
-                    address,
-                    targetWeek,
-                );
-
-            const mexRewards = weeklyRewards.filter(
-                (reward) => reward.tokenID === constantsConfig.MEX_TOKEN_ID,
-            );
-
-            const totalMexAmount = mexRewards
-                .reduce(
-                    (sum, reward) => sum.plus(new BigNumber(reward.amount)),
-                    new BigNumber(0),
-                )
-                .toFixed();
-
-            const rewardTokenIDs = weeklyRewards.map(
-                (reward) => reward.tokenID,
-            );
-            const allRewardsTokens =
-                await this.tokenService.getAllTokensMetadata(rewardTokenIDs);
-
-            const tokenPrices =
-                await this.tokenCompute.getAllTokensPriceDerivedUSD(
-                    rewardTokenIDs,
-                );
-
-            const energyRewardsUSD = weeklyRewards.reduce((acc, reward, j) => {
-                const tokenMetadata = allRewardsTokens.find(
-                    (token) => token.identifier === reward.tokenID,
-                );
-                const tokenAmount = new BigNumber(reward.amount).dividedBy(
-                    new BigNumber(10).pow(tokenMetadata.decimals),
-                );
-
-                const tokenPrice = tokenPrices[j];
-                const tokenValueUSD = tokenAmount.multipliedBy(tokenPrice);
-                return new BigNumber(acc).plus(tokenValueUSD).toFixed();
-            }, '0');
-
-            const totalRewardsUSD = new BigNumber(energyRewardsUSD)
-                .dividedBy(0.6)
-                .toFixed();
-
-            stakingRewards.push({
-                farmingToken: farmingTokens[i],
-                totalRewardsUSD,
-                energyRewardsUSD,
-                totalEnergyAmount,
-                totalMexAmount,
-            });
+            stakingRewards.push(stakingReward);
         }
 
         return stakingRewards;
+    }
+
+    private async computeSingleStakingRewards(
+        stakingAddress: string,
+        weekOffset: number,
+        farmingToken: EsdtToken,
+    ): Promise<StakingGlobalRewards> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            stakingAddress,
+        );
+        const targetWeek = Math.max(0, currentWeek - weekOffset);
+
+        let rewardAmount = '0';
+
+        if (weekOffset === 0) {
+            rewardAmount = await this.stakingAbi.accumulatedRewardsForWeek(
+                stakingAddress,
+                targetWeek,
+            );
+        } else {
+            const weeklyRewards =
+                await this.weeklyRewardsSplitting.totalRewardsForWeek(
+                    stakingAddress,
+                    targetWeek,
+                );
+            rewardAmount = weeklyRewards[0]?.amount ?? '0';
+        }
+
+        if (rewardAmount === '0') {
+            return new StakingGlobalRewards({
+                farmingToken,
+                totalRewardsUSD: '0',
+                energyRewardsUSD: '0',
+            });
+        }
+
+        const tokenPrice = await this.tokenCompute.tokenPriceDerivedUSD(
+            farmingToken.identifier,
+        );
+
+        const energyRewardsUSD = new BigNumber(rewardAmount)
+            .dividedBy(new BigNumber(10).pow(farmingToken.decimals))
+            .multipliedBy(tokenPrice)
+            .toFixed();
+
+        const totalRewardsUSD = new BigNumber(energyRewardsUSD)
+            .dividedBy(0.6)
+            .toFixed();
+
+        return new StakingGlobalRewards({
+            farmingToken,
+            totalRewardsUSD,
+            energyRewardsUSD,
+        });
     }
 }

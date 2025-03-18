@@ -1,4 +1,4 @@
-import { Resolver, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, ResolveField, Parent, Query, Args } from '@nestjs/graphql';
 import {
     GlobalRewardsModel,
     FeesCollectorGlobalRewards,
@@ -6,10 +6,20 @@ import {
     StakingGlobalRewards,
 } from './models/global.rewards.model';
 import { GlobalRewardsService } from './services/global.rewards.service';
+import { GlobalRewardsArgs } from './models/query.args';
 
 @Resolver(() => GlobalRewardsModel)
 export class GlobalRewardsResolver {
     constructor(private readonly globalRewardsService: GlobalRewardsService) {}
+
+    @Query(() => GlobalRewardsModel)
+    async globalRewards(
+        @Args() args: GlobalRewardsArgs,
+    ): Promise<GlobalRewardsModel> {
+        return Object.assign(new GlobalRewardsModel({}), {
+            weekOffset: args.weekOffset,
+        });
+    }
 
     @ResolveField(() => FeesCollectorGlobalRewards)
     async feesCollectorGlobalRewards(
