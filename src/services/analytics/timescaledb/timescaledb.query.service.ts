@@ -507,7 +507,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                 .map(
                     (row) =>
                         new CandleDataModel({
-                            time: moment(row.bucket).valueOf().toString(),
+                            time: row.bucket,
                             ohlc: [row.open, row.high, row.low, row.close],
                         }),
                 );
@@ -516,7 +516,7 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         return query.map(
             (row) =>
                 new CandleDataModel({
-                    time: moment(row.bucket).valueOf().toString(),
+                    time: row.bucket,
                     ohlc: [
                         row.open ?? previousCandle.open,
                         row.high ?? previousCandle.high,
