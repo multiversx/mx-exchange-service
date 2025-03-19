@@ -18,6 +18,7 @@ import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { RouterSetterService } from 'src/modules/router/services/router.setter.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -26,6 +27,7 @@ export class PairCacheWarmerService {
         private readonly pairComputeService: PairComputeService,
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
+        private readonly routerSetter: RouterSetterService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly tokenService: TokenService,
         private readonly tokenSetter: TokenSetterService,
@@ -100,6 +102,7 @@ export class PairCacheWarmerService {
 
         const pairsAddresses = await this.routerAbi.pairsAddress();
         const time = '24h';
+        let totalFeesUSD = new BigNumber(0);
         for (const pairAddress of pairsAddresses) {
             const firstTokenVolume24h =
                 await this.analyticsQuery.getAggregatedValue({
@@ -128,6 +131,8 @@ export class PairCacheWarmerService {
             });
             await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
 
+            totalFeesUSD = totalFeesUSD.plus(feesUSD24h);
+
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenVolume(
                     pairAddress,
@@ -149,6 +154,12 @@ export class PairCacheWarmerService {
             await this.deleteCacheKeys(cachedKeys);
         }
 
+        const feesKey = await this.routerSetter.setTotalFeesUSD(
+            time,
+            totalFeesUSD.toFixed(),
+        );
+        await this.deleteCacheKeys([feesKey]);
+
         this.logger.info('Finished refresh cached pairs analytics', {
             context: 'CachePairs',
         });
@@ -163,7 +174,7 @@ export class PairCacheWarmerService {
         const performance = new PerformanceProfiler('cachePairsInfo');
 
         const pairsAddresses = await this.routerAbi.pairsAddress();
-
+        let totalLockedValueUSD = new BigNumber(0);
         for (const pairAddress of pairsAddresses) {
             const [
                 feesAPR,
@@ -207,6 +218,10 @@ export class PairCacheWarmerService {
                 await this.pairComputeService.computeLockedValueUSD(
                     pairAddress,
                 );
+            const lockedValueUSDBig = new BigNumber(lockedValueUSD);
+            totalLockedValueUSD = !lockedValueUSDBig.isNaN()
+                ? totalLockedValueUSD.plus(lockedValueUSD)
+                : totalLockedValueUSD;
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
@@ -267,6 +282,11 @@ export class PairCacheWarmerService {
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
+
+        const tvlKey = await this.routerSetter.setTotalLockedValueUSD(
+            totalLockedValueUSD.toFixed(),
+        );
+        await this.deleteCacheKeys([tvlKey]);
 
         performance.stop();
 
