@@ -92,7 +92,7 @@ export class AutoRouterComputeService {
         pairs: PairModel[],
         initialAmountIn: string,
     ): Array<string[]> {
-        const intermediaryAmounts: Array<string[]> = new Array();
+        const intermediaryAmounts: Array<string[]> = [];
 
         for (const path of paths) {
             const pathAmounts: string[] = [];
@@ -125,7 +125,7 @@ export class AutoRouterComputeService {
         pairs: PairModel[],
         fixedAmountOut: string,
     ): Array<string[]> {
-        const intermediaryAmounts: Array<string[]> = new Array();
+        const intermediaryAmounts: Array<string[]> = [];
 
         for (const path of paths) {
             const pathAmounts: string[] = [];
