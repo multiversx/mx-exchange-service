@@ -11,36 +11,17 @@ export const options = {
     thresholds: {
         http_req_duration: ['p(95)<500'], // 95% of requests should be below 500ms
         http_req_failed: ['rate<0.01'],   // Less than 1% of requests should fail
+        'checks{type:status}': ['rate>0.95'],
+        'checks{type:data}': ['rate>0.95'],
     },
 };
 
 const BASE_URL = 'http://localhost:3005/graphql';
 
 const QUERIES = {
-    filteredTokens: `
-        query filteredTokens($filters: TokensFilter, $pagination: ConnectionArgs, $sorting: TokenSortingArgs) {
-            filteredTokens(filters: $filters, pagination: $pagination, sorting: $sorting) {
-                edges {
-                    node {
-                        identifier
-                        name
-                        ticker
-                        decimals
-                        price
-                        volumeUSD24h
-                        liquidityUSD
-                    }
-                }
-                pageInfo {
-                    hasNextPage
-                    hasPreviousPage
-                }
-                pageData {
-                    count
-                    limit
-                    offset
-                }
-            }
+    totalValueStaked: `
+        query {
+            totalValueStakedUSD
         }
     `,
 };
@@ -50,28 +31,43 @@ export default function () {
         'Content-Type': 'application/json',
     };
 
-    // Test filtered tokens endpoint with search string
-    const filteredTokensResponse = http.post(BASE_URL, JSON.stringify({
-        query: QUERIES.filteredTokens,
-        variables: {
-            filters: {
-                searchToken: "",
-                enabledSwaps: true
-            },
-            pagination: {
-                first: 10
-            }
-        }
+    // Test total value staked endpoint
+    const totalValueStakedResponse = http.post(BASE_URL, JSON.stringify({
+        query: QUERIES.totalValueStaked
     }), { 
         headers,
-        timeout: '5m',
-        tags: { name: 'FilteredTokens' }
+        timeout: '30s', // Reduced timeout
+        tags: { name: 'TotalValueStaked' }
     });
 
-    check(filteredTokensResponse, {
-        'filteredTokens status is 200': (r) => r.status === 200,
-        'filteredTokens has no errors': (r) => !JSON.parse(r.body).errors,
-        'filteredTokens has data': (r) => JSON.parse(r.body).data.filteredTokens.edges.length > 0,
+    const checks = {
+        'status is 200': {
+            type: 'status',
+            check: (r) => r.status === 200
+        },
+        'no GraphQL errors': {
+            type: 'data',
+            check: (r) => !JSON.parse(r.body).errors
+        },
+        'has totalValueStakedUSD': {
+            type: 'data',
+            check: (r) => JSON.parse(r.body).data.totalValueStakedUSD !== null
+        },
+        'is valid number': {
+            type: 'data',
+            check: (r) => !isNaN(JSON.parse(r.body).data.totalValueStakedUSD)
+        }
+    };
+
+    Object.entries(checks).forEach(([name, { type, check }]) => {
+        const success = check(totalValueStakedResponse);
+        check(totalValueStakedResponse, {
+            [name]: () => success
+        }, { type });
+        
+        if (!success) {
+            console.error(`Check failed: ${name}`);
+        }
     });
 
     sleep(1);

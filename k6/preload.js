@@ -9,30 +9,9 @@ export const options = {
 const BASE_URL = 'http://localhost:3005/graphql';
 
 const QUERIES = {
-    filteredTokens: `
-        query filteredTokens($filters: TokensFilter, $pagination: ConnectionArgs, $sorting: TokenSortingArgs) {
-            filteredTokens(filters: $filters, pagination: $pagination, sorting: $sorting) {
-                edges {
-                    node {
-                        identifier
-                        name
-                        ticker
-                        decimals
-                        price
-                        volumeUSD24h
-                        liquidityUSD
-                    }
-                }
-                pageInfo {
-                    hasNextPage
-                    hasPreviousPage
-                }
-                pageData {
-                    count
-                    limit
-                    offset
-                }
-            }
+    totalValueStaked: `
+        query {
+            totalValueStakedUSD
         }
     `,
 };
@@ -42,26 +21,18 @@ export default function () {
         'Content-Type': 'application/json',
     };
 
-    // Make a single query for filtered tokens with empty search string
-    const filteredTokensResponse = http.post(BASE_URL, JSON.stringify({
-        query: QUERIES.filteredTokens,
-        variables: {
-            filters: {
-                searchToken: "HTM",
-                enabledSwaps: false
-            },
-            pagination: {
-                first: 10
-            }
-        }
+    // Make a single query to get total value staked
+    const totalValueStakedResponse = http.post(BASE_URL, JSON.stringify({
+        query: QUERIES.totalValueStaked
     }), { 
         headers,
         timeout: '5m'
     });
 
-    check(filteredTokensResponse, {
-        'filteredTokens status is 200': (r) => r.status === 200,
-        'filteredTokens has no errors': (r) => !JSON.parse(r.body).errors,
-        'filteredTokens has data': (r) => JSON.parse(r.body).data.filteredTokens.edges.length > 0,
+    check(totalValueStakedResponse, {
+        'totalValueStaked status is 200': (r) => r.status === 200,
+        'totalValueStaked has no errors': (r) => !JSON.parse(r.body).errors,
+        'totalValueStaked has data': (r) => JSON.parse(r.body).data.totalValueStakedUSD !== null,
+        'totalValueStaked is a valid number': (r) => !isNaN(JSON.parse(r.body).data.totalValueStakedUSD)
     });
 } 
