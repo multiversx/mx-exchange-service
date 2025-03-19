@@ -151,7 +151,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.positionCreator.singleToken.liquidityPosition +
                 gasConfig.pairs.addLiquidity +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -219,7 +219,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.positionCreator.singleToken.liquidityPosition +
                 gasConfig.pairs.addLiquidity +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -472,7 +472,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.pairs.addLiquidity +
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -633,7 +633,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.pairs.addLiquidity +
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -702,7 +702,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.pairs.addLiquidity +
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -967,7 +967,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transaction).toEqual([
                 {
@@ -1144,7 +1144,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transaction).toEqual([
                 {
