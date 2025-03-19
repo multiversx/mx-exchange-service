@@ -13,7 +13,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { FarmServiceBase } from './farm.base.service';
 import { Inject, forwardRef } from '@nestjs/common';
 import { IFarmComputeService } from './interfaces';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 
 export abstract class FarmComputeService implements IFarmComputeService {
     constructor(
@@ -36,7 +36,7 @@ export abstract class FarmComputeService implements IFarmComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async farmLockedValueUSD(farmAddress: string): Promise<string> {
-        return await this.computeFarmLockedValueUSD(farmAddress);
+        return this.computeFarmLockedValueUSD(farmAddress);
     }
 
     async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
@@ -57,13 +57,13 @@ export abstract class FarmComputeService implements IFarmComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async farmingTokenPriceUSD(farmAddress: string): Promise<string> {
-        return await this.computeFarmingTokenPriceUSD(farmAddress);
+        return this.computeFarmingTokenPriceUSD(farmAddress);
     }
 
     async computeFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
         const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
         if (scAddress.has(farmingTokenID)) {
-            return await this.tokenCompute.tokenPriceDerivedUSD(farmingTokenID);
+            return this.tokenCompute.tokenPriceDerivedUSD(farmingTokenID);
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(

@@ -4,7 +4,7 @@ import {
 } from '@nestjs/common';
 import moment from 'moment';
 import * as crypto from 'crypto';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { NextFunction } from 'express';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MetricsCollector } from '../utils/metrics.collector';

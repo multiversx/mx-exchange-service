@@ -24,7 +24,7 @@ export class WrappedLpTokenResolver {
         );
         const lockedAssetTokenCollection =
             await this.proxyAbi.lockedAssetTokenID(proxyAddress);
-        return await this.proxyService.getLockedAssetsAttributes(
+        return this.proxyService.getLockedAssetsAttributes(
             proxyAddress,
             lockedAssetTokenCollection[0],
             parent.lockedAssetsNonce,

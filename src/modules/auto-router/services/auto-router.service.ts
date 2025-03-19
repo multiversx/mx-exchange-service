@@ -3,7 +3,7 @@ import { BigNumber } from 'bignumber.js';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { BaseEsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import {
     AutoRouterComputeService,
     BestSwapRoute,
@@ -17,7 +17,7 @@ import { PairTransactionService } from 'src/modules/pair/services/pair.transacti
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { GraphService } from './graph.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
@@ -26,12 +26,14 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TransactionModel } from 'src/models/transaction.model';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 @Injectable()
 export class AutoRouterService {
     constructor(
         private readonly routerAbi: RouterAbiService,
         private readonly tokenService: TokenService,
+        private readonly tokenCompute: TokenComputeService,
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
@@ -80,8 +82,8 @@ export class AutoRouterService {
             await Promise.all([
                 this.remoteConfigGetterService.getMultiSwapStatus(),
                 this.getAllActivePairs(),
-                this.tokenService.tokenMetadata(tokenInID),
-                this.tokenService.tokenMetadata(tokenOutID),
+                this.tokenService.baseTokenMetadata(tokenInID),
+                this.tokenService.baseTokenMetadata(tokenOutID),
             ]);
 
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
@@ -97,7 +99,7 @@ export class AutoRouterService {
             );
 
             if (directPair !== undefined) {
-                return await this.singleSwap(
+                return this.singleSwap(
                     args,
                     tokenInID,
                     tokenOutID,
@@ -111,7 +113,7 @@ export class AutoRouterService {
             }
         }
 
-        return await this.multiSwap(
+        return this.multiSwap(
             args,
             tokenInID,
             tokenOutID,
@@ -127,8 +129,8 @@ export class AutoRouterService {
         tokenInID: string,
         tokenOutID: string,
         pair: PairModel,
-        tokenInMetadata: EsdtToken,
-        tokenOutMetadata: EsdtToken,
+        tokenInMetadata: BaseEsdtToken,
+        tokenOutMetadata: BaseEsdtToken,
         swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
         const [result, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
@@ -203,8 +205,8 @@ export class AutoRouterService {
         tokenInID: string,
         tokenOutID: string,
         pairs: PairModel[],
-        tokenInMetadata: EsdtToken,
-        tokenOutMetadata: EsdtToken,
+        tokenInMetadata: BaseEsdtToken,
+        tokenOutMetadata: BaseEsdtToken,
         swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
         let swapRoute: BestSwapRoute,
@@ -299,7 +301,7 @@ export class AutoRouterService {
 
     setDefaultAmountInIfNeeded(
         args: AutoRouterArgs,
-        tokenInMetadata: EsdtToken,
+        tokenInMetadata: BaseEsdtToken,
     ): string {
         if (!args.amountOut && !args.amountIn) {
             return new BigNumber(10)
@@ -333,7 +335,7 @@ export class AutoRouterService {
             .toFixed();
     }
 
-    private async getAllActivePairs() {
+    private async getAllActivePairs(): Promise<PairModel[]> {
         const pairMetadata = await this.routerAbi.pairsMetadata();
 
         const states = await this.pairService.getAllStates(
@@ -355,7 +357,7 @@ export class AutoRouterService {
         const [allInfo, allTotalFeePercent, allTokens] = await Promise.all([
             this.pairAbi.getAllPairsInfoMetadata(pairAddresses),
             this.pairAbi.getAllPairsTotalFeePercent(pairAddresses),
-            this.tokenService.getAllTokensMetadata(tokenIDs),
+            this.tokenService.getAllBaseTokensMetadata(tokenIDs),
         ]);
 
         const tokenMap = new Map(
@@ -365,8 +367,12 @@ export class AutoRouterService {
         return activePairs.map((pair, index) => {
             return new PairModel({
                 address: pair.address,
-                firstToken: tokenMap.get(pair.firstTokenID),
-                secondToken: tokenMap.get(pair.secondTokenID),
+                firstToken: BaseEsdtToken.toEsdtToken(
+                    tokenMap.get(pair.firstTokenID),
+                ),
+                secondToken: BaseEsdtToken.toEsdtToken(
+                    tokenMap.get(pair.secondTokenID),
+                ),
                 info: allInfo[index],
                 totalFeePercent: allTotalFeePercent[index],
             });
@@ -494,7 +500,7 @@ export class AutoRouterService {
             throw new Error('Spread too big!');
         }
 
-        return await this.autoRouterTransactionService.multiPairSwap(sender, {
+        return this.autoRouterTransactionService.multiPairSwap(sender, {
             swapType: parent.swapType,
             tokenInID: parent.tokenInID,
             tokenOutID: parent.tokenOutID,
@@ -511,6 +517,11 @@ export class AutoRouterService {
         tokenRoute: string[],
         intermediaryAmounts: string[],
     ): Promise<number> {
+        const [tokensMetadata, tokensPriceUSD] = await Promise.all([
+            this.tokenService.getAllBaseTokensMetadata(tokenRoute),
+            this.tokenCompute.getAllTokensPriceDerivedUSD(tokenRoute),
+        ]);
+
         for (let index = 0; index < tokenRoute.length - 1; index++) {
             const [tokenInID, amountIn, tokenOutID, amountOut] = [
                 tokenRoute[index],
@@ -524,12 +535,12 @@ export class AutoRouterService {
                 tokenInPriceUSD,
                 intermediaryTokenOut,
                 intermediaryTokenOutPriceUSD,
-            ] = await Promise.all([
-                this.tokenService.tokenMetadata(tokenInID),
-                this.pairCompute.tokenPriceUSD(tokenInID),
-                this.tokenService.tokenMetadata(tokenOutID),
-                this.pairCompute.tokenPriceUSD(tokenOutID),
-            ]);
+            ] = [
+                tokensMetadata[index],
+                tokensPriceUSD[index],
+                tokensMetadata[index + 1],
+                tokensPriceUSD[index + 1],
+            ];
 
             const amountInUSD = computeValueUSD(
                 amountIn,

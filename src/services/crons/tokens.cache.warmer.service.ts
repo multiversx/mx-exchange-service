@@ -41,6 +41,7 @@ export class TokensCacheWarmerService {
 
             const cachedKeys = await Promise.all([
                 this.tokenSetterService.setMetadata(tokenID, token),
+                this.tokenSetterService.setBaseMetadata(tokenID, token),
                 this.tokenSetterService.setEsdtTokenType(tokenID, tokenType),
             ]);
 
@@ -209,6 +210,12 @@ export class TokensCacheWarmerService {
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
+        invalidatedKeys = invalidatedKeys.filter((key) => key !== undefined);
+
+        if (invalidatedKeys.length === 0) {
+            return;
+        }
+
         await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }

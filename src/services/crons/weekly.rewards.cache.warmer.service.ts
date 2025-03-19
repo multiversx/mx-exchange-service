@@ -13,6 +13,7 @@ import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { WeeklyRewardsSplittingSetterService } from 'src/submodules/weekly-rewards-splitting/services/weekly.rewarrds.splitting.setter.service';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingCacheWarmerService {
@@ -22,6 +23,7 @@ export class WeeklyRewardsSplittingCacheWarmerService {
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
         private readonly weeklyRewardsSplittingSetter: WeeklyRewardsSplittingSetterService,
     ) {}
 
@@ -47,12 +49,7 @@ export class WeeklyRewardsSplittingCacheWarmerService {
                 address,
             );
 
-            const cachedKeys = await this.cacheClaimWeeksData(
-                currentWeek,
-                address,
-            );
-
-            await this.deleteCacheKeys(cachedKeys);
+            await this.cacheClaimWeeksData(currentWeek, address);
         }
 
         profiler.stop();
@@ -66,9 +63,8 @@ export class WeeklyRewardsSplittingCacheWarmerService {
 
     private async cacheClaimWeeksData(
         currentWeek: number,
-        scAddress: string,
-    ): Promise<string[]> {
-        const cachedKeys = [];
+        address: string,
+    ): Promise<void> {
         const startWeek = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS;
 
         for (let week = startWeek; week <= currentWeek; week++) {
@@ -78,42 +74,54 @@ export class WeeklyRewardsSplittingCacheWarmerService {
 
             const totalEnergyForWeek =
                 await this.weeklyRewardsSplittingAbi.totalEnergyForWeekRaw(
-                    scAddress,
+                    address,
                     week,
                 );
             const totalRewardsForWeek =
                 await this.weeklyRewardsSplittingAbi.totalRewardsForWeekRaw(
-                    scAddress,
+                    address,
                     week,
                 );
             const totalLockedTokensForWeek =
                 await this.weeklyRewardsSplittingAbi.totalLockedTokensForWeekRaw(
-                    scAddress,
+                    address,
                     week,
                 );
 
-            const keys = await Promise.all([
+            const abiKeys = await Promise.all([
                 this.weeklyRewardsSplittingSetter.totalEnergyForWeek(
-                    scAddress,
+                    address,
                     week,
                     totalEnergyForWeek,
                 ),
                 this.weeklyRewardsSplittingSetter.totalRewardsForWeek(
-                    scAddress,
+                    address,
                     week,
                     totalRewardsForWeek,
                 ),
                 this.weeklyRewardsSplittingSetter.totalLockedTokensForWeek(
-                    scAddress,
+                    address,
                     week,
                     totalLockedTokensForWeek,
                 ),
             ]);
 
-            cachedKeys.push(...keys);
-        }
+            await this.deleteCacheKeys(abiKeys);
 
-        return cachedKeys;
+            const weekAPR =
+                await this.weeklyRewardsSplittingCompute.computeWeekAPR(
+                    address,
+                    week,
+                );
+
+            const aprKey = await this.weeklyRewardsSplittingSetter.weekAPR(
+                address,
+                week,
+                weekAPR,
+            );
+
+            await this.deleteCacheKeys([aprKey]);
+        }
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

@@ -38,6 +38,7 @@ import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.a
 import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -74,6 +75,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingAbiServiceProvider,
                 StakingProxyAbiServiceProvider,
                 TokenServiceProvider,
+                TokenComputeServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 ComposableTasksTransactionService,
                 ProxyFarmAbiServiceProvider,
@@ -151,7 +153,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.positionCreator.singleToken.liquidityPosition +
                 gasConfig.pairs.addLiquidity +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -219,7 +221,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.positionCreator.singleToken.liquidityPosition +
                 gasConfig.pairs.addLiquidity +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -472,7 +474,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.pairs.addLiquidity +
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -633,7 +635,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.pairs.addLiquidity +
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -702,7 +704,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.pairs.addLiquidity +
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transactions).toEqual([
                 {
@@ -967,7 +969,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transaction).toEqual([
                 {
@@ -1144,7 +1146,7 @@ describe('PositionCreatorTransaction', () => {
                 gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
                 gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
                 gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                    swapRoutes[0].pairs.length;
+                    (swapRoutes[0].pairs.length + 1);
 
             expect(transaction).toEqual([
                 {

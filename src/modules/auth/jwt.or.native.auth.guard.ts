@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { Logger } from 'winston';
 import { GqlAuthGuard } from './gql.auth.guard';
 import { NativeAuthGuard } from './native.auth.guard';

@@ -6,7 +6,7 @@ import { FarmTokenAttributesModel } from '../../models/farmTokenAttributes.model
 import { FarmCustomAbiService } from './farm.custom.abi.service';
 import { FarmCustomComputeService } from './farm.custom.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()

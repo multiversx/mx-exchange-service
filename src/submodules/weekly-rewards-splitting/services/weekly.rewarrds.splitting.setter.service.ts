@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
 import { IWeeklyRewardsSplittingSetterService } from '../interfaces';
@@ -108,6 +108,19 @@ export class WeeklyRewardsSplittingSetterService
     ): Promise<string> {
         return await this.setData(
             this.getCacheKey('totalLockedTokensForWeek', scAddress, week),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async weekAPR(
+        scAddress: string,
+        week: number,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('weekAPR', scAddress, week),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,

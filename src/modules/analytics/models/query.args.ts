@@ -68,3 +68,16 @@ export class GlobalRewardsArgs {
     })
     weekOffset?: number;
 }
+
+@ArgsType()
+export class TokenMiniChartPriceCandlesQueryArgs {
+    @Field()
+    @IsValidSeries()
+    series: string;
+    @Field()
+    @IsNotEmpty()
+    start: string;
+    @Field()
+    @IsNotEmpty()
+    end: string;
+}

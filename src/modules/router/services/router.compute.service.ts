@@ -22,7 +22,7 @@ export class RouterComputeService {
         remoteTtl: Constants.oneMinute(),
     })
     async totalLockedValueUSD(): Promise<BigNumber> {
-        return await this.computeTotalLockedValueUSD();
+        return this.computeTotalLockedValueUSD();
     }
 
     async computeTotalLockedValueUSD(): Promise<BigNumber> {
@@ -52,7 +52,7 @@ export class RouterComputeService {
         remoteTtl: Constants.oneMinute() * 5,
     })
     async totalFeesUSD(time: string): Promise<BigNumber> {
-        return await this.computeTotalFeesUSD(time);
+        return this.computeTotalFeesUSD(time);
     }
 
     async computeTotalFeesUSD(time: string): Promise<BigNumber> {
@@ -77,7 +77,7 @@ export class RouterComputeService {
         remoteTtl: Constants.oneMinute(),
     })
     async totalTxCount(): Promise<number> {
-        return await this.computeTotalTxCount();
+        return this.computeTotalTxCount();
     }
 
     async computeTotalTxCount(): Promise<number> {
@@ -99,7 +99,7 @@ export class RouterComputeService {
         remoteTtl: Constants.oneHour(),
     })
     async pairCount(): Promise<number> {
-        return await this.computePairCount();
+        return this.computePairCount();
     }
 
     async computePairCount(): Promise<number> {

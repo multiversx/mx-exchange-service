@@ -25,6 +25,7 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
 import { GlobalRewardsService } from './services/global.rewards.service';
 import { GlobalRewardsResolver } from './global.rewards.resolver';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
+import { AnalyticsPairSetterService } from './services/analytics.pair.setter.service';
 
 @Module({
     imports: [
@@ -56,6 +57,7 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
         PairDayDataResolver,
         GlobalRewardsService,
         GlobalRewardsResolver,
+        AnalyticsPairSetterService,
     ],
     exports: [
         AnalyticsAWSGetterService,
@@ -63,6 +65,8 @@ import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
         AnalyticsComputeService,
         AnalyticsSetterService,
         GlobalRewardsService,
+        AnalyticsPairSetterService,
+        AnalyticsPairService,
     ],
 })
 export class AnalyticsModule {}

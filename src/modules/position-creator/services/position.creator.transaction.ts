@@ -71,6 +71,10 @@ export class PositionCreatorTransactionService {
             swapRoutes.length < 2
                 ? []
                 : this.serializeSwapRouteArgs(swapRoutes[0]);
+        const swapsCount =
+            swapRoutes.length > 1
+                ? swapRoutes[0].pairs.length + 1
+                : swapRoutes.length;
 
         const [amount0Min, amount1Min] =
             await this.getMinimumAmountsForLiquidity(
@@ -80,8 +84,7 @@ export class PositionCreatorTransactionService {
         const gasLimit =
             gasConfig.positionCreator.singleToken.liquidityPosition +
             gasConfig.pairs.addLiquidity +
-            gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                swapRoutes[0].pairs.length;
+            gasConfig.pairs.swapTokensFixedInput.withFeeSwap * swapsCount;
 
         const transactionOptions = new TransactionOptions({
             sender: sender,
@@ -140,7 +143,7 @@ export class PositionCreatorTransactionService {
             VariadicValue.fromItems(...swapRouteArgs),
         ];
 
-        return await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+        return this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
             transactionOptions,
         );
     }
@@ -160,7 +163,7 @@ export class PositionCreatorTransactionService {
             VariadicValue.fromItems(...swapRouteArgs),
         ];
 
-        return await this.mxProxy.getPositionCreatorContractTransaction(
+        return this.mxProxy.getPositionCreatorContractTransaction(
             transactionOptions,
         );
     }
@@ -206,6 +209,10 @@ export class PositionCreatorTransactionService {
             swapRoutes.length < 2
                 ? []
                 : this.serializeSwapRouteArgs(swapRoutes[0]);
+        const swapsCount =
+            swapRoutes.length > 1
+                ? swapRoutes[0].pairs.length + 1
+                : swapRoutes.length;
 
         const [amount0Min, amount1Min] =
             await this.getMinimumAmountsForLiquidity(
@@ -216,8 +223,7 @@ export class PositionCreatorTransactionService {
             gasConfig.positionCreator.singleToken.farmPosition +
             gasConfig.pairs.addLiquidity +
             gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
-            gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                swapRoutes[0].pairs.length;
+            gasConfig.pairs.swapTokensFixedInput.withFeeSwap * swapsCount;
 
         const transactionOptions = new TransactionOptions({
             sender: sender,
@@ -287,7 +293,7 @@ export class PositionCreatorTransactionService {
             VariadicValue.fromItems(...swapRouteArgs),
         ];
 
-        return await this.mxProxy.getPositionCreatorContractTransaction(
+        return this.mxProxy.getPositionCreatorContractTransaction(
             transactionOptions,
         );
     }
@@ -306,7 +312,7 @@ export class PositionCreatorTransactionService {
             VariadicValue.fromItems(...swapRouteArgs),
         ];
 
-        return await this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
+        return this.mxProxy.getLockedTokenPositionCreatorContractTransaction(
             transactionOptions,
         );
     }
@@ -359,6 +365,10 @@ export class PositionCreatorTransactionService {
             swapRoutes.length < 2
                 ? []
                 : this.serializeSwapRouteArgs(swapRoutes[0]);
+        const swapsCount =
+            swapRoutes.length > 1
+                ? swapRoutes[0].pairs.length + 1
+                : swapRoutes.length;
 
         const [amount0Min, amount1Min] =
             payments[0].tokenIdentifier === lpTokenID
@@ -367,18 +377,12 @@ export class PositionCreatorTransactionService {
                       swapRoutes[swapRoutes.length - 1],
                   );
 
-        let gasLimit =
+        const gasLimit =
             gasConfig.positionCreator.singleToken.dualFarmPosition +
             gasConfig.pairs.addLiquidity +
             gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge +
-            gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge;
-
-        gasLimit =
-            swapRoutes.length < 1
-                ? gasLimit
-                : gasLimit +
-                  gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
-                      swapRoutes[0].pairs.length;
+            gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge +
+            gasConfig.pairs.swapTokensFixedInput.withFeeSwap * swapsCount;
 
         const transactionOptions = new TransactionOptions({
             sender: sender,
@@ -817,7 +821,7 @@ export class PositionCreatorTransactionService {
             ],
         });
 
-        return await this.mxProxy.getPositionCreatorContractTransaction(
+        return this.mxProxy.getPositionCreatorContractTransaction(
             transactionOptions,
         );
     }
