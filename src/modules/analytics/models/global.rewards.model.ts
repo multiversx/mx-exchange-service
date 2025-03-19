@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @ObjectType()
@@ -19,10 +20,10 @@ export class FarmsGlobalRewards {
     @Field()
     pairAddress: string;
 
-    @Field(() => EsdtToken, { nullable: true })
+    @Field(() => EsdtToken, { nullable: true, complexity: nestedFieldComplexity })
     firstToken?: EsdtToken;
 
-    @Field(() => EsdtToken, { nullable: true })
+    @Field(() => EsdtToken, { nullable: true, complexity: nestedFieldComplexity })
     secondToken?: EsdtToken;
 
     @Field()
@@ -44,7 +45,7 @@ export class FarmsGlobalRewards {
 
 @ObjectType()
 export class StakingGlobalRewards {
-    @Field(() => EsdtToken, { nullable: true })
+    @Field(() => EsdtToken, { nullable: true, complexity: nestedFieldComplexity })
     farmingToken?: EsdtToken;
 
     @Field()

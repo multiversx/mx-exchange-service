@@ -22,7 +22,6 @@ import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fees-collector.abi.service';
 
 @Injectable()
 export class GlobalRewardsService {
@@ -37,7 +36,6 @@ export class GlobalRewardsService {
         private readonly tokenCompute: TokenComputeService,
         private readonly stakingService: StakingService,
         private readonly stakingAbi: StakingAbiService,
-        private readonly feesCollectorAbi: FeesCollectorAbiService,
     ) {}
 
     @GetOrSetCache({
@@ -112,14 +110,12 @@ export class GlobalRewardsService {
             pairAddresses,
         );
 
-        // Create a deduplicated array of tokens
-        const uniqueTokensMap = new Map();
-        [...firstTokens, ...secondTokens].forEach((token) => {
-            if (!uniqueTokensMap.has(token.identifier)) {
-                uniqueTokensMap.set(token.identifier, token);
-            }
-        });
-        const allPairsTokens = Array.from(uniqueTokensMap.values());
+        const mexTokenID = constantsConfig.MEX_TOKEN_ID;
+
+        const mexMetadata = await this.tokenService.tokenMetadata(mexTokenID);
+        const mexPrice = await this.tokenCompute.tokenPriceDerivedUSD(
+            mexTokenID,
+        );
 
         for (let i = 0; i < farmAddresses.length; i++) {
             const farmReward = await this.computeSingleFarmRewards(
@@ -128,7 +124,8 @@ export class GlobalRewardsService {
                 pairAddresses[i],
                 firstTokens[i],
                 secondTokens[i],
-                allPairsTokens,
+                mexMetadata,
+                mexPrice,
             );
 
             farmsData.push(farmReward);
@@ -141,9 +138,10 @@ export class GlobalRewardsService {
         farmAddress: string,
         weekOffset: number,
         pairAddress: string,
-        firstToken: any,
-        secondToken: any,
-        allPairsTokens: any[],
+        firstToken: EsdtToken,
+        secondToken: EsdtToken,
+        mexMetadata: EsdtToken,
+        mexPrice: string,
     ): Promise<FarmsGlobalRewards> {
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             farmAddress,
@@ -154,14 +152,6 @@ export class GlobalRewardsService {
             const amount = await this.farmAbiV2.accumulatedRewardsForWeek(
                 farmAddress,
                 targetWeek,
-            );
-            const mexTokenID = constantsConfig.MEX_TOKEN_ID;
-
-            const mexMetadata = await this.tokenService.tokenMetadata(
-                mexTokenID,
-            );
-            const mexPrice = await this.tokenCompute.tokenPriceDerivedUSD(
-                mexTokenID,
             );
 
             const energyRewardsUSD = new BigNumber(amount)
@@ -196,18 +186,11 @@ export class GlobalRewardsService {
         }
 
         const reward = rewards[0] as EsdtTokenPayment;
-        const tokenMetadata =
-            allPairsTokens.find((t) => t.identifier === reward.tokenID) ||
-            (await this.tokenService.tokenMetadata(reward.tokenID));
-
-        const tokenPrice = await this.tokenCompute.tokenPriceDerivedUSD(
-            reward.tokenID,
-        );
         const tokenAmount = new BigNumber(reward.amount).dividedBy(
-            new BigNumber(10).pow(tokenMetadata.decimals),
+            new BigNumber(10).pow(mexMetadata.decimals),
         );
 
-        const energyRewardsUSD = tokenAmount.multipliedBy(tokenPrice).toFixed();
+        const energyRewardsUSD = tokenAmount.multipliedBy(mexPrice).toFixed();
         const totalRewardsUSD = new BigNumber(energyRewardsUSD)
             .dividedBy(0.6)
             .toFixed();
