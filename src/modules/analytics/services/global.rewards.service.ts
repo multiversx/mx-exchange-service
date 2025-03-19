@@ -47,7 +47,7 @@ export class GlobalRewardsService {
     async feesCollectorRewards(
         weekOffset: number,
     ): Promise<FeesCollectorGlobalRewards> {
-        return await this.processFeesCollectorRewards(weekOffset);
+        return await this.computeFeesCollectorRewards(weekOffset);
     }
 
     @GetOrSetCache({
@@ -57,7 +57,7 @@ export class GlobalRewardsService {
     })
     @ErrorLoggerAsync()
     async farmRewards(weekOffset: number): Promise<FarmsGlobalRewards[]> {
-        return await this.processFarmsRewards(weekOffset);
+        return await this.computeFarmsRewards(weekOffset);
     }
 
     @GetOrSetCache({
@@ -67,10 +67,10 @@ export class GlobalRewardsService {
     })
     @ErrorLoggerAsync()
     async stakingRewards(weekOffset: number): Promise<StakingGlobalRewards[]> {
-        return await this.processStakingRewards(weekOffset);
+        return await this.computeStakingRewards(weekOffset);
     }
 
-    private async processFeesCollectorRewards(
+    private async computeFeesCollectorRewards(
         weekOffset: number,
     ): Promise<FeesCollectorGlobalRewards> {
         const feesCollectorAddress = scAddress.feesCollector;
@@ -93,7 +93,7 @@ export class GlobalRewardsService {
         });
     }
 
-    private async processFarmsRewards(
+    private async computeFarmsRewards(
         weekOffset: number,
     ): Promise<FarmsGlobalRewards[]> {
         const farmsData: FarmsGlobalRewards[] = [];
@@ -204,7 +204,7 @@ export class GlobalRewardsService {
         });
     }
 
-    private async processStakingRewards(
+    private async computeStakingRewards(
         weekOffset: number,
     ): Promise<StakingGlobalRewards[]> {
         const stakingRewards: StakingGlobalRewards[] = [];
