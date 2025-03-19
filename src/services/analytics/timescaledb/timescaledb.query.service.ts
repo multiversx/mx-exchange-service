@@ -12,9 +12,6 @@ import {
     CloseDaily,
     CloseHourly,
     PDCloseMinute,
-    PriceCandleHourly,
-    PriceCandleMinute,
-    PriceCandleDaily,
     SumDaily,
     SumHourly,
     TokenBurnedWeekly,
@@ -55,12 +52,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
         private readonly tokenBurnedWeekly: Repository<TokenBurnedWeekly>,
         @InjectRepository(PDCloseMinute)
         private readonly pdCloseMinute: Repository<PDCloseMinute>,
-        @InjectRepository(PriceCandleMinute)
-        private readonly priceCandleMinute: Repository<PriceCandleMinute>,
-        @InjectRepository(PriceCandleHourly)
-        private readonly priceCandleHourly: Repository<PriceCandleHourly>,
-        @InjectRepository(PriceCandleDaily)
-        private readonly priceCandleDaily: Repository<PriceCandleDaily>,
         @InjectRepository(TokenCandlesMinute)
         private readonly tokenCandlesMinute: Repository<TokenCandlesMinute>,
         @InjectRepository(TokenCandlesHourly)
@@ -454,14 +445,18 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     }
 
     @TimescaleDBQuery()
-    async getPriceCandles({
+    async getTokenMiniChartPriceCandles({
         series,
-        metric,
-        resolution,
         start,
         end,
     }): Promise<CandleDataModel[]> {
-        const candleRepository = this.getCandleModelByResolution(resolution);
+        const resolution = PriceCandlesResolutions.HOUR_4;
+        const metric = 'priceUSD';
+
+        const candleRepository = this.getCandleRepositoryByResolutionAndMetric(
+            resolution,
+            metric,
+        );
 
         const startDate = moment.unix(start).utc().toString();
         const endDate = moment.unix(end).utc().toString();
@@ -474,7 +469,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             .addSelect('locf(min(low)) as low')
             .addSelect('locf(max(high)) as high')
             .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
             .andWhere('time between :startDate and :endDate', {
                 startDate,
                 endDate,
@@ -502,7 +496,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
             .createQueryBuilder()
             .select('open, close, high, low')
             .where('series = :series', { series })
-            .andWhere('key = :metric', { metric })
             .andWhere('time < :startDate', { startDate })
             .orderBy('time', 'DESC')
             .limit(1)
@@ -595,20 +588,6 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
                     ],
                 }),
         );
-    }
-
-    private getCandleModelByResolution(
-        resolution: PriceCandlesResolutions,
-    ): Repository<PriceCandleMinute | PriceCandleHourly | PriceCandleDaily> {
-        if (resolution.includes('minute')) {
-            return this.priceCandleMinute;
-        }
-
-        if (resolution.includes('hour')) {
-            return this.priceCandleHourly;
-        }
-
-        return this.priceCandleDaily;
     }
 
     private getCandleRepositoryByResolutionAndMetric(

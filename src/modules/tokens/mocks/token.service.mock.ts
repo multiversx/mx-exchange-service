@@ -1,11 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Tokens, pairs } from 'src/modules/pair/mocks/pair.constants';
-import { EsdtToken } from '../models/esdtToken.model';
+import { BaseEsdtToken, EsdtToken } from '../models/esdtToken.model';
 import { TokenService } from '../services/token.service';
 
 export class TokenServiceMock {
     async tokenMetadata(tokenID: string): Promise<EsdtToken> {
         return Tokens(tokenID);
+    }
+
+    async baseTokenMetadata(tokenID: string): Promise<BaseEsdtToken> {
+        return new BaseEsdtToken({
+            identifier: Tokens(tokenID).identifier,
+            decimals: Tokens(tokenID).decimals,
+        });
     }
 
     async getEsdtTokenType(tokenID: string): Promise<string> {
@@ -24,6 +31,17 @@ export class TokenServiceMock {
 
     async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
         return tokenIDs.map((tokenID) => Tokens(tokenID));
+    }
+    async getAllBaseTokensMetadata(
+        tokenIDs: string[],
+    ): Promise<BaseEsdtToken[]> {
+        return tokenIDs.map(
+            (tokenID) =>
+                new BaseEsdtToken({
+                    identifier: Tokens(tokenID).identifier,
+                    decimals: Tokens(tokenID).decimals,
+                }),
+        );
     }
 }
 

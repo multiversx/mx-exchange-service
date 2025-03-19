@@ -20,7 +20,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IStakingAbiService } from './interfaces';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
@@ -46,7 +46,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async farmTokenID(stakeAddress: string): Promise<string> {
-        return await this.getFarmTokenIDRaw(stakeAddress);
+        return this.getFarmTokenIDRaw(stakeAddress);
     }
 
     async getFarmTokenIDRaw(stakeAddress: string): Promise<string> {
@@ -60,12 +60,12 @@ export class StakingAbiService
     }
 
     async getAllFarmTokenIds(stakeAddresses: string[]): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cachingService,
             stakeAddresses,
             'stake.farmTokenID',
             this.farmTokenID.bind(this),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
     }
 
@@ -78,7 +78,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async farmingTokenID(stakeAddress: string): Promise<string> {
-        return await this.getFarmingTokenIDRaw(stakeAddress);
+        return this.getFarmingTokenIDRaw(stakeAddress);
     }
 
     async getFarmingTokenIDRaw(stakeAddress: string): Promise<string> {
@@ -92,11 +92,12 @@ export class StakingAbiService
     }
 
     async getAllFarmingTokensIds(stakeAddresses: string[]): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cachingService,
             stakeAddresses,
             'stake.farmingTokenID',
             this.farmingTokenID.bind(this),
+            CacheTtlInfo.TokenID,
         );
     }
 
@@ -109,7 +110,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async rewardTokenID(stakeAddress: string): Promise<string> {
-        return await this.getRewardTokenIDRaw(stakeAddress);
+        return this.getRewardTokenIDRaw(stakeAddress);
     }
 
     async getRewardTokenIDRaw(stakeAddress: string): Promise<string> {
@@ -131,7 +132,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async farmTokenSupply(stakeAddress: string): Promise<string> {
-        return await this.getFarmTokenSupplyRaw(stakeAddress);
+        return this.getFarmTokenSupplyRaw(stakeAddress);
     }
 
     async getFarmTokenSupplyRaw(stakeAddress: string): Promise<string> {
@@ -153,7 +154,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async rewardPerShare(stakeAddress: string): Promise<string> {
-        return await this.getRewardPerShareRaw(stakeAddress);
+        return this.getRewardPerShareRaw(stakeAddress);
     }
 
     async getRewardPerShareRaw(stakeAddress: string): Promise<string> {
@@ -175,7 +176,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async accumulatedRewards(stakeAddress: string): Promise<string> {
-        return await this.getAccumulatedRewardsRaw(stakeAddress);
+        return this.getAccumulatedRewardsRaw(stakeAddress);
     }
 
     async getAccumulatedRewardsRaw(stakeAddress: string): Promise<string> {
@@ -191,11 +192,12 @@ export class StakingAbiService
     async getAllAccumulatedRewards(
         stakeAddresses: string[],
     ): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cachingService,
             stakeAddresses,
             'stake.accumulatedRewards',
             this.accumulatedRewards.bind(this),
+            CacheTtlInfo.ContractInfo,
         );
     }
 
@@ -208,7 +210,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async rewardCapacity(stakeAddress: string): Promise<string> {
-        return await this.getRewardCapacityRaw(stakeAddress);
+        return this.getRewardCapacityRaw(stakeAddress);
     }
 
     async getRewardCapacityRaw(stakeAddress: string): Promise<string> {
@@ -222,11 +224,12 @@ export class StakingAbiService
     }
 
     async getAllRewardCapacity(stakeAddresses: string[]): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cachingService,
             stakeAddresses,
             'stake.rewardCapacity',
             this.rewardCapacity.bind(this),
+            CacheTtlInfo.ContractInfo,
         );
     }
 
@@ -239,7 +242,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async annualPercentageRewards(stakeAddress: string): Promise<string> {
-        return await this.getAnnualPercentageRewardsRaw(stakeAddress);
+        return this.getAnnualPercentageRewardsRaw(stakeAddress);
     }
 
     async getAnnualPercentageRewardsRaw(stakeAddress: string): Promise<string> {
@@ -261,7 +264,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async minUnbondEpochs(stakeAddress: string): Promise<number> {
-        return await this.getMinUnbondEpochsRaw(stakeAddress);
+        return this.getMinUnbondEpochsRaw(stakeAddress);
     }
 
     async getMinUnbondEpochsRaw(stakeAddress: string): Promise<number> {
@@ -283,7 +286,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async perBlockRewardsAmount(stakeAddress: string): Promise<string> {
-        return await this.getPerBlockRewardsAmountRaw(stakeAddress);
+        return this.getPerBlockRewardsAmountRaw(stakeAddress);
     }
 
     async getPerBlockRewardsAmountRaw(stakeAddress: string): Promise<string> {
@@ -305,7 +308,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async lastRewardBlockNonce(stakeAddress: string): Promise<number> {
-        return await this.getLastRewardBlockNonceRaw(stakeAddress);
+        return this.getLastRewardBlockNonceRaw(stakeAddress);
     }
 
     async getLastRewardBlockNonceRaw(stakeAddress: string): Promise<number> {
@@ -327,7 +330,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async divisionSafetyConstant(stakeAddress: string): Promise<number> {
-        return await this.getDivisionSafetyConstantRaw(stakeAddress);
+        return this.getDivisionSafetyConstantRaw(stakeAddress);
     }
 
     async getDivisionSafetyConstantRaw(stakeAddress: string): Promise<number> {
@@ -349,7 +352,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async produceRewardsEnabled(stakeAddress: string): Promise<boolean> {
-        return await this.getProduceRewardsEnabledRaw(stakeAddress);
+        return this.getProduceRewardsEnabledRaw(stakeAddress);
     }
 
     async getProduceRewardsEnabledRaw(farmAddress: string): Promise<boolean> {
@@ -363,11 +366,12 @@ export class StakingAbiService
     async getAllProduceRewardsEnabled(
         stakeAddresses: string[],
     ): Promise<boolean[]> {
-        return await getAllKeys<boolean>(
+        return getAllKeys<boolean>(
             this.cachingService,
             stakeAddresses,
             'stake.produceRewardsEnabled',
             this.produceRewardsEnabled.bind(this),
+            CacheTtlInfo.ContractState,
         );
     }
 
@@ -380,7 +384,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async state(stakeAddress: string): Promise<string> {
-        return await this.getStateRaw(stakeAddress);
+        return this.getStateRaw(stakeAddress);
     }
 
     async getStateRaw(stakeAddress: string): Promise<string> {
@@ -419,7 +423,7 @@ export class StakingAbiService
         remoteTtl: Constants.oneHour(),
     })
     async lockedAssetFactoryAddress(stakeAddress: string): Promise<string> {
-        return await this.getLockedAssetFactoryAddressRaw(stakeAddress);
+        return this.getLockedAssetFactoryAddressRaw(stakeAddress);
     }
 
     async getLockedAssetFactoryAddressRaw(
@@ -449,7 +453,7 @@ export class StakingAbiService
         stakeAddress: string,
         scAddress: string,
     ): Promise<boolean> {
-        return await this.isWhitelistedRaw(stakeAddress, scAddress);
+        return this.isWhitelistedRaw(stakeAddress, scAddress);
     }
 
     async isWhitelistedRaw(
@@ -476,7 +480,7 @@ export class StakingAbiService
         remoteTtl: Constants.oneMinute(),
     })
     async lastErrorMessage(stakeAddress: string): Promise<string> {
-        return await this.getLastErrorMessageRaw(stakeAddress);
+        return this.getLastErrorMessageRaw(stakeAddress);
     }
 
     async getLastErrorMessageRaw(stakeAddress: string): Promise<string> {
@@ -498,7 +502,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async energyFactoryAddress(stakeAddress: string): Promise<string> {
-        return await this.getEnergyFactoryAddressRaw(stakeAddress);
+        return this.getEnergyFactoryAddressRaw(stakeAddress);
     }
 
     async getEnergyFactoryAddressRaw(stakeAddress: string): Promise<string> {
@@ -523,7 +527,7 @@ export class StakingAbiService
     async boostedYieldsRewardsPercenatage(
         stakeAddress: string,
     ): Promise<number> {
-        return await this.getBoostedYieldsRewardsPercenatageRaw(stakeAddress);
+        return this.getBoostedYieldsRewardsPercenatageRaw(stakeAddress);
     }
 
     async getBoostedYieldsRewardsPercenatageRaw(
@@ -550,7 +554,7 @@ export class StakingAbiService
     async boostedYieldsFactors(
         stakeAddress: string,
     ): Promise<BoostedYieldsFactors> {
-        return await this.getBoostedYieldsFactorsRaw(stakeAddress);
+        return this.getBoostedYieldsFactorsRaw(stakeAddress);
     }
 
     async getBoostedYieldsFactorsRaw(
@@ -588,7 +592,7 @@ export class StakingAbiService
         stakeAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.getAccumulatedRewardsForWeekRaw(stakeAddress, week);
+        return this.getAccumulatedRewardsForWeekRaw(stakeAddress, week);
     }
 
     async getAccumulatedRewardsForWeekRaw(
@@ -615,7 +619,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async undistributedBoostedRewards(stakeAddress: string): Promise<string> {
-        return await this.getUndistributedBoostedRewardsRaw(stakeAddress);
+        return this.getUndistributedBoostedRewardsRaw(stakeAddress);
     }
 
     async getUndistributedBoostedRewardsRaw(
@@ -660,7 +664,7 @@ export class StakingAbiService
         stakeAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.getRemainingBoostedRewardsToDistributeRaw(
+        return this.getRemainingBoostedRewardsToDistributeRaw(
             stakeAddress,
             week,
         );
@@ -723,10 +727,7 @@ export class StakingAbiService
         stakeAddress: string,
         userAddress: string,
     ): Promise<string> {
-        return await this.getUserTotalStakePositionRaw(
-            stakeAddress,
-            userAddress,
-        );
+        return this.getUserTotalStakePositionRaw(stakeAddress, userAddress);
     }
 
     async getUserTotalStakePositionRaw(
@@ -761,7 +762,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async farmPositionMigrationNonce(stakeAddress: string): Promise<number> {
-        return await this.getFarmPositionMigrationNonceRaw(stakeAddress);
+        return this.getFarmPositionMigrationNonceRaw(stakeAddress);
     }
 
     async getFarmPositionMigrationNonceRaw(
@@ -786,7 +787,7 @@ export class StakingAbiService
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async stakingShard(stakeAddress: string): Promise<number> {
-        return await this.getStakingShardRaw(stakeAddress);
+        return this.getStakingShardRaw(stakeAddress);
     }
 
     async getStakingShardRaw(stakeAddress: string): Promise<number> {

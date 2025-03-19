@@ -24,7 +24,7 @@ import {
 } from '@multiversx/sdk-nestjs-elastic';
 import moment from 'moment';
 import { PendingExecutor } from 'src/utils/pending.executor';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { TokenService } from './token.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
@@ -64,7 +64,7 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async getEgldPriceInUSD(): Promise<string> {
-        return await this.pairCompute.firstTokenPrice(scAddress.WEGLD_USDC);
+        return this.pairCompute.firstTokenPrice(scAddress.WEGLD_USDC);
     }
 
     @ErrorLoggerAsync({
@@ -76,7 +76,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async tokenPriceDerivedEGLD(tokenID: string): Promise<string> {
-        return await this.computeTokenPriceDerivedEGLD(tokenID, []);
+        return this.computeTokenPriceDerivedEGLD(tokenID, []);
     }
 
     async computeTokenPriceDerivedEGLD(
@@ -208,7 +208,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async tokenPriceDerivedUSD(tokenID: string): Promise<string> {
-        return await this.computeTokenPriceDerivedUSD(tokenID);
+        return this.computeTokenPriceDerivedUSD(tokenID);
     }
 
     async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
@@ -251,7 +251,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.TokenAnalytics.localTtl,
     })
     async tokenPrevious24hPrice(tokenID: string): Promise<string> {
-        return await this.computeTokenPrevious24hPrice(tokenID);
+        return this.computeTokenPrevious24hPrice(tokenID);
     }
 
     async computeTokenPrevious24hPrice(tokenID: string): Promise<string> {
@@ -260,7 +260,7 @@ export class TokenComputeService implements ITokenComputeService {
             metric: 'priceUSD',
         });
         if (values24h.length > 0 && values24h[0]?.value === '0') {
-            return await this.computeMissingPrevious24hPrice(tokenID);
+            return this.computeMissingPrevious24hPrice(tokenID);
         }
         return values24h[0]?.value ?? undefined;
     }
@@ -295,7 +295,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.TokenAnalytics.localTtl,
     })
     async tokenPrevious7dPrice(tokenID: string): Promise<string> {
-        return await this.computeTokenPrevious7dPrice(tokenID);
+        return this.computeTokenPrevious7dPrice(tokenID);
     }
 
     async computeTokenPrevious7dPrice(tokenID: string): Promise<string> {
@@ -327,7 +327,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenPriceChange24h(tokenID: string): Promise<number> {
-        return await this.computeTokenPriceChange24h(tokenID);
+        return this.computeTokenPriceChange24h(tokenID);
     }
 
     async computeTokenPriceChange24h(tokenID: string): Promise<number> {
@@ -371,7 +371,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenVolumeUSDChange24h(tokenID: string): Promise<number> {
-        return await this.computeTokenVolumeUSDChange24h(tokenID);
+        return this.computeTokenVolumeUSDChange24h(tokenID);
     }
 
     async computeTokenVolumeUSDChange24h(tokenID: string): Promise<number> {
@@ -404,7 +404,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenTradeChange24h(tokenID: string): Promise<number> {
-        return await this.computeTokenTradeChange24h(tokenID);
+        return this.computeTokenTradeChange24h(tokenID);
     }
 
     async computeTokenTradeChange24h(tokenID: string): Promise<number> {
@@ -433,7 +433,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenVolumeUSD24h(tokenID: string): Promise<string> {
-        return await this.computeTokenVolumeUSD24h(tokenID);
+        return this.computeTokenVolumeUSD24h(tokenID);
     }
 
     async computeTokenVolumeUSD24h(tokenID: string): Promise<string> {
@@ -460,7 +460,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenPrevious24hVolumeUSD(tokenID: string): Promise<string> {
-        return await this.computeTokenPrevious24hVolumeUSD(tokenID);
+        return this.computeTokenPrevious24hVolumeUSD(tokenID);
     }
 
     async computeTokenPrevious24hVolumeUSD(tokenID: string): Promise<string> {
@@ -491,7 +491,7 @@ export class TokenComputeService implements ITokenComputeService {
     async tokenLast2DaysVolumeUSD(
         tokenID: string,
     ): Promise<{ previous: string; current: string }> {
-        return await this.computeTokenLast2DaysVolumeUSD(tokenID);
+        return this.computeTokenLast2DaysVolumeUSD(tokenID);
     }
 
     async computeTokenLast2DaysVolumeUSD(
@@ -545,7 +545,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.TokenAnalytics.localTtl,
     })
     async tokenLiquidityUSD(tokenID: string): Promise<string> {
-        return await this.computeTokenLiquidityUSD(tokenID);
+        return this.computeTokenLiquidityUSD(tokenID);
     }
 
     async computeTokenLiquidityUSD(tokenID: string): Promise<string> {
@@ -634,7 +634,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenCreatedAt(tokenID: string): Promise<string> {
-        return await this.computeTokenCreatedAtTimestamp(tokenID);
+        return this.computeTokenCreatedAtTimestamp(tokenID);
     }
 
     async computeTokenCreatedAtTimestamp(tokenID: string): Promise<string> {
@@ -781,7 +781,7 @@ export class TokenComputeService implements ITokenComputeService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenTrendingScore(tokenID: string): Promise<string> {
-        return await this.computeTokenTrendingScore(tokenID);
+        return this.computeTokenTrendingScore(tokenID);
     }
 
     async computeTokenTrendingScore(tokenID: string): Promise<string> {

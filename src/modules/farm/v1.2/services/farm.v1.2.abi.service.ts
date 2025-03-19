@@ -10,7 +10,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IFarmAbiServiceV1_2 } from './interfaces';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 
 @Injectable()
 export class FarmAbiServiceV1_2
@@ -35,7 +35,7 @@ export class FarmAbiServiceV1_2
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async lockedAssetFactoryAddress(farmAddress: string): Promise<string> {
-        return await this.getLockedAssetFactoryAddressRaw(farmAddress);
+        return this.getLockedAssetFactoryAddressRaw(farmAddress);
     }
 
     async getLockedAssetFactoryAddressRaw(
@@ -57,7 +57,7 @@ export class FarmAbiServiceV1_2
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async farmingTokenReserve(farmAddress: string): Promise<string> {
-        return await this.getFarmingTokenReserveRaw(farmAddress);
+        return this.getFarmingTokenReserveRaw(farmAddress);
     }
 
     async getFarmingTokenReserveRaw(farmAddress: string): Promise<string> {
@@ -78,7 +78,7 @@ export class FarmAbiServiceV1_2
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async undistributedFees(farmAddress: string): Promise<string> {
-        return await this.getUndistributedFeesRaw(farmAddress);
+        return this.getUndistributedFeesRaw(farmAddress);
     }
 
     async getUndistributedFeesRaw(farmAddress: string): Promise<string> {
@@ -99,7 +99,7 @@ export class FarmAbiServiceV1_2
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async currentBlockFee(farmAddress: string): Promise<string> {
-        return await this.getCurrentBlockFeeRaw(farmAddress);
+        return this.getCurrentBlockFeeRaw(farmAddress);
     }
 
     async getCurrentBlockFeeRaw(farmAddress: string): Promise<string> {
@@ -121,7 +121,7 @@ export class FarmAbiServiceV1_2
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async lockedRewardAprMuliplier(farmAddress: string): Promise<number> {
-        return await this.getLockedRewardAprMuliplierRaw(farmAddress);
+        return this.getLockedRewardAprMuliplierRaw(farmAddress);
     }
 
     async getLockedRewardAprMuliplierRaw(farmAddress: string): Promise<number> {
@@ -143,7 +143,7 @@ export class FarmAbiServiceV1_2
     async farmMigrationConfiguration(
         farmAddress: string,
     ): Promise<FarmMigrationConfig | undefined> {
-        return await this.getFarmMigrationConfigurationRaw(farmAddress);
+        return this.getFarmMigrationConfigurationRaw(farmAddress);
     }
 
     async getFarmMigrationConfigurationRaw(

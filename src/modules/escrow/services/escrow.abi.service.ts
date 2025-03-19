@@ -17,7 +17,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { EscrowSetterService } from './escrow.setter.service';
 import { EscrowAbiServiceInterface } from './interfaces';
 

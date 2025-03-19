@@ -49,7 +49,7 @@ export class SimpleLockTransactionService {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
         const unlockEpoch = currentEpoch + lockEpochs;
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        return this.mxProxy.getSimpleLockSmartContractTransaction(
             simpleLockAddress,
             new TransactionOptions({
                 sender: sender,
@@ -73,7 +73,7 @@ export class SimpleLockTransactionService {
         sender: string,
         inputTokens: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        return this.mxProxy.getSimpleLockSmartContractTransaction(
             simpleLockAddress,
             new TransactionOptions({
                 sender: sender,
@@ -193,7 +193,7 @@ export class SimpleLockTransactionService {
         const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
         const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        return this.mxProxy.getSimpleLockSmartContractTransaction(
             simpleLockAddress,
             new TransactionOptions({
                 sender: sender,
@@ -316,7 +316,7 @@ export class SimpleLockTransactionService {
                 ? gasConfig.simpleLock.enterFarmLockedToken.withTokenMerge
                 : gasConfig.simpleLock.enterFarmLockedToken.default;
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        return this.mxProxy.getSimpleLockSmartContractTransaction(
             simpleLockAddress,
             new TransactionOptions({
                 sender: sender,
@@ -355,7 +355,7 @@ export class SimpleLockTransactionService {
 
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        return this.mxProxy.getSimpleLockSmartContractTransaction(
             simpleLockAddress,
             new TransactionOptions({
                 sender: sender,
@@ -385,7 +385,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        return this.mxProxy.getSimpleLockSmartContractTransaction(
             simpleLockAddress,
             new TransactionOptions({
                 sender: sender,
@@ -411,7 +411,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        return await this.mxProxy.getSimpleLockSmartContractTransaction(
+        return this.mxProxy.getSimpleLockSmartContractTransaction(
             simpleLockAddress,
             new TransactionOptions({
                 sender: sender,

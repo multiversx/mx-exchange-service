@@ -53,3 +53,16 @@ export class PriceCandlesQueryArgs {
     @Field(() => PriceCandlesResolutions)
     resolution: PriceCandlesResolutions;
 }
+
+@ArgsType()
+export class TokenMiniChartPriceCandlesQueryArgs {
+    @Field()
+    @IsValidSeries()
+    series: string;
+    @Field()
+    @IsNotEmpty()
+    start: string;
+    @Field()
+    @IsNotEmpty()
+    end: string;
+}

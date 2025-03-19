@@ -1,4 +1,4 @@
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
@@ -17,7 +17,7 @@ export class WeekTimekeepingSetterService extends GenericSetterService {
     }
 
     async currentWeek(scAddress: string, value: number): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('currentWeek', scAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
@@ -29,7 +29,7 @@ export class WeekTimekeepingSetterService extends GenericSetterService {
         scAddress: string,
         value: number,
     ): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('firstWeekStartEpoch', scAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
@@ -42,7 +42,7 @@ export class WeekTimekeepingSetterService extends GenericSetterService {
         week: number,
         value: number,
     ): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('startEpochForWeek', scAddress, week),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
@@ -55,7 +55,7 @@ export class WeekTimekeepingSetterService extends GenericSetterService {
         week: number,
         value: number,
     ): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('endEpochForWeek', scAddress, week),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
