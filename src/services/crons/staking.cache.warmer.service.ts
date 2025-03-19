@@ -144,6 +144,12 @@ export class StakingCacheWarmerService {
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
+        invalidatedKeys = invalidatedKeys.filter((key) => key !== undefined);
+
+        if (invalidatedKeys.length === 0) {
+            return;
+        }
+
         await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }

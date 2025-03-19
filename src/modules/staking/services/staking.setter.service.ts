@@ -18,7 +18,7 @@ export class StakingSetterService extends GenericSetterService {
     }
 
     async setFarmTokenID(stakeAddress: string, value: string): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('farmTokenID', stakeAddress),
             value,
             CacheTtlInfo.TokenID.remoteTtl,
@@ -30,7 +30,7 @@ export class StakingSetterService extends GenericSetterService {
         stakeAddress: string,
         value: string,
     ): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('farmingTokenID', stakeAddress),
             value,
             CacheTtlInfo.TokenID.remoteTtl,
@@ -42,7 +42,7 @@ export class StakingSetterService extends GenericSetterService {
         stakeAddress: string,
         value: string,
     ): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('rewardTokenID', stakeAddress),
             value,
             CacheTtlInfo.TokenID.remoteTtl,
@@ -102,7 +102,7 @@ export class StakingSetterService extends GenericSetterService {
         stakeAddress: string,
         value: string,
     ): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('annualPercentageRewards', stakeAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
@@ -126,7 +126,7 @@ export class StakingSetterService extends GenericSetterService {
         stakeAddress: string,
         value: number,
     ): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('minUnboundEpochs', stakeAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
@@ -162,7 +162,7 @@ export class StakingSetterService extends GenericSetterService {
         stakeAddress: string,
         value: number,
     ): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('divisionSafetyConstant', stakeAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
@@ -171,7 +171,7 @@ export class StakingSetterService extends GenericSetterService {
     }
 
     async setState(stakeAddress: string, value: string): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('state', stakeAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
@@ -183,7 +183,7 @@ export class StakingSetterService extends GenericSetterService {
         stakeAddress: string,
         value: BoostedYieldsFactors,
     ): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getCacheKey('boostedYieldsFactors', stakeAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
