@@ -22,6 +22,7 @@ import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { computeValueUSD } from 'src/utils/token.converters';
 
 @Injectable()
 export class GlobalRewardsService {
@@ -148,49 +149,27 @@ export class GlobalRewardsService {
         );
         const targetWeek = Math.max(0, currentWeek - weekOffset);
 
+        let rewardAmount = '0';
         if (weekOffset === 0) {
-            const amount = await this.farmAbiV2.accumulatedRewardsForWeek(
+            rewardAmount = await this.farmAbiV2.accumulatedRewardsForWeek(
                 farmAddress,
                 targetWeek,
             );
-
-            const energyRewardsUSD = new BigNumber(amount)
-                .dividedBy(new BigNumber(10).pow(mexMetadata.decimals))
-                .multipliedBy(mexPrice)
-                .toFixed();
-            const totalRewardsUSD = new BigNumber(energyRewardsUSD)
-                .dividedBy(0.6)
-                .toFixed();
-
-            return new FarmsGlobalRewards({
-                pairAddress,
-                firstToken,
-                secondToken,
-                totalRewardsUSD,
-                energyRewardsUSD,
-            });
+        } else {
+            const rewards =
+                await this.weeklyRewardsSplitting.totalRewardsForWeek(
+                    farmAddress,
+                    targetWeek,
+                );
+            rewardAmount = rewards[0]?.amount ?? '0';
         }
 
-        const rewards = await this.weeklyRewardsSplitting.totalRewardsForWeek(
-            farmAddress,
-            targetWeek,
-        );
-        if (!rewards.length) {
-            return new FarmsGlobalRewards({
-                pairAddress,
-                firstToken,
-                secondToken,
-                totalRewardsUSD: '0',
-                energyRewardsUSD: '0',
-            });
-        }
+        const energyRewardsUSD = computeValueUSD(
+            rewardAmount,
+            mexMetadata.decimals,
+            mexPrice,
+        ).toFixed();
 
-        const reward = rewards[0] as EsdtTokenPayment;
-        const tokenAmount = new BigNumber(reward.amount).dividedBy(
-            new BigNumber(10).pow(mexMetadata.decimals),
-        );
-
-        const energyRewardsUSD = tokenAmount.multipliedBy(mexPrice).toFixed();
         const totalRewardsUSD = new BigNumber(energyRewardsUSD)
             .dividedBy(0.6)
             .toFixed();
@@ -265,10 +244,11 @@ export class GlobalRewardsService {
             farmingToken.identifier,
         );
 
-        const energyRewardsUSD = new BigNumber(rewardAmount)
-            .dividedBy(new BigNumber(10).pow(farmingToken.decimals))
-            .multipliedBy(tokenPrice)
-            .toFixed();
+        const energyRewardsUSD = computeValueUSD(
+            rewardAmount,
+            farmingToken.decimals,
+            tokenPrice,
+        ).toFixed();
 
         const totalRewardsUSD = new BigNumber(energyRewardsUSD)
             .dividedBy(0.6)
