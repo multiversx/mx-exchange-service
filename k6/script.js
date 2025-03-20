@@ -16,28 +16,19 @@ export const options = {
     },
 };
 
-const BASE_URL = 'http://localhost:3005/graphql';
-
-const QUERIES = {
-    totalValueStaked: `
-        query {
-            totalValueStakedUSD
-        }
-    `,
-};
+const BASE_URL = 'http://localhost:3005';
+const PAIR_ADDRESS = 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq';
 
 export default function () {
     const headers = {
         'Content-Type': 'application/json',
     };
 
-    // Test total value staked endpoint
-    const totalValueStakedResponse = http.post(BASE_URL, JSON.stringify({
-        query: QUERIES.totalValueStaked
-    }), { 
+    // Test swap count endpoint
+    const swapCountResponse = http.get(`${BASE_URL}/pair/${PAIR_ADDRESS}/swapcount`, { 
         headers,
-        timeout: '30s', // Reduced timeout
-        tags: { name: 'TotalValueStaked' }
+        timeout: '30s',
+        tags: { name: 'SwapCount' }
     });
 
     const checks = {
@@ -45,23 +36,23 @@ export default function () {
             type: 'status',
             check: (r) => r.status === 200
         },
-        'no GraphQL errors': {
+        'has valid data': {
             type: 'data',
-            check: (r) => !JSON.parse(r.body).errors
-        },
-        'has totalValueStakedUSD': {
-            type: 'data',
-            check: (r) => JSON.parse(r.body).data.totalValueStakedUSD !== null
-        },
-        'is valid number': {
-            type: 'data',
-            check: (r) => !isNaN(JSON.parse(r.body).data.totalValueStakedUSD)
+            check: (r) => {
+                try {
+                    const data = JSON.parse(r.body);
+                    return typeof data === 'number';
+                } catch (e) {
+                    console.error('Failed to parse response:', r.body);
+                    return false;
+                }
+            }
         }
     };
 
     Object.entries(checks).forEach(([name, { type, check }]) => {
-        const success = check(totalValueStakedResponse);
-        check(totalValueStakedResponse, {
+        const success = check(swapCountResponse);
+        check(swapCountResponse, {
             [name]: () => success
         }, { type });
         
