@@ -7,12 +7,15 @@ import {
 } from './models/global.rewards.model';
 import { GlobalRewardsService } from './services/global.rewards.service';
 import { GlobalRewardsArgs } from './models/query.args';
+import { UsePipes } from '@nestjs/common';
+import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
 
 @Resolver(() => GlobalRewardsModel)
 export class GlobalRewardsResolver {
     constructor(private readonly globalRewardsService: GlobalRewardsService) {}
 
     @Query(() => GlobalRewardsModel)
+    @UsePipes(new QueryArgsValidationPipe())
     async globalRewards(
         @Args() args: GlobalRewardsArgs,
     ): Promise<GlobalRewardsModel> {

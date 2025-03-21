@@ -135,13 +135,13 @@ export class AnalyticsCacheWarmerService {
         const allData = await Promise.all(
             weekOffsets.map(async (weekOffset) => {
                 const feesRewards =
-                    await this.globalRewardsService.feesCollectorRewards(
+                    await this.globalRewardsService.computeFeesCollectorRewards(
                         weekOffset,
                     );
                 const farmsRewards =
-                    await this.globalRewardsService.farmRewards(weekOffset);
+                    await this.globalRewardsService.computeFarmsRewards(weekOffset);
                 const stakingRewards =
-                    await this.globalRewardsService.stakingRewards(weekOffset);
+                    await this.globalRewardsService.computeStakingRewards(weekOffset);
 
                 return {
                     weekOffset,

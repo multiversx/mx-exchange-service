@@ -19,7 +19,6 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
-import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { computeValueUSD } from 'src/utils/token.converters';
@@ -71,7 +70,7 @@ export class GlobalRewardsService {
         return await this.computeStakingRewards(weekOffset);
     }
 
-    private async computeFeesCollectorRewards(
+    async computeFeesCollectorRewards(
         weekOffset: number,
     ): Promise<FeesCollectorGlobalRewards> {
         const feesCollectorAddress = scAddress.feesCollector;
@@ -94,7 +93,7 @@ export class GlobalRewardsService {
         });
     }
 
-    private async computeFarmsRewards(
+    async computeFarmsRewards(
         weekOffset: number,
     ): Promise<FarmsGlobalRewards[]> {
         const farmsData: FarmsGlobalRewards[] = [];
@@ -183,7 +182,7 @@ export class GlobalRewardsService {
         });
     }
 
-    private async computeStakingRewards(
+    async computeStakingRewards(
         weekOffset: number,
     ): Promise<StakingGlobalRewards[]> {
         const stakingRewards: StakingGlobalRewards[] = [];

@@ -57,15 +57,9 @@ export class PriceCandlesQueryArgs {
 
 @ArgsType()
 export class GlobalRewardsArgs {
-    @Field(() => Number, { nullable: true })
+    @Field(() => Number, { nullable: true, defaultValue: 0 })
     @IsNumber()
     @IsOptional()
-    @Transform(({ value }) => {
-        if (value === undefined || value === null) {
-            return 0;
-        }
-        return Number(value);
-    })
     weekOffset?: number;
 }
 
