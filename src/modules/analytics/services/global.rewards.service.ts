@@ -143,6 +143,15 @@ export class GlobalRewardsService {
         mexMetadata: EsdtToken,
         mexPrice: string,
     ): Promise<FarmsGlobalRewards> {
+        const farmBoostedPercentage =
+            await this.farmAbiV2.boostedYieldsRewardsPercenatage(farmAddress);
+
+        const boostedYieldRewardsPercentage = new BigNumber(
+            farmBoostedPercentage,
+        )
+            .dividedBy(constantsConfig.MAX_PERCENT)
+            .toNumber();
+
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             farmAddress,
         );
@@ -170,7 +179,7 @@ export class GlobalRewardsService {
         ).toFixed();
 
         const totalRewardsUSD = new BigNumber(energyRewardsUSD)
-            .dividedBy(0.6)
+            .dividedBy(boostedYieldRewardsPercentage)
             .toFixed();
 
         return new FarmsGlobalRewards({
@@ -210,6 +219,17 @@ export class GlobalRewardsService {
         weekOffset: number,
         farmingToken: EsdtToken,
     ): Promise<StakingGlobalRewards> {
+        const stakingBoostedPercentage =
+            await this.stakingAbi.boostedYieldsRewardsPercenatage(
+                stakingAddress,
+            );
+
+        const boostedYieldRewardsPercentage = new BigNumber(
+            stakingBoostedPercentage,
+        )
+            .dividedBy(constantsConfig.MAX_PERCENT)
+            .toNumber();
+
         const currentWeek = await this.weekTimekeepingAbi.currentWeek(
             stakingAddress,
         );
@@ -250,7 +270,7 @@ export class GlobalRewardsService {
         ).toFixed();
 
         const totalRewardsUSD = new BigNumber(energyRewardsUSD)
-            .dividedBy(0.6)
+            .dividedBy(boostedYieldRewardsPercentage)
             .toFixed();
 
         return new StakingGlobalRewards({
