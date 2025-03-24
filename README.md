@@ -62,7 +62,9 @@ It depends on the following external systems:
 -   api:
     -   to get information regarding tokens, metaesdts and user balances
     -   docs: [https://docs.multiversx.com/sdk-and-tools/rest-api/multiversx-api/](https://docs.multiversx.com/sdk-and-tools/rest-api/multiversx-api/)
-        It uses on the following internal systems:
+
+It uses on the following internal systems:
+
 -   redis: used to cache various data, for performance purposes
 -   rabbitmq:
     -   fetching events from blockchain emitted events via notifier
