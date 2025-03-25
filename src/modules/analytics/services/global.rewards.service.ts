@@ -89,9 +89,7 @@ export class GlobalRewardsService {
 
         if (weekOffset === 0) {
             totalFeesCollectorRewardsUSD =
-                await this.feesCollectorCompute.computeAccumulatedFeesUSD(
-                    targetWeek,
-                );
+                await this.feesCollectorCompute.accumulatedFeesUSD(targetWeek);
         } else {
             totalFeesCollectorRewardsUSD =
                 await this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
@@ -144,8 +142,8 @@ export class GlobalRewardsService {
             farmsData.push(farmReward);
         }
 
-        return farmsData.filter((farm) => 
-            new BigNumber(farm.totalRewardsUSD).isGreaterThan(0)
+        return farmsData.filter((farm) =>
+            new BigNumber(farm.totalRewardsUSD).isGreaterThan(0),
         );
     }
 
@@ -226,8 +224,8 @@ export class GlobalRewardsService {
             stakingRewards.push(stakingReward);
         }
 
-        return stakingRewards.filter((staking) => 
-            new BigNumber(staking.totalRewardsUSD).isGreaterThan(0)
+        return stakingRewards.filter((staking) =>
+            new BigNumber(staking.totalRewardsUSD).isGreaterThan(0),
         );
     }
 
