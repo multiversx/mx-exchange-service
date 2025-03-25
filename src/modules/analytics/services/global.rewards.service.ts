@@ -144,7 +144,9 @@ export class GlobalRewardsService {
             farmsData.push(farmReward);
         }
 
-        return farmsData;
+        return farmsData.filter((farm) => 
+            new BigNumber(farm.totalRewardsUSD).isGreaterThan(0)
+        );
     }
 
     private async computeSingleFarmRewards(
@@ -224,7 +226,9 @@ export class GlobalRewardsService {
             stakingRewards.push(stakingReward);
         }
 
-        return stakingRewards;
+        return stakingRewards.filter((staking) => 
+            new BigNumber(staking.totalRewardsUSD).isGreaterThan(0)
+        );
     }
 
     private async computeSingleStakingRewards(
