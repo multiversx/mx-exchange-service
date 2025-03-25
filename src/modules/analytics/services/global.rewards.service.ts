@@ -22,6 +22,8 @@ import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fees-collector.abi.service';
+import { FeesCollectorComputeService } from 'src/modules/fees-collector/services/fees-collector.compute.service';
 
 @Injectable()
 export class GlobalRewardsService {
@@ -36,6 +38,8 @@ export class GlobalRewardsService {
         private readonly tokenCompute: TokenComputeService,
         private readonly stakingService: StakingService,
         private readonly stakingAbi: StakingAbiService,
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
     ) {}
 
     @GetOrSetCache({
@@ -81,15 +85,24 @@ export class GlobalRewardsService {
 
         const targetWeek = Math.max(0, currentWeek - weekOffset);
 
-        const energyRewardsUSD =
-            await this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
-                feesCollectorAddress,
-                targetWeek,
-            );
+        let totalFeesCollectorRewardsUSD = '0';
+
+        if (weekOffset === 0) {
+            totalFeesCollectorRewardsUSD =
+                await this.feesCollectorCompute.getAccumulatedFeesUSD(
+                    targetWeek,
+                );
+        } else {
+            totalFeesCollectorRewardsUSD =
+                await this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
+                    feesCollectorAddress,
+                    targetWeek,
+                );
+        }
 
         return new FeesCollectorGlobalRewards({
-            totalRewardsUSD: energyRewardsUSD,
-            energyRewardsUSD: energyRewardsUSD,
+            totalRewardsUSD: totalFeesCollectorRewardsUSD,
+            energyRewardsUSD: totalFeesCollectorRewardsUSD,
         });
     }
 
