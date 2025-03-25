@@ -244,7 +244,7 @@ export class FeesCollectorComputeService {
         remoteTtl: Constants.oneHour() * 4,
         localTtl: Constants.oneHour() * 3,
     })
-    async getAccumulatedFeesUSD(week: number): Promise<string> {
+    async computeAccumulatedFeesUSD(week: number): Promise<string> {
         const allTokens = await this.feesCollectorAbi.allTokens();
 
         const tokensMetadata = await this.tokenService.getAllTokensMetadata(

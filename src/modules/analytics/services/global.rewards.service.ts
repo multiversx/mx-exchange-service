@@ -89,7 +89,7 @@ export class GlobalRewardsService {
 
         if (weekOffset === 0) {
             totalFeesCollectorRewardsUSD =
-                await this.feesCollectorCompute.getAccumulatedFeesUSD(
+                await this.feesCollectorCompute.computeAccumulatedFeesUSD(
                     targetWeek,
                 );
         } else {
