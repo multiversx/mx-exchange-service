@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { BigNumber } from 'bignumber.js';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
-import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
@@ -236,5 +236,47 @@ export class FeesCollectorComputeService {
         return blocksInEpoch.reduce((total, current) => {
             return total + current;
         });
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: Constants.oneHour() * 4,
+        localTtl: Constants.oneHour() * 3,
+    })
+    async accumulatedFeesUSD(week: number): Promise<string> {
+        return this.computeAccumulatedFeesUSD(week);
+    }
+
+    async computeAccumulatedFeesUSD(week: number): Promise<string> {
+        const allTokens = await this.feesCollectorAbi.allTokens();
+
+        const tokensMetadata = await this.tokenService.getAllTokensMetadata(
+            allTokens,
+        );
+        const tokenData = await Promise.all(
+            allTokens.map(async (tokenId) => ({
+                amount: await this.feesCollectorAbi.accumulatedFees(
+                    week,
+                    tokenId,
+                ),
+                price: await this.tokenCompute.tokenPriceDerivedUSD(tokenId),
+            })),
+        );
+
+        const usdValues = allTokens.map((tokenId, index) => {
+            return computeValueUSD(
+                tokenData[index].amount,
+                tokensMetadata[index].decimals,
+                tokenData[index].price,
+            );
+        });
+
+        const totalUsdValue = usdValues.reduce(
+            (sum, value) => sum.plus(value),
+            new BigNumber(0),
+        );
+
+        return totalUsdValue.toFixed();
     }
 }
