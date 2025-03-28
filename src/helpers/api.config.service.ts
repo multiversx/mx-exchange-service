@@ -196,6 +196,50 @@ export class ApiConfigService {
         return mongoDBPassword;
     }
 
+    getNotificationsApiUrl(): string {
+        const apiUrl = this.configService.get<string>('PUSH_NOTIFICATIONS_API_URL');
+        if (!apiUrl) {
+            throw new Error('No push notifications API url present');
+        }
+        return apiUrl;
+    }
+
+    getNotificationsApiKey(): string {
+        const apiKey = this.configService.get<string>('PUSH_NOTIFICATIONS_API_KEY');
+        if (!apiKey) {
+            throw new Error('No push notifications API key present');
+        }
+        return apiKey;
+    }
+
+    getNotificationsBatchSize(): number {
+        const batchSize = this.configService.get<number>(
+            'PUSH_NOTIFICATIONS_BATCH_SIZE',
+        );
+        if (!batchSize) {
+            throw new Error('No push notifications batch size present');
+        }
+        return batchSize;
+    }
+
+    getNotificationsMaxRetries(): number {
+        const maxRetries = this.configService.get<number>(
+            'PUSH_NOTIFICATIONS_MAX_RETRIES',
+        );
+        if (!maxRetries) {
+            throw new Error('No push notifications max retries present');
+        }
+        return maxRetries;
+    }
+
+    getChainId(): number {
+        const chainId = this.configService.get<number>('PUSH_NOTIFICATIONS_CHAIN_ID');
+        if (!chainId) {
+            throw new Error('No push notifications chainId present');
+        }
+        return chainId;
+    }
+
     getJwtSecret(): string {
         const secret = this.configService.get<string>('JWT_SECRET');
         if (!secret) {
@@ -351,5 +395,15 @@ export class ApiConfigService {
 
     getRateLimiterSecret(): string | undefined {
         return this.configService.get<string>('RATE_LIMITER_SECRET');
+    }
+
+    isNotificationsModuleActive(): boolean {
+        const notificationsModuleActive = this.configService.get<string>(
+            'ENABLE_PUSH_NOTIFICATIONS',
+        );
+        if (!notificationsModuleActive) {
+            return false;
+        }
+        return notificationsModuleActive === 'true';
     }
 }
