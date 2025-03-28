@@ -130,9 +130,7 @@ export class PushNotificationsService {
         });
 
         if (response.status !== 201) {
-            throw new Error(
-                `Notification API responded with status ${response.status}: ${response.data}`,
-            );
+            return false;
         }
 
         return true;
