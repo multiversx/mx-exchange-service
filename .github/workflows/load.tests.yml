@@ -2,8 +2,12 @@ name: Load Tests
 
 on:
   pull_request:
-    branches: [main, development]
+    branches: [main, development, MEX-723-load-test-workflow]
 
+# Add permissions block at the top level
+permissions:
+  pull-requests: write
+  contents: read
 jobs:
   test-base:
     runs-on: ubuntu-latest
@@ -18,7 +22,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
       timescaledb:
         image: timescale/timescaledb-ha:pg16
         env:
@@ -31,7 +34,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
       mongodb:
         image: mongo:latest
         env:
@@ -44,7 +46,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -65,7 +66,71 @@ jobs:
       run: npm run build
 
     - name: Start Node.js API
-      run: GH_ACTIONS=true node ./dist/main.js
+      run: |
+        export GH_ACTIONS=true
+        export ENABLE_PUBLIC_API=true
+        export ENABLE_PRIVATE_API=true
+        export PORT=3005
+        export PRIVATE_PORT=4001
+        export NODE_ENV=devnet
+        export REDIS_URL=localhost
+        export REDIS_PORT=6379
+        export MONGODB_URL=mongodb://localhost:27017
+        export MONGODB_DATABASE=development
+        export MONGODB_USERNAME=admin
+        export MONGODB_PASSWORD=admin
+        export TIMESCALEDB_URL=localhost
+        export TIMESCALEDB_PORT=5432
+        export TIMESCALEDB_DATABASE=timescaledb
+        export TIMESCALEDB_USERNAME=timescaledb
+        export TIMESCALEDB_PASSWORD=password
+        echo "Starting Node.js API..."
+        nohup node ./dist/main.js > server.log 2>&1 &
+        echo $! > .api.pid
+        echo "Server PID: $(cat .api.pid)"
+        echo "Waiting 5 seconds for initial startup..."
+        sleep 5  # Give initial time for process to start
+        if ! ps -p $(cat .api.pid) > /dev/null; then
+          echo "Server failed to start! Here's the log:"
+          cat server.log
+          exit 1
+        fi
+        echo "Server process is running. Proceeding with health checks..."
+
+    - name: Wait for API to be ready
+      run: |
+        if ! ps -p $(cat .api.pid) > /dev/null; then
+          echo "API process is not running"
+          echo "Server log output:"
+          cat server.log
+          exit 1
+        fi
+        
+        # Monitor server logs in background
+        tail -f server.log &
+        TAIL_PID=$!
+        
+        # Wait for server to indicate it's ready
+        echo "Waiting for server to start..."
+        timeout 60 bash -c 'until grep -q "Nest application successfully started" server.log; do
+          if ! ps -p $(cat .api.pid) > /dev/null; then
+            echo "API process died"
+            echo "Server log output:"
+            cat server.log
+            exit 1
+          fi
+          echo "Waiting for server startup..."
+          sleep 2
+        done'
+        
+        # Give a moment for all routes to be ready
+        echo "Server indicated successful start. Waiting 5 seconds for routes to be ready..."
+        sleep 5
+        
+        # Stop monitoring logs
+        kill $TAIL_PID
+        
+        echo "API is ready"
 
     - name: Install k6
       run: |
@@ -75,24 +140,28 @@ jobs:
         sudo apt-get update
         sudo apt-get install k6
 
-    - name: Wait for API to be ready
-      run: |
-        until curl --output /dev/null --silent --max-time 60 http://localhost:3005/graphql; do 
-          echo 'Waiting for API...'
-          sleep 5
-        done
-
     - name: Preload cache
       run: k6 run ./k6/preload.js
 
     - name: Run k6 Load Test
-      run: k6 run ./k6/script.js
+      run: |
+        mkdir -p k6/output
+        k6 run ./k6/script.js
+        mv summary.json k6/output/summary.json
 
     - name: Upload result file for base branch
       uses: actions/upload-artifact@v4
       with:
         name: base-results
         path: k6/output/summary.json
+
+    - name: Cleanup
+      if: always()
+      run: |
+        if [ -f .api.pid ]; then
+          kill $(cat .api.pid) || true
+          rm .api.pid
+        fi
 
   test-head:
     runs-on: ubuntu-latest
@@ -107,7 +176,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
       timescaledb:
         image: timescale/timescaledb-ha:pg16
         env:
@@ -133,7 +201,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -154,7 +221,71 @@ jobs:
       run: npm run build
 
     - name: Start Node.js API
-      run: GH_ACTIONS=true node ./dist/main.js &
+      run: |
+        export GH_ACTIONS=true
+        export ENABLE_PUBLIC_API=true
+        export ENABLE_PRIVATE_API=true
+        export PORT=3005
+        export PRIVATE_PORT=4001
+        export NODE_ENV=devnet
+        export REDIS_URL=localhost
+        export REDIS_PORT=6379
+        export MONGODB_URL=mongodb://localhost:27017
+        export MONGODB_DATABASE=development
+        export MONGODB_USERNAME=admin
+        export MONGODB_PASSWORD=admin
+        export TIMESCALEDB_URL=localhost
+        export TIMESCALEDB_PORT=5432
+        export TIMESCALEDB_DATABASE=timescaledb
+        export TIMESCALEDB_USERNAME=timescaledb
+        export TIMESCALEDB_PASSWORD=password
+        echo "Starting Node.js API..."
+        nohup node ./dist/main.js > server.log 2>&1 &
+        echo $! > .api.pid
+        echo "Server PID: $(cat .api.pid)"
+        echo "Waiting 5 seconds for initial startup..."
+        sleep 5  # Give initial time for process to start
+        if ! ps -p $(cat .api.pid) > /dev/null; then
+          echo "Server failed to start! Here's the log:"
+          cat server.log
+          exit 1
+        fi
+        echo "Server process is running. Proceeding with health checks..."
+
+    - name: Wait for API to be ready
+      run: |
+        if ! ps -p $(cat .api.pid) > /dev/null; then
+          echo "API process is not running"
+          echo "Server log output:"
+          cat server.log
+          exit 1
+        fi
+        
+        # Monitor server logs in background
+        tail -f server.log &
+        TAIL_PID=$!
+        
+        # Wait for server to indicate it's ready
+        echo "Waiting for server to start..."
+        timeout 60 bash -c 'until grep -q "Nest application successfully started" server.log; do
+          if ! ps -p $(cat .api.pid) > /dev/null; then
+            echo "API process died"
+            echo "Server log output:"
+            cat server.log
+            exit 1
+          fi
+          echo "Waiting for server startup..."
+          sleep 2
+        done'
+        
+        # Give a moment for all routes to be ready
+        echo "Server indicated successful start. Waiting 5 seconds for routes to be ready..."
+        sleep 5
+        
+        # Stop monitoring logs
+        kill $TAIL_PID
+        
+        echo "API is ready"
 
     - name: Install k6
       run: |
@@ -164,18 +295,15 @@ jobs:
         sudo apt-get update
         sudo apt-get install k6
 
-    - name: Wait for API to be ready
-      run: |
-        until curl --output /dev/null --silent --max-time 60 http://localhost:3005/graphql; do 
-          echo 'Waiting for API...'
-          sleep 5
-        done
-
     - name: Preload cache
       run: k6 run ./k6/preload.js
 
     - name: Run k6 Load Test
-      run: k6 run ./k6/script.js
+      run: |
+        mkdir -p k6/output
+        k6 run ./k6/script.js
+        mv summary.json k6/output/summary.json
+
 
     - name: Upload result file for head branch
       uses: actions/upload-artifact@v4
@@ -183,10 +311,20 @@ jobs:
         name: head-results
         path: k6/output/summary.json
 
+    - name: Cleanup
+      if: always()
+      run: |
+        if [ -f .api.pid ]; then
+          kill $(cat .api.pid) || true
+          rm .api.pid
+        fi
+
   compare-results:
     runs-on: ubuntu-latest
     needs: [test-base, test-head]
-    
+    permissions:
+      pull-requests: write
+      contents: read
     steps:
       - uses: actions/checkout@v2
 
@@ -203,7 +341,6 @@ jobs:
       - name: Compare test results
         run: |
           node ./k6/compare-results.js ${{ github.event.pull_request.base.sha }} artifacts/base-results/summary.json ${{ github.event.pull_request.head.sha }} artifacts/head-results/summary.json report.md
-
       - name: Find Comment
         uses: peter-evans/find-comment@v2
         id: fc

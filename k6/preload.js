@@ -199,10 +199,8 @@ export default function () {
             sleep(RETRY_DELAY);
         }
     }
-
     console.log('All retries failed. Last response:', lastResponse?.body);
 }
-
 export function handleSummary(data) {
     return {
         'summary.json': JSON.stringify(data),
