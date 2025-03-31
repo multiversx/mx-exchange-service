@@ -29,6 +29,7 @@ function calculateDiff(base, head) {
 
 function generateReport(baseSha, baseResults, headSha, headResults, diff) {
     return `# k6 load testing comparison
+
 ## Base Branch (${baseSha})
 - Average Response Time: ${baseResults.http_req_duration.avg.toFixed(2)}ms
 - P95 Response Time: ${baseResults.http_req_duration.p95.toFixed(2)}ms
@@ -46,6 +47,7 @@ function generateReport(baseSha, baseResults, headSha, headResults, diff) {
 - Checks Failed: ${headResults.checks_failed}
 
 ## Changes
+
 - Average Response Time: ${diff.http_req_duration.avg}% ${diff.http_req_duration.avg > 20 ? '⚠️' : '✅'}
 - P95 Response Time: ${diff.http_req_duration.p95}% ${diff.http_req_duration.p95 > 20 ? '⚠️' : '✅'}
 - Total Requests: ${diff.http_reqs}%
@@ -56,6 +58,7 @@ ${
     diff.http_req_duration.avg > 20 || 
     diff.http_req_duration.p95 > 20 || 
     diff.http_req_failed > 0.01 || 
+
     diff.checks_failed > 0
         ? '⚠️ **Performance regression detected!** Please review the changes.'
         : '✅ **No significant performance regression detected.**'

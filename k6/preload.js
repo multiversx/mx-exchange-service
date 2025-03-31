@@ -90,6 +90,7 @@ export default function () {
     const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+
     };
 
     let lastResponse;
@@ -199,7 +200,6 @@ export default function () {
             sleep(RETRY_DELAY);
         }
     }
-
     console.log('All retries failed. Last response:', lastResponse?.body);
 }
 

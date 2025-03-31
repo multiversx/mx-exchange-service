@@ -8,7 +8,6 @@ on:
 permissions:
   pull-requests: write
   contents: read
-
 jobs:
   test-base:
     runs-on: ubuntu-latest
@@ -305,6 +304,7 @@ jobs:
         k6 run ./k6/script.js
         mv summary.json k6/output/summary.json
 
+
     - name: Upload result file for head branch
       uses: actions/upload-artifact@v4
       with:
@@ -325,7 +325,6 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
-
     steps:
       - uses: actions/checkout@v2
 
@@ -355,6 +354,7 @@ jobs:
           echo "=== Load Test Comparison Report ==="
           cat report.md
           echo "================================"
+
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v2
         with:
