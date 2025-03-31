@@ -4,7 +4,7 @@ import { ProxyAbiService } from 'src/modules/proxy/services/proxy.abi.service';
 import { ProxyPairAbiService } from 'src/modules/proxy/services/proxy-pair/proxy.pair.abi.service';
 import { ProxyFarmAbiService } from 'src/modules/proxy/services/proxy-farm/proxy.farm.abi.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { cacheConfig, scAddress } from 'src/config';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';

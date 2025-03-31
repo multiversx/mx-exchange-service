@@ -41,7 +41,7 @@ export class StakingTransactionService {
                 ? gasConfig.stake.stakeFarm.withTokenMerge
                 : gasConfig.stake.stakeFarm.default;
 
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -66,7 +66,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -90,7 +90,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -114,7 +114,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -139,7 +139,7 @@ export class StakingTransactionService {
         payment: InputTokenModel,
         newValue: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -164,7 +164,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -187,7 +187,7 @@ export class StakingTransactionService {
         sender: string,
         stakeAddress: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -246,7 +246,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -269,7 +269,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -295,7 +295,7 @@ export class StakingTransactionService {
         address: string,
         whitelist: boolean,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -313,7 +313,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         state: boolean,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -328,7 +328,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         address: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -346,7 +346,7 @@ export class StakingTransactionService {
         tokenTicker: string,
         decimals: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -366,7 +366,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         perBlockAmount: string,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -382,7 +382,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         maxApr: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -398,7 +398,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         minUnboundEpoch: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
@@ -414,7 +414,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         rewards: boolean,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getStakingSmartContractTransaction(
+        return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,

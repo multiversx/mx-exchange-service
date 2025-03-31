@@ -7,7 +7,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IStakingProxyAbiService } from './interfaces';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 
 @Injectable()
@@ -30,7 +30,7 @@ export class StakingProxyAbiService
         remoteTtl: Constants.oneHour(),
     })
     async lpFarmAddress(stakingProxyAddress: string): Promise<string> {
-        return await this.getlpFarmAddressRaw(stakingProxyAddress);
+        return this.getlpFarmAddressRaw(stakingProxyAddress);
     }
 
     async getlpFarmAddressRaw(stakingProxyAddress: string): Promise<string> {
@@ -51,7 +51,7 @@ export class StakingProxyAbiService
         remoteTtl: Constants.oneHour(),
     })
     async stakingFarmAddress(stakingProxyAddress: string): Promise<string> {
-        return await this.getStakingFarmAddressRaw(stakingProxyAddress);
+        return this.getStakingFarmAddressRaw(stakingProxyAddress);
     }
 
     async getStakingFarmAddressRaw(
@@ -74,7 +74,7 @@ export class StakingProxyAbiService
         remoteTtl: Constants.oneHour(),
     })
     async pairAddress(stakingProxyAddress: string): Promise<string> {
-        return await this.getPairAddressRaw(stakingProxyAddress);
+        return this.getPairAddressRaw(stakingProxyAddress);
     }
 
     async getPairAddressRaw(stakingProxyAddress: string): Promise<string> {
@@ -96,7 +96,7 @@ export class StakingProxyAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async stakingTokenID(stakingProxyAddress: string): Promise<string> {
-        return await this.getStakingTokenIDRaw(stakingProxyAddress);
+        return this.getStakingTokenIDRaw(stakingProxyAddress);
     }
 
     async getStakingTokenIDRaw(stakingProxyAddress: string): Promise<string> {
@@ -118,7 +118,7 @@ export class StakingProxyAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async farmTokenID(stakingProxyAddress: string): Promise<string> {
-        return await this.getFarmTokenIDRaw(stakingProxyAddress);
+        return this.getFarmTokenIDRaw(stakingProxyAddress);
     }
 
     async getFarmTokenIDRaw(stakingProxyAddress: string): Promise<string> {
@@ -140,7 +140,7 @@ export class StakingProxyAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async dualYieldTokenID(stakingProxyAddress: string): Promise<string> {
-        return await this.getDualYieldTokenIDRaw(stakingProxyAddress);
+        return this.getDualYieldTokenIDRaw(stakingProxyAddress);
     }
 
     async getDualYieldTokenIDRaw(stakingProxyAddress: string): Promise<string> {
@@ -156,12 +156,12 @@ export class StakingProxyAbiService
     async getAllDualYieldTokenIds(
         stakingProxyAddresses: string[],
     ): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cachingService,
             stakingProxyAddresses,
             'stakeProxy.dualYieldTokenID',
             this.dualYieldTokenID.bind(this),
-            CacheTtlInfo.Token,
+            CacheTtlInfo.TokenID,
         );
     }
 
@@ -174,7 +174,7 @@ export class StakingProxyAbiService
         localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async lpFarmTokenID(stakingProxyAddress: string): Promise<string> {
-        return await this.getLpFarmTokenIDRaw(stakingProxyAddress);
+        return this.getLpFarmTokenIDRaw(stakingProxyAddress);
     }
 
     async getLpFarmTokenIDRaw(stakingProxyAddress: string): Promise<string> {
