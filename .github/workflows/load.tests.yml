@@ -2,7 +2,7 @@ name: Load Tests
 
 on:
   pull_request:
-    branches: [main, development]
+    branches: [main, development, MEX-723-load-test-workflow]
 
 # Add permissions block at the top level
 permissions:
