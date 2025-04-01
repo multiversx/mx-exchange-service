@@ -36,6 +36,10 @@ import { ComposableTasksModule } from '../composable-tasks/composable.tasks.modu
         AutoRouterTransactionService,
         PairTransactionService,
     ],
-    exports: [AutoRouterService, AutoRouterTransactionService],
+    exports: [
+        AutoRouterService,
+        AutoRouterTransactionService,
+        AutoRouterComputeService,
+    ],
 })
 export class AutoRouterModule {}
