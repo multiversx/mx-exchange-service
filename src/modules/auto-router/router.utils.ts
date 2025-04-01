@@ -29,6 +29,7 @@ export function getAddressRoute(
     tokensRoute: string[],
 ): string[] {
     const addressRoute: string[] = [];
+
     for (let i = 0; i < tokensRoute.length - 1; i++) {
         const pair = getPairByTokens(pairs, tokensRoute[i], tokensRoute[i + 1]);
         if (pair) {
@@ -130,7 +131,7 @@ export function calculateTokenPriceDeviationPercent(
         if (
             priceDeviationPercent.toNumber() > constantsConfig.MAX_SWAP_SPREAD
         ) {
-            console.log(`Spread too big validating auto route swap transaction ${tokenInID} => ${tokenOutID}.
+            console.log(`Spread too big validating parallel route swap transaction ${tokenInID} => ${tokenOutID}.
               amount in = ${amountIn}, usd value = ${amountInUSD};
               amount out = ${amountOut}, usd value = ${amountOutUSD}`);
         }

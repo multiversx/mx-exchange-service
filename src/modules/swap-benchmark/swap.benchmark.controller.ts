@@ -3,7 +3,6 @@ import {
     Controller,
     Get,
     Post,
-    Res,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
@@ -15,8 +14,7 @@ import { SnapshotDto } from './dtos/create.snapshot.dto';
 import { SwapBenchmarkService } from './services/benchmark.service';
 import { AutoRouteModel } from '../auto-router/models/auto-route.model';
 import { BenchmarkDto } from './dtos/benchmark.dto';
-import { Response } from 'express';
-import { MultiHopRouteModel } from './models/models';
+import { MultiHopRouteModel } from './models/benchmark.models';
 
 @Controller('swap-benchmark')
 export class SwapBenchmarkController {
@@ -56,10 +54,5 @@ export class SwapBenchmarkController {
             benchmarkDto.timestamp,
             benchmarkDto.args,
         );
-    }
-
-    @Get('/run')
-    async benchmarkView(@Res() res: Response) {
-        return res.render('template');
     }
 }

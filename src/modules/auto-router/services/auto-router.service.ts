@@ -27,6 +27,7 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { SmartRouterService } from './smart.router.service';
 
 @Injectable()
 export class AutoRouterService {
@@ -43,6 +44,7 @@ export class AutoRouterService {
         private readonly pairService: PairService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cacheService: CacheService,
+        private readonly smartRouterService: SmartRouterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -218,11 +220,12 @@ export class AutoRouterService {
         try {
             [swapRoute, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
                 this.isFixedInput(swapType)
-                    ? this.autoRouterComputeService.computeBestSwapRoute(
+                    ? this.computeBestFixedInputSwapRoute(
                           paths,
                           pairs,
                           args.amountIn,
-                          swapType,
+                          tokenInID,
+                          tokenOutID,
                       )
                     : this.autoRouterComputeService.computeBestSwapRoute(
                           paths,
@@ -297,6 +300,52 @@ export class AutoRouterService {
             maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
             tokensPriceDeviationPercent: priceDeviationPercent,
         });
+    }
+
+    private async computeBestFixedInputSwapRoute(
+        paths: string[][],
+        pairs: PairModel[],
+        amountIn: string,
+        tokenInID: string,
+        tokenOutID: string,
+    ): Promise<BestSwapRoute> {
+        const [currentBestRoute, parallelSwapRoute] = await Promise.all([
+            await this.autoRouterComputeService.computeBestSwapRoute(
+                paths,
+                pairs,
+                amountIn,
+                SWAP_TYPE.fixedInput,
+            ),
+            this.smartRouterService.computeBestSwapRoute(
+                paths,
+                pairs,
+                amountIn,
+            ),
+        ]);
+
+        const current = new BigNumber(currentBestRoute.bestResult);
+        const parallel = new BigNumber(parallelSwapRoute.totalResult);
+        const diff = parallel.minus(current);
+        const percentage = diff.dividedBy(current).multipliedBy(100);
+
+        this.logger.info(`SWAP ${amountIn} ${tokenInID} for ${tokenOutID}`, {
+            current: {
+                outputAmount: current.toFixed(),
+                routes: [currentBestRoute.tokenRoute.join(' > ')],
+            },
+            parallel: {
+                outputAmount: parallel.toFixed(),
+                routes: parallelSwapRoute.allocations.map(
+                    (allocation) =>
+                        `${
+                            allocation.inputAmount
+                        } => ${allocation.tokenRoute.join(' > ')}`,
+                ),
+            },
+            percentageDiff: percentage.toNumber(),
+        });
+
+        return currentBestRoute;
     }
 
     setDefaultAmountInIfNeeded(

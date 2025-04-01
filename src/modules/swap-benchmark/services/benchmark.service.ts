@@ -21,47 +21,32 @@ import {
     AutoRouterComputeService,
     BestSwapRoute,
 } from 'src/modules/auto-router/services/auto-router.compute.service';
-import { O1SmartRouterService } from './o1/o1.smart.router.service';
-import { GrokSmartRouterService } from './grok.smart.router.service';
-import { ClaudeV2SmartRouterService } from './claude/claude.v2.smart.router.service';
 import {
-    MultiHopRouteModel,
+    ParallelRouteSwap,
     ParallelRouteAllocation,
-    RouteAllocation,
-} from '../models/models';
+} from '../../auto-router/models/parallel.router.models';
 import { CacheService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { GraphService } from 'src/modules/auto-router/services/graph.service';
+import { SmartRouterService } from '../../auto-router/services/smart.router.service';
+import {
+    MultiHopRouteModel,
+    RouteAllocation,
+} from '../models/benchmark.models';
 import {
     addTolerance,
     calculateExchangeRate,
     calculateTokenPriceDeviationPercent,
     getPairsRoute,
     getPriceImpactPercents,
-    isFixedInput,
-} from '../router.utils';
-import { ClaudeV3SmartRouterService } from './claude/claude.v3.smart.router.service';
-import { O1SmartRouterServiceV3 } from './o1/o1.smart.router.v3.service';
-import { O1SmartRouterServiceV4 } from './o1/o1.smart.router.v4.service';
-import { ClaudeV4SmartRouterService } from './claude/claude.v4.smart.router.service';
-import { GeminiSmartRouterService } from './gemini.smart.router.service';
-import { RC1SmartRouterService } from './release-candidates/rc1.smart.router.service';
-import { RC2SmartRouterService } from './release-candidates/rc2.smart.router.service';
-import { RC3SmartRouterService } from './release-candidates/rc3.smart.router.service';
-import { RC4SmartRouterService } from './release-candidates/rc4.smart.router.service';
-
-export const STEPS = 100;
+} from 'src/modules/auto-router/router.utils';
 
 interface ISmartRouterService {
     computeBestSwapRoute(
         paths: string[][],
         pairs: PairModel[],
         amount: string,
-        swapType: SWAP_TYPE,
-    ): Promise<{
-        allocations: ParallelRouteAllocation[];
-        totalResult: string;
-    }>;
+    ): Promise<ParallelRouteSwap>;
 }
 
 type MultiSwapArgs = {
@@ -72,7 +57,6 @@ type MultiSwapArgs = {
     pairs: PairModel[];
     allTokensMetadata: Map<string, BaseEsdtToken>;
     allTokensPriceUSD: Map<string, string>;
-    swapType: SWAP_TYPE;
 };
 
 @Injectable()
@@ -81,18 +65,7 @@ export class SwapBenchmarkService {
     constructor(
         private readonly snapshotService: SwapBenchmarkSnapshotService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
-        private readonly o1SmartRouter: O1SmartRouterService,
-        private readonly o1SmartRouterV3: O1SmartRouterServiceV3,
-        private readonly o1SmartRouterV4: O1SmartRouterServiceV4,
-        private readonly grokSmartRouter: GrokSmartRouterService,
-        private readonly claudeV2SmartRouter: ClaudeV2SmartRouterService,
-        private readonly claudeV3SmartRouter: ClaudeV3SmartRouterService,
-        private readonly claudeV4SmartRouter: ClaudeV4SmartRouterService,
-        private readonly geminiSmartRouter: GeminiSmartRouterService,
-        private readonly rc1SmartRouter: RC1SmartRouterService,
-        private readonly rc2SmartRouter: RC2SmartRouterService,
-        private readonly rc3SmartRouter: RC3SmartRouterService,
-        private readonly rc4SmartRouter: RC4SmartRouterService,
+        private readonly smartRouterService: SmartRouterService,
         private readonly cacheService: CacheService,
     ) {}
 
@@ -121,15 +94,15 @@ export class SwapBenchmarkService {
             pairs,
             allTokensMetadata: tokensMetadata,
             allTokensPriceUSD: tokensPriceUSD,
-            swapType: SWAP_TYPE.fixedInput,
             tokenInID: swapArgs.tokenInID,
             tokenOutID: swapArgs.tokenOutID,
         };
 
         // for (const path of paths) {
-        //     console.log(path.map((token) => token.split('-')[0]).join('-'));
+        //     this.logger.log(path.map((token) => token.split('-')[0]).join('-'));
         // }
         this.logger.log(`TOTAL PATHS: ${paths.length}`);
+
         const perfDuration: Record<string, string> = {};
 
         const currentPerf = new PerformanceProfiler();
@@ -141,7 +114,6 @@ export class SwapBenchmarkService {
             pairs,
             tokensMetadata,
             tokensPriceUSD,
-            SWAP_TYPE.fixedInput,
         );
         currentPerf.stop();
         perfDuration['current'] = `${currentPerf.duration}ms`;
@@ -158,42 +130,10 @@ export class SwapBenchmarkService {
         );
 
         const routers = [
-            // {
-            //     routerName: 'O1V3',
-            //     service: this.o1SmartRouterV3,
-            // },
-            // {
-            //     routerName: 'RC1',
-            //     service: this.rc1SmartRouter,
-            // },
-            // {
-            //     routerName: 'RC2-iterative',
-            //     service: this.rc2SmartRouter,
-            // },
-            // {
-            //     routerName: 'RC3-lagrange',
-            //     service: this.rc3SmartRouter,
-            // },
             {
-                routerName: 'RC4-lagrange',
-                service: this.rc4SmartRouter,
+                routerName: 'Smart Router',
+                service: this.smartRouterService,
             },
-            // {
-            //     routerName: 'O1V4',
-            //     service: this.o1SmartRouterV4,
-            // },
-            // {
-            //     routerName: 'ClaudeV2',
-            //     service: this.claudeV2SmartRouter,
-            // },
-            // {
-            //     routerName: 'ClaudeV4',
-            //     service: this.claudeV4SmartRouter,
-            // },
-            // {
-            //     routerName: 'Gemini',  // iterative
-            //     service: this.geminiSmartRouter,
-            // },
         ];
 
         const result: { name: string; multiHop: MultiHopRouteModel }[] = [];
@@ -232,24 +172,17 @@ export class SwapBenchmarkService {
         pairs: PairModel[],
         allTokensMetadata: Map<string, BaseEsdtToken>,
         allTokensPriceUSD: Map<string, string>,
-        swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
         let swapRoute: BestSwapRoute;
         const pairsMap = new Map(pairs.map((pair) => [pair.address, pair]));
         try {
-            swapRoute = isFixedInput(swapType)
-                ? await this.autoRouterComputeService.computeBestSwapRoute(
-                      paths,
-                      pairs,
-                      args.amountIn,
-                      swapType,
-                  )
-                : await this.autoRouterComputeService.computeBestSwapRoute(
-                      paths,
-                      pairs,
-                      args.amountOut,
-                      swapType,
-                  );
+            swapRoute =
+                await this.autoRouterComputeService.computeBestSwapRoute(
+                    paths,
+                    pairs,
+                    args.amountIn,
+                    SWAP_TYPE.fixedInput,
+                );
         } catch (error) {
             this.logger.error(
                 'Error when computing the swap auto route.',
@@ -267,8 +200,8 @@ export class SwapBenchmarkService {
             calculateExchangeRate(
                 tokenInMetadata.decimals,
                 tokenOutMetadata.decimals,
-                isFixedInput(swapType) ? args.amountIn : swapRoute.bestResult,
-                isFixedInput(swapType) ? swapRoute.bestResult : args.amountOut,
+                args.amountIn,
+                swapRoute.bestResult,
             );
 
         const priceDeviationPercent = calculateTokenPriceDeviationPercent(
@@ -283,7 +216,7 @@ export class SwapBenchmarkService {
         );
 
         return new AutoRouteModel({
-            swapType: swapType,
+            swapType: SWAP_TYPE.fixedInput,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
             tokenInExchangeRate: tokenInExchangeRate,
@@ -321,19 +254,12 @@ export class SwapBenchmarkService {
         multiSwapArgs: MultiSwapArgs,
     ): Promise<MultiHopRouteModel> {
         try {
-            const swapRoute = isFixedInput(multiSwapArgs.swapType)
-                ? await routerService.computeBestSwapRoute(
-                      multiSwapArgs.paths,
-                      multiSwapArgs.pairs,
-                      multiSwapArgs.args.amountIn,
-                      multiSwapArgs.swapType,
-                  )
-                : await routerService.computeBestSwapRoute(
-                      multiSwapArgs.paths,
-                      multiSwapArgs.pairs,
-                      multiSwapArgs.args.amountOut,
-                      multiSwapArgs.swapType,
-                  );
+            const swapRoute = await routerService.computeBestSwapRoute(
+                multiSwapArgs.paths,
+                multiSwapArgs.pairs,
+                multiSwapArgs.args.amountIn,
+            );
+
             return this.computeMultiHopResult(
                 multiSwapArgs.args,
                 swapRoute,
@@ -342,7 +268,6 @@ export class SwapBenchmarkService {
                 multiSwapArgs.pairs,
                 multiSwapArgs.allTokensMetadata,
                 multiSwapArgs.allTokensPriceUSD,
-                multiSwapArgs.swapType,
             );
         } catch (error) {
             this.logger.error(
@@ -364,7 +289,6 @@ export class SwapBenchmarkService {
         pairs: PairModel[],
         allTokensMetadata: Map<string, BaseEsdtToken>,
         allTokensPriceUSD: Map<string, string>,
-        swapType: SWAP_TYPE,
     ): MultiHopRouteModel {
         const pairsMap = new Map(pairs.map((pair) => [pair.address, pair]));
 
@@ -377,10 +301,8 @@ export class SwapBenchmarkService {
             calculateExchangeRate(
                 tokenInMetadata.decimals,
                 tokenOutMetadata.decimals,
-                isFixedInput(swapType) ? args.amountIn : swapRoutes.totalResult,
-                isFixedInput(swapType)
-                    ? swapRoutes.totalResult
-                    : args.amountOut,
+                args.amountIn,
+                swapRoutes.totalResult,
             );
 
         const routeAllocations = swapRoutes.allocations.map(
@@ -416,7 +338,7 @@ export class SwapBenchmarkService {
         );
 
         return new MultiHopRouteModel({
-            swapType: swapType,
+            swapType: SWAP_TYPE.fixedInput,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
             tokenInExchangeRate: tokenInExchangeRate,

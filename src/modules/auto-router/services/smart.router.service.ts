@@ -1,14 +1,16 @@
 import BigNumber from 'bignumber.js';
 import { PairModel } from 'src/modules/pair/models/pair.model';
-import { SWAP_TYPE } from 'src/modules/auto-router/models/auto-route.model';
-import { ParallelRouteAllocation } from '../../models/models';
 import {
     computeIntermediaryAmountsFixedInput,
     computeRouteOutputFixedIn,
     getAddressRoute,
     getOrderedReserves,
     getPairByTokens,
-} from '../../router.utils';
+} from '../router.utils';
+import {
+    ParallelRouteAllocation,
+    ParallelRouteSwap,
+} from '../models/parallel.router.models';
 
 /**
  * Represents a path with precomputed output if 100% of user input is allocated.
@@ -41,7 +43,7 @@ interface RouteParameters {
  * Smart Router that computes optimal splits across multiple paths using Lagrange multipliers.
  * Supports up to 4-hop routes for maximum capital efficiency.
  */
-export class RC4SmartRouterService {
+export class SmartRouterService {
     /**
      * Given candidate paths and pairs, split the user input across the best non-conflicting routes
      * and produce final allocations. The final step uses a Lagrange-multiplier aggregator that
@@ -50,22 +52,13 @@ export class RC4SmartRouterService {
      * @param paths All possible token paths to consider
      * @param pairs All available liquidity pools
      * @param amount Amount of input token to swap
-     * @param swapType Type of swap (fixed input or fixed output)
      * @returns Optimal route allocations and total expected output
      */
     async computeBestSwapRoute(
         paths: string[][],
         pairs: PairModel[],
         amount: string,
-        swapType = SWAP_TYPE.fixedInput,
-    ): Promise<{
-        allocations: ParallelRouteAllocation[];
-        totalResult: string;
-    }> {
-        if (swapType === SWAP_TYPE.fixedOutput) {
-            throw new Error('Fixed output method not implemented');
-        }
-
+    ): Promise<ParallelRouteSwap> {
         // Validate input
         const totalInBN = new BigNumber(amount);
         if (totalInBN.isZero()) {
@@ -222,10 +215,7 @@ export class RC4SmartRouterService {
         route: RouteCandidate,
         pairs: PairModel[],
         totalInput: BigNumber,
-    ): {
-        allocations: ParallelRouteAllocation[];
-        totalResult: string;
-    } {
+    ): ParallelRouteSwap {
         const path = route.path;
         const intermediaryAmounts = computeIntermediaryAmountsFixedInput(
             path,
@@ -257,10 +247,7 @@ export class RC4SmartRouterService {
         paths: string[][],
         pairs: PairModel[],
         amount: string,
-    ): {
-        allocations: ParallelRouteAllocation[];
-        totalResult: string;
-    } {
+    ): ParallelRouteSwap {
         const totalAmount = new BigNumber(amount);
 
         // 1. Calculate alpha, beta, epsilon parameters for each route
@@ -352,10 +339,7 @@ export class RC4SmartRouterService {
         paths: string[][],
         pairs: PairModel[],
         totalAmount: BigNumber,
-    ): {
-        allocations: ParallelRouteAllocation[];
-        totalResult: string;
-    } {
+    ): ParallelRouteSwap {
         // Find the route with the best output if all input goes there
         let bestIdx = 0;
         let bestOutput = new BigNumber(0);
@@ -445,10 +429,7 @@ export class RC4SmartRouterService {
         rawAllocations: Array<{ path: string[]; allocation: BigNumber }>,
         finalAllocations: BigNumber[],
         pairs: PairModel[],
-    ): {
-        allocations: ParallelRouteAllocation[];
-        totalResult: string;
-    } {
+    ): ParallelRouteSwap {
         const allocations: ParallelRouteAllocation[] = [];
         let totalOutput = new BigNumber(0);
 
