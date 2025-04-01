@@ -1,17 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import {
-    BenchmarkSnapshotResponse,
-    SwapBenchmarkSnapshotService,
-} from './snapshot.service';
+import { SwapBenchmarkSnapshotService } from './snapshot.service';
 import { AutoRouterArgs } from 'src/modules/auto-router/models/auto-router.args';
 import {
     AutoRouteModel,
     SWAP_TYPE,
 } from 'src/modules/auto-router/models/auto-route.model';
-import {
-    BaseEsdtToken,
-    EsdtToken,
-} from 'src/modules/tokens/models/esdtToken.model';
+import { BaseEsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Constants, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { denominateAmount } from 'src/utils/token.converters';
@@ -73,7 +67,6 @@ export class SwapBenchmarkService {
         timestamp: number,
         swapArgs: AutoRouterArgs,
     ): Promise<{
-        snapshot: BenchmarkSnapshotResponse;
         current: AutoRouteModel;
         optimized: {
             name: string;
@@ -118,17 +111,6 @@ export class SwapBenchmarkService {
         currentPerf.stop();
         perfDuration['current'] = `${currentPerf.duration}ms`;
 
-        const uniqueTokens: EsdtToken[] = [];
-        tokensMetadata.forEach((token) =>
-            uniqueTokens.push(
-                new EsdtToken({
-                    identifier: token.identifier,
-                    decimals: token.decimals,
-                    price: tokensPriceUSD.get(token.identifier),
-                }),
-            ),
-        );
-
         const routers = [
             {
                 routerName: 'Smart Router',
@@ -155,10 +137,6 @@ export class SwapBenchmarkService {
         this.logger.log(perfDuration);
 
         return {
-            snapshot: {
-                pairs,
-                tokensMetadata: uniqueTokens,
-            },
             current,
             optimized: result,
         };

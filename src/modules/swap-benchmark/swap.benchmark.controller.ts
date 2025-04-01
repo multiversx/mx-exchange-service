@@ -2,6 +2,7 @@ import {
     Body,
     Controller,
     Get,
+    Param,
     Post,
     UsePipes,
     ValidationPipe,
@@ -15,6 +16,7 @@ import { SwapBenchmarkService } from './services/benchmark.service';
 import { AutoRouteModel } from '../auto-router/models/auto-route.model';
 import { BenchmarkDto } from './dtos/benchmark.dto';
 import { MultiHopRouteModel } from './models/benchmark.models';
+import { EsdtToken } from '../tokens/models/esdtToken.model';
 
 @Controller('swap-benchmark')
 export class SwapBenchmarkController {
@@ -40,10 +42,34 @@ export class SwapBenchmarkController {
     }
 
     // @UseGuards(JwtOrNativeAdminGuard)
+    @Get('/snapshots/:timestamp')
+    async getSnapshotData(
+        @Param('timestamp') timestamp: number,
+    ): Promise<BenchmarkSnapshotResponse> {
+        const { pairs, tokensMetadata, tokensPriceUSD } =
+            await this.snapshotService.getSnapshot(timestamp);
+
+        const uniqueTokens: EsdtToken[] = [];
+        tokensMetadata.forEach((token) =>
+            uniqueTokens.push(
+                new EsdtToken({
+                    identifier: token.identifier,
+                    decimals: token.decimals,
+                    price: tokensPriceUSD.get(token.identifier),
+                }),
+            ),
+        );
+
+        return {
+            pairs,
+            tokensMetadata: uniqueTokens,
+        };
+    }
+
+    // @UseGuards(JwtOrNativeAdminGuard)
     @UsePipes(new ValidationPipe())
     @Post('/run')
     async runBenchmark(@Body() benchmarkDto: BenchmarkDto): Promise<{
-        snapshot: BenchmarkSnapshotResponse;
         current: AutoRouteModel;
         optimized: {
             name: string;
