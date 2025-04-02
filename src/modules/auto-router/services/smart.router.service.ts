@@ -256,7 +256,7 @@ export class SmartRouterService {
         );
 
         // 2. Solve for the optimal phi multiplier
-        let phi = this.findOptimalPhi(pathParams, totalAmount);
+        let phi = this.computeOptimalPhi(pathParams, totalAmount);
 
         // 3. Identify valid routes (routes that receive positive allocation)
         const validMask = new Array(pathParams.length).fill(true);
@@ -283,7 +283,7 @@ export class SmartRouterService {
 
             if (!done) {
                 // Recompute phi with only valid routes
-                phi = this.findOptimalPhi(
+                phi = this.computeOptimalPhi(
                     pathParams.filter((_, idx) => validMask[idx]),
                     totalAmount,
                 );
@@ -805,14 +805,11 @@ export class SmartRouterService {
     }
 
     /**
-     * Find the optimal Lagrange multiplier phi such that the sum of allocations
-     * equals the total input amount.
+     * Compute the optimal Lagrange multiplier phi
      *
-     *   totalAmount = ∑  [ (phi*√αi - βi) / εi ],  over all i.
-     *
-     * Uses binary search to find phi efficiently.
+     *   phi = ( totalAmount + ∑ [ βi / εi ] ) / ∑ [ √αi / εi ]
      */
-    private findOptimalPhi(
+    private computeOptimalPhi(
         pathParams: RouteParameters[],
         totalAmount: BigNumber,
     ): BigNumber {
@@ -820,60 +817,18 @@ export class SmartRouterService {
             return new BigNumber(0);
         }
 
-        // Initial guess for phi based on approximation formula :
-        //    sum( (phi*√αi - βi)/εi ) = total
-        // Roughly, if φ >> all βi/√αi, sum x_i ~ φ * ∑(√αi / εi).
-        // So a starting guess can be: phi0 = total / ∑(√αi / εi).
-        let denom = new BigNumber(0);
-        for (const { alpha, epsilon } of pathParams) {
+        let denominator = new BigNumber(0);
+        let numerator = totalAmount;
+        for (const { alpha, epsilon, beta } of pathParams) {
             const sqrtAlpha = alpha.sqrt();
-            denom = denom.plus(sqrtAlpha.div(epsilon));
+            denominator = denominator.plus(sqrtAlpha.div(epsilon));
+            numerator = numerator.plus(beta.div(epsilon));
         }
 
-        if (denom.isZero()) {
+        if (denominator.isZero()) {
             return new BigNumber(0);
         }
 
-        const initialPhi = totalAmount.div(denom);
-
-        // Binary search for phi
-        let lower = new BigNumber(0);
-        let upper = initialPhi.multipliedBy(2);
-
-        // Calculate sum of allocations for a given phi
-        const sumAllocations = (testPhi: BigNumber): BigNumber => {
-            let sum = new BigNumber(0);
-
-            for (const { alpha, beta, epsilon } of pathParams) {
-                const sqrtAlpha = alpha.sqrt();
-                const numerator = testPhi.times(sqrtAlpha).minus(beta);
-
-                if (numerator.gt(0)) {
-                    sum = sum.plus(numerator.div(epsilon));
-                }
-            }
-
-            return sum;
-        };
-
-        // Ensure upper bound is high enough
-        while (sumAllocations(upper).lte(totalAmount)) {
-            upper = upper.multipliedBy(2);
-        }
-
-        // Binary search with fixed iterations for predictable performance
-        const MAX_ITERATIONS = 50;
-        for (let i = 0; i < MAX_ITERATIONS; i++) {
-            const mid = lower.plus(upper).div(2);
-            const midValue = sumAllocations(mid);
-
-            if (midValue.gt(totalAmount)) {
-                upper = mid;
-            } else {
-                lower = mid;
-            }
-        }
-
-        return lower.plus(upper).div(2);
+        return numerator.div(denominator);
     }
 }
