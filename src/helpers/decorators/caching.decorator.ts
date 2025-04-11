@@ -40,7 +40,19 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
                 propertyKey,
             );
 
-            if (context && context.deepHistoryTimestamp) {
+            const excludedKeys = [
+                'token.baseTokenMetadata',
+                'token.tokenMetadata',
+                'pair.firstTokenID',
+                'pair.secondTokenID',
+                'wrap.wrappedEgldTokenID',
+            ];
+
+            if (
+                context &&
+                context.deepHistoryTimestamp &&
+                !excludedKeys.includes(genericCacheKey)
+            ) {
                 cacheKey = `${cacheKey}.${context.deepHistoryTimestamp}`;
             }
 

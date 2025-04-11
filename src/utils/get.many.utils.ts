@@ -1,6 +1,7 @@
 import { CacheService } from 'src/services/caching/cache.service';
 import { parseCachedNullOrUndefined } from './cache.utils';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 
 export async function getAllKeys<T>(
     cacheService: CacheService,
@@ -9,7 +10,26 @@ export async function getAllKeys<T>(
     getterMethod: (address: string) => Promise<T>,
     ttlOptions?: CacheTtlInfo,
 ): Promise<T[]> {
-    const keys = rawKeys.map((tokenID) => `${baseKey}.${tokenID}`);
+    const context = ContextTracker.get();
+
+    const excludedKeys = [
+        'token.baseTokenMetadata',
+        'token.tokenMetadata',
+        'pair.firstTokenID',
+        'pair.secondTokenID',
+        // 'wrap.wrappedEgldTokenID'
+    ];
+
+    const keys = rawKeys.map((tokenID) => {
+        if (
+            context &&
+            context.deepHistoryTimestamp &&
+            !excludedKeys.includes(baseKey)
+        ) {
+            return `${baseKey}.${tokenID}.${context.deepHistoryTimestamp}`;
+        }
+        return `${baseKey}.${tokenID}`;
+    });
     const values = await cacheService.getMany<T>(
         keys,
         ttlOptions?.localTtl ?? 0,

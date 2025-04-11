@@ -39,11 +39,11 @@ export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
         if (
             this.apiConfigService.isDeephistoryActive() &&
             context &&
-            context.deepHistoryTimestamp
+            context.blockNonce
         ) {
             resourceUrl = resourceUrl.includes('?')
-                ? `${resourceUrl}&timestamp=${context.deepHistoryTimestamp}`
-                : `${resourceUrl}?timestamp=${context.deepHistoryTimestamp}`;
+                ? `${resourceUrl}&blockNonce=${context.blockNonce}`
+                : `${resourceUrl}?blockNonce=${context.blockNonce}`;
         }
         const response = await super.doPostGeneric(resourceUrl, payload);
         return response;
