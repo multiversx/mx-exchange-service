@@ -8,7 +8,10 @@ import { XPortalApiService } from './mx.xportal.api.service';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
-    imports: [DynamicModuleUtils.getCacheModule()],
+    imports: [
+        DynamicModuleUtils.getCacheModule(),
+        DynamicModuleUtils.getApiModule(),
+    ],
     providers: [
         MXProxyService,
         MXApiService,
