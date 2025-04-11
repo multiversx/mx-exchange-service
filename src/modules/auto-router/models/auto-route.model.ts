@@ -2,6 +2,7 @@ import { ObjectType, Field } from '@nestjs/graphql';
 import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 import { TransactionModel } from 'src/models/transaction.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+import { ParallelRouteSwap } from './smart.router.types';
 
 @ObjectType()
 export class SwapRouteModel {
@@ -74,6 +75,8 @@ export class AutoRouteModel extends SwapRouteModel {
 
     @Field(() => [TransactionModel], { nullable: true })
     noAuthTransactions: TransactionModel[];
+
+    parallelRouteSwap?: ParallelRouteSwap;
 
     constructor(init?: Partial<AutoRouteModel>) {
         super(init);

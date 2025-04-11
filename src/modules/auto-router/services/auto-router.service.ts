@@ -27,6 +27,9 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { SmartRouterService } from './smart.router.service';
+import { ParallelRouteSwap } from '../models/smart.router.types';
+import { SmartRouterEvaluationService } from 'src/modules/smart-router-evaluation/services/smar.router.evaluation.service';
 
 @Injectable()
 export class AutoRouterService {
@@ -43,6 +46,8 @@ export class AutoRouterService {
         private readonly pairService: PairService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cacheService: CacheService,
+        private readonly smartRouterService: SmartRouterService,
+        private readonly smartRouterEvaluationService: SmartRouterEvaluationService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -297,6 +302,9 @@ export class AutoRouterService {
             tolerance: args.tolerance,
             maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
             tokensPriceDeviationPercent: priceDeviationPercent,
+            parallelRouteSwap: this.isFixedInput(swapType)
+                ? this.getSmartRouterSwap(paths, pairs, args.amountIn)
+                : undefined,
         });
     }
 
@@ -462,6 +470,15 @@ export class AutoRouterService {
         sender: string,
         parent: AutoRouteModel,
     ): Promise<TransactionModel[]> {
+        if (
+            parent.swapType === SWAP_TYPE.fixedInput &&
+            parent.parallelRouteSwap
+        ) {
+            await this.smartRouterEvaluationService.addFixedInputSwapComparison(
+                parent,
+            );
+        }
+
         if (parent.pairs.length == 1) {
             if (parent.swapType === SWAP_TYPE.fixedInput) {
                 const transaction =
@@ -569,6 +586,23 @@ export class AutoRouterService {
 
                 return priceDeviationPercent.toNumber();
             }
+        }
+    }
+
+    private getSmartRouterSwap(
+        paths: string[][],
+        pairs: PairModel[],
+        amountIn: string,
+    ): ParallelRouteSwap {
+        try {
+            return this.smartRouterService.computeBestSwapRoute(
+                paths,
+                pairs,
+                amountIn,
+            );
+        } catch (error) {
+            this.logger.error('Smart router error.', error);
+            return undefined;
         }
     }
 }
