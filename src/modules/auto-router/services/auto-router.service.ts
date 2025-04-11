@@ -29,7 +29,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { SmartRouterService } from './smart.router.service';
 import { ParallelRouteSwap } from '../models/smart.router.types';
-import { SmartRouterEvaluationService } from 'src/modules/smart-router-evaluation/services/smar.router.evaluation.service';
+import { SmartRouterEvaluationService } from 'src/modules/smart-router-evaluation/services/smart.router.evaluation.service';
 
 @Injectable()
 export class AutoRouterService {
