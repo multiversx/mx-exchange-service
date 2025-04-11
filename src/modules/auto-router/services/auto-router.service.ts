@@ -216,20 +216,21 @@ export class AutoRouterService {
         const paths = await this.getAllPaths(pairs, tokenInID, tokenOutID);
 
         try {
-            [swapRoute, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
-                this.isFixedInput(swapType)
-                    ? this.autoRouterComputeService.computeBestSwapRoute(
-                          paths,
-                          pairs,
-                          args.amountIn,
-                          swapType,
-                      )
-                    : this.autoRouterComputeService.computeBestSwapRoute(
-                          paths,
-                          pairs,
-                          args.amountOut,
-                          swapType,
-                      ),
+            swapRoute = this.isFixedInput(swapType)
+                ? this.autoRouterComputeService.computeBestSwapRoute(
+                      paths,
+                      pairs,
+                      args.amountIn,
+                      swapType,
+                  )
+                : this.autoRouterComputeService.computeBestSwapRoute(
+                      paths,
+                      pairs,
+                      args.amountOut,
+                      swapType,
+                  );
+
+            [tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
                 this.pairCompute.tokenPriceUSD(tokenInID),
                 this.pairCompute.tokenPriceUSD(tokenOutID),
             ]);
