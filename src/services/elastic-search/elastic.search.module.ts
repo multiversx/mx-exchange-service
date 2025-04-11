@@ -3,6 +3,7 @@ import { ESTransactionsService } from './services/es.transactions.service';
 import { CommonAppModule } from 'src/common.app.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ElasticSearchEventsService } from './services/es.events.service';
+import { ElasticAccountsEnergyService } from './services/es.accounts.energy.service';
 
 @Module({
     imports: [
@@ -10,7 +11,15 @@ import { ElasticSearchEventsService } from './services/es.events.service';
         DynamicModuleUtils.getApiModule(),
         DynamicModuleUtils.getElasticModule(),
     ],
-    providers: [ESTransactionsService, ElasticSearchEventsService],
-    exports: [ESTransactionsService, ElasticSearchEventsService],
+    providers: [
+        ESTransactionsService,
+        ElasticSearchEventsService,
+        ElasticAccountsEnergyService,
+    ],
+    exports: [
+        ESTransactionsService,
+        ElasticSearchEventsService,
+        ElasticAccountsEnergyService,
+    ],
 })
 export class ElasticSearchModule {}

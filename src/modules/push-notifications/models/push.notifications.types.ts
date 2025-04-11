@@ -32,16 +32,19 @@ export interface ContractKeysRaw {
     code: string;
 }
 
-export interface UserEnergyAddress {
-    address: string;
-    notificationSent: boolean;
+export interface NotificationResult {
+    successful: string[];
+    failed: string[];
 }
 
-export interface NotificationPayload {
-    addresses: string[];
-    chainId: number;
+export interface NotificationConfig {
     title: string;
     body: string;
     route: string;
     iconUrl: string;
-} 
+}
+
+export enum NotificationType {
+    FEES_COLLECTOR_REWARDS = 'feesCollectorRewards',
+    NEGATIVE_ENERGY = 'negativeEnergy',
+}

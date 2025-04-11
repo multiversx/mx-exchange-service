@@ -102,6 +102,20 @@ export class CacheService {
         return this.redisCacheService.keys(key);
     }
 
+    addToSet(key: string, members: string[]): Promise<void> {
+        if (!members.length) return;
+        this.redisCacheService.sadd(key, ...members);
+    }
+
+    removeFromSet(key: string, members: string[]): Promise<void> {
+        if (!members.length) return;
+        return this.redisCacheService['redis'].srem(key, ...members);
+    }
+
+    getSetMembers(key: string): Promise<string[]> {
+        return this.redisCacheService.smembers(key);
+    }
+
     getOrSetRemote<T>(
         key: string,
         createValueFunc: () => Promise<T>,
