@@ -67,7 +67,7 @@ export class PushNotificationsService {
         notificationParams: NotificationConfig,
         notificationKey: string,
     ): Promise<NotificationResult> {
-        const batchSize = this.apiConfigService.getNotificationsBatchSize();
+        const batchSize = pushNotificationsConfig.options.batchSize;
         const failed: string[] = [];
         const successful: string[] = [];
 

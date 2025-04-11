@@ -212,34 +212,6 @@ export class ApiConfigService {
         return apiKey;
     }
 
-    getNotificationsBatchSize(): number {
-        const batchSize = this.configService.get<number>(
-            'PUSH_NOTIFICATIONS_BATCH_SIZE',
-        );
-        if (!batchSize) {
-            throw new Error('No push notifications batch size present');
-        }
-        return batchSize;
-    }
-
-    getNotificationsMaxRetries(): number {
-        const maxRetries = this.configService.get<number>(
-            'PUSH_NOTIFICATIONS_MAX_RETRIES',
-        );
-        if (!maxRetries) {
-            throw new Error('No push notifications max retries present');
-        }
-        return maxRetries;
-    }
-
-    getChainId(): number {
-        const chainId = this.configService.get<number>('PUSH_NOTIFICATIONS_CHAIN_ID');
-        if (!chainId) {
-            throw new Error('No push notifications chainId present');
-        }
-        return chainId;
-    }
-
     getJwtSecret(): string {
         const secret = this.configService.get<string>('JWT_SECRET');
         if (!secret) {

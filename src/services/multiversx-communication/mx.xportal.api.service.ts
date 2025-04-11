@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import axios from 'axios';
+import { pushNotificationsConfig } from 'src/config';
 
 interface NotificationPayload {
     addresses: string[];
@@ -32,7 +33,7 @@ export class XPortalApiService {
         route?: string,
         iconUrl?: string,
     ): Promise<boolean> {
-        const chainId = Number(this.apiConfigService.getChainId());
+        const chainId = pushNotificationsConfig.options.chainId;
 
         const payload: NotificationPayload = {
             addresses,

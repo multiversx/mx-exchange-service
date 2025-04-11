@@ -702,6 +702,10 @@
       }
     },
     "pushNotifications": {
+        "options": {
+            "batchSize": 100,
+            "chainId": 508
+        },
         "feesCollectorRewards": {
             "title": "Energy Update",
             "body": "You can now claim your fees rewards",
