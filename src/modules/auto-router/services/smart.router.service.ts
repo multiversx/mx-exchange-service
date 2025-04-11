@@ -54,11 +54,11 @@ export class SmartRouterService {
      * @param amount Amount of input token to swap
      * @returns Optimal route allocations and total expected output
      */
-    async computeBestSwapRoute(
+    computeBestSwapRoute(
         paths: string[][],
         pairs: PairModel[],
         amount: string,
-    ): Promise<ParallelRouteSwap> {
+    ): ParallelRouteSwap {
         // Validate input
         const totalInBN = new BigNumber(amount);
         if (totalInBN.isZero()) {

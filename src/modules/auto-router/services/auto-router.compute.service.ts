@@ -19,12 +19,12 @@ export class AutoRouterComputeService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async computeBestSwapRoute(
+    computeBestSwapRoute(
         paths: string[][],
         pairs: PairModel[],
         amount: string,
         swapType: SWAP_TYPE,
-    ): Promise<BestSwapRoute> {
+    ): BestSwapRoute {
         let amounts: string[][];
         if (swapType === SWAP_TYPE.fixedInput) {
             amounts = this.computeIntermediaryAmountsFixedInput(

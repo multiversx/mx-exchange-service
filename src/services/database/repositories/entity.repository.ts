@@ -1,11 +1,15 @@
 import { Document, FilterQuery, Model, UpdateQuery } from 'mongoose';
 
 export abstract class EntityRepository<T extends Document> {
-    constructor(protected readonly entityModel: Model<T>) { }
+    constructor(protected readonly entityModel: Model<T>) {}
 
     async create(createEntityData: any): Promise<T> {
         const entity = new this.entityModel(createEntityData);
         return entity.save();
+    }
+
+    async insertMany(entities: any[]): Promise<T[]> {
+        return this.entityModel.insertMany(entities);
     }
 
     async findOne(
@@ -60,7 +64,10 @@ export abstract class EntityRepository<T extends Document> {
     }
 
     async deleteMany(entityFilterQuery: FilterQuery<T>): Promise<boolean> {
-        const deleteResult = this.entityModel.deleteMany(entityFilterQuery);
-        return (await deleteResult).deletedCount >= 1;
+        const deleteResult = await this.entityModel.deleteMany(
+            entityFilterQuery,
+        );
+        console.log(deleteResult);
+        return deleteResult.deletedCount >= 1;
     }
 }
