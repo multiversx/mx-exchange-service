@@ -8,12 +8,10 @@ import {
     RouteParameters,
 } from '../models/smart.router.types';
 import {
-    computeIntermediaryAmountsFixedInput,
-    computeRouteOutputFixedIn,
+    computeRouteIntermediaryAmounts,
     getAddressRoute,
     getOrderedReserves,
     getPairByTokens,
-    getPoolsUsedByPath,
 } from 'src/utils/router.utils';
 
 export class SmartRouterService {
@@ -84,11 +82,14 @@ export class SmartRouterService {
         totalInput: BigNumber,
     ): RouteCandidate[] {
         const allCandidates: RouteCandidate[] = paths.map((path) => {
-            const poolsUsed = getPoolsUsedByPath(path, pairs);
-            const routeOutput = computeRouteOutputFixedIn(
+            const poolsUsed = getAddressRoute(pairs, path);
+            const intermediaryAmounts = computeRouteIntermediaryAmounts(
                 path,
                 pairs,
-                totalInput,
+                totalInput.toFixed(),
+            );
+            const routeOutput = new BigNumber(
+                intermediaryAmounts[intermediaryAmounts.length - 1],
             );
             return {
                 path,
@@ -189,7 +190,7 @@ export class SmartRouterService {
         totalInput: BigNumber,
     ): ParallelRouteSwap {
         const path = route.path;
-        const intermediaryAmounts = computeIntermediaryAmountsFixedInput(
+        const intermediaryAmounts = computeRouteIntermediaryAmounts(
             path,
             pairs,
             totalInput.toFixed(),
@@ -317,10 +318,13 @@ export class SmartRouterService {
         let bestOutput = new BigNumber(0);
 
         for (let i = 0; i < paths.length; i++) {
-            const output = computeRouteOutputFixedIn(
+            const intermediaryAmounts = computeRouteIntermediaryAmounts(
                 paths[i],
                 pairs,
-                totalAmount,
+                totalAmount.toFixed(),
+            );
+            const output = new BigNumber(
+                intermediaryAmounts[intermediaryAmounts.length - 1],
             );
 
             if (output.gt(bestOutput)) {
@@ -330,7 +334,7 @@ export class SmartRouterService {
         }
 
         const path = paths[bestIdx];
-        const intermediaryAmounts = computeIntermediaryAmountsFixedInput(
+        const intermediaryAmounts = computeRouteIntermediaryAmounts(
             path,
             pairs,
             totalAmount.toFixed(),
@@ -414,7 +418,7 @@ export class SmartRouterService {
             }
 
             const path = rawAllocations[i].path;
-            const intermediaryAmounts = computeIntermediaryAmountsFixedInput(
+            const intermediaryAmounts = computeRouteIntermediaryAmounts(
                 path,
                 pairs,
                 inputAmount.toFixed(),

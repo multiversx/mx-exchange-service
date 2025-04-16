@@ -48,23 +48,7 @@ export function getOrderedReserves(
         : [pair.info.reserves1, pair.info.reserves0];
 }
 
-export function getPoolsUsedByPath(
-    path: string[],
-    pairs: PairModel[],
-): string[] {
-    const poolAddresses: string[] = [];
-
-    for (let i = 0; i < path.length - 1; i++) {
-        const pair = getPairByTokens(pairs, path[i], path[i + 1]);
-        if (pair) {
-            poolAddresses.push(pair.address);
-        }
-    }
-
-    return poolAddresses;
-}
-
-export function computeIntermediaryAmountsFixedInput(
+export function computeRouteIntermediaryAmounts(
     path: string[],
     pairs: PairModel[],
     initialAmountIn: string,
@@ -82,11 +66,11 @@ export function computeIntermediaryAmountsFixedInput(
             break;
         }
 
-        const [resIn, resOut] = getOrderedReserves(tokenIn, pair);
+        const [reservesIn, reservesOut] = getOrderedReserves(tokenIn, pair);
         const outputAmount = getAmountOut(
             currentAmount.toFixed(),
-            resIn,
-            resOut,
+            reservesIn,
+            reservesOut,
             pair.totalFeePercent,
         );
 
@@ -95,45 +79,4 @@ export function computeIntermediaryAmountsFixedInput(
     }
 
     return amounts;
-}
-
-export function computeRouteOutputFixedIn(
-    path: string[],
-    pairs: PairModel[],
-    amountIn: BigNumber,
-): BigNumber {
-    let currentAmount = amountIn;
-
-    for (let i = 0; i < path.length - 1; i++) {
-        const tokenIn = path[i];
-        const tokenOut = path[i + 1];
-        const pair = getPairByTokens(pairs, tokenIn, tokenOut);
-
-        if (!pair) {
-            return new BigNumber(0);
-        }
-
-        const [resIn, resOut] = getOrderedReserves(tokenIn, pair);
-        const [resInBN, resOutBN] = [
-            new BigNumber(resIn),
-            new BigNumber(resOut),
-        ];
-
-        if (resInBN.isZero() || resOutBN.isZero() || currentAmount.isZero()) {
-            return new BigNumber(0);
-        }
-
-        currentAmount = getAmountOut(
-            currentAmount.toFixed(),
-            resIn,
-            resOut,
-            pair.totalFeePercent,
-        );
-
-        if (currentAmount.isZero()) {
-            return new BigNumber(0);
-        }
-    }
-
-    return currentAmount;
 }

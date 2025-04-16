@@ -2,10 +2,16 @@ import { BadRequestException, Inject } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PairModel } from 'src/modules/pair/models/pair.model';
-import { getAmountIn, getAmountOut } from 'src/modules/pair/pair.utils';
+import { getAmountIn } from 'src/modules/pair/pair.utils';
 import { denominateAmount } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { SWAP_TYPE } from '../models/auto-route.model';
+import {
+    computeRouteIntermediaryAmounts,
+    getAddressRoute,
+    getOrderedReserves,
+    getPairByTokens,
+} from 'src/utils/router.utils';
 
 export type BestSwapRoute = {
     tokenRoute: string[];
@@ -49,7 +55,7 @@ export class AutoRouterComputeService {
             throw new BadRequestException('No route found');
         }
 
-        const addressRoute = this.getAddressRoute(pairs, paths[pathIndex]);
+        const addressRoute = getAddressRoute(pairs, paths[pathIndex]);
 
         return {
             tokenRoute: paths[pathIndex],
@@ -57,34 +63,6 @@ export class AutoRouterComputeService {
             addressRoute,
             bestResult: bestAmount,
         };
-    }
-
-    private getPairByTokens(
-        pairs: PairModel[],
-        tokenIn: string,
-        tokenOut: string,
-    ): PairModel | undefined {
-        for (const pair of pairs) {
-            if (
-                (tokenIn === pair.firstToken.identifier &&
-                    tokenOut === pair.secondToken.identifier) ||
-                (tokenIn === pair.secondToken.identifier &&
-                    tokenOut === pair.firstToken.identifier)
-            ) {
-                return pair;
-            }
-        }
-
-        return undefined;
-    }
-
-    private getOrderedReserves(
-        tokenInID: string,
-        pair: PairModel,
-    ): [string, string] {
-        return tokenInID === pair.firstToken.identifier
-            ? [pair.info.reserves0, pair.info.reserves1]
-            : [pair.info.reserves1, pair.info.reserves0];
     }
 
     private computeIntermediaryAmountsFixedInput(
@@ -95,25 +73,11 @@ export class AutoRouterComputeService {
         const intermediaryAmounts: Array<string[]> = [];
 
         for (const path of paths) {
-            const pathAmounts: string[] = [];
-            pathAmounts.push(initialAmountIn);
-            for (let index = 0; index < path.length - 1; index++) {
-                const [tokenInID, tokenOutID] = [path[index], path[index + 1]];
-                const pair = this.getPairByTokens(pairs, tokenInID, tokenOutID);
-                if (pair === undefined) {
-                    continue;
-                }
-
-                const [tokenInReserves, tokenOutReserves] =
-                    this.getOrderedReserves(tokenInID, pair);
-                const amountOut = getAmountOut(
-                    pathAmounts[pathAmounts.length - 1],
-                    tokenInReserves,
-                    tokenOutReserves,
-                    pair.totalFeePercent,
-                );
-                pathAmounts.push(amountOut.toFixed());
-            }
+            const pathAmounts = computeRouteIntermediaryAmounts(
+                path,
+                pairs,
+                initialAmountIn,
+            );
             intermediaryAmounts.push(pathAmounts);
         }
 
@@ -132,12 +96,14 @@ export class AutoRouterComputeService {
             pathAmounts.push(fixedAmountOut);
             for (let index = path.length - 1; index > 0; index--) {
                 const [tokenInID, tokenOutID] = [path[index - 1], path[index]];
-                const pair = this.getPairByTokens(pairs, tokenInID, tokenOutID);
+                const pair = getPairByTokens(pairs, tokenInID, tokenOutID);
                 if (pair === undefined) {
                     continue;
                 }
-                const [tokenInReserves, tokenOutReserves] =
-                    this.getOrderedReserves(tokenInID, pair);
+                const [tokenInReserves, tokenOutReserves] = getOrderedReserves(
+                    tokenInID,
+                    pair,
+                );
                 const amountIn =
                     pathAmounts[0] === 'Infinity'
                         ? new BigNumber(0)
@@ -183,27 +149,6 @@ export class AutoRouterComputeService {
         }
 
         return [bestAmount.toFixed(), index];
-    }
-
-    private getAddressRoute(
-        pairs: PairModel[],
-        tokensRoute: string[],
-    ): string[] {
-        const addressRoute: string[] = [];
-
-        for (let index = 0; index < tokensRoute.length - 1; index++) {
-            const pair = this.getPairByTokens(
-                pairs,
-                tokensRoute[index],
-                tokensRoute[index + 1],
-            );
-            if (pair === undefined) {
-                continue;
-            }
-            addressRoute.push(pair.address);
-        }
-
-        return addressRoute;
     }
 
     computeFeeDenom(
