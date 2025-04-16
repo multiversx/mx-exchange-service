@@ -9,6 +9,7 @@ import { ContextModule } from '../../services/context/context.module';
 import { CacheModule } from '../../services/caching/cache.module';
 import { EnergyModule } from '../energy/energy.module';
 import { PushNotificationsEnergyCron } from './crons/push.notifications.energy';
+import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -18,6 +19,7 @@ import { PushNotificationsEnergyCron } from './crons/push.notifications.energy';
         ContextModule,
         CacheModule,
         EnergyModule,
+        WeekTimekeepingModule,
     ],
     providers: [
         PushNotificationsService,

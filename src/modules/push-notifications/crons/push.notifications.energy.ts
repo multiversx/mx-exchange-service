@@ -9,8 +9,8 @@ import { PushNotificationsService } from '../services/push.notifications.service
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElasticAccountsEnergyService } from 'src/services/elastic-search/services/es.accounts.energy.service';
-import { pushNotificationsConfig } from 'src/config';
-
+import { pushNotificationsConfig, scAddress } from 'src/config';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 @Injectable()
 export class PushNotificationsEnergyCron {
     constructor(
@@ -18,20 +18,23 @@ export class PushNotificationsEnergyCron {
         private readonly contextGetter: ContextGetterService,
         private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
     ) {}
 
     @Cron(CronExpression.EVERY_HOUR)
     @Lock({ name: 'feesCollectorRewardsCron', verbose: true })
     async feesCollectorRewardsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
-        const feesCollector = pushNotificationsConfig.feesCollector;
+        const firstWeekStartEpoch =
+            await this.weekTimekeepingAbi.firstWeekStartEpoch(
+                String(scAddress.feesCollector),
+            );
 
-        if ((currentEpoch - feesCollector.firstWeekStartEpoch) % 7 !== 0) {
+        if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
             return;
         }
 
         const isDevnet = process.env.NODE_ENV === 'devnet';
-        console.log('isDevnet', isDevnet);
 
         if (isDevnet) {
             console.log('Sending notifications for devnet');

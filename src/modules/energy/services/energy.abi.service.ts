@@ -227,9 +227,7 @@ export class EnergyAbiService
             [],
         );
 
-        const contractPairs = Object.entries(
-            contractKeysRaw?.data?.pairs || {},
-        );
+        const contractPairs = Object.entries(contractKeysRaw);
 
         const userEnergyKey = BinaryUtils.stringToHex('userEnergy');
         const userEnergyKeys = contractPairs
