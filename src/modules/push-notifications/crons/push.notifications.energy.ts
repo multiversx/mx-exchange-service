@@ -1,39 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { Lock } from '@multiversx/sdk-nestjs-common';
-import { PushNotificationsService } from '../services/push.notifications.service';
 import {
     AccountType,
     NotificationType,
 } from '../models/push.notifications.types';
-import { ElasticAccountsEnergyService } from 'src/services/elastic-search/services/es.accounts.energy.service';
+import { Injectable } from '@nestjs/common';
+import { Lock } from '@multiversx/sdk-nestjs-common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { PushNotificationsService } from '../services/push.notifications.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ElasticAccountsEnergyService } from 'src/services/elastic-search/services/es.accounts.energy.service';
+import { pushNotificationsConfig } from 'src/config';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
     constructor(
-        private readonly pushNotificationsService: PushNotificationsService,
+        private readonly energyAbiService: EnergyAbiService,
         private readonly contextGetter: ContextGetterService,
+        private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
     ) {}
 
-    @Cron('0 0 19 * * 5') // Every Friday at 19:00
+    @Cron(CronExpression.EVERY_HOUR)
     @Lock({ name: 'feesCollectorRewardsCron', verbose: true })
     async feesCollectorRewardsCron() {
+        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+        const feesCollector = pushNotificationsConfig.feesCollector;
+
+        if ((currentEpoch - feesCollector.firstWeekStartEpoch) % 7 !== 0) {
+            return;
+        }
+
         const isDevnet = process.env.NODE_ENV === 'devnet';
+        console.log('isDevnet', isDevnet);
 
         if (isDevnet) {
-            const addresses =
-                await this.pushNotificationsService.usersWithEnergyFromContractStorage();
+            console.log('Sending notifications for devnet');
+            const addresses = await this.energyAbiService.getUsersWithEnergy();
 
-            await this.pushNotificationsService.sendNotifications(
+            await this.pushNotificationsService.sendNotificationsInBatches(
                 addresses,
+                pushNotificationsConfig[
+                    NotificationType.FEES_COLLECTOR_REWARDS
+                ],
                 NotificationType.FEES_COLLECTOR_REWARDS,
             );
             return;
         }
-
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
 
         await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
             currentEpoch - 1,
@@ -43,8 +55,11 @@ export class PushNotificationsEnergyCron {
                     (item: AccountType) => item.address,
                 );
 
-                await this.pushNotificationsService.sendNotifications(
+                await this.pushNotificationsService.sendNotificationsInBatches(
                     addresses,
+                    pushNotificationsConfig[
+                        NotificationType.FEES_COLLECTOR_REWARDS
+                    ],
                     NotificationType.FEES_COLLECTOR_REWARDS,
                 );
             },
@@ -64,8 +79,9 @@ export class PushNotificationsEnergyCron {
                     (item: AccountType) => item.address,
                 );
 
-                await this.pushNotificationsService.sendNotifications(
+                await this.pushNotificationsService.sendNotificationsInBatches(
                     addresses,
+                    pushNotificationsConfig[NotificationType.NEGATIVE_ENERGY],
                     NotificationType.NEGATIVE_ENERGY,
                 );
             },
@@ -73,7 +89,7 @@ export class PushNotificationsEnergyCron {
         );
     }
 
-    @Cron('*/1 * * * *') // Every 10 minutes
+    @Cron(CronExpression.EVERY_10_MINUTES)
     @Lock({ name: 'retryFailedNotificationsCron', verbose: true })
     async retryFailedNotificationsCron() {
         const notificationTypes = Object.values(NotificationType);

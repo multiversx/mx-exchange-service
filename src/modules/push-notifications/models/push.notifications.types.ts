@@ -20,18 +20,6 @@ export interface AccountType {
     totalUnDelegate: string;
 }
 
-export interface ContractKeysRaw {
-    data: {
-        blockInfo: {
-            hash: string;
-            nonce: number;
-            rootHash: string;
-        };
-        pairs: Record<string, string>;
-    };
-    code: string;
-}
-
 export interface NotificationResult {
     successful: string[];
     failed: string[];

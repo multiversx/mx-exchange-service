@@ -1,73 +1,27 @@
-import { Injectable } from '@nestjs/common';
-import { pushNotificationsConfig, scAddress } from 'src/config';
-import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { ApiConfigService } from 'src/helpers/api.config.service';
 import {
-    AddressUtils,
-    BinaryUtils,
-    ErrorLoggerAsync,
-} from '@multiversx/sdk-nestjs-common';
-
-import {
-    ContractKeysRaw,
     NotificationConfig,
     NotificationResult,
     NotificationType,
 } from '../models/push.notifications.types';
+import { Injectable } from '@nestjs/common';
+import { pushNotificationsConfig } from 'src/config';
 import { PushNotificationsSetterService } from './push.notifications.setter.service';
 import { XPortalApiService } from 'src/services/multiversx-communication/mx.xportal.api.service';
 
 @Injectable()
 export class PushNotificationsService {
     constructor(
-        private readonly apiService: MXApiService,
-        private readonly apiConfigService: ApiConfigService,
-        private readonly notificationsSetter: PushNotificationsSetterService,
         private readonly xPortalApiService: XPortalApiService,
+        private readonly notificationsSetter: PushNotificationsSetterService,
     ) {}
 
-    @ErrorLoggerAsync()
-    async usersWithEnergyFromContractStorage(): Promise<string[]> {
-        const contractAddress = scAddress.simpleLockEnergy;
-        const contractKeysRaw: ContractKeysRaw =
-            await this.apiService.doGetGeneric(
-                'getContractKeys',
-                `address/${contractAddress}/keys`,
-            );
-
-        const contractPairs = Object.entries(
-            contractKeysRaw?.data?.pairs || {},
-        );
-
-        const userEnergyKey = BinaryUtils.stringToHex('userEnergy');
-        const userEnergyKeys = contractPairs
-            .filter(([key, _]) => key.startsWith(userEnergyKey))
-            .map(([key, _]) => key.replace(userEnergyKey, ''));
-
-        const userEnergyAddresses = userEnergyKeys.map((key) =>
-            AddressUtils.bech32Encode(key),
-        );
-
-        return userEnergyAddresses;
-    }
-
-    async sendNotifications(
-        addresses: string[],
-        notificationType: NotificationType,
-    ): Promise<NotificationResult> {
-        return this.sendNotificationsInBatches(
-            addresses,
-            pushNotificationsConfig[notificationType],
-            notificationType,
-        );
-    }
-
-    private async sendNotificationsInBatches(
+    async sendNotificationsInBatches(
         addresses: string[],
         notificationParams: NotificationConfig,
         notificationKey: string,
     ): Promise<NotificationResult> {
         const batchSize = pushNotificationsConfig.options.batchSize;
+        const chainId = pushNotificationsConfig.options.chainId;
         const failed: string[] = [];
         const successful: string[] = [];
 
@@ -75,13 +29,14 @@ export class PushNotificationsService {
             const batch = addresses.slice(i, i + batchSize);
             try {
                 const success =
-                    await this.xPortalApiService.sendPushNotifications(
-                        batch,
-                        notificationParams.title,
-                        notificationParams.body,
-                        notificationParams.route,
-                        notificationParams.iconUrl,
-                    );
+                    await this.xPortalApiService.sendPushNotifications({
+                        addresses: batch,
+                        chainId,
+                        title: notificationParams.title,
+                        body: notificationParams.body,
+                        route: notificationParams.route,
+                        iconUrl: notificationParams.iconUrl,
+                    });
 
                 if (success) {
                     successful.push(...batch);
@@ -115,8 +70,9 @@ export class PushNotificationsService {
             return;
         }
 
-        const { successful } = await this.sendNotifications(
+        const { successful } = await this.sendNotificationsInBatches(
             failedAddresses,
+            pushNotificationsConfig[notificationType],
             notificationType,
         );
 

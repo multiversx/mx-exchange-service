@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import { ApiService } from '@multiversx/sdk-nestjs-http';
-import { pushNotificationsConfig } from 'src/config';
 
-interface NotificationPayload {
+type NotificationPayload = {
     addresses: string[];
     chainId: number;
     title: string;
     body: string;
     route?: string;
     iconUrl?: string;
-}
+};
 
 @Injectable()
 export class XPortalApiService {
@@ -20,37 +19,25 @@ export class XPortalApiService {
     ) {}
 
     async sendPushNotifications(
-        addresses: string[],
-        title: string,
-        body: string,
-        route?: string,
-        iconUrl?: string,
+        notificationPayload: NotificationPayload,
     ): Promise<boolean> {
-        const chainId = pushNotificationsConfig.options.chainId;
         const baseUrl = this.apiConfigService.getNotificationsApiUrl();
         const apiKey = this.apiConfigService.getNotificationsApiKey();
         const url = `${baseUrl}/notifications-api/api/v1/dapps/push-notifications/send`;
 
-        const payload: NotificationPayload = {
-            addresses,
-            chainId,
-            title,
-            body,
-            route,
-            iconUrl,
-        };
-
-        console.log(payload);
         try {
-            const response = await this.apiService.post(url, payload, {
-                headers: {
-                    'x-notifications-api-key': apiKey,
+            const response = await this.apiService.post(
+                url,
+                notificationPayload,
+                {
+                    headers: {
+                        'x-notifications-api-key': apiKey,
+                    },
                 },
-            });
+            );
 
             return response.status === 201;
         } catch (error) {
-            console.error(error);
             return false;
         }
     }

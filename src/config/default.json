@@ -707,13 +707,13 @@
             "chainId": 508
         },
         "feesCollectorRewards": {
-            "title": "Energy Update",
+            "title": "xExchange: Energy rewards",
             "body": "You can now claim your fees rewards",
             "route": "/portfolio",
             "iconUrl": "https://xexchange.com/assets/imgs/mx-logos/xexchange-logo@2x.webp"
         },
         "negativeEnergy": {
-            "title": "Energy Update",
+            "title": "xExchange: Update energy",
             "body": "You have negative energy",
             "route": "/energy",
             "iconUrl": "https://xexchange.com/assets/imgs/mx-logos/xexchange-logo@2x.webp"
