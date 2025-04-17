@@ -21,7 +21,7 @@ export class PushNotificationsEnergyCron {
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
     ) {}
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_DAY_AT_NOON)
     @Lock({ name: 'feesCollectorRewardsCron', verbose: true })
     async feesCollectorRewardsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
