@@ -35,6 +35,8 @@ import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.s
 import { gasConfig, scAddress } from 'src/config';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { SmartRouterServiceProvider } from '../mocks/smart.router.service.mock';
+import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -89,6 +91,8 @@ describe('AutoRouterService', () => {
                 ApiConfigService,
                 MXApiServiceProvider,
                 PairFilteringService,
+                SmartRouterServiceProvider,
+                SmartRouterEvaluationServiceProvider,
             ],
             exports: [],
         }).compile();
