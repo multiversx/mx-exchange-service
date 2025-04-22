@@ -250,6 +250,11 @@ describe('FeesCollectorComputeService', () => {
                 );
             const energyService = module.get<EnergyService>(EnergyService);
 
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
                 'computeTokenPriceDerivedUSD',
@@ -260,6 +265,11 @@ describe('FeesCollectorComputeService', () => {
                 weeklyRewardsSplittingAbi,
                 'totalEnergyForWeek',
             ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
+
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(user1Energy));
 
             jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
                 Promise.resolve(user1Energy),
@@ -308,6 +318,11 @@ describe('FeesCollectorComputeService', () => {
                 );
             const energyService = module.get<EnergyService>(EnergyService);
 
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
                 'computeTokenPriceDerivedUSD',
@@ -319,6 +334,10 @@ describe('FeesCollectorComputeService', () => {
                 'totalEnergyForWeek',
             ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
 
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(user1Energy));
             jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
                 Promise.resolve(user1Energy),
             );
@@ -326,7 +345,7 @@ describe('FeesCollectorComputeService', () => {
             const apr = await service.computeUserRewardsAPR(
                 Address.Zero().bech32(),
                 user1,
-                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+                new BigNumber(totalEnergyForWeek).dividedBy(4).toFixed(),
             );
 
             expect(apr.toFixed()).toEqual('14.872');
@@ -369,6 +388,11 @@ describe('FeesCollectorComputeService', () => {
                 );
             const energyService = module.get<EnergyService>(EnergyService);
 
+            jest.spyOn(tokenCompute, 'tokenPriceDerivedUSD').mockImplementation(
+                (tokenID) => {
+                    return Promise.resolve(priceMap.get(tokenID));
+                },
+            );
             jest.spyOn(
                 tokenCompute,
                 'computeTokenPriceDerivedUSD',
@@ -380,6 +404,11 @@ describe('FeesCollectorComputeService', () => {
                 'totalEnergyForWeek',
             ).mockReturnValue(Promise.resolve(totalEnergyForWeek));
 
+            jest.spyOn(
+                weeklyRewardsSplittingAbi,
+                'userEnergyForWeek',
+            ).mockReturnValue(Promise.resolve(user1Energy));
+
             jest.spyOn(energyService, 'getUserEnergy').mockReturnValueOnce(
                 Promise.resolve(user1Energy),
             );
@@ -387,7 +416,7 @@ describe('FeesCollectorComputeService', () => {
             const apr = await service.computeUserRewardsAPR(
                 Address.Zero().bech32(),
                 user1,
-                new BigNumber(totalEnergyForWeek).dividedBy(2).toFixed(),
+                new BigNumber(totalEnergyForWeek).dividedBy(4).toFixed(),
                 new BigNumber(totalLockedTokensForWeek).dividedBy(2).toFixed(),
             );
 
@@ -401,12 +430,6 @@ describe('FeesCollectorComputeService', () => {
             ' with 0 user energy and locked tokens',
         async () => {
             const user1 = 'erd1';
-            const mex = 'MEX-123456';
-            const priceMap = new Map<string, string>();
-            priceMap.set('WEGLD-123456', '10');
-            priceMap.set('MEX-123456', '20');
-            priceMap.set('TOK4-123456', '30');
-            priceMap.set(mex, '1');
 
             const service = module.get<FeesCollectorComputeService>(
                 FeesCollectorComputeService,

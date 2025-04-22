@@ -1,9 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
+import { TradingActivityModel } from '../models/trading.activity.model';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 
 export class AnalyticsSetterService extends GenericSetterService {
     constructor(
@@ -72,6 +74,30 @@ export class AnalyticsSetterService extends GenericSetterService {
         );
     }
 
+    async pairTradingActivity(
+        pairAddress: string,
+        value: TradingActivityModel[],
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('pairTradingActivity', pairAddress),
+            value,
+            Constants.oneMinute() * 5,
+            Constants.oneMinute() * 3,
+        );
+    }
+
+    async tokenTradingActivity(
+        tokenID: string,
+        value: TradingActivityModel[],
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('tokenTradingActivity', tokenID),
+            value,
+            Constants.oneMinute() * 5,
+            Constants.oneMinute() * 3,
+        );
+    }
+
     async penaltyTokenBurned(
         tokenID: string,
         time: string,
@@ -82,6 +108,42 @@ export class AnalyticsSetterService extends GenericSetterService {
             value,
             Constants.oneMinute() * 10,
             Constants.oneMinute() * 5,
+        );
+    }
+
+    async feesCollectorRewards(
+        weekOffset: number,
+        value: any,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('feesCollectorRewards', weekOffset),
+            value,
+            Constants.oneHour() * 6,
+            Constants.oneHour() * 4,
+        );
+    }
+
+    async farmRewards(
+        weekOffset: number,
+        value: any,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('farmRewards', weekOffset),
+            value,
+            Constants.oneHour() * 6,
+            Constants.oneHour() * 4,
+        );
+    }
+
+    async stakingRewards(
+        weekOffset: number,
+        value: any,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('stakingRewards', weekOffset),
+            value,
+            Constants.oneHour() * 6,
+            Constants.oneHour() * 4,
         );
     }
 }

@@ -15,11 +15,11 @@ export class WrapAbiService extends GenericAbiService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'wrap',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
+        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
+        localTtl: CacheTtlInfo.TokenID.localTtl,
     })
     async wrappedEgldTokenID(): Promise<string> {
-        return await this.getWrappedEgldTokenIDRaw();
+        return this.getWrappedEgldTokenIDRaw();
     }
 
     async getWrappedEgldTokenIDRaw(): Promise<string> {

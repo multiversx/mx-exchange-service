@@ -165,7 +165,7 @@ export class StakingComputeService {
         const farmingTokenID = await this.stakingAbi.farmingTokenID(
             stakeAddress,
         );
-        return await this.tokenCompute.tokenPriceDerivedUSD(farmingTokenID);
+        return this.tokenCompute.tokenPriceDerivedUSD(farmingTokenID);
     }
 
     @ErrorLoggerAsync({
@@ -205,7 +205,7 @@ export class StakingComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async stakeFarmAPR(stakeAddress: string): Promise<string> {
-        return await this.computeStakeFarmAPR(stakeAddress);
+        return this.computeStakeFarmAPR(stakeAddress);
     }
 
     async computeStakeFarmAPR(stakeAddress: string): Promise<string> {
@@ -253,7 +253,7 @@ export class StakingComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async stakeFarmUncappedAPR(stakeAddress: string): Promise<string> {
-        return await this.computeStakeFarmUncappedAPR(stakeAddress);
+        return this.computeStakeFarmUncappedAPR(stakeAddress);
     }
 
     async computeStakeFarmUncappedAPR(stakeAddress: string): Promise<string> {
@@ -279,7 +279,7 @@ export class StakingComputeService {
         logArgs: true,
     })
     async stakeFarmBaseAPR(stakeAddress: string): Promise<string> {
-        return await this.computeStakeFarmBaseAPR(stakeAddress);
+        return this.computeStakeFarmBaseAPR(stakeAddress);
     }
 
     async computeStakeFarmBaseAPR(stakeAddress: string): Promise<string> {
@@ -297,7 +297,7 @@ export class StakingComputeService {
         logArgs: true,
     })
     async boostedAPR(stakeAddress: string): Promise<string> {
-        return await this.computeBoostedAPR(stakeAddress);
+        return this.computeBoostedAPR(stakeAddress);
     }
 
     async computeBoostedAPR(stakeAddress: string): Promise<string> {
@@ -323,7 +323,7 @@ export class StakingComputeService {
         logArgs: true,
     })
     async maxBoostedAPR(stakeAddress: string): Promise<string> {
-        return await this.computeMaxBoostedApr(stakeAddress);
+        return this.computeMaxBoostedApr(stakeAddress);
     }
 
     async computeMaxBoostedApr(stakeAddress: string): Promise<string> {
@@ -348,7 +348,7 @@ export class StakingComputeService {
         const extraRewardsAPRBoundedPerBlock =
             await this.computeExtraRewardsAPRBoundedPerBlock(stakeAddress);
 
-        return await this.computeRewardsRemainingDaysBase(
+        return this.computeRewardsRemainingDaysBase(
             stakeAddress,
             extraRewardsAPRBoundedPerBlock,
         );
@@ -357,7 +357,7 @@ export class StakingComputeService {
     async computeRewardsRemainingDaysUncapped(
         stakeAddress: string,
     ): Promise<number> {
-        return await this.computeRewardsRemainingDaysBase(stakeAddress);
+        return this.computeRewardsRemainingDaysBase(stakeAddress);
     }
 
     async computeRewardsRemainingDaysBase(
@@ -540,7 +540,7 @@ export class StakingComputeService {
             userAddress,
             week,
         );
-        return await this.weeklyRewardsSplittingCompute.computeDistribution([
+        return this.weeklyRewardsSplittingCompute.computeDistribution([
             new EsdtTokenPayment({
                 tokenID: rewardTokenID,
                 nonce: 0,
@@ -562,11 +562,7 @@ export class StakingComputeService {
         userAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.computeUserRewardsForWeek(
-            scAddress,
-            userAddress,
-            week,
-        );
+        return this.computeUserRewardsForWeek(scAddress, userAddress, week);
     }
 
     async userRewardsForWeek(
@@ -704,12 +700,12 @@ export class StakingComputeService {
         return userRewardForWeek.toFixed();
     }
 
-    async computeUserCurentBoostedAPR(
+    async computeUserEstimatedWeeklyRewards(
         scAddress: string,
         userAddress: string,
         additionalUserStakeAmount = '0',
         additionalUserEnergy = '0',
-    ): Promise<number> {
+    ): Promise<string> {
         const [produceRewardsEnabled, accumulatedRewards, rewardsCapacity] =
             await Promise.all([
                 this.stakingAbi.produceRewardsEnabled(scAddress),
@@ -721,7 +717,7 @@ export class StakingComputeService {
             !produceRewardsEnabled ||
             new BigNumber(accumulatedRewards).isEqualTo(rewardsCapacity)
         ) {
-            return 0;
+            return '0';
         }
 
         const [currentWeek, boostedRewardsPerWeek] = await Promise.all([
@@ -731,6 +727,34 @@ export class StakingComputeService {
                 additionalUserStakeAmount,
             ),
         ]);
+
+        return this.computeUserRewardsForWeek(
+            scAddress,
+            userAddress,
+            currentWeek,
+            additionalUserStakeAmount,
+            additionalUserEnergy,
+            boostedRewardsPerWeek,
+        );
+    }
+
+    async computeUserCurentBoostedAPR(
+        scAddress: string,
+        userAddress: string,
+        additionalUserStakeAmount = '0',
+        additionalUserEnergy = '0',
+    ): Promise<number> {
+        const userRewardsPerWeek = await this.computeUserEstimatedWeeklyRewards(
+            scAddress,
+            userAddress,
+            additionalUserStakeAmount,
+            additionalUserEnergy,
+        );
+
+        if (userRewardsPerWeek === '0') {
+            return 0;
+        }
+
         let userTotalStakePosition =
             await this.stakingAbi.userTotalStakePosition(
                 scAddress,
@@ -739,19 +763,6 @@ export class StakingComputeService {
         userTotalStakePosition = new BigNumber(userTotalStakePosition)
             .plus(additionalUserStakeAmount)
             .toFixed();
-
-        if (userTotalStakePosition === '0') {
-            return 0;
-        }
-
-        const userRewardsPerWeek = await this.computeUserRewardsForWeek(
-            scAddress,
-            userAddress,
-            currentWeek,
-            additionalUserStakeAmount,
-            additionalUserEnergy,
-            boostedRewardsPerWeek,
-        );
 
         return new BigNumber(userRewardsPerWeek)
             .multipliedBy(52)
@@ -866,7 +877,7 @@ export class StakingComputeService {
         scAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.computeOptimalEnergyPerStaking(scAddress, week);
+        return this.computeOptimalEnergyPerStaking(scAddress, week);
     }
 
     //
@@ -952,7 +963,7 @@ export class StakingComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async deployedAt(stakeAddress: string): Promise<number> {
-        return await this.computeDeployedAt(stakeAddress);
+        return this.computeDeployedAt(stakeAddress);
     }
 
     async computeDeployedAt(stakeAddress: string): Promise<number> {
@@ -971,7 +982,7 @@ export class StakingComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async isProducingRewards(stakeAddress: string): Promise<boolean> {
-        return await this.computeIsProducingRewards(stakeAddress);
+        return this.computeIsProducingRewards(stakeAddress);
     }
 
     async computeIsProducingRewards(stakeAddress: string): Promise<boolean> {

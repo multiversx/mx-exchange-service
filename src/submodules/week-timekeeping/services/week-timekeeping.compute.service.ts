@@ -31,7 +31,7 @@ export class WeekTimekeepingComputeService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async weekForEpoch(scAddress: string, epoch: number): Promise<number> {
-        return await this.computeWeekForEpoch(scAddress, epoch);
+        return this.computeWeekForEpoch(scAddress, epoch);
     }
 
     async computeWeekForEpoch(
@@ -58,7 +58,7 @@ export class WeekTimekeepingComputeService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async startEpochForWeek(scAddress: string, week: number): Promise<number> {
-        return await this.computeStartEpochForWeek(scAddress, week);
+        return this.computeStartEpochForWeek(scAddress, week);
     }
 
     async computeStartEpochForWeek(
@@ -82,7 +82,7 @@ export class WeekTimekeepingComputeService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async endEpochForWeek(scAddress: string, week: number): Promise<number> {
-        return await this.computeEndEpochForWeek(scAddress, week);
+        return this.computeEndEpochForWeek(scAddress, week);
     }
 
     async computeEndEpochForWeek(

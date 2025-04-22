@@ -29,40 +29,32 @@ export class WeeklyRewardsSplittingComputeService
     async computeDistribution(
         payments: EsdtTokenPayment[],
     ): Promise<TokenDistributionModel[]> {
-        let totalPriceUSD = new BigNumber('0');
-        const tokenDistributionModels = [];
-
-        const tokenDistributions = await Promise.all(
-            payments.map(async (token) => {
-                const tokenPriceUSD =
-                    await this.tokenCompute.tokenPriceDerivedUSD(token.tokenID);
-                const rewardsPriceUSD = new BigNumber(
-                    tokenPriceUSD,
-                ).multipliedBy(new BigNumber(token.amount));
-
-                return {
-                    tokenID: token.tokenID,
-                    rewardsPriceUSD: rewardsPriceUSD,
-                };
-            }),
-        );
-
-        tokenDistributions.forEach((token) => {
-            tokenDistributionModels.push(
-                new TokenDistributionModel({
-                    tokenId: token.tokenID,
-                    percentage: token.rewardsPriceUSD.toFixed(),
-                }),
+        const tokensPriceUSD =
+            await this.tokenCompute.getAllTokensPriceDerivedUSD(
+                payments.map((payment) => payment.tokenID),
             );
-            totalPriceUSD = totalPriceUSD.plus(token.rewardsPriceUSD);
+
+        let totalPriceUSD = new BigNumber(0);
+        const paymentsValueUSD = payments.map((payment, index) => {
+            const reward = new BigNumber(tokensPriceUSD[index]).multipliedBy(
+                payment.amount,
+            );
+            totalPriceUSD = totalPriceUSD.plus(reward);
+            return reward;
         });
 
-        return tokenDistributionModels.map((model: TokenDistributionModel) => {
-            model.percentage = new BigNumber(model.percentage)
-                .dividedBy(totalPriceUSD)
-                .multipliedBy(100)
-                .toFixed(4);
-            return model;
+        return payments.map((payment, index) => {
+            const valueUSD = paymentsValueUSD[index];
+            const percentage = totalPriceUSD.isZero()
+                ? '0.0000'
+                : valueUSD
+                      .dividedBy(totalPriceUSD)
+                      .multipliedBy(100)
+                      .toFixed(4);
+            return new TokenDistributionModel({
+                tokenId: payment.tokenID,
+                percentage,
+            });
         });
     }
 
@@ -75,7 +67,7 @@ export class WeeklyRewardsSplittingComputeService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async weekAPR(scAddress: string, week: number): Promise<string> {
-        return await this.computeWeekAPR(scAddress, week);
+        return this.computeWeekAPR(scAddress, week);
     }
 
     async computeWeekAPR(scAddress: string, week: number): Promise<string> {
@@ -92,10 +84,11 @@ export class WeeklyRewardsSplittingComputeService
         const totalRewardsForWeekPriceUSD =
             await this.computeTotalRewardsForWeekUSD(scAddress, week);
 
-        return new BigNumber(totalRewardsForWeekPriceUSD)
+        const weekAPR = new BigNumber(totalRewardsForWeekPriceUSD)
             .times(52)
-            .div(totalLockedTokensForWeekPriceUSD)
-            .toFixed();
+            .div(totalLockedTokensForWeekPriceUSD);
+
+        return weekAPR.isNaN() || !weekAPR.isFinite() ? '0' : weekAPR.toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -111,7 +104,7 @@ export class WeeklyRewardsSplittingComputeService
         userAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.computeUserApr(scAddress, userAddress, week);
+        return this.computeUserApr(scAddress, userAddress, week);
     }
 
     async computeUserApr(
@@ -123,6 +116,7 @@ export class WeeklyRewardsSplittingComputeService
             totalLockedTokensForWeek,
             totalEnergyForWeek,
             userEnergyForWeek,
+            globalApr,
         ] = await Promise.all([
             this.weeklyRewardsSplittingAbi.totalLockedTokensForWeek(
                 scAddress,
@@ -134,16 +128,16 @@ export class WeeklyRewardsSplittingComputeService
                 userAddress,
                 week,
             ),
+            this.weekAPR(scAddress, week),
         ]);
-        const globalApr = await this.computeWeekAPR(scAddress, week);
 
         const apr = new BigNumber(globalApr)
             .multipliedBy(new BigNumber(userEnergyForWeek.amount))
             .multipliedBy(new BigNumber(totalLockedTokensForWeek))
             .div(new BigNumber(totalEnergyForWeek))
-            .div(new BigNumber(userEnergyForWeek.totalLockedTokens))
-            .toFixed();
-        return apr;
+            .div(new BigNumber(userEnergyForWeek.totalLockedTokens));
+
+        return apr.isNaN() || !apr.isFinite() ? '0' : apr.toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -158,7 +152,7 @@ export class WeeklyRewardsSplittingComputeService
         scAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.computeTotalRewardsForWeekUSD(scAddress, week);
+        return this.computeTotalRewardsForWeekUSD(scAddress, week);
     }
 
     async computeTotalRewardsForWeekUSD(
@@ -174,30 +168,28 @@ export class WeeklyRewardsSplittingComputeService
                     week,
                 ),
             ]);
-        let totalPriceUSD = new BigNumber(0);
 
-        const totalRewardsArray = await Promise.all(
-            totalRewardsForWeek.map(async (reward) => {
-                const tokenID =
-                    reward.tokenID === lockedTokenID
-                        ? baseAssetTokenID
-                        : reward.tokenID;
-                const [token, rewardsPriceUSD] = await Promise.all([
-                    this.tokenService.tokenMetadata(tokenID),
-                    this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
-                ]);
-                return computeValueUSD(
+        const tokenIDs = totalRewardsForWeek.map((reward) =>
+            reward.tokenID === lockedTokenID
+                ? baseAssetTokenID
+                : reward.tokenID,
+        );
+
+        const [tokensMetadata, tokensPriceUSD] = await Promise.all([
+            this.tokenService.getAllTokensMetadata(tokenIDs),
+            this.tokenCompute.getAllTokensPriceDerivedUSD(tokenIDs),
+        ]);
+
+        return totalRewardsForWeek
+            .reduce((acc, reward, index) => {
+                const rewardUSD = computeValueUSD(
                     reward.amount,
-                    token.decimals,
-                    rewardsPriceUSD,
+                    tokensMetadata[index].decimals,
+                    tokensPriceUSD[index],
                 );
-            }),
-        );
-
-        totalRewardsArray.forEach(
-            (reward) => (totalPriceUSD = totalPriceUSD.plus(reward)),
-        );
-        return totalPriceUSD.toFixed();
+                return acc.plus(rewardUSD);
+            }, new BigNumber(0))
+            .toFixed();
     }
 
     async computeTotalLockedTokensForWeekPriceUSD(
@@ -206,7 +198,7 @@ export class WeeklyRewardsSplittingComputeService
         const baseAssetTokenID = await this.energyAbi.baseAssetTokenID();
         let tokenPriceUSD = '0';
         if (scAddress.has(baseAssetTokenID)) {
-            tokenPriceUSD = await this.tokenCompute.computeTokenPriceDerivedUSD(
+            tokenPriceUSD = await this.tokenCompute.tokenPriceDerivedUSD(
                 baseAssetTokenID,
             );
         }

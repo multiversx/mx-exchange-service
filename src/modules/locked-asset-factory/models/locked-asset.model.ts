@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
@@ -22,7 +23,7 @@ export class LockedAssetAttributesModel {
     attributes: string;
     @Field()
     identifier: string;
-    @Field(() => [UnlockMileStoneModel])
+    @Field(() => [UnlockMileStoneModel], { complexity: nestedFieldComplexity })
     unlockSchedule: UnlockMileStoneModel[];
     @Field()
     isMerged: boolean;
@@ -37,13 +38,13 @@ export class LockedAssetModel {
     @Field()
     address: string;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     assetToken: EsdtToken;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     lockedToken: NftCollection;
 
-    @Field(() => [UnlockMileStoneModel])
+    @Field(() => [UnlockMileStoneModel], { complexity: nestedFieldComplexity })
     unlockMilestones: UnlockMileStoneModel[];
 
     @Field(() => Int)

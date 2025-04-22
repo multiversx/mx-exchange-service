@@ -15,7 +15,7 @@ export class StakingProxyCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_30_MINUTES)
     async cacheFarmsStaking(): Promise<void> {
         const stakingProxiesAddress: string[] =
             await this.remoteConfigGetterService.getStakingProxyAddresses();
@@ -68,6 +68,12 @@ export class StakingProxyCacheWarmerService {
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
+        invalidatedKeys = invalidatedKeys.filter((key) => key !== undefined);
+
+        if (invalidatedKeys.length === 0) {
+            return;
+        }
+
         await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }

@@ -27,7 +27,6 @@ import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { FeesCollectorModule } from './modules/fees-collector/fees-collector.module';
-import { deprecationLoggerMiddleware } from './utils/deprecate.logger.middleware';
 import { EnergyModule } from './modules/energy/energy.module';
 import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
 import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-token-wrapper.module';
@@ -40,6 +39,9 @@ import { PositionCreatorModule } from './modules/position-creator/position.creat
 import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
 import { TradingViewModule } from './modules/trading-view/trading.view.module';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
+import { CurrencyConverterModule } from './modules/currency-converter/currency.converter.module';
+import { ConditionalModule } from '@nestjs/config';
+import { ComplexityModule } from './complexity.module';
 
 @Module({
     imports: [
@@ -50,8 +52,8 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
             useFactory: async (logger: LoggerService) => ({
                 autoSchemaFile: 'schema.gql',
                 installSubscriptionHandlers: true,
-                buildSchemaOptions: {
-                    fieldMiddleware: [deprecationLoggerMiddleware],
+                parseOptions: {
+                    maxTokens: 1000,
                 },
                 formatError: (
                     formattedError: GraphQLFormattedError,
@@ -103,6 +105,11 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
         ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
         TradingViewModule,
+        CurrencyConverterModule,
+        ConditionalModule.registerWhen(
+            ComplexityModule,
+            (env: NodeJS.ProcessEnv) => env['ENABLE_COMPLEXITY'] === 'true',
+        ),
     ],
     providers: [QueryMetricsPlugin],
 })

@@ -21,6 +21,11 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { AnalyticsSetterService } from './services/analytics.setter.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { GlobalRewardsService } from './services/global.rewards.service';
+import { GlobalRewardsResolver } from './global.rewards.resolver';
+import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
+import { AnalyticsPairSetterService } from './services/analytics.pair.setter.service';
 
 @Module({
     imports: [
@@ -30,6 +35,7 @@ import { AnalyticsSetterService } from './services/analytics.setter.service';
         forwardRef(() => RouterModule),
         PairModule,
         FarmModule,
+        FarmModuleV2,
         ProxyModule,
         LockedAssetModule,
         TokenModule,
@@ -39,6 +45,7 @@ import { AnalyticsSetterService } from './services/analytics.setter.service';
         RemoteConfigModule,
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
+        ElasticSearchModule,
     ],
     providers: [
         AnalyticsResolver,
@@ -48,12 +55,18 @@ import { AnalyticsSetterService } from './services/analytics.setter.service';
         AnalyticsSetterService,
         AnalyticsPairService,
         PairDayDataResolver,
+        GlobalRewardsService,
+        GlobalRewardsResolver,
+        AnalyticsPairSetterService,
     ],
     exports: [
         AnalyticsAWSGetterService,
         AnalyticsAWSSetterService,
         AnalyticsComputeService,
         AnalyticsSetterService,
+        GlobalRewardsService,
+        AnalyticsPairSetterService,
+        AnalyticsPairService,
     ],
 })
 export class AnalyticsModule {}

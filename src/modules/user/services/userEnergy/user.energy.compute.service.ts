@@ -133,22 +133,45 @@ export class UserEnergyComputeService {
         const farmService = this.farmService.useService(
             contractAddress,
         ) as FarmServiceV2;
-        const [currentClaimProgress, currentWeek, farmToken, userEnergy] =
-            await Promise.all([
-                this.weeklyRewardsSplittingAbi.currentClaimProgress(
-                    contractAddress,
-                    userAddress,
-                ),
-                this.weekTimekeepingAbi.currentWeek(contractAddress),
-                farmService.getFarmToken(contractAddress),
-                this.energyAbi.energyEntryForUser(userAddress),
-            ]);
+        const [
+            currentClaimProgress,
+            currentWeek,
+            farmToken,
+            userEnergy,
+            produceRewardsEnabled,
+        ] = await Promise.all([
+            this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                contractAddress,
+                userAddress,
+            ),
+            this.weekTimekeepingAbi.currentWeek(contractAddress),
+            farmService.getFarmToken(contractAddress),
+            this.energyAbi.energyEntryForUser(userAddress),
+            this.farmAbi
+                .useAbi(contractAddress)
+                .produceRewardsEnabled(contractAddress),
+        ]);
 
         if (currentClaimProgress.week === 0) {
             return new OutdatedContract();
         }
 
+        const claimProgressTotalRewards =
+            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                contractAddress,
+                currentClaimProgress.week,
+            );
+
         const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
+
+        if (
+            !produceRewardsEnabled &&
+            outdatedClaimProgress &&
+            (claimProgressTotalRewards.length === 0 ||
+                claimProgressTotalRewards[0].amount === '0')
+        ) {
+            return new OutdatedContract();
+        }
 
         if (
             this.isEnergyOutdated(userEnergy, currentClaimProgress) ||
@@ -161,6 +184,7 @@ export class UserEnergyComputeService {
                 farmToken: farmToken.collection,
             });
         }
+
         return new OutdatedContract();
     }
 
@@ -189,9 +213,20 @@ export class UserEnergyComputeService {
             return new OutdatedContract();
         }
 
+        const claimProgressTotalRewards =
+            await this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
+                contractAddress,
+                currentClaimProgress.week,
+            );
+
         const outdatedClaimProgress = currentClaimProgress.week !== currentWeek;
 
-        if (!isProducingRewards && !outdatedClaimProgress) {
+        if (
+            !isProducingRewards &&
+            outdatedClaimProgress &&
+            (claimProgressTotalRewards.length === 0 ||
+                claimProgressTotalRewards[0].amount === '0')
+        ) {
             return new OutdatedContract();
         }
 
@@ -206,6 +241,7 @@ export class UserEnergyComputeService {
                 farmToken: farmToken.collection,
             });
         }
+
         return new OutdatedContract();
     }
 

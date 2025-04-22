@@ -41,7 +41,7 @@ export class MXProxyService {
 
         this.proxy = new ProxyNetworkProviderProfiler(
             this.apiConfigService,
-            this.apiConfigService.getApiUrl(),
+            this.apiConfigService.getGatewayUrl(),
             {
                 timeout: mxConfig.proxyTimeout,
                 httpAgent: mxConfig.keepAlive ? httpAgent : null,

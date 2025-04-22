@@ -77,6 +77,9 @@ export class UserEntryFeesCollectorModel {
     @Field()
     lastActiveWeekForUser: number;
 
+    @Field()
+    lastWeekRewardsUSD: string;
+
     constructor(init?: Partial<UserEntryFeesCollectorModel>) {
         Object.assign(this, init);
     }

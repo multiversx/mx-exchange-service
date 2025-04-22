@@ -10,6 +10,8 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { PriceCandlesResolutions } from '../models/query.args';
+import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class AnalyticsPairService {
@@ -23,7 +25,7 @@ export class AnalyticsPairService {
     async getClosingLockedValueUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestCompleteValues(
+        return this.analyticsAWSGetter.getLatestCompleteValues(
             pairAddress,
             'lockedValueUSD',
         );
@@ -32,21 +34,21 @@ export class AnalyticsPairService {
     async getDailyVolumesUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getSumCompleteValues(
+        return this.analyticsAWSGetter.getSumCompleteValues(
             pairAddress,
             'volumeUSD',
         );
     }
 
     async getDailyFeesUSD(pairAddress: string): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getSumCompleteValues(
+        return this.analyticsAWSGetter.getSumCompleteValues(
             pairAddress,
             'feesUSD',
         );
     }
 
     async getClosingPriceUSD(tokenID: string): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestCompleteValues(
+        return this.analyticsAWSGetter.getLatestCompleteValues(
             tokenID,
             'priceUSD',
         );
@@ -128,17 +130,18 @@ export class AnalyticsPairService {
         return pairsDayDatas;
     }
 
-    async getPriceCandles(
+    @GetOrSetCache({
+        baseKey: 'analytics',
+        remoteTtl: Constants.oneHour() * 4,
+        localTtl: Constants.oneHour() * 3,
+    })
+    async tokenMiniChartPriceCandles(
         series: string,
-        metric: string,
         start: string,
         end: string,
-        resolution: PriceCandlesResolutions,
     ): Promise<CandleDataModel[]> {
-        return await this.analyticsQueryService.getPriceCandles({
+        return await this.analyticsQueryService.getTokenMiniChartPriceCandles({
             series,
-            metric,
-            resolution,
             start,
             end,
         });

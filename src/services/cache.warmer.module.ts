@@ -14,7 +14,6 @@ import { CommonAppModule } from 'src/common.app.module';
 import { AnalyticsCacheWarmerService } from './crons/analytics.cache.warmer.service';
 import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
 import { TransactionProcessorService } from './crons/transaction.processor.service';
-import { LogsProcessorService } from './crons/logs.processor.service';
 import { StakingModule } from 'src/modules/staking/staking.module';
 import { StakingCacheWarmerService } from './crons/staking.cache.warmer.service';
 import { StakingProxyCacheWarmerService } from './crons/staking.proxy.cache.warmer.service';
@@ -31,7 +30,6 @@ import { FarmModuleV1_2 } from 'src/modules/farm/v1.2/farm.v1.2.module';
 import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
-import { ElasticService } from 'src/helpers/elastic.service';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { GovernanceCacheWarmerService } from './crons/governance.cache.warmer.service';
 import { GovernanceModule } from '../modules/governance/governance.module';
@@ -43,6 +41,13 @@ import { FeesCollectorCacheWarmerService } from './crons/fees.collector.cache.wa
 import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.module';
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
+import { ElasticSearchModule } from './elastic-search/elastic.search.module';
+import { EventsProcessorService } from './crons/events.processor.service';
+import { CurrencyConverterCacheWarmerService } from './crons/currency.converter.cache.warmer.service';
+import { CurrencyConverterModule } from 'src/modules/currency-converter/currency.converter.module';
+import { WeekTimekeepingCacheWarmerService } from './crons/week.timekeeping.cache.warmer.service';
+import { WeeklyRewardsSplittingCacheWarmerService } from './crons/weekly.rewards.cache.warmer.service';
+import { RouterCacheWarmerService } from './crons/router.cache.warmer.service';
 
 @Module({
     imports: [
@@ -73,6 +78,8 @@ import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-spli
         FeesCollectorModule,
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
+        ElasticSearchModule,
+        CurrencyConverterModule,
     ],
     controllers: [],
     providers: [
@@ -88,11 +95,14 @@ import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-spli
         PriceDiscoveryCacheWarmerService,
         GovernanceCacheWarmerService,
         TransactionProcessorService,
-        LogsProcessorService,
-        ElasticService,
+        EventsProcessorService,
         TokensCacheWarmerService,
         EscrowCacheWarmerService,
         FeesCollectorCacheWarmerService,
+        CurrencyConverterCacheWarmerService,
+        WeekTimekeepingCacheWarmerService,
+        WeeklyRewardsSplittingCacheWarmerService,
+        RouterCacheWarmerService,
     ],
 })
 export class CacheWarmerModule {}

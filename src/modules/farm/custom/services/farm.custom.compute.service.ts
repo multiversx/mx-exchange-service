@@ -6,7 +6,7 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { FarmCustomService } from './farm.custom.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 
 @Injectable()
 export class FarmCustomComputeService extends FarmComputeService {

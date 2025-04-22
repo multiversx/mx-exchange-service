@@ -1,4 +1,4 @@
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { scAddress } from 'src/config';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
 import { LockedAssetAttributesUnion } from './models/locked.assets.attributes.union';
@@ -15,13 +15,13 @@ export class WrappedLpTokenAttributesResolverV2 {
 
     @ResolveField()
     async lockedAssetsAttributes(
-        @Parent() parent: WrappedLpTokenAttributesModelV2,
+        parent: WrappedLpTokenAttributesModelV2,
     ): Promise<typeof LockedAssetAttributesUnion> {
         const oldLockedAssetID =
             await this.lockedAssetsGetter.getLockedTokenID();
 
         if (parent.lockedTokens.tokenIdentifier === oldLockedAssetID) {
-            return await this.proxyService.getLockedAssetsAttributes(
+            return this.proxyService.getLockedAssetsAttributes(
                 scAddress.proxyDexAddress.v2,
                 parent.lockedTokens.tokenIdentifier,
                 parent.lockedTokens.tokenNonce,

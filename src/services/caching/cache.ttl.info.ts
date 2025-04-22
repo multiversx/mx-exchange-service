@@ -9,9 +9,19 @@ export class CacheTtlInfo {
         this.localTtl = localTtl ? localTtl : this.remoteTtl / 2;
     }
 
+    static TokenID: CacheTtlInfo = new CacheTtlInfo(
+        Constants.oneDay(),
+        Constants.oneDay(),
+    );
+
     static Token: CacheTtlInfo = new CacheTtlInfo(
         Constants.oneMinute() * 10,
         Constants.oneMinute() * 7,
+    );
+
+    static BaseToken: CacheTtlInfo = new CacheTtlInfo(
+        Constants.oneDay(),
+        Constants.oneDay(),
     );
 
     static TokenAnalytics: CacheTtlInfo = new CacheTtlInfo(

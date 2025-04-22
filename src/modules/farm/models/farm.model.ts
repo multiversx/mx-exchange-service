@@ -6,6 +6,7 @@ import {
     ClaimProgress,
     UserInfoByWeekModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 
 export enum FarmVersion {
     V1_2 = 'v1.2',
@@ -32,9 +33,15 @@ export class RewardsModel {
     rewards: string;
     @Field(() => Int, { nullable: true })
     remainingFarmingEpochs?: number;
-    @Field(() => [UserInfoByWeekModel], { nullable: true })
+    @Field(() => [UserInfoByWeekModel], {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     boostedRewardsWeeklyInfo: UserInfoByWeekModel[];
-    @Field(() => ClaimProgress, { nullable: true })
+    @Field(() => ClaimProgress, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     claimProgress: ClaimProgress;
     @Field({ nullable: true })
     accumulatedRewards: string;
@@ -50,12 +57,20 @@ export class BoostedRewardsModel {
     farmAddress: string;
     @Field()
     userAddress: string;
-    @Field(() => [UserInfoByWeekModel], { nullable: true })
+    @Field(() => [UserInfoByWeekModel], {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     boostedRewardsWeeklyInfo: UserInfoByWeekModel[];
-    @Field(() => ClaimProgress, { nullable: true })
+    @Field(() => ClaimProgress, {
+        nullable: true,
+        complexity: nestedFieldComplexity,
+    })
     claimProgress: ClaimProgress;
     @Field({ nullable: true })
     accumulatedRewards: string;
+    @Field({ nullable: true })
+    estimatedWeeklyRewards: string;
     @Field({ nullable: true })
     curentBoostedAPR: number;
     @Field({ nullable: true })
@@ -113,19 +128,19 @@ export class BaseFarmModel {
     @Field()
     address: string;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     farmedToken: EsdtToken;
 
     @Field()
     farmedTokenPriceUSD: string;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     farmToken: NftCollection;
 
     @Field()
     farmTokenPriceUSD: string;
 
-    @Field()
+    @Field({ complexity: nestedFieldComplexity })
     farmingToken: EsdtToken;
 
     @Field()
@@ -173,7 +188,7 @@ export class BaseFarmModel {
     @Field({ nullable: true })
     transferExecGasLimit: string;
 
-    @Field({ nullable: true })
+    @Field({ nullable: true, complexity: nestedFieldComplexity })
     pair: PairModel;
 
     @Field({ nullable: true })

@@ -22,17 +22,17 @@ export class EnergyService {
 
     async getBaseAssetToken(): Promise<EsdtToken> {
         const tokenID = await this.energyAbi.baseAssetTokenID();
-        return await this.tokenService.tokenMetadata(tokenID);
+        return this.tokenService.tokenMetadata(tokenID);
     }
 
     async getLockedToken(): Promise<NftCollection> {
         const collection = await this.energyAbi.lockedTokenID();
-        return await this.tokenService.getNftCollectionMetadata(collection);
+        return this.tokenService.getNftCollectionMetadata(collection);
     }
 
     async getLegacyLockedToken(): Promise<NftCollection> {
         const collection = await this.energyAbi.legacyLockedTokenID();
-        return await this.tokenService.getNftCollectionMetadata(collection);
+        return this.tokenService.getNftCollectionMetadata(collection);
     }
 
     async getUserEnergy(
@@ -96,7 +96,7 @@ export class EnergyService {
         }
 
         if (vmQuery) {
-            return await this.energyAbi.getPenaltyAmount(
+            return this.energyAbi.getPenaltyAmount(
                 new BigNumber(inputToken.amount),
                 prevLockEpochs,
                 newLockPeriod,

@@ -67,7 +67,7 @@ export class ProxyFarmTransactionsService {
                 ? gasConfig.proxy.farms[version].enterFarm.withTokenMerge
                 : gasConfig.proxy.farms[version].enterFarm.default;
 
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,
@@ -99,7 +99,7 @@ export class ProxyFarmTransactionsService {
     ): Promise<TransactionModel> {
         const gasLimit = await this.getExitFarmProxyGasLimit(args);
 
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,
@@ -143,7 +143,7 @@ export class ProxyFarmTransactionsService {
             gasConfig.proxy.farms[version][type].claimRewards +
             lockedAssetCreateGas;
 
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,
@@ -174,7 +174,7 @@ export class ProxyFarmTransactionsService {
     ): Promise<TransactionModel> {
         const version = farmVersion(args.farmAddress);
 
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,
@@ -205,7 +205,7 @@ export class ProxyFarmTransactionsService {
     ): Promise<TransactionModel> {
         const version = farmVersion(args.farmAddress);
 
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,
@@ -244,7 +244,7 @@ export class ProxyFarmTransactionsService {
 
         const gasLimit = gasConfig.proxy.farms.defaultMergeWFMT * tokens.length;
 
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,
@@ -331,7 +331,7 @@ export class ProxyFarmTransactionsService {
         payment: InputTokenModel,
         lockEpochs: number,
     ): Promise<TransactionModel> {
-        return await this.mxProxy.getProxyDexSmartContractTransaction(
+        return this.mxProxy.getProxyDexSmartContractTransaction(
             proxyAddress,
             new TransactionOptions({
                 sender: sender,

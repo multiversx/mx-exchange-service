@@ -1,10 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { cacheConfig, constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
-import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -13,21 +12,22 @@ import {
     EsdtLocalBurnEvent,
     ExitFarmEventV1_2,
     ExitFarmEventV1_3,
+    ExitFarmEventV2,
+    TRANSACTION_EVENTS,
 } from '@multiversx/sdk-exchange';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { AnalyticsWriteService } from '../analytics/services/analytics.write.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IngestRecord } from '../analytics/entities/ingest.record';
-import {
-    ElasticQuery,
-    ElasticSortOrder,
-    QueryType,
-} from '@multiversx/sdk-nestjs-elastic';
-import { ElasticService } from 'src/helpers/elastic.service';
+import { SWAP_IDENTIFIER } from 'src/modules/rabbitmq/handlers/pair.swap.handler.service';
+import { ElasticSearchEventsService } from '../elastic-search/services/es.events.service';
+import { RawElasticEventType } from '../elastic-search/entities/raw.elastic.event';
+import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
-export class LogsProcessorService {
+export class EventsProcessorService {
     isProcessing = false;
     feeMap: Map<number, string> = new Map();
     penaltyMap: Map<number, string> = new Map();
@@ -35,14 +35,14 @@ export class LogsProcessorService {
     constructor(
         private readonly cachingService: CacheService,
         private readonly apiService: MXApiService,
-        private readonly elasticService: ElasticService,
+        private readonly elasticEventsService: ElasticSearchEventsService,
         private readonly analyticsWrite: AnalyticsWriteService,
         private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     @Cron(CronExpression.EVERY_MINUTE)
-    async handleNewLogs() {
+    async handleNewEvents() {
         if (this.isProcessing || process.env.NODE_ENV === 'shadowfork2') {
             return;
         }
@@ -57,7 +57,7 @@ export class LogsProcessorService {
             }
 
             await this.getFeeBurned(currentTimestamp, lastProcessedTimestamp);
-            await this.getExitFarmLogs(
+            await this.getPenaltyBurned(
                 currentTimestamp,
                 lastProcessedTimestamp,
             );
@@ -69,8 +69,8 @@ export class LogsProcessorService {
             );
         } catch (error) {
             const logMessage = generateLogMessage(
-                LogsProcessorService.name,
-                this.handleNewLogs.name,
+                EventsProcessorService.name,
+                this.handleNewEvents.name,
                 '',
                 error,
             );
@@ -112,15 +112,10 @@ export class LogsProcessorService {
     private async getFeeBurned(
         currentTimestamp: number,
         lastProcessedTimestamp: number,
-    ) {
+    ): Promise<void> {
         this.feeMap.clear();
-        await this.getSwapLogs(
-            'swapTokensFixedInput',
-            currentTimestamp,
-            lastProcessedTimestamp,
-        );
-        await this.getSwapLogs(
-            'swapTokensFixedOutput',
+
+        await this.getSwapAndBurnEvents(
             currentTimestamp,
             lastProcessedTimestamp,
         );
@@ -133,42 +128,16 @@ export class LogsProcessorService {
         this.logger.info(`fee burned records: ${totalWriteRecords}`);
     }
 
-    private async getSwapLogs(
-        swapType: string,
+    private async getPenaltyBurned(
         currentTimestamp: number,
         lastProcessedTimestamp: number,
-    ) {
-        const transactionsLogs = await this.getTransactionsLogs(
-            swapType,
-            currentTimestamp,
-            lastProcessedTimestamp,
-        );
-
-        for (const transactionLogs of transactionsLogs) {
-            const timestamp: number = transactionLogs._source.timestamp;
-            const events = transactionLogs._source.events;
-            this.processSwapEvents(events, timestamp);
-        }
-    }
-
-    private async getExitFarmLogs(
-        currentTimestamp: number,
-        lastProcessedTimestamp: number,
-    ) {
-        const transactionsLogs = await this.getTransactionsLogs(
-            'exitFarm',
-            currentTimestamp,
-            lastProcessedTimestamp,
-        );
-
+    ): Promise<void> {
         this.penaltyMap.clear();
 
-        for (const transactionLogs of transactionsLogs) {
-            const timestamp = transactionLogs._source.timestamp;
-            const events = transactionLogs._source.events;
-
-            this.processExitFarmEvents(events, timestamp);
-        }
+        await this.getExitFarmAndBurnEvents(
+            currentTimestamp,
+            lastProcessedTimestamp,
+        );
 
         const totalWriteRecords = await this.writeRecords(
             this.penaltyMap,
@@ -178,41 +147,151 @@ export class LogsProcessorService {
         this.logger.info(`penalty burned records ${totalWriteRecords}`);
     }
 
-    private async getTransactionsLogs(
-        eventName: string,
+    private async getSwapAndBurnEvents(
         currentTimestamp: number,
         lastProcessedTimestamp: number,
-    ): Promise<any[]> {
-        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-        elasticQueryAdapter.condition.must = [
-            QueryType.Nested('events', [
-                QueryType.Match('events.identifier', eventName),
-            ]),
-        ];
+    ): Promise<void> {
+        const transactionsEvents: Map<string, RawElasticEventType[]> =
+            new Map();
+        const processEventsAction = async (events: any[]): Promise<void> => {
+            for (const originalEvent of events) {
+                const event = convertEventTopicsAndDataToBase64(originalEvent);
 
-        elasticQueryAdapter.filter = [
-            QueryType.Range(
-                'timestamp',
-                {
-                    key: 'gte',
-                    value: lastProcessedTimestamp,
-                },
-                {
-                    key: 'lte',
-                    value: currentTimestamp,
-                },
-            ),
-        ];
+                if (transactionsEvents.has(event.txHash)) {
+                    const txEvents = transactionsEvents.get(event.txHash);
+                    txEvents.push(event);
+                    transactionsEvents.set(event.txHash, txEvents);
+                } else {
+                    transactionsEvents.set(event.txHash, [event]);
+                }
+            }
+        };
 
-        elasticQueryAdapter.sort = [
-            { name: 'timestamp', order: ElasticSortOrder.ascending },
-        ];
-
-        return await this.elasticService.getList(
-            'logs',
-            '',
-            elasticQueryAdapter,
+        await this.elasticEventsService.getEvents(
+            [
+                SWAP_IDENTIFIER.SWAP_FIXED_INPUT,
+                SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+                TRANSACTION_EVENTS.ESDT_LOCAL_BURN,
+            ],
+            lastProcessedTimestamp,
+            currentTimestamp,
+            processEventsAction,
+            500,
         );
+
+        this.processSwapTransactionsEvents(transactionsEvents);
+    }
+
+    private async getExitFarmAndBurnEvents(
+        currentTimestamp: number,
+        lastProcessedTimestamp: number,
+    ): Promise<void> {
+        const transactionsEvents: Map<string, RawElasticEventType[]> =
+            new Map();
+        const processEventsAction = async (events: any[]): Promise<void> => {
+            for (const originalEvent of events) {
+                const event = convertEventTopicsAndDataToBase64(originalEvent);
+
+                if (transactionsEvents.has(event.txHash)) {
+                    const txEvents = transactionsEvents.get(event.txHash);
+                    txEvents.push(event);
+                    transactionsEvents.set(event.txHash, txEvents);
+                } else {
+                    transactionsEvents.set(event.txHash, [event]);
+                }
+            }
+        };
+
+        await this.elasticEventsService.getEvents(
+            ['exitFarm', TRANSACTION_EVENTS.ESDT_LOCAL_BURN],
+            lastProcessedTimestamp,
+            currentTimestamp,
+            processEventsAction,
+            500,
+        );
+
+        this.processExitFarmTransactionsEvents(transactionsEvents);
+    }
+
+    private processSwapTransactionsEvents(
+        transactionEvents: Map<string, RawElasticEventType[]>,
+    ): void {
+        const txHashes = transactionEvents.keys();
+        for (const txHash of txHashes) {
+            const events = transactionEvents.get(txHash);
+
+            const hasSwapEvents = events.findIndex(
+                (event) =>
+                    event.identifier === SWAP_IDENTIFIER.SWAP_FIXED_INPUT ||
+                    event.identifier === SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT,
+            );
+
+            if (hasSwapEvents === -1) {
+                continue;
+            }
+
+            const burnEvents = events
+                .filter(
+                    (event) =>
+                        event.identifier === TRANSACTION_EVENTS.ESDT_LOCAL_BURN,
+                )
+                .map((event) => new EsdtLocalBurnEvent(event));
+
+            this.processSwapLocalBurnEvents(burnEvents, events[0].timestamp);
+        }
+    }
+
+    private processExitFarmTransactionsEvents(
+        transactionEvents: Map<string, RawElasticEventType[]>,
+    ): void {
+        const txHashes = transactionEvents.keys();
+        for (const txHash of txHashes) {
+            const events = transactionEvents.get(txHash);
+
+            const burnEvents: EsdtLocalBurnEvent[] = [];
+            let exitFarmEvent: BaseFarmEvent | ExitFarmEventV2 | undefined =
+                undefined;
+
+            events.forEach((event) => {
+                switch (event.identifier) {
+                    case 'exitFarm':
+                        if (event.data === '') {
+                            break;
+                        }
+                        const version = farmVersion(event.address);
+                        switch (version) {
+                            case FarmVersion.V1_2:
+                                exitFarmEvent = new ExitFarmEventV1_2(event);
+                                break;
+                            case FarmVersion.V1_3:
+                                exitFarmEvent = new ExitFarmEventV1_3(event);
+                                break;
+                            case FarmVersion.V2:
+                                if (event.topics.length !== 6) {
+                                    break;
+                                }
+                                exitFarmEvent = new ExitFarmEventV2(event);
+                                break;
+                        }
+                        break;
+                    case TRANSACTION_EVENTS.ESDT_LOCAL_BURN:
+                        burnEvents.push(new EsdtLocalBurnEvent(event));
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            if (exitFarmEvent === undefined) {
+                continue;
+            }
+
+            this.processExitFarmEvents(
+                exitFarmEvent,
+                burnEvents,
+                events[0].timestamp,
+            );
+        }
     }
 
     private async writeRecords(
@@ -259,7 +338,7 @@ export class LogsProcessorService {
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(
-                LogsProcessorService.name,
+                EventsProcessorService.name,
                 this.writeRecords.name,
                 '',
                 error,
@@ -284,20 +363,11 @@ export class LogsProcessorService {
         return fee.toFixed();
     }
 
-    private processSwapEvents(events: any[], timestamp: number): Promise<void> {
-        const esdtLocalBurnEvents: EsdtLocalBurnEvent[] = [];
-
-        for (const event of events) {
-            switch (event.identifier) {
-                case 'ESDTLocalBurn':
-                    esdtLocalBurnEvents.push(new EsdtLocalBurnEvent(event));
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        const feeBurned = this.getBurnedFee(esdtLocalBurnEvents);
+    private processSwapLocalBurnEvents(
+        events: EsdtLocalBurnEvent[],
+        timestamp: number,
+    ): void {
+        const feeBurned = this.getBurnedFee(events);
 
         if (feeBurned === '0') {
             return;
@@ -316,49 +386,17 @@ export class LogsProcessorService {
     }
 
     private processExitFarmEvents(
-        events: any[],
+        exitFarmEvent: BaseFarmEvent | ExitFarmEventV2,
+        burnEvents: EsdtLocalBurnEvent[] = [],
         timestamp: number,
     ): Promise<void> {
-        let exitFarmEvent: BaseFarmEvent | undefined = undefined;
-        const esdtLocalBurnEvents: EsdtLocalBurnEvent[] = [];
-
-        for (const event of events) {
-            switch (event.identifier) {
-                case 'exitFarm':
-                    if (event.data === '') {
-                        break;
-                    }
-                    const version = farmVersion(event.address);
-                    switch (version) {
-                        case FarmVersion.V1_2:
-                            exitFarmEvent = new ExitFarmEventV1_2(event);
-                            break;
-                        case FarmVersion.V1_3:
-                            exitFarmEvent = new ExitFarmEventV1_3(event);
-                            break;
-                    }
-                    break;
-                case 'ESDTLocalBurn':
-                    esdtLocalBurnEvents.push(new EsdtLocalBurnEvent(event));
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        if (exitFarmEvent === undefined) {
-            return;
-        }
-
-        const penaltyEntry = this.penaltyMap.get(timestamp);
-        const penalty = this.getBurnedPenalty(
-            exitFarmEvent,
-            esdtLocalBurnEvents,
-        );
+        const penalty = this.getBurnedPenalty(exitFarmEvent, burnEvents);
 
         if (penalty === '0') {
             return;
         }
+
+        const penaltyEntry = this.penaltyMap.get(timestamp);
 
         if (penaltyEntry) {
             this.penaltyMap.set(
@@ -371,6 +409,31 @@ export class LogsProcessorService {
     }
 
     private getBurnedPenalty(
+        exitFarmEvent: BaseFarmEvent | ExitFarmEventV2,
+        esdtLocalBurnEvents: EsdtLocalBurnEvent[],
+    ): string {
+        if (!(exitFarmEvent instanceof ExitFarmEventV2)) {
+            return this.getBurnedPenaltyOldFarms(
+                exitFarmEvent,
+                esdtLocalBurnEvents,
+            );
+        }
+
+        let penalty = new BigNumber(0);
+
+        esdtLocalBurnEvents
+            .filter(
+                (event) =>
+                    event.getTopics().tokenID === constantsConfig.MEX_TOKEN_ID,
+            )
+            .forEach((event) => {
+                penalty = penalty.plus(event.getTopics().amount);
+            });
+
+        return penalty.toFixed();
+    }
+
+    private getBurnedPenaltyOldFarms(
         exitFarmEvent: BaseFarmEvent,
         esdtLocalBurnEvents: EsdtLocalBurnEvent[],
     ): string {

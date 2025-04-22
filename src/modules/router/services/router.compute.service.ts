@@ -6,6 +6,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { ESTransactionsService } from 'src/services/elastic-search/services/es.transactions.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class RouterComputeService {
@@ -19,10 +20,11 @@ export class RouterComputeService {
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: Constants.oneMinute(),
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async totalLockedValueUSD(): Promise<BigNumber> {
-        return await this.computeTotalLockedValueUSD();
+        return this.computeTotalLockedValueUSD();
     }
 
     async computeTotalLockedValueUSD(): Promise<BigNumber> {
@@ -49,10 +51,11 @@ export class RouterComputeService {
     })
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: Constants.oneMinute() * 5,
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
     })
     async totalFeesUSD(time: string): Promise<BigNumber> {
-        return await this.computeTotalFeesUSD(time);
+        return this.computeTotalFeesUSD(time);
     }
 
     async computeTotalFeesUSD(time: string): Promise<BigNumber> {
@@ -77,7 +80,7 @@ export class RouterComputeService {
         remoteTtl: Constants.oneMinute(),
     })
     async totalTxCount(): Promise<number> {
-        return await this.computeTotalTxCount();
+        return this.computeTotalTxCount();
     }
 
     async computeTotalTxCount(): Promise<number> {
@@ -99,7 +102,7 @@ export class RouterComputeService {
         remoteTtl: Constants.oneHour(),
     })
     async pairCount(): Promise<number> {
-        return await this.computePairCount();
+        return this.computePairCount();
     }
 
     async computePairCount(): Promise<number> {

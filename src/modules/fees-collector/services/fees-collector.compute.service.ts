@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { BigNumber } from 'bignumber.js';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
-import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
@@ -92,7 +92,7 @@ export class FeesCollectorComputeService {
             userAddress,
             week,
         );
-        return await this.weeklyRewardsSplittingCompute.computeDistribution(
+        return this.weeklyRewardsSplittingCompute.computeDistribution(
             userRewardsForWeek,
         );
     }
@@ -109,7 +109,7 @@ export class FeesCollectorComputeService {
         scAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.computeAccumulatedFeesUntilNow(scAddress, week);
+        return this.computeAccumulatedFeesUntilNow(scAddress, week);
     }
 
     async computeAccumulatedFeesUntilNow(
@@ -126,6 +126,49 @@ export class FeesCollectorComputeService {
             .toFixed();
     }
 
+    async computeUserLastWeekRewardsUSD(
+        scAddress: string,
+        userAddress: string,
+        additionalUserEnergy = '0',
+    ): Promise<string> {
+        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+            scAddress,
+        );
+        const lastWeek = currentWeek - 1;
+        const [totalRewardsForWeekUSD, userEnergyForWeek] = await Promise.all([
+            this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
+                scAddress,
+                lastWeek,
+            ),
+            this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                scAddress,
+                userAddress,
+                lastWeek,
+            ),
+        ]);
+        let totalEnergyForWeek =
+            await this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+                scAddress,
+                lastWeek,
+            );
+
+        userEnergyForWeek.amount = new BigNumber(userEnergyForWeek.amount)
+            .plus(additionalUserEnergy)
+            .toFixed();
+        totalEnergyForWeek = new BigNumber(totalEnergyForWeek)
+            .plus(additionalUserEnergy)
+            .toFixed();
+
+        const userRewardsForWeekUSD = new BigNumber(totalRewardsForWeekUSD)
+            .multipliedBy(userEnergyForWeek.amount)
+            .dividedBy(totalEnergyForWeek);
+
+        return userRewardsForWeekUSD.isNaN() ||
+            !userRewardsForWeekUSD.isFinite()
+            ? '0'
+            : userRewardsForWeekUSD.toFixed();
+    }
+
     async computeUserRewardsAPR(
         scAddress: string,
         userAddress: string,
@@ -139,49 +182,31 @@ export class FeesCollectorComputeService {
             return new BigNumber(0);
         }
 
-        const [currentWeek, baseAssetTokenID] = await Promise.all([
-            this.weekTimekeepingAbi.currentWeek(scAddress),
-            this.energyAbi.baseAssetTokenID(),
-        ]);
-        const lastWeek = currentWeek - 1;
+        const baseAssetTokenID = await this.energyAbi.baseAssetTokenID();
 
-        const [baseToken, userEnergy, totalRewardsForWeekUSD] =
-            await Promise.all([
-                this.tokenService.tokenMetadata(baseAssetTokenID),
-                this.energyService.getUserEnergy(userAddress),
-                this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
-                    scAddress,
-                    lastWeek,
-                ),
-            ]);
-
-        let totalEnergyForWeek =
-            await this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
+        const [
+            baseToken,
+            userEnergy,
+            baseAssetTokenPriceUSD,
+            userRewardsForWeekUSD,
+        ] = await Promise.all([
+            this.tokenService.tokenMetadata(baseAssetTokenID),
+            this.energyService.getUserEnergy(userAddress),
+            this.tokenCompute.tokenPriceDerivedUSD(baseAssetTokenID),
+            this.computeUserLastWeekRewardsUSD(
                 scAddress,
-                lastWeek,
-            );
+                userAddress,
+                customEnergyAmount,
+            ),
+        ]);
 
-        if (customEnergyAmount) {
-            totalEnergyForWeek = new BigNumber(totalEnergyForWeek)
-                .minus(userEnergy.amount)
-                .plus(customEnergyAmount)
-                .toFixed();
-        }
-
-        const baseAssetTokenPriceUSD =
-            await this.tokenCompute.computeTokenPriceDerivedUSD(
-                baseToken.identifier,
-            );
         const userLockedTokensValueUSD = computeValueUSD(
             customLockedTokens ?? userEnergy.totalLockedTokens,
             baseToken.decimals,
             baseAssetTokenPriceUSD,
         );
 
-        const userRewardsForWeekUSD = new BigNumber(totalRewardsForWeekUSD)
-            .multipliedBy(customEnergyAmount ?? userEnergy.amount)
-            .dividedBy(totalEnergyForWeek);
-        const userAPRForWeek = userRewardsForWeekUSD
+        const userAPRForWeek = new BigNumber(userRewardsForWeekUSD)
             .multipliedBy(52)
             .dividedBy(userLockedTokensValueUSD)
             .multipliedBy(100);
@@ -211,5 +236,47 @@ export class FeesCollectorComputeService {
         return blocksInEpoch.reduce((total, current) => {
             return total + current;
         });
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: Constants.oneHour() * 4,
+        localTtl: Constants.oneHour() * 3,
+    })
+    async accumulatedFeesUSD(week: number): Promise<string> {
+        return this.computeAccumulatedFeesUSD(week);
+    }
+
+    async computeAccumulatedFeesUSD(week: number): Promise<string> {
+        const allTokens = await this.feesCollectorAbi.allTokens();
+
+        const tokensMetadata = await this.tokenService.getAllTokensMetadata(
+            allTokens,
+        );
+        const tokenData = await Promise.all(
+            allTokens.map(async (tokenId) => ({
+                amount: await this.feesCollectorAbi.accumulatedFees(
+                    week,
+                    tokenId,
+                ),
+                price: await this.tokenCompute.tokenPriceDerivedUSD(tokenId),
+            })),
+        );
+
+        const usdValues = allTokens.map((tokenId, index) => {
+            return computeValueUSD(
+                tokenData[index].amount,
+                tokensMetadata[index].decimals,
+                tokenData[index].price,
+            );
+        });
+
+        const totalUsdValue = usdValues.reduce(
+            (sum, value) => sum.plus(value),
+            new BigNumber(0),
+        );
+
+        return totalUsdValue.toFixed();
     }
 }

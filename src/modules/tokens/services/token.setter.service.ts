@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
-import { EsdtToken } from '../models/esdtToken.model';
+import { BaseEsdtToken, EsdtToken } from '../models/esdtToken.model';
 import { NftCollection } from '../models/nftCollection.model';
 
 @Injectable()
@@ -41,7 +41,7 @@ export class TokenSetterService extends GenericSetterService {
     }
 
     async setEsdtTokenType(tokenID: string, type: string): Promise<string> {
-        return await this.setData(
+        return await this.setDataOrUpdateTtl(
             this.getTokenCacheKey(tokenID, 'getEsdtTokenType'),
             type,
             CacheTtlInfo.Token.remoteTtl,
@@ -146,8 +146,20 @@ export class TokenSetterService extends GenericSetterService {
         );
     }
 
-    async setCreatedAt(tokenID: string, value: string): Promise<string> {
+    async setBaseMetadata(tokenID: string, value: EsdtToken): Promise<string> {
         return await this.setData(
+            this.getTokenCacheKey(tokenID, 'baseTokenMetadata'),
+            new BaseEsdtToken({
+                identifier: tokenID,
+                decimals: value.decimals,
+            }),
+            CacheTtlInfo.BaseToken.remoteTtl,
+            CacheTtlInfo.BaseToken.localTtl,
+        );
+    }
+
+    async setCreatedAt(tokenID: string, value: string): Promise<string> {
+        return await this.setDataOrUpdateTtl(
             this.getTokenCacheKey(tokenID, 'tokenCreatedAt'),
             value,
             CacheTtlInfo.Token.remoteTtl,

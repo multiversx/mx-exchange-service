@@ -51,15 +51,6 @@ export class AutoRouterComputeService {
 
         const addressRoute = this.getAddressRoute(pairs, paths[pathIndex]);
 
-        this.logger.info(`Swap Type ${swapType}`, {
-            paths,
-            amounts,
-            bestPath: paths[pathIndex],
-            intermediaryAmounts: amounts[pathIndex],
-            addressRoute,
-            bestAmount,
-        });
-
         return {
             tokenRoute: paths[pathIndex],
             intermediaryAmounts: amounts[pathIndex],
@@ -101,7 +92,7 @@ export class AutoRouterComputeService {
         pairs: PairModel[],
         initialAmountIn: string,
     ): Array<string[]> {
-        const intermediaryAmounts: Array<string[]> = new Array();
+        const intermediaryAmounts: Array<string[]> = [];
 
         for (const path of paths) {
             const pathAmounts: string[] = [];
@@ -134,7 +125,7 @@ export class AutoRouterComputeService {
         pairs: PairModel[],
         fixedAmountOut: string,
     ): Array<string[]> {
-        const intermediaryAmounts: Array<string[]> = new Array();
+        const intermediaryAmounts: Array<string[]> = [];
 
         for (const path of paths) {
             const pathAmounts: string[] = [];

@@ -5,8 +5,10 @@ export class MetricsCollector {
     private static fieldDurationHistogram: Histogram<string>;
     private static queryDurationHistogram: Histogram<string>;
     private static queryCpuHistogram: Histogram<string>;
+    private static queryComplexityHistogram: Histogram<string>;
     private static awsQueryDurationHistogram: Histogram<string>;
     private static dataApiQueryDurationHistogram: Histogram<string>;
+    private static vmQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
     private static guestQueriesGauge: Gauge<string>;
     private static currentNonceGauge: Gauge<string>;
@@ -44,6 +46,15 @@ export class MetricsCollector {
             });
         }
 
+        if (!MetricsCollector.queryComplexityHistogram) {
+            MetricsCollector.queryComplexityHistogram = new Histogram({
+                name: 'query_complexity',
+                help: 'The estimated complexity of a query',
+                labelNames: ['query', 'origin'],
+                buckets: [],
+            });
+        }
+
         if (!MetricsCollector.awsQueryDurationHistogram) {
             MetricsCollector.awsQueryDurationHistogram = new Histogram({
                 name: 'aws_query',
@@ -57,6 +68,15 @@ export class MetricsCollector {
             MetricsCollector.dataApiQueryDurationHistogram = new Histogram({
                 name: 'data_api_query',
                 help: 'Data API Queries',
+                labelNames: ['query'],
+                buckets: [],
+            });
+        }
+
+        if (!MetricsCollector.vmQueryDurationHistogram) {
+            MetricsCollector.vmQueryDurationHistogram = new Histogram({
+                name: 'vm_query_duration',
+                help: 'VM Queries',
                 labelNames: ['query'],
                 buckets: [],
             });
@@ -133,6 +153,17 @@ export class MetricsCollector {
             .observe(duration);
     }
 
+    static setQueryComplexity(
+        query: string,
+        origin: string,
+        complexity: number,
+    ) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.queryComplexityHistogram
+            .labels(query, origin)
+            .observe(complexity);
+    }
+
     static setRedisDuration(action: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
         MetricsCollector.baseMetrics.setExternalCall('redis', duration);
@@ -156,6 +187,11 @@ export class MetricsCollector {
 
     static setExternalCall(system: string, func: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
+        if (system === 'vm.query') {
+            MetricsCollector.vmQueryDurationHistogram
+                .labels(func)
+                .observe(duration);
+        }
         MetricsCollector.baseMetrics.setExternalCall(system, duration);
     }
 

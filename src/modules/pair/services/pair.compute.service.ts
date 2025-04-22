@@ -25,10 +25,11 @@ import {
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
-import { ESTransactionsService } from 'src/services/elastic-search/services/es.transactions.service';
 import moment from 'moment';
+import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
+import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -49,8 +50,9 @@ export class PairComputeService implements IPairComputeService {
         private readonly apiService: MXApiService,
         private readonly farmCompute: FarmComputeServiceV2,
         private readonly stakingCompute: StakingComputeService,
+        private readonly routerAbi: RouterAbiService,
         private readonly cachingService: CacheService,
-        private readonly elasticTransactionsService: ESTransactionsService,
+        private readonly elasticEventsService: ElasticSearchEventsService,
     ) {}
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -76,7 +78,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async firstTokenPrice(pairAddress: string): Promise<string> {
-        return await this.computeFirstTokenPrice(pairAddress);
+        return this.computeFirstTokenPrice(pairAddress);
     }
 
     async computeFirstTokenPrice(pairAddress: string): Promise<string> {
@@ -105,7 +107,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async secondTokenPrice(pairAddress: string): Promise<string> {
-        return await this.computeSecondTokenPrice(pairAddress);
+        return this.computeSecondTokenPrice(pairAddress);
     }
 
     async computeSecondTokenPrice(pairAddress: string): Promise<string> {
@@ -134,7 +136,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async lpTokenPriceUSD(pairAddress: string): Promise<string> {
-        return await this.computeLpTokenPriceUSD(pairAddress);
+        return this.computeLpTokenPriceUSD(pairAddress);
     }
 
     async computeLpTokenPriceUSD(pairAddress: string): Promise<string> {
@@ -184,7 +186,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async tokenPriceUSD(tokenID: string): Promise<string> {
-        return await this.tokenCompute.tokenPriceDerivedUSD(tokenID);
+        return this.tokenCompute.tokenPriceDerivedUSD(tokenID);
     }
 
     @ErrorLoggerAsync({
@@ -196,7 +198,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async firstTokenPriceUSD(pairAddress: string): Promise<string> {
-        return await this.computeFirstTokenPriceUSD(pairAddress);
+        return this.computeFirstTokenPriceUSD(pairAddress);
     }
 
     async computeFirstTokenPriceUSD(pairAddress: string): Promise<string> {
@@ -218,15 +220,13 @@ export class PairComputeService implements IPairComputeService {
             return new BigNumber(tokenPrice).times(usdcPrice).toFixed();
         }
 
-        return await this.tokenCompute.computeTokenPriceDerivedUSD(
-            firstTokenID,
-        );
+        return this.tokenCompute.computeTokenPriceDerivedUSD(firstTokenID);
     }
 
     async getAllFirstTokensPriceUSD(
         pairAddresses: string[],
     ): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cachingService,
             pairAddresses,
             'pair.firstTokenPriceUSD',
@@ -244,7 +244,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Price.localTtl,
     })
     async secondTokenPriceUSD(pairAddress: string): Promise<string> {
-        return await this.computeSecondTokenPriceUSD(pairAddress);
+        return this.computeSecondTokenPriceUSD(pairAddress);
     }
 
     async computeSecondTokenPriceUSD(pairAddress: string): Promise<string> {
@@ -266,15 +266,13 @@ export class PairComputeService implements IPairComputeService {
             return new BigNumber(tokenPrice).times(usdcPrice).toFixed();
         }
 
-        return await this.tokenCompute.computeTokenPriceDerivedUSD(
-            secondTokenID,
-        );
+        return this.tokenCompute.computeTokenPriceDerivedUSD(secondTokenID);
     }
 
     async getAllSecondTokensPricesUSD(
         pairAddresses: string[],
     ): Promise<string[]> {
-        return await getAllKeys<string>(
+        return getAllKeys<string>(
             this.cachingService,
             pairAddresses,
             'pair.secondTokenPriceUSD',
@@ -313,6 +311,18 @@ export class PairComputeService implements IPairComputeService {
             .multipliedBy(firstTokenPriceUSD);
     }
 
+    async getAllFirstTokensLockedValueUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.firstTokenLockedValueUSD',
+            this.firstTokenLockedValueUSD.bind(this),
+            CacheTtlInfo.ContractInfo,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -343,6 +353,18 @@ export class PairComputeService implements IPairComputeService {
             .multipliedBy(secondTokenPriceUSD);
     }
 
+    async getAllSecondTokensLockedValueUSD(
+        pairAddresses: string[],
+    ): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.secondTokenLockedValueUSD',
+            this.secondTokenLockedValueUSD.bind(this),
+            CacheTtlInfo.ContractInfo,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -357,15 +379,45 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeLockedValueUSD(pairAddress: string): Promise<BigNumber> {
-        const [firstTokenLockedValueUSD, secondTokenLockedValueUSD] =
-            await Promise.all([
-                this.computeFirstTokenLockedValueUSD(pairAddress),
-                this.computeSecondTokenLockedValueUSD(pairAddress),
-            ]);
-
-        return new BigNumber(firstTokenLockedValueUSD).plus(
+        const [
+            firstTokenLockedValueUSD,
             secondTokenLockedValueUSD,
-        );
+            firstTokenID,
+            secondTokenID,
+            commonTokenIDs,
+        ] = await Promise.all([
+            this.computeFirstTokenLockedValueUSD(pairAddress),
+            this.computeSecondTokenLockedValueUSD(pairAddress),
+            this.pairAbi.firstTokenID(pairAddress),
+            this.pairAbi.secondTokenID(pairAddress),
+            this.routerAbi.commonTokensForUserPairs(),
+        ]);
+
+        if (
+            commonTokenIDs.includes(firstTokenID) &&
+            commonTokenIDs.includes(secondTokenID)
+        ) {
+            return new BigNumber(firstTokenLockedValueUSD).plus(
+                secondTokenLockedValueUSD,
+            );
+        }
+
+        const state = await this.pairAbi.state(pairAddress);
+        if (state === 'Active') {
+            return new BigNumber(firstTokenLockedValueUSD).plus(
+                secondTokenLockedValueUSD,
+            );
+        }
+
+        if (commonTokenIDs.includesNone([firstTokenID, secondTokenID])) {
+            return new BigNumber(0);
+        }
+
+        const commonTokenLockedValueUSD = commonTokenIDs.includes(firstTokenID)
+            ? new BigNumber(firstTokenLockedValueUSD)
+            : new BigNumber(secondTokenLockedValueUSD);
+
+        return commonTokenLockedValueUSD.multipliedBy(2);
     }
 
     @ErrorLoggerAsync({
@@ -377,7 +429,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
     async previous24hLockedValueUSD(pairAddress: string): Promise<string> {
-        return await this.computePrevious24hLockedValueUSD(pairAddress);
+        return this.computePrevious24hLockedValueUSD(pairAddress);
     }
 
     async computePrevious24hLockedValueUSD(
@@ -400,7 +452,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
     async firstTokenVolume(pairAddress: string, time: string): Promise<string> {
-        return await this.computeFirstTokenVolume(pairAddress, time);
+        return this.computeFirstTokenVolume(pairAddress, time);
     }
 
     async computeFirstTokenVolume(
@@ -410,7 +462,7 @@ export class PairComputeService implements IPairComputeService {
         if (!this.apiConfig.isAWSTimestreamRead()) {
             return '0';
         }
-        return await this.analyticsQuery.getAggregatedValue({
+        return this.analyticsQuery.getAggregatedValue({
             series: pairAddress,
             metric: 'firstTokenVolume',
             time,
@@ -429,7 +481,7 @@ export class PairComputeService implements IPairComputeService {
         pairAddress: string,
         time: string,
     ): Promise<string> {
-        return await this.computeSecondTokenVolume(pairAddress, time);
+        return this.computeSecondTokenVolume(pairAddress, time);
     }
 
     async computeSecondTokenVolume(
@@ -439,7 +491,7 @@ export class PairComputeService implements IPairComputeService {
         if (!this.apiConfig.isAWSTimestreamRead()) {
             return '0';
         }
-        return await this.analyticsQuery.getAggregatedValue({
+        return this.analyticsQuery.getAggregatedValue({
             series: pairAddress,
             metric: 'secondTokenVolume',
             time,
@@ -455,14 +507,14 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
     async volumeUSD(pairAddress: string): Promise<string> {
-        return await this.computeVolumeUSD(pairAddress, '24h');
+        return this.computeVolumeUSD(pairAddress, '24h');
     }
 
     async computeVolumeUSD(pairAddress: string, time: string): Promise<string> {
         if (!this.apiConfig.isAWSTimestreamRead()) {
             return '0';
         }
-        return await this.analyticsQuery.getAggregatedValue({
+        return this.analyticsQuery.getAggregatedValue({
             series: pairAddress,
             metric: 'volumeUSD',
             time,
@@ -470,7 +522,7 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async getAllVolumeUSD(pairAddresses: string[]): Promise<string[]> {
-        return await getAllKeys(
+        return getAllKeys(
             this.cachingService,
             pairAddresses,
             'pair.volumeUSD',
@@ -488,7 +540,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
     async previous24hVolumeUSD(pairAddress: string): Promise<string> {
-        return await this.computePrevious24hVolumeUSD(pairAddress);
+        return this.computePrevious24hVolumeUSD(pairAddress);
     }
 
     async computePrevious24hVolumeUSD(pairAddress: string): Promise<string> {
@@ -508,7 +560,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
     async feesUSD(pairAddress: string, time: string): Promise<string> {
-        return await this.computeFeesUSD(pairAddress, time);
+        return this.computeFeesUSD(pairAddress, time);
     }
 
     async computeFeesUSD(pairAddress: string, time: string): Promise<string> {
@@ -516,7 +568,7 @@ export class PairComputeService implements IPairComputeService {
             return '0';
         }
 
-        return await this.analyticsQuery.getAggregatedValue({
+        return this.analyticsQuery.getAggregatedValue({
             series: pairAddress,
             metric: 'feesUSD',
             time,
@@ -532,7 +584,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
     async previous24hFeesUSD(pairAddress: string): Promise<string> {
-        return await this.computePrevious24hFeesUSD(pairAddress);
+        return this.computePrevious24hFeesUSD(pairAddress);
     }
 
     async computePrevious24hFeesUSD(pairAddress: string): Promise<string> {
@@ -552,7 +604,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async feesAPR(pairAddress: string): Promise<string> {
-        return await this.computeFeesAPR(pairAddress);
+        return this.computeFeesAPR(pairAddress);
     }
 
     async computeFeesAPR(pairAddress: string): Promise<string> {
@@ -584,7 +636,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async type(pairAddress: string): Promise<string> {
-        return await this.computeTypeFromTokens(pairAddress);
+        return this.computeTypeFromTokens(pairAddress);
     }
 
     async computeTypeFromTokens(pairAddress: string): Promise<string> {
@@ -675,7 +727,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async hasFarms(pairAddress: string): Promise<boolean> {
-        return await this.computeHasFarms(pairAddress);
+        return this.computeHasFarms(pairAddress);
     }
 
     async computeHasFarms(pairAddress: string): Promise<boolean> {
@@ -700,7 +752,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async hasDualFarms(pairAddress: string): Promise<boolean> {
-        return await this.computeHasDualFarms(pairAddress);
+        return this.computeHasDualFarms(pairAddress);
     }
 
     async computeHasDualFarms(pairAddress: string): Promise<boolean> {
@@ -725,13 +777,11 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async tradesCount(pairAddress: string): Promise<number> {
-        return await this.computeTradesCount(pairAddress);
+        return this.computeTradesCount(pairAddress);
     }
 
     async computeTradesCount(pairAddress: string): Promise<number> {
-        return await this.elasticTransactionsService.computePairSwapCount(
-            pairAddress,
-        );
+        return this.elasticEventsService.getPairSwapCount(pairAddress);
     }
 
     @ErrorLoggerAsync({
@@ -743,14 +793,14 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async tradesCount24h(pairAddress: string): Promise<number> {
-        return await this.computeTradesCount24h(pairAddress);
+        return this.computeTradesCount24h(pairAddress);
     }
 
     async computeTradesCount24h(pairAddress: string): Promise<number> {
         const end = moment.utc().unix();
         const start = moment.unix(end).subtract(1, 'day').unix();
 
-        return await this.elasticTransactionsService.computePairSwapCount(
+        return this.elasticEventsService.getPairSwapCount(
             pairAddress,
             start,
             end,
@@ -758,7 +808,7 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async getAllTradesCount24h(pairAddresses: string[]): Promise<number[]> {
-        return await getAllKeys(
+        return getAllKeys(
             this.cachingService,
             pairAddresses,
             'pair.tradesCount24h',
@@ -776,7 +826,7 @@ export class PairComputeService implements IPairComputeService {
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async deployedAt(pairAddress: string): Promise<number> {
-        return await this.computeDeployedAt(pairAddress);
+        return this.computeDeployedAt(pairAddress);
     }
 
     async computeDeployedAt(pairAddress: string): Promise<number> {
@@ -833,7 +883,7 @@ export class PairComputeService implements IPairComputeService {
             return undefined;
         }
 
-        return await this.stakingProxyAbiService.stakingFarmAddress(
+        return this.stakingProxyAbiService.stakingFarmAddress(
             stakingProxyAddress,
         );
     }

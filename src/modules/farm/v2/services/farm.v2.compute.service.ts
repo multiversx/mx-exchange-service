@@ -15,7 +15,7 @@ import { FarmServiceV2 } from './farm.v2.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { IFarmComputeServiceV2 } from './interfaces';
@@ -76,7 +76,7 @@ export class FarmComputeServiceV2
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async farmBaseAPR(farmAddress: string): Promise<string> {
-        return await this.computeFarmBaseAPR(farmAddress);
+        return this.computeFarmBaseAPR(farmAddress);
     }
 
     async computeFarmBaseAPR(farmAddress: string): Promise<string> {
@@ -116,10 +116,7 @@ export class FarmComputeServiceV2
         positon: CalculateRewardsArgs,
         rewardPerShare: string,
     ): Promise<BigNumber> {
-        return await super.computeFarmRewardsForPosition(
-            positon,
-            rewardPerShare,
-        );
+        return super.computeFarmRewardsForPosition(positon, rewardPerShare);
     }
 
     computeBaseRewards(
@@ -150,7 +147,7 @@ export class FarmComputeServiceV2
             userAddress,
             week,
         );
-        return await this.weeklyRewardsSplittingCompute.computeDistribution([
+        return this.weeklyRewardsSplittingCompute.computeDistribution([
             new EsdtTokenPayment({
                 tokenID: rewardTokenID,
                 nonce: 0,
@@ -172,11 +169,7 @@ export class FarmComputeServiceV2
         userAddress: string,
         week: number,
     ): Promise<string> {
-        return await this.computeUserRewardsForWeek(
-            scAddress,
-            userAddress,
-            week,
-        );
+        return this.computeUserRewardsForWeek(scAddress, userAddress, week);
     }
 
     async userRewardsForWeek(
@@ -317,26 +310,15 @@ export class FarmComputeServiceV2
         return userRewardForWeek.toFixed();
     }
 
-    async computeUserCurentBoostedAPR(
+    async computeUserEstimatedWeeklyRewards(
         scAddress: string,
         userAddress: string,
         additionalUserFarmAmount = '0',
         additionalUserEnergy = '0',
-    ): Promise<number> {
-        const [
-            currentWeek,
-            boostedRewardsPerWeek,
-            farmToken,
-            farmedToken,
-            farmingTokenPriceUSD,
-            farmedTokenPriceUSD,
-        ] = await Promise.all([
+    ): Promise<string> {
+        const [currentWeek, boostedRewardsPerWeek] = await Promise.all([
             this.weekTimeKeepingAbi.currentWeek(scAddress),
             this.computeBoostedRewardsPerWeek(scAddress),
-            this.farmService.getFarmToken(scAddress),
-            this.farmService.getFarmedToken(scAddress),
-            this.farmingTokenPriceUSD(scAddress),
-            this.farmedTokenPriceUSD(scAddress),
         ]);
 
         let userTotalFarmPosition = await this.farmAbi.userTotalFarmPosition(
@@ -348,10 +330,10 @@ export class FarmComputeServiceV2
             .toFixed();
 
         if (userTotalFarmPosition === '0') {
-            return 0;
+            return '0';
         }
 
-        const userRewardsPerWeek = await this.computeUserRewardsForWeek(
+        return this.computeUserRewardsForWeek(
             scAddress,
             userAddress,
             currentWeek,
@@ -359,6 +341,38 @@ export class FarmComputeServiceV2
             additionalUserEnergy,
             boostedRewardsPerWeek,
         );
+    }
+
+    async computeUserCurentBoostedAPR(
+        scAddress: string,
+        userAddress: string,
+        additionalUserFarmAmount = '0',
+        additionalUserEnergy = '0',
+    ): Promise<number> {
+        const [
+            userRewardsPerWeek,
+            userTotalFarmPosition,
+            farmToken,
+            farmedToken,
+            farmingTokenPriceUSD,
+            farmedTokenPriceUSD,
+        ] = await Promise.all([
+            this.computeUserEstimatedWeeklyRewards(
+                scAddress,
+                userAddress,
+                additionalUserFarmAmount,
+                additionalUserEnergy,
+            ),
+            this.farmAbi.userTotalFarmPosition(scAddress, userAddress),
+            this.farmService.getFarmToken(scAddress),
+            this.farmService.getFarmedToken(scAddress),
+            this.farmingTokenPriceUSD(scAddress),
+            this.farmedTokenPriceUSD(scAddress),
+        ]);
+
+        if (userRewardsPerWeek === '0') {
+            return 0;
+        }
 
         const userTotalFarmPositionUSD = computeValueUSD(
             userTotalFarmPosition,
@@ -463,7 +477,7 @@ export class FarmComputeServiceV2
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async optimalEnergyPerLP(scAddress: string, week: number): Promise<string> {
-        return await this.computeOptimalEnergyPerLP(scAddress, week);
+        return this.computeOptimalEnergyPerLP(scAddress, week);
     }
 
     //
@@ -600,7 +614,7 @@ export class FarmComputeServiceV2
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async maxBoostedApr(farmAddress: string): Promise<string> {
-        return await this.computeMaxBoostedApr(farmAddress);
+        return this.computeMaxBoostedApr(farmAddress);
     }
 
     async computeMaxBoostedApr(farmAddress: string): Promise<string> {

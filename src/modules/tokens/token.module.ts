@@ -5,18 +5,15 @@ import { RouterModule } from '../router/router.module';
 import { EsdtTokenDbModel, EsdtTokenSchema } from './schemas/token.schema';
 import { TokenRepositoryService } from './services/token.repository.service';
 import { TokenService } from './services/token.service';
-import { AssetsResolver, TokensResolver } from './token.resolver';
+import { TokensResolver } from './token.resolver';
 import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenComputeService } from './services/token.compute.service';
 import { TokenSetterService } from './services/token.setter.service';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
-import { NftCollectionResolver } from './nftCollection.resolver';
 import { NftTokenResolver } from './nftToken.resolver';
 import { AnalyticsModule } from 'src/services/analytics/analytics.module';
-import { ElasticService } from 'src/helpers/elastic.service';
 import { TokenFilteringService } from './services/token.filtering.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
-import { ESLogsService } from 'src/services/elastic-search/services/es.logs.service';
 import { TokenLoader } from './services/token.loader';
 
 @Module({
@@ -37,13 +34,9 @@ import { TokenLoader } from './services/token.loader';
         TokenSetterService,
         TokenComputeService,
         TokenRepositoryService,
-        AssetsResolver,
         TokensResolver,
-        NftCollectionResolver,
         NftTokenResolver,
-        ElasticService,
         TokenFilteringService,
-        ESLogsService,
     ],
     exports: [
         TokenRepositoryService,

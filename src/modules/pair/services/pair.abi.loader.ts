@@ -1,7 +1,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { PairAbiService } from './pair.abi.service';
 import DataLoader from 'dataloader';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairService } from './pair.service';
 import { PairInfoModel } from '../models/pair-info.model';
@@ -60,13 +60,7 @@ export class PairAbiLoader {
 
     public readonly totalFeePercentLoader = new DataLoader<string, number>(
         async (addresses: string[]) => {
-            return getAllKeys<number>(
-                this.cacheService,
-                addresses,
-                'pair.totalFeePercent',
-                this.pairAbi.totalFeePercent.bind(this.pairAbi),
-                CacheTtlInfo.ContractState,
-            );
+            return this.pairAbi.getAllPairsTotalFeePercent(addresses);
         },
         {
             cache: false,

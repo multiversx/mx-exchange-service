@@ -16,7 +16,7 @@ export class WrapTransactionsService {
     async wrapEgld(sender: string, amount: string): Promise<TransactionModel> {
         const shardID = await this.mxProxy.getAddressShardID(sender);
 
-        return await this.mxProxy.getWrapSmartContractTransaction(
+        return this.mxProxy.getWrapSmartContractTransaction(
             shardID,
             new TransactionOptions({
                 function: 'wrapEgld',
@@ -37,7 +37,7 @@ export class WrapTransactionsService {
             this.wrapService.wrappedEgldToken(),
         ]);
 
-        return await this.mxProxy.getWrapSmartContractTransaction(
+        return this.mxProxy.getWrapSmartContractTransaction(
             shardID,
             new TransactionOptions({
                 function: 'unwrapEgld',

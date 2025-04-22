@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { Logger } from 'winston';
 import { PairMetadata } from '../models/pair.metadata.model';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class RouterSetterService extends GenericSetterService {
@@ -20,7 +21,8 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairsAddress'),
             value,
-            Constants.oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -28,7 +30,8 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('pairsMetadata'),
             value,
-            Constants.oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -44,7 +47,8 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('totalLockedValueUSD'),
             value,
-            Constants.oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -52,13 +56,30 @@ export class RouterSetterService extends GenericSetterService {
         return await this.setData(
             this.getCacheKey('totalFeesUSD', time),
             value,
-            Constants.oneMinute(),
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
     async setPairCount(value: number): Promise<string> {
         return await this.setData(
             this.getCacheKey('pairCount'),
+            value,
+            Constants.oneHour(),
+        );
+    }
+
+    async setOwner(value: string): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('owner'),
+            value,
+            Constants.oneHour(),
+        );
+    }
+
+    async setCommonTokensForUserPairs(value: string[]): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('commonTokensForUserPairs'),
             value,
             Constants.oneHour(),
         );

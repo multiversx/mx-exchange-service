@@ -15,6 +15,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IRouterAbiService } from './interfaces';
 import { constantsConfig } from 'src/config';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class RouterAbiService
@@ -28,10 +29,11 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: Constants.oneMinute(),
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async pairsAddress(): Promise<string[]> {
-        return await this.getAllPairsAddressRaw();
+        return this.getAllPairsAddressRaw();
     }
 
     async getAllPairsAddressRaw(): Promise<string[]> {
@@ -48,10 +50,11 @@ export class RouterAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'router',
-        remoteTtl: Constants.oneMinute(),
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async pairsMetadata(): Promise<PairMetadata[]> {
-        return await this.getPairsMetadataRaw();
+        return this.getPairsMetadataRaw();
     }
 
     async getPairsMetadataRaw(): Promise<PairMetadata[]> {
@@ -75,7 +78,7 @@ export class RouterAbiService
         remoteTtl: Constants.oneHour(),
     })
     async pairCreationEnabled(): Promise<boolean> {
-        return await this.getPairCreationEnabledRaw();
+        return this.getPairCreationEnabledRaw();
     }
 
     async getPairCreationEnabledRaw(): Promise<boolean> {
@@ -92,7 +95,7 @@ export class RouterAbiService
         remoteTtl: Constants.oneHour(),
     })
     async state(): Promise<boolean> {
-        return await this.getStateRaw();
+        return this.getStateRaw();
     }
 
     async getStateRaw(): Promise<boolean> {
@@ -108,7 +111,7 @@ export class RouterAbiService
         remoteTtl: Constants.oneHour(),
     })
     async owner(): Promise<string> {
-        return await this.getOwnerRaw();
+        return this.getOwnerRaw();
     }
 
     async getOwnerRaw(): Promise<string> {
@@ -124,7 +127,7 @@ export class RouterAbiService
         remoteTtl: Constants.oneHour(),
     })
     async allPairTokens(): Promise<PairTokens[]> {
-        return await this.getAllPairTokensRaw();
+        return this.getAllPairTokensRaw();
     }
 
     async getAllPairTokensRaw(): Promise<PairTokens[]> {
@@ -146,7 +149,7 @@ export class RouterAbiService
         remoteTtl: Constants.oneHour(),
     })
     async pairTemplateAddress(): Promise<string> {
-        return await this.getPairTemplateAddressRaw();
+        return this.getPairTemplateAddressRaw();
     }
 
     async getPairTemplateAddressRaw(): Promise<string> {
@@ -163,7 +166,7 @@ export class RouterAbiService
         remoteTtl: Constants.oneMinute() * 10,
     })
     async temporaryOwnerPeriod(): Promise<string> {
-        return await this.getTemporaryOwnerPeriodRaw();
+        return this.getTemporaryOwnerPeriodRaw();
     }
 
     async getTemporaryOwnerPeriodRaw(): Promise<string> {
@@ -182,7 +185,7 @@ export class RouterAbiService
     async enableSwapByUserConfig(
         tokenID: string,
     ): Promise<EnableSwapByUserConfig> {
-        return await this.getEnableSwapByUserConfigRaw(tokenID);
+        return this.getEnableSwapByUserConfigRaw(tokenID);
     }
 
     async getEnableSwapByUserConfigRaw(
@@ -221,7 +224,7 @@ export class RouterAbiService
         remoteTtl: Constants.oneHour(),
     })
     async commonTokensForUserPairs(): Promise<string[]> {
-        return await this.getCommonTokensForUserPairsRaw();
+        return this.getCommonTokensForUserPairsRaw();
     }
 
     async getCommonTokensForUserPairsRaw(): Promise<string[]> {

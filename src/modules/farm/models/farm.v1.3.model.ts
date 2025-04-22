@@ -5,13 +5,14 @@ import {
     FarmRewardType,
 } from './farm.model';
 import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
+import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 
 @ObjectType()
 export class FarmModelV1_3 extends BaseFarmModel {
     @Field()
     apr: string;
 
-    @Field({ nullable: true })
+    @Field({ nullable: true, complexity: nestedFieldComplexity })
     lockedAssetFactory: LockedAssetModel;
 
     @Field()

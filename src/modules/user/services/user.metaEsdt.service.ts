@@ -96,17 +96,20 @@ export class UserMetaEsdtService {
     async getUserLockedAssetTokens(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserLockedAssetToken[]> {
         const lockedMEXTokenID =
             await this.lockedAssetGetter.getLockedTokenID();
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            [lockedMEXTokenID],
-        );
-        return await Promise.all(
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => nft.collection === lockedMEXTokenID)
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  [lockedMEXTokenID],
+              );
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedAssetTokenUSD(
                     new LockedAssetToken(nft),
@@ -119,17 +122,20 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
         calculateUSD = true,
+        rawNfts?: NftToken[],
     ): Promise<UserFarmToken[]> {
         const farmTokenIDs = await this.farmAbiFactory
             .useAbi(Address.Zero().bech32())
             .getAllFarmTokenIds(farmsAddresses());
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            farmTokenIDs,
-        );
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => farmTokenIDs.includes(nft.collection))
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  farmTokenIDs,
+              );
         const userTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.farmTokenUSD(
@@ -146,19 +152,22 @@ export class UserMetaEsdtService {
     async getUserLockedLpTokens(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserLockedLPToken[]> {
         const lockedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             scAddress.proxyDexAddress.v1,
         );
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            [lockedLpTokenID],
-        );
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => nft.collection === lockedLpTokenID)
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  [lockedLpTokenID],
+              );
 
-        return await Promise.all(
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedLpTokenUSD(
                     new LockedLpToken(nft),
@@ -170,17 +179,20 @@ export class UserMetaEsdtService {
     async getUserLockedFarmTokens(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserLockedFarmToken[]> {
         const lockedFarmTokenID = await this.proxyFarmAbi.wrappedFarmTokenID(
             scAddress.proxyDexAddress.v1,
         );
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            [lockedFarmTokenID],
-        );
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => nft.collection === lockedFarmTokenID)
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  [lockedFarmTokenID],
+              );
         const userTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedFarmTokenUSD(
@@ -195,18 +207,21 @@ export class UserMetaEsdtService {
     async getUserLockedLpTokensV2(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserLockedLPTokenV2[]> {
         const lockedLpTokenID = await this.proxyPairAbi.wrappedLpTokenID(
             scAddress.proxyDexAddress.v2,
         );
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            [lockedLpTokenID],
-        );
-        return await Promise.all(
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => nft.collection === lockedLpTokenID)
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  [lockedLpTokenID],
+              );
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedLpTokenV2USD(
                     new LockedLpTokenV2(nft),
@@ -219,19 +234,22 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
         calculateUSD = true,
+        rawNfts?: NftToken[],
     ): Promise<UserLockedFarmTokenV2[]> {
         try {
             const lockedFarmTokenID =
                 await this.proxyFarmAbi.wrappedFarmTokenID(
                     scAddress.proxyDexAddress.v2,
                 );
-            const nfts = await this.contextGetter.getNftsForUser(
-                userAddress,
-                pagination.offset,
-                pagination.limit,
-                'MetaESDT',
-                [lockedFarmTokenID],
-            );
+            const nfts = rawNfts
+                ? rawNfts.filter((nft) => nft.collection === lockedFarmTokenID)
+                : await this.contextGetter.getNftsForUser(
+                      userAddress,
+                      pagination.offset,
+                      pagination.limit,
+                      'MetaESDT',
+                      [lockedFarmTokenID],
+                  );
             const userTokens = await Promise.all(
                 nfts.map((nft) =>
                     this.userComputeService.lockedFarmTokenV2USD(
@@ -251,6 +269,7 @@ export class UserMetaEsdtService {
     async getUserStakeFarmTokens(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserStakeFarmToken[]> {
         const stakingAddresses =
             await this.remoteConfigGetterService.getStakingAddresses();
@@ -258,13 +277,15 @@ export class UserMetaEsdtService {
             stakingAddresses,
         );
 
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            stakingTokenIDs,
-        );
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => stakingTokenIDs.includes(nft.collection))
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  stakingTokenIDs,
+              );
         const promises: Promise<UserStakeFarmToken>[] = [];
 
         nfts.forEach((nft) => {
@@ -279,12 +300,13 @@ export class UserMetaEsdtService {
                 );
             }
         });
-        return await Promise.all(promises);
+        return Promise.all(promises);
     }
 
     async getUserUnbondFarmTokens(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserUnbondFarmToken[]> {
         const stakingAddresses =
             await this.remoteConfigGetterService.getStakingAddresses();
@@ -292,13 +314,15 @@ export class UserMetaEsdtService {
             stakingAddresses,
         );
 
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            stakingTokenIDs,
-        );
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => stakingTokenIDs.includes(nft.collection))
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  stakingTokenIDs,
+              );
         const promises: Promise<UserUnbondFarmToken>[] = [];
         nfts.forEach((nft) => {
             if (
@@ -312,13 +336,14 @@ export class UserMetaEsdtService {
                 );
             }
         });
-        return await Promise.all(promises);
+        return Promise.all(promises);
     }
 
     async getUserDualYieldTokens(
         userAddress: string,
         pagination: PaginationArgs,
         calculateUSD = true,
+        rawNfts?: NftToken[],
     ): Promise<UserDualYiledToken[]> {
         const stakingProxyAddresses =
             await this.remoteConfigGetterService.getStakingProxyAddresses();
@@ -327,13 +352,17 @@ export class UserMetaEsdtService {
                 stakingProxyAddresses,
             );
 
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            dualYieldTokenIDs,
-        );
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) =>
+                  dualYieldTokenIDs.includes(nft.collection),
+              )
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  dualYieldTokenIDs,
+              );
         const userDualYieldTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.dualYieldTokenUSD(
@@ -349,20 +378,23 @@ export class UserMetaEsdtService {
     async getUserRedeemToken(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserRedeemToken[]> {
         const redeemTokenIDs =
             await this.priceDiscoveryAbi.getAllRedeemTokenIds(
                 scAddress.priceDiscovery,
             );
 
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            redeemTokenIDs,
-        );
-        return await Promise.all(
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => redeemTokenIDs.includes(nft.collection))
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  redeemTokenIDs,
+              );
+        return Promise.all(
             nfts.map((nft) => this.userComputeService.redeemTokenUSD(nft)),
         );
     }
@@ -370,6 +402,7 @@ export class UserMetaEsdtService {
     async getUserLockedEsdtToken(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserLockedEsdtToken[]> {
         const lockedEsdtTokenIDs = await Promise.all(
             scAddress.simpleLockAddress.map((address: string) =>
@@ -377,14 +410,18 @@ export class UserMetaEsdtService {
             ),
         );
 
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            lockedEsdtTokenIDs,
-        );
-        return await Promise.all(
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) =>
+                  lockedEsdtTokenIDs.includes(nft.collection),
+              )
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  lockedEsdtTokenIDs,
+              );
+        return Promise.all(
             nfts.map((nft) => this.userComputeService.lockedEsdtTokenUSD(nft)),
         );
     }
@@ -392,6 +429,7 @@ export class UserMetaEsdtService {
     async getUserLockedSimpleLpToken(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserLockedSimpleLpToken[]> {
         const lockedSimpleLpTokenIDs = await Promise.all(
             scAddress.simpleLockAddress.map((address: string) =>
@@ -399,14 +437,18 @@ export class UserMetaEsdtService {
             ),
         );
 
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            lockedSimpleLpTokenIDs,
-        );
-        return await Promise.all(
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) =>
+                  lockedSimpleLpTokenIDs.includes(nft.collection),
+              )
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  lockedSimpleLpTokenIDs,
+              );
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedSimpleLpTokenUSD(nft),
             ),
@@ -416,6 +458,7 @@ export class UserMetaEsdtService {
     async getUserLockedSimpleFarmToken(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserLockedSimpleFarmToken[]> {
         const lockedSimpleFarmTokenIDs = await Promise.all(
             scAddress.simpleLockAddress.map((address: string) =>
@@ -423,13 +466,17 @@ export class UserMetaEsdtService {
             ),
         );
 
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            lockedSimpleFarmTokenIDs,
-        );
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) =>
+                  lockedSimpleFarmTokenIDs.includes(nft.collection),
+              )
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  lockedSimpleFarmTokenIDs,
+              );
         const userTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedSimpleFarmTokenUSD(nft),
@@ -441,16 +488,19 @@ export class UserMetaEsdtService {
     async getUserLockedTokenEnergy(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserLockedTokenEnergy[]> {
         const lockedTokenEnergyID = await this.energyAbi.lockedTokenID();
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            [lockedTokenEnergyID],
-        );
-        return await Promise.all(
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => nft.collection === lockedTokenEnergyID)
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  [lockedTokenEnergyID],
+              );
+        return Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.lockedTokenEnergyUSD(nft),
             ),
@@ -460,16 +510,19 @@ export class UserMetaEsdtService {
     async getUserWrappedLockedTokenEnergy(
         userAddress: string,
         pagination: PaginationArgs,
+        rawNfts?: NftToken[],
     ): Promise<UserWrappedLockedToken[]> {
         const lockedTokenEnergyID =
             await this.lockedTokenWrapperAbi.wrappedTokenId();
-        const nfts = await this.contextGetter.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            [lockedTokenEnergyID],
-        );
+        const nfts = rawNfts
+            ? rawNfts.filter((nft) => nft.collection === lockedTokenEnergyID)
+            : await this.contextGetter.getNftsForUser(
+                  userAddress,
+                  pagination.offset,
+                  pagination.limit,
+                  'MetaESDT',
+                  [lockedTokenEnergyID],
+              );
         const userTokens = await Promise.all(
             nfts.map((nft) =>
                 this.userComputeService.wrappedLockedTokenEnergyUSD(nft),
@@ -605,7 +658,7 @@ export class UserMetaEsdtService {
             }
         }
 
-        return await Promise.all(promises);
+        return Promise.all(promises);
     }
 
     @ErrorLoggerAsync({
@@ -616,7 +669,7 @@ export class UserMetaEsdtService {
         remoteTtl: Constants.oneHour(),
     })
     private async nftTokenType(tokenID: string): Promise<NftTokenType> {
-        return await this.getNftTokenTypeRaw(tokenID);
+        return this.getNftTokenTypeRaw(tokenID);
     }
 
     private async getNftTokenTypeRaw(tokenID: string): Promise<NftTokenType> {

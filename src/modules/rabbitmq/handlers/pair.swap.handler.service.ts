@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
@@ -18,6 +18,8 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { TradingActivityAction } from 'src/modules/analytics/models/trading.activity.model';
+import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -30,9 +32,11 @@ export class SwapEventHandler {
         private readonly pairAbi: PairAbiService,
         private readonly pairService: PairService,
         private readonly pairSetter: PairSetterService,
+        @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
         private readonly routerAbi: RouterAbiService,
         private readonly routerCompute: RouterComputeService,
+        @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly tokenSetter: TokenSetterService,
         private readonly pairHandler: PairHandler,
@@ -244,6 +248,40 @@ export class SwapEventHandler {
             : await this.pubSub.publish(SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT, {
                   swapFixedOutputEvent: event,
               });
+
+        const pairsMetadata = await this.routerAbi.pairsMetadata();
+
+        const { quoteToken } = determineBaseAndQuoteTokens(
+            event.getAddress(),
+            pairsMetadata,
+            commonTokensIDs,
+        );
+
+        const tradingActivity = {
+            hash: event['txHash'],
+            address: event.getAddress(),
+            timestamp: event.getTimestamp(),
+            action:
+                quoteToken === event.getTokenOut().tokenID
+                    ? TradingActivityAction.BUY
+                    : TradingActivityAction.SELL,
+            inputToken: {
+                ...(event.getTokenIn().tokenID === firstToken.identifier
+                    ? firstToken
+                    : secondToken),
+                balance: event.getTokenIn().amount.toFixed(),
+            },
+            outputToken: {
+                ...(event.getTokenOut().tokenID === firstToken.identifier
+                    ? firstToken
+                    : secondToken),
+                balance: event.getTokenOut().amount.toFixed(),
+            },
+        };
+
+        this.pubSub.publish('tradingActivityEvent', {
+            tradingActivityEvent: tradingActivity,
+        });
 
         return [data, event.getTimestamp().toNumber()];
     }

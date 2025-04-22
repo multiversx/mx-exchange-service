@@ -77,6 +77,7 @@
     "tokenProviderUSD": "WEGLD-a28c59",
     "tokensSupply": ["MEX-a659d0"],
     "cachedTokensPrice": ["MEX-a659d0"],
+    "cryptoRatesIdentifiers": ["WBTC-05fd5b", "WETH-bbe4ab", "WEGLD-a28c59"], 
     "constants": {
         "MAX_SWAP_SPREAD": 0.9,
         "MEX_TOKEN_ID": "MEX-a659d0",

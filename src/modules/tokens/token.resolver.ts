@@ -1,7 +1,5 @@
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { AssetsModel, SocialModel } from './models/assets.model';
+import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { EsdtToken } from './models/esdtToken.model';
-import { RolesModel } from './models/roles.model';
 import {
     TokenSortingArgs,
     TokensFilter,
@@ -16,14 +14,10 @@ import ConnectionArgs, {
 } from '../common/filters/connection.args';
 import PageResponse from '../common/page.response';
 import { TokenLoader } from './services/token.loader';
-
-@Resolver(() => AssetsModel)
-export class AssetsResolver {
-    @ResolveField(() => SocialModel, { nullable: true })
-    async social(@Parent() parent: AssetsModel): Promise<SocialModel> {
-        return new SocialModel(parent.social);
-    }
-}
+import { UsePipes } from '@nestjs/common';
+import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
+import { relayQueryEstimator } from 'src/helpers/complexity/query.estimators';
+import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 
 @Resolver(() => EsdtToken)
 export class TokensResolver {
@@ -33,90 +27,87 @@ export class TokensResolver {
     ) {}
 
     @ResolveField(() => String)
-    async derivedEGLD(@Parent() parent: EsdtToken): Promise<string> {
+    async derivedEGLD(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenPriceDerivedEGLDLoader.load(
             parent.identifier,
         );
     }
 
     @ResolveField(() => String)
-    async price(@Parent() parent: EsdtToken): Promise<string> {
+    async price(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenPriceDerivedUSDLoader.load(
             parent.identifier,
         );
     }
 
     @ResolveField(() => String, { nullable: true })
-    async previous24hPrice(@Parent() parent: EsdtToken): Promise<string> {
+    async previous24hPrice(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenPrevious24hPriceLoader.load(
             parent.identifier,
         );
     }
 
     @ResolveField(() => String)
-    async type(@Parent() parent: EsdtToken): Promise<string> {
+    async type(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenTypeLoader.load(parent.identifier);
     }
 
-    @ResolveField(() => AssetsModel, { nullable: true })
-    async assets(@Parent() parent: EsdtToken): Promise<AssetsModel> {
-        return new AssetsModel(parent.assets);
-    }
-
-    @ResolveField(() => RolesModel, { nullable: true })
-    async roles(@Parent() parent: EsdtToken): Promise<RolesModel> {
-        return new RolesModel(parent.roles);
-    }
-
     @ResolveField(() => String, { nullable: true })
-    async previous7dPrice(@Parent() parent: EsdtToken): Promise<string> {
+    async previous7dPrice(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenPrevious7dPriceLoader.load(
             parent.identifier,
         );
     }
 
     @ResolveField(() => String, { nullable: true })
-    async volumeUSD24h(@Parent() parent: EsdtToken): Promise<string> {
+    async volumeUSD24h(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenVolumeUSD24hLoader.load(parent.identifier);
     }
 
     @ResolveField(() => String, { nullable: true })
-    async previous24hVolume(@Parent() parent: EsdtToken): Promise<string> {
+    async previous24hVolume(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenPrevious24hVolumeUSDLoader.load(
             parent.identifier,
         );
     }
 
     @ResolveField(() => String, { nullable: true })
-    async liquidityUSD(@Parent() parent: EsdtToken): Promise<string> {
+    async liquidityUSD(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenLiquidityUSDLoader.load(parent.identifier);
     }
 
     @ResolveField(() => String, { nullable: true })
-    async createdAt(@Parent() parent: EsdtToken): Promise<string> {
+    async createdAt(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenCreatedAtLoader.load(parent.identifier);
     }
 
     @ResolveField(() => Number, { nullable: true })
-    async swapCount24h(@Parent() parent: EsdtToken): Promise<number> {
+    async swapCount24h(parent: EsdtToken): Promise<number> {
         return this.tokenLoader.tokenSwapCountLoader.load(parent.identifier);
     }
 
     @ResolveField(() => Number, { nullable: true })
-    async previous24hSwapCount(@Parent() parent: EsdtToken): Promise<number> {
+    async previous24hSwapCount(parent: EsdtToken): Promise<number> {
         return this.tokenLoader.tokenPrevious24hSwapCountLoader.load(
             parent.identifier,
         );
     }
 
     @ResolveField(() => String, { nullable: true })
-    async trendingScore(@Parent() parent: EsdtToken): Promise<string> {
+    async trendingScore(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenTrendingScoreLoader.load(
             parent.identifier,
         );
     }
 
-    @Query(() => [EsdtToken])
+    @Query(() => [EsdtToken], {
+        complexity: (options: ComplexityEstimatorArgs) => {
+            return options.childComplexity * 400 + 1;
+        },
+        deprecationReason:
+            'Will be deprecated if favor of the  "filteredTokens" query following GraphQL "Connection" standard for pagination/sorting/filtering.',
+    })
+    @UsePipes(new QueryArgsValidationPipe())
     async tokens(@Args() filters: TokensFiltersArgs): Promise<EsdtToken[]> {
         try {
             return await this.tokenService.getTokens(filters);
@@ -129,7 +120,10 @@ export class TokensResolver {
         }
     }
 
-    @Query(() => TokensResponse)
+    @Query(() => TokensResponse, {
+        complexity: relayQueryEstimator,
+    })
+    @UsePipes(new QueryArgsValidationPipe())
     async filteredTokens(
         @Args({ name: 'filters', type: () => TokensFilter, nullable: true })
         filters: TokensFilter,
