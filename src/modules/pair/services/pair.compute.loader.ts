@@ -18,13 +18,7 @@ export class PairComputeLoader {
 
     public readonly firstTokenPriceLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return getAllKeys(
-                this.cacheService,
-                addresses,
-                'pair.firstTokenPrice',
-                this.pairCompute.firstTokenPrice.bind(this.pairCompute),
-                CacheTtlInfo.Price,
-            );
+            return this.pairCompute.getAllFirstTokensPrice(addresses);
         },
         {
             cache: false,
@@ -33,13 +27,7 @@ export class PairComputeLoader {
 
     public readonly secondTokenPriceLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
-            return getAllKeys(
-                this.cacheService,
-                addresses,
-                'pair.secondTokenPrice',
-                this.pairCompute.secondTokenPrice.bind(this.pairCompute),
-                CacheTtlInfo.Price,
-            );
+            return this.pairCompute.getAllSecondTokensPrice(addresses);
         },
         {
             cache: false,
