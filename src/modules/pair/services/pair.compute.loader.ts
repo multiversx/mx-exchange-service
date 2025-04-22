@@ -91,6 +91,24 @@ export class PairComputeLoader {
         },
     );
 
+    public readonly firstTokenVolumeLoader = new DataLoader<string, string>(
+        async (addresses: string[]) => {
+            return this.pairCompute.getAllFirstTokensVolume(addresses);
+        },
+        {
+            cache: false,
+        },
+    );
+
+    public readonly secondTokenVolumeLoader = new DataLoader<string, string>(
+        async (addresses: string[]) => {
+            return this.pairCompute.getAllSecondTokensVolume(addresses);
+        },
+        {
+            cache: false,
+        },
+    );
+
     public readonly lockedValueUSDLoader = new DataLoader<string, string>(
         async (addresses: string[]) => {
             return this.pairService.getAllLockedValueUSD(addresses);

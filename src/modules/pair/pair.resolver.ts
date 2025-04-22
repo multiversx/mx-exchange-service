@@ -239,12 +239,16 @@ export class PairResolver {
 
     @ResolveField()
     async firstTokenVolume24h(parent: PairModel): Promise<string> {
-        return this.pairCompute.firstTokenVolume(parent.address);
+        return this.pairComputeLoader.firstTokenVolumeLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
     async secondTokenVolume24h(parent: PairModel): Promise<string> {
-        return this.pairCompute.secondTokenVolume(parent.address);
+        return this.pairComputeLoader.secondTokenVolumeLoader.load(
+            parent.address,
+        );
     }
 
     @ResolveField()
