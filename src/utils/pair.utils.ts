@@ -1,8 +1,7 @@
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 export const determineBaseAndQuoteTokens = (
-    pairAddress: string,
-    pairsMetadata: PairMetadata[],
+    pair: PairMetadata,
     commonTokens: string[],
 ): { baseToken: string; quoteToken: string } => {
     const sortedCommonTokens = commonTokens.sort((a, b) => {
@@ -14,8 +13,6 @@ export const determineBaseAndQuoteTokens = (
         if (indexB === -1) return -1;
         return indexA - indexB;
     });
-
-    const pair = pairsMetadata.find((pair) => pair.address === pairAddress);
 
     for (const token of sortedCommonTokens) {
         if (pair.firstTokenID === token || pair.secondTokenID === token) {

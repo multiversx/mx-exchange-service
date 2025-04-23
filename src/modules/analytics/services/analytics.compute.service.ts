@@ -313,9 +313,10 @@ export class AnalyticsComputeService {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
         const commonTokens = await this.routerAbi.commonTokensForUserPairs();
 
+        const pair = pairsMetadata.find((pair) => pair.address === pairAddress);
+
         const { quoteToken, baseToken } = determineBaseAndQuoteTokens(
-            pairAddress,
-            pairsMetadata,
+            pair,
             commonTokens,
         );
 

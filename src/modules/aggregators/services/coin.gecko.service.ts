@@ -6,7 +6,7 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import BigNumber from 'bignumber.js';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { denominateAmount } from 'src/utils/token.converters';
-import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
 
 @Injectable()
 export class CoinGeckoService {
@@ -60,8 +60,10 @@ export class CoinGeckoService {
         );
 
         return activePairs.map((pair, index) => {
-            const { baseToken, targetToken } =
-                this.determineBaseAndTargetTokens(pair, commonTokens);
+            const { baseToken, quoteToken } = determineBaseAndQuoteTokens(
+                pair,
+                commonTokens,
+            );
 
             const firstToken = tokenMap.get(pair.firstTokenID);
             const secondToken = tokenMap.get(pair.secondTokenID);
@@ -90,10 +92,10 @@ export class CoinGeckoService {
             }
 
             return new CoinGeckoTicker({
-                ticker_id: `${baseToken}_${targetToken}`,
+                ticker_id: `${baseToken}_${quoteToken}`,
                 pool_id: pair.address,
                 base_currency: baseToken,
-                target_currency: targetToken,
+                target_currency: quoteToken,
                 last_price: new BigNumber(lastPrice).toFixed(10),
                 base_volume: baseVolume.toFixed(10),
                 target_volume: targetVolume.toFixed(10),
@@ -102,37 +104,5 @@ export class CoinGeckoService {
                 ).toFixed(5),
             });
         });
-    }
-
-    private determineBaseAndTargetTokens(
-        pair: PairMetadata,
-        commonTokens: string[],
-    ): { baseToken: string; targetToken: string } {
-        const sortedCommonTokens = commonTokens.sort((a, b) => {
-            const order = ['USD', 'USH', 'EGLD'];
-            const indexA = order.findIndex((token) => a.includes(token));
-            const indexB = order.findIndex((token) => b.includes(token));
-            if (indexA === -1 && indexB === -1) return 0;
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-        });
-
-        for (const token of sortedCommonTokens) {
-            if (pair.firstTokenID === token || pair.secondTokenID === token) {
-                return {
-                    baseToken: token,
-                    targetToken:
-                        pair.firstTokenID === token
-                            ? pair.secondTokenID
-                            : pair.firstTokenID,
-                };
-            }
-        }
-
-        return {
-            baseToken: pair.firstTokenID,
-            targetToken: pair.secondTokenID,
-        };
     }
 }
