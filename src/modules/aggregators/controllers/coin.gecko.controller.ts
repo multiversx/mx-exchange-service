@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { CoinGeckoService } from '../services/coin.gecko.service';
 import { CoinGeckoTicker } from '../dtos/coin.gecko.ticker';
 
-@Controller('cgk')
+@Controller('coingecko')
 export class CoinGeckoController {
     constructor(private readonly coinGeckoService: CoinGeckoService) {}
 
