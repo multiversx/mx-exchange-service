@@ -13,7 +13,6 @@ import cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { PushNotificationsModule } from './modules/push-notifications/push.notifications.module';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -90,11 +89,6 @@ async function bootstrap() {
             eventsNotifierApp.get<RabbitMqConsumer>(RabbitMqConsumer);
         await rabbitMqService.getFilterAddresses();
         await eventsNotifierApp.listen(5673, '0.0.0.0');
-    }
-
-    if (apiConfigService.isNotificationsModuleActive()) {
-        const pushNotificationsApp = await NestFactory.create(PushNotificationsModule);
-        await pushNotificationsApp.listen(5674, '0.0.0.0');
     }
 }
 bootstrap();

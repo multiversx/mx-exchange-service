@@ -12,13 +12,13 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { LockOption } from '../models/simple.lock.energy.model';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { AddressUtils, BinaryUtils } from '@multiversx/sdk-nestjs-common';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { scAddress } from 'src/config';
 import { IEnergyAbiService } from './interfaces';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
-import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
+
 @Injectable()
 export class EnergyAbiService
     extends GenericAbiService
@@ -27,7 +27,6 @@ export class EnergyAbiService
     constructor(
         protected readonly mxProxy: MXProxyService,
         private readonly mxAPI: MXApiService,
-        private readonly mxGateway: MXGatewayService,
     ) {
         super(mxProxy);
     }
@@ -216,28 +215,5 @@ export class EnergyAbiService
         const response = await this.getGenericData(interaction);
 
         return response.firstValue.valueOf();
-    }
-
-    @ErrorLoggerAsync()
-    async getUsersWithEnergy(): Promise<string[]> {
-        const contractAddress = scAddress.simpleLockEnergy;
-
-        const contractKeysRaw = await this.mxGateway.getSCStorageKeys(
-            contractAddress,
-            [],
-        );
-
-        const contractPairs = Object.entries(contractKeysRaw);
-
-        const userEnergyKey = BinaryUtils.stringToHex('userEnergy');
-        const userEnergyKeys = contractPairs
-            .filter(([key, _]) => key.startsWith(userEnergyKey))
-            .map(([key, _]) => key.replace(userEnergyKey, ''));
-
-        const userEnergyAddresses = userEnergyKeys.map((key) =>
-            AddressUtils.bech32Encode(key),
-        );
-
-        return userEnergyAddresses;
     }
 }
