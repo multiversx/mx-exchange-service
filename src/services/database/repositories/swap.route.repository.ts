@@ -15,4 +15,8 @@ export class SwapRouteRepositoryService extends EntityRepository<SwapRouteDocume
     ) {
         super(swapRouteModel);
     }
+
+    getModel(): Model<SwapRouteDocument> {
+        return this.swapRouteModel;
+    }
 }

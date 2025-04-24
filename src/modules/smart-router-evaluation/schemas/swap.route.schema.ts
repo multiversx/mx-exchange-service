@@ -5,6 +5,12 @@ export type SwapRouteDocument = SwapRoute & Document;
 
 @Schema()
 export class SwapRoute {
+    @Prop()
+    sender: string;
+    @Prop({ default: null })
+    txHash?: string;
+    @Prop({ index: true })
+    txData: string;
     @Prop({ index: true })
     timestamp: number;
     @Prop({ index: true })
