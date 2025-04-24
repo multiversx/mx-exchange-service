@@ -8,6 +8,7 @@ import { SwapRouteRepositoryService } from 'src/services/database/repositories/s
 import { SwapRoute } from '../schemas/swap.route.schema';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
+import { TransactionModel } from 'src/models/transaction.model';
 
 @Injectable()
 export class SmartRouterEvaluationService {
@@ -21,6 +22,7 @@ export class SmartRouterEvaluationService {
 
     async addFixedInputSwapComparison(
         autoRouteModel: AutoRouteModel,
+        transaction: TransactionModel,
     ): Promise<void> {
         if (autoRouteModel.swapType !== SWAP_TYPE.fixedInput) {
             return;
@@ -44,33 +46,36 @@ export class SmartRouterEvaluationService {
         const smartRouterOutput = new BigNumber(parallelRouteSwap.totalResult);
         const diff = smartRouterOutput.minus(amountOut);
         const percentage = diff.dividedBy(amountOut).multipliedBy(100);
-
-        const swapRouteDoc: SwapRoute = {
-            timestamp: moment().unix(),
-            tokenIn: tokenInID,
-            tokenOut: tokenOutID,
-            amountIn,
-            autoRouterAmountOut: amountOut,
-            autoRouterTokenRoute: tokenRoute,
-            autoRouterIntermediaryAmounts: intermediaryAmounts,
-            smartRouterAmountOut: parallelRouteSwap.totalResult,
-            smartRouterTokenRoutes: parallelRouteSwap.allocations.map(
-                (allocation) => allocation.tokenRoute,
-            ),
-            smartRouterIntermediaryAmounts: parallelRouteSwap.allocations.map(
-                (allocation) => allocation.intermediaryAmounts,
-            ),
-            outputDelta: diff.toFixed(),
-            outputDeltaPercentage: percentage.toNumber(),
-        };
-
         try {
+            const swapRouteDoc: SwapRoute = {
+                sender: transaction.sender,
+                txData: transaction.data,
+                timestamp: moment().unix(),
+                tokenIn: tokenInID,
+                tokenOut: tokenOutID,
+                amountIn,
+                autoRouterAmountOut: amountOut,
+                autoRouterTokenRoute: tokenRoute,
+                autoRouterIntermediaryAmounts: intermediaryAmounts,
+                smartRouterAmountOut: parallelRouteSwap.totalResult,
+                smartRouterTokenRoutes: parallelRouteSwap.allocations.map(
+                    (allocation) => allocation.tokenRoute,
+                ),
+                smartRouterIntermediaryAmounts:
+                    parallelRouteSwap.allocations.map(
+                        (allocation) => allocation.intermediaryAmounts,
+                    ),
+                outputDelta: diff.toFixed(),
+                outputDeltaPercentage: percentage.toNumber(),
+            };
+
             await this.swapRouteRepository.create(swapRouteDoc);
         } catch (error) {
             this.logger.error(
                 'Error when creating swap route comparison',
-                error,
+                error.message,
             );
         }
     }
+
 }
