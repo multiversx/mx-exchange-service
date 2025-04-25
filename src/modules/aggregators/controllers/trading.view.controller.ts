@@ -5,9 +5,9 @@ import {
     ConfigResponse,
     SymbolsResponse,
     supportedResolutions,
-} from './dtos/bars.response';
-import { TradingViewService } from './services/trading.view.service';
-import { TokenService } from '../tokens/services/token.service';
+} from '../dtos/bars.response';
+import { TradingViewService } from '../services/trading.view.service';
+import { TokenService } from '../../tokens/services/token.service';
 
 @Controller('trading-view')
 export class TradingViewController {

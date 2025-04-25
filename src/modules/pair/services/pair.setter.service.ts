@@ -243,10 +243,9 @@ export class PairSetterService extends GenericSetterService {
     async setFirstTokenVolume(
         pairAddress: string,
         value: string,
-        time: string,
     ): Promise<string> {
         return await this.setData(
-            this.getCacheKey('firstTokenVolume', pairAddress, time),
+            this.getCacheKey('firstTokenVolume', pairAddress),
             value,
             CacheTtlInfo.Analytics.remoteTtl,
             CacheTtlInfo.Analytics.localTtl,
@@ -256,10 +255,9 @@ export class PairSetterService extends GenericSetterService {
     async setSecondTokenVolume(
         pairAddress: string,
         value: string,
-        time: string,
     ): Promise<string> {
         return await this.setData(
-            this.getCacheKey('secondTokenVolume', pairAddress, time),
+            this.getCacheKey('secondTokenVolume', pairAddress),
             value,
             CacheTtlInfo.Analytics.remoteTtl,
             CacheTtlInfo.Analytics.localTtl,
