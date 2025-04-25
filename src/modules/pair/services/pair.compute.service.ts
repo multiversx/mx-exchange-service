@@ -98,6 +98,16 @@ export class PairComputeService implements IPairComputeService {
             .toFixed();
     }
 
+    async getAllFirstTokensPrice(pairAddresses: string[]): Promise<string[]> {
+        return getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.firstTokenPrice',
+            this.firstTokenPrice.bind(this),
+            CacheTtlInfo.Price,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -125,6 +135,16 @@ export class PairComputeService implements IPairComputeService {
         return secondTokenPrice
             .multipliedBy(`1e-${firstToken.decimals}`)
             .toFixed();
+    }
+
+    async getAllSecondTokensPrice(pairAddresses: string[]): Promise<string[]> {
+        return getAllKeys<string>(
+            this.cachingService,
+            pairAddresses,
+            'pair.secondTokenPrice',
+            this.secondTokenPrice.bind(this),
+            CacheTtlInfo.Price,
+        );
     }
 
     @ErrorLoggerAsync({
@@ -451,8 +471,8 @@ export class PairComputeService implements IPairComputeService {
         remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
-    async firstTokenVolume(pairAddress: string, time: string): Promise<string> {
-        return this.computeFirstTokenVolume(pairAddress, time);
+    async firstTokenVolume(pairAddress: string): Promise<string> {
+        return this.computeFirstTokenVolume(pairAddress, '24h');
     }
 
     async computeFirstTokenVolume(
@@ -469,6 +489,16 @@ export class PairComputeService implements IPairComputeService {
         });
     }
 
+    async getAllFirstTokensVolume(pairAddresses: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.firstTokenVolume',
+            this.firstTokenVolume.bind(this),
+            CacheTtlInfo.Analytics,
+        );
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -477,11 +507,8 @@ export class PairComputeService implements IPairComputeService {
         remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
         localTtl: CacheTtlInfo.Analytics.localTtl,
     })
-    async secondTokenVolume(
-        pairAddress: string,
-        time: string,
-    ): Promise<string> {
-        return this.computeSecondTokenVolume(pairAddress, time);
+    async secondTokenVolume(pairAddress: string): Promise<string> {
+        return this.computeSecondTokenVolume(pairAddress, '24h');
     }
 
     async computeSecondTokenVolume(
@@ -496,6 +523,16 @@ export class PairComputeService implements IPairComputeService {
             metric: 'secondTokenVolume',
             time,
         });
+    }
+
+    async getAllSecondTokensVolume(pairAddresses: string[]): Promise<string[]> {
+        return getAllKeys(
+            this.cachingService,
+            pairAddresses,
+            'pair.secondTokenVolume',
+            this.secondTokenVolume.bind(this),
+            CacheTtlInfo.Analytics,
+        );
     }
 
     @ErrorLoggerAsync({

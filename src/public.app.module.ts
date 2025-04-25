@@ -37,7 +37,7 @@ import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { PositionCreatorModule } from './modules/position-creator/position.creator.module';
 import { ComposableTasksModule } from './modules/composable-tasks/composable.tasks.module';
-import { TradingViewModule } from './modules/trading-view/trading.view.module';
+import { AggregatorsModule } from './modules/aggregators/aggregators.module';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 import { CurrencyConverterModule } from './modules/currency-converter/currency.converter.module';
 import { ConditionalModule } from '@nestjs/config';
@@ -104,7 +104,7 @@ import { ComplexityModule } from './complexity.module';
         PositionCreatorModule,
         ComposableTasksModule,
         DynamicModuleUtils.getCacheModule(),
-        TradingViewModule,
+        AggregatorsModule,
         CurrencyConverterModule,
         ConditionalModule.registerWhen(
             ComplexityModule,
