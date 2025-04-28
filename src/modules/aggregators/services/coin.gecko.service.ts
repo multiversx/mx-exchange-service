@@ -7,6 +7,7 @@ import BigNumber from 'bignumber.js';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { denominateAmount } from 'src/utils/token.converters';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
 
 @Injectable()
 export class CoinGeckoService {
@@ -60,8 +61,8 @@ export class CoinGeckoService {
         );
 
         return activePairs.map((pair, index) => {
-            const { baseToken, targetToken } =
-                this.determineBaseAndTargetTokens(pair, commonTokens);
+            const { baseToken: targetToken, quoteToken: baseToken } =
+                determineBaseAndQuoteTokens(pair, commonTokens);
 
             const firstToken = tokenMap.get(pair.firstTokenID);
             const secondToken = tokenMap.get(pair.secondTokenID);
@@ -107,36 +108,4 @@ export class CoinGeckoService {
             });
         });
     }
-
-    determineBaseAndTargetTokens = (
-        pair: PairMetadata,
-        commonTokens: string[],
-    ): { baseToken: string; targetToken: string } => {
-        const sortedCommonTokens = commonTokens.sort((a, b) => {
-            const order = ['USD', 'USH', 'WDAI', 'EGLD'];
-            const indexA = order.findIndex((token) => a.includes(token));
-            const indexB = order.findIndex((token) => b.includes(token));
-            if (indexA === -1 && indexB === -1) return 0;
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-        });
-
-        for (const token of sortedCommonTokens) {
-            if (pair.firstTokenID === token || pair.secondTokenID === token) {
-                return {
-                    baseToken:
-                        pair.firstTokenID === token
-                            ? pair.secondTokenID
-                            : pair.firstTokenID,
-                    targetToken: token,
-                };
-            }
-        }
-
-        return {
-            baseToken: pair.firstTokenID,
-            targetToken: pair.secondTokenID,
-        };
-    };
 }
