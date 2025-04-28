@@ -6,7 +6,7 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import BigNumber from 'bignumber.js';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { denominateAmount } from 'src/utils/token.converters';
-import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
+import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 @Injectable()
 export class CoinGeckoService {
@@ -60,42 +60,44 @@ export class CoinGeckoService {
         );
 
         return activePairs.map((pair, index) => {
-            const { baseToken, quoteToken } = determineBaseAndQuoteTokens(
-                pair,
-                commonTokens,
-            );
+            const { baseToken, targetToken } =
+                this.determineBaseAndTargetTokens(pair, commonTokens);
 
             const firstToken = tokenMap.get(pair.firstTokenID);
             const secondToken = tokenMap.get(pair.secondTokenID);
 
-            let lastPrice = firstTokensPrice[index];
-            let baseVolume = denominateAmount(
-                firstTokensVolume[index],
-                firstToken.decimals,
-            );
-            let targetVolume = denominateAmount(
-                secondTokensVolume[index],
-                secondToken.decimals,
-            );
+            const lastPrice =
+                firstToken.identifier === baseToken
+                    ? firstTokensPrice[index]
+                    : secondTokensPrice[index];
 
-            if (baseToken !== pair.firstTokenID) {
-                lastPrice = secondTokensPrice[index];
+            const baseVolume =
+                firstToken.identifier === baseToken
+                    ? denominateAmount(
+                          firstTokensVolume[index],
+                          firstToken.decimals,
+                      )
+                    : denominateAmount(
+                          secondTokensVolume[index],
+                          secondToken.decimals,
+                      );
 
-                baseVolume = denominateAmount(
-                    secondTokensVolume[index],
-                    secondToken.decimals,
-                );
-                targetVolume = denominateAmount(
-                    firstTokensVolume[index],
-                    firstToken.decimals,
-                );
-            }
+            const targetVolume =
+                firstToken.identifier === targetToken
+                    ? denominateAmount(
+                          firstTokensVolume[index],
+                          firstToken.decimals,
+                      )
+                    : denominateAmount(
+                          secondTokensVolume[index],
+                          secondToken.decimals,
+                      );
 
             return new CoinGeckoTicker({
-                ticker_id: `${baseToken}_${quoteToken}`,
+                ticker_id: `${baseToken}_${targetToken}`,
                 pool_id: pair.address,
                 base_currency: baseToken,
-                target_currency: quoteToken,
+                target_currency: targetToken,
                 last_price: new BigNumber(lastPrice).toFixed(10),
                 base_volume: baseVolume.toFixed(10),
                 target_volume: targetVolume.toFixed(10),
@@ -105,4 +107,36 @@ export class CoinGeckoService {
             });
         });
     }
+
+    determineBaseAndTargetTokens = (
+        pair: PairMetadata,
+        commonTokens: string[],
+    ): { baseToken: string; targetToken: string } => {
+        const sortedCommonTokens = commonTokens.sort((a, b) => {
+            const order = ['USD', 'USH', 'EGLD'];
+            const indexA = order.findIndex((token) => a.includes(token));
+            const indexB = order.findIndex((token) => b.includes(token));
+            if (indexA === -1 && indexB === -1) return 0;
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+
+        for (const token of sortedCommonTokens) {
+            if (pair.firstTokenID === token || pair.secondTokenID === token) {
+                return {
+                    baseToken:
+                        pair.firstTokenID === token
+                            ? pair.secondTokenID
+                            : pair.firstTokenID,
+                    targetToken: token,
+                };
+            }
+        }
+
+        return {
+            baseToken: pair.firstTokenID,
+            targetToken: pair.secondTokenID,
+        };
+    };
 }
