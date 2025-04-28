@@ -6,7 +6,6 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import BigNumber from 'bignumber.js';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { denominateAmount } from 'src/utils/token.converters';
-import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
 
 @Injectable()
