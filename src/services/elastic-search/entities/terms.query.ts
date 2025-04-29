@@ -13,3 +13,17 @@ export class CustomTermsQuery extends AbstractQuery {
         };
     }
 }
+
+export class TermFilter extends AbstractQuery {
+    constructor(private readonly key: string, private readonly value: any) {
+        super();
+    }
+
+    getQuery(): any {
+        return {
+            term: {
+                [this.key]: this.value,
+            },
+        };
+    }
+}

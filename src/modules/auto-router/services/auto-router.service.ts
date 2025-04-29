@@ -470,15 +470,6 @@ export class AutoRouterService {
         sender: string,
         parent: AutoRouteModel,
     ): Promise<TransactionModel[]> {
-        if (
-            parent.swapType === SWAP_TYPE.fixedInput &&
-            parent.parallelRouteSwap
-        ) {
-            await this.smartRouterEvaluationService.addFixedInputSwapComparison(
-                parent,
-            );
-        }
-
         if (parent.pairs.length == 1) {
             if (parent.swapType === SWAP_TYPE.fixedInput) {
                 const transaction =
@@ -493,6 +484,13 @@ export class AutoRouterService {
                             tolerance: parent.tolerance,
                         },
                     );
+
+                if (parent.parallelRouteSwap) {
+                    await this.smartRouterEvaluationService.addFixedInputSwapComparison(
+                        parent,
+                        transaction,
+                    );
+                }
 
                 return [transaction];
             }
@@ -518,17 +516,30 @@ export class AutoRouterService {
             throw new Error('Spread too big!');
         }
 
-        return this.autoRouterTransactionService.multiPairSwap(sender, {
-            swapType: parent.swapType,
-            tokenInID: parent.tokenInID,
-            tokenOutID: parent.tokenOutID,
-            addressRoute: parent.pairs.map((p) => {
-                return p.address;
-            }),
-            intermediaryAmounts: parent.intermediaryAmounts,
-            tokenRoute: parent.tokenRoute,
-            tolerance: parent.tolerance,
-        });
+        const transactions =
+            await this.autoRouterTransactionService.multiPairSwap(sender, {
+                swapType: parent.swapType,
+                tokenInID: parent.tokenInID,
+                tokenOutID: parent.tokenOutID,
+                addressRoute: parent.pairs.map((p) => {
+                    return p.address;
+                }),
+                intermediaryAmounts: parent.intermediaryAmounts,
+                tokenRoute: parent.tokenRoute,
+                tolerance: parent.tolerance,
+            });
+
+        if (
+            parent.parallelRouteSwap &&
+            parent.swapType === SWAP_TYPE.fixedInput
+        ) {
+            await this.smartRouterEvaluationService.addFixedInputSwapComparison(
+                parent,
+                transactions[0],
+            );
+        }
+
+        return transactions;
     }
 
     async getTokenPriceDeviationPercent(

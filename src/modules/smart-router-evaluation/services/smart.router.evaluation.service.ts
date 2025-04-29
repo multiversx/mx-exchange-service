@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import {
@@ -5,9 +6,11 @@ import {
     SWAP_TYPE,
 } from 'src/modules/auto-router/models/auto-route.model';
 import { SwapRouteRepositoryService } from 'src/services/database/repositories/swap.route.repository';
-import { SwapRoute } from '../schemas/swap.route.schema';
+import { SwapRoute, SwapRouteDocument } from '../schemas/swap.route.schema';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
+import { FilterQuery } from 'mongoose';
+import { TransactionModel } from 'src/models/transaction.model';
 
 @Injectable()
 export class SmartRouterEvaluationService {
@@ -21,6 +24,7 @@ export class SmartRouterEvaluationService {
 
     async addFixedInputSwapComparison(
         autoRouteModel: AutoRouteModel,
+        transaction: TransactionModel,
     ): Promise<void> {
         if (autoRouteModel.swapType !== SWAP_TYPE.fixedInput) {
             return;
@@ -46,6 +50,8 @@ export class SmartRouterEvaluationService {
         const percentage = diff.dividedBy(amountOut).multipliedBy(100);
 
         const swapRouteDoc: SwapRoute = {
+            sender: transaction.sender,
+            txData: transaction.data,
             timestamp: moment().unix(),
             tokenIn: tokenInID,
             tokenOut: tokenOutID,
@@ -69,8 +75,82 @@ export class SmartRouterEvaluationService {
         } catch (error) {
             this.logger.error(
                 'Error when creating swap route comparison',
-                error,
+                error.message,
             );
         }
+    }
+
+    async getGroupedUnconfirmedSwapRoutes(
+        cutoffTimestamp: number | undefined,
+    ): Promise<Map<string, SwapRouteDocument[]>> {
+        const filterQuery: FilterQuery<SwapRoute> = {
+            txHash: null,
+        };
+
+        if (cutoffTimestamp !== undefined) {
+            filterQuery.timestamp = { $gte: cutoffTimestamp };
+        }
+
+        const swaps = await this.swapRouteRepository
+            .getModel()
+            .find(filterQuery)
+            .sort({ timestamp: 'desc', _id: 1 })
+            .exec();
+
+        const uniqueSwaps = new Map<string, SwapRouteDocument[]>();
+        for (const swap of swaps) {
+            const tempSwap = {
+                sender: swap.sender,
+                txData: swap.txData,
+                tokenIn: swap.tokenIn,
+                tokenOut: swap.tokenOut,
+                amountIn: swap.amountIn,
+                autoRouterAmountOut: swap.autoRouterAmountOut,
+                autoRouterTokenRoute: swap.autoRouterTokenRoute,
+                autoRouterIntermediaryAmounts:
+                    swap.autoRouterIntermediaryAmounts,
+                smartRouterAmountOut: swap.smartRouterAmountOut,
+                smartRouterTokenRoutes: swap.smartRouterTokenRoutes,
+                smartRouterIntermediaryAmounts:
+                    swap.smartRouterIntermediaryAmounts,
+                outputDelta: swap.outputDelta,
+                outputDeltaPercentage: swap.outputDeltaPercentage,
+            };
+
+            const optionsHash = crypto
+                .createHash('md5')
+                .update(JSON.stringify(tempSwap))
+                .digest('hex');
+
+            if (!uniqueSwaps.has(optionsHash)) {
+                uniqueSwaps.set(optionsHash, []);
+            }
+
+            const currentSwaps = uniqueSwaps.get(optionsHash);
+            currentSwaps.push(swap);
+        }
+
+        return uniqueSwaps;
+    }
+
+    async updateSwapRoutes(bulkOps: any[]): Promise<void> {
+        try {
+            await this.swapRouteRepository.getModel().bulkWrite(bulkOps);
+        } catch (error) {
+            this.logger.error(error);
+        }
+    }
+
+    async purgeStaleComparisonSwapRoutes(
+        cutoffTimestamp: number | undefined,
+    ): Promise<void> {
+        if (cutoffTimestamp === undefined) {
+            return;
+        }
+
+        await this.swapRouteRepository.deleteMany({
+            txHash: null,
+            timestamp: { $lt: cutoffTimestamp },
+        });
     }
 }
