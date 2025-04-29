@@ -48,29 +48,29 @@ export class SmartRouterEvaluationService {
         const smartRouterOutput = new BigNumber(parallelRouteSwap.totalResult);
         const diff = smartRouterOutput.minus(amountOut);
         const percentage = diff.dividedBy(amountOut).multipliedBy(100);
-        try {
-            const swapRouteDoc: SwapRoute = {
-                sender: transaction.sender,
-                txData: transaction.data,
-                timestamp: moment().unix(),
-                tokenIn: tokenInID,
-                tokenOut: tokenOutID,
-                amountIn,
-                autoRouterAmountOut: amountOut,
-                autoRouterTokenRoute: tokenRoute,
-                autoRouterIntermediaryAmounts: intermediaryAmounts,
-                smartRouterAmountOut: parallelRouteSwap.totalResult,
-                smartRouterTokenRoutes: parallelRouteSwap.allocations.map(
-                    (allocation) => allocation.tokenRoute,
-                ),
-                smartRouterIntermediaryAmounts:
-                    parallelRouteSwap.allocations.map(
-                        (allocation) => allocation.intermediaryAmounts,
-                    ),
-                outputDelta: diff.toFixed(),
-                outputDeltaPercentage: percentage.toNumber(),
-            };
 
+        const swapRouteDoc: SwapRoute = {
+            sender: transaction.sender,
+            txData: transaction.data,
+            timestamp: moment().unix(),
+            tokenIn: tokenInID,
+            tokenOut: tokenOutID,
+            amountIn,
+            autoRouterAmountOut: amountOut,
+            autoRouterTokenRoute: tokenRoute,
+            autoRouterIntermediaryAmounts: intermediaryAmounts,
+            smartRouterAmountOut: parallelRouteSwap.totalResult,
+            smartRouterTokenRoutes: parallelRouteSwap.allocations.map(
+                (allocation) => allocation.tokenRoute,
+            ),
+            smartRouterIntermediaryAmounts: parallelRouteSwap.allocations.map(
+                (allocation) => allocation.intermediaryAmounts,
+            ),
+            outputDelta: diff.toFixed(),
+            outputDeltaPercentage: percentage.toNumber(),
+        };
+
+        try {
             await this.swapRouteRepository.create(swapRouteDoc);
         } catch (error) {
             this.logger.error(
