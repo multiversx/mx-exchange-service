@@ -11,6 +11,10 @@ import moment from 'moment';
 import BigNumber from 'bignumber.js';
 import { FilterQuery } from 'mongoose';
 import { TransactionModel } from 'src/models/transaction.model';
+import { SwapsEvaluationParams } from '../dtos/swaps.evaluation.params';
+import { TokenService } from 'src/modules/tokens/services/token.service';
+import { BaseEsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { mxConfig } from 'src/config';
 
 @Injectable()
 export class SmartRouterEvaluationService {
@@ -20,6 +24,7 @@ export class SmartRouterEvaluationService {
 
     constructor(
         private readonly swapRouteRepository: SwapRouteRepositoryService,
+        private readonly tokenService: TokenService,
     ) {}
 
     async addFixedInputSwapComparison(
@@ -152,5 +157,91 @@ export class SmartRouterEvaluationService {
             txHash: null,
             timestamp: { $lt: cutoffTimestamp },
         });
+    }
+
+    async getComparisonSwapRoutes(
+        params: SwapsEvaluationParams,
+    ): Promise<{ totalCount: number; swaps: SwapRoute[] }> {
+        const model = this.swapRouteRepository.getModel();
+
+        const filterObj: FilterQuery<SwapRoute> = {
+            outputDeltaPercentage: this.computeDeltaPercentageFilter(params),
+            txHash: { $ne: null },
+        };
+        if (params.tokenIn) {
+            filterObj.tokenIn = params.tokenIn;
+        }
+
+        if (params.tokenOut) {
+            filterObj.tokenOut = params.tokenOut;
+        }
+
+        if (params.start) {
+            const timestampQuery = {
+                $gte: params.start,
+            };
+
+            if (params.end) {
+                timestampQuery['$lte'] = params.end;
+            }
+            filterObj.timestamp = timestampQuery;
+        }
+
+        const totalCount = await model.find(filterObj).count();
+
+        const result = await model
+            .find(filterObj)
+            .sort({ timestamp: -1, _id: 1 })
+            .skip(params.offset)
+            .limit(params.size)
+            .exec();
+
+        return { swaps: result, totalCount };
+    }
+
+    async getDistinctTokens(): Promise<{
+        tokensIn: BaseEsdtToken[];
+        tokensOut: BaseEsdtToken[];
+    }> {
+        const model = this.swapRouteRepository.getModel();
+
+        const [distinctTokensIn, distinctTokensOut] = await Promise.all([
+            model.distinct('tokenIn'),
+            model.distinct('tokenOut'),
+        ]);
+
+        const uniqueTokens = [
+            ...new Set([...distinctTokensIn, ...distinctTokensOut]),
+        ].filter((token) => token !== mxConfig.EGLDIdentifier);
+
+        const tokensMap = (
+            await this.tokenService.getAllBaseTokensMetadata(uniqueTokens)
+        ).reduce(
+            (m, t) => m.set(t.identifier, t),
+            new Map<string, BaseEsdtToken>([
+                [
+                    mxConfig.EGLDIdentifier,
+                    {
+                        identifier: mxConfig.EGLDIdentifier,
+                        decimals: mxConfig.EGLDDecimals,
+                    },
+                ],
+            ]),
+        );
+
+        return {
+            tokensIn: distinctTokensIn.map((token) => tokensMap.get(token)),
+            tokensOut: distinctTokensOut.map((token) => tokensMap.get(token)),
+        };
+    }
+
+    private computeDeltaPercentageFilter(params: SwapsEvaluationParams) {
+        if (params.deltaComparison === 'eq') {
+            return params.delta;
+        }
+        if (params.deltaComparison === 'gt') {
+            return { $gt: params.delta };
+        }
+        return { $lt: params.delta };
     }
 }
