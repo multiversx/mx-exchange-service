@@ -7,9 +7,12 @@ import { Injectable } from '@nestjs/common';
 import { pushNotificationsConfig } from 'src/config';
 import { PushNotificationsSetterService } from './push.notifications.setter.service';
 import { XPortalApiService } from 'src/services/multiversx-communication/mx.xportal.api.service';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class PushNotificationsService {
+    private readonly logger = new Logger(PushNotificationsService.name);
+
     constructor(
         private readonly xPortalApiService: XPortalApiService,
         private readonly notificationsSetter: PushNotificationsSetterService,
@@ -25,37 +28,45 @@ export class PushNotificationsService {
         const failed: string[] = [];
         const successful: string[] = [];
 
-        for (let i = 0; i < addresses.length; i += batchSize) {
-            const batch = addresses.slice(i, i + batchSize);
-            try {
-                const success =
-                    await this.xPortalApiService.sendPushNotifications({
-                        addresses: batch,
-                        chainId,
-                        title: notificationParams.title,
-                        body: notificationParams.body,
-                        route: notificationParams.route,
-                        iconUrl: notificationParams.iconUrl,
-                    });
+        try {
+            for (let i = 0; i < addresses.length; i += batchSize) {
+                const batch = addresses.slice(i, i + batchSize);
+                try {
+                    const success =
+                        await this.xPortalApiService.sendPushNotifications({
+                            addresses: batch,
+                            chainId,
+                            title: notificationParams.title,
+                            body: notificationParams.body,
+                            route: notificationParams.route,
+                            iconUrl: notificationParams.iconUrl,
+                        });
 
-                if (success) {
-                    successful.push(...batch);
-                } else {
+                    if (success) {
+                        successful.push(...batch);
+                    } else {
+                        failed.push(...batch);
+                    }
+                } catch (error) {
                     failed.push(...batch);
                 }
-            } catch (error) {
-                failed.push(...batch);
             }
-        }
 
-        if (failed.length > 0) {
-            await this.notificationsSetter.addFailedNotifications(
-                failed,
-                notificationKey,
+            if (failed.length > 0) {
+                await this.notificationsSetter.addFailedNotifications(
+                    failed,
+                    notificationKey,
+                );
+            }
+
+            return { successful, failed };
+        } catch (error) {
+            this.logger.error(
+                `Error sending notifications: ${error.message}`,
+                'PushNotificationsService',
             );
+            throw error;
         }
-
-        return { successful, failed };
     }
 
     async retryFailedNotifications(
