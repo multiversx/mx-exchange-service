@@ -3,7 +3,6 @@ import {
     NotificationType,
 } from '../models/push.notifications.types';
 import { Injectable, Inject } from '@nestjs/common';
-import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PushNotificationsService } from '../services/push.notifications.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
@@ -13,6 +12,8 @@ import { pushNotificationsConfig, scAddress } from 'src/config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { RedlockService } from '@multiversx/sdk-nestjs-cache';
+import { LockAndRetry } from '../decorators/lock.retry.decorator';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
@@ -22,11 +23,15 @@ export class PushNotificationsEnergyCron {
         private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly redLockService: RedlockService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     @Cron(CronExpression.EVERY_DAY_AT_NOON)
-    @Lock({ name: 'feesCollectorRewardsCron', verbose: true })
+    @LockAndRetry({
+        lockKey: 'pushNotifications',
+        lockName: 'feesCollector',
+    })
     async feesCollectorRewardsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
         const firstWeekStartEpoch =
@@ -41,7 +46,6 @@ export class PushNotificationsEnergyCron {
         const isDevnet = process.env.NODE_ENV === 'devnet';
 
         if (isDevnet) {
-            this.logger.log('Sending notifications for devnet', 'PushNotificationsEnergyCron');
             const addresses = await this.energyAbiService.getUsersWithEnergy();
 
             await this.pushNotificationsService.sendNotificationsInBatches(
@@ -51,7 +55,6 @@ export class PushNotificationsEnergyCron {
                 ],
                 NotificationType.FEES_COLLECTOR_REWARDS,
             );
-            this.logger.log(`Sent ${addresses.length} notifications for devnet`, 'PushNotificationsEnergyCron');
             return;
         }
 
@@ -70,13 +73,15 @@ export class PushNotificationsEnergyCron {
                     ],
                     NotificationType.FEES_COLLECTOR_REWARDS,
                 );
-                this.logger.log(`Sent ${addresses.length} notifications for mainnet`, 'PushNotificationsEnergyCron');
             },
         );
     }
 
     @Cron('0 12 */2 * *') // Every 2 days at noon
-    @Lock({ name: 'negativeEnergyNotificationsCron', verbose: true })
+    @LockAndRetry({
+        lockKey: 'pushNotifications',
+        lockName: 'negativeEnergy',
+    })
     async negativeEnergyNotificationsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
 
@@ -93,14 +98,20 @@ export class PushNotificationsEnergyCron {
                     pushNotificationsConfig[NotificationType.NEGATIVE_ENERGY],
                     NotificationType.NEGATIVE_ENERGY,
                 );
-                this.logger.log(`Sent ${addresses.length} negative energy notifications`, 'PushNotificationsEnergyCron');
+                this.logger.log(
+                    `Sent ${addresses.length} negative energy notifications`,
+                    'PushNotificationsEnergyCron',
+                );
             },
             0,
         );
     }
 
     @Cron(CronExpression.EVERY_10_MINUTES)
-    @Lock({ name: 'retryFailedNotificationsCron', verbose: true })
+    @LockAndRetry({
+        lockKey: 'pushNotifications',
+        lockName: 'retryFailed',
+    })
     async retryFailedNotificationsCron() {
         const notificationTypes = Object.values(NotificationType);
 

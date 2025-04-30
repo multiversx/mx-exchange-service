@@ -10,6 +10,8 @@ import { CacheModule } from '../../services/caching/cache.module';
 import { EnergyModule } from '../energy/energy.module';
 import { PushNotificationsEnergyCron } from './crons/push.notifications.energy';
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+
 @Module({
     imports: [
         CommonAppModule,
@@ -20,6 +22,7 @@ import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-time
         CacheModule,
         EnergyModule,
         WeekTimekeepingModule,
+        DynamicModuleUtils.getRedlockModule(),
     ],
     providers: [
         PushNotificationsService,

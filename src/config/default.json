@@ -655,7 +655,8 @@
           "VOLUME_WEIGHT": 0.25,
           "TRADES_COUNT_WEIGHT": 0.25
         },
-        "AWS_QUERY_CACHE_WARMER_DELAY": 50
+        "AWS_QUERY_CACHE_WARMER_DELAY": 50,
+        "TIMESCALEDB_INSERT_CHUNK_SIZE": 30
     },
     "dataApi": {
         "tableName": "XEXCHANGE_ANALYTICS"
