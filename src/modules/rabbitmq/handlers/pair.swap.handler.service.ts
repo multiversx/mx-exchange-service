@@ -20,6 +20,7 @@ import { TokenSetterService } from 'src/modules/tokens/services/token.setter.ser
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TradingActivityAction } from 'src/modules/analytics/models/trading.activity.model';
 import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
+import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -249,11 +250,14 @@ export class SwapEventHandler {
                   swapFixedOutputEvent: event,
               });
 
-        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const pair = new PairMetadata({
+            address: event.getAddress(),
+            firstTokenID: firstToken.identifier,
+            secondTokenID: secondToken.identifier,
+        });
 
         const { quoteToken } = determineBaseAndQuoteTokens(
-            event.getAddress(),
-            pairsMetadata,
+            pair,
             commonTokensIDs,
         );
 

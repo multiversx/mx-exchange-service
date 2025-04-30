@@ -35,8 +35,6 @@ export class AutoRouterTransactionService {
         sender: string,
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
-        const transactions = [];
-
         const amountIn = new BigNumber(args.intermediaryAmounts[0]).plus(
             new BigNumber(args.intermediaryAmounts[0]).multipliedBy(
                 args.swapType === SWAP_TYPE.fixedOutput ? args.tolerance : 0,
@@ -97,20 +95,8 @@ export class AutoRouterTransactionService {
             await this.mxProxy.getRouterSmartContractTransaction(
                 transactionOptions,
             );
-        transactions.push(transaction);
 
-        if (args.tokenOutID === mxConfig.EGLDIdentifier) {
-            transactions.push(
-                await this.transactionsWrapService.unwrapEgld(
-                    sender,
-                    args.intermediaryAmounts[
-                        args.intermediaryAmounts.length - 1
-                    ],
-                ),
-            );
-        }
-
-        return transactions;
+        return [transaction];
     }
 
     multiPairFixedInputSwaps(args: MultiSwapTokensArgs): TypedValue[] {

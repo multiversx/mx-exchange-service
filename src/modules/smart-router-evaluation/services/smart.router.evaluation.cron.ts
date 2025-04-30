@@ -1,0 +1,116 @@
+import { Injectable } from '@nestjs/common';
+import { SmartRouterEvaluationService } from './smart.router.evaluation.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { Constants, Lock, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { SwapRouteDocument } from '../schemas/swap.route.schema';
+import {
+    ESOperationsService,
+    Operation,
+} from 'src/services/elastic-search/services/es.operations.service';
+import moment from 'moment';
+import { CacheService } from 'src/services/caching/cache.service';
+
+const SMART_ROUTER_BASE_KEY = 'smartRouter';
+
+@Injectable()
+export class SmartRouterEvaluationCronService {
+    private readonly logger = new OriginLogger(
+        SmartRouterEvaluationCronService.name,
+    );
+
+    constructor(
+        private readonly evaluationService: SmartRouterEvaluationService,
+        private readonly esOperationsService: ESOperationsService,
+        private readonly cachingService: CacheService,
+    ) {}
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    @Lock({ name: 'processUnconfirmedSwaps', verbose: true })
+    async processUnconfirmedSwaps(): Promise<void> {
+        const cutoffTimestamp = await this.getCutoffTimestamp();
+
+        const uniqueSwaps =
+            await this.evaluationService.getGroupedUnconfirmedSwapRoutes(
+                cutoffTimestamp,
+            );
+
+        for (const swapGroup of uniqueSwaps.values()) {
+            const newestSwap = swapGroup[0];
+            const oldestSwap = swapGroup[swapGroup.length - 1];
+
+            const operations =
+                await this.esOperationsService.getTransactionsBySenderAndData(
+                    newestSwap.sender,
+                    newestSwap.txData,
+                    oldestSwap.timestamp,
+                );
+
+            await this.updateSwapGroup(swapGroup, operations);
+        }
+
+        await this.evaluationService.purgeStaleComparisonSwapRoutes(
+            cutoffTimestamp,
+        );
+
+        await this.cachingService.setRemote(
+            `${SMART_ROUTER_BASE_KEY}.lastProcessedTimestamp`,
+            moment().unix(),
+            Constants.oneHour(),
+        );
+    }
+
+    private async updateSwapGroup(
+        swapGroup: SwapRouteDocument[],
+        operations: Operation[],
+    ): Promise<void> {
+        if (operations.length === 0) {
+            return;
+        }
+
+        if (operations.length > swapGroup.length) {
+            this.logger.warn('Found more transactions than persisted swaps');
+        }
+
+        const deleteIds = [];
+        const bulkOps = [];
+        for (let index = 0; index < swapGroup.length; index++) {
+            if (index > operations.length - 1) {
+                deleteIds.push(swapGroup[index]._id);
+            } else {
+                bulkOps.push({
+                    updateOne: {
+                        filter: { _id: swapGroup[index]._id },
+                        update: { $set: { txHash: operations[index]._search } },
+                    },
+                });
+            }
+        }
+
+        if (deleteIds.length > 0) {
+            bulkOps.push({
+                deleteMany: { filter: { _id: deleteIds } },
+            });
+        }
+
+        await this.evaluationService.updateSwapRoutes(bulkOps);
+    }
+
+    private async getCutoffTimestamp(): Promise<number | undefined> {
+        const lastProcessedTimestamp =
+            await this.cachingService.getRemote<number>(
+                `${SMART_ROUTER_BASE_KEY}.lastProcessedTimestamp`,
+            );
+
+        if (!lastProcessedTimestamp) {
+            return undefined;
+        }
+
+        const cutoffTimestamp = moment().subtract(10, 'minutes').unix();
+
+        if (lastProcessedTimestamp < cutoffTimestamp) {
+            return lastProcessedTimestamp;
+        }
+
+        return cutoffTimestamp;
+    }
+}
