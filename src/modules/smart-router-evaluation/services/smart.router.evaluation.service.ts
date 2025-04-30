@@ -200,38 +200,30 @@ export class SmartRouterEvaluationService {
     }
 
     async getDistinctTokens(): Promise<{
-        tokensIn: BaseEsdtToken[];
-        tokensOut: BaseEsdtToken[];
+        tokensIn: string[];
+        tokensOut: string[];
+        allTokensMetadata: BaseEsdtToken[];
     }> {
         const model = this.swapRouteRepository.getModel();
 
-        const [distinctTokensIn, distinctTokensOut] = await Promise.all([
-            model.distinct('tokenIn'),
-            model.distinct('tokenOut'),
-        ]);
+        const [distinctTokensIn, distinctTokensOut, uniqueTokensIDs] =
+            await Promise.all([
+                model.distinct('tokenIn'),
+                model.distinct('tokenOut'),
+                this.tokenService.getUniqueTokenIDs(false),
+            ]);
 
-        const uniqueTokens = [
-            ...new Set([...distinctTokensIn, ...distinctTokensOut]),
-        ].filter((token) => token !== mxConfig.EGLDIdentifier);
-
-        const tokensMap = (
-            await this.tokenService.getAllBaseTokensMetadata(uniqueTokens)
-        ).reduce(
-            (m, t) => m.set(t.identifier, t),
-            new Map<string, BaseEsdtToken>([
-                [
-                    mxConfig.EGLDIdentifier,
-                    {
-                        identifier: mxConfig.EGLDIdentifier,
-                        decimals: mxConfig.EGLDDecimals,
-                    },
-                ],
-            ]),
-        );
+        const allTokensMetadata =
+            await this.tokenService.getAllBaseTokensMetadata(uniqueTokensIDs);
+        allTokensMetadata.push({
+            identifier: mxConfig.EGLDIdentifier,
+            decimals: mxConfig.EGLDDecimals,
+        });
 
         return {
-            tokensIn: distinctTokensIn.map((token) => tokensMap.get(token)),
-            tokensOut: distinctTokensOut.map((token) => tokensMap.get(token)),
+            tokensIn: distinctTokensIn,
+            tokensOut: distinctTokensOut,
+            allTokensMetadata,
         };
     }
 

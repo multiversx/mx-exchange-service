@@ -36,8 +36,9 @@ export class SmartRouterEvaluationController {
     @UseGuards(JwtOrNativeAdminGuard)
     @Get('/swaps/tokens')
     async getDistinctTokens(): Promise<{
-        tokensIn: BaseEsdtToken[];
-        tokensOut: BaseEsdtToken[];
+        tokensIn: string[];
+        tokensOut: string[];
+        allTokensMetadata: BaseEsdtToken[];
     }> {
         return this.smartRouterEvaluationService.getDistinctTokens();
     }
