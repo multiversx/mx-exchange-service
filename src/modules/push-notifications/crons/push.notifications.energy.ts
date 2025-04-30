@@ -2,7 +2,7 @@ import {
     AccountType,
     NotificationType,
 } from '../models/push.notifications.types';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PushNotificationsService } from '../services/push.notifications.service';
@@ -11,6 +11,9 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { ElasticAccountsEnergyService } from 'src/services/elastic-search/services/es.accounts.energy.service';
 import { pushNotificationsConfig, scAddress } from 'src/config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
 @Injectable()
 export class PushNotificationsEnergyCron {
     constructor(
@@ -19,6 +22,7 @@ export class PushNotificationsEnergyCron {
         private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     @Cron(CronExpression.EVERY_DAY_AT_NOON)
@@ -37,7 +41,7 @@ export class PushNotificationsEnergyCron {
         const isDevnet = process.env.NODE_ENV === 'devnet';
 
         if (isDevnet) {
-            console.log('Sending notifications for devnet');
+            this.logger.log('Sending notifications for devnet', 'PushNotificationsEnergyCron');
             const addresses = await this.energyAbiService.getUsersWithEnergy();
 
             await this.pushNotificationsService.sendNotificationsInBatches(
@@ -47,6 +51,7 @@ export class PushNotificationsEnergyCron {
                 ],
                 NotificationType.FEES_COLLECTOR_REWARDS,
             );
+            this.logger.log(`Sent ${addresses.length} notifications for devnet`, 'PushNotificationsEnergyCron');
             return;
         }
 
@@ -65,6 +70,7 @@ export class PushNotificationsEnergyCron {
                     ],
                     NotificationType.FEES_COLLECTOR_REWARDS,
                 );
+                this.logger.log(`Sent ${addresses.length} notifications for mainnet`, 'PushNotificationsEnergyCron');
             },
         );
     }
@@ -87,6 +93,7 @@ export class PushNotificationsEnergyCron {
                     pushNotificationsConfig[NotificationType.NEGATIVE_ENERGY],
                     NotificationType.NEGATIVE_ENERGY,
                 );
+                this.logger.log(`Sent ${addresses.length} negative energy notifications`, 'PushNotificationsEnergyCron');
             },
             0,
         );
