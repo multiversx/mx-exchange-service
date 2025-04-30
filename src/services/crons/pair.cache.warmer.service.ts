@@ -137,12 +137,10 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setFirstTokenVolume(
                     pairAddress,
                     firstTokenVolume24h,
-                    time,
                 ),
                 this.pairSetterService.setSecondTokenVolume(
                     pairAddress,
                     secondTokenVolume24h,
-                    time,
                 ),
                 this.pairSetterService.setVolumeUSD(pairAddress, volumeUSD24h),
                 this.pairSetterService.setFeesUSD(
