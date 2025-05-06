@@ -23,6 +23,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
         EnergyModule,
         WeekTimekeepingModule,
         DynamicModuleUtils.getRedlockModule(),
+        DynamicModuleUtils.getCommonRedisModule(),
     ],
     providers: [
         PushNotificationsService,

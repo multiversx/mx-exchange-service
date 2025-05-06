@@ -13,6 +13,7 @@ import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/servi
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
+import { RedlockService } from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
@@ -22,6 +23,7 @@ export class PushNotificationsEnergyCron {
         private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly redLockService: RedlockService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
