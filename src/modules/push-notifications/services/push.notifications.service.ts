@@ -28,45 +28,32 @@ export class PushNotificationsService {
         const failed: string[] = [];
         const successful: string[] = [];
 
-        try {
-            for (let i = 0; i < addresses.length; i += batchSize) {
-                const batch = addresses.slice(i, i + batchSize);
-                try {
-                    const success =
-                        await this.xPortalApiService.sendPushNotifications({
-                            addresses: batch,
-                            chainId,
-                            title: notificationParams.title,
-                            body: notificationParams.body,
-                            route: notificationParams.route,
-                            iconUrl: notificationParams.iconUrl,
-                        });
+        for (let i = 0; i < addresses.length; i += batchSize) {
+            const batch = addresses.slice(i, i + batchSize);
+            const success = await this.xPortalApiService.sendPushNotifications({
+                addresses: batch,
+                chainId,
+                title: notificationParams.title,
+                body: notificationParams.body,
+                route: notificationParams.route,
+                iconUrl: notificationParams.iconUrl,
+            });
 
-                    if (success) {
-                        successful.push(...batch);
-                    } else {
-                        failed.push(...batch);
-                    }
-                } catch (error) {
-                    failed.push(...batch);
-                }
+            if (success) {
+                successful.push(...batch);
+            } else {
+                failed.push(...batch);
             }
-
-            if (failed.length > 0) {
-                await this.notificationsSetter.addFailedNotifications(
-                    failed,
-                    notificationKey,
-                );
-            }
-
-            return { successful, failed };
-        } catch (error) {
-            this.logger.error(
-                `Error sending notifications: ${error.message}`,
-                'PushNotificationsService',
-            );
-            throw error;
         }
+
+        if (failed.length > 0) {
+            await this.notificationsSetter.addFailedNotifications(
+                failed,
+                notificationKey,
+            );
+        }
+
+        return { successful, failed };
     }
 
     async retryFailedNotifications(
