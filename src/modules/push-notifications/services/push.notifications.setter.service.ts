@@ -34,6 +34,6 @@ export class PushNotificationsSetterService {
         if (!addresses || addresses.length === 0) return;
 
         const redisKey = `${this.failedNotificationsPrefix}.${notificationKey}`;
-        await this.redisCacheService.srem(redisKey, ...addresses);
+        await this.redisCacheService['redis'].srem(redisKey, ...addresses);
     }
 }
