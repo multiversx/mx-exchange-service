@@ -43,18 +43,25 @@ export class PushNotificationsEnergyCron {
             return;
         }
 
+        let successfulNotifications = 0;
+        let failedNotifications = 0;
+
         const isDevnet = process.env.NODE_ENV === 'devnet';
 
         if (isDevnet) {
             const addresses = await this.energyAbiService.getUsersWithEnergy();
 
-            await this.pushNotificationsService.sendNotificationsInBatches(
-                addresses,
-                pushNotificationsConfig[
-                    NotificationType.FEES_COLLECTOR_REWARDS
-                ],
-                NotificationType.FEES_COLLECTOR_REWARDS,
-            );
+            const result =
+                await this.pushNotificationsService.sendNotificationsInBatches(
+                    addresses,
+                    pushNotificationsConfig[
+                        NotificationType.FEES_COLLECTOR_REWARDS
+                    ],
+                    NotificationType.FEES_COLLECTOR_REWARDS,
+                );
+
+            successfulNotifications += result.successful.length;
+            failedNotifications += result.failed.length;
             return;
         }
 
@@ -66,14 +73,23 @@ export class PushNotificationsEnergyCron {
                     (item: AccountType) => item.address,
                 );
 
-                await this.pushNotificationsService.sendNotificationsInBatches(
-                    addresses,
-                    pushNotificationsConfig[
-                        NotificationType.FEES_COLLECTOR_REWARDS
-                    ],
-                    NotificationType.FEES_COLLECTOR_REWARDS,
-                );
+                const result =
+                    await this.pushNotificationsService.sendNotificationsInBatches(
+                        addresses,
+                        pushNotificationsConfig[
+                            NotificationType.FEES_COLLECTOR_REWARDS
+                        ],
+                        NotificationType.FEES_COLLECTOR_REWARDS,
+                    );
+
+                successfulNotifications += result.successful.length;
+                failedNotifications += result.failed.length;
             },
+        );
+
+        this.logger.log(
+            `Fees collector rewards cron completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
+            'PushNotificationsEnergyCron',
         );
     }
 
@@ -85,6 +101,9 @@ export class PushNotificationsEnergyCron {
     async negativeEnergyNotificationsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
 
+        let successfulNotifications = 0;
+        let failedNotifications = 0;
+
         await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
             currentEpoch - 1,
             'lt',
@@ -93,17 +112,24 @@ export class PushNotificationsEnergyCron {
                     (item: AccountType) => item.address,
                 );
 
-                await this.pushNotificationsService.sendNotificationsInBatches(
-                    addresses,
-                    pushNotificationsConfig[NotificationType.NEGATIVE_ENERGY],
-                    NotificationType.NEGATIVE_ENERGY,
-                );
-                this.logger.log(
-                    `Sent ${addresses.length} negative energy notifications`,
-                    'PushNotificationsEnergyCron',
-                );
+                const result =
+                    await this.pushNotificationsService.sendNotificationsInBatches(
+                        addresses,
+                        pushNotificationsConfig[
+                            NotificationType.NEGATIVE_ENERGY
+                        ],
+                        NotificationType.NEGATIVE_ENERGY,
+                    );
+
+                successfulNotifications += result.successful.length;
+                failedNotifications += result.failed.length;
             },
             0,
+        );
+
+        this.logger.log(
+            `Negative energy notifications cron completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
+            'PushNotificationsEnergyCron',
         );
     }
 
