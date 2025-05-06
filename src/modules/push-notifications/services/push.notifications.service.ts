@@ -7,12 +7,8 @@ import { Injectable } from '@nestjs/common';
 import { pushNotificationsConfig } from 'src/config';
 import { PushNotificationsSetterService } from './push.notifications.setter.service';
 import { XPortalApiService } from 'src/services/multiversx-communication/mx.xportal.api.service';
-import { Logger } from '@nestjs/common';
-
 @Injectable()
 export class PushNotificationsService {
-    private readonly logger = new Logger(PushNotificationsService.name);
-
     constructor(
         private readonly xPortalApiService: XPortalApiService,
         private readonly notificationsSetter: PushNotificationsSetterService,
