@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import { ApiService } from '@multiversx/sdk-nestjs-http';
 
@@ -13,6 +13,8 @@ type NotificationPayload = {
 
 @Injectable()
 export class XPortalApiService {
+    private readonly logger = new Logger(XPortalApiService.name);
+
     constructor(
         private readonly apiConfigService: ApiConfigService,
         private readonly apiService: ApiService,
@@ -38,6 +40,10 @@ export class XPortalApiService {
 
             return response.status === 201;
         } catch (error) {
+            this.logger.error(
+                `Error sending push notification: ${error.message}`,
+                'XPortalApiService',
+            );
             return false;
         }
     }
