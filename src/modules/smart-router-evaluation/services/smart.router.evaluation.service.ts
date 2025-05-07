@@ -80,6 +80,12 @@ export class SmartRouterEvaluationService {
         }
     }
 
+    async getSwapRouteByTxHash(
+        txHash: string,
+    ): Promise<SwapRouteDocument | null> {
+        return await this.swapRouteRepository.findOne({ txHash });
+    }
+
     async getGroupedUnconfirmedSwapRoutes(
         cutoffTimestamp: number | undefined,
     ): Promise<Map<string, SwapRouteDocument[]>> {

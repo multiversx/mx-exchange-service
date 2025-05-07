@@ -74,7 +74,11 @@ export class SmartRouterEvaluationCronService {
         const deleteIds = [];
         const bulkOps = [];
         for (let index = 0; index < swapGroup.length; index++) {
-            if (index > operations.length - 1) {
+            const existingSwapRoute =
+                await this.evaluationService.getSwapRouteByTxHash(
+                    operations[index]._search,
+                );
+            if (index > operations.length - 1 || existingSwapRoute !== null) {
                 deleteIds.push(swapGroup[index]._id);
             } else {
                 bulkOps.push({
