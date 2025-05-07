@@ -13,6 +13,7 @@ import {
     getOrderedReserves,
     getPairByTokens,
 } from 'src/utils/router.utils';
+import { constantsConfig } from 'src/config';
 
 export class SmartRouterService {
     /**
@@ -263,15 +264,49 @@ export class SmartRouterService {
             }
         }
 
+        let activeRoutesIndexes = validMask
+            .map((v, i) => (v ? i : -1))
+            .filter((i) => i >= 0);
+
+        while (
+            activeRoutesIndexes.length > constantsConfig.MAX_SMART_SWAP_ROUTES
+        ) {
+            // a. Compute current allocations for every active route
+            const allocations: BigNumber[] = activeRoutesIndexes.map(
+                (index) => {
+                    const { alpha, beta, epsilon } = pathParams[index];
+                    return this.calculateAllocation(alpha, beta, epsilon, phi);
+                },
+            );
+
+            // b. Find the route with the *smallest* allocation and disable it
+            let minIndexInActive = 0;
+            for (let i = 1; i < allocations.length; i++) {
+                if (allocations[i].lt(allocations[minIndexInActive])) {
+                    minIndexInActive = i;
+                }
+            }
+            validMask[activeRoutesIndexes[minIndexInActive]] = false;
+
+            // c. Recompute φ with the reduced set
+            phi = this.computeOptimalPhi(
+                pathParams.filter((_, idx) => validMask[idx]),
+                totalAmount,
+            );
+
+            // d. Update the active‑route index list
+            activeRoutesIndexes = validMask
+                .map((v, i) => (v ? i : -1))
+                .filter((i) => i >= 0);
+        }
+
         // 4. Calculate raw allocations for each valid route
         const rawAllocations: Array<{ path: string[]; allocation: BigNumber }> =
             [];
         let sumAllocations = new BigNumber(0);
 
-        for (let i = 0; i < pathParams.length; i++) {
-            if (!validMask[i]) continue;
-
-            const { alpha, beta, epsilon } = pathParams[i];
+        for (const index of activeRoutesIndexes) {
+            const { alpha, beta, epsilon } = pathParams[index];
             const allocation = this.calculateAllocation(
                 alpha,
                 beta,
@@ -280,7 +315,7 @@ export class SmartRouterService {
             );
 
             if (allocation.gt(0)) {
-                rawAllocations.push({ path: paths[i], allocation });
+                rawAllocations.push({ path: paths[index], allocation });
                 sumAllocations = sumAllocations.plus(allocation);
             }
         }
