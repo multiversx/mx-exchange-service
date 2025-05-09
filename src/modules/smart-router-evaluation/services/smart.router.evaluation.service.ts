@@ -85,6 +85,12 @@ export class SmartRouterEvaluationService {
         }
     }
 
+    async getSwapRouteByTxHash(
+        txHash: string,
+    ): Promise<SwapRouteDocument | null> {
+        return await this.swapRouteRepository.findOne({ txHash });
+    }
+
     async getGroupedUnconfirmedSwapRoutes(
         cutoffTimestamp: number | undefined,
     ): Promise<Map<string, SwapRouteDocument[]>> {
@@ -114,12 +120,6 @@ export class SmartRouterEvaluationService {
                 autoRouterTokenRoute: swap.autoRouterTokenRoute,
                 autoRouterIntermediaryAmounts:
                     swap.autoRouterIntermediaryAmounts,
-                smartRouterAmountOut: swap.smartRouterAmountOut,
-                smartRouterTokenRoutes: swap.smartRouterTokenRoutes,
-                smartRouterIntermediaryAmounts:
-                    swap.smartRouterIntermediaryAmounts,
-                outputDelta: swap.outputDelta,
-                outputDeltaPercentage: swap.outputDeltaPercentage,
             };
 
             const optionsHash = crypto
