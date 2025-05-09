@@ -264,48 +264,39 @@ export class SmartRouterService {
             }
         }
 
-        let activeRoutesIndexes = validMask
+        const activeRoutesIndexes = validMask
             .map((v, i) => (v ? i : -1))
             .filter((i) => i >= 0);
 
-        while (
-            activeRoutesIndexes.length > constantsConfig.MAX_SMART_SWAP_ROUTES
-        ) {
-            // a. Compute current allocations for every active route
-            const allocations: BigNumber[] = activeRoutesIndexes.map(
-                (index) => {
-                    const { alpha, beta, epsilon } = pathParams[index];
-                    return this.calculateAllocation(alpha, beta, epsilon, phi);
-                },
-            );
+        let allocationsAndIndexes: { alloc: BigNumber; index: number }[] =
+            activeRoutesIndexes.map((idx) => {
+                const { alpha, beta, epsilon } = pathParams[idx];
+                return {
+                    alloc: this.calculateAllocation(alpha, beta, epsilon, phi),
+                    index: idx,
+                };
+            });
 
-            // b. Find the route with the *smallest* allocation and disable it
-            let minIndexInActive = 0;
-            for (let i = 1; i < allocations.length; i++) {
-                if (allocations[i].lt(allocations[minIndexInActive])) {
-                    minIndexInActive = i;
-                }
-            }
-            validMask[activeRoutesIndexes[minIndexInActive]] = false;
+        allocationsAndIndexes.sort((a, b) => b.alloc.comparedTo(a.alloc));
 
-            // c. Recompute φ with the reduced set
-            phi = this.computeOptimalPhi(
-                pathParams.filter((_, idx) => validMask[idx]),
-                totalAmount,
-            );
+        allocationsAndIndexes = allocationsAndIndexes.slice(
+            0,
+            constantsConfig.MAX_SMART_SWAP_ROUTES,
+        );
 
-            // d. Update the active‑route index list
-            activeRoutesIndexes = validMask
-                .map((v, i) => (v ? i : -1))
-                .filter((i) => i >= 0);
-        }
+        const remainingIndexes = allocationsAndIndexes.map((a) => a.index);
+
+        phi = this.computeOptimalPhi(
+            pathParams.filter((_, idx) => remainingIndexes.includes(idx)),
+            totalAmount,
+        );
 
         // 4. Calculate raw allocations for each valid route
         const rawAllocations: Array<{ path: string[]; allocation: BigNumber }> =
             [];
         let sumAllocations = new BigNumber(0);
 
-        for (const index of activeRoutesIndexes) {
+        for (const index of remainingIndexes) {
             const { alpha, beta, epsilon } = pathParams[index];
             const allocation = this.calculateAllocation(
                 alpha,
