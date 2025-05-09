@@ -5,7 +5,6 @@ import { SwapRoute, SwapRouteSchema } from './schemas/swap.route.schema';
 import { SwapRouteRepositoryService } from 'src/services/database/repositories/swap.route.repository';
 import { TokenModule } from '../tokens/token.module';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { SmartRouterEvaluationController } from './smart.router.evaluation.controller';
 
 @Module({
     imports: [
@@ -17,7 +16,6 @@ import { SmartRouterEvaluationController } from './smart.router.evaluation.contr
     providers: [
         SmartRouterEvaluationService,
         SwapRouteRepositoryService,
-        SmartRouterEvaluationController,
         ApiConfigService,
     ],
     exports: [SmartRouterEvaluationService],
