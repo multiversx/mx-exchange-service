@@ -38,12 +38,16 @@ export class SmartRouterEvaluationCronService {
             const newestSwap = swapGroup[0];
             const oldestSwap = swapGroup[swapGroup.length - 1];
 
-            const operations =
+            let operations =
                 await this.esOperationsService.getTransactionsBySenderAndData(
                     newestSwap.sender,
                     newestSwap.txData,
                     oldestSwap.timestamp,
                 );
+
+            operations = operations.filter(
+                (operation) => operation.data === newestSwap.txData,
+            );
 
             await this.updateSwapGroup(swapGroup, operations);
         }
@@ -74,20 +78,27 @@ export class SmartRouterEvaluationCronService {
         const deleteIds = [];
         const bulkOps = [];
         for (let index = 0; index < swapGroup.length; index++) {
+            if (index > operations.length - 1) {
+                deleteIds.push(swapGroup[index]._id);
+                continue;
+            }
+
             const existingSwapRoute =
                 await this.evaluationService.getSwapRouteByTxHash(
                     operations[index]._search,
                 );
-            if (index > operations.length - 1 || existingSwapRoute !== null) {
+
+            if (existingSwapRoute !== null) {
                 deleteIds.push(swapGroup[index]._id);
-            } else {
-                bulkOps.push({
-                    updateOne: {
-                        filter: { _id: swapGroup[index]._id },
-                        update: { $set: { txHash: operations[index]._search } },
-                    },
-                });
+                continue;
             }
+
+            bulkOps.push({
+                updateOne: {
+                    filter: { _id: swapGroup[index]._id },
+                    update: { $set: { txHash: operations[index]._search } },
+                },
+            });
         }
 
         if (deleteIds.length > 0) {

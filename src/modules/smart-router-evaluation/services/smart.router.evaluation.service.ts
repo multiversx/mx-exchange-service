@@ -115,12 +115,6 @@ export class SmartRouterEvaluationService {
                 autoRouterTokenRoute: swap.autoRouterTokenRoute,
                 autoRouterIntermediaryAmounts:
                     swap.autoRouterIntermediaryAmounts,
-                smartRouterAmountOut: swap.smartRouterAmountOut,
-                smartRouterTokenRoutes: swap.smartRouterTokenRoutes,
-                smartRouterIntermediaryAmounts:
-                    swap.smartRouterIntermediaryAmounts,
-                outputDelta: swap.outputDelta,
-                outputDeltaPercentage: swap.outputDeltaPercentage,
             };
 
             const optionsHash = crypto
