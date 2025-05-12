@@ -1,31 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SmartRouterEvaluationService } from './smart.router.evaluation.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Constants, Lock, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { SwapRouteDocument } from '../schemas/swap.route.schema';
 import {
     ESOperationsService,
     Operation,
 } from 'src/services/elastic-search/services/es.operations.service';
 import moment from 'moment';
-import { CacheService } from 'src/services/caching/cache.service';
+import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import {
+    RedisCacheService,
+    RedlockService,
+} from '@multiversx/sdk-nestjs-cache';
+import { Logger } from 'winston';
 
 const SMART_ROUTER_BASE_KEY = 'smartRouter';
 
 @Injectable()
 export class SmartRouterEvaluationCronService {
-    private readonly logger = new OriginLogger(
-        SmartRouterEvaluationCronService.name,
-    );
-
     constructor(
         private readonly evaluationService: SmartRouterEvaluationService,
         private readonly esOperationsService: ESOperationsService,
-        private readonly cachingService: CacheService,
+        private readonly redLockService: RedlockService,
+        private readonly redisCacheService: RedisCacheService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     @Cron(CronExpression.EVERY_MINUTE)
-    @Lock({ name: 'processUnconfirmedSwaps', verbose: true })
+    @LockAndRetry({
+        lockKey: 'processUnconfirmedSwaps',
+        lockName: 'SmartRouterEvaluationCron',
+    })
     async processUnconfirmedSwaps(): Promise<void> {
         const cutoffTimestamp = await this.getCutoffTimestamp();
 
@@ -56,7 +63,7 @@ export class SmartRouterEvaluationCronService {
             cutoffTimestamp,
         );
 
-        await this.cachingService.setRemote(
+        await this.redisCacheService.set(
             `${SMART_ROUTER_BASE_KEY}.lastProcessedTimestamp`,
             moment().unix(),
             Constants.oneHour(),
@@ -103,7 +110,7 @@ export class SmartRouterEvaluationCronService {
             }
         }
 
-        this.logger.log(
+        this.logger.info(
             `Updating txHash for ${bulkOps.length} swap routes. Deleting ${deleteIds} redunant swap routes.`,
         );
 
@@ -117,10 +124,9 @@ export class SmartRouterEvaluationCronService {
     }
 
     private async getCutoffTimestamp(): Promise<number | undefined> {
-        const lastProcessedTimestamp =
-            await this.cachingService.getRemote<number>(
-                `${SMART_ROUTER_BASE_KEY}.lastProcessedTimestamp`,
-            );
+        const lastProcessedTimestamp = await this.redisCacheService.get<number>(
+            `${SMART_ROUTER_BASE_KEY}.lastProcessedTimestamp`,
+        );
 
         if (!lastProcessedTimestamp) {
             return undefined;

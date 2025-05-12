@@ -5,6 +5,7 @@ import { SwapRoute, SwapRouteSchema } from './schemas/swap.route.schema';
 import { SwapRouteRepositoryService } from 'src/services/database/repositories/swap.route.repository';
 import { TokenModule } from '../tokens/token.module';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
     imports: [
@@ -12,6 +13,8 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
             { name: SwapRoute.name, schema: SwapRouteSchema },
         ]),
         TokenModule,
+        DynamicModuleUtils.getRedlockModule(),
+        DynamicModuleUtils.getCommonRedisModule(),
     ],
     providers: [
         SmartRouterEvaluationService,
