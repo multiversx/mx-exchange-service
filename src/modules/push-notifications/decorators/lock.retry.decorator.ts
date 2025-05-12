@@ -1,6 +1,6 @@
 import { RedlockService } from '@multiversx/sdk-nestjs-cache';
+import { withLockAndRetry } from 'src/utils/lock.retry.utils';
 import { Logger } from 'winston';
-import { withLockAndRetry } from '../utils/lock.retry.utils';
 
 export function LockAndRetry(options: {
     lockKey: string;
