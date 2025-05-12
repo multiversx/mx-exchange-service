@@ -546,19 +546,14 @@ export class FarmComputeServiceV2
         scAddress: string,
         currentWeek: number,
     ): Promise<BigNumber> {
-        const [
-            undistributedBoostedRewards,
-            lastUndistributedBoostedRewardsCollectWeek,
-        ] = await Promise.all([
-            this.farmAbi.undistributedBoostedRewards(scAddress),
-            this.farmAbi.lastUndistributedBoostedRewardsCollectWeek(scAddress),
-        ]);
+        const lastUndistributedBoostedRewardsCollectWeek =
+            await this.farmAbi.lastUndistributedBoostedRewardsCollectWeek(
+                scAddress,
+            );
 
         const firstWeek = lastUndistributedBoostedRewardsCollectWeek + 1;
         const lastWeek = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS - 1;
-        if (firstWeek > lastWeek) {
-            return new BigNumber(undistributedBoostedRewards);
-        }
+
         const promises = [];
         for (let week = firstWeek; week <= lastWeek; week++) {
             promises.push(
@@ -569,12 +564,9 @@ export class FarmComputeServiceV2
             );
         }
         const remainingRewards = await Promise.all(promises);
-        const totalRemainingRewards = remainingRewards.reduce((acc, curr) => {
+        return remainingRewards.reduce((acc, curr) => {
             return new BigNumber(acc).plus(curr);
         });
-        return new BigNumber(undistributedBoostedRewards).plus(
-            totalRemainingRewards,
-        );
     }
 
     async computeBlocksInWeek(
