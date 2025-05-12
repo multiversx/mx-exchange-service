@@ -1,4 +1,5 @@
 import { RedlockService } from '@multiversx/sdk-nestjs-cache';
+import { delay } from 'src/helpers/helpers';
 import { Logger } from 'winston';
 
 interface LockRetryOptions {
@@ -56,10 +57,12 @@ export async function withLockAndRetry(
                     `Retrying operation ${lockName} (${retryCount}/${maxOperationRetries})`,
                     'LockRetryUtils',
                 );
-                await new Promise((resolve) => setTimeout(resolve, operationRetryInterval));
+                await delay(operationRetryInterval);
             }
         }
     }
+
+    await redLockService.release(lockKey, lockName);
 
     if (!success) {
         logger.error(
@@ -67,4 +70,4 @@ export async function withLockAndRetry(
             'LockRetryUtils',
         );
     }
-} 
+}
