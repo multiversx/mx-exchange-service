@@ -88,18 +88,24 @@ export class SmartRouterEvaluationCronService {
                     operations[index]._search,
                 );
 
-            if (existingSwapRoute !== null) {
-                deleteIds.push(swapGroup[index]._id);
+            if (existingSwapRoute === null) {
+                bulkOps.push({
+                    updateOne: {
+                        filter: { _id: swapGroup[index]._id },
+                        update: { $set: { txHash: operations[index]._search } },
+                    },
+                });
                 continue;
             }
 
-            bulkOps.push({
-                updateOne: {
-                    filter: { _id: swapGroup[index]._id },
-                    update: { $set: { txHash: operations[index]._search } },
-                },
-            });
+            if (existingSwapRoute._id !== swapGroup[index]._id) {
+                deleteIds.push(swapGroup[index]._id);
+            }
         }
+
+        this.logger.log(
+            `Updating txHash for ${bulkOps.length} swap routes. Deleting ${deleteIds} redunant swap routes.`,
+        );
 
         if (deleteIds.length > 0) {
             bulkOps.push({
