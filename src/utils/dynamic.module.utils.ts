@@ -38,6 +38,7 @@ export class DynamicModuleUtils {
                     host: configService.getCommonRedisUrl(),
                     port: configService.getCommonRedisPort(),
                     password: configService.getCommonRedisPassword(),
+                    tls: configService.getCommonRedisTls() ? {} : undefined,
                 }),
             inject: [ApiConfigService],
         });
@@ -51,6 +52,7 @@ export class DynamicModuleUtils {
                     host: configService.getCommonRedisUrl(),
                     port: configService.getCommonRedisPort(),
                     password: configService.getCommonRedisPassword(),
+                    tls: configService.getCommonRedisTls() ? {} : undefined,
                 }),
             ],
             inject: [ApiConfigService],

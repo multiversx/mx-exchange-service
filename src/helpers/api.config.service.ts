@@ -147,6 +147,14 @@ export class ApiConfigService {
         return password !== '' ? password : undefined;
     }
 
+    getCommonRedisTls(): boolean {
+        const redisTls = this.configService.get<string>('REDIS_COMMON_TLS');
+        if (!redisTls) {
+            throw new Error('No common redis tls flag present');
+        }
+        return redisTls === 'true';
+    }
+
     getApiUrl(): string {
         const apiUrl = this.configService.get<string>('MX_API_URL');
         if (!apiUrl) {
