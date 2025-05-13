@@ -140,6 +140,14 @@ export class ApiConfigService {
         return redisPort;
     }
 
+    getCommonRedisUser(): string | undefined {
+        const user = this.configService.get<string>('REDIS_COMMON_USER');
+        if (!user || user === '') {
+            return 'default';
+        }
+        return user;
+    }
+
     getCommonRedisPassword(): string | undefined {
         const password = this.configService.get<string>(
             'REDIS_COMMON_PASSWORD',
