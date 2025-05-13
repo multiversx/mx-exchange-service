@@ -496,21 +496,14 @@ export class StakingComputeService {
         scAddress: string,
         currentWeek: number,
     ): Promise<BigNumber> {
-        const [
-            undistributedBoostedRewards,
-            lastUndistributedBoostedRewardsCollectWeek,
-        ] = await Promise.all([
-            this.stakingAbi.undistributedBoostedRewards(scAddress),
-            this.stakingAbi.lastUndistributedBoostedRewardsCollectWeek(
+        const lastUndistributedBoostedRewardsCollectWeek =
+            await this.stakingAbi.lastUndistributedBoostedRewardsCollectWeek(
                 scAddress,
-            ),
-        ]);
+            );
 
         const firstWeek = lastUndistributedBoostedRewardsCollectWeek + 1;
         const lastWeek = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS - 1;
-        if (firstWeek > lastWeek) {
-            return new BigNumber(undistributedBoostedRewards);
-        }
+
         const promises = [];
         for (let week = firstWeek; week <= lastWeek; week++) {
             promises.push(
@@ -521,12 +514,9 @@ export class StakingComputeService {
             );
         }
         const remainingRewards = await Promise.all(promises);
-        const totalRemainingRewards = remainingRewards.reduce((acc, curr) => {
+        return remainingRewards.reduce((acc, curr) => {
             return new BigNumber(acc).plus(curr);
         });
-        return new BigNumber(undistributedBoostedRewards).plus(
-            totalRemainingRewards,
-        );
     }
 
     async computeUserRewardsDistributionForWeek(

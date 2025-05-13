@@ -648,7 +648,7 @@ export class StakingAbiService
     ): Promise<number> {
         return this.gatewayService.getSCStorageKey(
             stakeAddress,
-            'lastUndistributedBoostedRewardsCollectWeek',
+            'lastCollectUndistWeek',
         );
     }
 
