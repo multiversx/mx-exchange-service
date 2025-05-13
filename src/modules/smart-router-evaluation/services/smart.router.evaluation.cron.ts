@@ -15,6 +15,7 @@ import {
     RedlockService,
 } from '@multiversx/sdk-nestjs-cache';
 import { Logger } from 'winston';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 
 const SMART_ROUTER_BASE_KEY = 'smartRouter';
 
@@ -34,12 +35,19 @@ export class SmartRouterEvaluationCronService {
         lockName: 'SmartRouterEvaluationCron',
     })
     async processUnconfirmedSwaps(): Promise<void> {
+        this.logger.info('Start process unconfirmed swaps', {
+            context: 'SmartRouterEvaluationCron',
+        });
+        const performance = new PerformanceProfiler();
+
         const cutoffTimestamp = await this.getCutoffTimestamp();
 
         const uniqueSwaps =
             await this.evaluationService.getGroupedUnconfirmedSwapRoutes(
                 cutoffTimestamp,
             );
+
+        let updatedSwapsCount = 0;
 
         for (const swapGroup of uniqueSwaps.values()) {
             const newestSwap = swapGroup[0];
@@ -56,7 +64,8 @@ export class SmartRouterEvaluationCronService {
                 (operation) => operation.data === newestSwap.txData,
             );
 
-            await this.updateSwapGroup(swapGroup, operations);
+            const updated = await this.updateSwapGroup(swapGroup, operations);
+            updatedSwapsCount += updated;
         }
 
         await this.evaluationService.purgeStaleComparisonSwapRoutes(
@@ -68,59 +77,65 @@ export class SmartRouterEvaluationCronService {
             moment().unix(),
             Constants.oneHour(),
         );
+
+        performance.stop();
+
+        this.logger.info(
+            `Updated txHash field for ${updatedSwapsCount} swaps in ${
+                performance.duration / 1000
+            }s`,
+            {
+                context: 'SmartRouterEvaluationCron',
+            },
+        );
     }
 
     private async updateSwapGroup(
         swapGroup: SwapRouteDocument[],
         operations: Operation[],
-    ): Promise<void> {
+    ): Promise<number> {
         if (operations.length === 0) {
-            return;
+            return 0;
         }
 
         if (operations.length > swapGroup.length) {
             this.logger.warn('Found more transactions than persisted swaps');
         }
 
-        const deleteIds = [];
         const bulkOps = [];
-        for (let index = 0; index < swapGroup.length; index++) {
-            if (index > operations.length - 1) {
-                deleteIds.push(swapGroup[index]._id);
-                continue;
-            }
+        let swapIndex = 0;
 
+        for (const operation of operations) {
             const existingSwapRoute =
                 await this.evaluationService.getSwapRouteByTxHash(
-                    operations[index]._search,
+                    operation._search,
                 );
 
-            if (existingSwapRoute === null) {
-                bulkOps.push({
-                    updateOne: {
-                        filter: { _id: swapGroup[index]._id },
-                        update: { $set: { txHash: operations[index]._search } },
-                    },
-                });
+            if (existingSwapRoute !== null) {
                 continue;
             }
 
-            if (existingSwapRoute._id !== swapGroup[index]._id) {
-                deleteIds.push(swapGroup[index]._id);
-            }
-        }
-
-        this.logger.info(
-            `Updating txHash for ${bulkOps.length} swap routes. Deleting ${deleteIds} redunant swap routes.`,
-        );
-
-        if (deleteIds.length > 0) {
             bulkOps.push({
-                deleteMany: { filter: { _id: deleteIds } },
+                updateOne: {
+                    filter: { _id: swapGroup[swapIndex]._id },
+                    update: {
+                        $set: {
+                            txHash: operation._search,
+                        },
+                    },
+                },
             });
+
+            swapIndex += 1;
+
+            if (swapIndex > operations.length - 1) {
+                break;
+            }
         }
 
         await this.evaluationService.updateSwapRoutes(bulkOps);
+
+        return bulkOps.length;
     }
 
     private async getCutoffTimestamp(): Promise<number | undefined> {
