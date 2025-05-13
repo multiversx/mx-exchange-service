@@ -140,11 +140,27 @@ export class ApiConfigService {
         return redisPort;
     }
 
+    getCommonRedisUser(): string | undefined {
+        const user = this.configService.get<string>('REDIS_COMMON_USER');
+        if (!user || user === '') {
+            return 'default';
+        }
+        return user;
+    }
+
     getCommonRedisPassword(): string | undefined {
         const password = this.configService.get<string>(
             'REDIS_COMMON_PASSWORD',
         );
         return password !== '' ? password : undefined;
+    }
+
+    getCommonRedisTls(): boolean {
+        const redisTls = this.configService.get<string>('REDIS_COMMON_TLS');
+        if (!redisTls) {
+            throw new Error('No common redis tls flag present');
+        }
+        return redisTls === 'true';
     }
 
     getApiUrl(): string {
