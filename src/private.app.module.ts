@@ -8,6 +8,8 @@ import { TokenController } from './modules/tokens/token.controller';
 import { TokenModule } from './modules/tokens/token.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { ESTransactionsService } from './services/elastic-search/services/es.transactions.service';
+import { SmartRouterEvaluationModule } from './modules/smart-router-evaluation/smart.router.evaluation.module';
+import { SmartRouterEvaluationController } from './modules/smart-router-evaluation/smart.router.evaluation.controller';
 
 @Module({
     imports: [
@@ -16,8 +18,14 @@ import { ESTransactionsService } from './services/elastic-search/services/es.tra
         TokenModule,
         RemoteConfigModule,
         DynamicModuleUtils.getCacheModule(),
+        SmartRouterEvaluationModule,
     ],
-    controllers: [MetricsController, TokenController, RemoteConfigController],
+    controllers: [
+        MetricsController,
+        TokenController,
+        RemoteConfigController,
+        SmartRouterEvaluationController,
+    ],
     providers: [ESTransactionsService],
 })
 export class PrivateAppModule {}

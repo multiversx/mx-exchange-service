@@ -195,7 +195,7 @@ export class FarmAbiServiceV2
     ): Promise<number> {
         return this.gatewayService.getSCStorageKey(
             farmAddress,
-            'lastUndistributedBoostedRewardsCollectWeek',
+            'lastCollectUndistWeek',
         );
     }
 
