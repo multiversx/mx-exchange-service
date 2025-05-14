@@ -47,6 +47,8 @@ export class PairComputeServiceMock implements IPairComputeService {
                 return '100;';
             case 'EGLDMEXLP-abcdef':
                 return '2';
+            case 'TOK5-123456':
+                return '0.1';
         }
     }
     async firstTokenPriceUSD(pairAddress: string): Promise<string> {
