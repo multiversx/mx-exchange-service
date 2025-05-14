@@ -5,7 +5,6 @@ import {
 import { Injectable, Inject } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PushNotificationsService } from '../services/push.notifications.service';
-import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElasticAccountsEnergyService } from 'src/services/elastic-search/services/es.accounts.energy.service';
 import { pushNotificationsConfig, scAddress } from 'src/config';
@@ -18,7 +17,6 @@ import { RedlockService } from '@multiversx/sdk-nestjs-cache';
 @Injectable()
 export class PushNotificationsEnergyCron {
     constructor(
-        private readonly energyAbiService: EnergyAbiService,
         private readonly contextGetter: ContextGetterService,
         private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
@@ -45,25 +43,6 @@ export class PushNotificationsEnergyCron {
 
         let successfulNotifications = 0;
         let failedNotifications = 0;
-
-        const isDevnet = process.env.NODE_ENV === 'devnet';
-
-        if (isDevnet) {
-            const addresses = await this.energyAbiService.getUsersWithEnergy();
-
-            const result =
-                await this.pushNotificationsService.sendNotificationsInBatches(
-                    addresses,
-                    pushNotificationsConfig[
-                        NotificationType.FEES_COLLECTOR_REWARDS
-                    ],
-                    NotificationType.FEES_COLLECTOR_REWARDS,
-                );
-
-            successfulNotifications += result.successful.length;
-            failedNotifications += result.failed.length;
-            return;
-        }
 
         await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
             currentEpoch - 1,
