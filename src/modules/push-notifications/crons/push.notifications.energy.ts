@@ -25,7 +25,11 @@ export class PushNotificationsEnergyCron {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_DAY_AT_NOON)
+    @Cron(
+        process.env.NODE_ENV === 'mainnet'
+            ? CronExpression.EVERY_DAY_AT_NOON
+            : CronExpression.EVERY_4_HOURS,
+    )
     @LockAndRetry({
         lockKey: 'pushNotifications',
         lockName: 'feesCollector',
