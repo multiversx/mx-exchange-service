@@ -11,13 +11,19 @@ import {
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
-import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
+import {
+    MultiSwapTokensArgs,
+    SmartSwapTokensArgs,
+} from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { TransactionModel } from '../../../models/transaction.model';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
 import { ComposableTaskType } from 'src/modules/composable-tasks/models/composable.tasks.model';
-import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
+import {
+    ComposableTask,
+    ComposableTasksTransactionService,
+} from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { decimalToHex } from 'src/utils/token.converters';
@@ -99,6 +105,69 @@ export class AutoRouterTransactionService {
         return [transaction];
     }
 
+    async smartSwap(
+        sender: string,
+        args: SmartSwapTokensArgs,
+    ): Promise<TransactionModel[]> {
+        let amountIn = new BigNumber(0);
+        let amountOut = new BigNumber(0);
+        args.allocations.forEach((allocation) => {
+            amountIn = amountIn.plus(allocation.intermediaryAmounts[0]);
+            amountOut = amountOut.plus(
+                allocation.intermediaryAmounts[
+                    allocation.intermediaryAmounts.length - 1
+                ],
+            );
+        });
+
+        // TODO: alter amount out - tolerance - smart swap fee
+
+        const typedArgs = this.getSmartSwapTypedArgs(args);
+
+        const swaps = this.convertSmartSwapToBytesValues(typedArgs);
+
+        const payment = new EsdtTokenPayment({
+            tokenIdentifier: args.tokenInID,
+            tokenNonce: 0,
+            amount: amountIn.integerValue().toFixed(),
+        });
+        const tokenOut = new EgldOrEsdtTokenPayment({
+            tokenIdentifier: args.tokenOutID,
+            nonce: 0,
+            amount: amountOut.integerValue().toFixed(),
+        });
+
+        const tasks: ComposableTask[] = [];
+
+        if (args.tokenInID === mxConfig.EGLDIdentifier) {
+            tasks.push({
+                type: ComposableTaskType.WRAP_EGLD,
+                arguments: [],
+            });
+        }
+
+        tasks.push({
+            type: ComposableTaskType.SMART_SWAP,
+            arguments: swaps,
+        });
+
+        if (args.tokenOutID === mxConfig.EGLDIdentifier) {
+            tasks.push({
+                type: ComposableTaskType.UNWRAP_EGLD,
+                arguments: [],
+            });
+        }
+
+        const transaction =
+            await this.composeTasksTransactionService.getComposeTasksTransaction(
+                sender,
+                payment,
+                tokenOut,
+                tasks,
+            );
+        return [transaction];
+    }
+
     multiPairFixedInputSwaps(args: MultiSwapTokensArgs): TypedValue[] {
         const swaps: TypedValue[] = [];
 
@@ -130,6 +199,33 @@ export class AutoRouterTransactionService {
             );
         }
         return swaps;
+    }
+
+    getSmartSwapTypedArgs(args: SmartSwapTokensArgs): TypedValue[] {
+        const typedArgs: TypedValue[] = [
+            new BigUIntValue(args.allocations.length),
+        ];
+
+        const totalRoutes = 
+        
+        const intermediaryTolerance = args.tolerance / args.addressRoute.length;
+
+        for (const allocation of args.allocations) {
+            for (const [index, address] of allocation.addressRoute.entries()) {
+                typedArgs.push(
+                    ...[
+                        new BigUIntValue(
+                            new BigNumber(allocation.intermediaryAmounts[0]),
+                        ),
+                        new AddressValue(Address.fromString(address)),
+                        BytesValue.fromUTF8('swapTokensFixedInput'),
+                        BytesValue.fromUTF8(allocation.tokenRoute[index + 1]),
+                        new BigUIntValue(new BigNumber(1)),
+                    ],
+                );
+            }
+        }
+        return typedArgs;
     }
 
     multiPairFixedOutputSwaps(args: MultiSwapTokensArgs): TypedValue[] {
@@ -303,6 +399,52 @@ export class AutoRouterTransactionService {
             const tokenOutID = args[index + 2];
             const amountOutMin = args[index + 3];
 
+            swaps.push(
+                new BytesValue(Buffer.from(pairAddress.valueOf().hex(), 'hex')),
+            );
+            swaps.push(BytesValue.fromUTF8(functionName.valueOf()));
+            swaps.push(BytesValue.fromUTF8(tokenOutID.valueOf()));
+            swaps.push(
+                new BytesValue(
+                    Buffer.from(
+                        decimalToHex(new BigNumber(amountOutMin.valueOf())),
+                        'hex',
+                    ),
+                ),
+            );
+        }
+        return swaps;
+    }
+
+    private convertSmartSwapToBytesValues(args: TypedValue[]): BytesValue[] {
+        if ((args.length - 1) % 5 !== 0) {
+            throw new Error('Invalid number of router swap arguments');
+        }
+
+        const swaps: BytesValue[] = [
+            new BytesValue(
+                Buffer.from(
+                    decimalToHex(new BigNumber(args[0].valueOf())),
+                    'hex',
+                ),
+            ),
+        ];
+
+        for (let index = 1; index <= args.length - 5; index += 5) {
+            const amountIn = args[index];
+            const pairAddress = args[index + 1];
+            const functionName = args[index + 2];
+            const tokenOutID = args[index + 3];
+            const amountOutMin = args[index + 4];
+
+            swaps.push(
+                new BytesValue(
+                    Buffer.from(
+                        decimalToHex(new BigNumber(amountIn.valueOf())),
+                        'hex',
+                    ),
+                ),
+            );
             swaps.push(
                 new BytesValue(Buffer.from(pairAddress.valueOf().hex(), 'hex')),
             );

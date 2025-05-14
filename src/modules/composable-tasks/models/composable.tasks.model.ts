@@ -7,6 +7,7 @@ export enum ComposableTaskType {
     SWAP = 'Swap',
     ROUTER_SWAP = 'RouterSwap',
     SEND_EGLD_OR_ESDT = 'SendEgldOrEsdt',
+    SMART_SWAP = 'SmartSwap',
 }
 
 export class ComposableTaskEnumType {
@@ -17,6 +18,7 @@ export class ComposableTaskEnumType {
             new EnumVariantDefinition('Swap', 2),
             new EnumVariantDefinition('RouterSwap', 3),
             new EnumVariantDefinition('SendEgldOrEsdt', 4),
+            new EnumVariantDefinition('SmartSwap', 5),
         ]);
     }
 }

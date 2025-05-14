@@ -547,6 +547,24 @@ export class AutoRouterService {
         sender: string,
         parent: AutoRouteModel,
     ): Promise<TransactionModel[]> {
+        if (parent.smartSwap !== undefined) {
+            return this.autoRouterTransactionService.smartSwap(sender, {
+                tokenInID: parent.tokenInID,
+                tokenOutID: parent.tokenOutID,
+                amountIn: parent.amountIn,
+                allocations: parent.parallelRouteSwap.allocations.map(
+                    (allocation) => {
+                        return {
+                            addressRoute: allocation.addressRoute,
+                            intermediaryAmounts: allocation.intermediaryAmounts,
+                            tokenRoute: allocation.tokenRoute,
+                        };
+                    },
+                ),
+                tolerance: parent.tolerance,
+            });
+        }
+
         if (parent.pairs.length == 1) {
             if (parent.swapType === SWAP_TYPE.fixedInput) {
                 const transaction =

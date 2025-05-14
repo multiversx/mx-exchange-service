@@ -49,7 +49,6 @@ export class ComposableTasksTransactionService {
         tasks: ComposableTask[],
     ): Promise<TransactionModel> {
         let gasLimit: number = gasConfig.composableTasks.default;
-
         for (const task of tasks) {
             switch (task.type) {
                 case ComposableTaskType.WRAP_EGLD:
@@ -65,6 +64,13 @@ export class ComposableTasksTransactionService {
                     const routes = Math.trunc(task.arguments.length / 4);
                     gasLimit +=
                         routes * gasConfig.router.multiPairSwapMultiplier;
+                    break;
+                case ComposableTaskType.SMART_SWAP:
+                    const smartRoutes = Math.trunc(
+                        (task.arguments.length - 1) / 5,
+                    );
+                    gasLimit +=
+                        smartRoutes * gasConfig.router.multiPairSwapMultiplier;
                 default:
                     break;
             }
