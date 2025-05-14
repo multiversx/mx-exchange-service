@@ -69,6 +69,62 @@ export class SwapRouteModel {
 }
 
 @ObjectType()
+export class SmartSwapModel {
+    @Field()
+    amountOut: string;
+
+    @Field()
+    tokenInExchangeRate: string;
+
+    @Field()
+    tokenOutExchangeRate: string;
+
+    @Field()
+    tokenInExchangeRateDenom: string;
+
+    @Field()
+    tokenOutExchangeRateDenom: string;
+
+    @Field()
+    tokenInPriceUSD: string;
+
+    @Field()
+    tokenOutPriceUSD: string;
+
+    @Field({ nullable: true })
+    tokensPriceDeviationPercent: number;
+
+    @Field(() => [SmartSwapRoute])
+    routes: SmartSwapRoute[];
+
+    constructor(init?: Partial<SmartSwapModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class SmartSwapRoute {
+    @Field(() => [String])
+    intermediaryAmounts: string[];
+
+    @Field(() => [String])
+    tokenRoute: string[];
+
+    @Field(() => [String])
+    fees: string[];
+
+    @Field(() => [String])
+    pricesImpact: string[];
+
+    @Field(() => [PairModel], { complexity: nestedFieldComplexity })
+    pairs: PairModel[];
+
+    constructor(init?: Partial<SmartSwapRoute>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class AutoRouteModel extends SwapRouteModel {
     @Field(() => [TransactionModel], { nullable: true })
     transactions: TransactionModel[];
@@ -77,6 +133,11 @@ export class AutoRouteModel extends SwapRouteModel {
     noAuthTransactions: TransactionModel[];
 
     parallelRouteSwap?: ParallelRouteSwap;
+
+    @Field(() => SmartSwapModel, {
+        nullable: true,
+    })
+    smartSwap?: SmartSwapModel;
 
     constructor(init?: Partial<AutoRouteModel>) {
         super(init);
