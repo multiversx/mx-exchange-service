@@ -21,7 +21,6 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { Address } from '@multiversx/sdk-core';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
-import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { PairsData, Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
@@ -36,11 +35,11 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
-import { gasConfig, scAddress } from 'src/config';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 import { SmartRouterService } from '../services/smart.router.service';
+import { BinaryUtils } from '@multiversx/sdk-nestjs-common';
 
 describe('SmartRouterService', () => {
     let autoRouterService: AutoRouterService;
@@ -62,8 +61,7 @@ describe('SmartRouterService', () => {
             '0000000000000000000000000000000000000000000000000000000000000019',
     };
 
-    const { pairs: availablePairs, tokens: availableTokens } =
-        extractTokensAndPairs(testPairs);
+    const availablePairs = formatTestPairs(testPairs);
 
     const expectedAutoRouteWithoutSmartSwap = new AutoRouteModel({
         swapType: 0,
@@ -377,7 +375,9 @@ describe('SmartRouterService', () => {
                 senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: 180200000,
-                data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwOWQyOTBlNGM2OWE4MWU5ZGM5ZEBAQDA0QDAwMDAwMDAxMDMwMDAwMDAwOTAxNGU5MjRiYTQzM2JkZDFjZDAwMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxNTAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDAxMDAwMDAwMDAwOGRjODIzNjBhN2ExODUxOTQwMDAwMDAyMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTkwMDAwMDAxNDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzQwMDAwMDAwYjU1NTM0NDU0MmQzMTMyMzMzNDM1MzYwMDAwMDAwMTAwMDAwMDAwMDhkYzgyMzYwYTdhMTg1MTk0MDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDE4MDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGI1NDRmNGIzNTJkMzEzMjMzMzQzNTM2MDAwMDAwMDEwMDAwMDAwMDA3MDgwYTYzNzljOWRjOWYwMDAwMDAyMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTMwMDAwMDAxNDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzQwMDAwMDAwYjU1NTM0NDQzMmQzMTMyMzMzNDM1MzYwMDAwMDAwMTAwMDAwMDAwMDcwODBhNjM3OWM5ZGM5ZjAwMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxNzAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDAxMDA=',
+                data: BinaryUtils.base64Encode(
+                    'composeTasks@0000000b544f4b352d313233343536000000000000000000000009d05ae46bf134847654@@@05@000000010100000009014e924ba433bdd1cd0000002000000000000000000000000000000000000000000000000000000000000000150000001473776170546f6b656e734669786564496e7075740000000b544f4b352d313233343536000000097df816e9dd4a06dd60000000010200000008dc82360a7a1851940000002000000000000000000000000000000000000000000000000000000000000000190000001473776170546f6b656e734669786564496e7075740000000b555344542d313233343536000000040933c0c90000002000000000000000000000000000000000000000000000000000000000000000180000001473776170546f6b656e734669786564496e7075740000000b544f4b352d3132333435360000000952e55f5c9ccfc7a29b000000010200000007080a6379c9dc9f0000002000000000000000000000000000000000000000000000000000000000000000130000001473776170546f6b656e734669786564496e7075740000000b555344432d3132333435360000000257420000002000000000000000000000000000000000000000000000000000000000000000170000001473776170546f6b656e734669786564496e7075740000000b544f4b352d313233343536000000080309bcaf74319942',
+                ),
                 chainID: 'T',
                 version: 2,
                 options: undefined,
@@ -389,39 +389,29 @@ describe('SmartRouterService', () => {
     });
 });
 
-function extractTokensAndPairs(testPairs: Record<string, string>): {
-    tokens: Record<string, EsdtToken>;
-    pairs: Record<string, PairModel>;
-} {
-    const tokens: Record<string, EsdtToken> = {};
+function formatTestPairs(
+    testPairs: Record<string, string>,
+): Record<string, PairModel> {
     const pairs: Record<string, PairModel> = {};
 
     for (const [pair, addressHex] of Object.entries(testPairs)) {
         const { address, firstToken, secondToken, info, totalFeePercent } =
             PairsData(Address.newFromHex(addressHex).toBech32());
 
-        if (!tokens[firstToken.identifier]) {
-            tokens[firstToken.identifier] = new EsdtToken({
-                identifier: Tokens(firstToken.identifier).identifier,
-                decimals: Tokens(firstToken.identifier).decimals,
-            });
-        }
-
-        if (!tokens[secondToken.identifier]) {
-            tokens[secondToken.identifier] = new EsdtToken({
-                identifier: Tokens(secondToken.identifier).identifier,
-                decimals: Tokens(secondToken.identifier).decimals,
-            });
-        }
-
         pairs[pair] = new PairModel({
             address,
-            firstToken: tokens[firstToken.identifier],
-            secondToken: tokens[secondToken.identifier],
+            firstToken: new EsdtToken({
+                identifier: Tokens(firstToken.identifier).identifier,
+                decimals: Tokens(firstToken.identifier).decimals,
+            }),
+            secondToken: new EsdtToken({
+                identifier: Tokens(secondToken.identifier).identifier,
+                decimals: Tokens(secondToken.identifier).decimals,
+            }),
             info,
             totalFeePercent,
         });
     }
 
-    return { tokens, pairs };
+    return pairs;
 }
