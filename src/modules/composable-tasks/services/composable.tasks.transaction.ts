@@ -66,11 +66,24 @@ export class ComposableTasksTransactionService {
                         routes * gasConfig.router.multiPairSwapMultiplier;
                     break;
                 case ComposableTaskType.SMART_SWAP:
-                    const smartRoutes = Math.trunc(
-                        (task.arguments.length - 1) / 5,
-                    );
+                    let hopsIndex = 0;
+                    let totalHops = 0;
+                    while (true) {
+                        const routeHops = Number(
+                            `0x${task.arguments[hopsIndex]
+                                .valueOf()
+                                .toString('hex')}`,
+                        );
+
+                        totalHops += routeHops;
+                        hopsIndex += 2 + routeHops * 4;
+
+                        if (hopsIndex > task.arguments.length - 1) {
+                            break;
+                        }
+                    }
                     gasLimit +=
-                        smartRoutes * gasConfig.router.multiPairSwapMultiplier;
+                        totalHops * gasConfig.router.multiPairSwapMultiplier;
                 default:
                     break;
             }
