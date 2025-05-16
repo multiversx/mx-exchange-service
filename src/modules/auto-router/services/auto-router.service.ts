@@ -808,7 +808,6 @@ export class AutoRouterService {
             .dividedBy(autoRouterAmountOut)
             .multipliedBy(100);
 
-        // TODO : add constant to config
-        return percentage.gt(0.5);
+        return percentage.gt(constantsConfig.MIN_SMART_SWAP_DELTA_PERCENTAGE);
     }
 }

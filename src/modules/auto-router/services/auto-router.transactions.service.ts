@@ -10,7 +10,7 @@ import {
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { mxConfig, gasConfig } from 'src/config';
+import { mxConfig, gasConfig, constantsConfig } from 'src/config';
 import {
     MultiSwapTokensArgs,
     SmartSwapTokensArgs,
@@ -120,7 +120,16 @@ export class AutoRouterTransactionService {
             );
         });
 
-        // TODO: alter amount out - tolerance - smart swap fee
+        const toleranceAmount = amountOut.multipliedBy(args.tolerance);
+
+        const feeAmount = amountOut
+            .multipliedBy(constantsConfig.SMART_SWAP_FEE_PERCENTAGE)
+            .dividedBy(100);
+
+        const amountOutMin = amountOut
+            .minus(toleranceAmount)
+            .minus(feeAmount)
+            .integerValue();
 
         const typedArgs = this.getSmartSwapTypedArgs(args);
 
@@ -134,7 +143,7 @@ export class AutoRouterTransactionService {
         const tokenOut = new EgldOrEsdtTokenPayment({
             tokenIdentifier: args.tokenOutID,
             nonce: 0,
-            amount: amountOut.integerValue().toFixed(),
+            amount: amountOutMin.toFixed(),
         });
 
         const tasks: ComposableTask[] = [];
@@ -202,28 +211,31 @@ export class AutoRouterTransactionService {
     }
 
     getSmartSwapTypedArgs(args: SmartSwapTokensArgs): TypedValue[] {
-        const typedArgs: TypedValue[] = [
-            new BigUIntValue(args.allocations.length),
-        ];
-
-        const totalRoutes = 
-        
-        const intermediaryTolerance = args.tolerance / args.addressRoute.length;
+        const typedArgs: TypedValue[] = [];
 
         for (const allocation of args.allocations) {
-            for (const [index, address] of allocation.addressRoute.entries()) {
-                typedArgs.push(
-                    ...[
-                        new BigUIntValue(
-                            new BigNumber(allocation.intermediaryAmounts[0]),
-                        ),
-                        new AddressValue(Address.fromString(address)),
-                        BytesValue.fromUTF8('swapTokensFixedInput'),
-                        BytesValue.fromUTF8(allocation.tokenRoute[index + 1]),
-                        new BigUIntValue(new BigNumber(1)),
-                    ],
-                );
-            }
+            typedArgs.push(
+                ...[
+                    new BigUIntValue(
+                        new BigNumber(allocation.addressRoute.length),
+                    ),
+                    new BigUIntValue(
+                        new BigNumber(allocation.intermediaryAmounts[0]),
+                    ),
+                ],
+            );
+
+            const swaps = this.multiPairFixedInputSwaps({
+                swapType: SWAP_TYPE.fixedInput,
+                tokenInID: args.tokenInID,
+                tokenOutID: args.tokenOutID,
+                addressRoute: allocation.addressRoute,
+                tokenRoute: allocation.tokenRoute,
+                intermediaryAmounts: allocation.intermediaryAmounts,
+                tolerance: args.tolerance,
+            });
+
+            typedArgs.push(...swaps);
         }
         return typedArgs;
     }
@@ -417,26 +429,19 @@ export class AutoRouterTransactionService {
     }
 
     private convertSmartSwapToBytesValues(args: TypedValue[]): BytesValue[] {
-        if ((args.length - 1) % 5 !== 0) {
+        if (args.length < 6) {
             throw new Error('Invalid number of router swap arguments');
         }
 
-        const swaps: BytesValue[] = [
-            new BytesValue(
-                Buffer.from(
-                    decimalToHex(new BigNumber(args[0].valueOf())),
-                    'hex',
-                ),
-            ),
-        ];
+        const swaps: BytesValue[] = [];
+        let hopsIndex = 0;
+        let amountInIndex = 1;
 
-        for (let index = 1; index <= args.length - 5; index += 5) {
-            const amountIn = args[index];
-            const pairAddress = args[index + 1];
-            const functionName = args[index + 2];
-            const tokenOutID = args[index + 3];
-            const amountOutMin = args[index + 4];
+        while (true) {
+            const hops = new BigNumber(args[hopsIndex].valueOf()).toNumber();
+            const amountIn = args[amountInIndex];
 
+            swaps.push(new BytesValue(Buffer.from(decimalToHex(hops), 'hex')));
             swaps.push(
                 new BytesValue(
                     Buffer.from(
@@ -445,20 +450,29 @@ export class AutoRouterTransactionService {
                     ),
                 ),
             );
-            swaps.push(
-                new BytesValue(Buffer.from(pairAddress.valueOf().hex(), 'hex')),
-            );
-            swaps.push(BytesValue.fromUTF8(functionName.valueOf()));
-            swaps.push(BytesValue.fromUTF8(tokenOutID.valueOf()));
-            swaps.push(
-                new BytesValue(
-                    Buffer.from(
-                        decimalToHex(new BigNumber(amountOutMin.valueOf())),
-                        'hex',
-                    ),
-                ),
-            );
+
+            const routeStart = amountInIndex + 1;
+            const routeEnd = routeStart + hops * 4;
+
+            const swapsSlice = args.slice(routeStart, routeEnd);
+
+            if (swapsSlice.length === 0) {
+                throw new Error('Invalid number of router swap arguments');
+            }
+
+            const routeSwaps =
+                this.convertMultiPairSwapsToBytesValues(swapsSlice);
+
+            swaps.push(...routeSwaps);
+
+            hopsIndex = routeEnd;
+            amountInIndex = hopsIndex + 1;
+
+            if (amountInIndex > args.length) {
+                break;
+            }
         }
+
         return swaps;
     }
 }
