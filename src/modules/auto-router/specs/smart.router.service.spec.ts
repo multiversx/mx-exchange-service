@@ -232,10 +232,8 @@ describe('SmartRouterService', () => {
             ],
             tokenInExchangeRate: '97106423592051608554',
             tokenInExchangeRateDenom: '97.106423592051608554',
-            tokenInPriceUSD: '10',
             tokenOutExchangeRate: '10297979917384707',
             tokenOutExchangeRateDenom: '0.010297979917384707',
-            tokenOutPriceUSD: '0.1',
             tokensPriceDeviationPercent: undefined,
         }),
     });

@@ -85,12 +85,6 @@ export class SmartSwapModel {
     @Field()
     tokenOutExchangeRateDenom: string;
 
-    @Field()
-    tokenInPriceUSD: string;
-
-    @Field()
-    tokenOutPriceUSD: string;
-
     @Field({ nullable: true })
     tokensPriceDeviationPercent: number;
 
