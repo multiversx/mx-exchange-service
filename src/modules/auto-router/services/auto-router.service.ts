@@ -294,64 +294,14 @@ export class AutoRouterService {
                 args.amountIn,
             );
 
-            if (
-                this.shouldPerformSmartSwap(
-                    parallelRouteSwap,
-                    swapRoute.bestResult,
-                )
-            ) {
-                const [tokenInExchangeRate, tokenOutExchangeRate] =
-                    this.calculateExchangeRate(
-                        tokenInMetadata.decimals,
-                        tokenOutMetadata.decimals,
-                        args.amountIn,
-                        parallelRouteSwap.totalResult,
-                    );
-
-                const priceDeviationPercent =
-                    await this.getSmartRouterAllocationsPriceDeviationPercent(
-                        parallelRouteSwap.allocations,
-                    );
-
-                smartSwap = new SmartSwapModel({
-                    amountOut: parallelRouteSwap.totalResult,
-                    tokenInExchangeRate: tokenInExchangeRate,
-                    tokenOutExchangeRate: tokenOutExchangeRate,
-                    tokenInExchangeRateDenom: denominateAmount(
-                        tokenInExchangeRate,
-                        tokenOutMetadata.decimals,
-                    ).toString(),
-                    tokenOutExchangeRateDenom: denominateAmount(
-                        tokenOutExchangeRate,
-                        tokenInMetadata.decimals,
-                    ).toString(),
-                    tokenInPriceUSD: tokenInPriceUSD,
-                    tokenOutPriceUSD: tokenOutPriceUSD,
-                    tokensPriceDeviationPercent: priceDeviationPercent,
-                    routes: parallelRouteSwap.allocations.map((allocation) => {
-                        const routePairs = this.getPairsRoute(
-                            allocation.addressRoute,
-                            pairs,
-                        );
-
-                        return new SmartSwapRoute({
-                            intermediaryAmounts: allocation.intermediaryAmounts,
-                            tokenRoute: allocation.tokenRoute,
-                            fees: this.getFeesDenom(
-                                allocation.intermediaryAmounts,
-                                allocation.tokenRoute,
-                                routePairs,
-                            ),
-                            pricesImpact: this.getPriceImpactPercents(
-                                allocation.intermediaryAmounts,
-                                allocation.tokenRoute,
-                                routePairs,
-                            ),
-                            pairs: routePairs,
-                        });
-                    }),
-                });
-            }
+            smartSwap = await this.computeSmartSwap(
+                args.amountIn,
+                swapRoute.bestResult,
+                parallelRouteSwap,
+                tokenInMetadata,
+                tokenOutMetadata,
+                pairs,
+            );
         }
 
         return new AutoRouteModel({
@@ -548,21 +498,30 @@ export class AutoRouterService {
         parent: AutoRouteModel,
     ): Promise<TransactionModel[]> {
         if (parent.smartSwap !== undefined) {
-            return this.autoRouterTransactionService.smartSwap(sender, {
-                tokenInID: parent.tokenInID,
-                tokenOutID: parent.tokenOutID,
-                amountIn: parent.amountIn,
-                allocations: parent.parallelRouteSwap.allocations.map(
-                    (allocation) => {
-                        return {
-                            addressRoute: allocation.addressRoute,
-                            intermediaryAmounts: allocation.intermediaryAmounts,
-                            tokenRoute: allocation.tokenRoute,
-                        };
-                    },
-                ),
-                tolerance: parent.tolerance,
-            });
+            const transactions =
+                await this.autoRouterTransactionService.smartSwap(sender, {
+                    tokenInID: parent.tokenInID,
+                    tokenOutID: parent.tokenOutID,
+                    amountIn: parent.amountIn,
+                    allocations: parent.parallelRouteSwap.allocations.map(
+                        (allocation) => {
+                            return {
+                                addressRoute: allocation.addressRoute,
+                                intermediaryAmounts:
+                                    allocation.intermediaryAmounts,
+                                tokenRoute: allocation.tokenRoute,
+                            };
+                        },
+                    ),
+                    tolerance: parent.tolerance,
+                });
+
+            await this.smartRouterEvaluationService.addFixedInputSwapComparison(
+                parent,
+                transactions[0],
+            );
+
+            return transactions;
         }
 
         if (parent.pairs.length == 1) {
@@ -809,5 +768,68 @@ export class AutoRouterService {
             .multipliedBy(100);
 
         return percentage.gt(constantsConfig.MIN_SMART_SWAP_DELTA_PERCENTAGE);
+    }
+
+    private async computeSmartSwap(
+        amountIn: string,
+        amountOut: string,
+        parallelRouteSwap: ParallelRouteSwap,
+        tokenInMetadata: BaseEsdtToken,
+        tokenOutMetadata: BaseEsdtToken,
+        pairs: PairModel[],
+    ): Promise<SmartSwapModel | undefined> {
+        if (!this.shouldPerformSmartSwap(parallelRouteSwap, amountOut)) {
+            return undefined;
+        }
+
+        const [tokenInExchangeRate, tokenOutExchangeRate] =
+            this.calculateExchangeRate(
+                tokenInMetadata.decimals,
+                tokenOutMetadata.decimals,
+                amountIn,
+                parallelRouteSwap.totalResult,
+            );
+
+        const priceDeviationPercent =
+            await this.getSmartRouterAllocationsPriceDeviationPercent(
+                parallelRouteSwap.allocations,
+            );
+
+        return new SmartSwapModel({
+            amountOut: parallelRouteSwap.totalResult,
+            tokenInExchangeRate: tokenInExchangeRate,
+            tokenOutExchangeRate: tokenOutExchangeRate,
+            tokenInExchangeRateDenom: denominateAmount(
+                tokenInExchangeRate,
+                tokenOutMetadata.decimals,
+            ).toString(),
+            tokenOutExchangeRateDenom: denominateAmount(
+                tokenOutExchangeRate,
+                tokenInMetadata.decimals,
+            ).toString(),
+            tokensPriceDeviationPercent: priceDeviationPercent,
+            routes: parallelRouteSwap.allocations.map((allocation) => {
+                const routePairs = this.getPairsRoute(
+                    allocation.addressRoute,
+                    pairs,
+                );
+
+                return new SmartSwapRoute({
+                    intermediaryAmounts: allocation.intermediaryAmounts,
+                    tokenRoute: allocation.tokenRoute,
+                    fees: this.getFeesDenom(
+                        allocation.intermediaryAmounts,
+                        allocation.tokenRoute,
+                        routePairs,
+                    ),
+                    pricesImpact: this.getPriceImpactPercents(
+                        allocation.intermediaryAmounts,
+                        allocation.tokenRoute,
+                        routePairs,
+                    ),
+                    pairs: routePairs,
+                });
+            }),
+        });
     }
 }
