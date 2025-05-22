@@ -223,21 +223,19 @@ export class AutoRouterTransactionService {
                 : this.multiPairFixedOutputSwaps(args);
         const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
 
-        const toleranceAmount = new BigNumber(
+        const amountOut = new BigNumber(
             args.intermediaryAmounts[args.intermediaryAmounts.length - 1],
-        ).multipliedBy(args.tolerance);
+        );
 
         const amountOutMin =
             args.swapType === SWAP_TYPE.fixedInput
-                ? new BigNumber(
-                      args.intermediaryAmounts[
-                          args.intermediaryAmounts.length - 1
-                      ],
-                  )
-                      .minus(toleranceAmount)
+                ? new BigNumber(1)
+                      .dividedBy(new BigNumber(1).plus(args.tolerance))
+                      .decimalPlaces(2)
+                      .multipliedBy(amountOut)
                       .integerValue()
                       .toFixed()
-                : args.intermediaryAmounts[args.intermediaryAmounts.length - 1];
+                : amountOut.toFixed();
 
         return this.composeTasksTransactionService.getComposeTasksTransaction(
             sender,
@@ -275,21 +273,19 @@ export class AutoRouterTransactionService {
                 : this.multiPairFixedOutputSwaps(args);
         const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
 
-        const toleranceAmount = new BigNumber(
+        const amountOut = new BigNumber(
             args.intermediaryAmounts[args.intermediaryAmounts.length - 1],
-        ).multipliedBy(args.tolerance);
+        );
 
         const amountOutMin =
             args.swapType === SWAP_TYPE.fixedInput
-                ? new BigNumber(
-                      args.intermediaryAmounts[
-                          args.intermediaryAmounts.length - 1
-                      ],
-                  )
-                      .minus(toleranceAmount)
+                ? new BigNumber(1)
+                      .dividedBy(new BigNumber(1).plus(args.tolerance))
+                      .decimalPlaces(2)
+                      .multipliedBy(amountOut)
                       .integerValue()
                       .toFixed()
-                : args.intermediaryAmounts[args.intermediaryAmounts.length - 1];
+                : amountOut.toFixed();
 
         return this.composeTasksTransactionService.getComposeTasksTransaction(
             sender,
