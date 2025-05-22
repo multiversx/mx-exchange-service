@@ -1,15 +1,15 @@
-import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { QueryType, ElasticService } from '@multiversx/sdk-nestjs-elastic';
 import { ElasticQuery } from '@multiversx/sdk-nestjs-elastic';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class ElasticAccountsEnergyService {
-    private readonly logger = new OriginLogger(
-        ElasticAccountsEnergyService.name,
-    );
-
-    constructor(private readonly elasticService: ElasticService) {}
+    constructor(
+        private readonly elasticService: ElasticService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {}
 
     async getAccountsByEnergyAmount(
         epoch: number,
