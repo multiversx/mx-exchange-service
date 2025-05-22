@@ -38,6 +38,7 @@ export class ElasticAccountsEnergyService {
         } catch (error) {
             this.logger.error(
                 `Error getting accounts by energy amount: ${error.message}`,
+                { context: ElasticAccountsEnergyService.name },
             );
         }
     }

@@ -2,7 +2,7 @@ import {
     AccountType,
     NotificationType,
 } from '../models/push.notifications.types';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PushNotificationsService } from '../services/push.notifications.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -11,20 +11,18 @@ import { pushNotificationsConfig, scAddress } from 'src/config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
 import { RedlockService } from '@multiversx/sdk-nestjs-cache';
-import { OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
-    private readonly logger = new OriginLogger(
-        PushNotificationsEnergyCron.name,
-    );
-
     constructor(
         private readonly contextGetter: ContextGetterService,
         private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly redLockService: RedlockService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     @Cron(
@@ -44,18 +42,16 @@ export class PushNotificationsEnergyCron {
             );
 
         if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
-            this.logger.log(
-                `Fees collector rewards cron skipped for epoch: ${
-                    currentEpoch - 1
-                }`,
+            this.logger.info(
+                `Fees collector rewards cron skipped for epoch: ${currentEpoch - 1}`,
+                { context: PushNotificationsEnergyCron.name },
             );
             return;
         }
 
-        this.logger.log(
-            `Fees collector rewards cron started for epoch: ${
-                currentEpoch - 1
-            }`,
+        this.logger.info(
+            `Fees collector rewards cron started for epoch: ${ currentEpoch - 1}`,
+            { context: PushNotificationsEnergyCron.name },
         );
 
         let successfulNotifications = 0;
@@ -83,8 +79,9 @@ export class PushNotificationsEnergyCron {
             },
         );
 
-        this.logger.log(
+        this.logger.info(
             `Fees collector rewards cron completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
+            { context: PushNotificationsEnergyCron.name },
         );
     }
 
@@ -122,9 +119,9 @@ export class PushNotificationsEnergyCron {
             0,
         );
 
-        this.logger.log(
+        this.logger.info(
             `Negative energy notifications cron completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
-            'PushNotificationsEnergyCron',
+            { context: PushNotificationsEnergyCron.name },
         );
     }
 
