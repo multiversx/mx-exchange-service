@@ -28,7 +28,7 @@ export class PushNotificationsEnergyCron {
     @Cron(
         process.env.NODE_ENV === 'mainnet'
             ? CronExpression.EVERY_DAY_AT_NOON
-            : CronExpression.EVERY_4_HOURS,
+            : CronExpression.EVERY_HOUR,
     )
     @LockAndRetry({
         lockKey: 'pushNotifications',
@@ -36,21 +36,28 @@ export class PushNotificationsEnergyCron {
     })
     async feesCollectorRewardsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
-        const firstWeekStartEpoch =
-            await this.weekTimekeepingAbi.firstWeekStartEpoch(
-                String(scAddress.feesCollector),
-            );
 
-        if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
-            this.logger.info(
-                `Fees collector rewards cron skipped for epoch: ${currentEpoch - 1}`,
-                { context: PushNotificationsEnergyCron.name },
-            );
-            return;
+        if (process.env.NODE_ENV === 'mainnet') {
+            const firstWeekStartEpoch =
+                await this.weekTimekeepingAbi.firstWeekStartEpoch(
+                    String(scAddress.feesCollector),
+                );
+
+            if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
+                this.logger.info(
+                    `Fees collector rewards cron skipped for epoch: ${
+                        currentEpoch - 1
+                    }`,
+                    { context: PushNotificationsEnergyCron.name },
+                );
+                return;
+            }
         }
 
         this.logger.info(
-            `Fees collector rewards cron started for epoch: ${ currentEpoch - 1}`,
+            `Fees collector rewards cron started for epoch: ${
+                currentEpoch - 1
+            }`,
             { context: PushNotificationsEnergyCron.name },
         );
 
