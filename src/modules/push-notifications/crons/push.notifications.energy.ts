@@ -85,7 +85,6 @@ export class PushNotificationsEnergyCron {
         );
     }
 
-    @Cron('0 12 */2 * *') // Every 2 days at noon
     @LockAndRetry({
         lockKey: 'pushNotifications',
         lockName: 'negativeEnergy',
