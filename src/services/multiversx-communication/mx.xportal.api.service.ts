@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import { ApiService } from '@multiversx/sdk-nestjs-http';
 
-export type NotificationPayload = {
+type NotificationPayload = {
     addresses: string[];
     chainId: number;
     title: string;
