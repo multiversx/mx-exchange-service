@@ -41,6 +41,7 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
     async getValues24h(args: {
         series: any;
         metric: any;
+        time?: string;
     }): Promise<HistoricDataModel[]> {
         const service = await this.getService();
         return await service.getValues24h(args);
