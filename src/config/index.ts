@@ -38,3 +38,5 @@ export const dataApiConfig = config.get('dataApi');
 export const leaguesConfig = config.get('leagues');
 
 export const complexityConfig = config.get('complexity');
+
+export const pushNotificationsConfig = config.get('pushNotifications');

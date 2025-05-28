@@ -235,6 +235,22 @@ export class ApiConfigService {
         return mongoDBPassword;
     }
 
+    getNotificationsApiUrl(): string {
+        const apiUrl = this.configService.get<string>('PUSH_NOTIFICATIONS_API_URL');
+        if (!apiUrl) {
+            throw new Error('No push notifications API url present');
+        }
+        return apiUrl;
+    }
+
+    getNotificationsApiKey(): string {
+        const apiKey = this.configService.get<string>('PUSH_NOTIFICATIONS_API_KEY');
+        if (!apiKey) {
+            throw new Error('No push notifications API key present');
+        }
+        return apiKey;
+    }
+
     getJwtSecret(): string {
         const secret = this.configService.get<string>('JWT_SECRET');
         if (!secret) {
@@ -390,5 +406,15 @@ export class ApiConfigService {
 
     getRateLimiterSecret(): string | undefined {
         return this.configService.get<string>('RATE_LIMITER_SECRET');
+    }
+
+    isNotificationsModuleActive(): boolean {
+        const notificationsModuleActive = this.configService.get<string>(
+            'ENABLE_PUSH_NOTIFICATIONS',
+        );
+        if (!notificationsModuleActive) {
+            return false;
+        }
+        return notificationsModuleActive === 'true';
     }
 }

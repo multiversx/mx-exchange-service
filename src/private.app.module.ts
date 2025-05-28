@@ -10,7 +10,8 @@ import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { ESTransactionsService } from './services/elastic-search/services/es.transactions.service';
 import { SmartRouterEvaluationModule } from './modules/smart-router-evaluation/smart.router.evaluation.module';
 import { SmartRouterEvaluationController } from './modules/smart-router-evaluation/smart.router.evaluation.controller';
-
+import { PushNotificationsController } from './modules/push-notifications/push.notifications.controller';
+import { XPortalApiService } from './services/multiversx-communication/mx.xportal.api.service';
 @Module({
     imports: [
         CommonAppModule,
@@ -25,7 +26,8 @@ import { SmartRouterEvaluationController } from './modules/smart-router-evaluati
         TokenController,
         RemoteConfigController,
         SmartRouterEvaluationController,
+        PushNotificationsController
     ],
-    providers: [ESTransactionsService],
+    providers: [ESTransactionsService, XPortalApiService],
 })
 export class PrivateAppModule {}
