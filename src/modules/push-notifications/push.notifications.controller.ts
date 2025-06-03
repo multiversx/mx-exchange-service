@@ -2,7 +2,11 @@ import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import { XPortalApiService } from 'src/services/multiversx-communication/mx.xportal.api.service';
 import { pushNotificationsConfig } from 'src/config';
-import { NotificationType } from './models/push.notifications.types';
+import {
+    NotificationResultCount,
+    NotificationType,
+} from './models/push.notifications.types';
+import { PushNotificationsEnergyCron } from './crons/push.notifications.energy';
 
 interface PushNotificationPayload {
     addresses: string[];
@@ -11,7 +15,10 @@ interface PushNotificationPayload {
 
 @Controller()
 export class PushNotificationsController {
-    constructor(private readonly xPortalApiService: XPortalApiService) {}
+    constructor(
+        private readonly xPortalApiService: XPortalApiService,
+        private readonly pushNotificationsEnergyCron: PushNotificationsEnergyCron,
+    ) {}
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Post('/push-notifications/send')
@@ -24,5 +31,10 @@ export class PushNotificationsController {
             ...pushNotificationsConfig[payload.type],
         });
         return result;
+    }
+
+    @Post('/push-notifications/fees-collector-rewards')
+    async sendFeesCollectorRewardsPushNotifications(): Promise<NotificationResultCount> {
+        return await this.pushNotificationsEnergyCron.feesCollectorRewardsCron();
     }
 }

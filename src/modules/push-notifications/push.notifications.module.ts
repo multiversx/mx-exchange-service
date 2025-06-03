@@ -30,6 +30,6 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
         PushNotificationsSetterService,
         PushNotificationsEnergyCron,
     ],
-    exports: [],
+    exports: [PushNotificationsEnergyCron],
 })
 export class PushNotificationsModule {}

@@ -83,6 +83,11 @@ export class PushNotificationsEnergyCron {
             `Fees collector rewards cron completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
             { context: PushNotificationsEnergyCron.name },
         );
+
+        return {
+            successful: successfulNotifications,
+            failed: failedNotifications,
+        }
     }
 
     @LockAndRetry({
