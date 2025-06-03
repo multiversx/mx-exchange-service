@@ -33,6 +33,7 @@ export class PushNotificationsController {
         return result;
     }
 
+    @UseGuards(JwtOrNativeAdminGuard)
     @Post('/push-notifications/fees-collector-rewards')
     async sendFeesCollectorRewardsPushNotifications(): Promise<NotificationResultCount> {
         return await this.pushNotificationsEnergyCron.feesCollectorRewardsCron();
