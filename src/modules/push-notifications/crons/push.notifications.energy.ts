@@ -10,32 +10,42 @@ import { ElasticAccountsEnergyService } from 'src/services/elastic-search/servic
 import { pushNotificationsConfig, scAddress } from 'src/config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
-import { RedlockService } from '@multiversx/sdk-nestjs-cache';
+import { RedlockService, RedisCacheService } from '@multiversx/sdk-nestjs-cache';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
+    private readonly FEES_COLLECTOR_LAST_EPOCH_KEY = 'push_notifications:fees_collector:last_epoch';
+
     constructor(
         private readonly contextGetter: ContextGetterService,
         private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly redLockService: RedlockService,
+        private readonly redisCacheService: RedisCacheService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Cron(
-        process.env.NODE_ENV === 'mainnet'
-            ? CronExpression.EVERY_DAY_AT_NOON
-            : CronExpression.EVERY_4_HOURS,
-    )
+    @Cron(CronExpression.EVERY_4_HOURS)
     @LockAndRetry({
         lockKey: 'pushNotifications',
         lockName: 'feesCollector',
     })
     async feesCollectorRewardsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
+        const targetEpoch = currentEpoch - 1;
+
+        const lastProcessedEpoch: string = await this.redisCacheService.get(this.FEES_COLLECTOR_LAST_EPOCH_KEY);
+        if (lastProcessedEpoch && parseInt(lastProcessedEpoch) <= targetEpoch) {
+            this.logger.info(
+                `Fees collector rewards cron skipped - already processed epoch: ${targetEpoch}`,
+                { context: PushNotificationsEnergyCron.name },
+            );
+            return;
+        }
+
         const firstWeekStartEpoch =
             await this.weekTimekeepingAbi.firstWeekStartEpoch(
                 String(scAddress.feesCollector),
@@ -43,14 +53,14 @@ export class PushNotificationsEnergyCron {
 
         if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
             this.logger.info(
-                `Fees collector rewards cron skipped for epoch: ${currentEpoch - 1}`,
+                `Fees collector rewards cron skipped for epoch: ${targetEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
             );
             return;
         }
 
         this.logger.info(
-            `Fees collector rewards cron started for epoch: ${ currentEpoch - 1}`,
+            `Fees collector rewards cron started for epoch: ${targetEpoch}`,
             { context: PushNotificationsEnergyCron.name },
         );
 
@@ -58,7 +68,7 @@ export class PushNotificationsEnergyCron {
         let failedNotifications = 0;
 
         await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
-            currentEpoch - 1,
+            targetEpoch,
             'gt',
             async (items: AccountType[]) => {
                 const addresses = items.map(
@@ -83,6 +93,8 @@ export class PushNotificationsEnergyCron {
             `Fees collector rewards cron completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
             { context: PushNotificationsEnergyCron.name },
         );
+
+        await this.redisCacheService.set(this.FEES_COLLECTOR_LAST_EPOCH_KEY, targetEpoch.toString());
     }
 
     @LockAndRetry({
