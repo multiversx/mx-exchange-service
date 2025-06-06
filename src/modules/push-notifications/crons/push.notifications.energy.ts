@@ -11,12 +11,11 @@ import {
     RedisCacheService,
     RedlockService,
 } from '@multiversx/sdk-nestjs-cache';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
-    private readonly FEES_COLLECTOR_LAST_EPOCH_KEY =
-        'push_notifications:fees_collector:last_epoch';
-
+    private readonly FEES_COLLECTOR_LAST_EPOCH_KEY = 'push_notifications:fees_collector:last_epoch';
     constructor(
         private readonly pushNotificationsEnergyService: PushNotificationsEnergyService,
         private readonly contextGetter: ContextGetterService,
@@ -26,25 +25,18 @@ export class PushNotificationsEnergyCron {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Cron(
-        process.env.NODE_ENV === 'mainnet'
-            ? CronExpression.EVERY_DAY_AT_NOON
-            : CronExpression.EVERY_4_HOURS,
-    )
+    @Cron(CronExpression.EVERY_4_HOURS)
     @LockAndRetry({
         lockKey: 'pushNotifications',
         lockName: 'feesCollector',
     })
     async feesCollectorRewardsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
-        const targetEpoch = currentEpoch - 1;
 
-        const lastProcessedEpoch: string = await this.redisCacheService.get(
-            this.FEES_COLLECTOR_LAST_EPOCH_KEY,
-        );
-        if (lastProcessedEpoch && parseInt(lastProcessedEpoch) >= targetEpoch) {
+        const lastProcessedEpoch: string = await this.redisCacheService.get(this.FEES_COLLECTOR_LAST_EPOCH_KEY);
+        if (parseInt(lastProcessedEpoch) === currentEpoch) {
             this.logger.info(
-                `Fees collector rewards cron skipped - already processed epoch: ${targetEpoch}`,
+                `Fees collector rewards cron skipped - already processed epoch: ${currentEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
             );
             return;
@@ -57,19 +49,20 @@ export class PushNotificationsEnergyCron {
 
         if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
             this.logger.info(
-                `Fees collector rewards cron skipped for epoch: ${targetEpoch}`,
+                `Fees collector rewards cron skipped for epoch: ${currentEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
             );
             return;
         }
 
         await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
-            targetEpoch,
+            currentEpoch,
         );
 
         await this.redisCacheService.set(
             this.FEES_COLLECTOR_LAST_EPOCH_KEY,
-            targetEpoch.toString(),
+            currentEpoch,
+            Constants.oneWeek(),
         );
     }
 
