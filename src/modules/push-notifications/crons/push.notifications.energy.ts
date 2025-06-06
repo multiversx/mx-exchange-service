@@ -13,6 +13,7 @@ import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
 import { RedlockService, RedisCacheService } from '@multiversx/sdk-nestjs-cache';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
@@ -35,12 +36,11 @@ export class PushNotificationsEnergyCron {
     })
     async feesCollectorRewardsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
-        const targetEpoch = currentEpoch - 1;
 
         const lastProcessedEpoch: string = await this.redisCacheService.get(this.FEES_COLLECTOR_LAST_EPOCH_KEY);
-        if (lastProcessedEpoch && parseInt(lastProcessedEpoch) <= targetEpoch) {
+        if (parseInt(lastProcessedEpoch) === currentEpoch) {
             this.logger.info(
-                `Fees collector rewards cron skipped - already processed epoch: ${targetEpoch}`,
+                `Fees collector rewards cron skipped - already processed epoch: ${currentEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
             );
             return;
@@ -53,14 +53,14 @@ export class PushNotificationsEnergyCron {
 
         if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
             this.logger.info(
-                `Fees collector rewards cron skipped for epoch: ${targetEpoch}`,
+                `Fees collector rewards cron skipped for epoch: ${currentEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
             );
             return;
         }
 
         this.logger.info(
-            `Fees collector rewards cron started for epoch: ${targetEpoch}`,
+            `Fees collector rewards cron started for epoch: ${currentEpoch}`,
             { context: PushNotificationsEnergyCron.name },
         );
 
@@ -68,7 +68,7 @@ export class PushNotificationsEnergyCron {
         let failedNotifications = 0;
 
         await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
-            targetEpoch,
+            currentEpoch,
             'gt',
             async (items: AccountType[]) => {
                 const addresses = items.map(
@@ -94,7 +94,11 @@ export class PushNotificationsEnergyCron {
             { context: PushNotificationsEnergyCron.name },
         );
 
-        await this.redisCacheService.set(this.FEES_COLLECTOR_LAST_EPOCH_KEY, targetEpoch.toString());
+        await this.redisCacheService.set(
+            this.FEES_COLLECTOR_LAST_EPOCH_KEY,
+            currentEpoch,
+            Constants.oneWeek(),
+        );
     }
 
     @LockAndRetry({
