@@ -21,7 +21,6 @@ import { PushNotificationsModule } from './modules/push-notifications/push.notif
         TokenModule,
         RemoteConfigModule,
         DynamicModuleUtils.getCacheModule(),
-        DynamicModuleUtils.getCommonRedisModule(),
         SmartRouterEvaluationModule,
         PushNotificationsModule,
     ],
