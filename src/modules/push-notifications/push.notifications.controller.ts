@@ -6,7 +6,7 @@ import {
     NotificationResultCount,
     NotificationType,
 } from './models/push.notifications.types';
-import { PushNotificationsEnergyCron } from './crons/push.notifications.energy';
+import { PushNotificationsEnergyService } from './services/push.notifications.energy.service';
 
 interface PushNotificationPayload {
     addresses: string[];
@@ -17,7 +17,7 @@ interface PushNotificationPayload {
 export class PushNotificationsController {
     constructor(
         private readonly xPortalApiService: XPortalApiService,
-        private readonly pushNotificationsEnergyCron: PushNotificationsEnergyCron,
+        private readonly pushNotificationsEnergyService: PushNotificationsEnergyService,
     ) {}
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -35,7 +35,11 @@ export class PushNotificationsController {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Post('/push-notifications/fees-collector-rewards')
-    async sendFeesCollectorRewardsPushNotifications(): Promise<NotificationResultCount> {
-        return await this.pushNotificationsEnergyCron.feesCollectorRewardsCron();
+    async sendFeesCollectorRewardsPushNotifications(
+        @Body() payload: { targetEpoch: number },
+    ): Promise<NotificationResultCount> {
+        return await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
+            payload.targetEpoch,
+        );
     }
 }
