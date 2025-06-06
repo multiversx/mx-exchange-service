@@ -71,7 +71,7 @@ export class PushNotificationsEnergyCron {
         lockName: 'negativeEnergy',
     })
     async negativeEnergyNotificationsCron() {
-        return await this.pushNotificationsEnergyService.negativeEnergyNotificationsNotification();
+        return await this.pushNotificationsEnergyService.negativeEnergyNotifications();
     }
 
     @Cron(CronExpression.EVERY_10_MINUTES)
@@ -80,6 +80,6 @@ export class PushNotificationsEnergyCron {
         lockName: 'retryFailed',
     })
     async retryFailedNotificationsCron() {
-        await this.pushNotificationsEnergyService.retryFailedNotificationsNotification();
+        await this.pushNotificationsEnergyService.retryFailedNotifications();
     }
 }

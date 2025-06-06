@@ -64,7 +64,7 @@ export class PushNotificationsEnergyService {
         };
     }
 
-    async negativeEnergyNotificationsNotification(): Promise<void> {
+    async negativeEnergyNotifications(): Promise<void> {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
 
         let successfulNotifications = 0;
@@ -99,7 +99,7 @@ export class PushNotificationsEnergyService {
         );
     }
 
-    async retryFailedNotificationsNotification(): Promise<void> {
+    async retryFailedNotifications(): Promise<void> {
         const notificationTypes = Object.values(NotificationType);
 
         for (const notificationType of notificationTypes) {
