@@ -10,8 +10,6 @@ import { PushNotificationsService } from './services/push.notifications.service'
 import { PushNotificationsSetterService } from './services/push.notifications.setter.service';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { ElasticSearchModule } from '../../services/elastic-search/elastic.search.module';
-import { CacheModule } from '../../services/caching/cache.module';
-import { EnergyModule } from '../energy/energy.module';
 
 @Module({
     imports: [
@@ -21,8 +19,6 @@ import { EnergyModule } from '../energy/energy.module';
         WeekTimekeepingModule,
         MXCommunicationModule,
         ElasticSearchModule,
-        CacheModule,
-        EnergyModule,
         DynamicModuleUtils.getRedlockModule(),
         DynamicModuleUtils.getCommonRedisModule(),
     ],

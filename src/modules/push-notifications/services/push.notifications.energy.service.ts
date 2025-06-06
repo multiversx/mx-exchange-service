@@ -10,7 +10,6 @@ import { ElasticAccountsEnergyService } from 'src/services/elastic-search/servic
 import { pushNotificationsConfig } from 'src/config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { PushNotificationsEnergyCron } from '../crons/push.notifications.energy';
 
 @Injectable()
 export class PushNotificationsEnergyService {
@@ -96,7 +95,7 @@ export class PushNotificationsEnergyService {
 
         this.logger.info(
             `Negative energy notifications completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
-            { context: PushNotificationsEnergyCron.name },
+            { context: PushNotificationsEnergyService.name },
         );
     }
 
