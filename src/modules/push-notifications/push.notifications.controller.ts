@@ -7,6 +7,8 @@ import {
     NotificationType,
 } from './models/push.notifications.types';
 import { PushNotificationsEnergyService } from './services/push.notifications.energy.service';
+import { Constants } from '@multiversx/sdk-nestjs-common';
+import { RedisCacheService } from '@multiversx/sdk-nestjs-cache';
 
 interface PushNotificationPayload {
     addresses: string[];
@@ -15,9 +17,12 @@ interface PushNotificationPayload {
 
 @Controller()
 export class PushNotificationsController {
+    private readonly FEES_COLLECTOR_LAST_EPOCH_KEY =
+        'push_notifications:fees_collector:last_epoch';
     constructor(
         private readonly xPortalApiService: XPortalApiService,
         private readonly pushNotificationsEnergyService: PushNotificationsEnergyService,
+        private readonly redisCacheService: RedisCacheService,
     ) {}
 
     @UseGuards(JwtOrNativeAdminGuard)
@@ -38,8 +43,17 @@ export class PushNotificationsController {
     async sendFeesCollectorRewardsPushNotifications(
         @Body() payload: { targetEpoch: number },
     ): Promise<NotificationResultCount> {
-        return await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
+        const result =
+            await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
+                payload.targetEpoch,
+            );
+
+        await this.redisCacheService.set(
+            this.FEES_COLLECTOR_LAST_EPOCH_KEY,
             payload.targetEpoch,
+            Constants.oneWeek(),
         );
+
+        return result;
     }
 }
