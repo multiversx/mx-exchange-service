@@ -25,6 +25,11 @@ export interface NotificationResult {
     failed: string[];
 }
 
+export interface NotificationResultCount {
+    successful: number;
+    failed: number;
+}
+
 export interface NotificationConfig {
     title: string;
     body: string;

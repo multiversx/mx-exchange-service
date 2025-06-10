@@ -12,6 +12,8 @@ import { SmartRouterEvaluationModule } from './modules/smart-router-evaluation/s
 import { SmartRouterEvaluationController } from './modules/smart-router-evaluation/smart.router.evaluation.controller';
 import { PushNotificationsController } from './modules/push-notifications/push.notifications.controller';
 import { XPortalApiService } from './services/multiversx-communication/mx.xportal.api.service';
+import { PushNotificationsModule } from './modules/push-notifications/push.notifications.module';
+
 @Module({
     imports: [
         CommonAppModule,
@@ -20,6 +22,7 @@ import { XPortalApiService } from './services/multiversx-communication/mx.xporta
         RemoteConfigModule,
         DynamicModuleUtils.getCacheModule(),
         SmartRouterEvaluationModule,
+        PushNotificationsModule,
     ],
     controllers: [
         MetricsController,

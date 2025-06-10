@@ -1,31 +1,26 @@
-import {
-    AccountType,
-    NotificationType,
-} from '../models/push.notifications.types';
-import { Inject, Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { PushNotificationsService } from '../services/push.notifications.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElasticAccountsEnergyService } from 'src/services/elastic-search/services/es.accounts.energy.service';
-import { pushNotificationsConfig, scAddress } from 'src/config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { PushNotificationsEnergyService } from '../services/push.notifications.energy.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
-import { RedlockService, RedisCacheService } from '@multiversx/sdk-nestjs-cache';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Inject, Injectable } from '@nestjs/common';
+import { scAddress } from 'src/config';
 import { Logger } from 'winston';
-import { Constants } from '@multiversx/sdk-nestjs-common';
+import {
+    RedisCacheService,
+    RedlockService,
+} from '@multiversx/sdk-nestjs-cache';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
     private readonly FEES_COLLECTOR_LAST_EPOCH_KEY = 'push_notifications:fees_collector:last_epoch';
-
     constructor(
+        private readonly pushNotificationsEnergyService: PushNotificationsEnergyService,
         private readonly contextGetter: ContextGetterService,
-        private readonly pushNotificationsService: PushNotificationsService,
-        private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
-        private readonly redLockService: RedlockService,
         private readonly redisCacheService: RedisCacheService,
+        private readonly redLockService: RedlockService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -59,46 +54,10 @@ export class PushNotificationsEnergyCron {
             return;
         }
 
-        this.logger.info(
-            `Fees collector rewards cron started for epoch: ${currentEpoch}`,
-            { context: PushNotificationsEnergyCron.name },
-        );
-
-        let successfulNotifications = 0;
-        let failedNotifications = 0;
-
-        await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
+        await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
             currentEpoch,
-            'gt',
-            async (items: AccountType[]) => {
-                const addresses = items.map(
-                    (item: AccountType) => item.address,
-                );
-
-                const result =
-                    await this.pushNotificationsService.sendNotificationsInBatches(
-                        addresses,
-                        pushNotificationsConfig[
-                            NotificationType.FEES_COLLECTOR_REWARDS
-                        ],
-                        NotificationType.FEES_COLLECTOR_REWARDS,
-                    );
-
-                successfulNotifications += result.successful.length;
-                failedNotifications += result.failed.length;
-            },
         );
 
-        this.logger.info(
-            `Fees collector rewards cron completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
-            { context: PushNotificationsEnergyCron.name },
-        );
-
-        await this.redisCacheService.set(
-            this.FEES_COLLECTOR_LAST_EPOCH_KEY,
-            currentEpoch,
-            Constants.oneWeek(),
-        );
     }
 
     @LockAndRetry({
@@ -106,38 +65,7 @@ export class PushNotificationsEnergyCron {
         lockName: 'negativeEnergy',
     })
     async negativeEnergyNotificationsCron() {
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
-
-        let successfulNotifications = 0;
-        let failedNotifications = 0;
-
-        await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
-            currentEpoch - 1,
-            'lt',
-            async (items: AccountType[]) => {
-                const addresses = items.map(
-                    (item: AccountType) => item.address,
-                );
-
-                const result =
-                    await this.pushNotificationsService.sendNotificationsInBatches(
-                        addresses,
-                        pushNotificationsConfig[
-                            NotificationType.NEGATIVE_ENERGY
-                        ],
-                        NotificationType.NEGATIVE_ENERGY,
-                    );
-
-                successfulNotifications += result.successful.length;
-                failedNotifications += result.failed.length;
-            },
-            0,
-        );
-
-        this.logger.info(
-            `Negative energy notifications cron completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
-            { context: PushNotificationsEnergyCron.name },
-        );
+        return await this.pushNotificationsEnergyService.negativeEnergyNotifications();
     }
 
     @Cron(CronExpression.EVERY_10_MINUTES)
@@ -146,12 +74,6 @@ export class PushNotificationsEnergyCron {
         lockName: 'retryFailed',
     })
     async retryFailedNotificationsCron() {
-        const notificationTypes = Object.values(NotificationType);
-
-        for (const notificationType of notificationTypes) {
-            await this.pushNotificationsService.retryFailedNotifications(
-                notificationType,
-            );
-        }
+        await this.pushNotificationsEnergyService.retryFailedNotifications();
     }
 }
