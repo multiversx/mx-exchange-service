@@ -386,6 +386,16 @@ export class ApiConfigService {
         return elasticSearchUrl;
     }
 
+    getAccountsElasticSearchUrl(): string {
+        const elasticSearchUrl =
+            this.configService.get<string>('ACCOUNTS_ELASTICSEARCH_URL');
+        if (!elasticSearchUrl) {
+            throw new Error('No Accounts Elastic Search url present');
+        }
+
+        return elasticSearchUrl;
+    }
+
     getOpenExchangeRateAppID(): string {
         const appId = this.configService.get<string>(
             'OPEN_EXCHANGE_RATES_APP_ID',

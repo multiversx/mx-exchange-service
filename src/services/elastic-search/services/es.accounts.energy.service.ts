@@ -7,6 +7,7 @@ import { Logger } from 'winston';
 @Injectable()
 export class ElasticAccountsEnergyService {
     constructor(
+        @Inject('ACCOUNTS_ELASTIC_SERVICE')
         private readonly elasticService: ElasticService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
