@@ -1,11 +1,14 @@
 import { QueryType, ElasticService } from '@multiversx/sdk-nestjs-elastic';
 
 import { ElasticQuery } from '@multiversx/sdk-nestjs-elastic';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ElasticAccountsEnergyService {
-    constructor(private readonly elasticService: ElasticService) {}
+    constructor(
+        @Inject('ACCOUNTS_ELASTIC_SERVICE')
+        private readonly elasticService: ElasticService,
+    ) {}
 
     async getAccountsByEnergyAmount(
         epoch: number,
