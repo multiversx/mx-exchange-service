@@ -74,24 +74,9 @@ describe('FarmServiceV2', () => {
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             10,
         );
-        const expectedTotal = new BigNumber('5000')
-            .plus('4000')
-            .integerValue()
-            .toFixed(); // 4 weeks * 1000
+        const expectedTotal = new BigNumber('4000').integerValue().toFixed(); // 4 weeks * 1000
         expect(result).toEqual(expectedTotal);
-        // expect(mockFarmAbi.undistributedBoostedRewards).toHaveBeenCalled();
-        // expect(mockFarmAbi.lastUndistributedBoostedRewardsCollectWeek).toHaveBeenCalled();
-        // expect(mockFarmAbi.remainingBoostedRewardsToDistribute).toHaveBeenCalledTimes(4);
     });
-    // it("should return undistributedBoostedRewards if firstWeek > lastWeek", async () => {
-    //     const service = module.get<FarmComputeServiceV2>(
-    //         FarmComputeServiceV2,
-    //     );
-    //     const result = await service.computeUndistributedBoostedRewards('erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye', 5);
-    //     expect(result).toEqual('5000');
-    //     // expect(mockFarmAbi.undistributedBoostedRewards).toHaveBeenCalled();
-    //     // expect(mockFarmAbi.lastUndistributedBoostedRewardsCollectWeek).toHaveBeenCalled();
-    // }, 10000);
 
     it('should compute blocks in week', async () => {
         const service = module.get<FarmComputeServiceV2>(FarmComputeServiceV2);

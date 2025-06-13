@@ -11,6 +11,10 @@ import moment from 'moment';
 import BigNumber from 'bignumber.js';
 import { FilterQuery } from 'mongoose';
 import { TransactionModel } from 'src/models/transaction.model';
+import { SwapsEvaluationParams } from '../dtos/swaps.evaluation.params';
+import { TokenService } from 'src/modules/tokens/services/token.service';
+import { BaseEsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { mxConfig } from 'src/config';
 
 @Injectable()
 export class SmartRouterEvaluationService {
@@ -20,6 +24,7 @@ export class SmartRouterEvaluationService {
 
     constructor(
         private readonly swapRouteRepository: SwapRouteRepositoryService,
+        private readonly tokenService: TokenService,
     ) {}
 
     async addFixedInputSwapComparison(
@@ -80,6 +85,12 @@ export class SmartRouterEvaluationService {
         }
     }
 
+    async getSwapRouteByTxHash(
+        txHash: string,
+    ): Promise<SwapRouteDocument | null> {
+        return await this.swapRouteRepository.findOne({ txHash });
+    }
+
     async getGroupedUnconfirmedSwapRoutes(
         cutoffTimestamp: number | undefined,
     ): Promise<Map<string, SwapRouteDocument[]>> {
@@ -109,12 +120,6 @@ export class SmartRouterEvaluationService {
                 autoRouterTokenRoute: swap.autoRouterTokenRoute,
                 autoRouterIntermediaryAmounts:
                     swap.autoRouterIntermediaryAmounts,
-                smartRouterAmountOut: swap.smartRouterAmountOut,
-                smartRouterTokenRoutes: swap.smartRouterTokenRoutes,
-                smartRouterIntermediaryAmounts:
-                    swap.smartRouterIntermediaryAmounts,
-                outputDelta: swap.outputDelta,
-                outputDeltaPercentage: swap.outputDeltaPercentage,
             };
 
             const optionsHash = crypto
@@ -152,5 +157,83 @@ export class SmartRouterEvaluationService {
             txHash: null,
             timestamp: { $lt: cutoffTimestamp },
         });
+    }
+
+    async getComparisonSwapRoutes(
+        params: SwapsEvaluationParams,
+    ): Promise<{ totalCount: number; swaps: SwapRoute[] }> {
+        const model = this.swapRouteRepository.getModel();
+
+        const filterObj: FilterQuery<SwapRoute> = {
+            outputDeltaPercentage: this.computeDeltaPercentageFilter(params),
+            txHash: { $ne: null },
+        };
+        if (params.tokenIn) {
+            filterObj.tokenIn = params.tokenIn;
+        }
+
+        if (params.tokenOut) {
+            filterObj.tokenOut = params.tokenOut;
+        }
+
+        if (params.start) {
+            const timestampQuery = {
+                $gte: params.start,
+            };
+
+            if (params.end) {
+                timestampQuery['$lte'] = params.end;
+            }
+            filterObj.timestamp = timestampQuery;
+        }
+
+        const totalCount = await model.find(filterObj).count();
+
+        const result = await model
+            .find(filterObj)
+            .sort({ timestamp: -1, _id: 1 })
+            .skip(params.offset)
+            .limit(params.size)
+            .exec();
+
+        return { swaps: result, totalCount };
+    }
+
+    async getDistinctTokens(): Promise<{
+        tokensIn: string[];
+        tokensOut: string[];
+        allTokensMetadata: BaseEsdtToken[];
+    }> {
+        const model = this.swapRouteRepository.getModel();
+
+        const [distinctTokensIn, distinctTokensOut, uniqueTokensIDs] =
+            await Promise.all([
+                model.distinct('tokenIn'),
+                model.distinct('tokenOut'),
+                this.tokenService.getUniqueTokenIDs(false),
+            ]);
+
+        const allTokensMetadata =
+            await this.tokenService.getAllBaseTokensMetadata(uniqueTokensIDs);
+        allTokensMetadata.push({
+            identifier: mxConfig.EGLDIdentifier,
+            decimals: mxConfig.EGLDDecimals,
+        });
+
+        return {
+            tokensIn: distinctTokensIn,
+            tokensOut: distinctTokensOut,
+            allTokensMetadata,
+        };
+    }
+
+    private computeDeltaPercentageFilter(params: SwapsEvaluationParams) {
+        if (params.deltaComparison === 'eq') {
+            return params.delta;
+        }
+        if (params.deltaComparison === 'gt') {
+            return { $gt: params.delta };
+        }
+        return { $lt: params.delta };
     }
 }

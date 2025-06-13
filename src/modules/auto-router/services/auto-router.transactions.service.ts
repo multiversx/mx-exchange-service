@@ -223,6 +223,20 @@ export class AutoRouterTransactionService {
                 : this.multiPairFixedOutputSwaps(args);
         const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
 
+        const amountOut = new BigNumber(
+            args.intermediaryAmounts[args.intermediaryAmounts.length - 1],
+        );
+
+        const amountOutMin =
+            args.swapType === SWAP_TYPE.fixedInput
+                ? new BigNumber(1)
+                      .dividedBy(new BigNumber(1).plus(args.tolerance))
+                      .decimalPlaces(2)
+                      .multipliedBy(amountOut)
+                      .integerValue()
+                      .toFixed()
+                : amountOut.toFixed();
+
         return this.composeTasksTransactionService.getComposeTasksTransaction(
             sender,
             new EsdtTokenPayment({
@@ -233,9 +247,7 @@ export class AutoRouterTransactionService {
             new EgldOrEsdtTokenPayment({
                 tokenIdentifier: args.tokenRoute[args.tokenRoute.length - 1],
                 nonce: 0,
-                amount: args.intermediaryAmounts[
-                    args.intermediaryAmounts.length - 1
-                ],
+                amount: amountOutMin,
             }),
             [
                 {
@@ -261,6 +273,20 @@ export class AutoRouterTransactionService {
                 : this.multiPairFixedOutputSwaps(args);
         const swaps = this.convertMultiPairSwapsToBytesValues(typedArgs);
 
+        const amountOut = new BigNumber(
+            args.intermediaryAmounts[args.intermediaryAmounts.length - 1],
+        );
+
+        const amountOutMin =
+            args.swapType === SWAP_TYPE.fixedInput
+                ? new BigNumber(1)
+                      .dividedBy(new BigNumber(1).plus(args.tolerance))
+                      .decimalPlaces(2)
+                      .multipliedBy(amountOut)
+                      .integerValue()
+                      .toFixed()
+                : amountOut.toFixed();
+
         return this.composeTasksTransactionService.getComposeTasksTransaction(
             sender,
             new EsdtTokenPayment({
@@ -271,9 +297,7 @@ export class AutoRouterTransactionService {
             new EgldOrEsdtTokenPayment({
                 tokenIdentifier: 'EGLD',
                 nonce: 0,
-                amount: args.intermediaryAmounts[
-                    args.intermediaryAmounts.length - 1
-                ],
+                amount: amountOutMin,
             }),
             [
                 {

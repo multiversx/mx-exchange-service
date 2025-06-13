@@ -124,6 +124,45 @@ export class ApiConfigService {
         return password !== '' ? password : undefined;
     }
 
+    getCommonRedisUrl(): string {
+        const redisUrl = this.configService.get<string>('REDIS_COMMON_URL');
+        if (!redisUrl) {
+            throw new Error('No common redis url present');
+        }
+        return redisUrl;
+    }
+
+    getCommonRedisPort(): number {
+        const redisPort = this.configService.get<number>('REDIS_COMMON_PORT');
+        if (!redisPort) {
+            throw new Error('No common redis port present');
+        }
+        return redisPort;
+    }
+
+    getCommonRedisUser(): string | undefined {
+        const user = this.configService.get<string>('REDIS_COMMON_USER');
+        if (!user || user === '') {
+            return 'default';
+        }
+        return user;
+    }
+
+    getCommonRedisPassword(): string | undefined {
+        const password = this.configService.get<string>(
+            'REDIS_COMMON_PASSWORD',
+        );
+        return password !== '' ? password : undefined;
+    }
+
+    getCommonRedisTls(): boolean {
+        const redisTls = this.configService.get<string>('REDIS_COMMON_TLS');
+        if (!redisTls) {
+            throw new Error('No common redis tls flag present');
+        }
+        return redisTls === 'true';
+    }
+
     getApiUrl(): string {
         const apiUrl = this.configService.get<string>('MX_API_URL');
         if (!apiUrl) {

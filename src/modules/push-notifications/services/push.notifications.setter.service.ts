@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { CacheService } from 'src/services/caching/cache.service';
+import { RedisCacheService } from '@multiversx/sdk-nestjs-cache';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class PushNotificationsSetterService {
     private readonly failedNotificationsPrefix = 'pushNotificationsFailed';
 
-    constructor(private readonly cacheService: CacheService) {}
+    constructor(
+        private readonly redisCacheService: RedisCacheService,
+    ) {}
 
     async addFailedNotifications(
         addresses: string[],
@@ -16,13 +18,13 @@ export class PushNotificationsSetterService {
         if (!addresses || addresses.length === 0) return;
         const redisKey = `${this.failedNotificationsPrefix}.${notificationKey}`;
 
-        await this.cacheService.addToSet(redisKey, addresses);
-        await this.cacheService.setTtlRemote(redisKey, ttl);
+        await this.redisCacheService.sadd(redisKey, ...addresses);
+        await this.redisCacheService.expire(redisKey, ttl);
     }
 
     async getFailedNotifications(notificationKey: string): Promise<string[]> {
         const redisKey = `${this.failedNotificationsPrefix}.${notificationKey}`;
-        return await this.cacheService.getSetMembers(redisKey);
+        return await this.redisCacheService.smembers(redisKey);
     }
 
     async removeFailedNotifications(
@@ -32,6 +34,6 @@ export class PushNotificationsSetterService {
         if (!addresses || addresses.length === 0) return;
 
         const redisKey = `${this.failedNotificationsPrefix}.${notificationKey}`;
-        await this.cacheService.removeFromSet(redisKey, addresses);
+        await this.redisCacheService['redis'].srem(redisKey, ...addresses);
     }
 }

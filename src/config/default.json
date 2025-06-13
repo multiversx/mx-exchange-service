@@ -407,8 +407,8 @@
         },
         "stake": {
             "stakeFarm": {
-                "default": 20000000,
-                "withTokenMerge": 23000000
+                "default": 23000000,
+                "withTokenMerge": 25000000
             },
             "unstakeFarm": 25000000,
             "unbondFarm": 10000000,
@@ -612,6 +612,7 @@
         "STAKING_UNBOND_ATTRIBUTES_LEN": 12,
         "MAX_USER_NFTS": 10000,
         "MAX_SWAP_ROUTE_DEPTH": 4,
+        "MAX_SMART_SWAP_ROUTES": 4,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",

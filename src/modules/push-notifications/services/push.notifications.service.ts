@@ -7,7 +7,6 @@ import { Injectable } from '@nestjs/common';
 import { pushNotificationsConfig } from 'src/config';
 import { PushNotificationsSetterService } from './push.notifications.setter.service';
 import { XPortalApiService } from 'src/services/multiversx-communication/mx.xportal.api.service';
-
 @Injectable()
 export class PushNotificationsService {
     constructor(
@@ -27,23 +26,18 @@ export class PushNotificationsService {
 
         for (let i = 0; i < addresses.length; i += batchSize) {
             const batch = addresses.slice(i, i + batchSize);
-            try {
-                const success =
-                    await this.xPortalApiService.sendPushNotifications({
-                        addresses: batch,
-                        chainId,
-                        title: notificationParams.title,
-                        body: notificationParams.body,
-                        route: notificationParams.route,
-                        iconUrl: notificationParams.iconUrl,
-                    });
+            const success = await this.xPortalApiService.sendPushNotifications({
+                addresses: batch,
+                chainId,
+                title: notificationParams.title,
+                body: notificationParams.body,
+                route: notificationParams.route,
+                iconUrl: notificationParams.iconUrl,
+            });
 
-                if (success) {
-                    successful.push(...batch);
-                } else {
-                    failed.push(...batch);
-                }
-            } catch (error) {
+            if (success) {
+                successful.push(...batch);
+            } else {
                 failed.push(...batch);
             }
         }

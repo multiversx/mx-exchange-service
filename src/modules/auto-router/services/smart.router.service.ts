@@ -13,6 +13,7 @@ import {
     getOrderedReserves,
     getPairByTokens,
 } from 'src/utils/router.utils';
+import { constantsConfig } from 'src/config';
 
 export class SmartRouterService {
     /**
@@ -263,15 +264,40 @@ export class SmartRouterService {
             }
         }
 
+        const activeRoutesIndexes = validMask
+            .map((v, i) => (v ? i : -1))
+            .filter((i) => i >= 0);
+
+        let allocationsAndIndexes: { alloc: BigNumber; index: number }[] =
+            activeRoutesIndexes.map((idx) => {
+                const { alpha, beta, epsilon } = pathParams[idx];
+                return {
+                    alloc: this.calculateAllocation(alpha, beta, epsilon, phi),
+                    index: idx,
+                };
+            });
+
+        allocationsAndIndexes.sort((a, b) => b.alloc.comparedTo(a.alloc));
+
+        allocationsAndIndexes = allocationsAndIndexes.slice(
+            0,
+            constantsConfig.MAX_SMART_SWAP_ROUTES,
+        );
+
+        const remainingIndexes = allocationsAndIndexes.map((a) => a.index);
+
+        phi = this.computeOptimalPhi(
+            pathParams.filter((_, idx) => remainingIndexes.includes(idx)),
+            totalAmount,
+        );
+
         // 4. Calculate raw allocations for each valid route
         const rawAllocations: Array<{ path: string[]; allocation: BigNumber }> =
             [];
         let sumAllocations = new BigNumber(0);
 
-        for (let i = 0; i < pathParams.length; i++) {
-            if (!validMask[i]) continue;
-
-            const { alpha, beta, epsilon } = pathParams[i];
+        for (const index of remainingIndexes) {
+            const { alpha, beta, epsilon } = pathParams[index];
             const allocation = this.calculateAllocation(
                 alpha,
                 beta,
@@ -280,7 +306,7 @@ export class SmartRouterService {
             );
 
             if (allocation.gt(0)) {
-                rawAllocations.push({ path: paths[i], allocation });
+                rawAllocations.push({ path: paths[index], allocation });
                 sumAllocations = sumAllocations.plus(allocation);
             }
         }

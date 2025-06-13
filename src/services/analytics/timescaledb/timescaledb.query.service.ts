@@ -217,14 +217,25 @@ export class TimescaleDBQueryService implements AnalyticsQueryInterface {
     async getValues24h({
         series,
         metric,
+        time,
     }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
         try {
-            const endDate = moment().utc().toDate();
-            const startDate = moment()
+            let endDate = moment().utc().toDate();
+            let startDate = moment()
                 .subtract(1, 'day')
                 .utc()
                 .startOf('hour')
                 .toDate();
+
+            if (time) {
+                endDate = moment.unix(parseInt(time)).toDate();
+                startDate = moment
+                    .unix(parseInt(time))
+                    .subtract(1, 'day')
+                    .utc()
+                    .startOf('hour')
+                    .toDate();
+            }
 
             const query = await this.closeHourly
                 .createQueryBuilder()
