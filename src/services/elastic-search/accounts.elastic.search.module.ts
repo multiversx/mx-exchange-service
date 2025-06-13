@@ -26,6 +26,6 @@ import { MetricsService } from '@multiversx/sdk-nestjs-monitoring';
       },
       ElasticAccountsEnergyService,
     ],
-    exports: ['ACCOUNTS_ELASTIC_SERVICE', ElasticAccountsEnergyService],
+    exports: [ElasticAccountsEnergyService],
   })
 export class AccountsElasticSearchModule {}

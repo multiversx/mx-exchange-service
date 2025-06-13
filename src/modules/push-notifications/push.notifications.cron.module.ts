@@ -9,7 +9,7 @@ import { PushNotificationsEnergyService } from './services/push.notifications.en
 import { PushNotificationsService } from './services/push.notifications.service';
 import { PushNotificationsSetterService } from './services/push.notifications.setter.service';
 import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
-import { ElasticSearchModule } from '../../services/elastic-search/elastic.search.module';
+import { AccountsElasticSearchModule } from 'src/services/elastic-search/accounts.elastic.search.module';
 
 @Module({
     imports: [
@@ -18,9 +18,9 @@ import { ElasticSearchModule } from '../../services/elastic-search/elastic.searc
         ContextModule,
         WeekTimekeepingModule,
         MXCommunicationModule,
-        ElasticSearchModule,
         DynamicModuleUtils.getRedlockModule(),
         DynamicModuleUtils.getCommonRedisModule(),
+        AccountsElasticSearchModule,
     ],
     providers: [
         PushNotificationsEnergyCron,
