@@ -387,10 +387,11 @@ export class ApiConfigService {
     }
 
     getAccountsElasticSearchUrl(): string {
-        const elasticSearchUrl =
-            this.configService.get<string>('ACCOUNTS_ELASTICSEARCH_URL');
+        const elasticSearchUrl = this.configService.get<string>(
+            'ACCOUNTS_ELASTICSEARCH_URL',
+        );
         if (!elasticSearchUrl) {
-            throw new Error('No Accounts Elastic Search url present');
+            return this.getElasticSearchUrl();
         }
 
         return elasticSearchUrl;
