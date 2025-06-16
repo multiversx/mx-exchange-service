@@ -68,7 +68,7 @@ export class PushNotificationsEnergyCron {
         return await this.pushNotificationsEnergyService.negativeEnergyNotifications();
     }
 
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    // @Cron(CronExpression.EVERY_10_MINUTES)
     @LockAndRetry({
         lockKey: 'pushNotifications',
         lockName: 'retryFailed',
