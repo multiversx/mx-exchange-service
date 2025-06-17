@@ -1,6 +1,9 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
-import { XPortalApiService } from 'src/services/multiversx-communication/mx.xportal.api.service';
+import {
+    XPortalApiService,
+    XPortalPushNotificationsResult,
+} from 'src/services/multiversx-communication/mx.xportal.api.service';
 import { pushNotificationsConfig } from 'src/config';
 import {
     NotificationResultCount,
@@ -30,7 +33,7 @@ export class PushNotificationsController {
             chainId: pushNotificationsConfig.options.chainId,
             ...pushNotificationsConfig[payload.type],
         });
-        return result;
+        return result === XPortalPushNotificationsResult.SUCCESS;
     }
 
     @UseGuards(JwtOrNativeAdminGuard)

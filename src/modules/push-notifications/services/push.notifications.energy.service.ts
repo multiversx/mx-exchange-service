@@ -53,8 +53,8 @@ export class PushNotificationsEnergyService {
                         NotificationType.FEES_COLLECTOR_REWARDS,
                     );
 
-                successfulNotifications += result.successful.length;
-                failedNotifications += result.failed.length;
+                successfulNotifications += result.successful;
+                failedNotifications += result.failed;
             },
         );
 
@@ -98,8 +98,8 @@ export class PushNotificationsEnergyService {
                         NotificationType.NEGATIVE_ENERGY,
                     );
 
-                successfulNotifications += result.successful.length;
-                failedNotifications += result.failed.length;
+                successfulNotifications += result.successful;
+                failedNotifications += result.failed;
             },
             0,
         );

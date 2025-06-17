@@ -1,13 +1,15 @@
 import {
     NotificationConfig,
-    NotificationResult,
     NotificationResultCount,
     NotificationType,
 } from '../models/push.notifications.types';
 import { Injectable } from '@nestjs/common';
 import { pushNotificationsConfig } from 'src/config';
 import { PushNotificationsSetterService } from './push.notifications.setter.service';
-import { XPortalApiService } from 'src/services/multiversx-communication/mx.xportal.api.service';
+import {
+    XPortalApiService,
+    XPortalPushNotificationsResult,
+} from 'src/services/multiversx-communication/mx.xportal.api.service';
 import { delay } from 'src/helpers/helpers';
 
 @Injectable()
@@ -21,40 +23,68 @@ export class PushNotificationsService {
         addresses: string[],
         notificationParams: NotificationConfig,
         notificationKey: string,
-    ): Promise<NotificationResult> {
+    ): Promise<NotificationResultCount> {
         const batchSize = pushNotificationsConfig.options.batchSize;
         const chainId = pushNotificationsConfig.options.chainId;
-        const failed: string[] = [];
-        const successful: string[] = [];
+        const result: NotificationResultCount = {
+            successful: 0,
+            failed: 0,
+        };
+
+        let rateLimitHit = await this.notificationsSetter.isRateLimitHit();
 
         for (let i = 0; i < addresses.length; i += batchSize) {
             const batch = addresses.slice(i, i + batchSize);
-            const success = await this.xPortalApiService.sendPushNotifications({
-                addresses: batch,
-                chainId,
-                title: notificationParams.title,
-                body: notificationParams.body,
-                route: notificationParams.route,
-                iconUrl: notificationParams.iconUrl,
-            });
 
-            await delay(pushNotificationsConfig.options.requestsDelayMs);
+            try {
+                if (rateLimitHit) {
+                    throw new Error(
+                        `Failed to send ${notificationKey} notifications batch`,
+                    );
+                }
 
-            if (success) {
-                successful.push(...batch);
-            } else {
-                failed.push(...batch);
+                const response =
+                    await this.xPortalApiService.sendPushNotifications({
+                        addresses: batch,
+                        chainId,
+                        title: notificationParams.title,
+                        body: notificationParams.body,
+                        route: notificationParams.route,
+                        iconUrl: notificationParams.iconUrl,
+                    });
+
+                await delay(pushNotificationsConfig.options.requestsDelayMs);
+
+                if (response !== XPortalPushNotificationsResult.SUCCESS) {
+                    if (response === XPortalPushNotificationsResult.THROTTLED) {
+                        await this.notificationsSetter.setRateLimitHit();
+                        rateLimitHit = true;
+                    }
+
+                    throw new Error(
+                        `Failed to send ${notificationKey} notifications batch`,
+                    );
+                }
+
+                result.successful += batch.length;
+                await this.notificationsSetter.removeFailedNotifications(
+                    batch,
+                    notificationKey,
+                    'active',
+                );
+            } catch (error) {
+                result.failed += batch.length;
+
+                // add to stale failed notifications set - will be picked up on next cron run
+                await this.notificationsSetter.addFailedNotifications(
+                    batch,
+                    notificationKey,
+                    'stale',
+                );
             }
         }
 
-        if (failed.length > 0) {
-            await this.notificationsSetter.addFailedNotifications(
-                failed,
-                notificationKey,
-            );
-        }
-
-        return { successful, failed };
+        return result;
     }
 
     async retryFailedNotifications(
@@ -65,10 +95,13 @@ export class PushNotificationsService {
             failed: 0,
         };
 
+        await this.copyFailedNotifications(notificationType);
+
         while (true) {
             const failedAddresses =
                 await this.notificationsSetter.getFailedNotifications(
                     notificationType,
+                    'active',
                     1000,
                 );
 
@@ -83,15 +116,39 @@ export class PushNotificationsService {
                     notificationType,
                 );
 
-            if (successful.length > 0) {
-                await this.notificationsSetter.removeFailedNotifications(
-                    successful,
+            result.successful += successful;
+            result.failed += failed;
+        }
+    }
+
+    private async copyFailedNotifications(
+        notificationType: NotificationType,
+    ): Promise<void> {
+        while (true) {
+            const staleNotifications =
+                await this.notificationsSetter.getFailedNotifications(
                     notificationType,
+                    'stale',
+                    1000,
                 );
+
+            if (!staleNotifications || staleNotifications.length === 0) {
+                return;
             }
 
-            result.successful += successful.length;
-            result.failed += failed.length;
+            // add to active set
+            await this.notificationsSetter.addFailedNotifications(
+                staleNotifications,
+                notificationType,
+                'active',
+            );
+
+            // remove from stale set
+            await this.notificationsSetter.removeFailedNotifications(
+                staleNotifications,
+                notificationType,
+                'stale',
+            );
         }
     }
 }
