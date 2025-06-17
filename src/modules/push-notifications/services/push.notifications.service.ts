@@ -1,12 +1,15 @@
 import {
     NotificationConfig,
     NotificationResult,
+    NotificationResultCount,
     NotificationType,
 } from '../models/push.notifications.types';
 import { Injectable } from '@nestjs/common';
 import { pushNotificationsConfig } from 'src/config';
 import { PushNotificationsSetterService } from './push.notifications.setter.service';
 import { XPortalApiService } from 'src/services/multiversx-communication/mx.xportal.api.service';
+import { delay } from 'src/helpers/helpers';
+
 @Injectable()
 export class PushNotificationsService {
     constructor(
@@ -35,6 +38,8 @@ export class PushNotificationsService {
                 iconUrl: notificationParams.iconUrl,
             });
 
+            await delay(pushNotificationsConfig.options.requestsDelayMs);
+
             if (success) {
                 successful.push(...batch);
             } else {
@@ -54,27 +59,39 @@ export class PushNotificationsService {
 
     async retryFailedNotifications(
         notificationType: NotificationType,
-    ): Promise<void> {
-        const failedAddresses =
-            await this.notificationsSetter.getFailedNotifications(
-                notificationType,
-            );
+    ): Promise<NotificationResultCount> {
+        const result: NotificationResultCount = {
+            successful: 0,
+            failed: 0,
+        };
 
-        if (!failedAddresses || failedAddresses.length === 0) {
-            return;
-        }
+        while (true) {
+            const failedAddresses =
+                await this.notificationsSetter.getFailedNotifications(
+                    notificationType,
+                    1000,
+                );
 
-        const { successful } = await this.sendNotificationsInBatches(
-            failedAddresses,
-            pushNotificationsConfig[notificationType],
-            notificationType,
-        );
+            if (!failedAddresses || failedAddresses.length === 0) {
+                return result;
+            }
 
-        if (successful.length > 0) {
-            await this.notificationsSetter.removeFailedNotifications(
-                successful,
-                notificationType,
-            );
+            const { successful, failed } =
+                await this.sendNotificationsInBatches(
+                    failedAddresses,
+                    pushNotificationsConfig[notificationType],
+                    notificationType,
+                );
+
+            if (successful.length > 0) {
+                await this.notificationsSetter.removeFailedNotifications(
+                    successful,
+                    notificationType,
+                );
+            }
+
+            result.successful += successful.length;
+            result.failed += failed.length;
         }
     }
 }

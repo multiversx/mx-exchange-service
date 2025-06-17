@@ -22,9 +22,15 @@ export class PushNotificationsSetterService {
         await this.redisCacheService.expire(redisKey, ttl);
     }
 
-    async getFailedNotifications(notificationKey: string): Promise<string[]> {
+    async getFailedNotifications(
+        notificationKey: string,
+        count = 1000,
+    ): Promise<string[]> {
         const redisKey = `${this.failedNotificationsPrefix}.${notificationKey}`;
-        return await this.redisCacheService.smembers(redisKey);
+        return await this.redisCacheService['redis'].srandmember(
+            redisKey,
+            count,
+        );
     }
 
     async removeFailedNotifications(
