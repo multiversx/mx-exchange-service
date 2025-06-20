@@ -81,6 +81,13 @@ export class PushNotificationsService {
                     notificationKey,
                     'stale',
                 );
+
+                // remove from active set if the batch failed
+                await this.notificationsSetter.removeFailedNotifications(
+                    batch,
+                    notificationKey,
+                    'active',
+                );
             }
         }
 
