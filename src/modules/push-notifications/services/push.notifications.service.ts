@@ -53,8 +53,6 @@ export class PushNotificationsService {
                         iconUrl: notificationParams.iconUrl,
                     });
 
-                await delay(pushNotificationsConfig.options.requestsDelayMs);
-
                 if (response !== XPortalPushNotificationsResult.SUCCESS) {
                     if (response === XPortalPushNotificationsResult.THROTTLED) {
                         await this.notificationsSetter.setRateLimitHit();
@@ -88,6 +86,8 @@ export class PushNotificationsService {
                     notificationKey,
                     'active',
                 );
+            } finally {
+                await delay(pushNotificationsConfig.options.requestsDelayMs);
             }
         }
 
