@@ -19,6 +19,7 @@ import {
 } from 'src/services/database/repositories/trading.contest.repository';
 import { TradingContestSwapHandlerService } from './services/trading.contest.swap.handler.service';
 import { TradingContestService } from './services/trading.contest.service';
+import { RouterModule } from '../router/router.module';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { TradingContestService } from './services/trading.contest.service';
             },
             { name: TradingContestSwap.name, schema: TradingContestSwapSchema },
         ]),
+        RouterModule,
     ],
     providers: [
         TradingContestRepository,
@@ -39,6 +41,5 @@ import { TradingContestService } from './services/trading.contest.service';
         TradingContestSwapHandlerService,
     ],
     exports: [TradingContestService, TradingContestSwapHandlerService],
-    controllers: [],
 })
 export class TradingContestModule {}
