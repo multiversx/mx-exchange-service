@@ -66,6 +66,7 @@ import { governanceContractsAddresses } from '../../utils/governance';
 import { GovernanceHandlerService } from './handlers/governance.handler.service';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { StakingHandlerService } from './handlers/staking.handler.service';
+import { TradingContestSwapHandlerService } from '../trading-contest/services/trading.contest.swap.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -91,6 +92,7 @@ export class RabbitMqConsumer {
         private readonly analyticsWrite: AnalyticsWriteService,
         private readonly governanceHandler: GovernanceHandlerService,
         private readonly remoteConfig: RemoteConfigGetterService,
+        private readonly tradingContestSwapHandlerService: TradingContestSwapHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -148,11 +150,14 @@ export class RabbitMqConsumer {
             let eventData: any[];
             switch (rawEvent.name) {
                 case PAIR_EVENTS.SWAP:
+                    const swapEvent = new SwapEvent(rawEvent);
                     [eventData, timestamp] =
-                        await this.swapHandler.handleSwapEvents(
-                            new SwapEvent(rawEvent),
-                        );
+                        await this.swapHandler.handleSwapEvents(swapEvent);
                     this.updateIngestData(eventData);
+                    await this.tradingContestSwapHandlerService.handleSwapEvent(
+                        swapEvent,
+                        eventData[swapEvent.address],
+                    );
                     break;
                 case PAIR_EVENTS.ADD_LIQUIDITY:
                     [eventData, timestamp] =

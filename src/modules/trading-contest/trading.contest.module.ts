@@ -17,6 +17,8 @@ import {
     TradingContestRepository,
     TradingContestSwapRepository,
 } from 'src/services/database/repositories/trading.contest.repository';
+import { TradingContestSwapHandlerService } from './services/trading.contest.swap.handler.service';
+import { TradingContestService } from './services/trading.contest.service';
 
 @Module({
     imports: [
@@ -33,8 +35,10 @@ import {
         TradingContestRepository,
         TradingContestSwapRepository,
         TradingContestParticipantRepository,
+        TradingContestService,
+        TradingContestSwapHandlerService,
     ],
-    exports: [],
+    exports: [TradingContestService, TradingContestSwapHandlerService],
     controllers: [],
 })
 export class TradingContestModule {}
