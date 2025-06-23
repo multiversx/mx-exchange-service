@@ -66,7 +66,7 @@ describe('PushNotificationsService Integration', () => {
                 NotificationType.FEES_COLLECTOR_REWARDS,
                 'stale',
             );
-        expect(failedNotificationsBefore).toEqual(failedAddresses);
+        expect(failedNotificationsBefore.sort()).toEqual(failedAddresses.sort());
 
         jest.spyOn(
             xPortalApiService,
@@ -110,7 +110,7 @@ describe('PushNotificationsService Integration', () => {
                 NotificationType.FEES_COLLECTOR_REWARDS,
                 'active',
             );
-        expect(failedNotificationsBefore).toEqual(failedAddresses);
+        expect(failedNotificationsBefore.sort()).toEqual(failedAddresses.sort());
 
         // Mock sendPushNotifications to return a failure
         jest.spyOn(
@@ -129,7 +129,7 @@ describe('PushNotificationsService Integration', () => {
                 NotificationType.FEES_COLLECTOR_REWARDS,
                 'stale',
             );
-        expect(failedNotificationsAfter).toEqual(failedAddresses);
+        expect(failedNotificationsAfter.sort()).toEqual(failedAddresses.sort());
 
         // Check that the active notifications have been removed
         const activeNotifications =
