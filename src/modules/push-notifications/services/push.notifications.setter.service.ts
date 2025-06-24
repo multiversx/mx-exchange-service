@@ -35,6 +35,15 @@ export class PushNotificationsSetterService {
         );
     }
 
+    async getAndDeleteFailedNotifications(
+        notificationKey: string,
+        type: 'active' | 'stale',
+        count = 1000,
+    ): Promise<string[]> {
+        const redisKey = `${this.failedNotificationsPrefix}.${type}.${notificationKey}`;
+        return await this.redisCacheService['redis'].spop(redisKey, count);
+    }
+
     async removeFailedNotifications(
         addresses: string[],
         notificationKey: string,

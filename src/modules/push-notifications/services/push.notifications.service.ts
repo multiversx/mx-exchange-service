@@ -79,13 +79,6 @@ export class PushNotificationsService {
                     notificationKey,
                     'stale',
                 );
-
-                // remove from active set if the batch failed
-                await this.notificationsSetter.removeFailedNotifications(
-                    batch,
-                    notificationKey,
-                    'active',
-                );
             } finally {
                 await delay(pushNotificationsConfig.options.requestsDelayMs);
             }
@@ -106,7 +99,7 @@ export class PushNotificationsService {
 
         while (true) {
             const failedAddresses =
-                await this.notificationsSetter.getFailedNotifications(
+                await this.notificationsSetter.getAndDeleteFailedNotifications(
                     notificationType,
                     'active',
                     1000,
@@ -132,8 +125,9 @@ export class PushNotificationsService {
         notificationType: NotificationType,
     ): Promise<void> {
         while (true) {
+            // get and remove from stale set
             const staleNotifications =
-                await this.notificationsSetter.getFailedNotifications(
+                await this.notificationsSetter.getAndDeleteFailedNotifications(
                     notificationType,
                     'stale',
                     1000,
@@ -148,13 +142,6 @@ export class PushNotificationsService {
                 staleNotifications,
                 notificationType,
                 'active',
-            );
-
-            // remove from stale set
-            await this.notificationsSetter.removeFailedNotifications(
-                staleNotifications,
-                notificationType,
-                'stale',
             );
         }
     }
