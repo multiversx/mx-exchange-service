@@ -289,4 +289,17 @@ export abstract class FarmSetterService extends GenericSetterService {
             CacheTtlInfo.ContractState.localTtl,
         );
     }
+
+    async setFarmUndistributedBoostedRewards(
+        farmAddress: string,
+        value: string,
+        week: number,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('undistributedBoostedRewards', farmAddress, week),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
 }
