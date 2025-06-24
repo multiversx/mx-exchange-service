@@ -65,11 +65,6 @@ export class PushNotificationsService {
                 }
 
                 result.successful += batch.length;
-                await this.notificationsSetter.removeFailedNotifications(
-                    batch,
-                    notificationKey,
-                    'active',
-                );
             } catch (error) {
                 result.failed += batch.length;
 
