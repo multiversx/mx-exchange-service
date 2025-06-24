@@ -11,6 +11,7 @@ import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmSetterFactory } from 'src/modules/farm/farm.setter.factory';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -24,6 +25,7 @@ export class FarmCacheWarmerService {
         private readonly farmComputeV1_3: FarmComputeServiceV1_3,
         private readonly farmComputeV2: FarmComputeServiceV2,
         private readonly farmSetterFactory: FarmSetterFactory,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -252,6 +254,32 @@ export class FarmCacheWarmerService {
                     .setTotalValueLockedUSD(farmAddress, totalValueLockedUSD),
             ]);
             this.invalidatedKeys.push(cacheKeys);
+            await this.deleteCacheKeys();
+        }
+    }
+
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async cacheFarmsV2UndistributedBoostedRewards(): Promise<void> {
+        for (const address of farmsAddresses([FarmVersion.V2])) {
+            const currentWeek = await this.weekTimekeepingAbi.currentWeek(
+                address,
+            );
+
+            const amount =
+                await this.farmComputeV2.undistributedBoostedRewardsRaw(
+                    address,
+                    currentWeek,
+                );
+
+            const cachedKey = await this.farmSetterFactory
+                .useSetter(address)
+                .setFarmUndistributedBoostedRewards(
+                    address,
+                    amount.integerValue().toFixed(),
+                    currentWeek,
+                );
+
+            this.invalidatedKeys.push(cachedKey);
             await this.deleteCacheKeys();
         }
     }
