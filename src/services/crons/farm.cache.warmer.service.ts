@@ -259,7 +259,7 @@ export class FarmCacheWarmerService {
     }
 
     @Cron(CronExpression.EVERY_5_MINUTES)
-    async cacheFarmsV2UndistributedBoostedRewards(): Promise<void> {
+    async cacheFarmsV2Rewards(): Promise<void> {
         for (const address of farmsAddresses([FarmVersion.V2])) {
             const currentWeek = await this.weekTimekeepingAbi.currentWeek(
                 address,
