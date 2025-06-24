@@ -71,5 +71,10 @@
             "USDC-5bee92": "5000000",
             "WEGLD-dd8471": "100000000000000000"
         }
+    },
+    "pushNotifications": {
+        "options": {
+            "requestsDelayMs": 1
+        }
     }
 }

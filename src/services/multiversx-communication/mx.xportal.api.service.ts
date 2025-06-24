@@ -11,6 +11,12 @@ type NotificationPayload = {
     iconUrl?: string;
 };
 
+export enum XPortalPushNotificationsResult {
+    SUCCESS = 'success',
+    THROTTLED = 'throttled',
+    FAILED = 'failed',
+}
+
 @Injectable()
 export class XPortalApiService {
     private readonly logger = new Logger(XPortalApiService.name);
@@ -22,7 +28,7 @@ export class XPortalApiService {
 
     async sendPushNotifications(
         notificationPayload: NotificationPayload,
-    ): Promise<boolean> {
+    ): Promise<XPortalPushNotificationsResult> {
         const baseUrl = this.apiConfigService.getNotificationsApiUrl();
         const apiKey = this.apiConfigService.getNotificationsApiKey();
         const url = `${baseUrl}/notifications-api/api/v1/dapps/push-notifications/send`;
@@ -38,13 +44,19 @@ export class XPortalApiService {
                 },
             );
 
-            return response.status === 201;
+            return response.status === 201
+                ? XPortalPushNotificationsResult.SUCCESS
+                : XPortalPushNotificationsResult.FAILED;
         } catch (error) {
             this.logger.error(
                 `Error sending push notification: ${error.message}`,
                 'XPortalApiService',
             );
-            return false;
+            if (error.message.includes('Request failed with status code 429')) {
+                return XPortalPushNotificationsResult.THROTTLED;
+            }
+
+            return XPortalPushNotificationsResult.FAILED;
         }
     }
 }

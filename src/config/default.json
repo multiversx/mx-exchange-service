@@ -705,7 +705,8 @@
     "pushNotifications": {
         "options": {
             "batchSize": 100,
-            "chainId": 508
+            "chainId": 508,
+            "requestsDelayMs": 125
         },
         "feesCollectorRewards": {
             "title": "xExchange: Energy rewards",

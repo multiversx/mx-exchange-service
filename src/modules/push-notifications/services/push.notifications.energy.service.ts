@@ -53,8 +53,8 @@ export class PushNotificationsEnergyService {
                         NotificationType.FEES_COLLECTOR_REWARDS,
                     );
 
-                successfulNotifications += result.successful.length;
-                failedNotifications += result.failed.length;
+                successfulNotifications += result.successful;
+                failedNotifications += result.failed;
             },
         );
 
@@ -98,8 +98,8 @@ export class PushNotificationsEnergyService {
                         NotificationType.NEGATIVE_ENERGY,
                     );
 
-                successfulNotifications += result.successful.length;
-                failedNotifications += result.failed.length;
+                successfulNotifications += result.successful;
+                failedNotifications += result.failed;
             },
             0,
         );
@@ -114,9 +114,17 @@ export class PushNotificationsEnergyService {
         const notificationTypes = Object.values(NotificationType);
 
         for (const notificationType of notificationTypes) {
-            await this.pushNotificationsService.retryFailedNotifications(
-                notificationType,
-            );
+            const { successful, failed } =
+                await this.pushNotificationsService.retryFailedNotifications(
+                    notificationType,
+                );
+
+            if (successful > 0 || failed > 0) {
+                this.logger.info(
+                    `Retry failed '${notificationType}' notifications completed. Successful: ${successful}, Failed: ${failed}`,
+                    { context: PushNotificationsEnergyService.name },
+                );
+            }
         }
     }
 }
