@@ -86,7 +86,7 @@ describe('PushNotificationsService Integration', () => {
             );
         expect(failedNotifications).toEqual([]);
 
-        // Check that the active notifications have been copied to stale
+        // Check that the active notifications have been processed
         const activeNotifications =
             await notificationsSetter.getFailedNotifications(
                 NotificationType.FEES_COLLECTOR_REWARDS,
