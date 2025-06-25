@@ -206,6 +206,21 @@ export class ComposableTasksTransactionService {
         );
     }
 
+    async setSmartSwapFeePercentage(
+        sender: string,
+        fee: number,
+    ): Promise<TransactionModel> {
+        return this.mxProxy.getComposableTasksContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.composableTasks.default,
+                function: 'setSmartSwapFeePercentage',
+                arguments: [new BigUIntValue(new BigNumber(fee))],
+            }),
+        );
+    }
+
     private getRawTasks(tasks: ComposableTask[]): TypedValue[] {
         const rawTasks: TypedValue[] = [];
 
