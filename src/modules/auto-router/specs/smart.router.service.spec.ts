@@ -40,6 +40,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 import { SmartRouterService } from '../services/smart.router.service';
 import { BinaryUtils } from '@multiversx/sdk-nestjs-common';
+import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
 
 describe('SmartRouterService', () => {
     let autoRouterService: AutoRouterService;
@@ -287,6 +288,7 @@ describe('SmartRouterService', () => {
                 PairFilteringService,
                 SmartRouterService,
                 SmartRouterEvaluationServiceProvider,
+                ComposableTasksAbiServiceProvider,
             ],
             exports: [],
         }).compile();
