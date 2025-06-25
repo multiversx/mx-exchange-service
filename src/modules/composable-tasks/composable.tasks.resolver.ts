@@ -1,4 +1,4 @@
-import { Args, Float, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Query, Resolver } from '@nestjs/graphql';
 import { ComposableTaskModel } from './models/composable.tasks.model';
 import { scAddress } from 'src/config';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
@@ -23,7 +23,7 @@ export class ComposableTasksResolver {
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
     async setSmartSwapFeePercentage(
-        @Args('fee', { type: () => Float }) fee: number,
+        @Args('fee', { type: () => Int }) fee: number,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.transactionService.setSmartSwapFeePercentage(
