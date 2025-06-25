@@ -16,6 +16,7 @@ import { constantsConfig } from 'src/config';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import BigNumber from 'bignumber.js';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import moment from 'moment';
 
 @Injectable()
 export class AWSQueryCacheWarmerService {
@@ -135,6 +136,8 @@ export class AWSQueryCacheWarmerService {
         > = {};
         const timestampsSetCompleteValues = new Set<string>();
 
+        const startTime = moment().utc().unix();
+
         for (const pairAddress of pairsAddresses) {
             const currentLockedValueUSD = await this.pairCompute.lockedValueUSD(
                 pairAddress,
@@ -143,6 +146,7 @@ export class AWSQueryCacheWarmerService {
             const lockedValueUSD24h = await this.analyticsQuery.getValues24h({
                 series: pairAddress,
                 metric: 'lockedValueUSD',
+                time: startTime.toString(),
             });
 
             if (
