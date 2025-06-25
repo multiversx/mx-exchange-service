@@ -466,16 +466,20 @@ export class AutoRouterTransactionService {
             throw new Error('Invalid number of router swap arguments');
         }
 
-        const swaps: BytesValue[] = [];
+        const encodedArgs: BytesValue[] = [];
         let amountInIndex = 1;
         let hopsIndex = 2;
         const operations = new BigNumber(args[0].valueOf()).toNumber();
+
+        encodedArgs.push(
+            new BytesValue(Buffer.from(decimalToHex(operations), 'hex')),
+        );
 
         for (let index = 0; index < operations; index++) {
             const amountIn = args[amountInIndex];
             const hops = new BigNumber(args[hopsIndex].valueOf()).toNumber();
 
-            swaps.push(
+            encodedArgs.push(
                 new BytesValue(
                     Buffer.from(
                         decimalToHex(new BigNumber(amountIn.valueOf())),
@@ -483,7 +487,9 @@ export class AutoRouterTransactionService {
                     ),
                 ),
             );
-            swaps.push(new BytesValue(Buffer.from(decimalToHex(hops), 'hex')));
+            encodedArgs.push(
+                new BytesValue(Buffer.from(decimalToHex(hops), 'hex')),
+            );
 
             const routeStart = hopsIndex + 1;
             const routeEnd = routeStart + hops * 4;
@@ -497,12 +503,12 @@ export class AutoRouterTransactionService {
             const routeSwaps =
                 this.convertMultiPairSwapsToBytesValues(swapsSlice);
 
-            swaps.push(...routeSwaps);
+            encodedArgs.push(...routeSwaps);
 
             amountInIndex = routeEnd;
             hopsIndex = amountInIndex + 1;
         }
 
-        return swaps;
+        return encodedArgs;
     }
 }
