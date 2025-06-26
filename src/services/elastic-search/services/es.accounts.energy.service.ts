@@ -12,8 +12,9 @@ export class ElasticAccountsEnergyService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getAccountsByEnergyAmount(
+    async getAccountsByEnergyField(
         epoch: number,
+        field: 'energyDetails.amount' | 'energyNum',
         operator: 'gt' | 'lt' | 'gte' | 'lte' = 'gt',
         action: (items: any[]) => Promise<void>,
         amount = 0,
@@ -24,7 +25,7 @@ export class ElasticAccountsEnergyService {
                 .withMustExistCondition('energyDetails');
 
             query.condition.must = [
-                QueryType.Range('energyDetails.amount', {
+                QueryType.Range(field, {
                     key: operator,
                     value: amount,
                 }),
@@ -38,7 +39,7 @@ export class ElasticAccountsEnergyService {
             );
         } catch (error) {
             this.logger.error(
-                `Error getting accounts by energy amount: ${error.message}`,
+                `Error getting accounts by energy field ${field}: ${error.message}`,
                 { context: ElasticAccountsEnergyService.name },
             );
         }

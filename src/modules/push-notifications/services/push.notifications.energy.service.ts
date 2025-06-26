@@ -10,16 +10,11 @@ import { ElasticAccountsEnergyService } from 'src/services/elastic-search/servic
 import { pushNotificationsConfig } from 'src/config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { RedisCacheService } from '@multiversx/sdk-nestjs-cache';
-import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class PushNotificationsEnergyService {
-    private readonly FEES_COLLECTOR_LAST_EPOCH_KEY =
-        'push_notifications:fees_collector:last_epoch';
     constructor(
         private readonly contextGetter: ContextGetterService,
-        private readonly redisCacheService: RedisCacheService,
         private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -36,8 +31,9 @@ export class PushNotificationsEnergyService {
         let successfulNotifications = 0;
         let failedNotifications = 0;
 
-        await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
+        await this.accountsEnergyElasticService.getAccountsByEnergyField(
             targetEpoch,
+            'energyDetails.amount',
             'gt',
             async (items: AccountType[]) => {
                 const addresses = items.map(
@@ -63,26 +59,26 @@ export class PushNotificationsEnergyService {
             { context: PushNotificationsEnergyService.name },
         );
 
-        await this.redisCacheService.set(
-            this.FEES_COLLECTOR_LAST_EPOCH_KEY,
-            targetEpoch,
-            Constants.oneWeek(),
-        );
-
         return {
             successful: successfulNotifications,
             failed: failedNotifications,
         };
     }
 
-    async negativeEnergyNotifications(): Promise<void> {
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+    async negativeEnergyNotifications(
+        targetEpoch: number,
+    ): Promise<NotificationResultCount> {
+        this.logger.info(
+            `Negative energy notifications started for epoch: ${targetEpoch}`,
+            { context: PushNotificationsEnergyService.name },
+        );
 
         let successfulNotifications = 0;
         let failedNotifications = 0;
 
-        await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
-            currentEpoch - 1,
+        await this.accountsEnergyElasticService.getAccountsByEnergyField(
+            targetEpoch,
+            'energyNum',
             'lt',
             async (items: AccountType[]) => {
                 const addresses = items.map(
@@ -108,6 +104,11 @@ export class PushNotificationsEnergyService {
             `Negative energy notifications completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
             { context: PushNotificationsEnergyService.name },
         );
+
+        return {
+            successful: successfulNotifications,
+            failed: failedNotifications,
+        };
     }
 
     async retryFailedNotifications(): Promise<void> {
