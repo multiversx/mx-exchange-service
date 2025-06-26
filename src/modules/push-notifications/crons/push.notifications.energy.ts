@@ -34,7 +34,7 @@ export class PushNotificationsEnergyCron {
         expectedModulo: number,
         notificationAction: (
             currentEpoch: number,
-        ) => Promise<void | NotificationResultCount>,
+        ) => Promise<NotificationResultCount>,
     ): Promise<void> {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
 
@@ -84,7 +84,7 @@ export class PushNotificationsEnergyCron {
         );
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_4_HOURS)
     @LockAndRetry({
         lockKey: 'pushNotifications',
         lockName: 'negativeEnergy',
@@ -94,8 +94,10 @@ export class PushNotificationsEnergyCron {
             this.NEGATIVE_ENERGY_LAST_EPOCH_KEY,
             'Negative energy notifications',
             3,
-            () =>
-                this.pushNotificationsEnergyService.negativeEnergyNotifications(),
+            (currentEpoch) =>
+                this.pushNotificationsEnergyService.negativeEnergyNotifications(
+                    currentEpoch,
+                ),
         );
     }
 

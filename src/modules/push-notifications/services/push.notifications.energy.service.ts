@@ -65,10 +65,11 @@ export class PushNotificationsEnergyService {
         };
     }
 
-    async negativeEnergyNotifications(): Promise<void> {
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+    async negativeEnergyNotifications(
+        targetEpoch: number,
+    ): Promise<NotificationResultCount> {
         this.logger.info(
-            `Negative energy notifications started for epoch: ${currentEpoch}`,
+            `Negative energy notifications started for epoch: ${targetEpoch}`,
             { context: PushNotificationsEnergyService.name },
         );
 
@@ -76,7 +77,7 @@ export class PushNotificationsEnergyService {
         let failedNotifications = 0;
 
         await this.accountsEnergyElasticService.getAccountsByEnergyField(
-            currentEpoch,
+            targetEpoch,
             'energyNum',
             'lt',
             async (items: AccountType[]) => {
@@ -103,6 +104,11 @@ export class PushNotificationsEnergyService {
             `Negative energy notifications completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
             { context: PushNotificationsEnergyService.name },
         );
+
+        return {
+            successful: successfulNotifications,
+            failed: failedNotifications,
+        };
     }
 
     async retryFailedNotifications(): Promise<void> {

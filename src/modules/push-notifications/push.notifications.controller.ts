@@ -45,4 +45,14 @@ export class PushNotificationsController {
             payload.targetEpoch,
         );
     }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Post('/push-notifications/negative-energy')
+    async sendNegativeEnergyPushNotifications(
+        @Body() payload: { targetEpoch: number },
+    ): Promise<NotificationResultCount> {
+        return await this.pushNotificationsEnergyService.negativeEnergyNotifications(
+            payload.targetEpoch,
+        );
+    }
 }
