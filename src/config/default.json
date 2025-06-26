@@ -613,7 +613,6 @@
         "MAX_USER_NFTS": 10000,
         "MAX_SWAP_ROUTE_DEPTH": 4,
         "MAX_SMART_SWAP_ROUTES": 4,
-        "MIN_SMART_SWAP_DELTA_PERCENTAGE": 0.5,
         "SMART_SWAP_FEE_PERCENTAGE": 0.05,
         "endpoints": [
             "wrapEgld",
