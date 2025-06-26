@@ -8,6 +8,8 @@ import { GenericGetterService } from 'src/services/generics/generic.getter.servi
 import { SCAddressType } from './models/sc-address.model';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
+import { SettingsRepositoryService } from 'src/services/database/repositories/settings.repository';
+import { SettingsCategoryEnum } from './models/settings.model';
 
 @Injectable()
 export class RemoteConfigGetterService extends GenericGetterService {
@@ -17,6 +19,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
         protected readonly scAddressRepositoryService: SCAddressRepositoryService,
         protected readonly flagRepositoryService: FlagRepositoryService,
         protected readonly analyticsRepositoryService: AnalyticsRepositoryService,
+        protected readonly settingsRepositoryService: SettingsRepositoryService,
     ) {
         super(cachingService, logger);
     }
@@ -56,14 +59,17 @@ export class RemoteConfigGetterService extends GenericGetterService {
     }
 
     async getMinSmartSwapDeltaPercentage(): Promise<number> {
-        this.baseKey = 'flag';
+        this.baseKey = 'settings';
         const cacheKey = this.getCacheKey('MIN_SMART_SWAP_DELTA_PERCENTAGE');
         return await this.getData(
             cacheKey,
             () =>
-                this.flagRepositoryService
-                    .findOne({ name: 'MIN_SMART_SWAP_DELTA_PERCENTAGE' })
-                    .then((res) => res.value),
+                this.settingsRepositoryService
+                    .findOne({
+                        name: 'MIN_SMART_SWAP_DELTA_PERCENTAGE',
+                        category: SettingsCategoryEnum.SMART_SWAP,
+                    })
+                    .then((res) => Number(res.value)),
             Constants.oneHour(),
         );
     }
