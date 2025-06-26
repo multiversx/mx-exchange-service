@@ -36,8 +36,9 @@ export class PushNotificationsEnergyService {
         let successfulNotifications = 0;
         let failedNotifications = 0;
 
-        await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
+        await this.accountsEnergyElasticService.getAccountsByEnergyField(
             targetEpoch,
+            'energyDetails.amount',
             'gt',
             async (items: AccountType[]) => {
                 const addresses = items.map(
@@ -81,8 +82,9 @@ export class PushNotificationsEnergyService {
         let successfulNotifications = 0;
         let failedNotifications = 0;
 
-        await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
+        await this.accountsEnergyElasticService.getAccountsByEnergyField(
             currentEpoch - 1,
+            'energyNum',
             'lt',
             async (items: AccountType[]) => {
                 const addresses = items.map(

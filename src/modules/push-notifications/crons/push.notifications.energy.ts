@@ -15,6 +15,7 @@ import {
 @Injectable()
 export class PushNotificationsEnergyCron {
     private readonly FEES_COLLECTOR_LAST_EPOCH_KEY = 'push_notifications:fees_collector:last_epoch';
+    private readonly NEGATIVE_ENERGY_LAST_EPOCH_KEY = 'push_notifications:negative_energy:last_epoch';
     constructor(
         private readonly pushNotificationsEnergyService: PushNotificationsEnergyService,
         private readonly contextGetter: ContextGetterService,
@@ -60,12 +61,45 @@ export class PushNotificationsEnergyCron {
 
     }
 
+    @Cron(CronExpression.EVERY_4_HOURS)
     @LockAndRetry({
         lockKey: 'pushNotifications',
         lockName: 'negativeEnergy',
     })
     async negativeEnergyNotificationsCron() {
-        return await this.pushNotificationsEnergyService.negativeEnergyNotifications();
+        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+
+        const lastProcessedEpoch: string = await this.redisCacheService.get(
+            this.NEGATIVE_ENERGY_LAST_EPOCH_KEY,
+        );
+
+        if (parseInt(lastProcessedEpoch) === currentEpoch) {
+            this.logger.info(
+                `Negative energy notifications cron skipped - already processed epoch: ${currentEpoch}`,
+                { context: PushNotificationsEnergyCron.name },
+            );
+            return;
+        }
+
+        const firstWeekStartEpoch =
+            await this.weekTimekeepingAbi.firstWeekStartEpoch(
+                String(scAddress.feesCollector),
+            );
+
+        if ((currentEpoch - firstWeekStartEpoch) % 7 !== 3) {
+            this.logger.info(
+                `Negative energy notifications cron skipped for epoch: ${currentEpoch}`,
+                { context: PushNotificationsEnergyCron.name },
+            );
+            return;
+        }
+
+        await this.pushNotificationsEnergyService.negativeEnergyNotifications();
+
+        await this.redisCacheService.set(
+            this.NEGATIVE_ENERGY_LAST_EPOCH_KEY,
+            String(currentEpoch),
+        );
     }
 
     @Cron(CronExpression.EVERY_10_MINUTES)
