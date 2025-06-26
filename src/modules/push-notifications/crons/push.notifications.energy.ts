@@ -11,11 +11,14 @@ import {
     RedisCacheService,
     RedlockService,
 } from '@multiversx/sdk-nestjs-cache';
+import { NotificationResultCount } from '../models/push.notifications.types';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
-    private readonly FEES_COLLECTOR_LAST_EPOCH_KEY = 'push_notifications:fees_collector:last_epoch';
-    private readonly NEGATIVE_ENERGY_LAST_EPOCH_KEY = 'push_notifications:negative_energy:last_epoch';
+    private readonly FEES_COLLECTOR_LAST_EPOCH_KEY =
+        'push_notifications:fees_collector:last_epoch';
+    private readonly NEGATIVE_ENERGY_LAST_EPOCH_KEY =
+        'push_notifications:negative_energy:last_epoch';
     constructor(
         private readonly pushNotificationsEnergyService: PushNotificationsEnergyService,
         private readonly contextGetter: ContextGetterService,
@@ -25,80 +28,74 @@ export class PushNotificationsEnergyCron {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    private async executeNotificationCron(
+        cacheKey: string,
+        cronName: string,
+        expectedModulo: number,
+        notificationAction: (
+            currentEpoch: number,
+        ) => Promise<void | NotificationResultCount>,
+    ): Promise<void> {
+        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+
+        const lastProcessedEpoch: string = await this.redisCacheService.get(
+            cacheKey,
+        );
+        if (parseInt(lastProcessedEpoch) === currentEpoch) {
+            this.logger.info(
+                `${cronName} cron skipped - already processed epoch: ${currentEpoch}`,
+                { context: PushNotificationsEnergyCron.name },
+            );
+            return;
+        }
+
+        const firstWeekStartEpoch =
+            await this.weekTimekeepingAbi.firstWeekStartEpoch(
+                String(scAddress.feesCollector),
+            );
+
+        if ((currentEpoch - firstWeekStartEpoch) % 7 !== expectedModulo) {
+            this.logger.info(
+                `${cronName} cron skipped for epoch: ${currentEpoch}`,
+                { context: PushNotificationsEnergyCron.name },
+            );
+            return;
+        }
+
+        await notificationAction(currentEpoch);
+
+        await this.redisCacheService.set(cacheKey, String(currentEpoch));
+    }
+
     @Cron(CronExpression.EVERY_4_HOURS)
     @LockAndRetry({
         lockKey: 'pushNotifications',
         lockName: 'feesCollector',
     })
     async feesCollectorRewardsCron() {
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
-
-        const lastProcessedEpoch: string = await this.redisCacheService.get(this.FEES_COLLECTOR_LAST_EPOCH_KEY);
-        if (parseInt(lastProcessedEpoch) === currentEpoch) {
-            this.logger.info(
-                `Fees collector rewards cron skipped - already processed epoch: ${currentEpoch}`,
-                { context: PushNotificationsEnergyCron.name },
-            );
-            return;
-        }
-
-        const firstWeekStartEpoch =
-            await this.weekTimekeepingAbi.firstWeekStartEpoch(
-                String(scAddress.feesCollector),
-            );
-
-        if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
-            this.logger.info(
-                `Fees collector rewards cron skipped for epoch: ${currentEpoch}`,
-                { context: PushNotificationsEnergyCron.name },
-            );
-            return;
-        }
-
-        await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
-            currentEpoch,
+        await this.executeNotificationCron(
+            this.FEES_COLLECTOR_LAST_EPOCH_KEY,
+            'Fees collector rewards',
+            0,
+            (currentEpoch) =>
+                this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
+                    currentEpoch,
+                ),
         );
-
     }
 
-    @Cron(CronExpression.EVERY_4_HOURS)
+    @Cron(CronExpression.EVERY_30_SECONDS)
     @LockAndRetry({
         lockKey: 'pushNotifications',
         lockName: 'negativeEnergy',
     })
     async negativeEnergyNotificationsCron() {
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
-
-        const lastProcessedEpoch: string = await this.redisCacheService.get(
+        await this.executeNotificationCron(
             this.NEGATIVE_ENERGY_LAST_EPOCH_KEY,
-        );
-
-        if (parseInt(lastProcessedEpoch) === currentEpoch) {
-            this.logger.info(
-                `Negative energy notifications cron skipped - already processed epoch: ${currentEpoch}`,
-                { context: PushNotificationsEnergyCron.name },
-            );
-            return;
-        }
-
-        const firstWeekStartEpoch =
-            await this.weekTimekeepingAbi.firstWeekStartEpoch(
-                String(scAddress.feesCollector),
-            );
-
-        if ((currentEpoch - firstWeekStartEpoch) % 7 !== 3) {
-            this.logger.info(
-                `Negative energy notifications cron skipped for epoch: ${currentEpoch}`,
-                { context: PushNotificationsEnergyCron.name },
-            );
-            return;
-        }
-
-        await this.pushNotificationsEnergyService.negativeEnergyNotifications();
-
-        await this.redisCacheService.set(
-            this.NEGATIVE_ENERGY_LAST_EPOCH_KEY,
-            String(currentEpoch),
+            'Negative energy notifications',
+            3,
+            () =>
+                this.pushNotificationsEnergyService.negativeEnergyNotifications(),
         );
     }
 
