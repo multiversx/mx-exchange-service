@@ -11,6 +11,7 @@ import {
     RedisCacheService,
     RedlockService,
 } from '@multiversx/sdk-nestjs-cache';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class PushNotificationsEnergyCron {
@@ -57,6 +58,12 @@ export class PushNotificationsEnergyCron {
 
         await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
             targetEpoch,
+        );
+
+        await this.redisCacheService.set(
+            this.FEES_COLLECTOR_LAST_EPOCH_KEY,
+            targetEpoch,
+            Constants.oneWeek(),
         );
 
     }
