@@ -63,7 +63,7 @@ export class PushNotificationsEnergyCron {
         await this.redisCacheService.set(
             this.FEES_COLLECTOR_LAST_EPOCH_KEY,
             currentEpoch,
-            Constants.oneWeek(),
+            Constants.oneHour() * 25,
         );
 
     }
