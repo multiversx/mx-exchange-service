@@ -753,10 +753,10 @@ export class AutoRouterService {
         }
     }
 
-    private shouldPerformSmartSwap(
+    private async shouldPerformSmartSwap(
         parallelRouteSwap: ParallelRouteSwap,
         autoRouterAmountOut: string,
-    ): boolean {
+    ): Promise<boolean> {
         if (!parallelRouteSwap) {
             return false;
         }
@@ -767,7 +767,8 @@ export class AutoRouterService {
             .dividedBy(autoRouterAmountOut)
             .multipliedBy(100);
 
-        return percentage.gt(constantsConfig.MIN_SMART_SWAP_DELTA_PERCENTAGE);
+        const minSmartSwapDeltaPercentage = await this.remoteConfigGetterService.getMinSmartSwapDeltaPercentage();
+        return percentage.gt(minSmartSwapDeltaPercentage);
     }
 
     private async computeSmartSwap(
@@ -778,7 +779,12 @@ export class AutoRouterService {
         tokenOutMetadata: BaseEsdtToken,
         pairs: PairModel[],
     ): Promise<SmartSwapModel | undefined> {
-        if (!this.shouldPerformSmartSwap(parallelRouteSwap, amountOut)) {
+        const shouldPerformSmartSwap = await this.shouldPerformSmartSwap(
+            parallelRouteSwap,
+            amountOut,
+        );
+
+        if (!shouldPerformSmartSwap) {
             return undefined;
         }
 
