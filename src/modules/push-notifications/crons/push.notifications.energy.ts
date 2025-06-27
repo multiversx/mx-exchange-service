@@ -31,11 +31,12 @@ export class PushNotificationsEnergyCron {
     })
     async feesCollectorRewardsCron() {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
+        const targetEpoch = currentEpoch - 1;
 
         const lastProcessedEpoch: string = await this.redisCacheService.get(this.FEES_COLLECTOR_LAST_EPOCH_KEY);
-        if (parseInt(lastProcessedEpoch) === currentEpoch) {
+        if (parseInt(lastProcessedEpoch) === targetEpoch) {
             this.logger.info(
-                `Fees collector rewards cron skipped - already processed epoch: ${currentEpoch}`,
+                `Fees collector rewards cron skipped - already processed epoch: ${targetEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
             );
             return;
@@ -46,16 +47,16 @@ export class PushNotificationsEnergyCron {
                 String(scAddress.feesCollector),
             );
 
-        if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
+        if ((targetEpoch - firstWeekStartEpoch) % 7 !== 0) {
             this.logger.info(
-                `Fees collector rewards cron skipped for epoch: ${currentEpoch}`,
+                `Fees collector rewards cron skipped for epoch: ${targetEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
             );
             return;
         }
 
         await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
-            currentEpoch - 1,
+            targetEpoch,
         );
 
     }
