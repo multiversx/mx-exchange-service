@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { SettingsCategoryEnum } from '../models/settings.model';
 import { Document } from 'mongoose';
 
 export type SettingsDocument = Settings & Document;
@@ -10,7 +11,7 @@ export class Settings {
     @Prop()
     value: string;
     @Prop()
-    category: string;
+    category: SettingsCategoryEnum;
 }
 
 export const SettingsSchema = SchemaFactory.createForClass(Settings).index(
