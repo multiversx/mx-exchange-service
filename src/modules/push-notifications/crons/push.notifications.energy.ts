@@ -48,7 +48,7 @@ export class PushNotificationsEnergyCron {
                 String(scAddress.feesCollector),
             );
 
-        if ((targetEpoch - firstWeekStartEpoch) % 7 !== 0) {
+        if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
             this.logger.info(
                 `Fees collector rewards cron skipped for epoch: ${targetEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
