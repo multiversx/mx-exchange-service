@@ -35,9 +35,9 @@ export class PushNotificationsEnergyCron {
         const targetEpoch = currentEpoch - 1;
 
         const lastProcessedEpoch: string = await this.redisCacheService.get(this.FEES_COLLECTOR_LAST_EPOCH_KEY);
-        if (parseInt(lastProcessedEpoch) === targetEpoch) {
+        if (parseInt(lastProcessedEpoch) === currentEpoch) {
             this.logger.info(
-                `Fees collector rewards cron skipped - already processed epoch: ${targetEpoch}`,
+                `Fees collector rewards cron skipped - already processed epoch: ${currentEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
             );
             return;
@@ -50,7 +50,7 @@ export class PushNotificationsEnergyCron {
 
         if ((currentEpoch - firstWeekStartEpoch) % 7 !== 0) {
             this.logger.info(
-                `Fees collector rewards cron skipped for epoch: ${targetEpoch}`,
+                `Fees collector rewards cron skipped for epoch: ${currentEpoch}`,
                 { context: PushNotificationsEnergyCron.name },
             );
             return;
@@ -62,7 +62,7 @@ export class PushNotificationsEnergyCron {
 
         await this.redisCacheService.set(
             this.FEES_COLLECTOR_LAST_EPOCH_KEY,
-            targetEpoch,
+            currentEpoch,
             Constants.oneWeek(),
         );
 
