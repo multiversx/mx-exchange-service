@@ -37,7 +37,7 @@ export class PushNotificationsEnergyService {
         let failedNotifications = 0;
 
         await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
-            targetEpoch - 1,
+            targetEpoch,
             'gt',
             async (items: AccountType[]) => {
                 const addresses = items.map(

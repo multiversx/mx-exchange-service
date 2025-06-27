@@ -55,7 +55,7 @@ export class PushNotificationsEnergyCron {
         }
 
         await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
-            currentEpoch,
+            currentEpoch - 1,
         );
 
     }
