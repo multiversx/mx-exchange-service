@@ -205,6 +205,7 @@ export class TradingContestService {
                 minSwapAmountUSD: createContestDto.minSwapAmountUSD,
                 tokens: createContestDto.tokens,
                 pairAddresses: createContestDto.pairAddresses,
+                tokensPair: createContestDto.tokensPair,
                 requiresRegistration: createContestDto.requiresRegistration,
             };
 
@@ -227,12 +228,6 @@ export class TradingContestService {
     private async validateContestDto(
         contestDto: CreateTradingContestDto,
     ): Promise<void> {
-        if (contestDto.pairAddresses?.length && contestDto.tokens?.length) {
-            throw new Error(
-                'You can supply either tokens OR pairs, not both at the same time',
-            );
-        }
-
         const start = moment.unix(contestDto.start);
         const end = moment.unix(contestDto.end);
         const now = moment();
@@ -244,6 +239,16 @@ export class TradingContestService {
             end.isBefore(now)
         ) {
             throw new Error('Invalid start or end date');
+        }
+
+        if (
+            !contestDto.tokens &&
+            !contestDto.pairAddresses &&
+            !contestDto.tokensPair
+        ) {
+            throw new Error(
+                'You need to provide at least 1 type of indexing constraint (tokens, pairAddresses or tokensPair)',
+            );
         }
 
         const tokenIDs: Set<string> = new Set();
@@ -260,49 +265,50 @@ export class TradingContestService {
             pairAddresses.push(pair.address);
         });
 
-        if (contestDto.pairAddresses?.length) {
+        if (contestDto.pairAddresses) {
             contestDto.pairAddresses.forEach((address) => {
                 if (!pairAddresses.includes(address)) {
                     throw new Error(`Invalid pair address ${address}`);
                 }
             });
-
-            activeContests
-                .filter(
-                    (contest) =>
-                        contest.pairAddresses &&
-                        contest.pairAddresses.length > 0,
-                )
-                .forEach((contest) => {
-                    if (
-                        JSON.stringify(contest.pairAddresses.sort()) ==
-                        JSON.stringify(contestDto.pairAddresses.sort())
-                    ) {
-                        throw new Error(
-                            `A contest with the same pairs is already active`,
-                        );
-                    }
-                });
-            return;
         }
 
-        contestDto.tokens.forEach((token) => {
-            if (!tokenIDs.has(token)) {
-                throw new Error(`Invalid token identifier ${token}`);
-            }
-        });
-
-        activeContests
-            .filter((contest) => contest.tokens && contest.tokens.length > 0)
-            .forEach((contest) => {
-                if (
-                    JSON.stringify(contest.tokens.sort()) ==
-                    JSON.stringify(contestDto.tokens.sort())
-                ) {
-                    throw new Error(
-                        `A contest with the same tokens is already active`,
-                    );
+        if (contestDto.tokens) {
+            contestDto.tokens.forEach((token) => {
+                if (!tokenIDs.has(token)) {
+                    throw new Error(`Invalid token identifier ${token}`);
                 }
             });
+        }
+
+        if (contestDto.tokensPair) {
+            contestDto.tokensPair.forEach((token) => {
+                if (!tokenIDs.has(token)) {
+                    throw new Error(`Invalid token identifier ${token}`);
+                }
+            });
+        }
+
+        activeContests.forEach((contest) => {
+            const contestIndexingConstraints = {
+                tokens: contest.tokens.sort(),
+                pairs: contest.pairAddresses.sort(),
+                tokensPair: contest.tokensPair.sort(),
+            };
+            const dtoIndexingConstraints = {
+                tokens: contestDto.tokens?.sort() ?? [],
+                pairs: contestDto.pairAddresses?.sort() ?? [],
+                tokensPair: contestDto.tokensPair?.sort() ?? [],
+            };
+
+            if (
+                JSON.stringify(contestIndexingConstraints) ==
+                JSON.stringify(dtoIndexingConstraints)
+            ) {
+                throw new Error(
+                    `A contest with the same indexing constraints is already active`,
+                );
+            }
+        });
     }
 }

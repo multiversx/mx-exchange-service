@@ -1,24 +1,34 @@
 import {
+    ArrayMaxSize,
     ArrayMinSize,
     IsArray,
     IsBoolean,
     IsInt,
     IsNotEmpty,
+    IsOptional,
+    IsString,
     Min,
-    ValidateIf,
 } from 'class-validator';
 import { IsValidUnixTime } from 'src/helpers/validators/unix.time.validator';
 
 export class CreateTradingContestDto {
     @IsNotEmpty()
     name: string;
-    @ValidateIf((o) => !o.pairAddresses || o.pairAddresses === 0)
+    @IsOptional()
     @IsArray()
     @ArrayMinSize(1)
+    @IsString({ each: true })
     tokens?: string[];
-    @ValidateIf((o) => !o.tokens || o.tokens.length === 0)
+    @IsOptional()
     @IsArray()
+    @IsString({ each: true })
     pairAddresses?: string[];
+    @IsOptional()
+    @IsArray()
+    @ArrayMinSize(2)
+    @ArrayMaxSize(2)
+    @IsString({ each: true })
+    tokensPair?: [string, string];
     @IsNotEmpty()
     @IsBoolean()
     requiresRegistration: boolean;
