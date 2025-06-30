@@ -1,5 +1,6 @@
 import {
     CreatePairEvent,
+    MultiPairSwapEvent,
     PairSwapEnabledEvent,
     ROUTER_EVENTS,
 } from '@multiversx/sdk-exchange';
@@ -15,6 +16,11 @@ import { TokenService } from '../../tokens/services/token.service';
 import { TokenSetterService } from '../../tokens/services/token.setter.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
+import BigNumber from 'bignumber.js';
+import { computeValueUSD } from 'src/utils/token.converters';
+import { SwapEventPairData } from 'src/modules/trading-contest/types';
+import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 @Injectable()
 export class RouterHandlerService {
@@ -26,6 +32,8 @@ export class RouterHandlerService {
         private readonly tokenService: TokenService,
         private readonly tokenSetter: TokenSetterService,
         private readonly tokenRepository: TokenRepositoryService,
+        private readonly tokenCompute: TokenComputeService,
+        private readonly dataApi: MXDataApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -131,6 +139,64 @@ export class RouterHandlerService {
         await this.pubSub.publish(ROUTER_EVENTS.PAIR_SWAP_ENABLED, {
             pairSwapEnabledEvent: event,
         });
+    }
+
+    async handleMultiPairSwapEvent(
+        event: MultiPairSwapEvent,
+    ): Promise<SwapEventPairData> {
+        const [tokensMetadata, tokensPriceUSD, commonTokensIDs, usdcPrice] =
+            await Promise.all([
+                this.tokenService.getAllBaseTokensMetadata([
+                    event.getTopics().tokenInID,
+                    event.getTopics().tokenOutID,
+                ]),
+                this.tokenCompute.getAllTokensPriceDerivedUSD([
+                    event.getTopics().tokenInID,
+                    event.getTopics().tokenOutID,
+                ]),
+                this.routerAbiService.commonTokensForUserPairs(),
+                this.dataApi.getTokenPrice('USDC'),
+            ]);
+
+        const [tokenInPriceUSD, tokenOutPriceUSD] = tokensPriceUSD;
+
+        const [tokenIn, tokenOut] = tokensMetadata;
+
+        const tokenInVolumeUSD = computeValueUSD(
+            event.toJSON().amountIn,
+            tokenIn.decimals,
+            tokenInPriceUSD,
+        ).dividedBy(usdcPrice);
+        const tokenOutVolumeUSD = computeValueUSD(
+            event.toJSON().amountOut,
+            tokenOut.decimals,
+            tokenOutPriceUSD,
+        ).dividedBy(usdcPrice);
+
+        let volumeUSD: BigNumber;
+        if (
+            commonTokensIDs.includes(tokenIn.identifier) &&
+            commonTokensIDs.includes(tokenOut.identifier)
+        ) {
+            volumeUSD = tokenInVolumeUSD.plus(tokenOutVolumeUSD).dividedBy(2);
+        } else if (
+            commonTokensIDs.includes(tokenIn.identifier) &&
+            !commonTokensIDs.includes(tokenOut.identifier)
+        ) {
+            volumeUSD = tokenInVolumeUSD;
+        } else if (
+            !commonTokensIDs.includes(tokenIn.identifier) &&
+            commonTokensIDs.includes(tokenOut.identifier)
+        ) {
+            volumeUSD = tokenOutVolumeUSD;
+        } else {
+            volumeUSD = new BigNumber(0);
+        }
+
+        return {
+            volumeUSD: volumeUSD.toFixed(),
+            feesUSD: '0',
+        };
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

@@ -33,6 +33,7 @@ import {
     GOVERNANCE_EVENTS,
     METABONDING_EVENTS,
     MetabondingEvent,
+    MultiPairSwapEvent,
     PAIR_EVENTS,
     PairProxyEvent,
     PairSwapEnabledEvent,
@@ -248,6 +249,17 @@ export class RabbitMqConsumer {
                 case ROUTER_EVENTS.PAIR_SWAP_ENABLED:
                     await this.routerHandler.handlePairSwapEnabledEvent(
                         new PairSwapEnabledEvent(rawEvent),
+                    );
+                    break;
+                case ROUTER_EVENTS.MULTI_PAIR_SWAP:
+                    const multiPairSwapEvent = new MultiPairSwapEvent(rawEvent);
+                    const swapData =
+                        await this.routerHandler.handleMultiPairSwapEvent(
+                            multiPairSwapEvent,
+                        );
+                    await this.tradingContestSwapHandlerService.handleSwapEvent(
+                        multiPairSwapEvent,
+                        swapData,
                     );
                     break;
                 case METABONDING_EVENTS.STAKE_LOCKED_ASSET:

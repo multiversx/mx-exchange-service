@@ -9,7 +9,21 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { SWAP_IDENTIFIER } from 'src/modules/rabbitmq/handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
 import { ExtendedSwapEvent, SwapEventPairData } from '../types';
-import { SwapEvent } from '@multiversx/sdk-exchange';
+import {
+    MultiPairSwapEvent,
+    ROUTER_EVENTS,
+    SwapEvent,
+} from '@multiversx/sdk-exchange';
+
+type EventFields = {
+    swapType: number;
+    txHash: string;
+    address: string;
+    tokenIn: string;
+    tokenOut: string;
+    amountIn: string;
+    amountOut: string;
+};
 
 @Injectable()
 export class TradingContestSwapHandlerService {
@@ -19,10 +33,9 @@ export class TradingContestSwapHandlerService {
     ) {}
 
     async handleSwapEvent(
-        swapEvent: SwapEvent,
+        event: SwapEvent | MultiPairSwapEvent,
         swapData: SwapEventPairData,
     ): Promise<void> {
-        const event = swapEvent as ExtendedSwapEvent;
         const activeContests =
             await this.tradingContestService.getActiveContests();
 
@@ -32,7 +45,7 @@ export class TradingContestSwapHandlerService {
 
         let sender: string;
         try {
-            sender = await this.getSenderFromSwapEvent(event);
+            sender = await this.getSenderFromEvent(event);
         } catch (error) {
             this.logger.warn(error.message, {
                 context: TradingContestSwapHandlerService.name,
@@ -40,12 +53,23 @@ export class TradingContestSwapHandlerService {
             return;
         }
 
-        const txHash = event.originalTxHash ?? event.txHash;
+        const {
+            txHash,
+            swapType,
+            address,
+            tokenIn,
+            tokenOut,
+            amountIn,
+            amountOut,
+        } = this.extractEventFields(event);
 
         for (const contest of activeContests) {
             const isValidSwap = await this.isValidContestSwap(
                 contest,
-                event,
+                address,
+                tokenIn,
+                tokenOut,
+                txHash,
                 swapData.volumeUSD,
             );
 
@@ -56,17 +80,14 @@ export class TradingContestSwapHandlerService {
             const contestSwap: TradingContestSwap = {
                 contest: contest._id,
                 txHash: txHash,
-                pairAddress: event.address,
-                swapType:
-                    event.identifier === SWAP_IDENTIFIER.SWAP_FIXED_INPUT
-                        ? 0
-                        : 1,
+                pairAddress: address,
+                swapType,
                 volumeUSD: new BigNumber(swapData.volumeUSD).toNumber(),
                 feesUSD: new BigNumber(swapData.feesUSD).toNumber(),
-                tokenIn: event.getTokenIn().tokenID,
-                amountIn: event.getTokenIn().amount.toFixed(),
-                tokenOut: event.getTokenOut().tokenID,
-                amountOut: event.getTokenOut().amount.toFixed(),
+                tokenIn,
+                amountIn,
+                tokenOut,
+                amountOut,
                 timestamp: event.getTimestamp().toNumber(),
             };
 
@@ -88,8 +109,8 @@ export class TradingContestSwapHandlerService {
         }
     }
 
-    private async getSenderFromSwapEvent(
-        event: ExtendedSwapEvent,
+    private async getSenderFromEvent(
+        event: SwapEvent | MultiPairSwapEvent,
     ): Promise<string | undefined> {
         const sender = Address.newFromBech32(event.getTopics().caller);
 
@@ -111,27 +132,12 @@ export class TradingContestSwapHandlerService {
 
     private async isValidContestSwap(
         contest: TradingContestDocument,
-        event: ExtendedSwapEvent,
+        eventAddress: string,
+        tokenIn: string,
+        tokenOut: string,
+        txHash: string,
         volumeUSD: string,
     ): Promise<boolean> {
-        if (contest.pairAddresses.length > 0) {
-            if (!contest.pairAddresses.includes(event.address)) {
-                return false;
-            }
-        } else {
-            const { tokenID: tokenIn } = event.getTokenIn();
-            const { tokenID: tokenOut } = event.getTokenOut();
-
-            if (
-                !contest.tokens.includes(tokenIn) &&
-                !contest.tokens.includes(tokenOut)
-            ) {
-                return false;
-            }
-        }
-
-        const txHash = event.originalTxHash ?? event.txHash;
-
         if (new BigNumber(volumeUSD).lt(contest.minSwapAmountUSD)) {
             this.logger.info(
                 `Swap (tx ${txHash}) volume of ${volumeUSD} USD does not meet the minimum requirement for contest ${contest._id}`,
@@ -154,6 +160,70 @@ export class TradingContestSwapHandlerService {
             return false;
         }
 
-        return true;
+        if (
+            contest.pairAddresses.length > 0 &&
+            contest.pairAddresses.includes(eventAddress)
+        ) {
+            return true;
+        }
+
+        if (contest.tokensPair.length > 0) {
+            if (
+                (tokenIn === contest.tokensPair[0] &&
+                    tokenOut === contest.tokensPair[1]) ||
+                (tokenIn === contest.tokensPair[1] &&
+                    tokenOut === contest.tokensPair[0])
+            ) {
+                return true;
+            }
+        }
+
+        if (
+            contest.tokens.length > 0 &&
+            (contest.tokens.includes(tokenIn) ||
+                contest.tokens.includes(tokenOut))
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private extractEventFields(
+        event: SwapEvent | MultiPairSwapEvent,
+    ): EventFields {
+        const txHash =
+            (event as ExtendedSwapEvent).originalTxHash ??
+            (event as ExtendedSwapEvent).txHash;
+        const address = event.address;
+
+        if (event.identifier === ROUTER_EVENTS.MULTI_PAIR_SWAP) {
+            const multiPairSwapEvent = event as MultiPairSwapEvent;
+
+            return {
+                address,
+                swapType: 2,
+                txHash,
+                tokenIn: multiPairSwapEvent.getTopics().tokenInID,
+                amountIn: multiPairSwapEvent.getTopics().amountIn,
+                tokenOut: multiPairSwapEvent.getTopics().tokenOutID,
+                amountOut: multiPairSwapEvent.getTopics().amountOut,
+            };
+        }
+
+        const swapEvent = event as SwapEvent;
+
+        return {
+            address,
+            swapType:
+                swapEvent.identifier === SWAP_IDENTIFIER.SWAP_FIXED_INPUT
+                    ? 0
+                    : 1,
+            txHash,
+            tokenIn: swapEvent.getTokenIn().tokenID,
+            amountIn: swapEvent.getTokenIn().amount.toFixed(),
+            tokenOut: swapEvent.getTokenOut().tokenID,
+            amountOut: swapEvent.getTokenOut().amount.toFixed(),
+        };
     }
 }
