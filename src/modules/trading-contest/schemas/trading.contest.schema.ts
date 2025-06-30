@@ -25,10 +25,6 @@ export class TradingContest {
     requiresRegistration: boolean;
     @Prop({
         type: [String],
-        validate: [
-            (val: string[]) => val.length === 2,
-            'Must be exactly two strings',
-        ],
         required: false,
         default: [],
     })
