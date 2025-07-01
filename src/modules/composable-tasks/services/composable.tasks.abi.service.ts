@@ -8,26 +8,30 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { IComposableTasksAbiService } from '../interfaces';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
+import { CacheService } from 'src/services/caching/cache.service';
 
-Injectable();
+@Injectable()
 export class ComposableTasksAbiService
     extends GenericAbiService
     implements IComposableTasksAbiService
 {
-    constructor(protected readonly mxProxy: MXProxyService) {
+    constructor(
+        protected readonly mxProxy: MXProxyService,
+        private readonly cachingService: CacheService,
+    ) {
         super(mxProxy);
     }
 
     @ErrorLoggerAsync()
     @GetOrSetCache({
-        baseKey: 'router',
+        baseKey: 'composableTasks',
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async smartSwapFeePercentage(): Promise<number> {
         const feePercentage = await this.getSmartSwapFeePercentageRaw();
         return new BigNumber(feePercentage)
-            .dividedBy(constantsConfig.MAX_PERCENT)
+            .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
             .toNumber();
     }
 

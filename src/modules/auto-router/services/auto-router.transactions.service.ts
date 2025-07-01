@@ -10,7 +10,7 @@ import {
 } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { mxConfig, gasConfig, constantsConfig } from 'src/config';
+import { mxConfig, gasConfig } from 'src/config';
 import {
     MultiSwapTokensArgs,
     SmartSwapTokensArgs,
@@ -127,9 +127,7 @@ export class AutoRouterTransactionService {
 
         const toleranceAmount = amountOut.multipliedBy(args.tolerance);
 
-        const feeAmount = amountOut
-            .multipliedBy(feePercentage)
-            .dividedBy(constantsConfig.MAX_PERCENT);
+        const feeAmount = amountOut.multipliedBy(feePercentage);
 
         const amountOutMin = amountOut
             .minus(toleranceAmount)

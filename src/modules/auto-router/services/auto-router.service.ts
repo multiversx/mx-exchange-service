@@ -767,7 +767,8 @@ export class AutoRouterService {
             .dividedBy(autoRouterAmountOut)
             .multipliedBy(100);
 
-        const minSmartSwapDeltaPercentage = await this.remoteConfigGetterService.getMinSmartSwapDeltaPercentage();
+        const minSmartSwapDeltaPercentage =
+            await this.remoteConfigGetterService.getMinSmartSwapDeltaPercentage();
         return percentage.gt(minSmartSwapDeltaPercentage);
     }
 
