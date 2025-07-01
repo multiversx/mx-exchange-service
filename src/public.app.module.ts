@@ -42,6 +42,7 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 import { CurrencyConverterModule } from './modules/currency-converter/currency.converter.module';
 import { ConditionalModule } from '@nestjs/config';
 import { ComplexityModule } from './complexity.module';
+import { TradingContestModule } from './modules/trading-contest/trading.contest.module';
 
 @Module({
     imports: [
@@ -110,6 +111,7 @@ import { ComplexityModule } from './complexity.module';
             ComplexityModule,
             (env: NodeJS.ProcessEnv) => env['ENABLE_COMPLEXITY'] === 'true',
         ),
+        TradingContestModule,
     ],
     providers: [QueryMetricsPlugin],
 })

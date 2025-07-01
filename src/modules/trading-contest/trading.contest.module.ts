@@ -20,6 +20,8 @@ import {
 import { TradingContestSwapHandlerService } from './services/trading.contest.swap.handler.service';
 import { TradingContestService } from './services/trading.contest.service';
 import { RouterModule } from '../router/router.module';
+import { TradingContestController } from './controllers/trading.contest.controller';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Module({
     imports: [
@@ -39,7 +41,9 @@ import { RouterModule } from '../router/router.module';
         TradingContestParticipantRepository,
         TradingContestService,
         TradingContestSwapHandlerService,
+        ApiConfigService,
     ],
     exports: [TradingContestService, TradingContestSwapHandlerService],
+    controllers: [TradingContestController],
 })
 export class TradingContestModule {}

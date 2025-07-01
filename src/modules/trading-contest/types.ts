@@ -24,3 +24,18 @@ export type ContestParticipantStats = {
     totalFeesUSD: number;
     rank: number;
 };
+
+export type ContestParticipantTokenStats = {
+    tokenID: string;
+    buyVolumeUSD: number;
+    sellVolumeUSD: number;
+    buyCount?: number;
+    sellCount?: number;
+};
+
+export type RawSwapStat = {
+    tokenIn: string;
+    tokenOut: string;
+    totalVolumeUSD: number;
+    tradeCount?: number;
+};
