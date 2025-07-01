@@ -18,10 +18,20 @@ import {
 import { TradingContestParticipantDocument } from '../schemas/trading.contest.participant.schema';
 import { CreateTradingContestDto } from '../dtos/create.contest.dto';
 import { randomUUID } from 'node:crypto';
-import { ContestParticipantStats, LeaderBoardEntry } from '../types';
-import { globalLeaderboardPipeline } from '../pipelines/global.leaderboard.pipeline';
-import { participantStatsPipeline } from '../pipelines/participant.stats.pipeline';
+import {
+    LeaderBoardEntry,
+    RawSwapStat,
+    ContestParticipantTokenStats,
+    ContestParticipantStats,
+} from '../types';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { globalLeaderboardPipeline } from '../pipelines/global.leaderboard.pipeline';
+import { participantTokenStatsPipeline } from '../pipelines/participant.token.stats.pipeline';
+import {
+    TradingContestLeaderboardDto,
+    TradingContestParticipantDto,
+} from '../dtos/contest.leaderboard.dto';
+import { participantStatsPipeline } from '../pipelines/participant.stats.pipeline';
 
 @Injectable()
 export class TradingContestService {
@@ -129,9 +139,38 @@ export class TradingContestService {
         }
     }
 
+    async getParticipantTokenStats(
+        contest: TradingContestDocument,
+        address: string,
+        parameters: TradingContestParticipantDto,
+    ): Promise<ContestParticipantTokenStats[]> {
+        const participant = await this.getContestParticipant(contest, address);
+
+        if (!participant) {
+            throw new HttpException(
+                `Address is not a valid participant for contest ${contest.uuid}`,
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+
+        const aggregatedResults = await this.swapRepository
+            .getModel()
+            .aggregate<RawSwapStat>(
+                participantTokenStatsPipeline(
+                    contest._id,
+                    participant._id,
+                    parameters,
+                ),
+            )
+            .exec();
+
+        return this.transformSwapStats(aggregatedResults);
+    }
+
     async getParticipantStats(
         contest: TradingContestDocument,
         address: string,
+        parameters: TradingContestParticipantDto,
     ): Promise<ContestParticipantStats> {
         const participant = await this.getContestParticipant(contest, address);
 
@@ -142,29 +181,29 @@ export class TradingContestService {
             );
         }
 
-        const [stats] = await this.swapRepository
+        const [aggregatedResults] = await this.swapRepository
             .getModel()
             .aggregate<ContestParticipantStats>(
-                participantStatsPipeline(contest._id, participant._id),
+                participantStatsPipeline(
+                    contest._id,
+                    participant._id,
+                    parameters,
+                ),
             )
             .exec();
 
-        return (
-            stats ?? {
-                totalVolumeUSD: 0,
-                tradeCount: 0,
-                totalFeesUSD: 0,
-                rank: 0,
-            }
-        );
+        return aggregatedResults;
     }
 
-    async getContestByUuid(uuid: string): Promise<TradingContestDocument> {
+    async getContestByUuid(
+        uuid: string,
+        projection?: Record<string, unknown>,
+    ): Promise<TradingContestDocument> {
         return this.contestRepository.findOne(
             {
                 uuid: uuid,
             },
-            { _id: 1 },
+            projection,
         );
     }
 
@@ -174,11 +213,12 @@ export class TradingContestService {
 
     async getLeaderboard(
         contest: TradingContestDocument,
+        parameters: TradingContestLeaderboardDto,
     ): Promise<LeaderBoardEntry[]> {
         const result = await this.swapRepository
             .getModel()
             .aggregate<LeaderBoardEntry>(
-                globalLeaderboardPipeline(100, contest._id),
+                globalLeaderboardPipeline(contest._id, parameters),
             )
             .allowDiskUse(true) // safety net for very large datasets
             .exec();
@@ -310,5 +350,49 @@ export class TradingContestService {
                 );
             }
         });
+    }
+
+    private transformSwapStats(
+        rawStats: RawSwapStat[],
+    ): ContestParticipantTokenStats[] {
+        const tokenMap: Record<string, ContestParticipantTokenStats> = {};
+
+        for (const stat of rawStats) {
+            const { tokenIn, tokenOut, totalVolumeUSD, tradeCount } = stat;
+
+            if (!tokenMap[tokenIn]) {
+                tokenMap[tokenIn] = {
+                    tokenID: tokenIn,
+                    buyVolumeUSD: 0,
+                    sellVolumeUSD: 0,
+                };
+                if (tradeCount) {
+                    tokenMap[tokenIn].buyCount = 0;
+                    tokenMap[tokenIn].sellCount = 0;
+                }
+            }
+
+            if (!tokenMap[tokenOut]) {
+                tokenMap[tokenOut] = {
+                    tokenID: tokenOut,
+                    buyVolumeUSD: 0,
+                    sellVolumeUSD: 0,
+                };
+                if (tradeCount) {
+                    tokenMap[tokenOut].buyCount = 0;
+                    tokenMap[tokenOut].sellCount = 0;
+                }
+            }
+
+            tokenMap[tokenIn].sellVolumeUSD += totalVolumeUSD;
+            tokenMap[tokenOut].buyVolumeUSD += totalVolumeUSD;
+
+            if (tradeCount) {
+                tokenMap[tokenIn].sellCount += tradeCount;
+                tokenMap[tokenOut].buyCount += tradeCount;
+            }
+        }
+
+        return Object.values(tokenMap);
     }
 }
