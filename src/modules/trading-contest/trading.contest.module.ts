@@ -19,6 +19,7 @@ import {
 } from 'src/services/database/repositories/trading.contest.repository';
 import { TradingContestSwapHandlerService } from './services/trading.contest.swap.handler.service';
 import { TradingContestService } from './services/trading.contest.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { TradingContestService } from './services/trading.contest.service';
             },
             { name: TradingContestSwap.name, schema: TradingContestSwapSchema },
         ]),
+        ElasticSearchModule,
     ],
     providers: [
         TradingContestRepository,
