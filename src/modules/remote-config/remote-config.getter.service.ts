@@ -59,6 +59,24 @@ export class RemoteConfigGetterService extends GenericGetterService {
         );
     }
 
+    async getSmartSwapFlagValue(): Promise<boolean> {
+        this.baseKey = 'flag';
+        const name = 'SMARTSWAP';
+        const cacheKey = this.getCacheKey(name);
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.flagRepositoryService
+                    .findOne({
+                        name,
+                    })
+                    .then((res) => {
+                        return res ? res.value : false;
+                    }),
+            Constants.oneHour(),
+        );
+    }
+
     async getMinSmartSwapDeltaPercentage(): Promise<number> {
         this.baseKey = 'settings';
         const cacheKey = this.getCacheKey('MIN_SMART_SWAP_DELTA_PERCENTAGE');

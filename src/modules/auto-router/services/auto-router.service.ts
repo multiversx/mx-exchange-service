@@ -498,30 +498,37 @@ export class AutoRouterService {
         parent: AutoRouteModel,
     ): Promise<TransactionModel[]> {
         if (parent.smartSwap !== undefined) {
-            const transactions =
-                await this.autoRouterTransactionService.smartSwap(sender, {
-                    tokenInID: parent.tokenInID,
-                    tokenOutID: parent.tokenOutID,
-                    amountIn: parent.amountIn,
-                    allocations: parent.parallelRouteSwap.allocations.map(
-                        (allocation) => {
-                            return {
-                                addressRoute: allocation.addressRoute,
-                                intermediaryAmounts:
-                                    allocation.intermediaryAmounts,
-                                tokenRoute: allocation.tokenRoute,
-                            };
-                        },
-                    ),
-                    tolerance: parent.tolerance,
-                });
+            try {
+                const transactions =
+                    await this.autoRouterTransactionService.smartSwap(sender, {
+                        tokenInID: parent.tokenInID,
+                        tokenOutID: parent.tokenOutID,
+                        amountIn: parent.amountIn,
+                        allocations: parent.parallelRouteSwap.allocations.map(
+                            (allocation) => {
+                                return {
+                                    addressRoute: allocation.addressRoute,
+                                    intermediaryAmounts:
+                                        allocation.intermediaryAmounts,
+                                    tokenRoute: allocation.tokenRoute,
+                                };
+                            },
+                        ),
+                        tolerance: parent.tolerance,
+                    });
 
-            await this.smartRouterEvaluationService.addFixedInputSwapComparison(
-                parent,
-                transactions[0],
-            );
+                await this.smartRouterEvaluationService.addFixedInputSwapComparison(
+                    parent,
+                    transactions[0],
+                );
 
-            return transactions;
+                return transactions;
+            } catch (error) {
+                this.logger.error(
+                    'Error when computing the smart swap transactions.',
+                    error,
+                );
+            }
         }
 
         if (parent.pairs.length == 1) {
@@ -761,15 +768,22 @@ export class AutoRouterService {
             return false;
         }
 
+        const [minSmartSwapDeltaPercentage, smartSwapFlag] = await Promise.all([
+            this.remoteConfigGetterService.getMinSmartSwapDeltaPercentage(),
+            this.remoteConfigGetterService.getSmartSwapFlagValue(),
+        ]);
+
+        if (smartSwapFlag === false) {
+            return false;
+        }
+
         const smartRouterOutput = new BigNumber(parallelRouteSwap.totalResult);
         const diff = smartRouterOutput.minus(autoRouterAmountOut);
         const percentage = diff
             .dividedBy(autoRouterAmountOut)
             .multipliedBy(100);
 
-        const minSmartSwapDeltaPercentage =
-            await this.remoteConfigGetterService.getMinSmartSwapDeltaPercentage();
-        return percentage.gt(minSmartSwapDeltaPercentage);
+        return percentage.gte(minSmartSwapDeltaPercentage);
     }
 
     private async computeSmartSwap(
