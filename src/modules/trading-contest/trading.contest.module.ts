@@ -20,6 +20,9 @@ import {
 import { TradingContestSwapHandlerService } from './services/trading.contest.swap.handler.service';
 import { TradingContestService } from './services/trading.contest.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { RouterModule } from '../router/router.module';
+import { TradingContestController } from './controllers/trading.contest.controller';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Module({
     imports: [
@@ -32,6 +35,7 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
             { name: TradingContestSwap.name, schema: TradingContestSwapSchema },
         ]),
         ElasticSearchModule,
+        RouterModule,
     ],
     providers: [
         TradingContestRepository,
@@ -39,8 +43,9 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
         TradingContestParticipantRepository,
         TradingContestService,
         TradingContestSwapHandlerService,
+        ApiConfigService,
     ],
     exports: [TradingContestService, TradingContestSwapHandlerService],
-    controllers: [],
+    controllers: [TradingContestController],
 })
 export class TradingContestModule {}
