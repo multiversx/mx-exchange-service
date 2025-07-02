@@ -35,6 +35,8 @@ import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.s
 import { gasConfig, scAddress } from 'src/config';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { SmartRouterServiceProvider } from '../mocks/smart.router.service.mock';
+import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -89,6 +91,8 @@ describe('AutoRouterService', () => {
                 ApiConfigService,
                 MXApiServiceProvider,
                 PairFilteringService,
+                SmartRouterServiceProvider,
+                SmartRouterEvaluationServiceProvider,
             ],
             exports: [],
         }).compile();
@@ -313,6 +317,61 @@ describe('AutoRouterService', () => {
                 gasPrice: 1000000000,
                 gasLimit: 40200000,
                 data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNzExNzJhY2UwMjZiMGM0QEBAMDJAMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDcxMTcyYWNlMDI2YjBjNA==',
+                chainID: 'T',
+                version: 2,
+                options: undefined,
+                signature: undefined,
+                guardian: undefined,
+                guardianSignature: undefined,
+            },
+        ]);
+    });
+
+    it('should get a fixed input multi swap tx + unwrap tx', async () => {
+        const transactions = await service.getTransactions(
+            senderAddress,
+            new AutoRouteModel({
+                swapType: 0,
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'EGLD',
+                tokenInExchangeRate: '4962567499999999',
+                tokenOutExchangeRate: '201508594089652181902',
+                tokenInPriceUSD: '1',
+                tokenOutPriceUSD: '100',
+                amountIn: '101761840015274351860',
+                amountOut: '500000000000000000',
+                intermediaryAmounts: [
+                    '503014183917413680',
+                    '626881033727',
+                    '500000000000000000',
+                ],
+                tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
+                pairs: [
+                    new PairModel({
+                        address: Address.newFromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000013',
+                        ).toBech32(),
+                    }),
+                    new PairModel({
+                        address: Address.newFromHex(
+                            '0000000000000000000000000000000000000000000000000000000000000012',
+                        ).toBech32(),
+                    }),
+                ],
+                tolerance: 0.01,
+            }),
+        );
+        expect(transactions).toEqual([
+            {
+                nonce: 0,
+                value: '0',
+                receiver: Address.Zero().toBech32(),
+                sender: senderAddress,
+                receiverUsername: undefined,
+                senderUsername: undefined,
+                gasPrice: 1000000000,
+                gasLimit: 75200000,
+                data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDZmYjEwYmMzNTYxNjUzMEA2MzZmNmQ3MDZmNzM2NTU0NjE3MzZiNzNAMDAwMDAwMDQ0NTQ3NGM0NDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODA2ZGU5N2UwOWJkMTgwMDBAMDNAMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEzMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGM1NzQ1NDc0YzQ0MmQzMTMyMzMzNDM1MzYwMDAwMDAwNTkwN2Y1ZjAxOWQwMDAwMDAyMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTIwMDAwMDAxNDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzQwMDAwMDAwYTRkNDU1ODJkMzEzMjMzMzQzNTM2MDAwMDAwMDgwNmU3Nzk5ZDM3YzFjMDAwQDAxQA==',
                 chainID: 'T',
                 version: 2,
                 options: undefined,

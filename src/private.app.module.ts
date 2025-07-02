@@ -8,6 +8,11 @@ import { TokenController } from './modules/tokens/token.controller';
 import { TokenModule } from './modules/tokens/token.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { ESTransactionsService } from './services/elastic-search/services/es.transactions.service';
+import { SmartRouterEvaluationModule } from './modules/smart-router-evaluation/smart.router.evaluation.module';
+import { SmartRouterEvaluationController } from './modules/smart-router-evaluation/smart.router.evaluation.controller';
+import { PushNotificationsController } from './modules/push-notifications/push.notifications.controller';
+import { XPortalApiService } from './services/multiversx-communication/mx.xportal.api.service';
+import { PushNotificationsModule } from './modules/push-notifications/push.notifications.module';
 
 @Module({
     imports: [
@@ -16,8 +21,16 @@ import { ESTransactionsService } from './services/elastic-search/services/es.tra
         TokenModule,
         RemoteConfigModule,
         DynamicModuleUtils.getCacheModule(),
+        SmartRouterEvaluationModule,
+        PushNotificationsModule,
     ],
-    controllers: [MetricsController, TokenController, RemoteConfigController],
-    providers: [ESTransactionsService],
+    controllers: [
+        MetricsController,
+        TokenController,
+        RemoteConfigController,
+        SmartRouterEvaluationController,
+        PushNotificationsController
+    ],
+    providers: [ESTransactionsService, XPortalApiService],
 })
 export class PrivateAppModule {}

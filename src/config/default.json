@@ -407,8 +407,8 @@
         },
         "stake": {
             "stakeFarm": {
-                "default": 20000000,
-                "withTokenMerge": 23000000
+                "default": 23000000,
+                "withTokenMerge": 25000000
             },
             "unstakeFarm": 25000000,
             "unbondFarm": 10000000,
@@ -474,7 +474,7 @@
         "simpleLockEnergy": {
             "lockTokens": 13000000,
             "unlockTokens": {
-                "unlockEarly": 40000000,
+                "unlockEarly": 45000000,
                 "reduceLockPeriod": 25000000,
                 "default": 10000000
             },
@@ -612,6 +612,7 @@
         "STAKING_UNBOND_ATTRIBUTES_LEN": 12,
         "MAX_USER_NFTS": 10000,
         "MAX_SWAP_ROUTE_DEPTH": 4,
+        "MAX_SMART_SWAP_ROUTES": 4,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",
@@ -700,5 +701,24 @@
         "nested": 1.5,
         "exponentialBase": 10
       }
+    },
+    "pushNotifications": {
+        "options": {
+            "batchSize": 100,
+            "chainId": 508,
+            "requestsDelayMs": 125
+        },
+        "feesCollectorRewards": {
+            "title": "xExchange: Energy rewards",
+            "body": "You can now claim your fees rewards",
+            "route": "/portfolio",
+            "iconUrl": "https://xexchange.com/assets/imgs/mx-logos/xexchange-logo@2x.webp"
+        },
+        "negativeEnergy": {
+            "title": "xExchange: Update energy",
+            "body": "You have negative energy",
+            "route": "/energy",
+            "iconUrl": "https://xexchange.com/assets/imgs/mx-logos/xexchange-logo@2x.webp"
+        }
     }
 }

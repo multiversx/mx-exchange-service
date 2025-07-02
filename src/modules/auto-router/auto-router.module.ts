@@ -14,6 +14,8 @@ import { PairTransactionService } from '../pair/services/pair.transactions.servi
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { TokenModule } from '../tokens/token.module';
 import { ComposableTasksModule } from '../composable-tasks/composable.tasks.module';
+import { SmartRouterService } from './services/smart.router.service';
+import { SmartRouterEvaluationModule } from '../smart-router-evaluation/smart.router.evaluation.module';
 
 @Module({
     imports: [
@@ -27,6 +29,7 @@ import { ComposableTasksModule } from '../composable-tasks/composable.tasks.modu
         TokenModule,
         ComposableTasksModule,
         RemoteConfigModule,
+        SmartRouterEvaluationModule,
     ],
     providers: [
         SwapRouteResolver,
@@ -35,6 +38,7 @@ import { ComposableTasksModule } from '../composable-tasks/composable.tasks.modu
         AutoRouterComputeService,
         AutoRouterTransactionService,
         PairTransactionService,
+        SmartRouterService,
     ],
     exports: [AutoRouterService, AutoRouterTransactionService],
 })

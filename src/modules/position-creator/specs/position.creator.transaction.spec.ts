@@ -39,6 +39,8 @@ import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model'
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
+import { SmartRouterServiceProvider } from 'src/modules/auto-router/mocks/smart.router.service.mock';
+import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -85,6 +87,8 @@ describe('PositionCreatorTransaction', () => {
                 ApiConfigService,
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
+                SmartRouterServiceProvider,
+                SmartRouterEvaluationServiceProvider,
             ],
         }).compile();
     });

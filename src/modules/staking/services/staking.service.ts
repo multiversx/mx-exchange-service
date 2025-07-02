@@ -422,17 +422,37 @@ export class StakingService {
                 break;
         }
 
+        const allProduceRewardsEnabled =
+            await this.stakingAbi.getAllProduceRewardsEnabled(stakeAddresses);
+        const allAccumulatedRewards =
+            await this.stakingAbi.getAllAccumulatedRewards(stakeAddresses);
+        const allRewardCapacity = await this.stakingAbi.getAllRewardCapacity(
+            stakeAddresses,
+        );
+
+        const rewardsEnded: boolean[] = stakeAddresses.map(
+            (_, index) =>
+                allAccumulatedRewards[index] === allRewardCapacity[index] ||
+                !allProduceRewardsEnabled[index],
+        );
+
         const combined = stakeAddresses.map((address, index) => ({
-            address: address,
-            sortValue: new BigNumber(sortFieldData[index]),
+            address,
+            sortValue: new BigNumber(sortFieldData[index] || 0),
+            rewardsEnded: rewardsEnded[index],
         }));
 
         combined.sort((a, b) => {
-            if (stakingFarmsSorting.sortOrder === SortingOrder.ASC) {
-                return a.sortValue.comparedTo(b.sortValue);
+            const comparison =
+                stakingFarmsSorting.sortOrder === SortingOrder.ASC
+                    ? a.sortValue.comparedTo(b.sortValue)
+                    : b.sortValue.comparedTo(a.sortValue);
+
+            if (a.rewardsEnded !== b.rewardsEnded) {
+                return a.rewardsEnded ? 1 : -1;
             }
 
-            return b.sortValue.comparedTo(a.sortValue);
+            return comparison;
         });
 
         return combined.map((item) => item.address);

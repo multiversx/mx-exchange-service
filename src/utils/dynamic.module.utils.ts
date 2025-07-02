@@ -1,4 +1,9 @@
-import { RedisCacheModuleOptions } from '@multiversx/sdk-nestjs-cache';
+import {
+    RedisCacheModule,
+    RedisCacheModuleOptions,
+    RedlockConnectionOptions,
+    RedlockModule,
+} from '@multiversx/sdk-nestjs-cache';
 import {
     ElasticModule,
     ElasticModuleOptions,
@@ -22,6 +27,40 @@ export class DynamicModuleUtils {
                     password: configService.getRedisPassword(),
                     enableAutoPipelining: true,
                 }),
+        });
+    }
+
+    static getCommonRedisModule(): DynamicModule {
+        return RedisCacheModule.forRootAsync({
+            imports: [CommonAppModule],
+            useFactory: (configService: ApiConfigService) =>
+                new RedisCacheModuleOptions({
+                    host: configService.getCommonRedisUrl(),
+                    port: configService.getCommonRedisPort(),
+                    password: configService.getCommonRedisPassword(),
+                    username: configService.getCommonRedisUser(),
+                    sentinelUsername: undefined,
+                    sentinelPassword: undefined,
+                    sentinels: undefined,
+                    name: undefined,
+                    tls: configService.getCommonRedisTls() ? {} : undefined,
+                }),
+            inject: [ApiConfigService],
+        });
+    }
+
+    static getRedlockModule(): DynamicModule {
+        return RedlockModule.forRootAsync({
+            imports: [CommonAppModule],
+            useFactory: (configService: ApiConfigService) => [
+                new RedlockConnectionOptions({
+                    host: configService.getCommonRedisUrl(),
+                    port: configService.getCommonRedisPort(),
+                    password: configService.getCommonRedisPassword(),
+                    tls: configService.getCommonRedisTls() ? {} : undefined,
+                }),
+            ],
+            inject: [ApiConfigService],
         });
     }
 
