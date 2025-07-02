@@ -13,27 +13,57 @@ export class PushNotificationsSetterService {
     async addFailedNotifications(
         addresses: string[],
         notificationKey: string,
+        type: 'active' | 'stale',
         ttl: number = Constants.oneWeek(),
     ): Promise<void> {
         if (!addresses || addresses.length === 0) return;
-        const redisKey = `${this.failedNotificationsPrefix}.${notificationKey}`;
+        const redisKey = `${this.failedNotificationsPrefix}.${type}.${notificationKey}`;
 
         await this.redisCacheService.sadd(redisKey, ...addresses);
         await this.redisCacheService.expire(redisKey, ttl);
     }
 
-    async getFailedNotifications(notificationKey: string): Promise<string[]> {
-        const redisKey = `${this.failedNotificationsPrefix}.${notificationKey}`;
-        return await this.redisCacheService.smembers(redisKey);
+    async getFailedNotifications(
+        notificationKey: string,
+        type: 'active' | 'stale',
+        count = 1000,
+    ): Promise<string[]> {
+        const redisKey = `${this.failedNotificationsPrefix}.${type}.${notificationKey}`;
+        return await this.redisCacheService['redis'].srandmember(
+            redisKey,
+            count,
+        );
+    }
+
+    async getAndDeleteFailedNotifications(
+        notificationKey: string,
+        type: 'active' | 'stale',
+        count = 1000,
+    ): Promise<string[]> {
+        const redisKey = `${this.failedNotificationsPrefix}.${type}.${notificationKey}`;
+        return await this.redisCacheService['redis'].spop(redisKey, count);
     }
 
     async removeFailedNotifications(
         addresses: string[],
         notificationKey: string,
+        type: 'active' | 'stale',
     ): Promise<void> {
         if (!addresses || addresses.length === 0) return;
 
-        const redisKey = `${this.failedNotificationsPrefix}.${notificationKey}`;
+        const redisKey = `${this.failedNotificationsPrefix}.${type}.${notificationKey}`;
         await this.redisCacheService['redis'].srem(redisKey, ...addresses);
+    }
+
+    async setRateLimitHit(): Promise<void> {
+        const redisKey = `${this.failedNotificationsPrefix}.rateLimitHit`;
+        await this.redisCacheService.set(redisKey, true, Constants.oneMinute());
+    }
+
+    async isRateLimitHit(): Promise<boolean> {
+        const redisKey = `${this.failedNotificationsPrefix}.rateLimitHit`;
+        const result = await this.redisCacheService.get<boolean>(redisKey);
+
+        return result === true;
     }
 }

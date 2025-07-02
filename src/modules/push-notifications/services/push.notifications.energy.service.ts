@@ -10,16 +10,11 @@ import { ElasticAccountsEnergyService } from 'src/services/elastic-search/servic
 import { pushNotificationsConfig } from 'src/config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { RedisCacheService } from '@multiversx/sdk-nestjs-cache';
-import { Constants } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class PushNotificationsEnergyService {
-    private readonly FEES_COLLECTOR_LAST_EPOCH_KEY =
-        'push_notifications:fees_collector:last_epoch';
     constructor(
         private readonly contextGetter: ContextGetterService,
-        private readonly redisCacheService: RedisCacheService,
         private readonly pushNotificationsService: PushNotificationsService,
         private readonly accountsEnergyElasticService: ElasticAccountsEnergyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -53,20 +48,14 @@ export class PushNotificationsEnergyService {
                         NotificationType.FEES_COLLECTOR_REWARDS,
                     );
 
-                successfulNotifications += result.successful.length;
-                failedNotifications += result.failed.length;
+                successfulNotifications += result.successful;
+                failedNotifications += result.failed;
             },
         );
 
         this.logger.info(
             `Fees collector rewards notification completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
             { context: PushNotificationsEnergyService.name },
-        );
-
-        await this.redisCacheService.set(
-            this.FEES_COLLECTOR_LAST_EPOCH_KEY,
-            targetEpoch,
-            Constants.oneWeek(),
         );
 
         return {
@@ -98,8 +87,8 @@ export class PushNotificationsEnergyService {
                         NotificationType.NEGATIVE_ENERGY,
                     );
 
-                successfulNotifications += result.successful.length;
-                failedNotifications += result.failed.length;
+                successfulNotifications += result.successful;
+                failedNotifications += result.failed;
             },
             0,
         );
@@ -114,9 +103,17 @@ export class PushNotificationsEnergyService {
         const notificationTypes = Object.values(NotificationType);
 
         for (const notificationType of notificationTypes) {
-            await this.pushNotificationsService.retryFailedNotifications(
-                notificationType,
-            );
+            const { successful, failed } =
+                await this.pushNotificationsService.retryFailedNotifications(
+                    notificationType,
+                );
+
+            if (successful > 0 || failed > 0) {
+                this.logger.info(
+                    `Retry failed '${notificationType}' notifications completed. Successful: ${successful}, Failed: ${failed}`,
+                    { context: PushNotificationsEnergyService.name },
+                );
+            }
         }
     }
 }
