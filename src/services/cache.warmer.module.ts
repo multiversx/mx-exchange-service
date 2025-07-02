@@ -49,6 +49,7 @@ import { WeekTimekeepingCacheWarmerService } from './crons/week.timekeeping.cach
 import { WeeklyRewardsSplittingCacheWarmerService } from './crons/weekly.rewards.cache.warmer.service';
 import { RouterCacheWarmerService } from './crons/router.cache.warmer.service';
 import { SmartRouterEvaluationCronModule } from 'src/modules/smart-router-evaluation/smart.router.evaluation.cron.module';
+import { TradingContestCronModule } from 'src/modules/trading-contest/trading.contest.cron.module';
 
 @Module({
     imports: [
@@ -82,6 +83,7 @@ import { SmartRouterEvaluationCronModule } from 'src/modules/smart-router-evalua
         ElasticSearchModule,
         CurrencyConverterModule,
         SmartRouterEvaluationCronModule,
+        TradingContestCronModule,
     ],
     controllers: [],
     providers: [
