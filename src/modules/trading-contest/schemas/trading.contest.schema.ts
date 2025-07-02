@@ -23,6 +23,12 @@ export class TradingContest {
     pairAddresses: string[];
     @Prop()
     requiresRegistration: boolean;
+    @Prop({
+        type: [String],
+        required: false,
+        default: [],
+    })
+    tokensPair: string[];
     @Prop()
     start: number;
     @Prop()

@@ -1,6 +1,6 @@
-import { SwapEvent } from '@multiversx/sdk-exchange';
+import { MultiPairSwapEvent, SwapEvent } from '@multiversx/sdk-exchange';
 
-export type ExtendedSwapEvent = SwapEvent & {
+export type ExtendedSwapEvent = (SwapEvent | MultiPairSwapEvent) & {
     txHash: string;
     originalTxHash?: string;
 };
