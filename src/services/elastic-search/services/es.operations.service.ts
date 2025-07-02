@@ -67,4 +67,31 @@ export class ESOperationsService {
 
         return operations;
     }
+
+    async getOperationsByHash(txHash: string): Promise<Operation[]> {
+        const pagination = new ElasticPagination();
+        pagination.size = 100;
+        const elasticQuery: ElasticQuery = new ElasticQuery().withPagination(
+            pagination,
+        );
+
+        elasticQuery.condition.must = [
+            QueryType.Should([
+                QueryType.Match('_id', txHash),
+                QueryType.Match('originalTxHash', txHash),
+            ]),
+        ];
+
+        elasticQuery.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.descending },
+        ];
+
+        const operations: Operation[] = await this.elasticService.getList(
+            'operations',
+            '_search',
+            elasticQuery,
+        );
+
+        return operations;
+    }
 }

@@ -19,6 +19,7 @@ import {
 } from 'src/services/database/repositories/trading.contest.repository';
 import { TradingContestSwapHandlerService } from './services/trading.contest.swap.handler.service';
 import { TradingContestService } from './services/trading.contest.service';
+import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { RouterModule } from '../router/router.module';
 import { TradingContestController } from './controllers/trading.contest.controller';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -33,6 +34,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
             },
             { name: TradingContestSwap.name, schema: TradingContestSwapSchema },
         ]),
+        ElasticSearchModule,
         RouterModule,
     ],
     providers: [

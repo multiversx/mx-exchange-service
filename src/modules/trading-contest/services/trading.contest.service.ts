@@ -32,6 +32,8 @@ import {
     TradingContestParticipantDto,
 } from '../dtos/contest.leaderboard.dto';
 import { participantStatsPipeline } from '../pipelines/participant.stats.pipeline';
+import { ESOperationsService } from 'src/services/elastic-search/services/es.operations.service';
+import { Address } from '@multiversx/sdk-core';
 
 @Injectable()
 export class TradingContestService {
@@ -39,6 +41,7 @@ export class TradingContestService {
         private readonly swapRepository: TradingContestSwapRepository,
         private readonly contestRepository: TradingContestRepository,
         private readonly participantRepository: TradingContestParticipantRepository,
+        private readonly elasticOperationsService: ESOperationsService,
         private readonly routerAbi: RouterAbiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -394,5 +397,75 @@ export class TradingContestService {
         }
 
         return Object.values(tokenMap);
+    }
+
+    async getSwapsWithoutParticipant(): Promise<TradingContestSwapDocument[]> {
+        const now = moment().subtract(2, 'minutes').unix();
+        const swaps = await this.swapRepository
+            .getModel()
+            .find({ participant: { $eq: null }, timestamp: { $lt: now } })
+            .populate('contest')
+            .exec();
+        return swaps;
+    }
+
+    async getSenderFromElastic(hash: string): Promise<string> {
+        const operations =
+            await this.elasticOperationsService.getOperationsByHash(hash);
+
+        if (!operations || operations.length === 0) {
+            this.logger.warn(
+                `Could not find transactions or SC results for ${hash} in ES`,
+                { context: TradingContestService.name },
+            );
+            return undefined;
+        }
+
+        const transaction = operations.find(
+            (operation) =>
+                operation.type === 'normal' && operation._search === hash,
+        );
+
+        if (transaction) {
+            const originalSender = Address.newFromBech32(transaction.sender);
+
+            if (
+                !originalSender.isEmpty() &&
+                !originalSender.isSmartContract()
+            ) {
+                return originalSender.toBech32();
+            }
+        }
+
+        const scResult = operations.find(
+            (operation) =>
+                operation.type === 'unsigned' && operation._search === hash,
+        );
+
+        if (scResult) {
+            const originalSender = Address.newFromBech32(
+                scResult.originalSender ?? transaction.sender,
+            );
+
+            if (
+                !originalSender.isEmpty() &&
+                !originalSender.isSmartContract()
+            ) {
+                return originalSender.toBech32();
+            }
+        }
+
+        this.logger.warn(`Could not extract sender for hash ${hash}`, {
+            context: TradingContestService.name,
+        });
+        return undefined;
+    }
+
+    async bulkUpdateSwaps(bulkOps: any[]): Promise<void> {
+        try {
+            await this.swapRepository.getModel().bulkWrite(bulkOps);
+        } catch (error) {
+            this.logger.error(error);
+        }
     }
 }
