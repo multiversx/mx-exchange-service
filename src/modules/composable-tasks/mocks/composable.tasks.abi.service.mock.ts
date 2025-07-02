@@ -4,7 +4,7 @@ import { ComposableTasksAbiService } from '../services/composable.tasks.abi.serv
 @Injectable()
 export class ComposableTasksAbiServiceMock {
     async smartSwapFeePercentage(): Promise<number> {
-        return Promise.resolve(50);
+        return Promise.resolve(0.005);
     }
 }
 
