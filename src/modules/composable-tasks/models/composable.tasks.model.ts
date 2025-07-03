@@ -28,6 +28,9 @@ export class ComposableTaskModel {
     @Field()
     address: string;
 
+    @Field()
+    smartSwapFeePercentage: number;
+
     constructor(init: Partial<ComposableTaskModel>) {
         Object.assign(this, init);
     }

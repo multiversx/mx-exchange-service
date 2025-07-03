@@ -1,4 +1,4 @@
-import { Args, Int, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ComposableTaskModel } from './models/composable.tasks.model';
 import { scAddress } from 'src/config';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
@@ -7,17 +7,24 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { ComposableTasksTransactionService } from './services/composable.tasks.transaction';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
+import { ComposableTasksAbiService } from './services/composable.tasks.abi.service';
 
-@Resolver()
+@Resolver(() => ComposableTaskModel)
 export class ComposableTasksResolver {
     constructor(
         private readonly transactionService: ComposableTasksTransactionService,
+        private readonly abiService: ComposableTasksAbiService,
     ) {}
     @Query(() => ComposableTaskModel)
     async composableTask(): Promise<ComposableTaskModel> {
         return new ComposableTaskModel({
             address: scAddress.composableTasks,
         });
+    }
+
+    @ResolveField()
+    async smartSwapFeePercentage(): Promise<number> {
+        return this.abiService.smartSwapFeePercentage();
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
