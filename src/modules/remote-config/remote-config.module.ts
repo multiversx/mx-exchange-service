@@ -11,6 +11,8 @@ import { RemoteConfigSetterService } from './remote-config.setter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
 import { Analytics, AnalyticsSchema } from './schemas/analytics.schema';
+import { SettingsRepositoryService } from 'src/services/database/repositories/settings.repository';
+import { Settings, SettingsSchema } from './schemas/settings.schema';
 
 @Module({
     imports: [
@@ -22,12 +24,16 @@ import { Analytics, AnalyticsSchema } from './schemas/analytics.schema';
         MongooseModule.forFeature([
             { name: Analytics.name, schema: AnalyticsSchema },
         ]),
+        MongooseModule.forFeature([
+            { name: Settings.name, schema: SettingsSchema },
+        ]),
     ],
     providers: [
         RemoteConfigController,
         FlagRepositoryService,
         SCAddressRepositoryService,
         AnalyticsRepositoryService,
+        SettingsRepositoryService,
         RemoteConfigGetterService,
         RemoteConfigSetterService,
         ApiConfigService,
@@ -38,6 +44,7 @@ import { Analytics, AnalyticsSchema } from './schemas/analytics.schema';
         FlagRepositoryService,
         SCAddressRepositoryService,
         AnalyticsRepositoryService,
+        SettingsRepositoryService,
     ],
 })
 export class RemoteConfigModule {}

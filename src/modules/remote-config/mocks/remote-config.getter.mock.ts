@@ -25,6 +25,14 @@ export class RemoteConfigGetterServiceMock {
     async getAnalyticsDataApiWriteFlagValue(): Promise<boolean> {
         return false;
     }
+
+    async getSmartSwapFlagValue(): Promise<boolean> {
+        return true;
+    }
+
+    async getMinSmartSwapDeltaPercentage(): Promise<number> {
+        return 0.5;
+    }
 }
 
 export const RemoteConfigGetterServiceProvider = {
