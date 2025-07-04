@@ -37,6 +37,7 @@ import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.comp
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { SmartRouterServiceProvider } from '../mocks/smart.router.service.mock';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
+import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -93,6 +94,7 @@ describe('AutoRouterService', () => {
                 PairFilteringService,
                 SmartRouterServiceProvider,
                 SmartRouterEvaluationServiceProvider,
+                ComposableTasksAbiServiceProvider,
             ],
             exports: [],
         }).compile();

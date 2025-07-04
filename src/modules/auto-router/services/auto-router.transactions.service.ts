@@ -11,17 +11,24 @@ import {
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { mxConfig, gasConfig } from 'src/config';
-import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
+import {
+    MultiSwapTokensArgs,
+    SmartSwapTokensArgs,
+} from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { TransactionModel } from '../../../models/transaction.model';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
 import { ComposableTaskType } from 'src/modules/composable-tasks/models/composable.tasks.model';
-import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
+import {
+    ComposableTask,
+    ComposableTasksTransactionService,
+} from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { decimalToHex } from 'src/utils/token.converters';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { ComposableTasksAbiService } from 'src/modules/composable-tasks/services/composable.tasks.abi.service';
 
 @Injectable()
 export class AutoRouterTransactionService {
@@ -29,6 +36,7 @@ export class AutoRouterTransactionService {
         private readonly mxProxy: MXProxyService,
         private readonly transactionsWrapService: WrapTransactionsService,
         private readonly composeTasksTransactionService: ComposableTasksTransactionService,
+        private readonly composeTasksAbi: ComposableTasksAbiService,
     ) {}
 
     async multiPairSwap(
@@ -99,6 +107,79 @@ export class AutoRouterTransactionService {
         return [transaction];
     }
 
+    async smartSwap(
+        sender: string,
+        args: SmartSwapTokensArgs,
+    ): Promise<TransactionModel[]> {
+        let amountIn = new BigNumber(0);
+        let amountOut = new BigNumber(0);
+        args.allocations.forEach((allocation) => {
+            amountIn = amountIn.plus(allocation.intermediaryAmounts[0]);
+            amountOut = amountOut.plus(
+                allocation.intermediaryAmounts[
+                    allocation.intermediaryAmounts.length - 1
+                ],
+            );
+        });
+
+        const feePercentage =
+            await this.composeTasksAbi.smartSwapFeePercentage();
+
+        const toleranceAmount = amountOut.multipliedBy(args.tolerance);
+
+        const feeAmount = amountOut.multipliedBy(feePercentage);
+
+        const amountOutMin = amountOut
+            .minus(toleranceAmount)
+            .minus(feeAmount)
+            .integerValue();
+
+        const typedArgs = this.getSmartSwapTypedArgs(args);
+
+        const argumentsBytes = this.convertSmartSwapToBytesValues(typedArgs);
+
+        const payment = new EsdtTokenPayment({
+            tokenIdentifier: args.tokenInID,
+            tokenNonce: 0,
+            amount: amountIn.integerValue().toFixed(),
+        });
+        const tokenOut = new EgldOrEsdtTokenPayment({
+            tokenIdentifier: args.tokenOutID,
+            nonce: 0,
+            amount: amountOutMin.toFixed(),
+        });
+
+        const tasks: ComposableTask[] = [];
+
+        if (args.tokenInID === mxConfig.EGLDIdentifier) {
+            tasks.push({
+                type: ComposableTaskType.WRAP_EGLD,
+                arguments: [],
+            });
+        }
+
+        tasks.push({
+            type: ComposableTaskType.SMART_SWAP,
+            arguments: argumentsBytes,
+        });
+
+        if (args.tokenOutID === mxConfig.EGLDIdentifier) {
+            tasks.push({
+                type: ComposableTaskType.UNWRAP_EGLD,
+                arguments: [],
+            });
+        }
+
+        const transaction =
+            await this.composeTasksTransactionService.getComposeTasksTransaction(
+                sender,
+                payment,
+                tokenOut,
+                tasks,
+            );
+        return [transaction];
+    }
+
     multiPairFixedInputSwaps(args: MultiSwapTokensArgs): TypedValue[] {
         const swaps: TypedValue[] = [];
 
@@ -130,6 +211,40 @@ export class AutoRouterTransactionService {
             );
         }
         return swaps;
+    }
+
+    getSmartSwapTypedArgs(args: SmartSwapTokensArgs): TypedValue[] {
+        const typedArgs: TypedValue[] = [];
+
+        typedArgs.push(
+            new BigUIntValue(new BigNumber(args.allocations.length)),
+        );
+
+        for (const allocation of args.allocations) {
+            typedArgs.push(
+                ...[
+                    new BigUIntValue(
+                        new BigNumber(allocation.intermediaryAmounts[0]),
+                    ),
+                    new BigUIntValue(
+                        new BigNumber(allocation.addressRoute.length),
+                    ),
+                ],
+            );
+
+            const swaps = this.multiPairFixedInputSwaps({
+                swapType: SWAP_TYPE.fixedInput,
+                tokenInID: args.tokenInID,
+                tokenOutID: args.tokenOutID,
+                addressRoute: allocation.addressRoute,
+                tokenRoute: allocation.tokenRoute,
+                intermediaryAmounts: allocation.intermediaryAmounts,
+                tolerance: args.tolerance,
+            });
+
+            typedArgs.push(...swaps);
+        }
+        return typedArgs;
     }
 
     multiPairFixedOutputSwaps(args: MultiSwapTokensArgs): TypedValue[] {
@@ -342,5 +457,56 @@ export class AutoRouterTransactionService {
             );
         }
         return swaps;
+    }
+
+    private convertSmartSwapToBytesValues(args: TypedValue[]): BytesValue[] {
+        if (args.length < 7) {
+            throw new Error('Invalid number of router swap arguments');
+        }
+
+        const encodedArgs: BytesValue[] = [];
+        let amountInIndex = 1;
+        let hopsIndex = 2;
+        const operations = new BigNumber(args[0].valueOf()).toNumber();
+
+        encodedArgs.push(
+            new BytesValue(Buffer.from(decimalToHex(operations), 'hex')),
+        );
+
+        for (let index = 0; index < operations; index++) {
+            const amountIn = args[amountInIndex];
+            const hops = new BigNumber(args[hopsIndex].valueOf()).toNumber();
+
+            encodedArgs.push(
+                new BytesValue(
+                    Buffer.from(
+                        decimalToHex(new BigNumber(amountIn.valueOf())),
+                        'hex',
+                    ),
+                ),
+            );
+            encodedArgs.push(
+                new BytesValue(Buffer.from(decimalToHex(hops), 'hex')),
+            );
+
+            const routeStart = hopsIndex + 1;
+            const routeEnd = routeStart + hops * 4;
+
+            const swapsSlice = args.slice(routeStart, routeEnd);
+
+            if (swapsSlice.length === 0 || swapsSlice.length % 4 !== 0) {
+                throw new Error('Invalid number of router swap arguments');
+            }
+
+            const routeSwaps =
+                this.convertMultiPairSwapsToBytesValues(swapsSlice);
+
+            encodedArgs.push(...routeSwaps);
+
+            amountInIndex = routeEnd;
+            hopsIndex = amountInIndex + 1;
+        }
+
+        return encodedArgs;
     }
 }

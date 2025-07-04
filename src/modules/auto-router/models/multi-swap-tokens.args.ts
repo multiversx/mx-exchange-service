@@ -26,3 +26,33 @@ export class MultiSwapTokensArgs {
     @Field()
     tolerance: number;
 }
+
+@ArgsType()
+export class SmartSwapTokensArgs {
+    @Field()
+    tokenInID: string;
+
+    @Field()
+    tokenOutID: string;
+
+    @Field()
+    amountIn: string;
+
+    @Field(() => [RouteAllocation])
+    allocations: RouteAllocation[];
+
+    @Field()
+    tolerance: number;
+}
+
+@ArgsType()
+export class RouteAllocation {
+    @Field(() => [String])
+    tokenRoute: string[];
+
+    @Field(() => [String])
+    intermediaryAmounts: string[];
+
+    @Field(() => [String])
+    addressRoute: string[];
+}

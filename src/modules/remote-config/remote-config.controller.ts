@@ -9,6 +9,8 @@ import {
     Put,
     Res,
     UseGuards,
+    UsePipes,
+    ValidationPipe,
 } from '@nestjs/common';
 import { FlagRepositoryService } from 'src/services/database/repositories/flag.repository';
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
@@ -26,6 +28,10 @@ import { AnalyticsRepositoryService } from 'src/services/database/repositories/a
 import { AnalyticsModel } from './models/analytics.model';
 import { AnalyticsArgs } from './args/analytics.args';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { SettingsRepositoryService } from 'src/services/database/repositories/settings.repository';
+import { SettingsDocument } from './schemas/settings.schema';
+import { SettingsArgs } from './args/settings.args';
+import { SettingsCategoryEnum } from './models/settings.model';
 
 @Controller('remote-config')
 export class RemoteConfigController {
@@ -34,6 +40,7 @@ export class RemoteConfigController {
         private readonly scAddressRepositoryService: SCAddressRepositoryService,
         private readonly analyticsRepositoryService: AnalyticsRepositoryService,
         private readonly remoteConfigSetterService: RemoteConfigSetterService,
+        private readonly settingsRepositoryService: SettingsRepositoryService,
         private readonly cacheService: CacheService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -268,5 +275,81 @@ export class RemoteConfigController {
         }
         await this.pubSub.publish('deleteCacheKeys', cacheKeys.keys);
         return res.status(200).send();
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @UsePipes(ValidationPipe)
+    @Post('/settings')
+    async upsertRemoteConfigSetting(
+        @Body() setting: SettingsArgs,
+    ): Promise<SettingsDocument> {
+        return await this.settingsRepositoryService.findOneAndUpdate(
+            { name: setting.name, category: setting.category },
+            setting,
+            undefined,
+            true,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Get('/settings')
+    async getRemoteConfigSettings(): Promise<SettingsDocument[]> {
+        return await this.settingsRepositoryService.find({});
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Get('/settings/:nameOrID')
+    async getRemoteConfigSetting(
+        @Param('nameOrID') nameOrID: string,
+    ): Promise<SettingsDocument> {
+        return await this.settingsRepositoryService.findOne({
+            name: nameOrID,
+        });
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Get('/settings/category/:category')
+    async getRemoteConfigSettingsByCategory(
+        @Param('category') category: SettingsCategoryEnum,
+    ): Promise<SettingsDocument[]> {
+        return await this.settingsRepositoryService.find({ category });
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @UsePipes(ValidationPipe)
+    @Put('/settings/:nameOrID')
+    async updateRemoteConfigSetting(
+        @Param('nameOrID') nameOrID: string,
+        @Body() setting: SettingsArgs,
+    ): Promise<SettingsDocument> {
+        return await this.settingsRepositoryService.findOneAndUpdate(
+            { name: nameOrID },
+            setting,
+        );
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Delete('/settings/:nameOrID')
+    async deleteRemoteConfigSetting(
+        @Param('nameOrID') nameOrID: string,
+    ): Promise<boolean> {
+        const setting = await this.settingsRepositoryService.findOneAndDelete({
+            name: nameOrID,
+        });
+
+        if (setting) {
+            return true;
+        }
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Delete('/settings/category/:category')
+    async deleteRemoteConfigSettingsByCategory(
+        @Param('category') category: SettingsCategoryEnum,
+    ): Promise<boolean> {
+        const settings = await this.settingsRepositoryService.deleteMany({
+            category,
+        });
+        return settings;
     }
 }
