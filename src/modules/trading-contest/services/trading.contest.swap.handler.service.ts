@@ -16,14 +16,21 @@ import {
 } from '@multiversx/sdk-exchange';
 
 type EventFields = {
-    swapType: number;
+    swapType: SWAP_TYPE;
     txHash: string;
     address: string;
+    caller: string;
     tokenIn: string;
     tokenOut: string;
     amountIn: string;
     amountOut: string;
 };
+
+enum SWAP_TYPE {
+    FIXED_INPUT,
+    FIXED_OUTPUT,
+    MULTI_PAIR,
+}
 
 @Injectable()
 export class TradingContestSwapHandlerService {
@@ -57,6 +64,7 @@ export class TradingContestSwapHandlerService {
             txHash,
             swapType,
             address,
+            caller,
             tokenIn,
             tokenOut,
             amountIn,
@@ -67,6 +75,8 @@ export class TradingContestSwapHandlerService {
             const isValidSwap = await this.isValidContestSwap(
                 contest,
                 address,
+                caller,
+                swapType,
                 tokenIn,
                 tokenOut,
                 txHash,
@@ -133,6 +143,8 @@ export class TradingContestSwapHandlerService {
     private async isValidContestSwap(
         contest: TradingContestDocument,
         eventAddress: string,
+        callerAddress: string,
+        swapType: SWAP_TYPE,
         tokenIn: string,
         tokenOut: string,
         txHash: string,
@@ -167,6 +179,18 @@ export class TradingContestSwapHandlerService {
             return true;
         }
 
+        if (
+            contest.pairAddresses.length === 0 &&
+            swapType !== SWAP_TYPE.MULTI_PAIR &&
+            callerAddress === scAddress.routerAddress
+        ) {
+            this.logger.info(
+                `Swap (tx ${txHash}) is intermediary and not accepted for contest ${contest._id}`,
+                { context: TradingContestSwapHandlerService.name },
+            );
+            return false;
+        }
+
         if (contest.tokensPair.length > 0) {
             if (
                 (tokenIn === contest.tokensPair[0] &&
@@ -196,13 +220,15 @@ export class TradingContestSwapHandlerService {
             (event as ExtendedSwapEvent).originalTxHash ??
             (event as ExtendedSwapEvent).txHash;
         const address = event.address;
+        const caller = event.getTopics().caller;
 
         if (event.identifier === ROUTER_EVENTS.MULTI_PAIR_SWAP) {
             const multiPairSwapEvent = event as MultiPairSwapEvent;
 
             return {
                 address,
-                swapType: 2,
+                caller,
+                swapType: SWAP_TYPE.MULTI_PAIR,
                 txHash,
                 tokenIn: multiPairSwapEvent.getTopics().tokenInID,
                 amountIn: multiPairSwapEvent.getTopics().amountIn,
@@ -215,10 +241,11 @@ export class TradingContestSwapHandlerService {
 
         return {
             address,
+            caller,
             swapType:
                 swapEvent.identifier === SWAP_IDENTIFIER.SWAP_FIXED_INPUT
-                    ? 0
-                    : 1,
+                    ? SWAP_TYPE.FIXED_INPUT
+                    : SWAP_TYPE.FIXED_OUTPUT,
             txHash,
             tokenIn: swapEvent.getTokenIn().tokenID,
             amountIn: swapEvent.getTokenIn().amount.toFixed(),
