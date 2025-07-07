@@ -35,6 +35,8 @@ import { participantStatsPipeline } from '../pipelines/participant.stats.pipelin
 import { ESOperationsService } from 'src/services/elastic-search/services/es.operations.service';
 import { Address } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
+import { TokenService } from 'src/modules/tokens/services/token.service';
+import { denominateAmount } from 'src/utils/token.converters';
 
 @Injectable()
 export class TradingContestService {
@@ -44,6 +46,7 @@ export class TradingContestService {
         private readonly participantRepository: TradingContestParticipantRepository,
         private readonly elasticOperationsService: ESOperationsService,
         private readonly routerAbi: RouterAbiService,
+        private readonly tokenService: TokenService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -356,9 +359,9 @@ export class TradingContestService {
         });
     }
 
-    private transformSwapStats(
+    private async transformSwapStats(
         rawStats: RawSwapStat[],
-    ): ContestParticipantTokenStats[] {
+    ): Promise<ContestParticipantTokenStats[]> {
         const tokenMap: Record<string, ContestParticipantTokenStats> = {};
 
         for (const stat of rawStats) {
@@ -416,7 +419,24 @@ export class TradingContestService {
             }
         }
 
-        return Object.values(tokenMap);
+        const tokenIDs = Object.keys(tokenMap);
+        const tokensMetadata = await this.tokenService.getAllBaseTokensMetadata(
+            tokenIDs,
+        );
+
+        return tokenIDs.map((tokenID, index) => {
+            const tokenStats = tokenMap[tokenID];
+            tokenStats.sellAmount = denominateAmount(
+                tokenStats.sellAmount,
+                tokensMetadata[index].decimals,
+            ).toFixed();
+            tokenStats.buyAmount = denominateAmount(
+                tokenStats.buyAmount,
+                tokensMetadata[index].decimals,
+            ).toFixed();
+
+            return tokenStats;
+        });
     }
 
     async getSwapsWithoutParticipant(): Promise<TradingContestSwapDocument[]> {
