@@ -34,6 +34,7 @@ import {
 import { participantStatsPipeline } from '../pipelines/participant.stats.pipeline';
 import { ESOperationsService } from 'src/services/elastic-search/services/es.operations.service';
 import { Address } from '@multiversx/sdk-core';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class TradingContestService {
@@ -361,13 +362,22 @@ export class TradingContestService {
         const tokenMap: Record<string, ContestParticipantTokenStats> = {};
 
         for (const stat of rawStats) {
-            const { tokenIn, tokenOut, totalVolumeUSD, tradeCount } = stat;
+            const {
+                tokenIn,
+                tokenOut,
+                totalVolumeUSD,
+                tradeCount,
+                tokenInAmount,
+                tokenOutAmount,
+            } = stat;
 
             if (!tokenMap[tokenIn]) {
                 tokenMap[tokenIn] = {
                     tokenID: tokenIn,
                     buyVolumeUSD: 0,
+                    buyAmount: '0',
                     sellVolumeUSD: 0,
+                    sellAmount: '0',
                 };
                 if (tradeCount) {
                     tokenMap[tokenIn].buyCount = 0;
@@ -379,7 +389,9 @@ export class TradingContestService {
                 tokenMap[tokenOut] = {
                     tokenID: tokenOut,
                     buyVolumeUSD: 0,
+                    buyAmount: '0',
                     sellVolumeUSD: 0,
+                    sellAmount: '0',
                 };
                 if (tradeCount) {
                     tokenMap[tokenOut].buyCount = 0;
@@ -387,8 +399,16 @@ export class TradingContestService {
                 }
             }
 
+            const sellAmount = new BigNumber(tokenInAmount).plus(
+                tokenMap[tokenIn].sellAmount,
+            );
+            const buyAmount = new BigNumber(tokenOutAmount).plus(
+                tokenMap[tokenIn].buyAmount,
+            );
             tokenMap[tokenIn].sellVolumeUSD += totalVolumeUSD;
+            tokenMap[tokenIn].sellAmount = sellAmount.toFixed();
             tokenMap[tokenOut].buyVolumeUSD += totalVolumeUSD;
+            tokenMap[tokenOut].buyAmount = buyAmount.toFixed();
 
             if (tradeCount) {
                 tokenMap[tokenIn].sellCount += tradeCount;
