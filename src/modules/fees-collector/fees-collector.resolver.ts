@@ -61,6 +61,7 @@ export class FeesCollectorResolver {
         );
     }
 
+    // TODO : remove ?
     @ResolveField()
     async lockedTokenId(): Promise<string> {
         return this.feesCollectorAbi.lockedTokenID();
@@ -79,6 +80,13 @@ export class FeesCollectorResolver {
     @ResolveField(() => [String])
     async knownContracts(): Promise<string[]> {
         return this.feesCollectorAbi.knownContracts();
+    }
+
+    @ResolveField()
+    async allowExternalClaimRewards(
+        @Args('address') address: string,
+    ): Promise<boolean> {
+        return this.feesCollectorAbi.allowExternalClaimRewards(address);
     }
 
     @Query(() => FeesCollectorModel)

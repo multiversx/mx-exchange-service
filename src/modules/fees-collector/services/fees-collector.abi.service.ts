@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import {
+    Address,
+    AddressValue,
     Interaction,
     TokenIdentifierValue,
     TypedValue,
@@ -45,6 +47,7 @@ export class FeesCollectorAbiService
         return response.firstValue.valueOf().integerValue().toFixed();
     }
 
+    // TODO : remove ?
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
@@ -94,11 +97,32 @@ export class FeesCollectorAbiService
     async getAllTokensRaw(): Promise<string[]> {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
-            contract.methodsExplicit.getAllTokens();
+            contract.methodsExplicit.getRewardTokens();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async allowExternalClaimRewards(address: string): Promise<boolean> {
+        return this.getAllowExternalClaimRewardsRaw(address);
+    }
+
+    async getAllowExternalClaimRewardsRaw(address: string): Promise<boolean> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getAllowExternalClaimRewards([
+                new AddressValue(Address.newFromBech32(address)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf();
+    }
+
+    // TODO : remove ?
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
