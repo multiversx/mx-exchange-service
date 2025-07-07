@@ -121,13 +121,28 @@ export class FeesCollectorTransactionService {
             new TransactionOptions({
                 sender: sender,
                 gasLimit: gasConfig.feesCollector.addKnownTokens,
-                function: remove ? 'removeKnownTokens' : 'addKnownTokens',
+                function: remove ? 'removeRewardTokens' : 'addRewardTokens',
                 arguments: [
                     new VariadicValue(
                         new VariadicType(new TokenIdentifierType(), false),
                         tokenIDs.map((id) => new TokenIdentifierValue(id)),
                     ),
                 ],
+            }),
+        );
+    }
+
+    async swapTokenToBaseToken(
+        sender: string,
+        tokenID: string,
+        swapArgs: VariadicValue,
+    ): Promise<TransactionModel> {
+        return this.mxProxy.getFeesCollectorSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.feesCollector.addKnownTokens,
+                function: 'swapTokenToBaseToken',
+                arguments: [new TokenIdentifierValue(tokenID), swapArgs],
             }),
         );
     }

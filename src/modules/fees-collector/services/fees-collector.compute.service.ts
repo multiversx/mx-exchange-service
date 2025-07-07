@@ -16,6 +16,7 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @Injectable()
 export class FeesCollectorComputeService {
@@ -278,5 +279,38 @@ export class FeesCollectorComputeService {
         );
 
         return totalUsdValue.toFixed();
+    }
+
+    async computeTokenAvailableAmountUSD(
+        token: EsdtToken,
+        startWeek: number,
+        endWeek: number,
+    ): Promise<BigNumber> {
+        const price = await this.tokenCompute.tokenPriceDerivedUSD(
+            token.identifier,
+        );
+
+        const promises = [];
+        for (let week = startWeek; week <= endWeek; week++) {
+            promises.push(
+                this.feesCollectorAbi.accumulatedFees(week, token.identifier),
+            );
+        }
+
+        const tokenWeeksAmounts = await Promise.all(promises);
+        const accumulatedAmount = tokenWeeksAmounts.reduce(
+            (sum, value) => sum.plus(value),
+            new BigNumber(0),
+        );
+
+        const totalBalance = new BigNumber(token.balance);
+
+        if (totalBalance.lte(accumulatedAmount)) {
+            return new BigNumber(0);
+        }
+
+        const swappableAmount = totalBalance.minus(accumulatedAmount).toFixed();
+
+        return computeValueUSD(swappableAmount, token.decimals, price);
     }
 }
