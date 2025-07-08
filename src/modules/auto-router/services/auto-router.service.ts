@@ -38,6 +38,7 @@ import {
     ParallelRouteSwap,
 } from '../models/smart.router.types';
 import { SmartRouterEvaluationService } from 'src/modules/smart-router-evaluation/services/smart.router.evaluation.service';
+import { ComposableTasksAbiService } from 'src/modules/composable-tasks/services/composable.tasks.abi.service';
 
 @Injectable()
 export class AutoRouterService {
@@ -56,6 +57,7 @@ export class AutoRouterService {
         private readonly cacheService: CacheService,
         private readonly smartRouterService: SmartRouterService,
         private readonly smartRouterEvaluationService: SmartRouterEvaluationService,
+        private readonly composeTasksAbi: ComposableTasksAbiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -811,13 +813,21 @@ export class AutoRouterService {
                 parallelRouteSwap.totalResult,
             );
 
-        const priceDeviationPercent =
-            await this.getSmartRouterAllocationsPriceDeviationPercent(
+        const [priceDeviationPercent, feePercentage] = await Promise.all([
+            this.getSmartRouterAllocationsPriceDeviationPercent(
                 parallelRouteSwap.allocations,
-            );
+            ),
+            this.composeTasksAbi.smartSwapFeePercentage(),
+        ]);
+
+        const smartSwapAmountOut = new BigNumber(parallelRouteSwap.totalResult);
+        const feeAmount = smartSwapAmountOut.multipliedBy(feePercentage);
 
         return new SmartSwapModel({
-            amountOut: parallelRouteSwap.totalResult,
+            amountOut: smartSwapAmountOut
+                .minus(feeAmount)
+                .integerValue()
+                .toFixed(),
             tokenInExchangeRate: tokenInExchangeRate,
             tokenOutExchangeRate: tokenOutExchangeRate,
             tokenInExchangeRateDenom: denominateAmount(
@@ -851,6 +861,8 @@ export class AutoRouterService {
                     pairs: routePairs,
                 });
             }),
+            feePercentage,
+            feeAmount: feeAmount.integerValue().toFixed(),
         });
     }
 }

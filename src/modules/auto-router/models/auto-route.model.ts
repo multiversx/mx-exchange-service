@@ -91,6 +91,12 @@ export class SmartSwapModel {
     @Field(() => [SmartSwapRoute])
     routes: SmartSwapRoute[];
 
+    @Field(() => Number)
+    feePercentage: number;
+
+    @Field()
+    feeAmount: string;
+
     constructor(init?: Partial<SmartSwapModel>) {
         Object.assign(this, init);
     }
