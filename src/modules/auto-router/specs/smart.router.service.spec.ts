@@ -190,7 +190,7 @@ describe('SmartRouterService', () => {
             totalResult: '3884256943682064342173',
         },
         smartSwap: new SmartSwapModel({
-            amountOut: '3884256943682064342173',
+            amountOut: '3864835658963654020462',
             routes: [
                 new SmartSwapRoute({
                     fees: ['0.072325244771647452519'],
@@ -236,6 +236,8 @@ describe('SmartRouterService', () => {
             tokenOutExchangeRate: '10297979917384707',
             tokenOutExchangeRateDenom: '0.010297979917384707',
             tokensPriceDeviationPercent: undefined,
+            feeAmount: '19421284718410321710',
+            feePercentage: 0.005,
         }),
     });
 
