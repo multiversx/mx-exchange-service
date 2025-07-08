@@ -45,6 +45,26 @@ export const participantTokenStatsPipeline = (
                 tokenOut: '$tokenOut',
             },
             totalVolumeUSD: { $sum: '$volumeUSD' },
+            tokenInAmount: {
+                $sum: {
+                    $convert: {
+                        input: '$amountIn',
+                        to: 'decimal',
+                        onError: 0,
+                        onNull: 0,
+                    },
+                },
+            },
+            tokenOutAmount: {
+                $sum: {
+                    $convert: {
+                        input: '$amountOut',
+                        to: 'decimal',
+                        onError: 0,
+                        onNull: 0,
+                    },
+                },
+            },
             ...(includeTradeCount && { tradeCount: { $sum: 1 } }),
         },
     };
@@ -54,6 +74,8 @@ export const participantTokenStatsPipeline = (
             _id: 0,
             tokenIn: '$_id.tokenIn',
             tokenOut: '$_id.tokenOut',
+            tokenInAmount: { $toString: '$tokenInAmount' },
+            tokenOutAmount: { $toString: '$tokenOutAmount' },
             totalVolumeUSD: 1,
         },
     };

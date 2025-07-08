@@ -34,6 +34,9 @@ import {
 import { participantStatsPipeline } from '../pipelines/participant.stats.pipeline';
 import { ESOperationsService } from 'src/services/elastic-search/services/es.operations.service';
 import { Address } from '@multiversx/sdk-core';
+import BigNumber from 'bignumber.js';
+import { TokenService } from 'src/modules/tokens/services/token.service';
+import { denominateAmount } from 'src/utils/token.converters';
 
 @Injectable()
 export class TradingContestService {
@@ -43,6 +46,7 @@ export class TradingContestService {
         private readonly participantRepository: TradingContestParticipantRepository,
         private readonly elasticOperationsService: ESOperationsService,
         private readonly routerAbi: RouterAbiService,
+        private readonly tokenService: TokenService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -355,19 +359,28 @@ export class TradingContestService {
         });
     }
 
-    private transformSwapStats(
+    private async transformSwapStats(
         rawStats: RawSwapStat[],
-    ): ContestParticipantTokenStats[] {
+    ): Promise<ContestParticipantTokenStats[]> {
         const tokenMap: Record<string, ContestParticipantTokenStats> = {};
 
         for (const stat of rawStats) {
-            const { tokenIn, tokenOut, totalVolumeUSD, tradeCount } = stat;
+            const {
+                tokenIn,
+                tokenOut,
+                totalVolumeUSD,
+                tradeCount,
+                tokenInAmount,
+                tokenOutAmount,
+            } = stat;
 
             if (!tokenMap[tokenIn]) {
                 tokenMap[tokenIn] = {
                     tokenID: tokenIn,
                     buyVolumeUSD: 0,
+                    buyAmount: '0',
                     sellVolumeUSD: 0,
+                    sellAmount: '0',
                 };
                 if (tradeCount) {
                     tokenMap[tokenIn].buyCount = 0;
@@ -379,7 +392,9 @@ export class TradingContestService {
                 tokenMap[tokenOut] = {
                     tokenID: tokenOut,
                     buyVolumeUSD: 0,
+                    buyAmount: '0',
                     sellVolumeUSD: 0,
+                    sellAmount: '0',
                 };
                 if (tradeCount) {
                     tokenMap[tokenOut].buyCount = 0;
@@ -387,8 +402,16 @@ export class TradingContestService {
                 }
             }
 
+            const sellAmount = new BigNumber(tokenInAmount).plus(
+                tokenMap[tokenIn].sellAmount,
+            );
+            const buyAmount = new BigNumber(tokenOutAmount).plus(
+                tokenMap[tokenIn].buyAmount,
+            );
             tokenMap[tokenIn].sellVolumeUSD += totalVolumeUSD;
+            tokenMap[tokenIn].sellAmount = sellAmount.toFixed();
             tokenMap[tokenOut].buyVolumeUSD += totalVolumeUSD;
+            tokenMap[tokenOut].buyAmount = buyAmount.toFixed();
 
             if (tradeCount) {
                 tokenMap[tokenIn].sellCount += tradeCount;
@@ -396,7 +419,24 @@ export class TradingContestService {
             }
         }
 
-        return Object.values(tokenMap);
+        const tokenIDs = Object.keys(tokenMap);
+        const tokensMetadata = await this.tokenService.getAllBaseTokensMetadata(
+            tokenIDs,
+        );
+
+        return tokenIDs.map((tokenID, index) => {
+            const tokenStats = tokenMap[tokenID];
+            tokenStats.sellAmount = denominateAmount(
+                tokenStats.sellAmount,
+                tokensMetadata[index].decimals,
+            ).toFixed();
+            tokenStats.buyAmount = denominateAmount(
+                tokenStats.buyAmount,
+                tokensMetadata[index].decimals,
+            ).toFixed();
+
+            return tokenStats;
+        });
     }
 
     async getSwapsWithoutParticipant(): Promise<TradingContestSwapDocument[]> {
