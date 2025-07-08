@@ -23,6 +23,7 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
 import { RouterModule } from '../router/router.module';
 import { TradingContestController } from './controllers/trading.contest.controller';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
@@ -36,6 +37,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
         ]),
         ElasticSearchModule,
         RouterModule,
+        TokenModule,
     ],
     providers: [
         TradingContestRepository,
