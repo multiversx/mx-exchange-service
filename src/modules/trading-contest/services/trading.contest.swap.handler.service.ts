@@ -10,8 +10,10 @@ import { SWAP_IDENTIFIER } from 'src/modules/rabbitmq/handlers/pair.swap.handler
 import BigNumber from 'bignumber.js';
 import { ExtendedSwapEvent, SwapEventPairData } from '../types';
 import {
+    COMPOSABLE_TASKS_EVENTS,
     MultiPairSwapEvent,
     ROUTER_EVENTS,
+    SmartSwapEvent,
     SwapEvent,
 } from '@multiversx/sdk-exchange';
 
@@ -30,6 +32,7 @@ enum SWAP_TYPE {
     FIXED_INPUT,
     FIXED_OUTPUT,
     MULTI_PAIR,
+    SMART_SWAP,
 }
 
 @Injectable()
@@ -40,7 +43,7 @@ export class TradingContestSwapHandlerService {
     ) {}
 
     async handleSwapEvent(
-        event: SwapEvent | MultiPairSwapEvent,
+        event: SwapEvent | MultiPairSwapEvent | SmartSwapEvent,
         swapData: SwapEventPairData,
     ): Promise<void> {
         const activeContests =
@@ -115,12 +118,16 @@ export class TradingContestSwapHandlerService {
                 contestSwap.participant = participant._id;
             }
 
-            await this.tradingContestService.createContestSwap(contestSwap);
+            if (swapType === SWAP_TYPE.SMART_SWAP) {
+                await this.tradingContestService.upsertContestSwap(contestSwap);
+            } else {
+                await this.tradingContestService.createContestSwap(contestSwap);
+            }
         }
     }
 
     private async getSenderFromEvent(
-        event: SwapEvent | MultiPairSwapEvent,
+        event: SwapEvent | MultiPairSwapEvent | SmartSwapEvent,
     ): Promise<string | undefined> {
         const sender = Address.newFromBech32(event.getTopics().caller);
 
@@ -164,7 +171,7 @@ export class TradingContestSwapHandlerService {
                 txHash,
             );
 
-        if (existingSwap) {
+        if (existingSwap && swapType !== SWAP_TYPE.SMART_SWAP) {
             this.logger.info(
                 `Swap (tx ${txHash}) already persisted for contest ${contest._id}`,
                 { context: TradingContestSwapHandlerService.name },
@@ -214,7 +221,7 @@ export class TradingContestSwapHandlerService {
     }
 
     private extractEventFields(
-        event: SwapEvent | MultiPairSwapEvent,
+        event: SwapEvent | MultiPairSwapEvent | SmartSwapEvent,
     ): EventFields {
         const txHash =
             (event as ExtendedSwapEvent).originalTxHash ??
@@ -222,13 +229,22 @@ export class TradingContestSwapHandlerService {
         const address = event.address;
         const caller = event.getTopics().caller;
 
-        if (event.identifier === ROUTER_EVENTS.MULTI_PAIR_SWAP) {
-            const multiPairSwapEvent = event as MultiPairSwapEvent;
+        if (
+            event.name === ROUTER_EVENTS.MULTI_PAIR_SWAP ||
+            event.name === COMPOSABLE_TASKS_EVENTS.SMART_SWAP
+        ) {
+            const multiPairSwapEvent = event as
+                | MultiPairSwapEvent
+                | SmartSwapEvent;
+            const swapType =
+                event.name === ROUTER_EVENTS.MULTI_PAIR_SWAP
+                    ? SWAP_TYPE.MULTI_PAIR
+                    : SWAP_TYPE.SMART_SWAP;
 
             return {
                 address,
                 caller,
-                swapType: SWAP_TYPE.MULTI_PAIR,
+                swapType,
                 txHash,
                 tokenIn: multiPairSwapEvent.getTopics().tokenInID,
                 amountIn: multiPairSwapEvent.getTopics().amountIn,

@@ -3,6 +3,7 @@ import {
     MultiPairSwapEvent,
     PairSwapEnabledEvent,
     ROUTER_EVENTS,
+    SmartSwapEvent,
 } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -142,7 +143,7 @@ export class RouterHandlerService {
     }
 
     async handleMultiPairSwapEvent(
-        event: MultiPairSwapEvent,
+        event: MultiPairSwapEvent | SmartSwapEvent,
     ): Promise<SwapEventPairData> {
         const [tokensMetadata, tokensPriceUSD, commonTokensIDs, usdcPrice] =
             await Promise.all([
