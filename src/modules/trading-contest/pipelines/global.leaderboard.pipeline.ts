@@ -18,6 +18,7 @@ export const globalLeaderboardPipeline = (
     const matchStage: PipelineStage.Match = {
         $match: {
             contest: new mongoose.Types.ObjectId(contestId),
+            participant: { $ne: null },
         },
     };
 
