@@ -15,6 +15,7 @@ import {
     AddLiquidityProxyEvent,
     ClaimMultiEvent,
     ClaimRewardsProxyEvent,
+    COMPOSABLE_TASKS_EVENTS,
     CompoundRewardsProxyEvent,
     CreatePairEvent,
     DepositEvent,
@@ -43,6 +44,7 @@ import {
     RemoveLiquidityEvent,
     ROUTER_EVENTS,
     SIMPLE_LOCK_ENERGY_EVENTS,
+    SmartSwapEvent,
     SwapEvent,
     TOKEN_UNSTAKE_EVENTS,
     TRANSACTION_EVENTS,
@@ -345,6 +347,17 @@ export class RabbitMqConsumer {
                         rawEvent.name,
                     );
                     break;
+                case COMPOSABLE_TASKS_EVENTS.SMART_SWAP:
+                    const smartSwapEvent = new SmartSwapEvent(rawEvent);
+                    const smartSwapData =
+                        await this.routerHandler.handleMultiPairSwapEvent(
+                            smartSwapEvent,
+                        );
+                    await this.tradingContestSwapHandlerService.handleSwapEvent(
+                        smartSwapEvent,
+                        smartSwapData,
+                    );
+                    break;
             }
         }
 
@@ -369,6 +382,7 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.tokenUnstake);
         this.filterAddresses.push(scAddress.escrow);
         this.filterAddresses.push(...governanceContractsAddresses());
+        this.filterAddresses.push(scAddress.composableTasks);
 
         const stakeAddresses = await this.remoteConfig.getStakingAddresses();
         this.filterAddresses.push(...stakeAddresses);

@@ -122,6 +122,20 @@ export class TradingContestService {
         }
     }
 
+    async upsertContestSwap(swap: TradingContestSwap): Promise<void> {
+        try {
+            await this.swapRepository.findOneAndUpdate(
+                { contest: swap.contest, txHash: swap.txHash },
+                swap,
+                {},
+                true,
+            );
+        } catch (error) {
+            this.logger.error(error);
+            throw error;
+        }
+    }
+
     async createContestParticipant(
         contest: TradingContestDocument,
         address: string,
