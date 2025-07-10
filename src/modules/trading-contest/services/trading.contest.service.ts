@@ -420,7 +420,7 @@ export class TradingContestService {
                 tokenMap[tokenIn].sellAmount,
             );
             const buyAmount = new BigNumber(tokenOutAmount).plus(
-                tokenMap[tokenIn].buyAmount,
+                tokenMap[tokenOut].buyAmount,
             );
             tokenMap[tokenIn].sellVolumeUSD += totalVolumeUSD;
             tokenMap[tokenIn].sellAmount = sellAmount.toFixed();
