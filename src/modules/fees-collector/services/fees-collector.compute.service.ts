@@ -17,6 +17,7 @@ import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @Injectable()
 export class FeesCollectorComputeService {
@@ -303,5 +304,32 @@ export class FeesCollectorComputeService {
         ).dividedBy(stats.roundsPerEpoch);
 
         return lockedTokensPerBlock.integerValue().toFixed();
+    }
+
+    async computeTokenAvailableAmount(
+        token: EsdtToken,
+        startWeek: number,
+        endWeek: number,
+    ): Promise<BigNumber> {
+        const promises = [];
+        for (let week = startWeek; week <= endWeek; week++) {
+            promises.push(
+                this.feesCollectorAbi.accumulatedFees(week, token.identifier),
+            );
+        }
+
+        const tokenWeeksAmounts: string[] = await Promise.all(promises);
+        const accumulatedAmount = tokenWeeksAmounts.reduce(
+            (sum, value) => sum.plus(value),
+            new BigNumber(0),
+        );
+
+        const totalBalance = new BigNumber(token.balance);
+
+        if (totalBalance.lte(accumulatedAmount)) {
+            return new BigNumber(0);
+        }
+
+        return totalBalance.minus(accumulatedAmount);
     }
 }

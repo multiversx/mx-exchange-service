@@ -428,4 +428,33 @@ export class ApiConfigService {
         }
         return notificationsModuleActive === 'true';
     }
+
+    isTaskRunnerModuleActive(): boolean {
+        const notificationsModuleActive =
+            this.configService.get<string>('ENABLE_TASK_RUNNER');
+        if (!notificationsModuleActive) {
+            return false;
+        }
+        return notificationsModuleActive === 'true';
+    }
+
+    getTaskRunnerWallet(): string {
+        const walletPath = this.configService.get<string>(
+            'TASK_RUNNER_WALLET_PATH',
+        );
+        if (!walletPath || walletPath.length === 0) {
+            throw new Error('No TASK_RUNNER_WALLET_PATH present');
+        }
+        return walletPath;
+    }
+
+    getTaskRunnerWalletPassword(): string {
+        const walletPassword = this.configService.get<string>(
+            'TASK_RUNNER_WALLET_PASSWORD',
+        );
+        if (!walletPassword || walletPassword.length === 0) {
+            throw new Error('No TASK_RUNNER_WALLET_PASSWORD present');
+        }
+        return walletPassword;
+    }
 }
