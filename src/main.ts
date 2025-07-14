@@ -94,13 +94,16 @@ async function bootstrap() {
     }
 
     if (apiConfigService.isNotificationsModuleActive()) {
-        const pushNotificationsApp = await NestFactory.create(PushNotificationsCronModule);
+        const pushNotificationsApp = await NestFactory.create(
+            PushNotificationsCronModule,
+        );
         await pushNotificationsApp.listen(5674, '0.0.0.0');
     }
 
     if (apiConfigService.isTaskRunnerModuleActive()) {
-        const pushNotificationsApp = await NestFactory.create(TaskRunnerModule);
-        await pushNotificationsApp.listen(5675, '0.0.0.0');
+        pubSubApp.listen();
+        const taskRunnerApp = await NestFactory.create(TaskRunnerModule);
+        await taskRunnerApp.listen(5675, '0.0.0.0');
     }
 }
 bootstrap();
