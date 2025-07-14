@@ -22,14 +22,19 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
 import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { EnergyAbiService } from '../energy/services/energy.abi.service';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorTransaction: FeesCollectorTransactionService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly energyAbi: EnergyAbiService,
     ) {}
 
     @ResolveField()
@@ -63,12 +68,17 @@ export class FeesCollectorResolver {
 
     @ResolveField()
     async lockedTokenId(): Promise<string> {
-        return this.feesCollectorAbi.lockedTokenID();
+        return this.energyAbi.lockedTokenID();
     }
 
     @ResolveField()
     async lockedTokensPerBlock(): Promise<string> {
-        return this.feesCollectorAbi.lockedTokensPerBlock();
+        return this.feesCollectorCompute.lockedTokensPerBlock();
+    }
+
+    @ResolveField()
+    async lockedTokensPerEpoch(): Promise<string> {
+        return this.feesCollectorAbi.lockedTokensPerEpoch();
     }
 
     @ResolveField(() => [String])
@@ -78,7 +88,21 @@ export class FeesCollectorResolver {
 
     @ResolveField(() => [String])
     async knownContracts(): Promise<string[]> {
-        return this.feesCollectorAbi.knownContracts();
+        return [];
+    }
+
+    @ResolveField(() => Boolean)
+    async isSCAddressWhitelisted(
+        @Args('address') address: string,
+    ): Promise<boolean> {
+        return this.feesCollectorAbi.isSCAddressWhitelisted(address);
+    }
+
+    @ResolveField(() => Boolean)
+    async allowExternalClaimRewards(
+        @Args('address') address: string,
+    ): Promise<boolean> {
+        return this.feesCollectorAbi.allowExternalClaimRewards(address);
     }
 
     @Query(() => FeesCollectorModel)
@@ -89,23 +113,40 @@ export class FeesCollectorResolver {
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel, {
         description: 'Add or remove known contracts',
+        deprecationReason: 'The endpoint was removed from the SC',
     })
     async handleKnownContracts(
         @Args('contractAddresses', { type: () => [String] })
-        contractAddresses: string[],
+        _contractAddresses: string[],
+        @Args('remove', { nullable: true }) _remove: boolean,
+        @AuthUser() _user: UserAuthResult,
+    ): Promise<TransactionModel> {
+        throw new GraphQLError('Endpoint removed from SC', {
+            extensions: {
+                code: ApolloServerErrorCode.BAD_REQUEST,
+            },
+        });
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @Query(() => TransactionModel, {
+        description: 'Add or remove address from whitelist',
+    })
+    async handleWhitelistedAddress(
+        @Args('address', { type: () => String }) address: string,
         @Args('remove', { nullable: true }) remove: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.feesCollectorTransaction.handleKnownContracts(
+        return this.feesCollectorTransaction.handleWhitelistedAddress(
             user.address,
-            contractAddresses,
+            address,
             remove,
         );
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel, {
-        description: 'Add or remove known tokens',
+        description: 'Add or remove reward tokens',
     })
     async handleKnownTokens(
         @Args('tokenIDs', { type: () => [String] }) tokenIDs: string[],

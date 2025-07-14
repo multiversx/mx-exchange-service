@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import {
+    Address,
+    AddressValue,
     Interaction,
     TokenIdentifierValue,
-    TypedValue,
     U32Value,
 } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
@@ -48,35 +49,17 @@ export class FeesCollectorAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
-        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
-        localTtl: CacheTtlInfo.TokenID.localTtl,
-    })
-    async lockedTokenID(): Promise<string> {
-        return this.getLockedTokenIDRaw();
-    }
-
-    async getLockedTokenIDRaw(): Promise<string> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedTokenId();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
-    }
-
-    @ErrorLoggerAsync()
-    @GetOrSetCache({
-        baseKey: 'feesCollector',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
-    async lockedTokensPerBlock(): Promise<string> {
-        return this.getLockedTokensPerBlockRaw();
+    async lockedTokensPerEpoch(): Promise<string> {
+        return this.getLockedTokensPerEpochRaw();
     }
 
-    async getLockedTokensPerBlockRaw(): Promise<string> {
+    async getLockedTokensPerEpochRaw(): Promise<string> {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
-            contract.methodsExplicit.getLockedTokensPerBlock();
+            contract.methodsExplicit.getLockedTokensPerEpoch();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
@@ -94,7 +77,7 @@ export class FeesCollectorAbiService
     async getAllTokensRaw(): Promise<string[]> {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
-            contract.methodsExplicit.getAllTokens();
+            contract.methodsExplicit.getRewardTokens();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
@@ -105,17 +88,37 @@ export class FeesCollectorAbiService
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
-    async knownContracts(): Promise<string[]> {
-        return this.getKnownContractsRaw();
+    async allowExternalClaimRewards(address: string): Promise<boolean> {
+        return this.getAllowExternalClaimRewardsRaw(address);
     }
 
-    async getKnownContractsRaw(): Promise<string[]> {
+    async getAllowExternalClaimRewardsRaw(address: string): Promise<boolean> {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
-            contract.methodsExplicit.getAllKnownContracts();
+            contract.methodsExplicit.getAllowExternalClaimRewards([
+                new AddressValue(Address.newFromBech32(address)),
+            ]);
         const response = await this.getGenericData(interaction);
-        return response.firstValue
-            .valueOf()
-            .map((value: TypedValue) => value.valueOf().bech32());
+        return response.firstValue.valueOf();
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async isSCAddressWhitelisted(address: string): Promise<boolean> {
+        return this.getIsSCAddressWhitelistedRaw(address);
+    }
+
+    async getIsSCAddressWhitelistedRaw(address: string): Promise<boolean> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.isSCAddressWhitelisted([
+                new AddressValue(Address.newFromBech32(address)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf();
     }
 }

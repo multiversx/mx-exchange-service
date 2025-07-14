@@ -31,7 +31,9 @@ export class FeesCollectorModel {
     @Field(() => [String])
     allTokens: string[];
 
-    @Field(() => [String])
+    @Field(() => [String], {
+        deprecationReason: 'The endpoint was removed from the SC',
+    })
     knownContracts: string[];
 
     @Field(() => [EsdtTokenPayment])
@@ -42,6 +44,15 @@ export class FeesCollectorModel {
 
     @Field()
     lockedTokensPerBlock: string;
+
+    @Field()
+    lockedTokensPerEpoch: string;
+
+    @Field()
+    isSCAddressWhitelisted: boolean;
+
+    @Field()
+    allowExternalClaimRewards: boolean;
 
     constructor(init?: Partial<FeesCollectorModel>) {
         Object.assign(this, init);

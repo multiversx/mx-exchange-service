@@ -493,8 +493,9 @@
         "feesCollector": {
             "baseClaimRewards": 20000000,
             "claimRewardsPerWeek": 25000000,
-            "addKnownContracts": 10000000,
-            "addKnownTokens": 10000000
+            "addSCAddressToWhitelist": 10000000,
+            "addRewardTokens": 10000000,
+            "swapTokenToBaseToken": 10000000
         },
         "energyUpdate": {
             "updateFarmsEnergyForUser": 17000000

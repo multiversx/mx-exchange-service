@@ -3,14 +3,14 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { FeesCollectorTransactionModel } from '../models/fees-collector.model';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import { constantsConfig, gasConfig } from 'src/config';
+import { constantsConfig, gasConfig, mxConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     Address,
-    AddressType,
     AddressValue,
     TokenIdentifierType,
     TokenIdentifierValue,
+    TypedValue,
     VariadicType,
     VariadicValue,
 } from '@multiversx/sdk-core';
@@ -87,27 +87,19 @@ export class FeesCollectorTransactionService {
         );
     }
 
-    async handleKnownContracts(
+    async handleWhitelistedAddress(
         sender: string,
-        pairAddresses: string[],
+        address: string,
         remove = false,
     ): Promise<TransactionModel> {
         return this.mxProxy.getFeesCollectorSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                gasLimit: gasConfig.feesCollector.addKnownContracts,
-                function: remove ? 'removeKnownContracts' : 'addKnownContracts',
-                arguments: [
-                    new VariadicValue(
-                        new VariadicType(new AddressType(), false),
-                        pairAddresses.map(
-                            (address) =>
-                                new AddressValue(
-                                    Address.newFromBech32(address),
-                                ),
-                        ),
-                    ),
-                ],
+                gasLimit: gasConfig.feesCollector.addSCAddressToWhitelist,
+                function: remove
+                    ? 'removeSCAddressFromWhitelist'
+                    : 'addSCAddressToWhitelist',
+                arguments: [new AddressValue(Address.newFromBech32(address))],
             }),
         );
     }
@@ -120,13 +112,37 @@ export class FeesCollectorTransactionService {
         return this.mxProxy.getFeesCollectorSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                gasLimit: gasConfig.feesCollector.addKnownTokens,
-                function: remove ? 'removeKnownTokens' : 'addKnownTokens',
+                gasLimit: gasConfig.feesCollector.addRewardTokens,
+                function: remove ? 'removeRewardTokens' : 'addRewardTokens',
                 arguments: [
                     new VariadicValue(
                         new VariadicType(new TokenIdentifierType(), false),
                         tokenIDs.map((id) => new TokenIdentifierValue(id)),
                     ),
+                ],
+            }),
+        );
+    }
+
+    async swapTokenToBaseToken(
+        sender: string,
+        tokenID: string,
+        swapArgs: TypedValue[],
+    ): Promise<TransactionModel> {
+        let gasLimit = gasConfig.feesCollector.swapTokenToBaseToken;
+
+        const routes = Math.trunc(swapArgs.length / 4);
+        gasLimit += routes * gasConfig.router.multiPairSwapMultiplier;
+
+        return this.mxProxy.getFeesCollectorSmartContractTransaction(
+            new TransactionOptions({
+                sender,
+                chainID: mxConfig.chainID,
+                gasLimit,
+                function: 'swapTokenToBaseToken',
+                arguments: [
+                    new TokenIdentifierValue(tokenID),
+                    VariadicValue.fromItems(...swapArgs),
                 ],
             }),
         );
