@@ -30,6 +30,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 
 describe('FeesCollectorService', () => {
     let module: TestingModule;
@@ -81,9 +82,7 @@ describe('FeesCollectorService', () => {
 
     it('getAccumulatedFees' + ' no rewards for tokens', async () => {
         const service = module.get<FeesCollectorService>(FeesCollectorService);
-        const feesCollectorAbi = module.get<FeesCollectorAbiService>(
-            FeesCollectorAbiService,
-        );
+        const energyAbi = module.get<EnergyAbiService>(EnergyAbiService);
         const feesCollectorCompute = module.get<FeesCollectorComputeService>(
             FeesCollectorComputeService,
         );
@@ -92,7 +91,7 @@ describe('FeesCollectorService', () => {
             'accumulatedFeesUntilNow',
         ).mockReturnValue(Promise.resolve('0'));
 
-        const energyToken = await feesCollectorAbi.lockedTokenID();
+        const energyToken = await energyAbi.lockedTokenID();
         const tokens = [];
         const firstToken = 'WEGLD-abcabc';
         tokens.push(firstToken);
@@ -136,6 +135,7 @@ describe('FeesCollectorService', () => {
         const feesCollectorCompute = module.get<FeesCollectorComputeService>(
             FeesCollectorComputeService,
         );
+        const energyAbi = module.get<EnergyAbiService>(EnergyAbiService);
 
         jest.spyOn(feesCollectorAbi, 'accumulatedFees').mockImplementation(
             (week: number, token: string) => {
@@ -156,7 +156,7 @@ describe('FeesCollectorService', () => {
             'accumulatedFeesUntilNow',
         ).mockReturnValue(Promise.resolve(rewardsMinted));
 
-        const energyToken = await feesCollectorAbi.lockedTokenID();
+        const energyToken = await energyAbi.lockedTokenID();
         const tokens = [];
 
         tokens.push(firstToken);

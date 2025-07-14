@@ -23,7 +23,6 @@ import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.serv
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import {
-    EnergyModel,
     UserEnergyModel,
 } from 'src/modules/energy/models/energy.model';
 import BigNumber from 'bignumber.js';

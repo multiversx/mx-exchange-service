@@ -5,11 +5,8 @@ export class FeesCollectorAbiServiceMock implements IFeesCollectorAbiService {
     async accumulatedFees(week: number, token: string): Promise<string> {
         return '0';
     }
-    async lockedTokenID(): Promise<string> {
-        return 'ELKMEX-123456';
-    }
 
-    async lockedTokensPerBlock(): Promise<string> {
+    async lockedTokensPerEpoch(): Promise<string> {
         return '0';
     }
 

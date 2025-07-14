@@ -147,20 +147,15 @@ describe('FeesCollectorTransactionService', () => {
         );
     });
 
-    it('should get remove known contract transaction', async () => {
+    it('should get remove address from whitelist transaction', async () => {
         const service = module.get<FeesCollectorTransactionService>(
             FeesCollectorTransactionService,
         );
-        const transaction = await service.handleKnownContracts(
+        const transaction = await service.handleWhitelistedAddress(
             senderAddress,
-            [
-                Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
-                Address.fromHex(
-                    '0000000000000000000000000000000000000000000000000000000000000002',
-                ).bech32(),
-            ],
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000001',
+            ).bech32(),
             true,
         );
 
@@ -176,10 +171,8 @@ describe('FeesCollectorTransactionService', () => {
                 senderUsername: undefined,
                 value: '0',
                 data: encodeTransactionData(
-                    `removeKnownContracts@${Address.fromHex(
+                    `removeSCAddressFromWhitelist@${Address.fromHex(
                         '0000000000000000000000000000000000000000000000000000000000000001',
-                    ).bech32()}@${Address.fromHex(
-                        '0000000000000000000000000000000000000000000000000000000000000002',
                     ).bech32()}`,
                 ),
                 options: undefined,
@@ -212,7 +205,7 @@ describe('FeesCollectorTransactionService', () => {
                 senderUsername: undefined,
                 value: '0',
                 data: encodeTransactionData(
-                    `addKnownTokens@${'WEGLD-123456'}@${'MEX-123456'}`,
+                    `addRewardTokens@${'WEGLD-123456'}@${'MEX-123456'}`,
                 ),
                 options: undefined,
                 signature: undefined,
