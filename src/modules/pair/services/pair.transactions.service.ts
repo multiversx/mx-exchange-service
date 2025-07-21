@@ -144,8 +144,10 @@ export class PairTransactionService {
                 new BigNumber(secondTokenInput.amount),
             );
 
-        if (permanentLockedAmountUSD.isGreaterThan(1)) {
-            throw new Error('Permanent locked amount must be less than 1 USD');
+        if (permanentLockedAmountUSD.isGreaterThan(1.5)) {
+            throw new Error(
+                'Permanent locked amount must be less than 1.5 USD',
+            );
         }
 
         return this.mxProxy.getPairSmartContractTransaction(
