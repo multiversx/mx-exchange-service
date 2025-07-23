@@ -81,7 +81,7 @@ describe('SmartRouterService', () => {
         pairs: [availablePairs['WEGLD-TOK5']],
         tolerance: 0.01,
         maxPriceDeviationPercent: 1,
-        tokensPriceDeviationPercent: undefined,
+        tokensPriceDeviationPercent: 0.012841965602938701,
         parallelRouteSwap: {
             allocations: [
                 {
@@ -145,7 +145,7 @@ describe('SmartRouterService', () => {
         pairs: [availablePairs['WEGLD-TOK5']],
         tolerance: 0.01,
         maxPriceDeviationPercent: 1,
-        tokensPriceDeviationPercent: undefined,
+        tokensPriceDeviationPercent: 0.04123552717621264,
         parallelRouteSwap: {
             allocations: [
                 {
@@ -235,7 +235,7 @@ describe('SmartRouterService', () => {
             tokenInExchangeRateDenom: '97.106423592051608554',
             tokenOutExchangeRate: '10297979917384707',
             tokenOutExchangeRateDenom: '0.010297979917384707',
-            tokensPriceDeviationPercent: undefined,
+            tokensPriceDeviationPercent: 0.02640150083732185,
             feeAmount: '19421284718410321710',
             feePercentage: 0.005,
         }),
@@ -388,6 +388,18 @@ describe('SmartRouterService', () => {
                 guardianSignature: undefined,
             },
         ]);
+    });
+
+    it('should throw an error when spread is too big', async () => {
+        const autoRouteModel = new AutoRouteModel({
+            ...expectedAutoRouteWithSmartSwap,
+            maxPriceDeviationPercent: 0.02,
+            tokenInID: 'EGLD',
+        });
+
+        await expect(
+            autoRouterService.getTransactions(senderAddress, autoRouteModel),
+        ).rejects.toThrow('Spread too big!');
     });
 });
 
