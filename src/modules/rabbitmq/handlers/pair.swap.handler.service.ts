@@ -141,6 +141,7 @@ export class SwapEventHandler {
         ).dividedBy(usdcPrice);
 
         let volumeUSD: BigNumber;
+        let feesUSD: BigNumber;
 
         if (
             commonTokensIDs.includes(firstToken.identifier) &&
@@ -149,32 +150,42 @@ export class SwapEventHandler {
             volumeUSD = firstTokenVolumeUSD
                 .plus(secondTokenVolumeUSD)
                 .dividedBy(2);
+            feesUSD =
+                event.getTokenIn().tokenID === firstToken.identifier
+                    ? computeValueUSD(
+                          firstTokenAmount,
+                          firstToken.decimals,
+                          firstTokenPriceUSD,
+                      ).times(totalFeePercent)
+                    : computeValueUSD(
+                          secondTokenAmount,
+                          secondToken.decimals,
+                          secondTokenPriceUSD,
+                      ).times(totalFeePercent);
         } else if (
             commonTokensIDs.includes(firstToken.identifier) &&
             !commonTokensIDs.includes(secondToken.identifier)
         ) {
             volumeUSD = firstTokenVolumeUSD;
+            feesUSD = computeValueUSD(
+                firstTokenAmount,
+                firstToken.decimals,
+                firstTokenPriceUSD,
+            ).times(totalFeePercent);
         } else if (
             !commonTokensIDs.includes(firstToken.identifier) &&
             commonTokensIDs.includes(secondToken.identifier)
         ) {
             volumeUSD = secondTokenVolumeUSD;
+            feesUSD = computeValueUSD(
+                secondTokenAmount,
+                secondToken.decimals,
+                secondTokenPriceUSD,
+            ).times(totalFeePercent);
         } else {
             volumeUSD = new BigNumber(0);
+            feesUSD = new BigNumber(0);
         }
-
-        const feesUSD =
-            event.getTokenIn().tokenID === firstToken.identifier
-                ? computeValueUSD(
-                      firstTokenAmount,
-                      firstToken.decimals,
-                      firstTokenPriceUSD,
-                  ).times(totalFeePercent)
-                : computeValueUSD(
-                      secondTokenAmount,
-                      secondToken.decimals,
-                      secondTokenPriceUSD,
-                  ).times(totalFeePercent);
 
         const data = [];
         data[event.address] = {
