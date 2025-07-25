@@ -500,6 +500,13 @@ export class AutoRouterService {
         parent: AutoRouteModel,
     ): Promise<TransactionModel[]> {
         if (parent.smartSwap !== undefined) {
+            if (
+                parent.smartSwap.tokensPriceDeviationPercent >
+                parent.maxPriceDeviationPercent
+            ) {
+                throw new Error('Spread too big!');
+            }
+
             try {
                 const transactions =
                     await this.autoRouterTransactionService.smartSwap(sender, {
@@ -657,9 +664,9 @@ export class AutoRouterService {
                     .error(`Spread too big validating auto route swap transaction ${tokenInID} => ${tokenOutID}.
                 amount in = ${amountIn}, usd value = ${amountInUSD};
                 amount out = ${amountOut}, usd value = ${amountOutUSD}`);
-
-                return priceDeviationPercent.toNumber();
             }
+
+            return priceDeviationPercent.toNumber();
         }
     }
 
@@ -738,9 +745,9 @@ export class AutoRouterService {
                         .error(`Spread too big validating smart swap transaction ${tokenInID} => ${tokenOutID}.
                 amount in = ${amountIn}, usd value = ${amountInUSD};
                 amount out = ${amountOut}, usd value = ${amountOutUSD}`);
-
-                    return priceDeviationPercent.toNumber();
                 }
+
+                return priceDeviationPercent.toNumber();
             }
         }
     }
