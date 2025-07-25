@@ -143,14 +143,9 @@ export class SwapEventHandler {
         let volumeUSD: BigNumber;
         let feesUSD: BigNumber;
 
-        let feeAmount =
-            event.getTokenIn().tokenID === firstToken.identifier
-                ? new BigNumber(firstTokenAmount)
-                      .times(totalFeePercent)
-                      .toFixed()
-                : new BigNumber(secondTokenAmount)
-                      .times(totalFeePercent)
-                      .toFixed();
+        let feeAmount = new BigNumber(event.getTokenIn().amount)
+            .times(totalFeePercent)
+            .toFixed();
 
         if (
             commonTokensIDs.includes(firstToken.identifier) &&
