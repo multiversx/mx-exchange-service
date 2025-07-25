@@ -412,10 +412,10 @@
             },
             "unstakeFarm": 25000000,
             "unbondFarm": 10000000,
-            "claimRewards": 40000000,
+            "claimRewards": 20000000,
             "claimBoostedRewards": 30000000,
             "claimRewardsWithNewValue": 7500000,
-            "compoundRewards": 40000000,
+            "compoundRewards": 20000000,
             "mergeTokens": 20000000,
             "admin": {
                 "setState": 20000000,
@@ -497,7 +497,7 @@
             "addKnownTokens": 10000000
         },
         "energyUpdate": {
-            "updateFarmsEnergyForUser": 17000000
+            "updateFarmsEnergyForUser": 8000000
         },
         "tokenUnstake": {
             "claimUnlockedTokens": {
@@ -540,7 +540,7 @@
             "default": 1000000
         },
         "lockedAssetCreate": 5000000,
-        "wrapeGLD": 4200000,
+        "wrapeGLD": 3000000,
         "claimLockedAssets": 45500000
     },
     "abi": {
