@@ -57,13 +57,20 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
             if (cachedValue !== undefined) {
                 MetricsCollector.incrementCachedApiHit(genericCacheKey);
 
-                cachingService.setLocal(
-                    cacheKey,
-                    cachedValue,
+                const parsedValue = parseCachedNullOrUndefined(cachedValue);
+                let localTtl =
                     cachingOptions.localTtl ??
-                        Math.floor(cachingOptions.remoteTtl / 2),
-                );
-                return parseCachedNullOrUndefined(cachedValue);
+                    Math.floor(cachingOptions.remoteTtl / 2);
+
+                if (
+                    typeof parsedValue === 'undefined' ||
+                    parsedValue === null
+                ) {
+                    localTtl = CacheTtlInfo.NullValue.localTtl;
+                }
+
+                cachingService.setLocal(cacheKey, cachedValue, localTtl);
+                return parsedValue;
             }
 
             const value = await originalMethod.apply(this, args);
