@@ -141,6 +141,11 @@ export class SwapEventHandler {
         ).dividedBy(usdcPrice);
 
         let volumeUSD: BigNumber;
+        let feesUSD: BigNumber;
+
+        let feeAmount = new BigNumber(event.getTokenIn().amount)
+            .times(totalFeePercent)
+            .toFixed();
 
         if (
             commonTokensIDs.includes(firstToken.identifier) &&
@@ -149,32 +154,64 @@ export class SwapEventHandler {
             volumeUSD = firstTokenVolumeUSD
                 .plus(secondTokenVolumeUSD)
                 .dividedBy(2);
+            feesUSD =
+                event.getTokenIn().tokenID === firstToken.identifier
+                    ? computeValueUSD(
+                          feeAmount,
+                          firstToken.decimals,
+                          firstTokenPriceUSD,
+                      )
+                    : computeValueUSD(
+                          feeAmount,
+                          secondToken.decimals,
+                          secondTokenPriceUSD,
+                      );
         } else if (
             commonTokensIDs.includes(firstToken.identifier) &&
             !commonTokensIDs.includes(secondToken.identifier)
         ) {
             volumeUSD = firstTokenVolumeUSD;
+
+            if (event.getTokenIn().tokenID === secondToken.identifier) {
+                feeAmount = (
+                    await this.pairService.getEquivalentForLiquidity(
+                        event.address,
+                        secondToken.identifier,
+                        feeAmount,
+                    )
+                ).toFixed();
+            }
+
+            feesUSD = computeValueUSD(
+                feeAmount,
+                firstToken.decimals,
+                firstTokenPriceUSD,
+            );
         } else if (
             !commonTokensIDs.includes(firstToken.identifier) &&
             commonTokensIDs.includes(secondToken.identifier)
         ) {
             volumeUSD = secondTokenVolumeUSD;
+
+            if (event.getTokenIn().tokenID === firstToken.identifier) {
+                feeAmount = (
+                    await this.pairService.getEquivalentForLiquidity(
+                        event.address,
+                        firstToken.identifier,
+                        feeAmount,
+                    )
+                ).toFixed();
+            }
+
+            feesUSD = computeValueUSD(
+                feeAmount,
+                secondToken.decimals,
+                secondTokenPriceUSD,
+            );
         } else {
             volumeUSD = new BigNumber(0);
+            feesUSD = new BigNumber(0);
         }
-
-        const feesUSD =
-            event.getTokenIn().tokenID === firstToken.identifier
-                ? computeValueUSD(
-                      firstTokenAmount,
-                      firstToken.decimals,
-                      firstTokenPriceUSD,
-                  ).times(totalFeePercent)
-                : computeValueUSD(
-                      secondTokenAmount,
-                      secondToken.decimals,
-                      secondTokenPriceUSD,
-                  ).times(totalFeePercent);
 
         const data = [];
         data[event.address] = {
