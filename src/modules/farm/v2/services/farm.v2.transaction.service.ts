@@ -109,13 +109,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
     ): Promise<TransactionModel> {
         const type = farmType(args.farmAddress);
 
-        const lockedAssetCreateGas =
-            type === FarmRewardType.LOCKED_REWARDS
-                ? gasConfig.lockedAssetCreate
-                : 0;
-        const gasLimit =
-            gasConfig.farms[FarmVersion.V2][type].claimRewards +
-            lockedAssetCreateGas;
+        const gasLimit = gasConfig.farms[FarmVersion.V2][type].claimRewards;
 
         return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
