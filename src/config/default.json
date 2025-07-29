@@ -239,7 +239,7 @@
                             "buybackAndBurn": 48300000
                         }
                     },
-                    "claimRewards": 30000000
+                    "claimRewards": 27000000
                 },
                 "deprecated": {
                     "exitFarm": {
@@ -412,10 +412,10 @@
             },
             "unstakeFarm": 25000000,
             "unbondFarm": 10000000,
-            "claimRewards": 20000000,
+            "claimRewards": 25000000,
             "claimBoostedRewards": 30000000,
             "claimRewardsWithNewValue": 7500000,
-            "compoundRewards": 20000000,
+            "compoundRewards": 25000000,
             "mergeTokens": 20000000,
             "admin": {
                 "setState": 20000000,
@@ -479,7 +479,8 @@
                 "default": 10000000
             },
             "updateTokens": 10000000,
-            "defaultMergeTokens": 12000000,
+            "defaultMergeTokens": 8000000,
+            "mergeTokensMultiplier": 750000,
             "migrateOldTokens": 15000000,
             "admin": {
                 "issueLockedToken": 60000000,
@@ -497,7 +498,7 @@
             "addKnownTokens": 10000000
         },
         "energyUpdate": {
-            "updateFarmsEnergyForUser": 8000000
+            "updateFarmsEnergyForUser": 9500000
         },
         "tokenUnstake": {
             "claimUnlockedTokens": {

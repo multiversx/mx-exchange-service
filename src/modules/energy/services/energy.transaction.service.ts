@@ -96,12 +96,19 @@ export class EnergyTransactionService {
         sender: string,
         inputTokens: InputTokenModel[],
     ): Promise<TransactionModel> {
+        if (inputTokens.length < 2) {
+            return undefined;
+        }
+
+        const gasLimit =
+            gasConfig.simpleLockEnergy.defaultMergeTokens +
+            (inputTokens.length - 2) *
+                gasConfig.simpleLockEnergy.mergeTokensMultiplier;
+
         return this.mxProxy.getSimpleLockEnergySmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                gasLimit:
-                    gasConfig.simpleLockEnergy.defaultMergeTokens *
-                    inputTokens.length,
+                gasLimit: gasLimit,
                 function: 'mergeTokens',
                 tokenTransfers: inputTokens.map(
                     (inputToken) =>
