@@ -46,33 +46,45 @@ export const globalLeaderboardPipeline = (
             _id: 0,
             sender: '$_id',
             totalVolumeUSD: 1,
+            ...(includeFees ? { totalFeesUSD: 1 } : {}),
+            ...(includeTradeCount ? { tradeCount: 1 } : {}),
+            ...(includeRank ? { rank: 1 } : {}),
         },
     };
 
-    if (includeFees) {
-        projectStage.$project.totalFeesUSD = 1;
-    }
-
-    if (includeTradeCount) {
-        projectStage.$project.tradeCount = 1;
-    }
-
-    if (includeRank) {
-        projectStage.$project.rank = 1;
-    }
+    const resultsBranch: PipelineStage[] = [
+        { $sort: { totalVolumeUSD: -1 as const } },
+        ...(includeRank
+            ? [
+                  {
+                      $setWindowFields: {
+                          sortBy: { totalVolumeUSD: -1 as const },
+                          output: { rank: { $rank: {} } },
+                      },
+                  } as PipelineStage.SetWindowFields,
+              ]
+            : []),
+        projectStage,
+        { $skip: offset },
+        { $limit: limit },
+    ];
 
     return [
         matchStage,
         groupStage,
-        { $sort: { totalVolumeUSD: -1 as const } },
         {
-            $setWindowFields: {
-                sortBy: { totalVolumeUSD: -1 as const },
-                output: { rank: { $rank: {} } },
+            $facet: {
+                results: resultsBranch,
+                total: [{ $count: 'count' }],
+            },
+        } as PipelineStage.Facet,
+        {
+            $project: {
+                results: 1,
+                totalCount: {
+                    $ifNull: [{ $arrayElemAt: ['$total.count', 0] }, 0],
+                },
             },
         },
-        projectStage,
-        { $skip: offset },
-        { $limit: limit },
     ];
 };
