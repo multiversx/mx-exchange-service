@@ -43,6 +43,7 @@ import { CurrencyConverterModule } from './modules/currency-converter/currency.c
 import { ConditionalModule } from '@nestjs/config';
 import { ComplexityModule } from './complexity.module';
 import { TradingContestModule } from './modules/trading-contest/trading.contest.module';
+import { ApiConfigService } from './helpers/api.config.service';
 
 @Module({
     imports: [
@@ -50,7 +51,10 @@ import { TradingContestModule } from './modules/trading-contest/trading.contest.
         GraphQLModule.forRootAsync<ApolloDriverConfig>({
             driver: ApolloDriver,
             imports: [CommonAppModule],
-            useFactory: async (logger: LoggerService) => ({
+            useFactory: async (
+                logger: LoggerService,
+                apiConfig: ApiConfigService,
+            ) => ({
                 autoSchemaFile: 'schema.gql',
                 installSubscriptionHandlers: true,
                 parseOptions: {
@@ -76,8 +80,9 @@ import { TradingContestModule } from './modules/trading-contest/trading.contest.
                     };
                 },
                 fieldResolverEnhancers: ['guards'],
+                playground: apiConfig.isGraphqlPlaygroundEnabled(),
             }),
-            inject: [WINSTON_MODULE_NEST_PROVIDER],
+            inject: [WINSTON_MODULE_NEST_PROVIDER, ApiConfigService],
         }),
         RouterModule,
         AutoRouterModule,
