@@ -18,6 +18,7 @@ import { proxyVersion } from 'src/utils/proxy.utils';
 import { GovernanceType } from '../../utils/governance';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { TransactionModel } from 'src/models/transaction.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @Injectable()
 export class MXProxyService {
@@ -66,6 +67,36 @@ export class MXProxyService {
             `address/${address}/shard`,
         );
         return response.shardID;
+    }
+
+    async getAddressNonce(address: string): Promise<number> {
+        return (
+            await this.getService().getAccount(Address.newFromBech32(address))
+        ).nonce;
+    }
+
+    async getAddressTokens(address: string): Promise<EsdtToken[]> {
+        const addressTokens =
+            await this.getService().getFungibleTokensOfAccount(
+                Address.newFromBech32(address),
+            );
+
+        const tokensDefinition = await Promise.all(
+            addressTokens.map((token) =>
+                this.getService().getDefinitionOfFungibleToken(
+                    token.identifier,
+                ),
+            ),
+        );
+
+        return addressTokens.map(
+            (token, index) =>
+                new EsdtToken({
+                    identifier: token.identifier,
+                    balance: token.balance.toFixed(),
+                    decimals: tokensDefinition[index].decimals,
+                }),
+        );
     }
 
     async getRouterSmartContract(): Promise<SmartContract> {

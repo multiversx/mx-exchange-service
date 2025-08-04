@@ -14,6 +14,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { PushNotificationsCronModule } from './modules/push-notifications/push.notifications.cron.module';
+import { TaskRunnerModule } from './modules/task-runner/task.runner.module';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -95,6 +96,11 @@ async function bootstrap() {
     if (apiConfigService.isNotificationsModuleActive()) {
         const pushNotificationsApp = await NestFactory.create(PushNotificationsCronModule);
         await pushNotificationsApp.listen(5674, '0.0.0.0');
+    }
+
+    if (apiConfigService.isTaskRunnerModuleActive()) {
+        const pushNotificationsApp = await NestFactory.create(TaskRunnerModule);
+        await pushNotificationsApp.listen(5675, '0.0.0.0');
     }
 }
 bootstrap();
