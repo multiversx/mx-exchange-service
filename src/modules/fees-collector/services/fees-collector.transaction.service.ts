@@ -9,12 +9,20 @@ import {
     Address,
     AddressType,
     AddressValue,
+    BigUIntValue,
+    Field,
+    Struct,
     TokenIdentifierType,
     TokenIdentifierValue,
+    TypedValue,
+    U64Value,
     VariadicType,
     VariadicValue,
 } from '@multiversx/sdk-core';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
+import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class FeesCollectorTransactionService {
@@ -74,6 +82,16 @@ export class FeesCollectorTransactionService {
         );
     }
 
+    async redistributeRewards(sender: string): Promise<TransactionModel> {
+        return this.mxProxy.getFeesCollectorSmartContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                gasLimit: gasConfig.feesCollector.redistributeRewards,
+                function: 'redistributeRewards',
+            }),
+        );
+    }
+
     async updateEnergyForUser(userAddress: string): Promise<TransactionModel> {
         return this.mxProxy.getFeesCollectorSmartContractTransaction(
             new TransactionOptions({
@@ -112,21 +130,58 @@ export class FeesCollectorTransactionService {
         );
     }
 
-    async handleKnownTokens(
+    async removeRewardTokens(
         sender: string,
         tokenIDs: string[],
-        remove = false,
     ): Promise<TransactionModel> {
         return this.mxProxy.getFeesCollectorSmartContractTransaction(
             new TransactionOptions({
                 sender: sender,
-                gasLimit: gasConfig.feesCollector.addKnownTokens,
-                function: remove ? 'removeKnownTokens' : 'addKnownTokens',
+                gasLimit: gasConfig.feesCollector.removeRewardTokens,
+                function: 'removeRewardTokens',
                 arguments: [
                     new VariadicValue(
                         new VariadicType(new TokenIdentifierType(), false),
                         tokenIDs.map((id) => new TokenIdentifierValue(id)),
                     ),
+                ],
+            }),
+        );
+    }
+
+    async swapTokenToBaseToken(
+        sender: string,
+        tokenToSend: EsdtTokenPayment,
+        swapArgs: TypedValue[],
+    ): Promise<TransactionModel> {
+        let gasLimit = gasConfig.feesCollector.swapTokenToBaseToken;
+
+        const routes = Math.trunc(swapArgs.length / 4);
+        gasLimit += routes * gasConfig.router.multiPairSwapMultiplier;
+
+        return this.mxProxy.getFeesCollectorSmartContractTransaction(
+            new TransactionOptions({
+                sender,
+                gasLimit,
+                function: 'swapTokenToBaseToken',
+                arguments: [
+                    new Struct(EgldOrEsdtTokenPayment.getStructure(), [
+                        new Field(
+                            new TokenIdentifierValue(
+                                tokenToSend.tokenIdentifier,
+                            ),
+                            'token_identifier',
+                        ),
+                        new Field(
+                            new U64Value(new BigNumber(tokenToSend.tokenNonce)),
+                            'token_nonce',
+                        ),
+                        new Field(
+                            new BigUIntValue(new BigNumber(tokenToSend.amount)),
+                            'amount',
+                        ),
+                    ]),
+                    VariadicValue.fromItems(...swapArgs),
                 ],
             }),
         );
