@@ -18,7 +18,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig, scAddress } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
-import { delay } from 'src/helpers/helpers';
+import { delay, randomJitter } from 'src/helpers/helpers';
 import { TransactionModel } from 'src/models/transaction.model';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
 import { AutoRouterTransactionService } from 'src/modules/auto-router/services/auto-router.transactions.service';
@@ -39,9 +39,11 @@ enum BroadcastStatus {
     skip = 'skip',
 }
 
+const WAIT_MIN = 2_000;
+const WAIT_MAX = 15_000;
+
 @Injectable()
 export class FeesCollectorTasksService implements OnModuleInit {
-    private currentNonce: number;
     private baseToken: EsdtToken;
     private accountSigner: UserSigner;
     private transactionWatcher: TransactionWatcher;
@@ -108,15 +110,11 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
         this.log('info', 'Start swaps task for tokens in fees collector');
 
-        const [feesCollector, tokens, accountNonce] = await Promise.all([
+        const [feesCollector, tokens] = await Promise.all([
             this.feesCollectorService.feesCollector(scAddress.feesCollector),
             this.mxProxy.getAddressTokens(scAddress.feesCollector),
-            this.mxProxy.getAddressNonce(
-                this.accountSigner.getAddress().bech32(),
-            ),
         ]);
 
-        this.currentNonce = accountNonce;
         this.startWeek = feesCollector.startWeek;
         this.endWeek = feesCollector.endWeek;
 
@@ -128,10 +126,11 @@ export class FeesCollectorTasksService implements OnModuleInit {
         };
 
         for (const token of tokens) {
+            const waitMs = randomJitter(WAIT_MAX, WAIT_MIN);
+            await delay(waitMs);
+
             const status = await this.performSwap(token);
             txStats[status]++;
-
-            await delay(500);
         }
 
         performance.stop();
@@ -182,10 +181,14 @@ export class FeesCollectorTasksService implements OnModuleInit {
                     this.startWeek,
                     this.endWeek,
                 ),
-                this.tokenCompute.tokenPriceDerivedUSD(token.identifier),
-                this.tokenCompute.tokenPriceDerivedEGLD(token.identifier),
-                this.tokenCompute.tokenPriceDerivedEGLD(
+                this.tokenCompute.computeTokenPriceDerivedUSD(token.identifier),
+                this.tokenCompute.computeTokenPriceDerivedEGLD(
+                    token.identifier,
+                    [],
+                ),
+                this.tokenCompute.computeTokenPriceDerivedEGLD(
                     this.baseToken.identifier,
+                    [],
                 ),
             ]);
 
@@ -296,8 +299,12 @@ export class FeesCollectorTasksService implements OnModuleInit {
     private async broadcastTransaction(
         swapTransaction: TransactionModel,
     ): Promise<BroadcastStatus> {
+        const currentNonce = await this.mxProxy.getAddressNonce(
+            this.accountSigner.getAddress().bech32(),
+        );
+
         const transaction = new Transaction({
-            nonce: BigInt(this.currentNonce),
+            nonce: BigInt(currentNonce),
             sender: swapTransaction.sender,
             receiver: scAddress.feesCollector,
             value: BigInt(swapTransaction.value),
@@ -319,8 +326,6 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
             const transactionOnNetwork =
                 await this.transactionWatcher.awaitCompleted(txHash);
-
-            this.currentNonce += 1;
 
             if (!transactionOnNetwork.status.isSuccessful()) {
                 this.log('error', `Swap transaction ${txHash} has failed`);

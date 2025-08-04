@@ -99,8 +99,9 @@ async function bootstrap() {
     }
 
     if (apiConfigService.isTaskRunnerModuleActive()) {
-        const pushNotificationsApp = await NestFactory.create(TaskRunnerModule);
-        await pushNotificationsApp.listen(5675, '0.0.0.0');
+        pubSubApp.listen();
+        const taskRunnerApp = await NestFactory.create(TaskRunnerModule);
+        await taskRunnerApp.listen(5675, '0.0.0.0');
     }
 }
 bootstrap();
