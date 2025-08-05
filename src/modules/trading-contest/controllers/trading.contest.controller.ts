@@ -13,13 +13,15 @@ import {
 import { TradingContestService } from '../services/trading.contest.service';
 import { TradingContest } from '../schemas/trading.contest.schema';
 import {
+    AggregationParamsDto,
     TradingContestLeaderboardDto,
-    TradingContestParticipantDto,
+    TradingContestParamsDto,
 } from '../dtos/contest.leaderboard.dto';
 import {
     ContestParticipantStats,
-    LeaderBoardEntry,
-    ContestParticipantTokenStats,
+    ContestStats,
+    ContestTokenStats,
+    LeaderBoardResponse,
 } from '../types';
 import { JwtOrNativeAuthGuard } from 'src/modules/auth/jwt.or.native.auth.guard';
 import { AuthUser } from 'src/modules/auth/auth.user';
@@ -41,6 +43,55 @@ export class TradingContestController {
         }
 
         return contest;
+    }
+
+    @UsePipes(
+        new ValidationPipe({
+            transform: true,
+            transformOptions: { enableImplicitConversion: true },
+        }),
+    )
+    @Post('/:uuid/stats')
+    async getContestStats(
+        @Param('uuid') uuid: string,
+        @Body() parameters: AggregationParamsDto,
+    ): Promise<ContestStats> {
+        const contest = await this.tradingContestService.getContestByUuid(
+            uuid,
+            { _id: 1 },
+        );
+
+        if (!contest) {
+            throw new HttpException('Contest not found', HttpStatus.NOT_FOUND);
+        }
+
+        return this.tradingContestService.getContestStats(contest, parameters);
+    }
+
+    @UsePipes(
+        new ValidationPipe({
+            transform: true,
+            transformOptions: { enableImplicitConversion: true },
+        }),
+    )
+    @Post('/:uuid/token-stats')
+    async getContestTokenStats(
+        @Param('uuid') uuid: string,
+        @Body() parameters: TradingContestParamsDto,
+    ): Promise<ContestTokenStats[]> {
+        const contest = await this.tradingContestService.getContestByUuid(
+            uuid,
+            { _id: 1 },
+        );
+
+        if (!contest) {
+            throw new HttpException('Contest not found', HttpStatus.NOT_FOUND);
+        }
+
+        return this.tradingContestService.getContestTokenStats(
+            contest,
+            parameters,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -71,7 +122,7 @@ export class TradingContestController {
     async contestLeaderboard(
         @Param('uuid') uuid: string,
         @Body() contestLeaderboardDto: TradingContestLeaderboardDto,
-    ): Promise<LeaderBoardEntry[]> {
+    ): Promise<LeaderBoardResponse> {
         const contest = await this.tradingContestService.getContestByUuid(
             uuid,
             { _id: 1 },
@@ -97,7 +148,7 @@ export class TradingContestController {
     async getContestParticipantStats(
         @Param('uuid') uuid: string,
         @Param('address') address: string,
-        @Body() parameters: TradingContestParticipantDto,
+        @Body() parameters: TradingContestParamsDto,
     ): Promise<ContestParticipantStats> {
         const contest = await this.tradingContestService.getContestByUuid(
             uuid,
@@ -125,8 +176,8 @@ export class TradingContestController {
     async getContestParticipantTokenStats(
         @Param('uuid') uuid: string,
         @Param('address') address: string,
-        @Body() parameters: TradingContestParticipantDto,
-    ): Promise<ContestParticipantTokenStats[]> {
+        @Body() parameters: TradingContestParamsDto,
+    ): Promise<ContestTokenStats[]> {
         const contest = await this.tradingContestService.getContestByUuid(
             uuid,
             { _id: 1 },

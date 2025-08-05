@@ -1,10 +1,10 @@
 import mongoose, { PipelineStage } from 'mongoose';
-import { TradingContestParticipantDto } from '../dtos/contest.leaderboard.dto';
+import { TradingContestParamsDto } from '../dtos/contest.leaderboard.dto';
 
 export const participantStatsPipeline = (
     contestId: string,
     participantId: string,
-    parameters: TradingContestParticipantDto,
+    parameters: TradingContestParamsDto,
 ): PipelineStage[] => {
     const {
         startTimestamp,

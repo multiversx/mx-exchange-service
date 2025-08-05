@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { IsValidUnixTime } from 'src/helpers/validators/unix.time.validator';
 
-class AggregationParamsDto {
+export class AggregationParamsDto {
     @IsOptional()
     @IsInt()
     @IsValidUnixTime()
@@ -42,7 +42,7 @@ export class TradingContestLeaderboardDto extends AggregationParamsDto {
     limit? = 25;
 }
 
-export class TradingContestParticipantDto extends AggregationParamsDto {
+export class TradingContestParamsDto extends AggregationParamsDto {
     @ValidateIf((o) => o.secondToken)
     @IsNotEmpty()
     @IsString()
