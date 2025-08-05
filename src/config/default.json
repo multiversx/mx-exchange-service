@@ -479,7 +479,7 @@
                 "default": 10000000
             },
             "updateTokens": 10000000,
-            "defaultMergeTokens": 8000000,
+            "defaultMergeTokens": 9000000,
             "mergeTokensMultiplier": 750000,
             "migrateOldTokens": 15000000,
             "admin": {
