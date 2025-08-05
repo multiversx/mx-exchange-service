@@ -19,6 +19,7 @@ import {
 } from '../dtos/contest.leaderboard.dto';
 import {
     ContestParticipantStats,
+    ContestStats,
     ContestTokenStats,
     LeaderBoardResponse,
 } from '../types';
@@ -54,7 +55,7 @@ export class TradingContestController {
     async getContestStats(
         @Param('uuid') uuid: string,
         @Body() parameters: AggregationParamsDto,
-    ): Promise<any> {
+    ): Promise<ContestStats> {
         const contest = await this.tradingContestService.getContestByUuid(
             uuid,
             { _id: 1 },
