@@ -16,6 +16,7 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class FeesCollectorComputeService {
@@ -30,6 +31,7 @@ export class FeesCollectorComputeService {
         private readonly energyService: EnergyService,
         private readonly tokenService: TokenService,
         private readonly tokenCompute: TokenComputeService,
+        private readonly apiService: MXApiService,
     ) {}
 
     async computeUserRewardsForWeek(
@@ -117,7 +119,7 @@ export class FeesCollectorComputeService {
         week: number,
     ): Promise<string> {
         const [lockedTokensPerBlock, blocksInWeek] = await Promise.all([
-            this.feesCollectorAbi.lockedTokensPerBlock(),
+            this.lockedTokensPerBlock(),
             this.computeBlocksInWeek(scAddress, week),
         ]);
 
@@ -278,5 +280,28 @@ export class FeesCollectorComputeService {
         );
 
         return totalUsdValue.toFixed();
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: Constants.oneHour() * 4,
+        localTtl: Constants.oneHour() * 3,
+    })
+    async lockedTokensPerBlock(): Promise<string> {
+        return this.computeLockedTokensPerBlock();
+    }
+
+    async computeLockedTokensPerBlock(): Promise<string> {
+        const [lockedTokensPerEpoch, stats] = await Promise.all([
+            this.feesCollectorAbi.lockedTokensPerEpoch(),
+            this.apiService.getStats(),
+        ]);
+
+        const lockedTokensPerBlock = new BigNumber(
+            lockedTokensPerEpoch,
+        ).dividedBy(stats.roundsPerEpoch);
+
+        return lockedTokensPerBlock.integerValue().toFixed();
     }
 }

@@ -22,14 +22,17 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
 import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { EnergyAbiService } from '../energy/services/energy.abi.service';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorTransaction: FeesCollectorTransactionService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly energyAbi: EnergyAbiService,
     ) {}
 
     @ResolveField()
@@ -61,14 +64,25 @@ export class FeesCollectorResolver {
         );
     }
 
+    @ResolveField(() => [EsdtTokenPayment])
+    async rewardsClaimed(
+        parent: FeesCollectorModel,
+    ): Promise<EsdtTokenPayment[]> {
+        return this.feesCollectorService.getAccumulatedFees(
+            parent.address,
+            parent.time.currentWeek,
+            parent.allTokens,
+        );
+    }
+
     @ResolveField()
     async lockedTokenId(): Promise<string> {
-        return this.feesCollectorAbi.lockedTokenID();
+        return this.energyAbi.lockedTokenID();
     }
 
     @ResolveField()
     async lockedTokensPerBlock(): Promise<string> {
-        return this.feesCollectorAbi.lockedTokensPerBlock();
+        return this.feesCollectorCompute.lockedTokensPerBlock();
     }
 
     @ResolveField(() => [String])
@@ -79,6 +93,23 @@ export class FeesCollectorResolver {
     @ResolveField(() => [String])
     async knownContracts(): Promise<string[]> {
         return this.feesCollectorAbi.knownContracts();
+    }
+
+    @ResolveField()
+    async lockedTokensPerEpoch(): Promise<string> {
+        return this.feesCollectorAbi.lockedTokensPerEpoch();
+    }
+
+    @ResolveField(() => [String])
+    async lastLockedTokensAddWeek(): Promise<number> {
+        return this.feesCollectorAbi.lastLockedTokensAddWeek();
+    }
+
+    @ResolveField(() => Boolean)
+    async allowExternalClaimRewards(
+        @Args('address') address: string,
+    ): Promise<boolean> {
+        return this.feesCollectorAbi.allowExternalClaimRewards(address);
     }
 
     @Query(() => FeesCollectorModel)
@@ -105,17 +136,16 @@ export class FeesCollectorResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel, {
-        description: 'Add or remove known tokens',
+        description: 'Remove reward tokens',
     })
-    async handleKnownTokens(
+    async removeRewardTokens(
         @Args('tokenIDs', { type: () => [String] }) tokenIDs: string[],
         @Args('remove', { nullable: true }) remove: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return this.feesCollectorTransaction.handleKnownTokens(
+        return this.feesCollectorTransaction.removeRewardTokens(
             user.address,
             tokenIDs,
-            remove,
         );
     }
 }

@@ -37,11 +37,23 @@ export class FeesCollectorModel {
     @Field(() => [EsdtTokenPayment])
     accumulatedFees: [EsdtTokenPayment];
 
+    @Field(() => [EsdtTokenPayment])
+    rewardsClaimed: [EsdtTokenPayment];
+
     @Field()
     lockedTokenId: string;
 
     @Field()
     lockedTokensPerBlock: string;
+
+    @Field()
+    lockedTokensPerEpoch: string;
+
+    @Field()
+    allowExternalClaimRewards: boolean;
+
+    @Field()
+    lastLockedTokensAddWeek: number;
 
     constructor(init?: Partial<FeesCollectorModel>) {
         Object.assign(this, init);

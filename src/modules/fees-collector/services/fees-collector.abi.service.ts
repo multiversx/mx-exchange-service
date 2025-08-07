@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import {
+    Address,
+    AddressValue,
     Interaction,
     TokenIdentifierValue,
     TypedValue,
@@ -48,35 +50,17 @@ export class FeesCollectorAbiService
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
-        remoteTtl: CacheTtlInfo.TokenID.remoteTtl,
-        localTtl: CacheTtlInfo.TokenID.localTtl,
-    })
-    async lockedTokenID(): Promise<string> {
-        return this.getLockedTokenIDRaw();
-    }
-
-    async getLockedTokenIDRaw(): Promise<string> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedTokenId();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
-    }
-
-    @ErrorLoggerAsync()
-    @GetOrSetCache({
-        baseKey: 'feesCollector',
         remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
         localTtl: CacheTtlInfo.ContractInfo.localTtl,
     })
-    async lockedTokensPerBlock(): Promise<string> {
-        return this.getLockedTokensPerBlockRaw();
+    async lockedTokensPerEpoch(): Promise<string> {
+        return this.getLockedTokensPerEpochRaw();
     }
 
-    async getLockedTokensPerBlockRaw(): Promise<string> {
+    async getLockedTokensPerEpochRaw(): Promise<string> {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
-            contract.methodsExplicit.getLockedTokensPerBlock();
+            contract.methodsExplicit.getLockedTokensPerEpoch();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
@@ -94,7 +78,7 @@ export class FeesCollectorAbiService
     async getAllTokensRaw(): Promise<string[]> {
         const contract = await this.mxProxy.getFeesCollectorContract();
         const interaction: Interaction =
-            contract.methodsExplicit.getAllTokens();
+            contract.methodsExplicit.getRewardTokens();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
@@ -117,5 +101,66 @@ export class FeesCollectorAbiService
         return response.firstValue
             .valueOf()
             .map((value: TypedValue) => value.valueOf().bech32());
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async lastLockedTokensAddWeek(): Promise<number> {
+        return this.getLastLockedTokensAddWeekRaw();
+    }
+
+    async getLastLockedTokensAddWeekRaw(): Promise<number> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getLastLockedTokensAddWeek();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async rewardsClaimed(week: number, token: string): Promise<string> {
+        return this.getAccumulatedFeesRaw(week, token);
+    }
+
+    async getRewardsClaimedRaw(week: number, token: string): Promise<string> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getRewardsClaimed([
+                new U32Value(new BigNumber(week)),
+                new TokenIdentifierValue(token),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().integerValue().toFixed();
+    }
+
+    @ErrorLoggerAsync()
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async allowExternalClaimRewards(address: string): Promise<boolean> {
+        return this.getAllowExternalClaimRewardsRaw(address);
+    }
+
+    async getAllowExternalClaimRewardsRaw(address: string): Promise<boolean> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getAllowExternalClaimRewards([
+                new AddressValue(Address.newFromBech32(address)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf();
     }
 }

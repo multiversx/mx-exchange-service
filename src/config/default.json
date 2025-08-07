@@ -494,8 +494,10 @@
         "feesCollector": {
             "baseClaimRewards": 20000000,
             "claimRewardsPerWeek": 25000000,
+            "redistributeRewards": 25000000,
             "addKnownContracts": 10000000,
-            "addKnownTokens": 10000000
+            "removeRewardTokens": 10000000,
+            "swapTokenToBaseToken": 25000000
         },
         "energyUpdate": {
             "updateFarmsEnergyForUser": 9500000
