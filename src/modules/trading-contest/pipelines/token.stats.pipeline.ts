@@ -1,10 +1,10 @@
 import mongoose, { PipelineStage } from 'mongoose';
-import { TradingContestParticipantDto } from '../dtos/contest.leaderboard.dto';
+import { TradingContestParamsDto } from '../dtos/contest.leaderboard.dto';
 
-export const participantTokenStatsPipeline = (
+export const tokenStatsPipeline = (
     contestId: string,
-    participantId: string,
-    parameters: TradingContestParticipantDto,
+    parameters: TradingContestParamsDto,
+    participantId?: string,
 ): PipelineStage[] => {
     const {
         startTimestamp,
@@ -17,9 +17,14 @@ export const participantTokenStatsPipeline = (
     const matchStage: PipelineStage.Match = {
         $match: {
             contest: new mongoose.Types.ObjectId(contestId),
-            participant: new mongoose.Types.ObjectId(participantId),
         },
     };
+
+    if (participantId) {
+        matchStage.$match.participant = new mongoose.Types.ObjectId(
+            participantId,
+        );
+    }
 
     if (firstToken && secondToken) {
         matchStage.$match.$or = [

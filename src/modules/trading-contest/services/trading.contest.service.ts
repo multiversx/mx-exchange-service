@@ -19,17 +19,19 @@ import { TradingContestParticipantDocument } from '../schemas/trading.contest.pa
 import { CreateTradingContestDto } from '../dtos/create.contest.dto';
 import { randomUUID } from 'node:crypto';
 import {
-    LeaderBoardEntry,
     RawSwapStat,
-    ContestParticipantTokenStats,
+    ContestTokenStats,
     ContestParticipantStats,
+    ContestStats,
+    LeaderBoardResponse,
 } from '../types';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { globalLeaderboardPipeline } from '../pipelines/global.leaderboard.pipeline';
-import { participantTokenStatsPipeline } from '../pipelines/participant.token.stats.pipeline';
+import { tokenStatsPipeline } from '../pipelines/token.stats.pipeline';
 import {
+    AggregationParamsDto,
     TradingContestLeaderboardDto,
-    TradingContestParticipantDto,
+    TradingContestParamsDto,
 } from '../dtos/contest.leaderboard.dto';
 import { participantStatsPipeline } from '../pipelines/participant.stats.pipeline';
 import { ESOperationsService } from 'src/services/elastic-search/services/es.operations.service';
@@ -37,6 +39,7 @@ import { Address } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { denominateAmount } from 'src/utils/token.converters';
+import { contestStatsPipeline } from '../pipelines/contest.stats.pipeline';
 
 @Injectable()
 export class TradingContestService {
@@ -163,8 +166,8 @@ export class TradingContestService {
     async getParticipantTokenStats(
         contest: TradingContestDocument,
         address: string,
-        parameters: TradingContestParticipantDto,
-    ): Promise<ContestParticipantTokenStats[]> {
+        parameters: TradingContestParamsDto,
+    ): Promise<ContestTokenStats[]> {
         const participant = await this.getContestParticipant(contest, address);
 
         if (!participant) {
@@ -177,11 +180,7 @@ export class TradingContestService {
         const aggregatedResults = await this.swapRepository
             .getModel()
             .aggregate<RawSwapStat>(
-                participantTokenStatsPipeline(
-                    contest._id,
-                    participant._id,
-                    parameters,
-                ),
+                tokenStatsPipeline(contest._id, parameters, participant._id),
             )
             .exec();
 
@@ -191,7 +190,7 @@ export class TradingContestService {
     async getParticipantStats(
         contest: TradingContestDocument,
         address: string,
-        parameters: TradingContestParticipantDto,
+        parameters: TradingContestParamsDto,
     ): Promise<ContestParticipantStats> {
         const participant = await this.getContestParticipant(contest, address);
 
@@ -235,21 +234,63 @@ export class TradingContestService {
     async getLeaderboard(
         contest: TradingContestDocument,
         parameters: TradingContestLeaderboardDto,
-    ): Promise<LeaderBoardEntry[]> {
-        const result = await this.swapRepository
+    ): Promise<LeaderBoardResponse> {
+        const [leaderboard] = await this.swapRepository
             .getModel()
-            .aggregate<LeaderBoardEntry>(
+            .aggregate<LeaderBoardResponse>(
                 globalLeaderboardPipeline(contest._id, parameters),
             )
             .allowDiskUse(true) // safety net for very large datasets
             .exec();
 
-        await this.participantRepository.getModel().populate(result, {
-            path: 'sender',
-            select: { address: 1, _id: 0 },
-        });
+        await this.participantRepository
+            .getModel()
+            .populate(leaderboard.results, {
+                path: 'sender',
+                select: { address: 1, _id: 0 },
+            });
+
+        leaderboard.currentOffset = parameters.offset;
+
+        return leaderboard;
+    }
+
+    async getContestStats(
+        contest: TradingContestDocument,
+        parameters: AggregationParamsDto,
+    ): Promise<ContestStats> {
+        const [result] = await this.swapRepository
+            .getModel()
+            .aggregate<ContestStats>(
+                contestStatsPipeline(contest._id, parameters),
+            )
+            .allowDiskUse(true)
+            .exec();
+
+        const swapTypeMap = [
+            'Fixed Input',
+            'Fixed Output',
+            'Multi Pair',
+            'Smart Swap',
+        ];
+        result.bySwapType.map(
+            (stats) => (stats.swapType = swapTypeMap[stats.swapType]),
+        );
 
         return result;
+    }
+
+    async getContestTokenStats(
+        contest: TradingContestDocument,
+        parameters: TradingContestParamsDto,
+    ): Promise<ContestTokenStats[]> {
+        const result = await this.swapRepository
+            .getModel()
+            .aggregate<RawSwapStat>(tokenStatsPipeline(contest._id, parameters))
+            .allowDiskUse(true)
+            .exec();
+
+        return this.transformSwapStats(result);
     }
 
     async createContest(
@@ -375,8 +416,8 @@ export class TradingContestService {
 
     private async transformSwapStats(
         rawStats: RawSwapStat[],
-    ): Promise<ContestParticipantTokenStats[]> {
-        const tokenMap: Record<string, ContestParticipantTokenStats> = {};
+    ): Promise<ContestTokenStats[]> {
+        const tokenMap: Record<string, ContestTokenStats> = {};
 
         for (const stat of rawStats) {
             const {
