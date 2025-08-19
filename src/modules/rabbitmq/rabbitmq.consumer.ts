@@ -104,7 +104,6 @@ export class RabbitMqConsumer {
         exchange: process.env.RABBITMQ_EXCHANGE,
     })
     async consumeEvents(rawEvents: any) {
-        this.logger.info('Start Processing events...');
         if (!rawEvents.events) {
             return;
         }
@@ -367,7 +366,6 @@ export class RabbitMqConsumer {
                 Time: timestamp,
             });
         }
-        this.logger.info('Finish Processing events...');
     }
 
     async getFilterAddresses(): Promise<void> {
