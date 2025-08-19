@@ -11,17 +11,14 @@ import {
     AddressValue,
     BigUIntValue,
     Field,
-    Struct,
     TokenIdentifierType,
     TokenIdentifierValue,
     TypedValue,
-    U64Value,
     VariadicType,
     VariadicValue,
 } from '@multiversx/sdk-core';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
-import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import BigNumber from 'bignumber.js';
 
 @Injectable()
@@ -165,22 +162,11 @@ export class FeesCollectorTransactionService {
                 gasLimit,
                 function: 'swapTokenToBaseToken',
                 arguments: [
-                    new Struct(EgldOrEsdtTokenPayment.getStructure(), [
-                        new Field(
-                            new TokenIdentifierValue(
-                                tokenToSend.tokenIdentifier,
-                            ),
-                            'token_identifier',
-                        ),
-                        new Field(
-                            new U64Value(new BigNumber(tokenToSend.tokenNonce)),
-                            'token_nonce',
-                        ),
-                        new Field(
-                            new BigUIntValue(new BigNumber(tokenToSend.amount)),
-                            'amount',
-                        ),
-                    ]),
+                    new TokenIdentifierValue(tokenToSend.tokenIdentifier),
+                    new Field(
+                        new BigUIntValue(new BigNumber(tokenToSend.amount)),
+                        'amount',
+                    ),
                     VariadicValue.fromItems(...swapArgs),
                 ],
             }),
