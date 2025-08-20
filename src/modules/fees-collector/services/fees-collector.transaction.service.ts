@@ -10,7 +10,6 @@ import {
     AddressType,
     AddressValue,
     BigUIntValue,
-    Field,
     TokenIdentifierType,
     TokenIdentifierValue,
     TypedValue,
@@ -163,10 +162,7 @@ export class FeesCollectorTransactionService {
                 function: 'swapTokenToBaseToken',
                 arguments: [
                     new TokenIdentifierValue(tokenToSend.tokenIdentifier),
-                    new Field(
-                        new BigUIntValue(new BigNumber(tokenToSend.amount)),
-                        'amount',
-                    ),
+                    new BigUIntValue(new BigNumber(tokenToSend.amount)),
                     VariadicValue.fromItems(...swapArgs),
                 ],
             }),
