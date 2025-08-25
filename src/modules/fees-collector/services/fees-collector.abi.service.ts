@@ -130,7 +130,7 @@ export class FeesCollectorAbiService
         localTtl: CacheTtlInfo.ContractBalance.localTtl,
     })
     async rewardsClaimed(week: number, token: string): Promise<string> {
-        return this.getAccumulatedFeesRaw(week, token);
+        return this.getRewardsClaimedRaw(week, token);
     }
 
     async getRewardsClaimedRaw(week: number, token: string): Promise<string> {
@@ -162,5 +162,31 @@ export class FeesCollectorAbiService
             ]);
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'feesCollector',
+        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
+        localTtl: CacheTtlInfo.ContractBalance.localTtl,
+    })
+    async tokenAvailableAmount(week: number, token: string): Promise<string> {
+        return this.getTokenAvailableAmountRaw(week, token);
+    }
+
+    async getTokenAvailableAmountRaw(
+        week: number,
+        token: string,
+    ): Promise<string> {
+        const contract = await this.mxProxy.getFeesCollectorContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getTokenAvailableAmount([
+                new U32Value(new BigNumber(week)),
+                new TokenIdentifierValue(token),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().integerValue().toFixed();
     }
 }
