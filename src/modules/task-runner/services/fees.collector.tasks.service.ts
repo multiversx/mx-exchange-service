@@ -5,10 +5,7 @@ import {
     TransactionWatcher,
 } from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
-import {
-    RedisCacheService,
-    RedlockService,
-} from '@multiversx/sdk-nestjs-cache';
+import { RedlockService } from '@multiversx/sdk-nestjs-cache';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -23,7 +20,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
 import { AutoRouterTransactionService } from 'src/modules/auto-router/services/auto-router.transactions.service';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
-import { FeesCollectorComputeService } from 'src/modules/fees-collector/services/fees-collector.compute.service';
+import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fees-collector.abi.service';
 import { FeesCollectorService } from 'src/modules/fees-collector/services/fees-collector.service';
 import { FeesCollectorTransactionService } from 'src/modules/fees-collector/services/fees-collector.transaction.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -39,8 +36,8 @@ enum BroadcastStatus {
     skip = 'skip',
 }
 
-const WAIT_MIN = 2_000;
-const WAIT_MAX = 15_000;
+const WAIT_MIN = 5_000;
+const WAIT_MAX = 25_000;
 
 @Injectable()
 export class FeesCollectorTasksService implements OnModuleInit {
@@ -48,16 +45,14 @@ export class FeesCollectorTasksService implements OnModuleInit {
     private accountSigner: UserSigner;
     private transactionWatcher: TransactionWatcher;
     private isInitialised = false;
-    private startWeek: number;
-    private endWeek: number;
+    private currentWeek: number;
 
     constructor(
         private readonly redLockService: RedlockService,
-        private readonly redisCacheService: RedisCacheService,
         private readonly autoRouterService: AutoRouterService,
         private readonly autoRouterTransaction: AutoRouterTransactionService,
         private readonly energyService: EnergyService,
-        private readonly feesCollectorCompute: FeesCollectorComputeService,
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorTransaction: FeesCollectorTransactionService,
         private readonly tokenCompute: TokenComputeService,
@@ -95,10 +90,10 @@ export class FeesCollectorTasksService implements OnModuleInit {
         });
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_4_HOURS)
     @LockAndRetry({
-        lockKey: 'swapTokens',
-        lockName: FeesCollectorTasksService.name,
+        lockKey: FeesCollectorTasksService.name,
+        lockName: 'swapTokens',
     })
     async swapTokens(): Promise<void> {
         if (!this.isInitialised) {
@@ -106,17 +101,16 @@ export class FeesCollectorTasksService implements OnModuleInit {
             return;
         }
 
-        const performance = new PerformanceProfiler();
-
         this.log('info', 'Start swaps task for tokens in fees collector');
+
+        const performance = new PerformanceProfiler();
 
         const [feesCollector, tokens] = await Promise.all([
             this.feesCollectorService.feesCollector(scAddress.feesCollector),
             this.mxProxy.getAddressTokens(scAddress.feesCollector),
         ]);
 
-        this.startWeek = feesCollector.startWeek;
-        this.endWeek = feesCollector.endWeek;
+        this.currentWeek = feesCollector.time.currentWeek;
 
         const txStats: Record<BroadcastStatus, number> = {
             success: 0,
@@ -148,6 +142,7 @@ export class FeesCollectorTasksService implements OnModuleInit {
         }
 
         const amount = await this.computeAmountForSwap(token);
+
         if (amount === '0') {
             return BroadcastStatus.skip;
         }
@@ -170,37 +165,23 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
     private async computeAmountForSwap(token: EsdtToken): Promise<string> {
         try {
-            const [
-                availableAmount,
-                tokenPriceUSD,
-                tokenPriceEGLD,
-                baseTokenPriceEGLD,
-            ] = await Promise.all([
-                this.feesCollectorCompute.computeTokenAvailableAmount(
-                    token,
-                    this.startWeek,
-                    this.endWeek,
+            const [availableAmount, tokenPriceUSD] = await Promise.all([
+                this.feesCollectorAbi.tokenAvailableAmount(
+                    this.currentWeek,
+                    token.identifier,
                 ),
                 this.tokenCompute.computeTokenPriceDerivedUSD(token.identifier),
-                this.tokenCompute.computeTokenPriceDerivedEGLD(
-                    token.identifier,
-                    [],
-                ),
-                this.tokenCompute.computeTokenPriceDerivedEGLD(
-                    this.baseToken.identifier,
-                    [],
-                ),
             ]);
 
             const availableAmountUSD = computeValueUSD(
-                availableAmount.toFixed(),
+                availableAmount,
                 token.decimals,
                 tokenPriceUSD,
             );
 
             this.log(
                 'info',
-                `Available : ${availableAmount.toFixed()} ${token.identifier}` +
+                `Available : ${availableAmount} ${token.identifier}` +
                     ` | $${availableAmountUSD.toFixed()}`,
             );
 
@@ -211,34 +192,32 @@ export class FeesCollectorTasksService implements OnModuleInit {
             ) {
                 this.log(
                     'warn',
-                    `Threshold not met. Skipping ${token.identifier}`,
+                    `Available USD amount below minimum. Skipping swap for ${token.identifier}`,
                 );
                 return '0';
             }
 
-            let inputTokenDenominatedAmount = availableAmount.times(
-                `1e-${token.decimals}`,
-            );
-
             if (
-                availableAmountUSD.gt(
+                availableAmountUSD.lte(
                     constantsConfig.FEES_COLLECTOR_MAX_SWAP_AMOUNT_USD,
                 )
             ) {
-                inputTokenDenominatedAmount = new BigNumber(
-                    constantsConfig.FEES_COLLECTOR_MAX_SWAP_AMOUNT_USD,
-                ).dividedBy(tokenPriceUSD);
+                return availableAmount;
             }
 
-            const egldAmount =
-                inputTokenDenominatedAmount.times(tokenPriceEGLD);
+            this.log(
+                'warn',
+                `Available USD amount above maximum. Capping swap amount for ${token.identifier}`,
+            );
 
-            const baseTokenAmount = egldAmount
-                .dividedBy(baseTokenPriceEGLD)
-                .multipliedBy(`1e${this.baseToken.decimals}`)
+            const cappedInputTokenAmount = new BigNumber(
+                constantsConfig.FEES_COLLECTOR_MAX_SWAP_AMOUNT_USD,
+            )
+                .dividedBy(tokenPriceUSD)
+                .multipliedBy(`1e${token.decimals}`)
                 .integerValue();
 
-            return baseTokenAmount.toFixed();
+            return cappedInputTokenAmount.toFixed();
         } catch (error) {
             this.log(
                 'error',
@@ -252,17 +231,17 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
     private async getSwapTransaction(
         token: EsdtToken,
-        amountOut: string,
+        amountIn: string,
     ): Promise<TransactionModel | undefined> {
         try {
             const route = await this.autoRouterService.swap({
                 tokenInID: token.identifier,
                 tokenOutID: this.baseToken.identifier,
                 tolerance: constantsConfig.FEES_COLLECTOR_SWAP_TOLERANCE,
-                amountOut,
+                amountIn,
             });
 
-            const args = this.autoRouterTransaction.multiPairFixedOutputSwaps({
+            const args = this.autoRouterTransaction.multiPairFixedInputSwaps({
                 swapType: route.swapType,
                 tokenInID: route.tokenInID,
                 tokenOutID: route.tokenOutID,
@@ -274,11 +253,11 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
             const transaction =
                 await this.feesCollectorTransaction.swapTokenToBaseToken(
-                    this.accountSigner.getAddress().bech32(),
+                    this.accountSigner.getAddress().toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: token.identifier,
                         tokenNonce: 0,
-                        amount: '1',
+                        amount: amountIn,
                     }),
                     args,
                 );
@@ -288,7 +267,7 @@ export class FeesCollectorTasksService implements OnModuleInit {
             this.log(
                 'error',
                 `Encountered an error while computing swap transaction for token ${token.identifier} |` +
-                    ` expected output : ${amountOut} ${this.baseToken.identifier}`,
+                    ` input amount : ${amountIn} ${this.baseToken.identifier}`,
             );
             this.logger.error(error);
 
