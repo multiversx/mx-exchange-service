@@ -42,6 +42,8 @@ import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 import { CurrencyConverterModule } from './modules/currency-converter/currency.converter.module';
 import { ConditionalModule } from '@nestjs/config';
 import { ComplexityModule } from './complexity.module';
+import { TradingContestModule } from './modules/trading-contest/trading.contest.module';
+import { ApiConfigService } from './helpers/api.config.service';
 
 @Module({
     imports: [
@@ -49,7 +51,10 @@ import { ComplexityModule } from './complexity.module';
         GraphQLModule.forRootAsync<ApolloDriverConfig>({
             driver: ApolloDriver,
             imports: [CommonAppModule],
-            useFactory: async (logger: LoggerService) => ({
+            useFactory: async (
+                logger: LoggerService,
+                apiConfig: ApiConfigService,
+            ) => ({
                 autoSchemaFile: 'schema.gql',
                 installSubscriptionHandlers: true,
                 parseOptions: {
@@ -75,8 +80,9 @@ import { ComplexityModule } from './complexity.module';
                     };
                 },
                 fieldResolverEnhancers: ['guards'],
+                playground: apiConfig.isGraphqlPlaygroundEnabled(),
             }),
-            inject: [WINSTON_MODULE_NEST_PROVIDER],
+            inject: [WINSTON_MODULE_NEST_PROVIDER, ApiConfigService],
         }),
         RouterModule,
         AutoRouterModule,
@@ -110,6 +116,7 @@ import { ComplexityModule } from './complexity.module';
             ComplexityModule,
             (env: NodeJS.ProcessEnv) => env['ENABLE_COMPLEXITY'] === 'true',
         ),
+        TradingContestModule,
     ],
     providers: [QueryMetricsPlugin],
 })

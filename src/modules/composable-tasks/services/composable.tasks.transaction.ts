@@ -49,7 +49,6 @@ export class ComposableTasksTransactionService {
         tasks: ComposableTask[],
     ): Promise<TransactionModel> {
         let gasLimit: number = gasConfig.composableTasks.default;
-
         for (const task of tasks) {
             switch (task.type) {
                 case ComposableTaskType.WRAP_EGLD:
@@ -65,6 +64,26 @@ export class ComposableTasksTransactionService {
                     const routes = Math.trunc(task.arguments.length / 4);
                     gasLimit +=
                         routes * gasConfig.router.multiPairSwapMultiplier;
+                    break;
+                case ComposableTaskType.SMART_SWAP:
+                    let hopsIndex = 2;
+                    let totalHops = 0;
+                    const operations = Number(
+                        `0x${task.arguments[0].valueOf().toString('hex')}`,
+                    );
+
+                    for (let i = 0; i < operations; i++) {
+                        const routeHops = Number(
+                            `0x${task.arguments[hopsIndex]
+                                .valueOf()
+                                .toString('hex')}`,
+                        );
+                        totalHops += routeHops;
+                        hopsIndex += 2 + routeHops * 4;
+                    }
+
+                    gasLimit +=
+                        totalHops * gasConfig.router.multiPairSwapMultiplier;
                 default:
                     break;
             }
@@ -184,6 +203,21 @@ export class ComposableTasksTransactionService {
                 amount: minimumValue,
             }),
             [swapTask, unwrapTask],
+        );
+    }
+
+    async setSmartSwapFeePercentage(
+        sender: string,
+        fee: number,
+    ): Promise<TransactionModel> {
+        return this.mxProxy.getComposableTasksContractTransaction(
+            new TransactionOptions({
+                sender: sender,
+                chainID: mxConfig.chainID,
+                gasLimit: gasConfig.composableTasks.default,
+                function: 'setSmartSwapFeePercentage',
+                arguments: [new BigUIntValue(new BigNumber(fee))],
+            }),
         );
     }
 

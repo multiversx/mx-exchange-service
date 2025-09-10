@@ -37,6 +37,7 @@ import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.comp
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { SmartRouterServiceProvider } from '../mocks/smart.router.service.mock';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
+import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -93,6 +94,7 @@ describe('AutoRouterService', () => {
                 PairFilteringService,
                 SmartRouterServiceProvider,
                 SmartRouterEvaluationServiceProvider,
+                ComposableTasksAbiServiceProvider,
             ],
             exports: [],
         }).compile();
@@ -149,7 +151,7 @@ describe('AutoRouterService', () => {
                 ],
                 tolerance: 0.01,
                 maxPriceDeviationPercent: 1,
-                tokensPriceDeviationPercent: undefined,
+                tokensPriceDeviationPercent: 0.00309939099071823,
             }),
         );
     });
@@ -199,7 +201,7 @@ describe('AutoRouterService', () => {
                 ],
                 tolerance: 0.01,
                 maxPriceDeviationPercent: 1,
-                tokensPriceDeviationPercent: undefined,
+                tokensPriceDeviationPercent: 0.00319876216682394,
             }),
         );
     });
@@ -273,7 +275,7 @@ describe('AutoRouterService', () => {
                 ],
                 tolerance: 0.01,
                 maxPriceDeviationPercent: 1,
-                tokensPriceDeviationPercent: undefined,
+                tokensPriceDeviationPercent: 0.004001066100470686,
             }),
         );
     });
@@ -315,7 +317,7 @@ describe('AutoRouterService', () => {
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
-                gasLimit: 40200000,
+                gasLimit: 39000000,
                 data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNzExNzJhY2UwMjZiMGM0QEBAMDJAMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDcxMTcyYWNlMDI2YjBjNA==',
                 chainID: 'T',
                 version: 2,
@@ -370,7 +372,7 @@ describe('AutoRouterService', () => {
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
-                gasLimit: 75200000,
+                gasLimit: 59000000,
                 data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDZmYjEwYmMzNTYxNjUzMEA2MzZmNmQ3MDZmNzM2NTU0NjE3MzZiNzNAMDAwMDAwMDQ0NTQ3NGM0NDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODA2ZGU5N2UwOWJkMTgwMDBAMDNAMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEzMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGM1NzQ1NDc0YzQ0MmQzMTMyMzMzNDM1MzYwMDAwMDAwNTkwN2Y1ZjAxOWQwMDAwMDAyMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTIwMDAwMDAxNDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzQwMDAwMDAwYTRkNDU1ODJkMzEzMjMzMzQzNTM2MDAwMDAwMDgwNmU3Nzk5ZDM3YzFjMDAwQDAxQA==',
                 chainID: 'T',
                 version: 2,
@@ -380,6 +382,48 @@ describe('AutoRouterService', () => {
                 guardianSignature: undefined,
             },
         ]);
+    });
+
+    it('should throw an error when spread is too big', async () => {
+        await expect(
+            service.getTransactions(
+                senderAddress,
+                new AutoRouteModel({
+                    swapType: 1,
+                    tokenInID: 'USDC-123456',
+                    tokenOutID: 'MEX-123456',
+                    tokenInExchangeRate: '99201792616073289490',
+                    tokenOutExchangeRate: '10080',
+                    tokenInExchangeRateDenom: '99.20179261607328949',
+                    tokenOutExchangeRateDenom: '0.01008',
+                    tokenInPriceUSD: '1',
+                    tokenOutPriceUSD: '0.01',
+                    amountIn: '10181267',
+                    amountOut: '1000000000000000000000',
+                    intermediaryAmounts: [
+                        '10080463',
+                        '1004013040121365097',
+                        '1000000000000000000000',
+                    ],
+                    tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
+                    pairs: [
+                        new PairModel({
+                            address: Address.newFromHex(
+                                '0000000000000000000000000000000000000000000000000000000000000013',
+                            ).toBech32(),
+                        }),
+                        new PairModel({
+                            address: Address.newFromHex(
+                                '0000000000000000000000000000000000000000000000000000000000000012',
+                            ).toBech32(),
+                        }),
+                    ],
+                    tolerance: 0.01,
+                    maxPriceDeviationPercent: 0.004,
+                    tokensPriceDeviationPercent: 0.004001066100470686,
+                }),
+            ),
+        ).rejects.toThrow('Spread too big!');
     });
 
     it('should get a fixed output multi swap tx + unwrap tx', async () => {
@@ -425,7 +469,7 @@ describe('AutoRouterService', () => {
                 receiverUsername: undefined,
                 senderUsername: undefined,
                 gasPrice: 1000000000,
-                gasLimit: 75200000,
+                gasLimit: 59000000,
                 data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDcwY2VmOWY1ZWRmY2YyOEA2MzZmNmQ3MDZmNzM2NTU0NjE3MzZiNzNAMDAwMDAwMDQ0NTQ3NGM0NDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODA2ZjA1YjU5ZDNiMjAwMDBAMDNAMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEzMDAwMDAwMTU3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzQwMDAwMDAwYzU3NDU0NzRjNDQyZDMxMzIzMzM0MzUzNjAwMDAwMDA1OTJhZmQ4YjAyZjAwMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMjAwMDAwMDE1NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NGY3NTc0NzA3NTc0MDAwMDAwMGE0ZDQ1NTgyZDMxMzIzMzM0MzUzNjAwMDAwMDA4MDZmMDViNTlkM2IyMDAwMEAwMUA=',
                 chainID: 'T',
                 version: 2,

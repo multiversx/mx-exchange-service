@@ -41,6 +41,7 @@ import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { SmartRouterServiceProvider } from 'src/modules/auto-router/mocks/smart.router.service.mock';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
+import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -89,6 +90,7 @@ describe('PositionCreatorTransaction', () => {
                 MXApiServiceProvider,
                 SmartRouterServiceProvider,
                 SmartRouterEvaluationServiceProvider,
+                ComposableTasksAbiServiceProvider,
             ],
         }).compile();
     });
@@ -562,7 +564,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit: 4200000,
+                    gasLimit: 3000000,
                     data: encodeTransactionData('wrapEgld'),
                     chainID: 'T',
                     version: 2,
@@ -1065,7 +1067,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit: 4200000,
+                    gasLimit: 3000000,
                     data: encodeTransactionData('wrapEgld'),
                     chainID: 'T',
                     version: 2,
@@ -1467,7 +1469,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit: 4200000,
+                    gasLimit: 3000000,
                     data: encodeTransactionData('wrapEgld'),
                     chainID: 'T',
                     version: 2,
@@ -1763,7 +1765,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit: 4200000,
+                    gasLimit: 3000000,
                     data: encodeTransactionData('wrapEgld'),
                     chainID: 'T',
                     version: 2,
@@ -2178,7 +2180,7 @@ describe('PositionCreatorTransaction', () => {
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
-                    gasLimit: 4200000,
+                    gasLimit: 3000000,
                     data: encodeTransactionData('wrapEgld'),
                     chainID: 'T',
                     version: 2,

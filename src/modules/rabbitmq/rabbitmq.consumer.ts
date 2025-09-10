@@ -15,6 +15,7 @@ import {
     AddLiquidityProxyEvent,
     ClaimMultiEvent,
     ClaimRewardsProxyEvent,
+    COMPOSABLE_TASKS_EVENTS,
     CompoundRewardsProxyEvent,
     CreatePairEvent,
     DepositEvent,
@@ -33,6 +34,7 @@ import {
     GOVERNANCE_EVENTS,
     METABONDING_EVENTS,
     MetabondingEvent,
+    MultiPairSwapEvent,
     PAIR_EVENTS,
     PairProxyEvent,
     PairSwapEnabledEvent,
@@ -42,6 +44,7 @@ import {
     RemoveLiquidityEvent,
     ROUTER_EVENTS,
     SIMPLE_LOCK_ENERGY_EVENTS,
+    SmartSwapEvent,
     SwapEvent,
     TOKEN_UNSTAKE_EVENTS,
     TRANSACTION_EVENTS,
@@ -66,6 +69,7 @@ import { governanceContractsAddresses } from '../../utils/governance';
 import { GovernanceHandlerService } from './handlers/governance.handler.service';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { StakingHandlerService } from './handlers/staking.handler.service';
+import { TradingContestSwapHandlerService } from '../trading-contest/services/trading.contest.swap.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -91,6 +95,7 @@ export class RabbitMqConsumer {
         private readonly analyticsWrite: AnalyticsWriteService,
         private readonly governanceHandler: GovernanceHandlerService,
         private readonly remoteConfig: RemoteConfigGetterService,
+        private readonly tradingContestSwapHandlerService: TradingContestSwapHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -99,7 +104,6 @@ export class RabbitMqConsumer {
         exchange: process.env.RABBITMQ_EXCHANGE,
     })
     async consumeEvents(rawEvents: any) {
-        this.logger.info('Start Processing events...');
         if (!rawEvents.events) {
             return;
         }
@@ -148,11 +152,14 @@ export class RabbitMqConsumer {
             let eventData: any[];
             switch (rawEvent.name) {
                 case PAIR_EVENTS.SWAP:
+                    const swapEvent = new SwapEvent(rawEvent);
                     [eventData, timestamp] =
-                        await this.swapHandler.handleSwapEvents(
-                            new SwapEvent(rawEvent),
-                        );
+                        await this.swapHandler.handleSwapEvents(swapEvent);
                     this.updateIngestData(eventData);
+                    await this.tradingContestSwapHandlerService.handleSwapEvent(
+                        swapEvent,
+                        eventData[swapEvent.address],
+                    );
                     break;
                 case PAIR_EVENTS.ADD_LIQUIDITY:
                     [eventData, timestamp] =
@@ -245,6 +252,17 @@ export class RabbitMqConsumer {
                         new PairSwapEnabledEvent(rawEvent),
                     );
                     break;
+                case ROUTER_EVENTS.MULTI_PAIR_SWAP:
+                    const multiPairSwapEvent = new MultiPairSwapEvent(rawEvent);
+                    const swapData =
+                        await this.routerHandler.handleMultiPairSwapEvent(
+                            multiPairSwapEvent,
+                        );
+                    await this.tradingContestSwapHandlerService.handleSwapEvent(
+                        multiPairSwapEvent,
+                        swapData,
+                    );
+                    break;
                 case METABONDING_EVENTS.STAKE_LOCKED_ASSET:
                     await this.wsMetabondingHandler.handleMetabondingEvent(
                         new MetabondingEvent(rawEvent),
@@ -328,6 +346,17 @@ export class RabbitMqConsumer {
                         rawEvent.name,
                     );
                     break;
+                case COMPOSABLE_TASKS_EVENTS.SMART_SWAP:
+                    const smartSwapEvent = new SmartSwapEvent(rawEvent);
+                    const smartSwapData =
+                        await this.routerHandler.handleMultiPairSwapEvent(
+                            smartSwapEvent,
+                        );
+                    await this.tradingContestSwapHandlerService.handleSwapEvent(
+                        smartSwapEvent,
+                        smartSwapData,
+                    );
+                    break;
             }
         }
 
@@ -337,7 +366,6 @@ export class RabbitMqConsumer {
                 Time: timestamp,
             });
         }
-        this.logger.info('Finish Processing events...');
     }
 
     async getFilterAddresses(): Promise<void> {
@@ -352,6 +380,7 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.tokenUnstake);
         this.filterAddresses.push(scAddress.escrow);
         this.filterAddresses.push(...governanceContractsAddresses());
+        this.filterAddresses.push(scAddress.composableTasks);
 
         const stakeAddresses = await this.remoteConfig.getStakingAddresses();
         this.filterAddresses.push(...stakeAddresses);
@@ -379,6 +408,17 @@ export class RabbitMqConsumer {
                 this.data[series] = {};
             }
             for (const measure of Object.keys(eventData[series])) {
+                const measureValue = new BigNumber(eventData[series][measure]);
+
+                if (measureValue.isNaN() || !measureValue.isFinite()) {
+                    this.logger.warn('Skipping ingest for non numeric value', {
+                        series,
+                        measure,
+                        value: eventData[series][measure],
+                    });
+                    continue;
+                }
+
                 if (
                     measure.toLowerCase().includes('volume') ||
                     measure.toLowerCase().includes('fees')
@@ -391,6 +431,10 @@ export class RabbitMqConsumer {
                 } else {
                     this.data[series][measure] = eventData[series][measure];
                 }
+            }
+
+            if (Object.keys(this.data[series]).length === 0) {
+                delete this.data[series];
             }
         }
     }

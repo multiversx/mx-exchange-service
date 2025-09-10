@@ -101,7 +101,7 @@
             "createPair": 35000000,
             "issueToken": 75000000,
             "setLocalRoles": 75000000,
-            "multiPairSwapMultiplier": 35000000,
+            "multiPairSwapMultiplier": 27500000,
             "swapEnableByUser": 35000000,
             "admin": {
                 "setState": 22000000,
@@ -239,7 +239,7 @@
                             "buybackAndBurn": 48300000
                         }
                     },
-                    "claimRewards": 30000000
+                    "claimRewards": 27000000
                 },
                 "deprecated": {
                     "exitFarm": {
@@ -412,10 +412,10 @@
             },
             "unstakeFarm": 25000000,
             "unbondFarm": 10000000,
-            "claimRewards": 40000000,
+            "claimRewards": 25000000,
             "claimBoostedRewards": 30000000,
             "claimRewardsWithNewValue": 7500000,
-            "compoundRewards": 40000000,
+            "compoundRewards": 25000000,
             "mergeTokens": 20000000,
             "admin": {
                 "setState": 20000000,
@@ -479,7 +479,8 @@
                 "default": 10000000
             },
             "updateTokens": 10000000,
-            "defaultMergeTokens": 12000000,
+            "defaultMergeTokens": 9000000,
+            "mergeTokensMultiplier": 750000,
             "migrateOldTokens": 15000000,
             "admin": {
                 "issueLockedToken": 60000000,
@@ -497,7 +498,7 @@
             "addKnownTokens": 10000000
         },
         "energyUpdate": {
-            "updateFarmsEnergyForUser": 17000000
+            "updateFarmsEnergyForUser": 9500000
         },
         "tokenUnstake": {
             "claimUnlockedTokens": {
@@ -540,7 +541,7 @@
             "default": 1000000
         },
         "lockedAssetCreate": 5000000,
-        "wrapeGLD": 4200000,
+        "wrapeGLD": 3000000,
         "claimLockedAssets": 45500000
     },
     "abi": {
@@ -613,6 +614,7 @@
         "MAX_USER_NFTS": 10000,
         "MAX_SWAP_ROUTE_DEPTH": 4,
         "MAX_SMART_SWAP_ROUTES": 4,
+        "MIN_SMART_SWAP_DELTA_PERCENTAGE": 0.5,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",

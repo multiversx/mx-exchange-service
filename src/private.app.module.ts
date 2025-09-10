@@ -13,6 +13,8 @@ import { SmartRouterEvaluationController } from './modules/smart-router-evaluati
 import { PushNotificationsController } from './modules/push-notifications/push.notifications.controller';
 import { XPortalApiService } from './services/multiversx-communication/mx.xportal.api.service';
 import { PushNotificationsModule } from './modules/push-notifications/push.notifications.module';
+import { TradingContestAdminController } from './modules/trading-contest/controllers/trading.contest.admin.controller';
+import { TradingContestModule } from './modules/trading-contest/trading.contest.module';
 
 @Module({
     imports: [
@@ -23,13 +25,15 @@ import { PushNotificationsModule } from './modules/push-notifications/push.notif
         DynamicModuleUtils.getCacheModule(),
         SmartRouterEvaluationModule,
         PushNotificationsModule,
+        TradingContestModule,
     ],
     controllers: [
         MetricsController,
         TokenController,
         RemoteConfigController,
         SmartRouterEvaluationController,
-        PushNotificationsController
+        PushNotificationsController,
+        TradingContestAdminController,
     ],
     providers: [ESTransactionsService, XPortalApiService],
 })

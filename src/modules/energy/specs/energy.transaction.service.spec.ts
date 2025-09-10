@@ -225,6 +225,21 @@ describe('EnergyTransactionService', () => {
                 nonce: 1,
                 amount: '1000000000000000000',
             }),
+        ]);
+
+        expect(transaction).toEqual(undefined);
+    });
+
+    it('should return merge tokens transaction', async () => {
+        const service: EnergyTransactionService =
+            module.get<EnergyTransactionService>(EnergyTransactionService);
+
+        const transaction = await service.mergeTokens(senderAddress, [
+            new InputTokenModel({
+                tokenID: 'XMEX-123456',
+                nonce: 1,
+                amount: '1000000000000000000',
+            }),
             new InputTokenModel({
                 tokenID: 'XMEX-123456',
                 nonce: 2,
@@ -240,7 +255,7 @@ describe('EnergyTransactionService', () => {
                     `MultiESDTNFTTransfer@${scAddress.simpleLockEnergy}@02@XMEX-123456@01@1000000000000000000@XMEX-123456@02@2000000000000000000@mergeTokens`,
                 ),
                 gasPrice: 1000000000,
-                gasLimit: gasConfig.simpleLockEnergy.defaultMergeTokens * 2,
+                gasLimit: gasConfig.simpleLockEnergy.defaultMergeTokens,
                 value: '0',
                 receiver: senderAddress,
                 sender: senderAddress,

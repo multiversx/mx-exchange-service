@@ -44,12 +44,12 @@ export class GenericSetterService {
         remoteTtl: number,
         localTtl?: number,
     ): Promise<string> {
-        const cachedValue = await this.cachingService.getRemote(cacheKey);
+        const shouldUpdateTtl = await this.shouldUpdateRemoteTtl(
+            cacheKey,
+            value,
+        );
 
-        if (
-            cachedValue !== undefined &&
-            parseCachedNullOrUndefined(cachedValue) === value
-        ) {
+        if (shouldUpdateTtl) {
             if (typeof value === 'undefined' || value === null) {
                 remoteTtl = CacheTtlInfo.NullValue.remoteTtl;
             }
@@ -82,5 +82,31 @@ export class GenericSetterService {
             this.logger.error('baseKey was not set');
         }
         return generateCacheKeyFromParams(this.baseKey, ...args);
+    }
+
+    private async shouldUpdateRemoteTtl(
+        cacheKey: string,
+        value: any,
+    ): Promise<boolean> {
+        const cachedValue = await this.cachingService.getRemote(cacheKey);
+
+        if (cachedValue === undefined) {
+            return false;
+        }
+
+        const parsedRemote = parseCachedNullOrUndefined(cachedValue);
+        if (parsedRemote !== value) {
+            return false;
+        }
+
+        const locallyCachedValue = this.cachingService.getLocal(cacheKey);
+
+        if (locallyCachedValue === undefined) {
+            return true;
+        }
+
+        const parsedLocal = parseCachedNullOrUndefined(locallyCachedValue);
+
+        return parsedRemote === parsedLocal;
     }
 }
