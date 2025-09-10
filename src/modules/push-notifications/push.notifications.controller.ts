@@ -1,4 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Post,
+    UseGuards,
+    UsePipes,
+    ValidationPipe,
+} from '@nestjs/common';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
 import {
     XPortalApiService,
@@ -10,6 +17,7 @@ import {
     NotificationType,
 } from './models/push.notifications.types';
 import { PushNotificationsEnergyService } from './services/push.notifications.energy.service';
+import { CustomPushNotificationPayload } from './models/custom.push.notification.payload';
 
 interface PushNotificationPayload {
     addresses: string[];
@@ -34,6 +42,40 @@ export class PushNotificationsController {
             ...pushNotificationsConfig[payload.type],
         });
         return result === XPortalPushNotificationsResult.SUCCESS;
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @UsePipes(
+        new ValidationPipe({
+            transform: true,
+            transformOptions: { enableImplicitConversion: true },
+        }),
+    )
+    @Post('/push-notifications/send-custom')
+    async sendCustomPushNotifications(
+        @Body() payload: CustomPushNotificationPayload,
+    ): Promise<NotificationResultCount> {
+        const { content, notificationKey, targetEpoch, addresses } = payload;
+
+        if (!addresses || addresses.length === 0) {
+            return this.pushNotificationsEnergyService.customNotificationForUsersWithEnergy(
+                content,
+                notificationKey,
+                targetEpoch,
+            );
+        }
+
+        const result = await this.xPortalApiService.sendPushNotifications({
+            addresses,
+            chainId: pushNotificationsConfig.options.chainId,
+            ...content,
+        });
+
+        if (result === XPortalPushNotificationsResult.SUCCESS) {
+            return { successful: addresses.length, failed: 0 };
+        }
+
+        return { successful: 0, failed: addresses.length };
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
