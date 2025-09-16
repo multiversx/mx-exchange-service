@@ -68,12 +68,6 @@ export class MXProxyService {
         return response.shardID;
     }
 
-    async getAddressNonce(address: string): Promise<number> {
-        return (
-            await this.getService().getAccount(Address.newFromBech32(address))
-        ).nonce;
-    }
-
     async getRouterSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.routerAddress,

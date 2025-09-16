@@ -298,12 +298,12 @@ export class FeesCollectorTasksService implements OnModuleInit {
     private async broadcastTransaction(
         swapTransaction: TransactionModel,
     ): Promise<BroadcastStatus> {
-        const currentNonce = await this.mxProxy.getAddressNonce(
+        const { nonce } = await this.mxApi.getAccountStats(
             this.accountSigner.getAddress().bech32(),
         );
 
         const transaction = new Transaction({
-            nonce: BigInt(currentNonce),
+            nonce: BigInt(nonce),
             sender: swapTransaction.sender,
             receiver: scAddress.feesCollector,
             value: BigInt(swapTransaction.value),
