@@ -82,7 +82,6 @@ export class PairPersistenceService {
     async populatePairsComputedFields(): Promise<void> {
         await this.updatePairsTokensPrice();
         await this.updatePairsLiquidityValuesUSD();
-        // await this.updatePairsAnalytics();
     }
 
     async populatePairModel(pairMetadata: PairMetadata): Promise<PairModel> {
@@ -304,85 +303,6 @@ export class PairPersistenceService {
             });
         }
 
-        // pairs.forEach(async (pair) => {
-        //     const {
-        //         firstTokenPriceUSD,
-        //         firstTokenLockedValueUSD,
-        //         secondTokenPriceUSD,
-        //         secondTokenLockedValueUSD,
-        //         lockedValueUSD,
-        //         liquidityPoolTokenPriceUSD,
-        //     } = await this.computeLiquidityValuesUSD(
-        //         pair,
-        //         usdcPrice,
-        //         commonTokenIDs,
-        //     );
-
-        //     console.log({
-        //         firstTokenPriceUSD,
-        //         firstTokenLockedValueUSD,
-        //         secondTokenPriceUSD,
-        //         secondTokenLockedValueUSD,
-        //         lockedValueUSD,
-        //         liquidityPoolTokenPriceUSD,
-        //     });
-
-        // let firstTokenPriceUSD = pair.firstToken.price;
-        // let secondTokenPriceUSD = pair.secondToken.price;
-
-        // if (pair.firstToken.identifier === constantsConfig.USDC_TOKEN_ID) {
-        //     firstTokenPriceUSD = usdcPrice.toString();
-        //     secondTokenPriceUSD = new BigNumber(pair.secondTokenPrice)
-        //         .times(usdcPrice)
-        //         .toFixed();
-        // }
-
-        // if (pair.secondToken.identifier === constantsConfig.USDC_TOKEN_ID) {
-        //     secondTokenPriceUSD = usdcPrice.toString();
-        //     firstTokenPriceUSD = new BigNumber(pair.firstTokenPrice)
-        //         .times(usdcPrice)
-        //         .toFixed();
-        // }
-
-        // const firstTokenLockedValueUSD = new BigNumber(pair.info.reserves0)
-        //     .multipliedBy(`1e-${pair.firstToken.decimals}`)
-        //     .multipliedBy(firstTokenPriceUSD)
-        //     .toFixed();
-
-        // const secondTokenLockedValueUSD = new BigNumber(pair.info.reserves1)
-        //     .multipliedBy(`1e-${pair.secondToken.decimals}`)
-        //     .multipliedBy(secondTokenPriceUSD)
-        //     .toFixed();
-
-        // pair.firstTokenPriceUSD = firstTokenPriceUSD;
-        // pair.secondTokenPriceUSD = secondTokenPriceUSD;
-        // pair.firstTokenLockedValueUSD = firstTokenLockedValueUSD;
-        // pair.secondTokenLockedValueUSD = secondTokenLockedValueUSD;
-
-        // pair.lockedValueUSD = this.computeLockedValueUSD(
-        //     pair,
-        //     commonTokenIDs,
-        // );
-
-        // pair.liquidityPoolTokenPriceUSD = this.computeLpTokenPriceUSD(pair);
-
-        //     bulkOps.push({
-        //         updateOne: {
-        //             filter: { _id: pair._id },
-        //             update: {
-        //                 $set: {
-        //                     firstTokenPriceUSD,
-        //                     firstTokenLockedValueUSD,
-        //                     secondTokenPriceUSD,
-        //                     secondTokenLockedValueUSD,
-        //                     lockedValueUSD,
-        //                     liquidityPoolTokenPriceUSD,
-        //                 },
-        //             },
-        //         },
-        //     });
-        // });
-
         await this.bulkUpdatePairs(bulkOps);
 
         await this.tokenPersistence.bulkUpdatePairTokensLiquidityUSD(
@@ -391,7 +311,6 @@ export class PairPersistenceService {
     }
 
     async updatePairsAnalytics(): Promise<void> {
-        // const bulkOps: AnyBulkWriteOperation<PairDocument>[] = [];
         const pairs = await this.getFilteredPairs(
             {},
             {
@@ -456,14 +375,6 @@ export class PairPersistenceService {
             .multipliedBy(`1e-${pair.secondToken.decimals}`)
             .toFixed();
 
-        // const firstTokenPrice = quote(
-        //     new BigNumber(`1e${pair.firstToken.decimals}`).toFixed(),
-        //     pair.info.reserves0,
-        //     pair.info.reserves1,
-        // )
-        //     .multipliedBy(`1e-${pair.secondToken.decimals}`)
-        //     .toFixed();
-
         const secondTokenPrice = this.getEquivalentForLiquidity(
             pair,
             pair.secondToken.identifier,
@@ -471,14 +382,6 @@ export class PairPersistenceService {
         )
             .multipliedBy(`1e-${pair.firstToken.decimals}`)
             .toFixed();
-
-        // const secondTokenPrice = quote(
-        //     new BigNumber(`1e${pair.secondToken.decimals}`).toFixed(),
-        //     pair.info.reserves1,
-        //     pair.info.reserves0,
-        // )
-        //     .multipliedBy(`1e-${pair.firstToken.decimals}`)
-        //     .toFixed();
 
         return { firstTokenPrice, secondTokenPrice };
     }
@@ -626,7 +529,6 @@ export class PairPersistenceService {
         return !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
     }
 
-    // async computeTotalLockedValueUSD(): Promise<string> {
     async getTotalLockedValueUSD(): Promise<string> {
         const [result] = await this.pairRepository
             .getModel()
