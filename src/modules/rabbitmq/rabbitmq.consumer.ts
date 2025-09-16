@@ -70,6 +70,7 @@ import { GovernanceHandlerService } from './handlers/governance.handler.service'
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { StakingHandlerService } from './handlers/staking.handler.service';
 import { TradingContestSwapHandlerService } from '../trading-contest/services/trading.contest.swap.handler.service';
+import { PersistenceEventHandlerService } from './handlers/persistence.event.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -96,6 +97,7 @@ export class RabbitMqConsumer {
         private readonly governanceHandler: GovernanceHandlerService,
         private readonly remoteConfig: RemoteConfigGetterService,
         private readonly tradingContestSwapHandlerService: TradingContestSwapHandlerService,
+        private readonly persistenceEventHandler: PersistenceEventHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -150,6 +152,7 @@ export class RabbitMqConsumer {
                 topics: rawEvent.topics,
             });
             let eventData: any[];
+            let persistenceEventData: any[];
             switch (rawEvent.name) {
                 case PAIR_EVENTS.SWAP:
                     const swapEvent = new SwapEvent(rawEvent);
@@ -160,6 +163,16 @@ export class RabbitMqConsumer {
                         swapEvent,
                         eventData[swapEvent.address],
                     );
+                    persistenceEventData =
+                        await this.persistenceEventHandler.handleSwapEvents(
+                            swapEvent,
+                        );
+
+                    console.log('Regular handler data', eventData['factory']);
+                    console.log(
+                        'Persistence handler data',
+                        persistenceEventData['factory'],
+                    );
                     break;
                 case PAIR_EVENTS.ADD_LIQUIDITY:
                     [eventData, timestamp] =
@@ -167,6 +180,18 @@ export class RabbitMqConsumer {
                             new AddLiquidityEvent(rawEvent),
                         );
                     this.updateIngestData(eventData);
+                    persistenceEventData =
+                        await this.persistenceEventHandler.handleLiquidityEvent(
+                            new AddLiquidityEvent(rawEvent),
+                        );
+                    console.log(
+                        'Regular liquidity handler data',
+                        eventData['factory'],
+                    );
+                    console.log(
+                        'Persistence liquidity handler data',
+                        persistenceEventData['factory'],
+                    );
                     break;
                 case PAIR_EVENTS.REMOVE_LIQUIDITY:
                     [eventData, timestamp] =
@@ -174,6 +199,18 @@ export class RabbitMqConsumer {
                             new RemoveLiquidityEvent(rawEvent),
                         );
                     this.updateIngestData(eventData);
+                    persistenceEventData =
+                        await this.persistenceEventHandler.handleLiquidityEvent(
+                            new RemoveLiquidityEvent(rawEvent),
+                        );
+                    console.log(
+                        'Regular r_liquidity handler data',
+                        eventData['factory'],
+                    );
+                    console.log(
+                        'Persistence r_liquidity handler data',
+                        persistenceEventData['factory'],
+                    );
                     break;
                 case FARM_EVENTS.ENTER_FARM:
                     if (await this.isStakingAddress(rawEvent.address)) {
@@ -246,9 +283,15 @@ export class RabbitMqConsumer {
                         new CreatePairEvent(rawEvent),
                     );
                     await this.getFilterAddresses();
+                    await this.persistenceEventHandler.handleCreatePairEvent(
+                        new CreatePairEvent(rawEvent),
+                    );
                     break;
                 case ROUTER_EVENTS.PAIR_SWAP_ENABLED:
                     await this.routerHandler.handlePairSwapEnabledEvent(
+                        new PairSwapEnabledEvent(rawEvent),
+                    );
+                    await this.persistenceEventHandler.handlePairSwapEnabledEvent(
                         new PairSwapEnabledEvent(rawEvent),
                     );
                     break;
