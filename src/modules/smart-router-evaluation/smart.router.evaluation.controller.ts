@@ -17,7 +17,7 @@ export class SmartRouterEvaluationController {
         private readonly smartRouterEvaluationService: SmartRouterEvaluationService,
     ) {}
 
-    @UseGuards(JwtOrNativeAdminGuard)
+    // @UseGuards(JwtOrNativeAdminGuard)
     @Get('/swaps')
     async getComparisonSwapRoutes(
         @Query(
@@ -28,12 +28,17 @@ export class SmartRouterEvaluationController {
         )
         params: SwapsEvaluationParams,
     ): Promise<{ totalCount: number; swaps: SwapRoute[] }> {
-        return this.smartRouterEvaluationService.getComparisonSwapRoutes(
-            params,
-        );
+        const result =
+            await this.smartRouterEvaluationService.getComparisonSwapRoutes(
+                params,
+            );
+
+        // await this.smartRouterEvaluationService.getValue(result.swaps);
+
+        return result;
     }
 
-    @UseGuards(JwtOrNativeAdminGuard)
+    // @UseGuards(JwtOrNativeAdminGuard)
     @Get('/swaps/tokens')
     async getDistinctTokens(): Promise<{
         tokensIn: string[];

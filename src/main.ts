@@ -68,6 +68,11 @@ async function bootstrap() {
 
     if (apiConfigService.isPrivateAppActive()) {
         const privateApp = await NestFactory.create(PrivateAppModule);
+
+        privateApp.enableCors({
+            origin: '*',
+        });
+
         await privateApp.listen(
             apiConfigService.getPrivateAppPort(),
             apiConfigService.getPrivateAppListenAddress(),

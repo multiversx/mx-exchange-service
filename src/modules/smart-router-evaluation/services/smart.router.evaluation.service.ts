@@ -15,6 +15,8 @@ import { SwapsEvaluationParams } from '../dtos/swaps.evaluation.params';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { BaseEsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { mxConfig } from 'src/config';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 
 @Injectable()
 export class SmartRouterEvaluationService {
@@ -25,6 +27,7 @@ export class SmartRouterEvaluationService {
     constructor(
         private readonly swapRouteRepository: SwapRouteRepositoryService,
         private readonly tokenService: TokenService,
+        private readonly tokenCompute: TokenComputeService,
     ) {}
 
     async addFixedInputSwapComparison(
@@ -197,6 +200,70 @@ export class SmartRouterEvaluationService {
             .exec();
 
         return { swaps: result, totalCount };
+    }
+
+    async getValue(swaps: SwapRoute[]): Promise<void> {
+        const { allTokensMetadata } = await this.getDistinctTokens();
+        const allTokensPrices =
+            await this.tokenCompute.getAllTokensPriceDerivedUSD(
+                allTokensMetadata.map((meta) => meta.identifier),
+            );
+
+        const amounts = new Map<string, BigNumber>();
+
+        for (const swap of swaps) {
+            if (!amounts.has(swap.tokenOut)) {
+                amounts.set(swap.tokenOut, new BigNumber(0));
+            }
+
+            let current = amounts.get(swap.tokenOut);
+            current = current.plus(swap.outputDelta);
+
+            amounts.set(swap.tokenOut, current);
+        }
+
+        console.log('----------==========----------');
+        console.log(`${swaps.length} swaps`);
+        // console.log(allTokensMetadata);
+        let total = new BigNumber(0);
+        for (const [token, amount] of amounts.entries()) {
+            const index = allTokensMetadata.findIndex((meta) => {
+                if (token === 'EGLD') {
+                    return meta.identifier === 'WEGLD-bd4d79';
+                }
+
+                return meta.identifier === token;
+            });
+
+            if (index === -1) {
+                console.log('Could not find token', token);
+                continue;
+            }
+
+            const price = allTokensPrices[index];
+            const tokenMetadata = allTokensMetadata[index];
+
+            const denominatedAmount = denominateAmount(
+                amount.integerValue().toFixed(),
+                tokenMetadata.decimals,
+            );
+
+            const usdValue = computeValueUSD(
+                amount.integerValue().toFixed(),
+                tokenMetadata.decimals,
+                price,
+            );
+
+            console.log(
+                `${token} | $${usdValue.toFixed(
+                    5,
+                )} | ${denominatedAmount.toFixed(5)}`,
+            );
+
+            total = total.plus(usdValue);
+        }
+
+        console.log(`TOTAL : $${total.toFixed(5)}`);
     }
 
     async getDistinctTokens(): Promise<{
