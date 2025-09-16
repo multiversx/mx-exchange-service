@@ -25,6 +25,7 @@ import { FeesCollectorService } from 'src/modules/fees-collector/services/fees-c
 import { FeesCollectorTransactionService } from 'src/modules/fees-collector/services/fees-collector.transaction.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
@@ -57,6 +58,7 @@ export class FeesCollectorTasksService implements OnModuleInit {
         private readonly feesCollectorTransaction: FeesCollectorTransactionService,
         private readonly tokenCompute: TokenComputeService,
         private readonly mxProxy: MXProxyService,
+        private readonly mxApi: MXApiService,
         private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -97,17 +99,21 @@ export class FeesCollectorTasksService implements OnModuleInit {
     })
     async swapTokens(): Promise<void> {
         if (!this.isInitialised) {
-            this.log('warn', 'Service not initialised, aborting run');
+            this.logger.warn('Service not initialised, aborting run', {
+                context: FeesCollectorTasksService.name,
+            });
             return;
         }
 
-        this.log('info', 'Start swaps task for tokens in fees collector');
+        this.logger.info('Start swaps task for tokens in fees collector', {
+            context: FeesCollectorTasksService.name,
+        });
 
         const performance = new PerformanceProfiler();
 
         const [feesCollector, tokens] = await Promise.all([
             this.feesCollectorService.feesCollector(scAddress.feesCollector),
-            this.mxProxy.getAddressTokens(scAddress.feesCollector),
+            this.mxApi.getTokensForUser(scAddress.feesCollector),
         ]);
 
         this.currentWeek = feesCollector.time.currentWeek;
@@ -129,10 +135,12 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
         performance.stop();
 
-        this.log(
-            'info',
+        this.logger.info(
             `Finished performing swaps for ${tokens.length} tokens in ${performance.duration}ms ` +
                 `| ${JSON.stringify(txStats)}`,
+            {
+                context: FeesCollectorTasksService.name,
+            },
         );
     }
 
@@ -154,9 +162,11 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
         const status = await this.broadcastTransaction(transaction);
         if (status === BroadcastStatus.error) {
-            this.log(
-                'error',
+            this.logger.error(
                 `Encountered an error while broadcasting swap transaction for ${token.identifier}`,
+                {
+                    context: FeesCollectorTasksService.name,
+                },
             );
         }
 
@@ -179,10 +189,12 @@ export class FeesCollectorTasksService implements OnModuleInit {
                 tokenPriceUSD,
             );
 
-            this.log(
-                'info',
+            this.logger.info(
                 `Available : ${availableAmount} ${token.identifier}` +
                     ` | $${availableAmountUSD.toFixed()}`,
+                {
+                    context: FeesCollectorTasksService.name,
+                },
             );
 
             if (
@@ -190,9 +202,11 @@ export class FeesCollectorTasksService implements OnModuleInit {
                     constantsConfig.FEES_COLLECTOR_MIN_SWAP_AMOUNT_USD,
                 )
             ) {
-                this.log(
-                    'warn',
+                this.logger.warn(
                     `Available USD amount below minimum. Skipping swap for ${token.identifier}`,
+                    {
+                        context: FeesCollectorTasksService.name,
+                    },
                 );
                 return '0';
             }
@@ -205,9 +219,11 @@ export class FeesCollectorTasksService implements OnModuleInit {
                 return availableAmount;
             }
 
-            this.log(
-                'warn',
+            this.logger.warn(
                 `Available USD amount above maximum. Capping swap amount for ${token.identifier}`,
+                {
+                    context: FeesCollectorTasksService.name,
+                },
             );
 
             const cappedInputTokenAmount = new BigNumber(
@@ -219,9 +235,11 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
             return cappedInputTokenAmount.toFixed();
         } catch (error) {
-            this.log(
-                'error',
+            this.logger.error(
                 `Encountered an error while computing swap amount for token ${token.identifier}`,
+                {
+                    context: FeesCollectorTasksService.name,
+                },
             );
             this.logger.error(error);
 
@@ -264,10 +282,12 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
             return transaction;
         } catch (error) {
-            this.log(
-                'error',
+            this.logger.error(
                 `Encountered an error while computing swap transaction for token ${token.identifier} |` +
                     ` input amount : ${amountIn} ${this.baseToken.identifier}`,
+                {
+                    context: FeesCollectorTasksService.name,
+                },
             );
             this.logger.error(error);
 
@@ -307,38 +327,22 @@ export class FeesCollectorTasksService implements OnModuleInit {
                 await this.transactionWatcher.awaitCompleted(txHash);
 
             if (!transactionOnNetwork.status.isSuccessful()) {
-                this.log('error', `Swap transaction ${txHash} has failed`);
+                this.logger.error(`Swap transaction ${txHash} has failed`, {
+                    context: FeesCollectorTasksService.name,
+                });
 
                 return BroadcastStatus.fail;
             }
 
-            this.log('info', `Swap transaction ${txHash} was successful`);
+            this.logger.info(`Swap transaction ${txHash} was successful`, {
+                context: FeesCollectorTasksService.name,
+            });
 
             return BroadcastStatus.success;
         } catch (error) {
             this.logger.error(error);
 
             return BroadcastStatus.error;
-        }
-    }
-
-    private log(type: 'info' | 'warn' | 'error', message: string): void {
-        switch (type) {
-            case 'info':
-                this.logger.info(message, {
-                    context: FeesCollectorTasksService.name,
-                });
-                break;
-            case 'warn':
-                this.logger.warn(message, {
-                    context: FeesCollectorTasksService.name,
-                });
-                break;
-            case 'error':
-                this.logger.error(message, {
-                    context: FeesCollectorTasksService.name,
-                });
-                break;
         }
     }
 }

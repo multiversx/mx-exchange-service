@@ -75,30 +75,6 @@ export class MXProxyService {
         ).nonce;
     }
 
-    async getAddressTokens(address: string): Promise<EsdtToken[]> {
-        const addressTokens =
-            await this.getService().getFungibleTokensOfAccount(
-                Address.newFromBech32(address),
-            );
-
-        const tokensDefinition = await Promise.all(
-            addressTokens.map((token) =>
-                this.getService().getDefinitionOfFungibleToken(
-                    token.identifier,
-                ),
-            ),
-        );
-
-        return addressTokens.map(
-            (token, index) =>
-                new EsdtToken({
-                    identifier: token.identifier,
-                    balance: token.balance.toFixed(),
-                    decimals: tokensDefinition[index].decimals,
-                }),
-        );
-    }
-
     async getRouterSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.routerAddress,
