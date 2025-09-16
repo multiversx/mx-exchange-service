@@ -72,6 +72,27 @@ export class FeesCollectorService {
         return accumulatedFees;
     }
 
+    async getRewardsClaimed(
+        week: number,
+        allTokens: string[],
+    ): Promise<EsdtTokenPayment[]> {
+        const claimAmounts = await Promise.all(
+            allTokens.map((token) =>
+                this.feesCollectorAbi.rewardsClaimed(week, token),
+            ),
+        );
+
+        return allTokens.map(
+            (token, index) =>
+                new EsdtTokenPayment({
+                    tokenID: token,
+                    tokenType: 0,
+                    amount: claimAmounts[index],
+                    nonce: 0,
+                }),
+        );
+    }
+
     async feesCollector(scAddress: string): Promise<FeesCollectorModel> {
         const [allToken, currentWeek] = await Promise.all([
             this.feesCollectorAbi.allTokens(),
