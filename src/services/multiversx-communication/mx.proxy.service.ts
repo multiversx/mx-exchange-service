@@ -18,7 +18,6 @@ import { proxyVersion } from 'src/utils/proxy.utils';
 import { GovernanceType } from '../../utils/governance';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { TransactionModel } from 'src/models/transaction.model';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @Injectable()
 export class MXProxyService {
