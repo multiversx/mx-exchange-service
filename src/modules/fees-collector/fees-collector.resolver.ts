@@ -68,8 +68,7 @@ export class FeesCollectorResolver {
     async rewardsClaimed(
         parent: FeesCollectorModel,
     ): Promise<EsdtTokenPayment[]> {
-        return this.feesCollectorService.getAccumulatedFees(
-            parent.address,
+        return this.feesCollectorService.getRewardsClaimed(
             parent.time.currentWeek,
             parent.allTokens,
         );
@@ -140,7 +139,6 @@ export class FeesCollectorResolver {
     })
     async removeRewardTokens(
         @Args('tokenIDs', { type: () => [String] }) tokenIDs: string[],
-        @Args('remove', { nullable: true }) remove: boolean,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.feesCollectorTransaction.removeRewardTokens(
