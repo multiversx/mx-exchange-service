@@ -17,8 +17,6 @@ import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { scAddress } from 'src/config';
 
 @Injectable()
 export class FeesCollectorComputeService {
@@ -305,52 +303,5 @@ export class FeesCollectorComputeService {
         ).dividedBy(stats.roundsPerEpoch);
 
         return lockedTokensPerBlock.integerValue().toFixed();
-    }
-
-    async computeTokenAvailableAmount(
-        token: EsdtToken,
-        startWeek: number,
-        endWeek: number,
-    ): Promise<BigNumber> {
-        let remainingClaimableTokenAmount = new BigNumber(0);
-        const scTokenBalance = new BigNumber(token.balance);
-
-        for (let week = startWeek; week <= endWeek; week++) {
-            const [accumulatedFees, totalRewards, rewardsClaimed] =
-                await Promise.all([
-                    this.feesCollectorAbi.accumulatedFees(
-                        week,
-                        token.identifier,
-                    ),
-                    this.weeklyRewardsSplittingAbi.totalRewardsForWeek(
-                        scAddress.feesCollector,
-                        week,
-                    ),
-                    this.feesCollectorAbi.rewardsClaimed(
-                        week,
-                        token.identifier,
-                    ),
-                ]);
-
-            const tokenReward = totalRewards.find(
-                (v) => v.tokenID === token.identifier,
-            );
-
-            let weekAmount = new BigNumber(accumulatedFees);
-            if (tokenReward !== undefined) {
-                weekAmount = weekAmount.plus(tokenReward.amount);
-            }
-
-            weekAmount = weekAmount.minus(rewardsClaimed);
-
-            remainingClaimableTokenAmount =
-                remainingClaimableTokenAmount.plus(weekAmount);
-        }
-
-        if (scTokenBalance.lte(remainingClaimableTokenAmount)) {
-            return new BigNumber(0);
-        }
-
-        return scTokenBalance.minus(remainingClaimableTokenAmount);
     }
 }
