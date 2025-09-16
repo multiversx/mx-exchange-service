@@ -21,12 +21,12 @@ export class GqlAdminGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const ctx = GqlExecutionContext.create(context);
         const { req } = ctx.getContext();
-        this.logger.log(
-            `request header: requestIP: ${req.ip}, request: ${JSON.stringify(
-                req.headers,
-            )}`,
-            GqlAdminGuard.name,
-        );
+        // this.logger.log(
+        //     `request header: requestIP: ${req.ip}, request: ${JSON.stringify(
+        //         req.headers,
+        //     )}`,
+        //     GqlAdminGuard.name,
+        // );
 
         const authorization: string = req.headers['authorization'];
         if (!authorization) {
