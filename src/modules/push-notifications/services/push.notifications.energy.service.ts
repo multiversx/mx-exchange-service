@@ -2,6 +2,7 @@ import {
     AccountType,
     NotificationType,
     NotificationResultCount,
+    NotificationConfig,
 } from '../models/push.notifications.types';
 import { Inject, Injectable } from '@nestjs/common';
 import { PushNotificationsService } from './push.notifications.service';
@@ -55,6 +56,50 @@ export class PushNotificationsEnergyService {
 
         this.logger.info(
             `Fees collector rewards notification completed. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
+            { context: PushNotificationsEnergyService.name },
+        );
+
+        return {
+            successful: successfulNotifications,
+            failed: failedNotifications,
+        };
+    }
+
+    async customNotificationForUsersWithEnergy(
+        notificationConfig: NotificationConfig,
+        notificationKey: string,
+        targetEpoch: number,
+    ): Promise<NotificationResultCount> {
+        this.logger.info(
+            `Started sending custom notification for users with energy in epoch: ${targetEpoch}`,
+            { context: PushNotificationsEnergyService.name },
+        );
+
+        let successfulNotifications = 0;
+        let failedNotifications = 0;
+
+        await this.accountsEnergyElasticService.getAccountsByEnergyAmount(
+            targetEpoch,
+            'gt',
+            async (items: AccountType[]) => {
+                const addresses = items.map(
+                    (item: AccountType) => item.address,
+                );
+
+                const result =
+                    await this.pushNotificationsService.sendNotificationsInBatches(
+                        addresses,
+                        notificationConfig,
+                        notificationKey,
+                    );
+
+                successfulNotifications += result.successful;
+                failedNotifications += result.failed;
+            },
+        );
+
+        this.logger.info(
+            `Finished sending custom notification. Successful: ${successfulNotifications}, Failed: ${failedNotifications}`,
             { context: PushNotificationsEnergyService.name },
         );
 

@@ -10,22 +10,27 @@ export type SwapEventPairData = {
     feesUSD: string;
 };
 
-export type LeaderBoardEntry = {
+export type ContestSwapsStats = {
+    totalVolumeUSD: number;
+    totalFeesUSD?: number;
+    tradeCount?: number;
+};
+
+export type ContestParticipantStats = ContestSwapsStats & {
+    rank: number;
+};
+
+type LeaderBoardEntry = ContestParticipantStats & {
     sender: { address: string };
-    totalVolumeUSD: number;
-    tradeCount: number;
-    totalFeesUSD: number;
-    rank: number;
 };
 
-export type ContestParticipantStats = {
-    totalVolumeUSD: number;
-    tradeCount: number;
-    totalFeesUSD: number;
-    rank: number;
+export type LeaderBoardResponse = {
+    results: LeaderBoardEntry[];
+    totalCount: number;
+    currentOffset: number;
 };
 
-export type ContestParticipantTokenStats = {
+export type ContestTokenStats = {
     tokenID: string;
     buyVolumeUSD: number;
     buyAmount: string;
@@ -42,4 +47,27 @@ export type RawSwapStat = {
     tokenOutAmount: string;
     totalVolumeUSD: number;
     tradeCount?: number;
+};
+
+export type ContestSwapsExtendedStats = ContestSwapsStats & {
+    minTradeUSD: number;
+    maxTradeUSD: number;
+    averageTradeUSD?: number;
+};
+
+export type ContestStatsBySwapType = ContestSwapsExtendedStats & {
+    swapType: 'Fixed Input' | 'Fixed Output' | 'Multi Pair' | 'Smart Swap';
+};
+
+export type ContestDailyStats = ContestSwapsExtendedStats & {
+    distinctParticipants: number;
+    date: string;
+};
+
+export type ContestStats = {
+    bySwapType: ContestStatsBySwapType[];
+    daily: ContestDailyStats[];
+    summary: ContestSwapsExtendedStats & {
+        distinctParticipants: number;
+    };
 };

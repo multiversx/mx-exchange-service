@@ -104,7 +104,6 @@ export class RabbitMqConsumer {
         exchange: process.env.RABBITMQ_EXCHANGE,
     })
     async consumeEvents(rawEvents: any) {
-        this.logger.info('Start Processing events...');
         if (!rawEvents.events) {
             return;
         }
@@ -367,7 +366,6 @@ export class RabbitMqConsumer {
                 Time: timestamp,
             });
         }
-        this.logger.info('Finish Processing events...');
     }
 
     async getFilterAddresses(): Promise<void> {
@@ -410,6 +408,17 @@ export class RabbitMqConsumer {
                 this.data[series] = {};
             }
             for (const measure of Object.keys(eventData[series])) {
+                const measureValue = new BigNumber(eventData[series][measure]);
+
+                if (measureValue.isNaN() || !measureValue.isFinite()) {
+                    this.logger.warn('Skipping ingest for non numeric value', {
+                        series,
+                        measure,
+                        value: eventData[series][measure],
+                    });
+                    continue;
+                }
+
                 if (
                     measure.toLowerCase().includes('volume') ||
                     measure.toLowerCase().includes('fees')
@@ -422,6 +431,10 @@ export class RabbitMqConsumer {
                 } else {
                     this.data[series][measure] = eventData[series][measure];
                 }
+            }
+
+            if (Object.keys(this.data[series]).length === 0) {
+                delete this.data[series];
             }
         }
     }
