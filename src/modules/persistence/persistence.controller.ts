@@ -13,6 +13,11 @@ export class PersistenceController {
         return this.persistenceInit.populateDb();
     }
 
+    @Get('/refresh-reserves')
+    async refreshPairReserves(): Promise<PopulateStatus> {
+        return this.persistenceInit.refreshPairReserves();
+    }
+
     @Get('/status')
     getStatus(): PopulateStatus {
         return this.persistenceInit.getStatus();
