@@ -14,11 +14,10 @@ import { RouterAbiService } from './router.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import BigNumber from 'bignumber.js';
 import { CollectionType } from 'src/modules/common/collection.type';
-import { PairsMetadataBuilder } from 'src/modules/pair/services/pair.metadata.builder';
-import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { CacheService } from 'src/services/caching/cache.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
+import { PairPersistenceService } from 'src/modules/pair/persistence/services/pair.persistence.service';
 
 @Injectable()
 export class RouterService {
@@ -26,9 +25,9 @@ export class RouterService {
         private readonly pairAbi: PairAbiService,
         private readonly routerAbi: RouterAbiService,
         private readonly pairCompute: PairComputeService,
-        private readonly pairFilteringService: PairFilteringService,
         private readonly cacheService: CacheService,
         private readonly pairService: PairService,
+        private readonly pairPersistence: PairPersistenceService,
     ) {}
 
     async getFactory(): Promise<FactoryModel> {
@@ -37,6 +36,7 @@ export class RouterService {
         });
     }
 
+    // TODO remove. not used
     async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
         const pairs = await this.routerAbi.pairsMetadata();
         return pairs.find((pair) => pair.address === pairAddress);
@@ -48,37 +48,48 @@ export class RouterService {
         filters: PairsFilter,
         sorting: PairSortingArgs,
     ): Promise<CollectionType<PairModel>> {
-        let pairsMetadata = await this.routerAbi.pairsMetadata();
-
-        const builder = new PairsMetadataBuilder(
-            pairsMetadata,
+        const dbResult = await this.pairPersistence.getFilteredPairs(
+            offset,
+            limit,
             filters,
-            this.pairFilteringService,
+            sorting,
         );
 
-        await builder.applyAllFilters();
+        // let pairsMetadata = await this.routerAbi.pairsMetadata();
 
-        pairsMetadata = await builder.build();
+        // const builder = new PairsMetadataBuilder(
+        //     pairsMetadata,
+        //     filters,
+        //     this.pairFilteringService,
+        // );
 
-        if (sorting) {
-            pairsMetadata = await this.sortPairs(
-                pairsMetadata,
-                sorting.sortField,
-                sorting.sortOrder,
-            );
-        }
+        // await builder.applyAllFilters();
 
-        const pairs = pairsMetadata.map(
-            (pairMetadata) =>
-                new PairModel({
-                    address: pairMetadata.address,
-                }),
-        );
+        // pairsMetadata = await builder.build();
+
+        // if (sorting) {
+        //     pairsMetadata = await this.sortPairs(
+        //         pairsMetadata,
+        //         sorting.sortField,
+        //         sorting.sortOrder,
+        //     );
+        // }
+
+        // const pairs = pairsMetadata.map(
+        //     (pairMetadata) =>
+        //         new PairModel({
+        //             address: pairMetadata.address,
+        //         }),
+        // );
 
         return new CollectionType({
-            count: pairs.length,
-            items: pairs.slice(offset, offset + limit),
+            count: dbResult.count,
+            items: dbResult.pairs,
         });
+        // return new CollectionType({
+        //     count: pairs.length,
+        //     items: pairs.slice(offset, offset + limit),
+        // });
     }
 
     async getAllPairs(
