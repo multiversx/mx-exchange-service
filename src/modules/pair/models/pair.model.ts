@@ -245,11 +245,11 @@ export class PairModel {
     @Field()
     type: string;
 
-    @Prop()
+    @Prop({ index: true })
     @Field()
     state: string;
 
-    @Prop({ default: false })
+    @Prop({ default: false, index: true })
     @Field()
     feeState: boolean;
 
@@ -285,23 +285,23 @@ export class PairModel {
     })
     feesCollector: FeesCollectorModel;
 
-    @Prop({ default: false })
+    @Prop({ default: false, index: true })
     @Field()
     hasFarms: boolean;
 
-    @Prop({ default: false })
+    @Prop({ default: false, index: true })
     @Field()
     hasDualFarms: boolean;
 
-    @Prop({ default: 0 })
+    @Prop({ default: 0, index: true })
     @Field(() => Int)
     tradesCount: number;
 
-    @Prop({ default: 0 })
+    @Prop({ default: 0, index: true })
     @Field(() => Int)
     tradesCount24h: number;
 
-    @Prop({ default: null })
+    @Prop({ default: null, index: true })
     @Field(() => Int, { nullable: true })
     deployedAt: number;
 
