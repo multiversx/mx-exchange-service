@@ -58,9 +58,9 @@ const rolesRaw = {
     toObject: { getters: true, virtuals: false },
 })
 export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
-    @Prop()
+    @Prop({ index: true })
     name: string;
-    @Prop()
+    @Prop({ index: true })
     ticker: string;
     @Prop()
     owner: string;
@@ -71,28 +71,39 @@ export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
     @Prop({ required: false })
     initialMinted?: string;
     @Prop({ default: '0' })
+    @Field()
     derivedEGLD: string;
     @Prop({ required: false, default: '0' })
     price?: string;
     @Prop({ required: false, default: '0' })
+    @Field()
     previous24hPrice?: string;
     @Prop({ required: false, default: '0' })
+    @Field()
     previous7dPrice?: string;
     @Prop({ required: false, default: '0' })
+    @Field()
     volumeUSD24h?: string;
     @Prop({ required: false, default: '0' })
+    @Field()
     previous24hVolume?: string;
     @Prop({ required: false, default: '0' })
+    @Field()
     liquidityUSD?: string;
     @Prop({ required: false, default: 0 })
+    @Field()
     swapCount24h?: number;
     @Prop({ required: false, default: 0 })
+    @Field()
     previous24hSwapCount?: number;
     @Prop({ required: false })
+    @Field()
     trendingScore?: string;
     @Prop({ required: false })
+    @Field()
     supply?: string;
     @Prop({ required: false })
+    @Field()
     circulatingSupply?: string;
     @Prop(assetsRaw)
     @Field(() => AssetsModel, {
@@ -126,14 +137,22 @@ export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
         complexity: nestedFieldComplexity,
     })
     roles?: RolesModel;
-    @Prop({ required: false })
+    @Prop({ required: false, index: true })
     type?: string;
     @Prop({ required: false })
     balance?: string;
     @Prop({ required: false })
     createdAt?: string;
-    @Prop({ required: false })
+    @Prop({ required: false, index: true })
     pairAddress?: string;
+    @Prop({ default: 0 })
+    priceChange24h?: number;
+    @Prop({ default: 0 })
+    priceChange7d?: number;
+    @Prop({ default: 0 })
+    tradeChange24h?: number;
+    @Prop({ default: 0 })
+    volumeUSDChange24h?: number;
 
     constructor(init?: Partial<EsdtToken>) {
         super(init);
