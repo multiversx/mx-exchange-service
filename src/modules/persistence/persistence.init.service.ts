@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairPersistenceService } from '../pair/persistence/services/pair.persistence.service';
-import { TokenPersistenceService } from '../tokens/persistence/services/token.persistence.service';
 
 export enum PopulateStatus {
     NOT_STARTED = 'Not Started',
@@ -16,7 +15,6 @@ export class PersistenceInitService {
     private status: PopulateStatus = PopulateStatus.NOT_STARTED;
 
     constructor(
-        private readonly tokenPersistence: TokenPersistenceService,
         private readonly pairPersistence: PairPersistenceService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -37,6 +35,28 @@ export class PersistenceInitService {
             this.status = PopulateStatus.SUCCESSFUL;
         } catch (error) {
             this.logger.error('Failed during DB populate', {
+                context: PersistenceInitService.name,
+            });
+            this.logger.error(error);
+
+            this.status = PopulateStatus.FAILED;
+        } finally {
+            return this.status;
+        }
+    }
+
+    async refreshPairReserves(): Promise<PopulateStatus> {
+        if (this.status === PopulateStatus.IN_PROGRESS) {
+            return this.status;
+        }
+
+        this.status = PopulateStatus.IN_PROGRESS;
+
+        try {
+            await this.pairPersistence.updatePairReserves();
+            this.status = PopulateStatus.SUCCESSFUL;
+        } catch (error) {
+            this.logger.error('Failed pair reserves refresh', {
                 context: PersistenceInitService.name,
             });
             this.logger.error(error);

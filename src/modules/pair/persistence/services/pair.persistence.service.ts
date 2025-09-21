@@ -153,46 +153,61 @@ export class PairPersistenceService {
         return pair;
     }
 
+    async updatePairReserves(): Promise<void> {
+        const pairs = await this.getPairs(
+            {},
+            {
+                address: 1,
+                info: 1,
+            },
+        );
+
+        for (const pair of pairs) {
+            pair.info = await this.pairAbi.pairInfoMetadata(pair.address);
+            await pair.save();
+        }
+    }
+
     async updateAbiFields(pair: PairModel): Promise<PairModel> {
         const [
             info,
-            // totalFeePercent,
-            // specialFeePercent,
-            // feesCollectorCutPercentage,
-            // trustedSwapPairs,
-            // state,
-            // feeState,
-            // whitelistedAddresses,
-            // initialLiquidityAdder,
-            // feeDestinations,
-            // feesCollectorAddress,
+            totalFeePercent,
+            specialFeePercent,
+            feesCollectorCutPercentage,
+            trustedSwapPairs,
+            state,
+            feeState,
+            whitelistedAddresses,
+            initialLiquidityAdder,
+            feeDestinations,
+            feesCollectorAddress,
         ] = await Promise.all([
             this.pairAbi.pairInfoMetadata(pair.address),
-            // this.pairAbi.totalFeePercent(pair.address),
-            // this.pairAbi.specialFeePercent(pair.address),
-            // this.pairAbi.feesCollectorCutPercentage(pair.address),
-            // this.pairAbi.trustedSwapPairs(pair.address),
-            // this.pairAbi.state(pair.address),
-            // this.pairAbi.feeState(pair.address),
-            // this.pairAbi.whitelistedAddresses(pair.address),
-            // this.pairAbi.initialLiquidityAdder(pair.address),
-            // this.pairAbi.feeDestinations(pair.address),
-            // this.pairAbi.feesCollectorAddress(pair.address),
+            this.pairAbi.totalFeePercent(pair.address),
+            this.pairAbi.specialFeePercent(pair.address),
+            this.pairAbi.feesCollectorCutPercentage(pair.address),
+            this.pairAbi.trustedSwapPairs(pair.address),
+            this.pairAbi.state(pair.address),
+            this.pairAbi.feeState(pair.address),
+            this.pairAbi.whitelistedAddresses(pair.address),
+            this.pairAbi.initialLiquidityAdder(pair.address),
+            this.pairAbi.feeDestinations(pair.address),
+            this.pairAbi.feesCollectorAddress(pair.address),
         ]);
 
         pair.info = info;
-        // pair.totalFeePercent = totalFeePercent;
-        // pair.specialFeePercent = specialFeePercent;
-        // pair.feesCollectorCutPercentage =
-        //     feesCollectorCutPercentage /
-        //     constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
-        // pair.trustedSwapPairs = trustedSwapPairs;
-        // pair.state = state;
-        // pair.feeState = feeState;
-        // pair.whitelistedManagedAddresses = whitelistedAddresses;
-        // pair.initialLiquidityAdder = initialLiquidityAdder;
-        // pair.feeDestinations = feeDestinations;
-        // pair.feesCollectorAddress = feesCollectorAddress;
+        pair.totalFeePercent = totalFeePercent;
+        pair.specialFeePercent = specialFeePercent;
+        pair.feesCollectorCutPercentage =
+            feesCollectorCutPercentage /
+            constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
+        pair.trustedSwapPairs = trustedSwapPairs;
+        pair.state = state;
+        pair.feeState = feeState;
+        pair.whitelistedManagedAddresses = whitelistedAddresses;
+        pair.initialLiquidityAdder = initialLiquidityAdder;
+        pair.feeDestinations = feeDestinations;
+        pair.feesCollectorAddress = feesCollectorAddress;
 
         return pair;
     }
