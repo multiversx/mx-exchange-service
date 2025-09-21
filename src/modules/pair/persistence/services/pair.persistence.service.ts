@@ -18,6 +18,11 @@ import { PairRepository } from './pair.repository';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { PairComputeService } from '../../services/pair.compute.service';
+import {
+    PairsFilter,
+    PairSortingArgs,
+} from 'src/modules/router/models/filter.args';
+import { filteredPairsPipeline } from '../pipelines/filtered.pairs.pipeline';
 
 export type PairLiquidityValuesUSD = {
     firstTokenPriceUSD: string;
@@ -26,6 +31,11 @@ export type PairLiquidityValuesUSD = {
     secondTokenLockedValueUSD: string;
     lockedValueUSD: string;
     liquidityPoolTokenPriceUSD: string;
+};
+
+type FilteredPairsResponse = {
+    items: PairDocument[];
+    total: number;
 };
 
 @Injectable()
@@ -215,14 +225,16 @@ export class PairPersistenceService {
     async updatePairsTokensPrice(): Promise<void> {
         const bulkOps: AnyBulkWriteOperation<PairDocument>[] = [];
         const [pairs, usdcPrice] = await Promise.all([
-            this.getFilteredPairs(
+            this.getPairs(
                 {},
                 {
                     address: 1,
                     info: 1,
                     state: 1,
                     firstToken: 1,
+                    firstTokenPrice: 1,
                     secondToken: 1,
+                    secondTokenPrice: 1,
                 },
                 {
                     path: 'firstToken secondToken',
@@ -257,7 +269,7 @@ export class PairPersistenceService {
     async updatePairsLiquidityValuesUSD(): Promise<void> {
         const bulkOps: AnyBulkWriteOperation<PairDocument>[] = [];
         const [pairs, usdcPrice, commonTokenIDs] = await Promise.all([
-            this.getFilteredPairs(
+            this.getPairs(
                 {},
                 {
                     address: 1,
@@ -265,9 +277,15 @@ export class PairPersistenceService {
                     state: 1,
                     firstToken: 1,
                     firstTokenPrice: 1,
+                    firstTokenPriceUSD: 1,
+                    firstTokenLockedValueUSD: 1,
                     secondToken: 1,
                     secondTokenPrice: 1,
+                    secondTokenPriceUSD: 1,
+                    secondTokenLockedValueUSD: 1,
                     liquidityPoolToken: 1,
+                    liquidityPoolTokenPriceUSD: 1,
+                    lockedValueUSD: 1,
                 },
                 {
                     path: 'firstToken secondToken liquidityPoolToken',
@@ -326,7 +344,7 @@ export class PairPersistenceService {
     }
 
     async updatePairsAnalytics(): Promise<void> {
-        const pairs = await this.getFilteredPairs(
+        const pairs = await this.getPairs(
             {},
             {
                 address: 1,
@@ -599,27 +617,42 @@ export class PairPersistenceService {
         }
     }
 
-    async bulkUpdatePairs(bulkOps: any[]): Promise<void> {
+    async bulkUpdatePairs(bulkOps: any[], name?: string): Promise<void> {
+        if (bulkOps.length === 0) {
+            return;
+        }
+
         try {
             const result = await this.pairRepository
                 .getModel()
                 .bulkWrite(bulkOps);
 
-            this.logger.info(`Bulk update pairs : ${JSON.stringify(result)}`);
+            this.logger.info(
+                `Bulk update pairs | ${name ?? 'no op'} : ${JSON.stringify(
+                    result,
+                )}`,
+            );
         } catch (error) {
             this.logger.error(error);
         }
     }
 
-    async getFilteredPairs(
+    async getPairs(
         filterQuery: FilterQuery<PairDocument>,
         projection?: ProjectionType<PairDocument>,
         populateOptions?: PopulateOptions,
     ): Promise<PairDocument[]> {
-        const pairs = await this.pairRepository
+        const profiler = new PerformanceProfiler();
+
+        const query = this.pairRepository
             .getModel()
-            .find(filterQuery, projection)
-            .exec();
+            .find(filterQuery, projection);
+
+        // const explanation = await query.explain().exec();
+
+        // console.log(JSON.stringify(explanation));
+
+        const pairs = await query.exec();
 
         if (populateOptions) {
             await this.pairRepository
@@ -627,7 +660,38 @@ export class PairPersistenceService {
                 .populate(pairs, populateOptions);
         }
 
+        profiler.stop();
+
+        console.log(`getPairs - ${profiler.duration}ms`);
+
         return pairs;
+    }
+
+    async getFilteredPairs(
+        offset: number,
+        limit: number,
+        filters: PairsFilter,
+        sorting: PairSortingArgs,
+    ): Promise<{ pairs: PairModel[]; count: number }> {
+        const profiler = new PerformanceProfiler();
+
+        const [result] = await this.pairRepository
+            .getModel()
+            .aggregate<FilteredPairsResponse>(
+                filteredPairsPipeline(offset, limit, filters, sorting),
+            )
+            .exec();
+
+        await this.pairRepository.getModel().populate(result.items, {
+            path: 'firstToken secondToken liquidityPoolToken',
+            // select: ['identifier', 'decimals', 'price'],
+        });
+
+        profiler.stop();
+        console.log('filtered pairs query', profiler.duration);
+        // console.log(result.items, result.total);
+
+        return { pairs: result.items, count: result.total };
     }
 
     async getPair(
