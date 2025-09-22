@@ -369,7 +369,7 @@ export class FeesCollectorTasksService implements OnModuleInit {
     }
 
     private async broadcastTransaction(
-        swapTransaction: TransactionModel,
+        tx: TransactionModel,
     ): Promise<BroadcastStatus> {
         const { nonce } = await this.mxApi.getAccountStats(
             this.accountSigner.getAddress().bech32(),
@@ -377,13 +377,13 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
         const transaction = new Transaction({
             nonce: BigInt(nonce),
-            sender: swapTransaction.sender,
+            sender: tx.sender,
             receiver: scAddress.feesCollector,
-            value: BigInt(swapTransaction.value),
-            data: Buffer.from(swapTransaction.data, 'base64'),
-            gasPrice: BigInt(swapTransaction.gasPrice),
-            gasLimit: BigInt(swapTransaction.gasLimit),
-            chainID: swapTransaction.chainID,
+            value: BigInt(tx.value),
+            data: Buffer.from(tx.data, 'base64'),
+            gasPrice: BigInt(tx.gasPrice),
+            gasLimit: BigInt(tx.gasLimit),
+            chainID: tx.chainID,
             version: 2,
         });
 
@@ -400,14 +400,14 @@ export class FeesCollectorTasksService implements OnModuleInit {
                 await this.transactionWatcher.awaitCompleted(txHash);
 
             if (!transactionOnNetwork.status.isSuccessful()) {
-                this.logger.error(`Swap transaction ${txHash} has failed`, {
+                this.logger.error(`Transaction ${txHash} has failed`, {
                     context: FeesCollectorTasksService.name,
                 });
 
                 return BroadcastStatus.fail;
             }
 
-            this.logger.info(`Swap transaction ${txHash} was successful`, {
+            this.logger.info(`Transaction ${txHash} was successful`, {
                 context: FeesCollectorTasksService.name,
             });
 
