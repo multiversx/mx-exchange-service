@@ -421,14 +421,17 @@ export class PairPersistenceService {
 
             profiler.stop();
 
-            this.logger.info(
-                `Bulk update pairs - ${profiler.duration}ms | ${
-                    name ?? 'no op'
-                } : ${JSON.stringify(result)}`,
+            this.logger.debug(
+                `${this.bulkUpdatePairs.name} - ${profiler.duration}ms`,
+                {
+                    context: PairPersistenceService.name,
+                    operation: name ?? 'no-op',
+                    result,
+                },
             );
         } catch (error) {
             profiler.stop();
-            this.logger.error(error);
+            this.logger.error(error, { context: PairPersistenceService.name });
         }
     }
 
@@ -444,12 +447,6 @@ export class PairPersistenceService {
             .find(filterQuery, projection)
             .exec();
 
-        // const explanation = await query.explain().exec();
-
-        // console.log(JSON.stringify(explanation));
-
-        // const pairs = await query.exec();
-
         if (populateOptions) {
             await this.pairRepository
                 .getModel()
@@ -458,7 +455,9 @@ export class PairPersistenceService {
 
         profiler.stop();
 
-        console.log(`getPairs - ${profiler.duration}ms`);
+        this.logger.debug(`${this.getPairs.name} : ${profiler.duration}ms`, {
+            context: PairPersistenceService.name,
+        });
 
         return pairs;
     }
@@ -483,7 +482,13 @@ export class PairPersistenceService {
         });
 
         profiler.stop();
-        console.log('filtered pairs query', profiler.duration);
+
+        this.logger.debug(
+            `${this.getFilteredPairs.name} : ${profiler.duration}ms`,
+            {
+                context: PairPersistenceService.name,
+            },
+        );
 
         return { pairs: result.items, count: result.total };
     }
