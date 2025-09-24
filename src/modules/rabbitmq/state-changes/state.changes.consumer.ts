@@ -10,20 +10,17 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { Logger } from 'winston';
-import { PairDocument } from '../pair/persistence/schemas/pair.schema';
-import { PairPersistenceService } from '../pair/persistence/services/pair.persistence.service';
-import { RouterAbiService } from '../router/services/router.abi.service';
-import { EsdtTokenDocument } from '../tokens/persistence/schemas/esdtToken.schema';
-import { TokenPersistenceService } from '../tokens/persistence/services/token.persistence.service';
-import { CompetingRabbitConsumer } from './rabbitmq.consumers';
-import { AnyBulkWriteOperation, MatchKeysAndValues } from 'mongodb';
+import { PairPersistenceService } from '../../pair/persistence/services/pair.persistence.service';
+import { RouterAbiService } from '../../router/services/router.abi.service';
+import { TokenPersistenceService } from '../../tokens/persistence/services/token.persistence.service';
+import { CompetingRabbitConsumer } from '../rabbitmq.consumers';
 import {
     BlockWithStateChanges,
     StateAccessPerAccountRaw,
-} from './state.changes.types';
-import { PairModel } from '../pair/models/pair.model';
-import { EsdtToken } from '../tokens/models/esdtToken.model';
-import { StateChangesProcessor } from './state-changes/state.changes.processor';
+} from '../state.changes.types';
+import { PairModel } from '../../pair/models/pair.model';
+import { EsdtToken } from '../../tokens/models/esdtToken.model';
+import { StateChangesProcessor } from './state.changes.processor';
 
 const PAIR_RESERVE_PREFIX = Buffer.from('reserve').toString('hex');
 
@@ -108,9 +105,6 @@ export class StateChangesConsumer implements OnModuleInit {
         //     stateJSON: JSON.stringify(blockData),
         // });
 
-        // const pairBulkOps: AnyBulkWriteOperation<PairDocument>[] = [];
-
-        // const updatedPairs: string[] = [];
         const pairsStateChanges: Map<string, PairStateChanges> = new Map();
         for (const [hexAddress, address] of addressesMap.entries()) {
             if (address !== scAddress.routerAddress) {
@@ -124,28 +118,8 @@ export class StateChangesConsumer implements OnModuleInit {
                 if (Object.keys(stateChanges).length > 0) {
                     pairsStateChanges.set(address, stateChanges);
                 }
-
-                // const updateOperations = this.getPairDbUpdateOperations(
-                //     address,
-                //     stateChanges,
-                // );
-                // if (Object.keys(updateOperations).length > 0) {
-                //     pairBulkOps.push({
-                //         updateOne: {
-                //             filter: { address },
-                //             update: {
-                //                 $set: updateOperations,
-                //             },
-                //         },
-                //     });
-                //     updatedPairs.push(address);
-                // }
             }
         }
-
-        // console.log('HTM before', this.tokens.get('HTM-23a1da'));
-        // const allPairs = [];
-        // this.pairs.forEach((pair) => allPairs.push(pair.address));
 
         if (pairsStateChanges.size > 0) {
             const [usdcPrice, commonTokenIDs] = await Promise.all([
@@ -167,37 +141,26 @@ export class StateChangesConsumer implements OnModuleInit {
             //     tokenBulkOps: JSON.stringify(tokenBulkOps),
             // });
             await Promise.all([
-                this.tokenPersistence.bulkUpdateTokens(tokenBulkOps),
-                this.pairPersistence.bulkUpdatePairs(pairBulkOps),
+                this.tokenPersistence.bulkUpdateTokens(
+                    tokenBulkOps,
+                    'stateChange',
+                ),
+                this.pairPersistence.bulkUpdatePairs(
+                    pairBulkOps,
+                    'stateChange',
+                ),
             ]);
         }
 
-        // if (pairBulkOps.length > 0) {
-        //     const usdcPrice = await this.dataApi.getTokenPrice('USDC');
-        //     const tokenBulkOps =
-        //         this.tokenPersistence.bulkUpdatePairTokensPriceGrok(
-        //             usdcPrice,
-        //             this.pairs,
-        //             this.tokens,
-        //             updatedPairs,
-        //         );
-
-        //     console.log('token bulk ops', JSON.stringify(tokenBulkOps));
-        // }
-
-        // console.log('HTM after', this.tokens.get('HTM-23a1da'));
-
         profiler.stop();
-        // console.log('bulk ops', JSON.stringify(pairBulkOps));
 
         this.logger.info(
             `Finished processing state update for block ${blockData.hash} in ${profiler.duration}`,
+            {
+                context: StateChangesConsumer.name,
+            },
         );
     }
-
-    // private recomputePricesAndLiquidity(): void {
-
-    // }
 
     private decodePairStateChanges(
         address: string,
@@ -252,11 +215,14 @@ export class StateChangesConsumer implements OnModuleInit {
                 );
 
                 if (!Object.keys(storageToFieldMap).includes(keyHex)) {
-                    console.log(
+                    this.logger.info(
                         `Skipping key ${keyHex} ${Buffer.from(
                             change.key,
                             'base64',
                         ).toString()}`,
+                        {
+                            context: StateChangesConsumer.name,
+                        },
                     );
                     continue;
                 }
@@ -271,56 +237,70 @@ export class StateChangesConsumer implements OnModuleInit {
         return pairUpdates;
     }
 
-    private getPairDbUpdateOperations(
-        address: string,
-        stateChanges: PairStateChanges,
-    ): MatchKeysAndValues<PairDocument> {
-        if (Object.keys(stateChanges).length === 0) {
-            return {};
-        }
+    private decodeRouterStateChanges(
+        stateAccess: StateAccessPerAccountRaw[],
+    ): void {
+        this.logger.info(`Decoding router state changes`, {
+            context: StateChangesConsumer.name,
+        });
 
-        const pair = this.pairs.get(address);
-        // console.log('before reserves update', pair);
+        console.log({
+            state: stateAccess,
+            // dataTrieChanges,
+            // dataTrieChangesJSON: JSON.stringify(dataTrieChanges),
+        });
 
-        const rawUpdates: Partial<PairModel> = {};
-        if (
-            Object.keys(stateChanges).includes(
-                PAIR_FIELDS.firstTokenReserve ||
-                    PAIR_FIELDS.secondTokenReserve ||
-                    PAIR_FIELDS.totalSupply,
-            )
-        ) {
-            const info = {
-                reserves0: stateChanges.reserves0 ?? pair.info.reserves0,
-                reserves1: stateChanges.reserves1 ?? pair.info.reserves1,
-                totalSupply: stateChanges.totalSupply ?? pair.info.totalSupply,
-            };
+        for (const state of stateAccess) {
+            const dataTrieChanges = state.dataTrieChanges;
+            const txHash = Buffer.from(state.txHash, 'base64').toString('hex');
 
-            const { firstTokenPrice, secondTokenPrice } =
-                this.pairPersistence.computeTokensPriceByReserves(
-                    info,
-                    this.tokens.get(pair.firstTokenId),
-                    this.tokens.get(pair.secondTokenId),
+            if (!dataTrieChanges || !Array.isArray(dataTrieChanges)) {
+                this.logger.warn(
+                    `No data trie changes in tx ${txHash} (i: ${state.index})`,
+                    {
+                        context: StateChangesConsumer.name,
+                    },
                 );
+                continue;
+            }
 
-            pair.info = info;
-            pair.firstTokenPrice = firstTokenPrice;
-            pair.secondTokenPrice = secondTokenPrice;
+            this.logger.info(
+                `Decoding dataTrie changes in tx ${txHash} (i: ${state.index})`,
+                {
+                    context: StateChangesConsumer.name,
+                },
+            );
 
-            rawUpdates.info = pair.info;
-            rawUpdates.firstTokenPrice = firstTokenPrice;
-            rawUpdates.secondTokenPrice = secondTokenPrice;
+            for (const change of dataTrieChanges) {
+                if (change.version === 0) {
+                    this.logger.warn(`Unsupported dataTrieChanges version 0`, {
+                        context: StateChangesConsumer.name,
+                    });
+                    continue;
+                }
+
+                console.log(change);
+
+                // const trieLeadData: TrieLeafData = TrieLeafData.decode(
+                //     Buffer.from(change.val, 'base64'),
+                // );
+
+                // const keyHex = Buffer.from(trieLeadData.key).toString('hex');
+
+                console.log({
+                    key: Buffer.from(change.key, 'base64').toString('hex'),
+                    keyStr: Buffer.from(change.key, 'base64').toString(),
+                    value: Buffer.from(change.val, 'base64').toString('hex'),
+                });
+
+                // if (!Object.keys(storageToFieldMap).includes(keyHex)) {
+                //     continue;
+                // }
+            }
         }
-
-        // console.log('after reserves update', this.pairs.get(address));
-
-        return Object.fromEntries(
-            Object.entries(rawUpdates).filter(([, v]) => v !== undefined),
-        ) as MatchKeysAndValues<PairDocument>;
     }
 
     async updatePairsAndTokens(): Promise<void> {
-        // const profiler = new PerformanceProfiler();
         this.filterAddresses = [];
         this.pairs = new Map();
         this.tokens = new Map();
@@ -330,31 +310,31 @@ export class StateChangesConsumer implements OnModuleInit {
                 {},
                 {
                     address: 1,
-                    // firstToken: 1,
                     firstTokenId: 1,
                     firstTokenPrice: 1,
                     firstTokenPriceUSD: 1,
                     firstTokenLockedValueUSD: 1,
-                    // secondToken: 1,
                     secondTokenId: 1,
                     secondTokenPrice: 1,
                     secondTokenPriceUSD: 1,
                     secondTokenLockedValueUSD: 1,
-                    // liquidityPoolToken: 1,
                     liquidityPoolTokenId: 1,
+                    liquidityPoolTokenPriceUSD: 1,
                     lockedValueUSD: 1,
                     info: 1,
                     state: 1,
                 },
             ),
             this.tokenPersistence.getTokens(
-                { type: 'FungibleESDT' },
+                {},
                 {
                     identifier: 1,
                     decimals: 1,
                     price: 1,
                     derivedEGLD: 1,
                     liquidityUSD: 1,
+                    type: 1,
+                    pairAddress: 1,
                 },
             ),
         ]);
@@ -367,9 +347,6 @@ export class StateChangesConsumer implements OnModuleInit {
         tokens.forEach((token) => this.tokens.set(token.identifier, token));
 
         this.filterAddresses.push(scAddress.routerAddress);
-
-        // profiler.stop();
-        // console.log('update pairs and tokens', profiler.duration);
     }
 
     private getPairDecoders(
