@@ -37,6 +37,7 @@ export class TokenPersistenceService {
 
             return token;
         } catch (error) {
+            this.logger.error(error);
             return undefined;
         }
     }
@@ -91,10 +92,13 @@ export class TokenPersistenceService {
 
             profiler.stop();
 
-            this.logger.info(
-                `Bulk update tokens - ${profiler.duration}ms | ${
-                    name ?? 'no-op'
-                } : ${JSON.stringify(result)}`,
+            this.logger.debug(
+                `${this.bulkUpdateTokens.name} : ${profiler.duration}ms`,
+                {
+                    context: TokenPersistenceService.name,
+                    operation: name ?? 'no-op',
+                    result,
+                },
             );
         } catch (error) {
             profiler.stop();
@@ -106,10 +110,20 @@ export class TokenPersistenceService {
         filterQuery: FilterQuery<EsdtTokenDocument>,
         projection?: ProjectionType<EsdtTokenDocument>,
     ): Promise<EsdtTokenDocument[]> {
-        return this.tokenRepository
+        const profiler = new PerformanceProfiler();
+
+        const result = await this.tokenRepository
             .getModel()
             .find(filterQuery, projection)
             .exec();
+
+        profiler.stop();
+
+        this.logger.debug(`${this.getTokens.name} : ${profiler.duration}ms`, {
+            context: TokenPersistenceService.name,
+        });
+
+        return result;
     }
 
     async getFilteredTokens(
@@ -128,7 +142,13 @@ export class TokenPersistenceService {
             .exec();
 
         profiler.stop();
-        console.log('filtered tokens query', profiler.duration);
+
+        this.logger.debug(
+            `${this.getFilteredTokens.name} : ${profiler.duration}ms`,
+            {
+                context: TokenPersistenceService.name,
+            },
+        );
 
         return { tokens: result.items, count: result.total };
     }
