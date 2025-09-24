@@ -1,11 +1,11 @@
-import {
-    LiquidityPosition,
-    PairModel,
-} from 'src/modules/pair/models/pair.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 import { PairDocument } from 'src/modules/pair/persistence/schemas/pair.schema';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import {
+    EsdtToken,
+    EsdtTokenType,
+} from 'src/modules/tokens/models/esdtToken.model';
 import { EsdtTokenDocument } from 'src/modules/tokens/persistence/schemas/esdtToken.schema';
-import { PairStateChanges } from '../state.changes.consumer';
+import { PairStateChanges } from './state.changes.consumer';
 import { AnyBulkWriteOperation } from 'mongodb';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { getTokenForGivenPosition, quote } from 'src/modules/pair/pair.utils';
@@ -60,22 +60,15 @@ export class StateChangesProcessor {
     getDbUpdateOperations(
         stateChangesMap: Map<string, PairStateChanges>,
     ): MongoBulkOperations {
-        // console.log('BEFORE PAIRS', this.pairsUpdates);
-        // console.log('BEFORE TOKENS', this.tokensUpdates);
-
         for (const [address, stateChanges] of stateChangesMap.entries()) {
             this.updatePairReservesAndPrices(address, stateChanges);
         }
 
+        // TODO: all token IDs with changes + pairs to update = keys(pairUpdates) + pairs of keys(tokensUpdates)
+
         this.updateTokensDerivedPriceEGLD();
 
         this.updateValuesUSD();
-
-        // get all token IDs with changes
-        // TODO: pairs to update = keys(pairUpdates) + pairs of keys(tokensUpdates)
-
-        // console.log('AFTER PAIRS', this.pairsUpdates);
-        // console.log('AFTER TOKENS', this.tokensUpdates);
 
         return this.convertUpdatesToMongoBulkOperations();
     }
@@ -88,12 +81,6 @@ export class StateChangesProcessor {
         this.updateTokensDerivedPriceEGLD();
 
         this.updateValuesUSD();
-
-        // get all token IDs with changes
-        // TODO: pairs to update = keys(pairUpdates) + pairs of keys(tokensUpdates)
-
-        // console.log('AFTER PAIRS', this.pairsUpdates);
-        // console.log('AFTER TOKENS', this.tokensUpdates);
 
         return this.convertUpdatesToMongoBulkOperations();
     }
@@ -179,6 +166,10 @@ export class StateChangesProcessor {
         ).firstTokenPrice;
 
         for (const [tokenID, token] of this.tokens.entries()) {
+            if (token.type === EsdtTokenType.FungibleLpToken) {
+                continue;
+            }
+
             const derivedEGLD = this.computeTokenPriceDerivedEGLD(
                 tokenID,
                 egldPriceUSD,
@@ -217,12 +208,16 @@ export class StateChangesProcessor {
                 secondTokenPriceUSD,
             );
 
+            const liquidityPoolTokenPriceUSD =
+                this.computePairLpTokenPriceUSD(address);
+
             const rawPairUpdates: Partial<PairModel> = {
                 firstTokenPriceUSD,
                 secondTokenPriceUSD,
                 firstTokenLockedValueUSD,
                 secondTokenLockedValueUSD,
                 lockedValueUSD,
+                liquidityPoolTokenPriceUSD,
             };
 
             const pairChanged = this.syncPairUpdates(address, rawPairUpdates);
@@ -233,19 +228,34 @@ export class StateChangesProcessor {
                 pair.firstTokenLockedValueUSD = firstTokenLockedValueUSD;
                 pair.secondTokenLockedValueUSD = secondTokenLockedValueUSD;
                 pair.lockedValueUSD = lockedValueUSD;
+                pair.liquidityPoolTokenPriceUSD = liquidityPoolTokenPriceUSD;
 
                 tokensNeedingUpdate.add(pair.firstTokenId);
                 tokensNeedingUpdate.add(pair.secondTokenId);
-            }
 
-            // const liquidityPoolTokenPriceUSD =
-            //     this.computePairLpTokenPriceUSD(address);
+                if (pair.liquidityPoolTokenId) {
+                    tokensNeedingUpdate.add(pair.liquidityPoolTokenId);
+                }
+            }
         }
 
         for (const tokenID of tokensNeedingUpdate.values()) {
-            const liquidityUSD = this.computeTokenLiquidityUSD(tokenID);
+            const token = this.tokens.get(tokenID);
+            if (token.type === EsdtTokenType.FungibleLpToken) {
+                const { liquidityPoolTokenPriceUSD } = this.pairs.get(
+                    token.pairAddress,
+                );
+                this.syncTokenUpdates(tokenID, {
+                    price: liquidityPoolTokenPriceUSD,
+                });
 
-            this.syncTokenUpdates(tokenID, { liquidityUSD });
+                token.price = liquidityPoolTokenPriceUSD;
+            } else {
+                const liquidityUSD = this.computeTokenLiquidityUSD(tokenID);
+                this.syncTokenUpdates(tokenID, { liquidityUSD });
+
+                token.liquidityUSD = liquidityUSD;
+            }
         }
 
         // console.log(tokensNeedingUpdate);
@@ -512,45 +522,38 @@ export class StateChangesProcessor {
             return '0';
         }
 
-        const lpPosition = this.computeLiquidityPosition(
-            pair.info,
-            new BigNumber(`1e${pair.liquidityPoolToken.decimals}`).toFixed(),
+        const liquidityPoolToken = this.tokens.get(pair.liquidityPoolTokenId);
+        const firstToken = this.tokens.get(pair.firstTokenId);
+        const secondToken = this.tokens.get(pair.secondTokenId);
+
+        const lpAmount = new BigNumber(
+            `1e${liquidityPoolToken.decimals}`,
+        ).toFixed();
+
+        const firstTokenAmount = getTokenForGivenPosition(
+            lpAmount,
+            pair.info.reserves0,
+            pair.info.totalSupply,
+        );
+        const secondTokenAmount = getTokenForGivenPosition(
+            lpAmount,
+            pair.info.reserves1,
+            pair.info.totalSupply,
         );
 
         const firstTokenValueUSD = computeValueUSD(
-            lpPosition.firstTokenAmount,
-            pair.firstToken.decimals,
+            firstTokenAmount.toFixed(),
+            firstToken.decimals,
             pair.firstTokenPriceUSD,
         );
 
         const secondTokenValueUSD = computeValueUSD(
-            lpPosition.secondTokenAmount,
-            pair.secondToken.decimals,
+            secondTokenAmount.toFixed(),
+            secondToken.decimals,
             pair.secondTokenPriceUSD,
         );
 
         return firstTokenValueUSD.plus(secondTokenValueUSD).toFixed();
-    }
-
-    private computeLiquidityPosition(
-        pairInfo: PairInfoModel,
-        amount: string,
-    ): LiquidityPosition {
-        const firstTokenAmount = getTokenForGivenPosition(
-            amount,
-            pairInfo.reserves0,
-            pairInfo.totalSupply,
-        );
-        const secondTokenAmount = getTokenForGivenPosition(
-            amount,
-            pairInfo.reserves1,
-            pairInfo.totalSupply,
-        );
-
-        return new LiquidityPosition({
-            firstTokenAmount: firstTokenAmount.toFixed(),
-            secondTokenAmount: secondTokenAmount.toFixed(),
-        });
     }
 
     private syncPairUpdates(
