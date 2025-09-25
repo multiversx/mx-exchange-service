@@ -22,6 +22,7 @@ import {
 import { filteredPairsPipeline } from '../pipelines/filtered.pairs.pipeline';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { StateChangesProcessor } from 'src/modules/rabbitmq/state-changes/state.changes.processor';
+import { EsdtTokenDocument } from 'src/modules/tokens/persistence/schemas/esdtToken.schema';
 
 export type PairLiquidityValuesUSD = {
     firstTokenPriceUSD: string;
@@ -64,9 +65,7 @@ export class PairPersistenceService {
 
         for (const pairMeta of pairsMetadata) {
             try {
-                const pair = await this.populatePairModel(pairMeta);
-
-                await this.upsertPair(pair);
+                await this.populatePairModel(pairMeta);
 
                 counters.successful++;
             } catch (error) {
@@ -85,91 +84,85 @@ export class PairPersistenceService {
         });
     }
 
-    async populatePairModel(pairMetadata: PairMetadata): Promise<PairModel> {
-        let pair = new PairModel({
-            address: pairMetadata.address,
-            firstTokenId: pairMetadata.firstTokenID,
-            secondTokenId: pairMetadata.secondTokenID,
-        });
+    async populatePairModel(pairMetadata: PairMetadata): Promise<PairDocument> {
+        const profiler = new PerformanceProfiler();
 
-        pair = await this.updatePairTokens(pairMetadata, pair);
-        pair = await this.updateLpToken(pair);
-        pair = await this.updateAbiFields(pair);
+        const { firstTokenID, secondTokenID, address } = pairMetadata;
 
-        pair.deployedAt = await this.pairCompute.computeDeployedAt(
-            pair.address,
+        const [firstToken, secondToken, lpToken, deployedAt, info, state] =
+            await Promise.all([
+                this.tokenPersistence.populateEsdtTokenMetadata(firstTokenID),
+                this.tokenPersistence.populateEsdtTokenMetadata(secondTokenID),
+                this.getPairLpToken(address),
+                this.pairCompute.computeDeployedAt(address),
+                this.pairAbi.pairInfoMetadata(address),
+                this.pairAbi.state(address),
+            ]);
+
+        if (firstToken === undefined || secondToken === undefined) {
+            throw new Error(
+                `Could not get tokens (${firstTokenID}, ${secondTokenID}) for pair ${address}`,
+            );
+        }
+
+        const rawPair: Partial<PairModel> = {
+            firstToken: firstToken._id,
+            firstTokenId: firstToken.identifier,
+            secondToken: secondToken._id,
+            secondTokenId: secondToken.identifier,
+            info,
+            state,
+            deployedAt,
+        };
+
+        if (lpToken !== undefined) {
+            rawPair.liquidityPoolToken = lpToken._id;
+            rawPair.liquidityPoolTokenId = lpToken.identifier;
+        }
+
+        const pair = await this.pairRepository.create(rawPair);
+
+        profiler.stop();
+
+        this.logger.debug(
+            `${this.populatePairModel.name} : ${profiler.duration}ms`,
+            {
+                context: PairPersistenceService.name,
+            },
         );
 
         return pair;
     }
 
-    async updatePairTokens(
-        pairMetadata: PairMetadata,
-        pair: PairModel,
-    ): Promise<PairModel> {
-        const [firstToken, secondToken] = await Promise.all([
-            this.tokenPersistence.populateEsdtTokenMetadata(
-                pairMetadata.firstTokenID,
-            ),
-            this.tokenPersistence.populateEsdtTokenMetadata(
-                pairMetadata.secondTokenID,
-            ),
-        ]);
-
-        if (firstToken === undefined) {
-            throw new Error(
-                `Could not get first token (${pairMetadata.firstTokenID}) for pair ${pair.address}`,
-            );
-        }
-
-        if (secondToken === undefined) {
-            throw new Error(
-                `Could not get second token (${pairMetadata.secondTokenID}) for pair ${pair.address}`,
-            );
-        }
-
-        pair.firstToken = firstToken._id;
-        pair.secondToken = secondToken._id;
-
-        return pair;
-    }
-
-    async updateLpToken(pair: PairModel): Promise<PairModel> {
-        const lpTokenMetadata = await this.pairService.getLpToken(pair.address);
-
-        if (lpTokenMetadata === undefined) {
-            return pair;
-        }
-
-        lpTokenMetadata.type = EsdtTokenType.FungibleLpToken;
-        lpTokenMetadata.pairAddress = pair.address;
-
-        const lpToken = await this.tokenPersistence.upsertToken(
-            lpTokenMetadata,
-        );
-
-        pair.liquidityPoolToken = lpToken;
-        pair.liquidityPoolTokenId = lpToken.identifier;
-
-        return pair;
-    }
-
-    async updatePairReserves(): Promise<void> {
+    async refreshPairsStateAndReserves(): Promise<void> {
         const pairs = await this.getPairs(
             {},
             {
                 address: 1,
                 info: 1,
+                state: 1,
             },
         );
 
         for (const pair of pairs) {
-            pair.info = await this.pairAbi.pairInfoMetadata(pair.address);
-            await pair.save();
+            await this.updateStateAndReserves(pair);
         }
     }
 
-    async recomputeValues(): Promise<void> {
+    async refreshPairsAbiFields(): Promise<void> {
+        const pairs = await this.getPairs(
+            {},
+            {
+                address: 1,
+            },
+        );
+
+        for (const pair of pairs) {
+            await this.updateAbiFields(pair);
+        }
+    }
+
+    async refreshPairsPricesAndTVL(): Promise<void> {
         const profiler = new PerformanceProfiler();
 
         const pairsMap = new Map();
@@ -243,51 +236,7 @@ export class PairPersistenceService {
         });
     }
 
-    async updateAbiFields(pair: PairModel): Promise<PairModel> {
-        const [
-            info,
-            totalFeePercent,
-            specialFeePercent,
-            feesCollectorCutPercentage,
-            trustedSwapPairs,
-            state,
-            feeState,
-            whitelistedAddresses,
-            initialLiquidityAdder,
-            feeDestinations,
-            feesCollectorAddress,
-        ] = await Promise.all([
-            this.pairAbi.pairInfoMetadata(pair.address),
-            this.pairAbi.totalFeePercent(pair.address),
-            this.pairAbi.specialFeePercent(pair.address),
-            this.pairAbi.feesCollectorCutPercentage(pair.address),
-            this.pairAbi.trustedSwapPairs(pair.address),
-            this.pairAbi.state(pair.address),
-            this.pairAbi.feeState(pair.address),
-            this.pairAbi.whitelistedAddresses(pair.address),
-            this.pairAbi.initialLiquidityAdder(pair.address),
-            this.pairAbi.feeDestinations(pair.address),
-            this.pairAbi.feesCollectorAddress(pair.address),
-        ]);
-
-        pair.info = info;
-        pair.totalFeePercent = totalFeePercent;
-        pair.specialFeePercent = specialFeePercent;
-        pair.feesCollectorCutPercentage =
-            feesCollectorCutPercentage /
-            constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
-        pair.trustedSwapPairs = trustedSwapPairs;
-        pair.state = state;
-        pair.feeState = feeState;
-        pair.whitelistedManagedAddresses = whitelistedAddresses;
-        pair.initialLiquidityAdder = initialLiquidityAdder;
-        pair.feeDestinations = feeDestinations;
-        pair.feesCollectorAddress = feesCollectorAddress;
-
-        return pair;
-    }
-
-    async updatePairsAnalytics(): Promise<void> {
+    async refreshPairsAnalytics(): Promise<void> {
         const pairs = await this.getPairs(
             {},
             {
@@ -334,22 +283,104 @@ export class PairPersistenceService {
             pair.previous24hLockedValueUSD = previous24hLockedValueUSD ?? '0';
             pair.tradesCount = tradesCount;
             pair.tradesCount24h = tradesCount24h;
-            pair.feesAPR = this.computeFeesAPR(pair);
+
+            const actualFees24hBig = new BigNumber(feesUSD24h).multipliedBy(
+                new BigNumber(
+                    pair.totalFeePercent - pair.specialFeePercent,
+                ).div(pair.totalFeePercent),
+            );
+            const feesAPR = actualFees24hBig
+                .times(365)
+                .div(pair.lockedValueUSD);
+
+            pair.feesAPR = !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
 
             await pair.save();
         }
     }
 
-    computeFeesAPR(pair: PairModel): string {
-        const actualFees24hBig = new BigNumber(pair.feesUSD24h).multipliedBy(
-            new BigNumber(pair.totalFeePercent - pair.specialFeePercent).div(
-                pair.totalFeePercent,
-            ),
-        );
+    async updateLpToken(pair: PairDocument): Promise<void> {
+        const lpToken = await this.getPairLpToken(pair.address);
 
-        const feesAPR = actualFees24hBig.times(365).div(pair.lockedValueUSD);
+        if (lpToken === undefined) {
+            return;
+        }
 
-        return !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
+        pair.liquidityPoolToken = lpToken;
+        pair.liquidityPoolTokenId = lpToken.identifier;
+
+        await pair.save();
+    }
+
+    async updateStateAndReserves(pair: PairDocument): Promise<void> {
+        const [info, state] = await Promise.all([
+            this.pairAbi.pairInfoMetadata(pair.address),
+            this.pairAbi.state(pair.address),
+        ]);
+
+        pair.info = info;
+        pair.state = state;
+
+        await pair.save();
+    }
+
+    async updateAbiFields(pair: PairDocument): Promise<void> {
+        const [
+            info,
+            totalFeePercent,
+            specialFeePercent,
+            feesCollectorCutPercentage,
+            trustedSwapPairs,
+            state,
+            feeState,
+            whitelistedAddresses,
+            initialLiquidityAdder,
+            feeDestinations,
+            feesCollectorAddress,
+        ] = await Promise.all([
+            this.pairAbi.pairInfoMetadata(pair.address),
+            this.pairAbi.totalFeePercent(pair.address),
+            this.pairAbi.specialFeePercent(pair.address),
+            this.pairAbi.feesCollectorCutPercentage(pair.address),
+            this.pairAbi.trustedSwapPairs(pair.address),
+            this.pairAbi.state(pair.address),
+            this.pairAbi.feeState(pair.address),
+            this.pairAbi.whitelistedAddresses(pair.address),
+            this.pairAbi.initialLiquidityAdder(pair.address),
+            this.pairAbi.feeDestinations(pair.address),
+            this.pairAbi.feesCollectorAddress(pair.address),
+        ]);
+
+        pair.info = info;
+        pair.totalFeePercent = totalFeePercent;
+        pair.specialFeePercent = specialFeePercent;
+        pair.feesCollectorCutPercentage =
+            feesCollectorCutPercentage /
+            constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
+        pair.trustedSwapPairs = trustedSwapPairs;
+        pair.state = state;
+        pair.feeState = feeState;
+        pair.whitelistedManagedAddresses = whitelistedAddresses;
+        pair.initialLiquidityAdder = initialLiquidityAdder;
+        pair.feeDestinations = feeDestinations;
+        pair.feesCollectorAddress = feesCollectorAddress;
+
+        await pair.save();
+    }
+
+    async getPairLpToken(
+        address: string,
+    ): Promise<EsdtTokenDocument | undefined> {
+        const lpTokenMetadata = await this.pairService.getLpToken(address);
+
+        if (lpTokenMetadata === undefined) {
+            return undefined;
+        }
+
+        lpTokenMetadata.type = EsdtTokenType.FungibleLpToken;
+        lpTokenMetadata.pairAddress = address;
+
+        return this.tokenPersistence.upsertToken(lpTokenMetadata);
     }
 
     async getTotalLockedValueUSD(): Promise<string> {
@@ -446,6 +477,10 @@ export class PairPersistenceService {
             .getModel()
             .find(filterQuery, projection)
             .exec();
+
+        // const explanation = await query.explain().exec();
+        // console.log(JSON.stringify(explanation));
+        // const pairs = await query.exec();
 
         if (populateOptions) {
             await this.pairRepository

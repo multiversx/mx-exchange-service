@@ -28,9 +28,11 @@ export class PersistenceInitService {
         this.status = PopulateStatus.IN_PROGRESS;
 
         try {
-            // await this.pairPersistence.populatePairs();
+            await this.pairPersistence.populatePairs();
 
-            await this.pairPersistence.populatePairsComputedFields();
+            await this.pairPersistence.refreshPairsPricesAndTVL();
+
+            // await this.pairPersistence.refreshPairsAnalytics();
 
             this.status = PopulateStatus.SUCCESSFUL;
         } catch (error) {
@@ -53,7 +55,9 @@ export class PersistenceInitService {
         this.status = PopulateStatus.IN_PROGRESS;
 
         try {
-            await this.pairPersistence.updatePairReserves();
+            await this.pairPersistence.refreshPairsStateAndReserves();
+            await this.pairPersistence.refreshPairsPricesAndTVL();
+
             this.status = PopulateStatus.SUCCESSFUL;
         } catch (error) {
             this.logger.error('Failed pair reserves refresh', {
