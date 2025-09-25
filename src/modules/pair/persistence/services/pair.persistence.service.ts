@@ -106,6 +106,7 @@ export class PairPersistenceService {
         }
 
         const rawPair: Partial<PairModel> = {
+            address,
             firstToken: firstToken._id,
             firstTokenId: firstToken.identifier,
             secondToken: secondToken._id,
@@ -128,6 +129,8 @@ export class PairPersistenceService {
             `${this.populatePairModel.name} : ${profiler.duration}ms`,
             {
                 context: PairPersistenceService.name,
+                address,
+                tokens: `${firstTokenID}/${secondTokenID}`,
             },
         );
 
