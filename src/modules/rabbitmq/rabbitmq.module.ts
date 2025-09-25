@@ -44,7 +44,7 @@ import { TradingContestModule } from '../trading-contest/trading.contest.module'
 import { PairPersistenceModule } from '../pair/persistence/pair.persistence.module';
 import { TokenPersistenceModule } from '../tokens/persistence/token.persistence.module';
 import { PersistenceEventHandlerService } from './handlers/persistence.event.handler.service';
-import { RabbitMqStateConsumer } from './rabbitmq.state.consumer';
+import { StateChangesConsumer } from './state-changes/state.changes.consumer';
 
 @Module({
     imports: [
@@ -77,7 +77,7 @@ import { RabbitMqStateConsumer } from './rabbitmq.state.consumer';
     ],
     providers: [
         RabbitMqConsumer,
-        RabbitMqStateConsumer,
+        StateChangesConsumer,
         FarmHandlerService,
         RabbitMQProxyHandlerService,
         RouterHandlerService,

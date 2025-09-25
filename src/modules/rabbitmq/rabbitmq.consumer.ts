@@ -104,6 +104,7 @@ export class RabbitMqConsumer {
     @CompetingRabbitConsumer({
         queueName: process.env.RABBITMQ_QUEUE,
         exchange: process.env.RABBITMQ_EXCHANGE,
+        channel: 'channel-events',
     })
     async consumeEvents(rawEvents: any) {
         if (!rawEvents.events) {
@@ -152,7 +153,6 @@ export class RabbitMqConsumer {
                 topics: rawEvent.topics,
             });
             let eventData: any[];
-            let persistenceEventData: any[];
             switch (rawEvent.name) {
                 case PAIR_EVENTS.SWAP:
                     const swapEvent = new SwapEvent(rawEvent);
@@ -279,20 +279,24 @@ export class RabbitMqConsumer {
                     );
                     break;
                 case ROUTER_EVENTS.CREATE_PAIR:
+                    const createPairEvent = new CreatePairEvent(rawEvent);
                     await this.routerHandler.handleCreatePairEvent(
-                        new CreatePairEvent(rawEvent),
+                        createPairEvent,
+                    );
+                    await this.persistenceEventHandler.handleCreatePairEvent(
+                        createPairEvent,
                     );
                     await this.getFilterAddresses();
-                    await this.persistenceEventHandler.handleCreatePairEvent(
-                        new CreatePairEvent(rawEvent),
-                    );
                     break;
                 case ROUTER_EVENTS.PAIR_SWAP_ENABLED:
+                    const pairSwapEnabledEvent = new PairSwapEnabledEvent(
+                        rawEvent,
+                    );
                     await this.routerHandler.handlePairSwapEnabledEvent(
-                        new PairSwapEnabledEvent(rawEvent),
+                        pairSwapEnabledEvent,
                     );
                     await this.persistenceEventHandler.handlePairSwapEnabledEvent(
-                        new PairSwapEnabledEvent(rawEvent),
+                        pairSwapEnabledEvent,
                     );
                     break;
                 case ROUTER_EVENTS.MULTI_PAIR_SWAP:
