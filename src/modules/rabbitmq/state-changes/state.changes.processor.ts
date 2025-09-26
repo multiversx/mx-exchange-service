@@ -315,25 +315,25 @@ export class StateChangesProcessor {
             return tokenPairs;
         };
 
-        const dfs = (id: string): string => {
-            if (memo.has(id)) {
-                return memo.get(id);
+        const tokenDerivedEGLD = (tokenID: string): string => {
+            if (memo.has(tokenID)) {
+                return memo.get(tokenID);
             }
 
-            if (id === tokenProviderUSD) {
-                memo.set(id, '1');
+            if (tokenID === tokenProviderUSD) {
+                memo.set(tokenID, '1');
                 return '1';
             }
 
-            if (id === constantsConfig.USDC_TOKEN_ID) {
+            if (tokenID === constantsConfig.USDC_TOKEN_ID) {
                 const price = new BigNumber(1)
                     .dividedBy(egldPriceInUSD)
                     .toFixed();
-                memo.set(id, price);
+                memo.set(tokenID, price);
                 return price;
             }
 
-            const pairs = loadPairsForToken(id);
+            const pairs = loadPairsForToken(tokenID);
 
             let largestLiquidityEGLD = new BigNumber(0);
             let priceSoFar = new BigNumber(0);
@@ -343,8 +343,11 @@ export class StateChangesProcessor {
                     continue;
                 }
 
-                if (pair.firstTokenId === id) {
-                    const secondTokenDerivedEGLD = dfs(pair.secondTokenId);
+                if (pair.firstTokenId === tokenID) {
+                    const secondTokenDerivedEGLD = tokenDerivedEGLD(
+                        pair.secondTokenId,
+                    );
+
                     const secondToken = this.tokens.get(pair.secondTokenId);
                     const egldLocked = new BigNumber(pair.info.reserves1)
                         .times(`1e-${secondToken.decimals}`)
@@ -358,7 +361,10 @@ export class StateChangesProcessor {
                         );
                     }
                 } else {
-                    const firstTokenDerivedEGLD = dfs(pair.firstTokenId);
+                    const firstTokenDerivedEGLD = tokenDerivedEGLD(
+                        pair.firstTokenId,
+                    );
+
                     const firstToken = this.tokens.get(pair.firstTokenId);
                     const egldLocked = new BigNumber(pair.info.reserves0)
                         .times(`1e-${firstToken.decimals}`)
@@ -374,12 +380,12 @@ export class StateChangesProcessor {
                 }
             }
 
-            memo.set(id, priceSoFar.toFixed());
+            memo.set(tokenID, priceSoFar.toFixed());
 
             return priceSoFar.toFixed();
         };
 
-        return dfs(tokenID);
+        return tokenDerivedEGLD(tokenID);
     }
 
     private computeTokenLiquidityUSD(tokenID: string): string {
