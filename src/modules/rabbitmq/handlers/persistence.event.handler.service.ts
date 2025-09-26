@@ -27,6 +27,7 @@ export class PersistenceEventHandlerService {
 
         const pair = await this.pairPersistence.populatePairModel(
             new PairMetadata({ address, firstTokenID, secondTokenID }),
+            event.getTimestamp().toNumber(),
         );
 
         await this.pairPersistence.updateAbiFields(pair);
@@ -50,6 +51,7 @@ export class PersistenceEventHandlerService {
         await Promise.all([
             this.pairPersistence.updateLpToken(pair),
             this.pairPersistence.updateStateAndReserves(pair),
+            this.pairPersistence.updateAbiFields(pair),
         ]);
 
         profiler.stop();
