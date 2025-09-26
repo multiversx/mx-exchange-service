@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairPersistenceService } from '../pair/persistence/services/pair.persistence.service';
+import { TokenPersistenceService } from '../tokens/persistence/services/token.persistence.service';
 
 export enum PopulateStatus {
     NOT_STARTED = 'Not Started',
@@ -16,6 +17,7 @@ export class PersistenceInitService {
 
     constructor(
         private readonly pairPersistence: PairPersistenceService,
+        private readonly tokenPersistence: TokenPersistenceService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -30,9 +32,15 @@ export class PersistenceInitService {
         try {
             await this.pairPersistence.populatePairs();
 
-            await this.pairPersistence.refreshPairsPricesAndTVL();
+            await Promise.all([
+                this.pairPersistence.refreshPairsPricesAndTVL(),
+                this.pairPersistence.refreshPairsAbiFields(),
+            ]);
 
-            // await this.pairPersistence.refreshPairsAnalytics();
+            await Promise.all([
+                this.pairPersistence.refreshPairsAnalytics(),
+                this.tokenPersistence.refreshTokensAnalytics(),
+            ]);
 
             this.status = PopulateStatus.SUCCESSFUL;
         } catch (error) {
