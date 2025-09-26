@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { TokenRepository } from './token.repository';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { EsdtToken } from '../../models/esdtToken.model';
+import { EsdtToken, EsdtTokenType } from '../../models/esdtToken.model';
 import { FilterQuery, ProjectionType } from 'mongoose';
 import { TokenService } from '../../services/token.service';
 import { EsdtTokenDocument } from '../schemas/esdtToken.schema';
@@ -12,6 +12,10 @@ import {
 } from '../../models/tokens.filter.args';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { filteredTokensPipeline } from '../pipelines/filtered.tokens.pipeline';
+import { TokenComputeService } from '../../services/token.compute.service';
+import BigNumber from 'bignumber.js';
+import { constantsConfig, tokenProviderUSD } from 'src/config';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 
 type FilteredTokensResponse = {
     items: EsdtTokenDocument[];
@@ -23,6 +27,8 @@ export class TokenPersistenceService {
     constructor(
         private readonly tokenRepository: TokenRepository,
         private readonly tokenService: TokenService,
+        private readonly tokenCompute: TokenComputeService,
+        private readonly analyticsQuery: AnalyticsQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -30,9 +36,13 @@ export class TokenPersistenceService {
         tokenID: string,
     ): Promise<EsdtTokenDocument> {
         try {
-            const tokenMetadata = await this.tokenService.tokenMetadata(
-                tokenID,
-            );
+            const [tokenMetadata, createdAt] = await Promise.all([
+                this.tokenService.tokenMetadata(tokenID),
+                this.tokenCompute.tokenCreatedAt(tokenID),
+            ]);
+
+            tokenMetadata.createdAt = createdAt;
+
             const token = await this.upsertToken(tokenMetadata);
 
             return token;
@@ -40,6 +50,131 @@ export class TokenPersistenceService {
             this.logger.error(error);
             return undefined;
         }
+    }
+
+    async refreshTokensAnalytics(): Promise<void> {
+        const tokens = await this.getTokens(
+            { type: EsdtTokenType.FungibleToken },
+            { identifier: 1, derivedEGLD: 1, price: 1, previous24hPrice: 1 },
+        );
+
+        const wegldToken = tokens.find(
+            (token) => token.identifier === tokenProviderUSD,
+        );
+
+        if (!wegldToken) {
+            throw new Error(
+                `Missing token provider in DB. Cannot refresh analytics`,
+            );
+        }
+
+        const wrappedEGLDPrev24hPrice = await this.computeTokenPrevious24hPrice(
+            wegldToken,
+            wegldToken.previous24hPrice,
+        );
+
+        for (const token of tokens) {
+            const [
+                volumeLast2D,
+                pricePrevious24h,
+                pricePrevious7D,
+                swapsCount,
+                previous24hSwapsCount,
+            ] = await Promise.all([
+                this.tokenCompute.computeTokenLast2DaysVolumeUSD(
+                    token.identifier,
+                ),
+                this.computeTokenPrevious24hPrice(
+                    token,
+                    wrappedEGLDPrev24hPrice,
+                ),
+                this.tokenCompute.computeTokenPrevious7dPrice(token.identifier),
+                this.tokenCompute.tokenSwapCount(token.identifier),
+                this.tokenCompute.tokenPrevious24hSwapCount(token.identifier),
+            ]);
+
+            token.volumeUSD24h = volumeLast2D.current;
+            token.previous24hVolume = volumeLast2D.previous;
+            token.previous24hPrice = pricePrevious24h;
+            token.previous7dPrice = pricePrevious7D ?? '0';
+            token.swapCount24h = swapsCount;
+            token.previous24hSwapCount = previous24hSwapsCount;
+
+            token.volumeUSDChange24h = this.computeTokenVolumeChange(token);
+            token.priceChange24h = this.computeTokenPriceChange(token, '24h');
+            token.priceChange7d = this.computeTokenPriceChange(token, '7d');
+            token.tradeChange24h = this.computeTokenTradeChange24h(token);
+
+            token.trendingScore = this.tokenCompute.calculateTrendingScore(
+                token.volumeUSDChange24h,
+                token.priceChange24h,
+                token.tradeChange24h,
+            );
+
+            await token.save();
+        }
+    }
+
+    private async computeTokenPrevious24hPrice(
+        token: EsdtTokenDocument,
+        wrappedEGLDPrev24hPrice: string,
+    ): Promise<string> {
+        const values24h = await this.analyticsQuery.getValues24h({
+            series: token.identifier,
+            metric: 'priceUSD',
+        });
+
+        if (values24h.length > 0 && values24h[0]?.value === '0') {
+            return new BigNumber(token.derivedEGLD)
+                .times(wrappedEGLDPrev24hPrice)
+                .toFixed();
+        }
+
+        return values24h[0]?.value ?? '0';
+    }
+
+    private computeTokenPriceChange(
+        token: EsdtTokenDocument,
+        period: '24h' | '7d',
+    ): number {
+        const currentPriceBN = new BigNumber(token.price);
+        const previousPriceBN = new BigNumber(
+            period === '24h' ? token.previous24hPrice : token.previous7dPrice,
+        );
+
+        if (previousPriceBN.isZero()) {
+            return 0;
+        }
+
+        return currentPriceBN.dividedBy(previousPriceBN).toNumber();
+    }
+
+    private computeTokenVolumeChange(token: EsdtTokenDocument): number {
+        const currentVolumeBN = new BigNumber(token.volumeUSD24h);
+        const previous24hVolumeBN = new BigNumber(token.previous24hVolume);
+
+        if (currentVolumeBN.isZero()) {
+            return 0;
+        }
+
+        const maxPrevious24hVolume = BigNumber.maximum(
+            previous24hVolumeBN,
+            constantsConfig.trendingScore.MIN_24H_VOLUME,
+        );
+
+        return currentVolumeBN.dividedBy(maxPrevious24hVolume).toNumber();
+    }
+
+    private computeTokenTradeChange24h(token: EsdtTokenDocument): number {
+        const currentSwapsBN = new BigNumber(token.swapCount24h);
+        const previous24hSwapsBN = new BigNumber(token.previous24hSwapCount);
+
+        const maxPrevious24hTradeCount = BigNumber.maximum(
+            previous24hSwapsBN,
+            constantsConfig.trendingScore.MIN_24H_TRADE_COUNT,
+        );
+
+        return currentSwapsBN.dividedBy(maxPrevious24hTradeCount).toNumber();
     }
 
     async addToken(token: EsdtToken): Promise<void> {

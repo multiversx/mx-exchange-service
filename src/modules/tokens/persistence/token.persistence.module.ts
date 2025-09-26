@@ -5,6 +5,7 @@ import { TokenRepository } from './services/token.repository';
 import { TokenPersistenceService } from './services/token.persistence.service';
 import { TokenModule } from '../token.module';
 import { EsdtTokenSchema } from './schemas/esdtToken.schema';
+import { AnalyticsModule } from 'src/services/analytics/analytics.module';
 
 @Module({
     imports: [
@@ -12,6 +13,7 @@ import { EsdtTokenSchema } from './schemas/esdtToken.schema';
             { name: EsdtToken.name, schema: EsdtTokenSchema },
         ]),
         TokenModule,
+        AnalyticsModule,
     ],
     providers: [TokenRepository, TokenPersistenceService],
     exports: [TokenPersistenceService],
