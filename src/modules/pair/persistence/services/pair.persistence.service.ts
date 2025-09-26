@@ -84,7 +84,10 @@ export class PairPersistenceService {
         });
     }
 
-    async populatePairModel(pairMetadata: PairMetadata): Promise<PairDocument> {
+    async populatePairModel(
+        pairMetadata: PairMetadata,
+        timestamp?: number,
+    ): Promise<PairDocument> {
         const profiler = new PerformanceProfiler();
 
         const { firstTokenID, secondTokenID, address } = pairMetadata;
@@ -113,7 +116,7 @@ export class PairPersistenceService {
             secondTokenId: secondToken.identifier,
             info,
             state,
-            deployedAt,
+            deployedAt: deployedAt ?? timestamp ?? 0,
         };
 
         if (lpToken !== undefined) {
