@@ -55,6 +55,7 @@ export class PairComputeService implements IPairComputeService {
         private readonly elasticEventsService: ElasticSearchEventsService,
     ) {}
 
+    // TODO remove. not used
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
         const [firstTokenID, secondTokenID] = await Promise.all([
             this.pairAbi.firstTokenID(pairAddress),
@@ -778,6 +779,18 @@ export class PairComputeService implements IPairComputeService {
         );
 
         return farmingTokenIDs.includes(lpTokenID);
+    }
+
+    async getAllFarmingTokenIDs(): Promise<string[]> {
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]).filter(
+            (address) => farmType(address) !== FarmRewardType.DEPRECATED,
+        );
+
+        const farmingTokenIDs = await Promise.all(
+            addresses.map((address) => this.farmAbi.farmingTokenID(address)),
+        );
+
+        return farmingTokenIDs;
     }
 
     @ErrorLoggerAsync({
