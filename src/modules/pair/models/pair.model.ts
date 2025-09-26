@@ -326,6 +326,9 @@ export class PairModel {
     stakingProxyAddress: string;
 
     @Prop({ default: null, type: String })
+    stakingFarmAddress: string;
+
+    @Prop({ default: null, type: String })
     feesCollectorAddress: string;
 
     // @Prop()
