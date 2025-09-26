@@ -163,16 +163,6 @@ export class RabbitMqConsumer {
                         swapEvent,
                         eventData[swapEvent.address],
                     );
-                    persistenceEventData =
-                        await this.persistenceEventHandler.handleSwapEvents(
-                            swapEvent,
-                        );
-
-                    console.log('Regular handler data', eventData['factory']);
-                    console.log(
-                        'Persistence handler data',
-                        persistenceEventData['factory'],
-                    );
                     break;
                 case PAIR_EVENTS.ADD_LIQUIDITY:
                     [eventData, timestamp] =
@@ -180,18 +170,6 @@ export class RabbitMqConsumer {
                             new AddLiquidityEvent(rawEvent),
                         );
                     this.updateIngestData(eventData);
-                    persistenceEventData =
-                        await this.persistenceEventHandler.handleLiquidityEvent(
-                            new AddLiquidityEvent(rawEvent),
-                        );
-                    console.log(
-                        'Regular liquidity handler data',
-                        eventData['factory'],
-                    );
-                    console.log(
-                        'Persistence liquidity handler data',
-                        persistenceEventData['factory'],
-                    );
                     break;
                 case PAIR_EVENTS.REMOVE_LIQUIDITY:
                     [eventData, timestamp] =
@@ -199,18 +177,6 @@ export class RabbitMqConsumer {
                             new RemoveLiquidityEvent(rawEvent),
                         );
                     this.updateIngestData(eventData);
-                    persistenceEventData =
-                        await this.persistenceEventHandler.handleLiquidityEvent(
-                            new RemoveLiquidityEvent(rawEvent),
-                        );
-                    console.log(
-                        'Regular r_liquidity handler data',
-                        eventData['factory'],
-                    );
-                    console.log(
-                        'Persistence r_liquidity handler data',
-                        persistenceEventData['factory'],
-                    );
                     break;
                 case FARM_EVENTS.ENTER_FARM:
                     if (await this.isStakingAddress(rawEvent.address)) {
