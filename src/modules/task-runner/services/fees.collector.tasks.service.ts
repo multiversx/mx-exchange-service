@@ -5,7 +5,11 @@ import {
     TransactionWatcher,
 } from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
-import { RedlockService } from '@multiversx/sdk-nestjs-cache';
+import {
+    RedisCacheService,
+    RedlockService,
+} from '@multiversx/sdk-nestjs-cache';
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -29,6 +33,8 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 enum BroadcastStatus {
     success = 'success',
@@ -60,6 +66,9 @@ export class FeesCollectorTasksService implements OnModuleInit {
         private readonly mxProxy: MXProxyService,
         private readonly mxApi: MXApiService,
         private readonly apiConfigService: ApiConfigService,
+        private readonly redisCacheService: RedisCacheService,
+        private readonly contextGetter: ContextGetterService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -141,6 +150,70 @@ export class FeesCollectorTasksService implements OnModuleInit {
             {
                 context: FeesCollectorTasksService.name,
             },
+        );
+    }
+
+    @Cron(CronExpression.EVERY_4_HOURS)
+    @LockAndRetry({
+        lockKey: FeesCollectorTasksService.name,
+        lockName: 'redistributeRewards',
+    })
+    async redistributeRewards(): Promise<void> {
+        const cacheKey = 'feeCollectorTasks.redistributeRewards.lastEpoch';
+
+        const [currentEpoch, lastProcessedEpoch] = await Promise.all([
+            this.contextGetter.getCurrentEpoch(),
+            this.redisCacheService.get<number>(cacheKey),
+        ]);
+
+        if (lastProcessedEpoch === currentEpoch) {
+            this.logger.info(
+                `Redistribute rewards task skipped - already processed in epoch ${currentEpoch}`,
+                { context: FeesCollectorTasksService.name },
+            );
+            return;
+        }
+
+        const firstWeekStartEpoch =
+            await this.weekTimekeepingAbi.firstWeekStartEpoch(
+                scAddress.feesCollector,
+            );
+
+        if (
+            (currentEpoch - firstWeekStartEpoch) %
+                constantsConfig.EPOCHS_IN_WEEK !==
+            0
+        ) {
+            this.logger.info(
+                `Redistribute rewards task skipped for epoch ${currentEpoch}`,
+                { context: FeesCollectorTasksService.name },
+            );
+            return;
+        }
+
+        const transaction =
+            await this.feesCollectorTransaction.redistributeRewards(
+                this.accountSigner.getAddress().toBech32(),
+            );
+
+        const status = await this.broadcastTransaction(transaction);
+
+        if (status === BroadcastStatus.error) {
+            this.logger.error(
+                `Encountered an error while broadcasting redistribute rewards transaction`,
+                {
+                    context: FeesCollectorTasksService.name,
+                },
+            );
+
+            // throwing will trigger retry (up to 3 times)
+            throw new Error('Redistribute Rewards transaction failed');
+        }
+
+        await this.redisCacheService.set(
+            cacheKey,
+            currentEpoch,
+            Constants.oneHour() * 25,
         );
     }
 
@@ -296,7 +369,7 @@ export class FeesCollectorTasksService implements OnModuleInit {
     }
 
     private async broadcastTransaction(
-        swapTransaction: TransactionModel,
+        tx: TransactionModel,
     ): Promise<BroadcastStatus> {
         const { nonce } = await this.mxApi.getAccountStats(
             this.accountSigner.getAddress().bech32(),
@@ -304,13 +377,13 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
         const transaction = new Transaction({
             nonce: BigInt(nonce),
-            sender: swapTransaction.sender,
+            sender: tx.sender,
             receiver: scAddress.feesCollector,
-            value: BigInt(swapTransaction.value),
-            data: Buffer.from(swapTransaction.data, 'base64'),
-            gasPrice: BigInt(swapTransaction.gasPrice),
-            gasLimit: BigInt(swapTransaction.gasLimit),
-            chainID: swapTransaction.chainID,
+            value: BigInt(tx.value),
+            data: Buffer.from(tx.data, 'base64'),
+            gasPrice: BigInt(tx.gasPrice),
+            gasLimit: BigInt(tx.gasLimit),
+            chainID: tx.chainID,
             version: 2,
         });
 
@@ -327,14 +400,14 @@ export class FeesCollectorTasksService implements OnModuleInit {
                 await this.transactionWatcher.awaitCompleted(txHash);
 
             if (!transactionOnNetwork.status.isSuccessful()) {
-                this.logger.error(`Swap transaction ${txHash} has failed`, {
+                this.logger.error(`Transaction ${txHash} has failed`, {
                     context: FeesCollectorTasksService.name,
                 });
 
                 return BroadcastStatus.fail;
             }
 
-            this.logger.info(`Swap transaction ${txHash} was successful`, {
+            this.logger.info(`Transaction ${txHash} was successful`, {
                 context: FeesCollectorTasksService.name,
             });
 

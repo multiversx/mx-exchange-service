@@ -9,6 +9,7 @@ import { EnergyModule } from '../energy/energy.module';
 import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { TokenModule } from '../tokens/token.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
+import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.
         EnergyModule,
         FeesCollectorModule,
         TokenModule,
+        WeekTimekeepingModule,
     ],
     providers: [FeesCollectorTasksService],
     exports: [],
