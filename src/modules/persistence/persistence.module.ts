@@ -6,6 +6,7 @@ import { PairRepository } from './repositories/pair.repository';
 import { TokenRepository } from './repositories/token.repository';
 import { EsdtTokenSchema } from './schemas/esdtToken.schema';
 import { PairSchema } from './schemas/pair.schema';
+import { PairPersistenceService } from './services/pair.persistence.service';
 import { TokenPersistenceService } from './services/token.persistence.service';
 
 @Module({
@@ -15,8 +16,13 @@ import { TokenPersistenceService } from './services/token.persistence.service';
             { name: PairModel.name, schema: PairSchema },
         ]),
     ],
-    providers: [TokenRepository, TokenPersistenceService, PairRepository],
-    exports: [TokenPersistenceService],
+    providers: [
+        TokenRepository,
+        TokenPersistenceService,
+        PairRepository,
+        PairPersistenceService,
+    ],
+    exports: [TokenPersistenceService, PairPersistenceService],
     controllers: [],
 })
 export class PersistenceModule {}
