@@ -1,7 +1,10 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PairModel } from '../pair/models/pair.model';
+import { PairModule } from '../pair/pair.module';
+import { RouterModule } from '../router/router.module';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
+import { TokenModule } from '../tokens/token.module';
 import { PairRepository } from './repositories/pair.repository';
 import { TokenRepository } from './repositories/token.repository';
 import { EsdtTokenSchema } from './schemas/esdtToken.schema';
@@ -15,6 +18,9 @@ import { TokenPersistenceService } from './services/token.persistence.service';
             { name: EsdtToken.name, schema: EsdtTokenSchema },
             { name: PairModel.name, schema: PairSchema },
         ]),
+        forwardRef(() => RouterModule),
+        TokenModule,
+        PairModule,
     ],
     providers: [
         TokenRepository,

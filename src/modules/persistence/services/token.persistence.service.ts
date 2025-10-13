@@ -6,11 +6,15 @@ import { EsdtToken } from '../../tokens/models/esdtToken.model';
 import { FilterQuery, ProjectionType } from 'mongoose';
 import { EsdtTokenDocument } from '../schemas/esdtToken.schema';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
+import { TokenService } from 'src/modules/tokens/services/token.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 @Injectable()
 export class TokenPersistenceService {
     constructor(
         private readonly tokenRepository: TokenRepository,
+        private readonly tokenService: TokenService,
+        private readonly tokenCompute: TokenComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -99,5 +103,25 @@ export class TokenPersistenceService {
         });
 
         return result;
+    }
+
+    async populateEsdtTokenMetadata(
+        tokenID: string,
+    ): Promise<EsdtTokenDocument> {
+        try {
+            const [tokenMetadata, createdAt] = await Promise.all([
+                this.tokenService.tokenMetadata(tokenID),
+                this.tokenCompute.tokenCreatedAt(tokenID),
+            ]);
+
+            tokenMetadata.createdAt = createdAt;
+
+            const token = await this.upsertToken(tokenMetadata);
+
+            return token;
+        } catch (error) {
+            this.logger.error(error);
+            return undefined;
+        }
     }
 }
