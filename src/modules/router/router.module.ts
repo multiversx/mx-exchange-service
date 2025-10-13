@@ -15,7 +15,7 @@ import { SwapEnableConfigResolver } from './swap.enable.config.resolver';
 import { SimpleLockModule } from '../simple-lock/simple.lock.module';
 import { ESTransactionsService } from 'src/services/elastic-search/services/es.transactions.service';
 import { AnalyticsModule } from '../analytics/analytics.module';
-import { PairPersistenceModule } from '../pair/persistence/pair.persistence.module';
+import { PersistenceModule } from '../persistence/persistence.module';
 
 @Module({
     imports: [
@@ -27,7 +27,7 @@ import { PairPersistenceModule } from '../pair/persistence/pair.persistence.modu
         ContextModule,
         WrappingModule,
         RemoteConfigModule,
-        PairPersistenceModule,
+        PersistenceModule,
     ],
     providers: [
         RouterService,

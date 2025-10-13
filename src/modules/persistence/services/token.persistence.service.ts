@@ -1,18 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TokenRepository } from './token.repository';
+import { TokenRepository } from '../repositories/token.repository';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { EsdtToken, EsdtTokenType } from '../../models/esdtToken.model';
+import { EsdtToken, EsdtTokenType } from '../../tokens/models/esdtToken.model';
 import { FilterQuery, ProjectionType } from 'mongoose';
-import { TokenService } from '../../services/token.service';
+import { TokenService } from '../../tokens/services/token.service';
 import { EsdtTokenDocument } from '../schemas/esdtToken.schema';
 import {
     TokensFilter,
     TokenSortingArgs,
-} from '../../models/tokens.filter.args';
+} from '../../tokens/models/tokens.filter.args';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { filteredTokensPipeline } from '../pipelines/filtered.tokens.pipeline';
-import { TokenComputeService } from '../../services/token.compute.service';
+import { TokenComputeService } from '../../tokens/services/token.compute.service';
 import BigNumber from 'bignumber.js';
 import { constantsConfig, tokenProviderUSD } from 'src/config';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
@@ -74,44 +74,59 @@ export class TokenPersistenceService {
         );
 
         for (const token of tokens) {
-            const [
-                volumeLast2D,
-                pricePrevious24h,
-                pricePrevious7D,
-                swapsCount,
-                previous24hSwapsCount,
-            ] = await Promise.all([
-                this.tokenCompute.computeTokenLast2DaysVolumeUSD(
-                    token.identifier,
-                ),
-                this.computeTokenPrevious24hPrice(
+            try {
+                const [
+                    volumeLast2D,
+                    pricePrevious24h,
+                    pricePrevious7D,
+                    swapsCount,
+                    previous24hSwapsCount,
+                ] = await Promise.all([
+                    this.tokenCompute.computeTokenLast2DaysVolumeUSD(
+                        token.identifier,
+                    ),
+                    this.computeTokenPrevious24hPrice(
+                        token,
+                        wrappedEGLDPrev24hPrice,
+                    ),
+                    this.tokenCompute.computeTokenPrevious7dPrice(
+                        token.identifier,
+                    ),
+                    this.tokenCompute.tokenSwapCount(token.identifier),
+                    this.tokenCompute.tokenPrevious24hSwapCount(
+                        token.identifier,
+                    ),
+                ]);
+
+                token.volumeUSD24h = volumeLast2D.current;
+                token.previous24hVolume = volumeLast2D.previous;
+                token.previous24hPrice = pricePrevious24h;
+                token.previous7dPrice = pricePrevious7D ?? '0';
+                token.swapCount24h = swapsCount;
+                token.previous24hSwapCount = previous24hSwapsCount;
+
+                token.volumeUSDChange24h = this.computeTokenVolumeChange(token);
+                token.priceChange24h = this.computeTokenPriceChange(
                     token,
-                    wrappedEGLDPrev24hPrice,
-                ),
-                this.tokenCompute.computeTokenPrevious7dPrice(token.identifier),
-                this.tokenCompute.tokenSwapCount(token.identifier),
-                this.tokenCompute.tokenPrevious24hSwapCount(token.identifier),
-            ]);
+                    '24h',
+                );
+                token.priceChange7d = this.computeTokenPriceChange(token, '7d');
+                token.tradeChange24h = this.computeTokenTradeChange24h(token);
 
-            token.volumeUSD24h = volumeLast2D.current;
-            token.previous24hVolume = volumeLast2D.previous;
-            token.previous24hPrice = pricePrevious24h;
-            token.previous7dPrice = pricePrevious7D ?? '0';
-            token.swapCount24h = swapsCount;
-            token.previous24hSwapCount = previous24hSwapsCount;
+                token.trendingScore = this.tokenCompute.calculateTrendingScore(
+                    token.volumeUSDChange24h,
+                    token.priceChange24h,
+                    token.tradeChange24h,
+                );
 
-            token.volumeUSDChange24h = this.computeTokenVolumeChange(token);
-            token.priceChange24h = this.computeTokenPriceChange(token, '24h');
-            token.priceChange7d = this.computeTokenPriceChange(token, '7d');
-            token.tradeChange24h = this.computeTokenTradeChange24h(token);
-
-            token.trendingScore = this.tokenCompute.calculateTrendingScore(
-                token.volumeUSDChange24h,
-                token.priceChange24h,
-                token.tradeChange24h,
-            );
-
-            await token.save();
+                await token.save();
+            } catch (error) {
+                this.logger.error(
+                    `Failed while refreshing analytics for token ${token.identifier}`,
+                    { context: TokenPersistenceService.name },
+                );
+                this.logger.error(error);
+            }
         }
     }
 

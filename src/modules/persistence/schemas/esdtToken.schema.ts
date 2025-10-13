@@ -1,8 +1,8 @@
 import { SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { PairModel } from '../../models/pair.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
-export type PairDocument = PairModel & mongoose.Document;
+export type EsdtTokenDocument = EsdtToken & mongoose.Document;
 
 // const schemaDefinition = DefinitionsFactory.createForClass(EsdtToken);
 // export const EsdtTokenSchema = new mongoose.Schema(schemaDefinition, {
@@ -10,4 +10,4 @@ export type PairDocument = PairModel & mongoose.Document;
 //     toJSON: { getters: true, virtuals: false },
 //     toObject: { getters: true, virtuals: false },
 // });
-export const PairSchema = SchemaFactory.createForClass(PairModel);
+export const EsdtTokenSchema = SchemaFactory.createForClass(EsdtToken);

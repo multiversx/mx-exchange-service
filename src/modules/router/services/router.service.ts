@@ -17,7 +17,7 @@ import { CollectionType } from 'src/modules/common/collection.type';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { CacheService } from 'src/services/caching/cache.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { PairPersistenceService } from 'src/modules/pair/persistence/services/pair.persistence.service';
+import { PairPersistenceService } from 'src/modules/persistence/services/pair.persistence.service';
 
 @Injectable()
 export class RouterService {
@@ -54,6 +54,8 @@ export class RouterService {
             filters,
             sorting,
         );
+
+        // dbResult.pairs.forEach((pair) => pair.rewardTokens = [pair.firstToken, pair.secondToken])
 
         // let pairsMetadata = await this.routerAbi.pairsMetadata();
 

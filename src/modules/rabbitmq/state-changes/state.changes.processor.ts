@@ -1,11 +1,8 @@
 import { PairModel } from 'src/modules/pair/models/pair.model';
-import { PairDocument } from 'src/modules/pair/persistence/schemas/pair.schema';
 import {
     EsdtToken,
     EsdtTokenType,
 } from 'src/modules/tokens/models/esdtToken.model';
-import { EsdtTokenDocument } from 'src/modules/tokens/persistence/schemas/esdtToken.schema';
-import { PairStateChanges } from './state.changes.consumer';
 import { AnyBulkWriteOperation } from 'mongodb';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { getTokenForGivenPosition, quote } from 'src/modules/pair/pair.utils';
@@ -17,6 +14,9 @@ import {
     tokenProviderUSD,
 } from 'src/config';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { PairStateChanges, PAIR_FIELDS } from './entities';
+import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
+import { EsdtTokenDocument } from 'src/modules/persistence/schemas/esdtToken.schema';
 
 export type MongoBulkOperations = {
     pairBulkOps: AnyBulkWriteOperation<PairDocument>[];
@@ -31,6 +31,8 @@ export class StateChangesProcessor {
     private tokens: Map<string, EsdtToken>;
     private pairsUpdates: Map<string, Partial<PairModel>> = new Map();
     private tokensUpdates: Map<string, Partial<EsdtToken>> = new Map();
+    private pricesRecomputeNeeded = false;
+    private usdcPairChanged = false;
 
     constructor(
         pairs: Map<string, PairModel>,
@@ -61,14 +63,16 @@ export class StateChangesProcessor {
         stateChangesMap: Map<string, PairStateChanges>,
     ): MongoBulkOperations {
         for (const [address, stateChanges] of stateChangesMap.entries()) {
+            this.updatePairState(address, stateChanges);
             this.updatePairReservesAndPrices(address, stateChanges);
         }
 
-        // TODO: all token IDs with changes + pairs to update = keys(pairUpdates) + pairs of keys(tokensUpdates)
+        // TODO: extract only token IDs with changes + pairs to update = keys(pairUpdates) + pairs of keys(tokensUpdates)
 
-        this.updateTokensDerivedPriceEGLD();
-
-        this.updateValuesUSD();
+        if (this.pricesRecomputeNeeded) {
+            this.updateTokensDerivedPriceEGLD();
+            this.updateValuesUSD();
+        }
 
         return this.convertUpdatesToMongoBulkOperations();
     }
@@ -117,21 +121,70 @@ export class StateChangesProcessor {
         };
     }
 
+    private containsReservesStateChanges(
+        stateChanges: PairStateChanges,
+    ): boolean {
+        if (
+            Object.keys(stateChanges).includesSome([
+                PAIR_FIELDS.firstTokenReserve,
+                PAIR_FIELDS.secondTokenReserve,
+                PAIR_FIELDS.totalSupply,
+            ])
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private updatePairState(
+        address: string,
+        stateChanges: PairStateChanges,
+    ): void {
+        const trackedFields = [
+            PAIR_FIELDS.state,
+            PAIR_FIELDS.totalFeePercent,
+            PAIR_FIELDS.specialFeePercent,
+        ];
+
+        const rawPair: Partial<PairModel> = {};
+
+        for (const field of Object.keys(stateChanges)) {
+            if (!trackedFields.includes(field as PAIR_FIELDS)) {
+                continue;
+            }
+
+            rawPair[field] = stateChanges[field];
+        }
+
+        const pairChanged = this.syncPairUpdates(address, rawPair);
+
+        if (!pairChanged) {
+            return;
+        }
+
+        const pair = this.pairs.get(address);
+        for (const [field, value] of Object.entries(rawPair)) {
+            pair[field] = value;
+        }
+    }
+
     private updatePairReservesAndPrices(
         address: string,
         stateChanges: PairStateChanges,
     ): void {
+        if (!this.containsReservesStateChanges(stateChanges)) {
+            return;
+        }
+
+        this.pricesRecomputeNeeded = true;
+
         const pair = this.pairs.get(address);
 
-        // const rawUpdates: Partial<PairModel> = {};
+        if (address === scAddress.WEGLD_USDC) {
+            this.usdcPairChanged = true;
+        }
 
-        // if (
-        //     Object.keys(stateChanges).includes(
-        //         PAIR_FIELDS.firstTokenReserve ||
-        //             PAIR_FIELDS.secondTokenReserve ||
-        //             PAIR_FIELDS.totalSupply,
-        //     )
-        // ) {
         const info = {
             reserves0: stateChanges.reserves0 ?? pair.info.reserves0,
             reserves1: stateChanges.reserves1 ?? pair.info.reserves1,
@@ -175,7 +228,7 @@ export class StateChangesProcessor {
                 egldPriceUSD,
             );
 
-            if (token.derivedEGLD === derivedEGLD) {
+            if (token.derivedEGLD === derivedEGLD && !this.usdcPairChanged) {
                 continue;
             }
 
@@ -195,8 +248,14 @@ export class StateChangesProcessor {
         const tokensNeedingUpdate: Set<string> = new Set();
 
         for (const [address, pair] of this.pairs.entries()) {
-            const { firstTokenPriceUSD, secondTokenPriceUSD } =
-                this.computePairTokensPriceUSD(address);
+            // todo: remove; already computed
+            // const { firstTokenPriceUSD, secondTokenPriceUSD } =
+            //     this.computePairTokensPriceUSD(address);
+
+            const firstTokenPriceUSD = this.tokens.get(pair.firstTokenId).price;
+            const secondTokenPriceUSD = this.tokens.get(
+                pair.secondTokenId,
+            ).price;
 
             const {
                 firstTokenLockedValueUSD,
@@ -257,8 +316,6 @@ export class StateChangesProcessor {
                 token.liquidityUSD = liquidityUSD;
             }
         }
-
-        // console.log(tokensNeedingUpdate);
     }
 
     private computeTokensPriceByReserves(

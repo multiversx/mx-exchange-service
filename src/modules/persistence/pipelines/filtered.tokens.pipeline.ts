@@ -4,7 +4,7 @@ import {
     TokensFilter,
     TokenSortingArgs,
     TokensSortableFields,
-} from '../../models/tokens.filter.args';
+} from 'src/modules/tokens/models/tokens.filter.args';
 import { EsdtTokenDocument } from '../schemas/esdtToken.schema';
 
 export const filteredTokensPipeline = (

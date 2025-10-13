@@ -6,7 +6,7 @@ import {
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { PairPersistenceService } from 'src/modules/pair/persistence/services/pair.persistence.service';
+import { PairPersistenceService } from 'src/modules/persistence/services/pair.persistence.service';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { Logger } from 'winston';
 

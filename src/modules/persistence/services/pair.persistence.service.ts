@@ -6,15 +6,14 @@ import { constantsConfig } from 'src/config';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
-import { TokenPersistenceService } from 'src/modules/tokens/persistence/services/token.persistence.service';
 import { Logger } from 'winston';
-import { PairModel } from '../../models/pair.model';
-import { PairAbiService } from '../../services/pair.abi.service';
-import { PairService } from '../../services/pair.service';
+import { PairModel } from '../../pair/models/pair.model';
+import { PairAbiService } from '../../pair/services/pair.abi.service';
+import { PairService } from '../../pair/services/pair.service';
 import { PairDocument } from '../schemas/pair.schema';
-import { PairRepository } from './pair.repository';
+import { PairRepository } from '../repositories/pair.repository';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
-import { PairComputeService } from '../../services/pair.compute.service';
+import { PairComputeService } from '../../pair/services/pair.compute.service';
 import {
     PairsFilter,
     PairSortingArgs,
@@ -22,7 +21,8 @@ import {
 import { filteredPairsPipeline } from '../pipelines/filtered.pairs.pipeline';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { StateChangesProcessor } from 'src/modules/rabbitmq/state-changes/state.changes.processor';
-import { EsdtTokenDocument } from 'src/modules/tokens/persistence/schemas/esdtToken.schema';
+import { TokenPersistenceService } from './token.persistence.service';
+import { EsdtTokenDocument } from '../schemas/esdtToken.schema';
 
 export type PairLiquidityValuesUSD = {
     firstTokenPriceUSD: string;
@@ -124,7 +124,7 @@ export class PairPersistenceService {
             rawPair.liquidityPoolTokenId = lpToken.identifier;
         }
 
-        const pair = await this.pairRepository.create(rawPair);
+        const pair = await this.upsertPair(rawPair as PairModel);
 
         profiler.stop();
 
@@ -254,54 +254,71 @@ export class PairPersistenceService {
         );
 
         for (const pair of pairs) {
-            const [
-                firstTokenVolume,
-                secondTokenVolume,
-                volumeUSD24h,
-                volumeUSD48h,
-                feesUSD24h,
-                feesUSD48h,
-                previous24hLockedValueUSD,
-                tradesCount,
-                tradesCount24h,
-            ] = await Promise.all([
-                this.pairCompute.computeFirstTokenVolume(pair.address, '24h'),
-                this.pairCompute.computeSecondTokenVolume(pair.address, '24h'),
-                this.pairCompute.computeVolumeUSD(pair.address, '24h'),
-                this.pairCompute.computeVolumeUSD(pair.address, '48h'),
-                this.pairCompute.computeFeesUSD(pair.address, '24h'),
-                this.pairCompute.computeFeesUSD(pair.address, '48h'),
-                this.pairCompute.computePrevious24hLockedValueUSD(pair.address),
-                this.pairCompute.tradesCount(pair.address),
-                this.pairCompute.tradesCount24h(pair.address),
-            ]);
+            try {
+                const [
+                    firstTokenVolume,
+                    secondTokenVolume,
+                    volumeUSD24h,
+                    volumeUSD48h,
+                    feesUSD24h,
+                    feesUSD48h,
+                    previous24hLockedValueUSD,
+                    tradesCount,
+                    tradesCount24h,
+                ] = await Promise.all([
+                    this.pairCompute.computeFirstTokenVolume(
+                        pair.address,
+                        '24h',
+                    ),
+                    this.pairCompute.computeSecondTokenVolume(
+                        pair.address,
+                        '24h',
+                    ),
+                    this.pairCompute.computeVolumeUSD(pair.address, '24h'),
+                    this.pairCompute.computeVolumeUSD(pair.address, '48h'),
+                    this.pairCompute.computeFeesUSD(pair.address, '24h'),
+                    this.pairCompute.computeFeesUSD(pair.address, '48h'),
+                    this.pairCompute.computePrevious24hLockedValueUSD(
+                        pair.address,
+                    ),
+                    this.pairCompute.tradesCount(pair.address),
+                    this.pairCompute.tradesCount24h(pair.address),
+                ]);
 
-            pair.firstTokenVolume24h = firstTokenVolume;
-            pair.secondTokenVolume24h = secondTokenVolume;
-            pair.volumeUSD24h = volumeUSD24h;
-            pair.previous24hVolumeUSD = new BigNumber(volumeUSD48h)
-                .minus(feesUSD24h)
-                .toFixed();
-            pair.feesUSD24h = feesUSD24h;
-            pair.previous24hFeesUSD = new BigNumber(feesUSD48h)
-                .minus(feesUSD24h)
-                .toFixed();
-            pair.previous24hLockedValueUSD = previous24hLockedValueUSD ?? '0';
-            pair.tradesCount = tradesCount;
-            pair.tradesCount24h = tradesCount24h;
+                pair.firstTokenVolume24h = firstTokenVolume;
+                pair.secondTokenVolume24h = secondTokenVolume;
+                pair.volumeUSD24h = volumeUSD24h;
+                pair.previous24hVolumeUSD = new BigNumber(volumeUSD48h)
+                    .minus(feesUSD24h)
+                    .toFixed();
+                pair.feesUSD24h = feesUSD24h;
+                pair.previous24hFeesUSD = new BigNumber(feesUSD48h)
+                    .minus(feesUSD24h)
+                    .toFixed();
+                pair.previous24hLockedValueUSD =
+                    previous24hLockedValueUSD ?? '0';
+                pair.tradesCount = tradesCount;
+                pair.tradesCount24h = tradesCount24h;
 
-            const actualFees24hBig = new BigNumber(feesUSD24h).multipliedBy(
-                new BigNumber(
-                    pair.totalFeePercent - pair.specialFeePercent,
-                ).div(pair.totalFeePercent),
-            );
-            const feesAPR = actualFees24hBig
-                .times(365)
-                .div(pair.lockedValueUSD);
+                const actualFees24hBig = new BigNumber(feesUSD24h).multipliedBy(
+                    new BigNumber(
+                        pair.totalFeePercent - pair.specialFeePercent,
+                    ).div(pair.totalFeePercent),
+                );
+                const feesAPR = actualFees24hBig
+                    .times(365)
+                    .div(pair.lockedValueUSD);
 
-            pair.feesAPR = !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
+                pair.feesAPR = !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
 
-            await pair.save();
+                await pair.save();
+            } catch (error) {
+                this.logger.error(
+                    `Failed while refreshing analytics for pair ${pair.address}`,
+                    { context: PairPersistenceService.name },
+                );
+                this.logger.error(error);
+            }
         }
     }
 
@@ -377,7 +394,7 @@ export class PairPersistenceService {
     async getPairLpToken(
         address: string,
     ): Promise<EsdtTokenDocument | undefined> {
-        const lpTokenMetadata = await this.pairService.getLpToken(address);
+        const lpTokenMetadata = await this.pairService.getLpTokenRaw(address);
 
         if (lpTokenMetadata === undefined) {
             return undefined;
@@ -430,14 +447,18 @@ export class PairPersistenceService {
         }
     }
 
-    async upsertPair(pair: PairModel): Promise<void> {
+    async upsertPair(
+        pair: PairModel,
+        projection: ProjectionType<PairModel> = { __v: 0 },
+    ): Promise<PairDocument> {
         try {
-            await this.pairRepository.findOneAndUpdate(
-                { address: pair.address },
-                pair,
-                {},
-                true,
-            );
+            return this.pairRepository
+                .getModel()
+                .findOneAndUpdate({ address: pair.address }, pair, {
+                    new: true,
+                    upsert: true,
+                    projection,
+                });
         } catch (error) {
             this.logger.error(error);
             throw error;
