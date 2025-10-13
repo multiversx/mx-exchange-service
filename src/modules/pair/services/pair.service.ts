@@ -78,6 +78,13 @@ export class PairService {
             : this.tokenService.tokenMetadata(lpTokenID);
     }
 
+    async getLpTokenRaw(pairAddress: string): Promise<EsdtToken> {
+        const lpTokenID = await this.pairAbi.getLpTokenIDRaw(pairAddress);
+        return lpTokenID === undefined
+            ? undefined
+            : this.tokenService.tokenMetadataRaw(lpTokenID);
+    }
+
     async getAllLpTokensIds(pairAddresses: string[]): Promise<string[]> {
         return getAllKeys<string>(
             this.cachingService,

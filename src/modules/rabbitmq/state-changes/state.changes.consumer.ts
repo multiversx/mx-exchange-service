@@ -2,46 +2,46 @@ import {
     Address,
     BigUIntType,
     BinaryCodec,
+    TokenIdentifierType,
     TokenIdentifierValue,
+    U64Type,
 } from '@multiversx/sdk-core';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { scAddress } from 'src/config';
+import { constantsConfig, scAddress } from 'src/config';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { Logger } from 'winston';
-import { PairPersistenceService } from '../../pair/persistence/services/pair.persistence.service';
+import { PairPersistenceService } from '../../persistence/services/pair.persistence.service';
 import { RouterAbiService } from '../../router/services/router.abi.service';
-import { TokenPersistenceService } from '../../tokens/persistence/services/token.persistence.service';
+import { TokenPersistenceService } from '../../persistence/services/token.persistence.service';
 import { CompetingRabbitConsumer } from '../rabbitmq.consumers';
 import {
     BlockWithStateChanges,
     StateAccessPerAccountRaw,
 } from '../state.changes.types';
-import { PairModel } from '../../pair/models/pair.model';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
 import { StateChangesProcessor } from './state.changes.processor';
-
-const PAIR_RESERVE_PREFIX = Buffer.from('reserve').toString('hex');
-
-export enum PAIR_FIELDS {
-    firstTokenReserve = 'reserves0',
-    secondTokenReserve = 'reserves1',
-    totalSupply = 'totalSupply',
-}
-
-type PairStorageDecoder<T> = {
-    outputField: PAIR_FIELDS;
-    decode: (value: Uint8Array) => T;
-};
-
-export type PairStateChanges = Partial<Record<PAIR_FIELDS, any>>;
+import BigNumber from 'bignumber.js';
+import {
+    ENUM_TYPES,
+    PairStateChanges,
+    PairStorageDecoder,
+    PAIR_ENUMS,
+    PAIR_FIELDS,
+    PAIR_RESERVE_PREFIX,
+} from './entities';
+import {
+    PersistenceInitService,
+    PersistenceTasks,
+} from 'src/modules/persistence/services/persistence.init.service';
+import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
 
 @Injectable()
 export class StateChangesConsumer implements OnModuleInit {
     private isInitialised = false;
     private filterAddresses: string[];
-    private pairs: Map<string, PairModel> = new Map();
+    private pairs: Map<string, PairDocument> = new Map();
     private tokens: Map<string, EsdtToken> = new Map();
 
     constructor(
@@ -49,6 +49,7 @@ export class StateChangesConsumer implements OnModuleInit {
         private readonly tokenPersistence: TokenPersistenceService,
         private readonly dataApi: MXDataApiService,
         private readonly pairPersistence: PairPersistenceService,
+        private readonly persistenceInit: PersistenceInitService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -84,6 +85,16 @@ export class StateChangesConsumer implements OnModuleInit {
         }
 
         const addressesMap = new Map<string, string>();
+        const profiler = new PerformanceProfiler();
+
+        await this.updatePairsAndTokens();
+
+        // console.log({
+        //     state: blockData,
+        //     stateJSON: JSON.stringify(blockData),
+        // });
+
+        console.log('PAIRS', this.filterAddresses.length);
 
         Object.keys(blockData.stateAccessesPerAccounts).forEach((address) => {
             const bech32Address = Address.newFromHex(address).toBech32();
@@ -97,27 +108,28 @@ export class StateChangesConsumer implements OnModuleInit {
             return;
         }
 
-        const profiler = new PerformanceProfiler();
-
-        await this.updatePairsAndTokens();
-        // console.log({
-        //     state: blockData,
-        //     stateJSON: JSON.stringify(blockData),
-        // });
-
         const pairsStateChanges: Map<string, PairStateChanges> = new Map();
         for (const [hexAddress, address] of addressesMap.entries()) {
             if (address !== scAddress.routerAddress) {
-                // const pair = this.pairs.get(address);
-
                 const stateChanges = this.decodePairStateChanges(
                     address,
                     blockData.stateAccessesPerAccounts[hexAddress].stateAccess,
                 );
 
-                if (Object.keys(stateChanges).length > 0) {
-                    pairsStateChanges.set(address, stateChanges);
+                if (Object.keys(stateChanges).includes(PAIR_FIELDS.lpTokenID)) {
+                    await this.persistenceInit.queueTask({
+                        name: PersistenceTasks.INDEX_LP_TOKEN,
+                        args: [address],
+                    });
+
+                    delete stateChanges[PAIR_FIELDS.lpTokenID];
                 }
+
+                if (Object.keys(stateChanges).length === 0) {
+                    continue;
+                }
+
+                pairsStateChanges.set(address, stateChanges);
             }
         }
 
@@ -237,69 +249,6 @@ export class StateChangesConsumer implements OnModuleInit {
         return pairUpdates;
     }
 
-    private decodeRouterStateChanges(
-        stateAccess: StateAccessPerAccountRaw[],
-    ): void {
-        this.logger.info(`Decoding router state changes`, {
-            context: StateChangesConsumer.name,
-        });
-
-        console.log({
-            state: stateAccess,
-            // dataTrieChanges,
-            // dataTrieChangesJSON: JSON.stringify(dataTrieChanges),
-        });
-
-        for (const state of stateAccess) {
-            const dataTrieChanges = state.dataTrieChanges;
-            const txHash = Buffer.from(state.txHash, 'base64').toString('hex');
-
-            if (!dataTrieChanges || !Array.isArray(dataTrieChanges)) {
-                this.logger.warn(
-                    `No data trie changes in tx ${txHash} (i: ${state.index})`,
-                    {
-                        context: StateChangesConsumer.name,
-                    },
-                );
-                continue;
-            }
-
-            this.logger.info(
-                `Decoding dataTrie changes in tx ${txHash} (i: ${state.index})`,
-                {
-                    context: StateChangesConsumer.name,
-                },
-            );
-
-            for (const change of dataTrieChanges) {
-                if (change.version === 0) {
-                    this.logger.warn(`Unsupported dataTrieChanges version 0`, {
-                        context: StateChangesConsumer.name,
-                    });
-                    continue;
-                }
-
-                console.log(change);
-
-                // const trieLeadData: TrieLeafData = TrieLeafData.decode(
-                //     Buffer.from(change.val, 'base64'),
-                // );
-
-                // const keyHex = Buffer.from(trieLeadData.key).toString('hex');
-
-                console.log({
-                    key: Buffer.from(change.key, 'base64').toString('hex'),
-                    keyStr: Buffer.from(change.key, 'base64').toString(),
-                    value: Buffer.from(change.val, 'base64').toString('hex'),
-                });
-
-                // if (!Object.keys(storageToFieldMap).includes(keyHex)) {
-                //     continue;
-                // }
-            }
-        }
-    }
-
     async updatePairsAndTokens(): Promise<void> {
         this.filterAddresses = [];
         this.pairs = new Map();
@@ -323,6 +272,8 @@ export class StateChangesConsumer implements OnModuleInit {
                     lockedValueUSD: 1,
                     info: 1,
                     state: 1,
+                    totalFeePercent: 1,
+                    specialFeePercent: 1,
                 },
             ),
             this.tokenPersistence.getTokens(
@@ -368,6 +319,13 @@ export class StateChangesConsumer implements OnModuleInit {
                 .toString('hex');
 
         const keyLpTokenSupply = Buffer.from('lp_token_supply').toString('hex');
+        const keyLpTokenId = Buffer.from('lpTokenIdentifier').toString('hex');
+        const keyState = Buffer.from('state').toString('hex');
+        const keyTotalFeePercent =
+            Buffer.from('total_fee_percent').toString('hex');
+        const keySpecialFeePercent = Buffer.from(
+            'special_fee_percent',
+        ).toString('hex');
 
         const storageToFieldMap: Record<string, PairStorageDecoder<any>> = {
             [keyFirstTokenReserves]: {
@@ -382,6 +340,32 @@ export class StateChangesConsumer implements OnModuleInit {
                 outputField: PAIR_FIELDS.totalSupply,
                 decode: decodeBigUIntType,
             },
+            [keyState]: {
+                outputField: PAIR_FIELDS.state,
+                decode: (value) => decodeEnumType(value, PAIR_ENUMS.state),
+            },
+            [keyTotalFeePercent]: {
+                outputField: PAIR_FIELDS.totalFeePercent,
+                decode: (value) => {
+                    const raw = decodeU64Type(value);
+                    return new BigNumber(raw)
+                        .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+                        .toNumber();
+                },
+            },
+            [keySpecialFeePercent]: {
+                outputField: PAIR_FIELDS.specialFeePercent,
+                decode: (value) => {
+                    const raw = decodeU64Type(value);
+                    return new BigNumber(raw)
+                        .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+                        .toNumber();
+                },
+            },
+            [keyLpTokenId]: {
+                outputField: PAIR_FIELDS.lpTokenID,
+                decode: decodeTokenIdentifierType,
+            },
         };
 
         return storageToFieldMap;
@@ -393,4 +377,25 @@ const decodeBigUIntType = (value: Uint8Array): string => {
         .decodeTopLevel(Buffer.from(value), new BigUIntType())
         .valueOf()
         .toFixed();
+};
+
+const decodeU64Type = (value: Uint8Array): number => {
+    return new BinaryCodec()
+        .decodeTopLevel(Buffer.from(value), new U64Type())
+        .valueOf()
+        .toNumber();
+};
+
+const decodeTokenIdentifierType = (value: Uint8Array): string => {
+    return new BinaryCodec()
+        .decodeTopLevel(Buffer.from(value), new TokenIdentifierType())
+        .valueOf()
+        .toString();
+};
+
+const decodeEnumType = (value: Uint8Array, enumName: PAIR_ENUMS): string => {
+    return new BinaryCodec()
+        .decodeTopLevel(Buffer.from(value), ENUM_TYPES[enumName])
+        .valueOf()
+        .toString();
 };
