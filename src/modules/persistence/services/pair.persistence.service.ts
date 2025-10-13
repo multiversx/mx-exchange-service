@@ -14,6 +14,8 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
+import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
+import { BulkUpdatesService } from './bulk.updates.service';
 
 @Injectable()
 export class PairPersistenceService {
@@ -24,6 +26,7 @@ export class PairPersistenceService {
         private readonly pairService: PairService,
         private readonly pairCompute: PairComputeService,
         private readonly pairAbi: PairAbiService,
+        private readonly dataApi: MXDataApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -238,5 +241,80 @@ export class PairPersistenceService {
         lpTokenMetadata.pairAddress = address;
 
         return this.tokenPersistence.upsertToken(lpTokenMetadata);
+    }
+
+    async refreshPairsPricesAndTVL(): Promise<void> {
+        const profiler = new PerformanceProfiler();
+
+        const pairsMap = new Map();
+        const tokensMap = new Map();
+
+        const [pairs, tokens, usdcPrice, commonTokenIDs] = await Promise.all([
+            this.getPairs(
+                {},
+                {
+                    address: 1,
+                    firstTokenId: 1,
+                    firstTokenPrice: 1,
+                    firstTokenPriceUSD: 1,
+                    firstTokenLockedValueUSD: 1,
+                    secondTokenId: 1,
+                    secondTokenPrice: 1,
+                    secondTokenPriceUSD: 1,
+                    secondTokenLockedValueUSD: 1,
+                    liquidityPoolTokenId: 1,
+                    liquidityPoolTokenPriceUSD: 1,
+                    lockedValueUSD: 1,
+                    info: 1,
+                    state: 1,
+                },
+            ),
+            this.tokenPersistence.getTokens(
+                {},
+                {
+                    identifier: 1,
+                    decimals: 1,
+                    price: 1,
+                    derivedEGLD: 1,
+                    liquidityUSD: 1,
+                    type: 1,
+                    pairAddress: 1,
+                },
+            ),
+            this.dataApi.getTokenPrice('USDC'),
+            this.routerAbi.commonTokensForUserPairs(),
+        ]);
+
+        pairs.forEach((pair) => {
+            pairsMap.set(pair.address, pair);
+        });
+
+        tokens.forEach((token) => tokensMap.set(token.identifier, token));
+
+        const stateChangesProcessor = new BulkUpdatesService(
+            pairsMap,
+            tokensMap,
+            usdcPrice,
+            commonTokenIDs,
+        );
+        const { pairBulkOps, tokenBulkOps } =
+            stateChangesProcessor.recomputeAllValues();
+
+        await Promise.all([
+            this.bulkUpdatePairs(pairBulkOps, 'recomputeValues'),
+            this.tokenPersistence.bulkUpdateTokens(
+                tokenBulkOps,
+                'recomputeValues',
+            ),
+        ]);
+
+        profiler.stop();
+
+        this.logger.debug(
+            `${this.refreshPairsPricesAndTVL.name} : ${profiler.duration}ms`,
+            {
+                context: PairPersistenceService.name,
+            },
+        );
     }
 }
