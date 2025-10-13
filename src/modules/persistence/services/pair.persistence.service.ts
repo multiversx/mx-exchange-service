@@ -16,6 +16,7 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { BulkUpdatesService } from './bulk.updates.service';
+import { constantsConfig } from 'src/config';
 
 @Injectable()
 export class PairPersistenceService {
@@ -146,24 +147,13 @@ export class PairPersistenceService {
 
         const pairsMetadata = await this.routerAbi.pairsMetadata();
 
-        const counters = {
-            successful: 0,
-            failed: 0,
-        };
-
         for (const pairMeta of pairsMetadata) {
             try {
                 await this.populatePairModel(pairMeta);
-
-                counters.successful++;
             } catch (error) {
                 this.logger.error(error, {
                     context: PairPersistenceService.name,
                 });
-
-                counters.failed++;
-
-                continue;
             }
         }
 
@@ -288,7 +278,6 @@ export class PairPersistenceService {
         pairs.forEach((pair) => {
             pairsMap.set(pair.address, pair);
         });
-
         tokens.forEach((token) => tokensMap.set(token.identifier, token));
 
         const stateChangesProcessor = new BulkUpdatesService(
@@ -316,5 +305,91 @@ export class PairPersistenceService {
                 context: PairPersistenceService.name,
             },
         );
+    }
+
+    async refreshPairsStateAndReserves(): Promise<void> {
+        const pairs = await this.getPairs(
+            {},
+            {
+                address: 1,
+                info: 1,
+                state: 1,
+            },
+        );
+
+        for (const pair of pairs) {
+            // TOTO add try catch
+            await this.updateStateAndReserves(pair);
+        }
+    }
+
+    async updateStateAndReserves(pair: PairDocument): Promise<void> {
+        const [info, state] = await Promise.all([
+            this.pairAbi.pairInfoMetadata(pair.address),
+            this.pairAbi.state(pair.address),
+        ]);
+
+        pair.info = info;
+        pair.state = state;
+
+        await pair.save();
+    }
+
+    async refreshPairsAbiFields(): Promise<void> {
+        const pairs = await this.getPairs(
+            {},
+            {
+                address: 1,
+            },
+        );
+
+        for (const pair of pairs) {
+            // TODO add try/catch
+            await this.updateAbiFields(pair);
+        }
+    }
+
+    async updateAbiFields(pair: PairDocument): Promise<void> {
+        const [
+            info,
+            totalFeePercent,
+            specialFeePercent,
+            feesCollectorCutPercentage,
+            trustedSwapPairs,
+            state,
+            feeState,
+            whitelistedAddresses,
+            initialLiquidityAdder,
+            feeDestinations,
+            feesCollectorAddress,
+        ] = await Promise.all([
+            this.pairAbi.pairInfoMetadata(pair.address),
+            this.pairAbi.totalFeePercent(pair.address),
+            this.pairAbi.specialFeePercent(pair.address),
+            this.pairAbi.feesCollectorCutPercentage(pair.address),
+            this.pairAbi.trustedSwapPairs(pair.address),
+            this.pairAbi.state(pair.address),
+            this.pairAbi.feeState(pair.address),
+            this.pairAbi.whitelistedAddresses(pair.address),
+            this.pairAbi.initialLiquidityAdder(pair.address),
+            this.pairAbi.feeDestinations(pair.address),
+            this.pairAbi.feesCollectorAddress(pair.address),
+        ]);
+
+        pair.info = info;
+        pair.totalFeePercent = totalFeePercent;
+        pair.specialFeePercent = specialFeePercent;
+        pair.feesCollectorCutPercentage =
+            feesCollectorCutPercentage /
+            constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
+        pair.trustedSwapPairs = trustedSwapPairs;
+        pair.state = state;
+        pair.feeState = feeState;
+        pair.whitelistedManagedAddresses = whitelistedAddresses;
+        pair.initialLiquidityAdder = initialLiquidityAdder;
+        pair.feeDestinations = feeDestinations;
+        pair.feesCollectorAddress = feesCollectorAddress;
+
+        await pair.save();
     }
 }
