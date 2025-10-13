@@ -17,6 +17,7 @@ import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { BulkUpdatesService } from './bulk.updates.service';
 import { constantsConfig } from 'src/config';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class PairPersistenceService {
@@ -318,8 +319,15 @@ export class PairPersistenceService {
         );
 
         for (const pair of pairs) {
-            // TOTO add try catch
-            await this.updateStateAndReserves(pair);
+            try {
+                await this.updateStateAndReserves(pair);
+            } catch (error) {
+                this.logger.error(
+                    `Failed while refreshing state and reserves for pair ${pair.address}`,
+                    { context: PairPersistenceService.name },
+                );
+                this.logger.error(error);
+            }
         }
     }
 
@@ -344,8 +352,15 @@ export class PairPersistenceService {
         );
 
         for (const pair of pairs) {
-            // TODO add try/catch
-            await this.updateAbiFields(pair);
+            try {
+                await this.updateAbiFields(pair);
+            } catch (error) {
+                this.logger.error(
+                    `Failed while refreshing ABI fields for pair ${pair.address}`,
+                    { context: PairPersistenceService.name },
+                );
+                this.logger.error(error);
+            }
         }
     }
 
@@ -389,6 +404,79 @@ export class PairPersistenceService {
         pair.initialLiquidityAdder = initialLiquidityAdder;
         pair.feeDestinations = feeDestinations;
         pair.feesCollectorAddress = feesCollectorAddress;
+
+        await pair.save();
+    }
+
+    async refreshPairsAnalytics(): Promise<void> {
+        const pairs = await this.getPairs(
+            {},
+            {
+                address: 1,
+                lockedValueUSD: 1,
+                totalFeePercent: 1,
+                specialFeePercent: 1,
+            },
+        );
+
+        for (const pair of pairs) {
+            try {
+                await this.updateAnalytics(pair);
+            } catch (error) {
+                this.logger.error(
+                    `Failed while refreshing analytics for pair ${pair.address}`,
+                    { context: PairPersistenceService.name },
+                );
+                this.logger.error(error);
+            }
+        }
+    }
+
+    async updateAnalytics(pair: PairDocument): Promise<void> {
+        const [
+            firstTokenVolume,
+            secondTokenVolume,
+            volumeUSD24h,
+            volumeUSD48h,
+            feesUSD24h,
+            feesUSD48h,
+            previous24hLockedValueUSD,
+            tradesCount,
+            tradesCount24h,
+        ] = await Promise.all([
+            this.pairCompute.computeFirstTokenVolume(pair.address, '24h'),
+            this.pairCompute.computeSecondTokenVolume(pair.address, '24h'),
+            this.pairCompute.computeVolumeUSD(pair.address, '24h'),
+            this.pairCompute.computeVolumeUSD(pair.address, '48h'),
+            this.pairCompute.computeFeesUSD(pair.address, '24h'),
+            this.pairCompute.computeFeesUSD(pair.address, '48h'),
+            this.pairCompute.computePrevious24hLockedValueUSD(pair.address),
+            this.pairCompute.tradesCount(pair.address),
+            this.pairCompute.tradesCount24h(pair.address),
+        ]);
+
+        pair.firstTokenVolume24h = firstTokenVolume;
+        pair.secondTokenVolume24h = secondTokenVolume;
+        pair.volumeUSD24h = volumeUSD24h;
+        pair.previous24hVolumeUSD = new BigNumber(volumeUSD48h)
+            .minus(feesUSD24h)
+            .toFixed();
+        pair.feesUSD24h = feesUSD24h;
+        pair.previous24hFeesUSD = new BigNumber(feesUSD48h)
+            .minus(feesUSD24h)
+            .toFixed();
+        pair.previous24hLockedValueUSD = previous24hLockedValueUSD ?? '0';
+        pair.tradesCount = tradesCount;
+        pair.tradesCount24h = tradesCount24h;
+
+        const actualFees24hBig = new BigNumber(feesUSD24h).multipliedBy(
+            new BigNumber(pair.totalFeePercent - pair.specialFeePercent).div(
+                pair.totalFeePercent,
+            ),
+        );
+        const feesAPR = actualFees24hBig.times(365).div(pair.lockedValueUSD);
+
+        pair.feesAPR = !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
 
         await pair.save();
     }
