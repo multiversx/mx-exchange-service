@@ -9,7 +9,12 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
 import { delay } from 'src/helpers/helpers';
 import { Logger } from 'winston';
-import { PersistenceTasks, TaskDto } from '../entities';
+import {
+    PersistenceTaskPriority,
+    PersistenceTasks,
+    TaskDto,
+    TASK_MAX_SCORE,
+} from '../entities';
 import { PairPersistenceService } from './pair.persistence.service';
 import { TokenPersistenceService } from './token.persistence.service';
 
@@ -27,8 +32,6 @@ export class PersistenceService {
     ) {}
 
     async queueTasks(tasks: TaskDto[]): Promise<void> {
-        const serializedTasks: string[] = [];
-
         for (const task of tasks) {
             if (
                 task.name === PersistenceTasks.INDEX_LP_TOKEN &&
@@ -39,20 +42,26 @@ export class PersistenceService {
                 );
             }
 
-            serializedTasks.push(JSON.stringify(instanceToPlain(task)));
+            await this.redisService.zadd(
+                CACHE_KEY,
+                JSON.stringify(instanceToPlain(task)),
+                PersistenceTaskPriority[task.name],
+            );
         }
-
-        await this.redisService.rpush(CACHE_KEY, serializedTasks);
     }
 
     @LockAndRetry({
         lockKey: PersistenceService.name,
         lockName: 'processQueuedTasks',
         maxLockRetries: 0,
-        maxOperationRetries: 0,
+        maxOperationRetries: 1,
     })
     async processQueuedTasks(): Promise<void> {
-        const tasks = await this.redisService.lpop(CACHE_KEY);
+        const tasks = await this.redisService.zrangebyscore(
+            CACHE_KEY,
+            0,
+            TASK_MAX_SCORE,
+        );
 
         if (tasks.length === 0) {
             return;
@@ -86,6 +95,8 @@ export class PersistenceService {
             }
         }
 
+        await this.redisService.delete(CACHE_KEY);
+
         profiler.stop();
 
         this.logger.debug(
@@ -100,11 +111,8 @@ export class PersistenceService {
     async populateDb(): Promise<void> {
         try {
             await this.pairPersistence.populatePairs();
-
             await this.pairPersistence.refreshPairsPricesAndTVL();
-
             await this.pairPersistence.refreshPairsAbiFields();
-
             await this.refreshAnalytics();
         } catch (error) {
             this.logger.error('Failed populate DB task', {
@@ -138,6 +146,10 @@ export class PersistenceService {
             const pair = await this.pairPersistence.getPair({
                 address,
             });
+
+            if (!pair) {
+                throw new Error('Pair not found');
+            }
 
             let ct = 0;
             while (ct < INDEX_LP_MAX_ATTEMPTS) {

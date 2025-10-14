@@ -29,6 +29,15 @@ export enum PersistenceTasks {
     REFRESH_ANALYTICS = 'refreshAnalytics',
 }
 
+export const TASK_MAX_SCORE = 1000;
+
+export const PersistenceTaskPriority: Record<PersistenceTasks, number> = {
+    populateDb: 0,
+    refreshReserves: 10,
+    indexLpToken: 100,
+    refreshAnalytics: TASK_MAX_SCORE,
+};
+
 export class TaskDto {
     @IsNotEmpty()
     @IsEnum(PersistenceTasks)
@@ -39,6 +48,10 @@ export class TaskDto {
     @IsString({ each: true })
     @ArrayMinSize(1)
     args?: string[];
+
+    constructor(init?: Partial<TaskDto>) {
+        Object.assign(this, init);
+    }
 }
 
 export class QueueTasksRequest {
