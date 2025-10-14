@@ -43,6 +43,7 @@ import { StakingModule } from '../staking/staking.module';
 import { TradingContestModule } from '../trading-contest/trading.contest.module';
 import { PersistenceModule } from '../persistence/persistence.module';
 import { StateChangesConsumer } from './state-changes/state.changes.consumer';
+import { PersistenceEventHandlerService } from './handlers/persistence.event.handler.service';
 
 @Module({
     imports: [
@@ -91,6 +92,7 @@ import { StateChangesConsumer } from './state-changes/state.changes.consumer';
         GovernanceHandlerService,
         EscrowHandlerService,
         StakingHandlerService,
+        PersistenceEventHandlerService,
     ],
 })
 export class RabbitMqModule {
