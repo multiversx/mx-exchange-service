@@ -97,11 +97,27 @@ export class RabbitMqModule {
                 RabbitMQModule.forRootAsync(RabbitMQModule, {
                     useFactory: () => {
                         return {
-                            name: process.env.RABBITMQ_EXCHANGE,
-                            type: 'fanout',
+                            exchanges: [
+                                {
+                                    name: process.env.RABBITMQ_EXCHANGE,
+                                    type: 'fanout',
+                                },
+                                {
+                                    name: process.env.RABBITMQ_EXCHANGE_STATE,
+                                    type: 'fanout',
+                                },
+                            ],
+                            channels: {
+                                'channel-events': {
+                                    prefetchCount: 1,
+                                    default: true,
+                                },
+                                'channel-state': {
+                                    prefetchCount: 1,
+                                },
+                            },
                             options: {},
                             uri: process.env.RABBITMQ_URL,
-                            prefetchCount: 1,
                         };
                     },
                 }),
