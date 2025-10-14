@@ -1,7 +1,7 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Unit Tests
+name: Code Coverage
 
 on:
     pull_request:
@@ -18,17 +18,29 @@ jobs:
                 redis-version: [6]
 
         steps:
-            - uses: actions/checkout@v5
-            - name: Use Node.js ${{ matrix.node-version }}
+            - name: Checkout code
+              uses: actions/checkout@v5
+
+            - name: Setup Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v5
               with:
                   node-version: ${{ matrix.node-version }}
 
-            - name: Redis Server in GitHub Actions
+            - name: Setup Redis Server in GitHub Actions
               uses: supercharge/redis-github-action@1.2.0
               with:
                   redis-version: ${{ matrix.redis-version }}
 
             - run: npm ci
             - run: npm run build --if-present
-            - run: npm test
+            - run: npm run test:cov
+
+            - name: Upload code coverage
+              uses: codecov/codecov-action@v5
+              with:
+                  files: ./coverage/unit/clover.xml
+                  flags: unittests
+                  name: codecov-umbrella
+                  fail_ci_if_error: true
+                  verbose: true
+                  token: ${{ secrets.CODECOV_TOKEN }}

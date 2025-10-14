@@ -3,7 +3,10 @@ import { BigNumber } from 'bignumber.js';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { BaseEsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import {
+    BaseEsdtToken,
+    EsdtToken,
+} from 'src/modules/tokens/models/esdtToken.model';
 import {
     AutoRouterComputeService,
     BestSwapRoute,
@@ -380,37 +383,54 @@ export class AutoRouterService {
             pairMetadata.map((pair) => pair.address),
         );
 
-        const activePairs = pairMetadata.filter(
+        const tokenIDs: string[] = [];
+        const pairAddresses: string[] = [];
+
+        let activePairs = pairMetadata.filter(
             (_pair, index) => states[index] === 'Active',
         );
 
-        const pairAddresses: string[] = [];
-        let tokenIDs: string[] = [];
         activePairs.forEach((pair) => {
-            pairAddresses.push(pair.address);
             tokenIDs.push(...[pair.firstTokenID, pair.secondTokenID]);
         });
-        tokenIDs = [...new Set(tokenIDs)];
 
-        const [allInfo, allTotalFeePercent, allTokens] = await Promise.all([
-            this.pairAbi.getAllPairsInfoMetadata(pairAddresses),
-            this.pairAbi.getAllPairsTotalFeePercent(pairAddresses),
-            this.tokenService.getAllBaseTokensMetadata(tokenIDs),
+        const tokens = await this.tokenService.getAllTokensMetadata([
+            ...new Set(tokenIDs),
         ]);
 
         const tokenMap = new Map(
-            allTokens.map((token) => [token.identifier, token]),
+            tokens
+                .filter((token) => !token.isPaused)
+                .map((token) => [token.identifier, token]),
         );
 
+        activePairs = activePairs.filter(
+            (pair) =>
+                tokenMap.has(pair.firstTokenID) &&
+                tokenMap.has(pair.secondTokenID),
+        );
+        activePairs.forEach((pair) => {
+            pairAddresses.push(pair.address);
+        });
+
+        const [allInfo, allTotalFeePercent] = await Promise.all([
+            this.pairAbi.getAllPairsInfoMetadata(pairAddresses),
+            this.pairAbi.getAllPairsTotalFeePercent(pairAddresses),
+        ]);
+
         return activePairs.map((pair, index) => {
+            const firstToken = tokenMap.get(pair.firstTokenID);
+            const secondToken = tokenMap.get(pair.secondTokenID);
             return new PairModel({
                 address: pair.address,
-                firstToken: BaseEsdtToken.toEsdtToken(
-                    tokenMap.get(pair.firstTokenID),
-                ),
-                secondToken: BaseEsdtToken.toEsdtToken(
-                    tokenMap.get(pair.secondTokenID),
-                ),
+                firstToken: new EsdtToken({
+                    identifier: firstToken.identifier,
+                    decimals: firstToken.decimals,
+                }),
+                secondToken: new EsdtToken({
+                    identifier: secondToken.identifier,
+                    decimals: secondToken.decimals,
+                }),
                 info: allInfo[index],
                 totalFeePercent: allTotalFeePercent[index],
             });

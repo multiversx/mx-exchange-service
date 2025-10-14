@@ -186,7 +186,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 ticker: 'TOK6',
                 supply: '1000000000000000000',
                 decimals: 18,
-                isPaused: false,
+                isPaused: true,
                 canUpgrade: true,
                 canMint: true,
                 canBurn: true,
