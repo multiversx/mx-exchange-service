@@ -61,7 +61,11 @@ export class BulkUpdatesService {
 
     recomputeAllValues(): MongoBulkOperations {
         for (const [address, pair] of this.pairs.entries()) {
-            this.updatePairReservesAndPrices(address, { ...pair.info });
+            this.updatePairReservesAndPrices(address, {
+                reserves0: pair.info.reserves0,
+                reserves1: pair.info.reserves1,
+                totalSupply: pair.info.totalSupply,
+            });
         }
 
         this.updateTokensDerivedPriceEGLD();
@@ -522,13 +526,13 @@ export class BulkUpdatesService {
         const firstTokenValueUSD = computeValueUSD(
             firstTokenAmount.toFixed(),
             firstToken.decimals,
-            pair.firstTokenPriceUSD,
+            firstToken.price,
         );
 
         const secondTokenValueUSD = computeValueUSD(
             secondTokenAmount.toFixed(),
             secondToken.decimals,
-            pair.secondTokenPriceUSD,
+            secondToken.price,
         );
 
         return firstTokenValueUSD.plus(secondTokenValueUSD).toFixed();
