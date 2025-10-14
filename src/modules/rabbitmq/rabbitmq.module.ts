@@ -41,6 +41,8 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingHandlerService } from './handlers/staking.handler.service';
 import { StakingModule } from '../staking/staking.module';
 import { TradingContestModule } from '../trading-contest/trading.contest.module';
+import { PersistenceModule } from '../persistence/persistence.module';
+import { StateChangesConsumer } from './state-changes/state.changes.consumer';
 
 @Module({
     imports: [
@@ -68,9 +70,11 @@ import { TradingContestModule } from '../trading-contest/trading.contest.module'
         EscrowModule,
         RemoteConfigModule,
         TradingContestModule,
+        PersistenceModule,
     ],
     providers: [
         RabbitMqConsumer,
+        StateChangesConsumer,
         FarmHandlerService,
         RabbitMQProxyHandlerService,
         RouterHandlerService,
