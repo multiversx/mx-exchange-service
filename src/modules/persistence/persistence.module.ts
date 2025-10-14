@@ -1,5 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 import { PairModel } from '../pair/models/pair.model';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
@@ -21,6 +23,8 @@ import { TokenPersistenceService } from './services/token.persistence.service';
         forwardRef(() => RouterModule),
         TokenModule,
         PairModule,
+        MXCommunicationModule,
+        AnalyticsModule,
     ],
     providers: [
         TokenRepository,
