@@ -10,7 +10,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 
-export enum TRACKED_PAIR_FIELDS {
+export enum TrackedPairFields {
     firstTokenReserve = 'reserves0',
     secondTokenReserve = 'reserves1',
     totalSupply = 'totalSupply',
@@ -20,7 +20,7 @@ export enum TRACKED_PAIR_FIELDS {
     lpTokenID = 'lpTokenID',
 }
 
-export type PairStateChanges = Partial<Record<TRACKED_PAIR_FIELDS, any>>;
+export type PairStateChanges = Partial<Record<TrackedPairFields, any>>;
 
 export enum PersistenceTasks {
     POPULATE_DB = 'populateDb',

@@ -16,7 +16,7 @@ import {
 import { computeValueUSD } from 'src/utils/token.converters';
 import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
 import { EsdtTokenDocument } from 'src/modules/persistence/schemas/esdtToken.schema';
-import { PairStateChanges, TRACKED_PAIR_FIELDS } from '../entities';
+import { PairStateChanges, TrackedPairFields } from '../entities';
 
 export type MongoBulkOperations = {
     pairBulkOps: AnyBulkWriteOperation<PairDocument>[];
@@ -75,6 +75,54 @@ export class BulkUpdatesService {
         return this.convertUpdatesToMongoBulkOperations();
     }
 
+    getDbUpdateOperations(
+        stateChangesMap: Map<string, PairStateChanges>,
+    ): MongoBulkOperations {
+        for (const [address, stateChanges] of stateChangesMap.entries()) {
+            this.updatePairState(address, stateChanges);
+            this.updatePairReservesAndPrices(address, stateChanges);
+        }
+
+        if (this.pricesRecomputeNeeded) {
+            this.updateTokensDerivedPriceEGLD();
+            this.updateValuesUSD();
+        }
+
+        return this.convertUpdatesToMongoBulkOperations();
+    }
+
+    private updatePairState(
+        address: string,
+        stateChanges: PairStateChanges,
+    ): void {
+        const trackedFields = [
+            TrackedPairFields.state,
+            TrackedPairFields.totalFeePercent,
+            TrackedPairFields.specialFeePercent,
+        ];
+
+        const rawPair: Partial<PairModel> = {};
+
+        for (const field of Object.keys(stateChanges)) {
+            if (!trackedFields.includes(field as TrackedPairFields)) {
+                continue;
+            }
+
+            rawPair[field] = stateChanges[field];
+        }
+
+        const pairChanged = this.syncPairUpdates(address, rawPair);
+
+        if (!pairChanged) {
+            return;
+        }
+
+        const pair = this.pairs.get(address);
+        for (const [field, value] of Object.entries(rawPair)) {
+            pair[field] = value;
+        }
+    }
+
     private convertUpdatesToMongoBulkOperations(): MongoBulkOperations {
         const pairBulkOps: AnyBulkWriteOperation<PairDocument>[] = [];
         const tokenBulkOps: AnyBulkWriteOperation<EsdtTokenDocument>[] = [];
@@ -112,9 +160,9 @@ export class BulkUpdatesService {
     ): boolean {
         if (
             Object.keys(stateChanges).includesSome([
-                TRACKED_PAIR_FIELDS.firstTokenReserve,
-                TRACKED_PAIR_FIELDS.secondTokenReserve,
-                TRACKED_PAIR_FIELDS.totalSupply,
+                TrackedPairFields.firstTokenReserve,
+                TrackedPairFields.secondTokenReserve,
+                TrackedPairFields.totalSupply,
             ])
         ) {
             return true;
