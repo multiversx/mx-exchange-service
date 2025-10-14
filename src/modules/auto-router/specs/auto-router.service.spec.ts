@@ -426,6 +426,17 @@ describe('AutoRouterService', () => {
         ).rejects.toThrow('Spread too big!');
     });
 
+    it('should throw an error when the single possible route contains a paused token', async () => {
+        await expect(
+            service.swap({
+                amountOut: '1000000000000000000000',
+                tokenInID: 'WEGLD-123456',
+                tokenOutID: 'TOK6-123456',
+                tolerance: 0.01,
+            }),
+        ).rejects.toThrow('No route found');
+    });
+
     it('should get a fixed output multi swap tx + unwrap tx', async () => {
         const transactions = await service.getTransactions(
             senderAddress,
