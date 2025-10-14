@@ -142,10 +142,11 @@ export class PairPersistenceService {
     }
 
     async populatePairs(): Promise<void> {
-        this.logger.info('Starting populate pairs', {
+        this.logger.info(`Starting ${this.populatePairs.name}`, {
             context: PairPersistenceService.name,
         });
 
+        const profiler = new PerformanceProfiler();
         const pairsMetadata = await this.routerAbi.pairsMetadata();
 
         for (const pairMeta of pairsMetadata) {
@@ -158,9 +159,14 @@ export class PairPersistenceService {
             }
         }
 
-        this.logger.info('Finished populating pairs and tokens metadata', {
-            context: PairPersistenceService.name,
-        });
+        profiler.stop();
+
+        this.logger.debug(
+            `${this.populatePairs.name} : ${profiler.duration}ms`,
+            {
+                context: PairPersistenceService.name,
+            },
+        );
     }
 
     async populatePairModel(
@@ -248,8 +254,11 @@ export class PairPersistenceService {
     }
 
     async refreshPairsPricesAndTVL(): Promise<void> {
-        const profiler = new PerformanceProfiler();
+        this.logger.info(`Starting ${this.refreshPairsPricesAndTVL.name}`, {
+            context: PairPersistenceService.name,
+        });
 
+        const profiler = new PerformanceProfiler();
         const pairsMap = new Map();
         const tokensMap = new Map();
 
@@ -314,7 +323,7 @@ export class PairPersistenceService {
         profiler.stop();
 
         this.logger.debug(
-            `${this.refreshPairsPricesAndTVL.name} : ${profiler.duration}ms`,
+            `Finished ${this.refreshPairsPricesAndTVL.name} : ${profiler.duration}ms`,
             {
                 context: PairPersistenceService.name,
             },
@@ -322,6 +331,12 @@ export class PairPersistenceService {
     }
 
     async refreshPairsStateAndReserves(): Promise<void> {
+        this.logger.info(`Starting ${this.refreshPairsStateAndReserves.name}`, {
+            context: PairPersistenceService.name,
+        });
+
+        const profiler = new PerformanceProfiler();
+
         const pairs = await this.getPairs(
             {},
             {
@@ -342,6 +357,15 @@ export class PairPersistenceService {
                 this.logger.error(error);
             }
         }
+
+        profiler.stop();
+
+        this.logger.debug(
+            `Finished ${this.refreshPairsStateAndReserves.name} : ${profiler.duration}ms`,
+            {
+                context: PairPersistenceService.name,
+            },
+        );
     }
 
     async updateStateAndReserves(pair: PairDocument): Promise<void> {
@@ -357,6 +381,12 @@ export class PairPersistenceService {
     }
 
     async refreshPairsAbiFields(): Promise<void> {
+        this.logger.info(`Starting ${this.refreshPairsAbiFields.name}`, {
+            context: PairPersistenceService.name,
+        });
+
+        const profiler = new PerformanceProfiler();
+
         const pairs = await this.getPairs(
             {},
             {
@@ -375,6 +405,15 @@ export class PairPersistenceService {
                 this.logger.error(error);
             }
         }
+
+        profiler.stop();
+
+        this.logger.debug(
+            `Finished ${this.refreshPairsAbiFields.name} : ${profiler.duration}ms`,
+            {
+                context: PairPersistenceService.name,
+            },
+        );
     }
 
     async updateAbiFields(pair: PairDocument): Promise<void> {
@@ -422,6 +461,12 @@ export class PairPersistenceService {
     }
 
     async refreshPairsAnalytics(): Promise<void> {
+        this.logger.info(`Starting ${this.refreshPairsAnalytics.name}`, {
+            context: PairPersistenceService.name,
+        });
+
+        const profiler = new PerformanceProfiler();
+
         const pairs = await this.getPairs(
             {},
             {
@@ -443,6 +488,15 @@ export class PairPersistenceService {
                 this.logger.error(error);
             }
         }
+
+        profiler.stop();
+
+        this.logger.debug(
+            `Finished ${this.refreshPairsAnalytics.name} : ${profiler.duration}ms`,
+            {
+                context: PairPersistenceService.name,
+            },
+        );
     }
 
     async updateAnalytics(pair: PairDocument): Promise<void> {
