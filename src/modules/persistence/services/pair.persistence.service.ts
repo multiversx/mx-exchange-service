@@ -234,6 +234,19 @@ export class PairPersistenceService {
         return this.tokenPersistence.upsertToken(lpTokenMetadata);
     }
 
+    async updateLpToken(pair: PairDocument): Promise<void> {
+        const lpToken = await this.getPairLpToken(pair.address);
+
+        if (lpToken === undefined) {
+            return;
+        }
+
+        pair.liquidityPoolToken = lpToken;
+        pair.liquidityPoolTokenId = lpToken.identifier;
+
+        await pair.save();
+    }
+
     async refreshPairsPricesAndTVL(): Promise<void> {
         const profiler = new PerformanceProfiler();
 
