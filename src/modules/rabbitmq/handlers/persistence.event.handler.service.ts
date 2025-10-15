@@ -48,11 +48,9 @@ export class PersistenceEventHandlerService {
             address: event.getPairAddress().bech32(),
         });
 
-        await Promise.all([
-            this.pairPersistence.updateLpToken(pair),
-            this.pairPersistence.updateStateAndReserves(pair),
-            this.pairPersistence.updateAbiFields(pair),
-        ]);
+        await this.pairPersistence.updateLpToken(pair);
+        await this.pairPersistence.updateStateAndReserves(pair);
+        await this.pairPersistence.updateAbiFields(pair);
 
         profiler.stop();
 
