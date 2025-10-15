@@ -66,6 +66,10 @@ export const filteredTokensPipeline = (
         initialStage.push({ $match: matchQuery });
     }
 
+    if (filters.enabledSwaps === true) {
+        initialStage.push(...getActivePairsLookupStage());
+    }
+
     if (sortField !== undefined) {
         itemsFacet.push(convertSortArgs(sortArgs));
     }
@@ -172,4 +176,46 @@ const convertToDecimalExpr = (field: string, onError = 0, onNull = 0) => {
             onNull,
         },
     };
+};
+
+const getActivePairsLookupStage = () => {
+    return [
+        {
+            $lookup: {
+                from: 'pairs',
+                let: { tokenId: '$identifier' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$state', 'Active'] },
+                                    {
+                                        $or: [
+                                            {
+                                                $eq: [
+                                                    '$firstTokenId',
+                                                    '$$tokenId',
+                                                ],
+                                            },
+                                            {
+                                                $eq: [
+                                                    '$secondTokenId',
+                                                    '$$tokenId',
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                    { $project: { _id: 1 } },
+                ],
+                as: '__activePairs',
+            },
+        },
+        { $match: { '__activePairs.0': { $exists: true } } },
+        { $unset: '__activePairs' },
+    ];
 };
