@@ -141,6 +141,7 @@ export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
     @Prop({ required: false })
     balance?: string;
     @Prop({ required: false })
+    @Field({ nullable: true })
     createdAt?: string;
     @Prop({ required: false, index: true })
     pairAddress?: string;
