@@ -121,6 +121,19 @@ export class TokenService {
         return this.tokenMetadataRaw(tokenID);
     }
 
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async tokenMetadataFromDb(
+        tokenID: string,
+        projection?: ProjectionType<EsdtTokenDocument>,
+    ): Promise<EsdtToken> {
+        return this.tokenPersistence.getToken(
+            { identifier: tokenID },
+            projection,
+        );
+    }
+
     async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
         return getAllKeys<EsdtToken>(
             this.cachingService,
@@ -128,6 +141,21 @@ export class TokenService {
             'token.tokenMetadata',
             this.tokenMetadata.bind(this),
             CacheTtlInfo.Token,
+        );
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async getAllTokensMetadataFromDb(
+        tokenIDs: string[],
+        projection?: ProjectionType<EsdtTokenDocument>,
+    ): Promise<EsdtToken[]> {
+        return this.tokenPersistence.getTokens(
+            {
+                identifier: { $in: tokenIDs },
+            },
+            projection,
         );
     }
 
