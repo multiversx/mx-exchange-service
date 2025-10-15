@@ -112,13 +112,13 @@ export class TokenService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    @GetOrSetCache({
-        baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
-    })
+    // @GetOrSetCache({
+    //     baseKey: 'token',
+    //     remoteTtl: CacheTtlInfo.Token.remoteTtl,
+    //     localTtl: CacheTtlInfo.Token.localTtl,
+    // })
     async tokenMetadata(tokenID: string): Promise<EsdtToken> {
-        return this.tokenMetadataRaw(tokenID);
+        return this.tokenMetadataFromDb(tokenID);
     }
 
     @ErrorLoggerAsync({
@@ -135,13 +135,8 @@ export class TokenService {
     }
 
     async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
-        return getAllKeys<EsdtToken>(
-            this.cachingService,
-            tokenIDs,
-            'token.tokenMetadata',
-            this.tokenMetadata.bind(this),
-            CacheTtlInfo.Token,
-        );
+        const tokens = await this.getAllTokensMetadataFromDb(tokenIDs);
+        return tokenIDs.map((tokenID) => tokens.get(tokenID));
     }
 
     @ErrorLoggerAsync({
@@ -149,14 +144,15 @@ export class TokenService {
     })
     async getAllTokensMetadataFromDb(
         tokenIDs: string[],
-        projection?: ProjectionType<EsdtTokenDocument>,
-    ): Promise<EsdtToken[]> {
-        return this.tokenPersistence.getTokens(
+        projection: ProjectionType<EsdtTokenDocument> = { _id: 0, __v: 0 },
+    ): Promise<Map<string, EsdtToken>> {
+        const tokens = await this.tokenPersistence.getTokens(
             {
-                identifier: { $in: tokenIDs },
+                identifier: { $in: [...new Set(tokenIDs)] },
             },
             projection,
         );
+        return new Map(tokens.map((token) => [token.identifier, token]));
     }
 
     async tokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
