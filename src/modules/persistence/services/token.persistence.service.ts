@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TokenRepository } from '../repositories/token.repository';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -11,12 +11,24 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { constantsConfig, tokenProviderUSD } from 'src/config';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import BigNumber from 'bignumber.js';
+import {
+    TokensFilter,
+    TokenSortingArgs,
+} from 'src/modules/tokens/models/tokens.filter.args';
+import { filteredTokensPipeline } from '../pipelines/filtered.tokens.pipeline';
+
+type FilteredTokensResponse = {
+    items: EsdtTokenDocument[];
+    total: number;
+};
 
 @Injectable()
 export class TokenPersistenceService {
     constructor(
         private readonly tokenRepository: TokenRepository,
+        @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
+        @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly analyticsQuery: AnalyticsQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -267,5 +279,52 @@ export class TokenPersistenceService {
         );
 
         return currentSwapsBN.dividedBy(maxPrevious24hTradeCount).toNumber();
+    }
+
+    async getFilteredTokens(
+        offset: number,
+        limit: number,
+        filters: TokensFilter,
+        sorting: TokenSortingArgs,
+    ): Promise<{ tokens: EsdtToken[]; count: number }> {
+        const profiler = new PerformanceProfiler();
+
+        const [result] = await this.tokenRepository
+            .getModel()
+            .aggregate<FilteredTokensResponse>(
+                filteredTokensPipeline(offset, limit, filters, sorting),
+            )
+            .exec();
+
+        profiler.stop();
+
+        this.logger.debug(
+            `${this.getFilteredTokens.name} : ${profiler.duration}ms`,
+            {
+                context: TokenPersistenceService.name,
+            },
+        );
+
+        return { tokens: result.items, count: result.total };
+    }
+
+    async getToken(
+        filterQuery: FilterQuery<EsdtTokenDocument>,
+        projection?: ProjectionType<EsdtTokenDocument>,
+    ): Promise<EsdtTokenDocument> {
+        const profiler = new PerformanceProfiler();
+
+        const token = await this.tokenRepository
+            .getModel()
+            .findOne(filterQuery, projection)
+            .exec();
+
+        profiler.stop();
+
+        this.logger.debug(`${this.getToken.name} : ${profiler.duration}ms`, {
+            context: TokenPersistenceService.name,
+        });
+
+        return token;
     }
 }
