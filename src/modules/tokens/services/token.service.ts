@@ -152,6 +152,9 @@ export class TokenService {
 
         if (fields.length > 0) {
             fields.forEach((field) => (projection[field] = 1));
+        } else {
+            projection.__v = 0;
+            projection._id = 0;
         }
 
         const tokens = await this.tokenPersistence.getTokens(
@@ -159,6 +162,7 @@ export class TokenService {
                 identifier: { $in: [...new Set(tokenIDs)] },
             },
             projection,
+            true,
         );
         return new Map(tokens.map((token) => [token.identifier, token]));
     }
@@ -175,10 +179,13 @@ export class TokenService {
             fields.forEach((field) => (projection[field] = 1));
         }
 
-        return this.tokenPersistence.getToken(
+        const [token] = await this.tokenPersistence.getTokens(
             { identifier: tokenID },
             Object.keys(projection).length ? projection : undefined,
+            true,
         );
+
+        return token;
     }
 
     @ErrorLoggerAsync({

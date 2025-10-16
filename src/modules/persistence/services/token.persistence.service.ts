@@ -104,12 +104,13 @@ export class TokenPersistenceService {
     async getTokens(
         filterQuery: FilterQuery<EsdtTokenDocument>,
         projection?: ProjectionType<EsdtTokenDocument>,
+        lean = false,
     ): Promise<EsdtTokenDocument[]> {
         const profiler = new PerformanceProfiler();
 
         const result = await this.tokenRepository
             .getModel()
-            .find(filterQuery, projection)
+            .find(filterQuery, projection, { lean })
             .exec();
 
         profiler.stop();
