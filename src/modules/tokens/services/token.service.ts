@@ -117,25 +117,27 @@ export class TokenService {
     //     remoteTtl: CacheTtlInfo.Token.remoteTtl,
     //     localTtl: CacheTtlInfo.Token.localTtl,
     // })
-    async tokenMetadata(tokenID: string): Promise<EsdtToken> {
-        return this.tokenMetadataFromDb(tokenID);
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    async tokenMetadataFromDb(
+    async tokenMetadata(
         tokenID: string,
-        projection?: ProjectionType<EsdtTokenDocument>,
+        fields?: (keyof EsdtToken)[],
     ): Promise<EsdtToken> {
-        return this.tokenPersistence.getToken(
-            { identifier: tokenID },
-            projection,
-        );
+        return this.tokenMetadataRaw(tokenID, fields);
     }
 
-    async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
-        const tokens = await this.getAllTokensMetadataFromDb(tokenIDs);
+    async getAllTokensMetadata(
+        tokenIDs: string[],
+        fields: (keyof EsdtToken)[] = [],
+    ): Promise<EsdtToken[]> {
+        // return getAllKeys<EsdtToken>(
+        //     this.cachingService,
+        //     tokenIDs,
+        //     'token.tokenMetadata',
+        //     this.tokenMetadata.bind(this),
+        //     CacheTtlInfo.Token,
+        // );
+        // TODO: check for stale data + fallback mechanism ?
+
+        const tokens = await this.getAllTokensMetadataFromDb(tokenIDs, fields);
         return tokenIDs.map((tokenID) => tokens.get(tokenID));
     }
 
@@ -144,8 +146,14 @@ export class TokenService {
     })
     async getAllTokensMetadataFromDb(
         tokenIDs: string[],
-        projection: ProjectionType<EsdtTokenDocument> = { _id: 0, __v: 0 },
+        fields: (keyof EsdtToken)[] = [],
     ): Promise<Map<string, EsdtToken>> {
+        const projection: ProjectionType<EsdtTokenDocument> = {};
+
+        if (fields.length > 0) {
+            fields.forEach((field) => (projection[field] = 1));
+        }
+
         const tokens = await this.tokenPersistence.getTokens(
             {
                 identifier: { $in: [...new Set(tokenIDs)] },
@@ -155,8 +163,22 @@ export class TokenService {
         return new Map(tokens.map((token) => [token.identifier, token]));
     }
 
-    async tokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
-        return this.apiService.getToken(tokenID);
+    async tokenMetadataRaw(
+        tokenID: string,
+        fields: (keyof EsdtToken)[] = [],
+    ): Promise<EsdtToken> {
+        // return this.apiService.getToken(tokenID);
+        // TODO: check for stale data + fallback mechanism ?
+        const projection: ProjectionType<EsdtTokenDocument> = {};
+
+        if (fields.length > 0) {
+            fields.forEach((field) => (projection[field] = 1));
+        }
+
+        return this.tokenPersistence.getToken(
+            { identifier: tokenID },
+            Object.keys(projection).length ? projection : undefined,
+        );
     }
 
     @ErrorLoggerAsync({
