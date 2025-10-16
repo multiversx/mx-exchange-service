@@ -14,7 +14,6 @@ import { StakingModule } from '../staking/staking.module';
 import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
 import { SimpleLockModule } from '../simple-lock/simple.lock.module';
-import { UserTokenResolver } from './user.token.resolver';
 import { TokenModule } from '../tokens/token.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { RouterModule } from '../router/router.module';
@@ -71,7 +70,6 @@ import { MetabondingModule } from '../metabonding/metabonding.module';
         UserEnergySetterService,
         UserEnergyTransactionService,
         UserResolver,
-        UserTokenResolver,
         UserNftsResolver,
         UserInfoByWeekResolver,
     ],
