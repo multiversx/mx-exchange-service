@@ -18,6 +18,7 @@ import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.
 import { BulkUpdatesService } from './bulk.updates.service';
 import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
+import { BulkWriteOperations } from '../entities';
 
 @Injectable()
 export class PairPersistenceService {
@@ -67,7 +68,7 @@ export class PairPersistenceService {
     }
 
     async bulkUpdatePairs(
-        bulkOps: any[],
+        bulkOps: BulkWriteOperations<PairModel>,
         operationName?: string,
     ): Promise<void> {
         if (bulkOps.length === 0) {
@@ -122,23 +123,6 @@ export class PairPersistenceService {
         });
 
         return pairs;
-    }
-
-    async getPair(
-        filterQuery: FilterQuery<PairDocument>,
-        projection?: ProjectionType<PairDocument>,
-        populateOptions?: PopulateOptions,
-    ): Promise<PairDocument> {
-        const pair = await this.pairRepository
-            .getModel()
-            .findOne(filterQuery, projection)
-            .exec();
-
-        if (populateOptions) {
-            await pair.populate(populateOptions);
-        }
-
-        return pair;
     }
 
     async populatePairs(): Promise<void> {
@@ -370,8 +354,8 @@ export class PairPersistenceService {
 
     async updateStateAndReserves(pair: PairDocument): Promise<void> {
         const [info, state] = await Promise.all([
-            this.pairAbi.pairInfoMetadata(pair.address),
-            this.pairAbi.state(pair.address),
+            this.pairAbi.getPairInfoMetadataRaw(pair.address),
+            this.pairAbi.getStateRaw(pair.address),
         ]);
 
         pair.info = info;
@@ -430,22 +414,26 @@ export class PairPersistenceService {
             feeDestinations,
             feesCollectorAddress,
         ] = await Promise.all([
-            this.pairAbi.pairInfoMetadata(pair.address),
-            this.pairAbi.totalFeePercent(pair.address),
-            this.pairAbi.specialFeePercent(pair.address),
-            this.pairAbi.feesCollectorCutPercentage(pair.address),
-            this.pairAbi.trustedSwapPairs(pair.address),
-            this.pairAbi.state(pair.address),
-            this.pairAbi.feeState(pair.address),
-            this.pairAbi.whitelistedAddresses(pair.address),
-            this.pairAbi.initialLiquidityAdder(pair.address),
-            this.pairAbi.feeDestinations(pair.address),
-            this.pairAbi.feesCollectorAddress(pair.address),
+            this.pairAbi.getPairInfoMetadataRaw(pair.address),
+            this.pairAbi.getTotalFeePercentRaw(pair.address),
+            this.pairAbi.getSpecialFeePercentRaw(pair.address),
+            this.pairAbi.getFeesCollectorCutPercentageRaw(pair.address),
+            this.pairAbi.getTrustedSwapPairsRaw(pair.address),
+            this.pairAbi.getStateRaw(pair.address),
+            this.pairAbi.getFeeStateRaw(pair.address),
+            this.pairAbi.getWhitelistedAddressesRaw(pair.address),
+            this.pairAbi.getInitialLiquidityAdderRaw(pair.address),
+            this.pairAbi.getFeeDestinationsRaw(pair.address),
+            this.pairAbi.getFeesCollectorAddressRaw(pair.address),
         ]);
 
         pair.info = info;
-        pair.totalFeePercent = totalFeePercent;
-        pair.specialFeePercent = specialFeePercent;
+        pair.totalFeePercent = new BigNumber(totalFeePercent)
+            .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+            .toNumber();
+        pair.specialFeePercent = new BigNumber(specialFeePercent)
+            .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+            .toNumber();
         pair.feesCollectorCutPercentage =
             feesCollectorCutPercentage /
             constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS;
