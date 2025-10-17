@@ -11,6 +11,7 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { constantsConfig, tokenProviderUSD } from 'src/config';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import BigNumber from 'bignumber.js';
+import { BulkWriteOperations } from '../entities';
 
 @Injectable()
 export class TokenPersistenceService {
@@ -59,7 +60,7 @@ export class TokenPersistenceService {
     }
 
     async bulkUpdateTokens(
-        bulkOps: any[],
+        bulkOps: BulkWriteOperations<EsdtToken>,
         operationName?: string,
     ): Promise<void> {
         if (bulkOps.length === 0) {

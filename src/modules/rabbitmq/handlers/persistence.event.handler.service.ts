@@ -44,7 +44,7 @@ export class PersistenceEventHandlerService {
     ): Promise<void> {
         const profiler = new PerformanceProfiler();
 
-        const pair = await this.pairPersistence.getPair({
+        const [pair] = await this.pairPersistence.getPairs({
             address: event.getPairAddress().bech32(),
         });
 

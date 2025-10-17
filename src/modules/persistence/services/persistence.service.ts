@@ -143,7 +143,7 @@ export class PersistenceService {
 
     async indexPairLpToken(address: string): Promise<void> {
         try {
-            const pair = await this.pairPersistence.getPair({
+            const [pair] = await this.pairPersistence.getPairs({
                 address,
             });
 
@@ -155,21 +155,19 @@ export class PersistenceService {
             while (ct < INDEX_LP_MAX_ATTEMPTS) {
                 await this.pairPersistence.updateLpToken(pair);
 
-                if (!pair.liquidityPoolToken) {
-                    await delay(1500);
-                    ct++;
+                if (pair.liquidityPoolToken) {
+                    this.logger.debug(`Updated LP token`, {
+                        context: PersistenceService.name,
+                        address,
+                        lpId: pair.liquidityPoolTokenId,
+                        token: pair.liquidityPoolToken,
+                    });
 
-                    continue;
+                    return;
                 }
 
-                this.logger.debug(`Updated LP token`, {
-                    context: PersistenceService.name,
-                    address,
-                    lpId: pair.liquidityPoolTokenId,
-                    token: pair.liquidityPoolToken,
-                });
-
-                return;
+                await delay(1500);
+                ct++;
             }
 
             this.logger.warn(

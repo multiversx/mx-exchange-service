@@ -3,7 +3,6 @@ import {
     EsdtToken,
     EsdtTokenType,
 } from 'src/modules/tokens/models/esdtToken.model';
-import { AnyBulkWriteOperation } from 'mongodb';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { getTokenForGivenPosition, quote } from 'src/modules/pair/pair.utils';
 import BigNumber from 'bignumber.js';
@@ -14,13 +13,15 @@ import {
     tokenProviderUSD,
 } from 'src/config';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
-import { EsdtTokenDocument } from 'src/modules/persistence/schemas/esdtToken.schema';
-import { PairStateChanges, TrackedPairFields } from '../entities';
+import {
+    BulkWriteOperations,
+    PairStateChanges,
+    TrackedPairFields,
+} from '../entities';
 
 export type MongoBulkOperations = {
-    pairBulkOps: AnyBulkWriteOperation<PairDocument>[];
-    tokenBulkOps: AnyBulkWriteOperation<EsdtTokenDocument>[];
+    pairBulkOps: BulkWriteOperations<PairModel>;
+    tokenBulkOps: BulkWriteOperations<EsdtToken>;
 };
 
 export class BulkUpdatesService {
@@ -68,7 +69,7 @@ export class BulkUpdatesService {
             });
         }
 
-        this.updateTokensDerivedPriceEGLD();
+        this.updateTokensDerivedEgldAndUsdPrices();
 
         this.updateValuesUSD();
 
@@ -84,7 +85,7 @@ export class BulkUpdatesService {
         }
 
         if (this.pricesRecomputeNeeded) {
-            this.updateTokensDerivedPriceEGLD();
+            this.updateTokensDerivedEgldAndUsdPrices();
             this.updateValuesUSD();
         }
 
@@ -124,8 +125,8 @@ export class BulkUpdatesService {
     }
 
     private convertUpdatesToMongoBulkOperations(): MongoBulkOperations {
-        const pairBulkOps: AnyBulkWriteOperation<PairDocument>[] = [];
-        const tokenBulkOps: AnyBulkWriteOperation<EsdtTokenDocument>[] = [];
+        const pairBulkOps: BulkWriteOperations<PairModel> = [];
+        const tokenBulkOps: BulkWriteOperations<EsdtToken> = [];
 
         for (const [address, updates] of this.pairsUpdates.entries()) {
             pairBulkOps.push({
@@ -215,7 +216,7 @@ export class BulkUpdatesService {
         pair.secondTokenPrice = secondTokenPrice;
     }
 
-    private updateTokensDerivedPriceEGLD(): void {
+    private updateTokensDerivedEgldAndUsdPrices(): void {
         const egldPriceUSD = this.pairs.get(
             scAddress.WEGLD_USDC,
         ).firstTokenPrice;
