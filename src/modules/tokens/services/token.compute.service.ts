@@ -791,6 +791,18 @@ export class TokenComputeService implements ITokenComputeService {
             this.tokenTradeChange24h(tokenID),
         ]);
 
+        return this.calculateTrendingScore(
+            volumeChange,
+            priceChange,
+            tradeChange,
+        );
+    }
+
+    calculateTrendingScore(
+        volumeChange: number,
+        priceChange: number,
+        tradeChange: number,
+    ): string {
         const minScore = -(10 ** 9);
 
         const volumeScore = new BigNumber(

@@ -15,6 +15,8 @@ import { XPortalApiService } from './services/multiversx-communication/mx.xporta
 import { PushNotificationsModule } from './modules/push-notifications/push.notifications.module';
 import { TradingContestAdminController } from './modules/trading-contest/controllers/trading.contest.admin.controller';
 import { TradingContestModule } from './modules/trading-contest/trading.contest.module';
+import { PersistenceController } from './modules/persistence/persistence.controller';
+import { PersistenceModule } from './modules/persistence/persistence.module';
 
 @Module({
     imports: [
@@ -26,6 +28,7 @@ import { TradingContestModule } from './modules/trading-contest/trading.contest.
         SmartRouterEvaluationModule,
         PushNotificationsModule,
         TradingContestModule,
+        PersistenceModule,
     ],
     controllers: [
         MetricsController,
@@ -34,6 +37,7 @@ import { TradingContestModule } from './modules/trading-contest/trading.contest.
         SmartRouterEvaluationController,
         PushNotificationsController,
         TradingContestAdminController,
+        PersistenceController,
     ],
     providers: [ESTransactionsService, XPortalApiService],
 })
