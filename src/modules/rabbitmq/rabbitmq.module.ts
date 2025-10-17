@@ -41,6 +41,9 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingHandlerService } from './handlers/staking.handler.service';
 import { StakingModule } from '../staking/staking.module';
 import { TradingContestModule } from '../trading-contest/trading.contest.module';
+import { PersistenceModule } from '../persistence/persistence.module';
+import { StateChangesConsumer } from './state-changes/state.changes.consumer';
+import { PersistenceEventHandlerService } from './handlers/persistence.event.handler.service';
 
 @Module({
     imports: [
@@ -68,9 +71,11 @@ import { TradingContestModule } from '../trading-contest/trading.contest.module'
         EscrowModule,
         RemoteConfigModule,
         TradingContestModule,
+        PersistenceModule,
     ],
     providers: [
         RabbitMqConsumer,
+        StateChangesConsumer,
         FarmHandlerService,
         RabbitMQProxyHandlerService,
         RouterHandlerService,
@@ -87,6 +92,7 @@ import { TradingContestModule } from '../trading-contest/trading.contest.module'
         GovernanceHandlerService,
         EscrowHandlerService,
         StakingHandlerService,
+        PersistenceEventHandlerService,
     ],
 })
 export class RabbitMqModule {
@@ -97,11 +103,27 @@ export class RabbitMqModule {
                 RabbitMQModule.forRootAsync(RabbitMQModule, {
                     useFactory: () => {
                         return {
-                            name: process.env.RABBITMQ_EXCHANGE,
-                            type: 'fanout',
+                            exchanges: [
+                                {
+                                    name: process.env.RABBITMQ_EXCHANGE,
+                                    type: 'fanout',
+                                },
+                                {
+                                    name: process.env.RABBITMQ_EXCHANGE_STATE,
+                                    type: 'fanout',
+                                },
+                            ],
+                            channels: {
+                                'channel-events': {
+                                    prefetchCount: 1,
+                                    default: true,
+                                },
+                                'channel-state': {
+                                    prefetchCount: 1,
+                                },
+                            },
                             options: {},
                             uri: process.env.RABBITMQ_URL,
-                            prefetchCount: 1,
                         };
                     },
                 }),
