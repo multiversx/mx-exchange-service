@@ -9,6 +9,7 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
+import { Model } from 'mongoose';
 
 export enum TRACKED_PAIR_FIELDS {
     firstTokenReserve = 'reserves0',
@@ -62,3 +63,5 @@ export class QueueTasksRequest {
     @Type(() => TaskDto)
     tasks: TaskDto[];
 }
+
+export type BulkWriteOperations<T> = Parameters<Model<T>['bulkWrite']>[0];
