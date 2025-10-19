@@ -422,13 +422,6 @@ export class PairComputeService implements IPairComputeService {
             );
         }
 
-        const state = await this.pairAbi.state(pairAddress);
-        if (state === 'Active') {
-            return new BigNumber(firstTokenLockedValueUSD).plus(
-                secondTokenLockedValueUSD,
-            );
-        }
-
         if (commonTokenIDs.includesNone([firstTokenID, secondTokenID])) {
             return new BigNumber(0);
         }
