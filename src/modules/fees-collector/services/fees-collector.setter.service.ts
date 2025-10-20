@@ -48,6 +48,19 @@ export class FeesCollectorSetterService extends GenericSetterService {
         );
     }
 
+    async rewardsClaimed(
+        week: number,
+        token: string,
+        value: string,
+    ): Promise<string> {
+        return this.setData(
+            this.getCacheKey('rewardsClaimed', week, token),
+            value,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        );
+    }
+
     async allTokens(tokens: string[]): Promise<string> {
         return this.setData(
             this.getCacheKey('allTokens'),
