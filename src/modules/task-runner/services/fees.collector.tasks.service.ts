@@ -101,7 +101,7 @@ export class FeesCollectorTasksService implements OnModuleInit {
         });
     }
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
     @LockAndRetry({
         lockKey: FeesCollectorTasksService.name,
         lockName: 'swapTokens',
