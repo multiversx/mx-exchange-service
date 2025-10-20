@@ -38,6 +38,7 @@ import { TokenModule } from '../tokens/token.module';
         FeesCollectorSetterService,
         FeesCollectorService,
         FeesCollectorComputeService,
+        FeesCollectorTransactionService,
     ],
 })
 export class FeesCollectorModule {}
