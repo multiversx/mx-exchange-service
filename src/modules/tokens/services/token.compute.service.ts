@@ -559,21 +559,15 @@ export class TokenComputeService implements ITokenComputeService {
                 tokenID === pair.firstTokenID || pair.secondTokenID === tokenID,
         );
 
-        const [
-            allFirstTokensLockedValueUSD,
-            allSecondTokensLockedValueUSD,
-            allPairsState,
-        ] = await Promise.all([
-            this.pairCompute.getAllFirstTokensLockedValueUSD(
-                relevantPairs.map((pair) => pair.address),
-            ),
-            this.pairCompute.getAllSecondTokensLockedValueUSD(
-                relevantPairs.map((pair) => pair.address),
-            ),
-            this.pairService.getAllStates(
-                relevantPairs.map((pair) => pair.address),
-            ),
-        ]);
+        const [allFirstTokensLockedValueUSD, allSecondTokensLockedValueUSD] =
+            await Promise.all([
+                this.pairCompute.getAllFirstTokensLockedValueUSD(
+                    relevantPairs.map((pair) => pair.address),
+                ),
+                this.pairCompute.getAllSecondTokensLockedValueUSD(
+                    relevantPairs.map((pair) => pair.address),
+                ),
+            ]);
 
         let newLockedValue = new BigNumber(0);
         for (const [index, pair] of relevantPairs.entries()) {
@@ -581,12 +575,10 @@ export class TokenComputeService implements ITokenComputeService {
                 allFirstTokensLockedValueUSD[index];
             const secondTokenLockedValueUSD =
                 allSecondTokensLockedValueUSD[index];
-            const state = allPairsState[index];
 
             if (
-                state === 'Active' ||
-                (commonTokenIDs.includes(pair.firstTokenID) &&
-                    commonTokenIDs.includes(pair.secondTokenID))
+                commonTokenIDs.includes(pair.firstTokenID) &&
+                commonTokenIDs.includes(pair.secondTokenID)
             ) {
                 const tokenLockedValueUSD =
                     tokenID === pair.firstTokenID
@@ -597,8 +589,10 @@ export class TokenComputeService implements ITokenComputeService {
             }
 
             if (
-                !commonTokenIDs.includes(pair.firstTokenID) &&
-                !commonTokenIDs.includes(pair.secondTokenID)
+                commonTokenIDs.includesNone([
+                    pair.firstTokenID,
+                    pair.secondTokenID,
+                ])
             ) {
                 continue;
             }
