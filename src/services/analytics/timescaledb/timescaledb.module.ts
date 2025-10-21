@@ -41,12 +41,14 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
                 username: apiConfig.getTimescaleDbUsername(),
                 password: apiConfig.getTimescaleDbPassword(),
                 applicationName: 'xExchangeService',
-                ssl: true,
-                extra: {
-                    ssl: {
-                        rejectUnauthorized: false,
+                ...(process.env.GH_ACTIONS !== 'true' && {
+                    ssl: true,
+                    extra: {
+                        ssl: {
+                            rejectUnauthorized: false,
+                        },
                     },
-                },
+                }),
                 entities: ['dist/**/*.entities.{ts,js}'],
             }),
             inject: [ApiConfigService],
