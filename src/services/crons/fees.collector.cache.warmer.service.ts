@@ -33,8 +33,8 @@ export class FeesCollectorCacheWarmerService {
         const profiler = new PerformanceProfiler();
 
         const [allTokens, currentWeek] = await Promise.all([
-            this.feesCollectorAbi.allTokens(),
-            this.weekTimekeepingAbi.currentWeek(scAddress.feesCollector),
+            this.feesCollectorAbi.getAllTokensRaw(),
+            this.weekTimekeepingAbi.getCurrentWeekRaw(scAddress.feesCollector),
         ]);
 
         const accumulatedFeesUntilNow =
