@@ -82,12 +82,24 @@ export class TokenComputeService implements ITokenComputeService {
     async computeTokenPriceDerivedEGLD(
         tokenID: string,
         pairsNotToVisit: PairMetadata[],
+        computedPrices = new Map<string, string>(),
     ): Promise<string> {
+        if (computedPrices.has(tokenID)) {
+            return computedPrices.get(tokenID);
+        }
+
         if (tokenID === tokenProviderUSD) {
+            computedPrices.set(tokenID, '1');
             return new BigNumber('1').toFixed();
         }
 
-        const pairsMetadata = await this.routerAbi.pairsMetadata();
+        const minLiquidity = new BigNumber(`1e${mxConfig.EGLDDecimals}`);
+
+        const [pairsMetadata, commonTokenIDs] = await Promise.all([
+            this.routerAbi.pairsMetadata(),
+            this.routerAbi.commonTokensForUserPairs(),
+        ]);
+
         let tokenPairs: PairMetadata[] = [];
         for (const pair of pairsMetadata) {
             if (
@@ -108,6 +120,12 @@ export class TokenComputeService implements ITokenComputeService {
                 });
             }
         }
+
+        tokenPairs = tokenPairs.filter((pair) => {
+            return pair.firstTokenID === tokenID
+                ? commonTokenIDs.includes(pair.secondTokenID)
+                : commonTokenIDs.includes(pair.firstTokenID);
+        });
 
         tokenPairs = tokenPairs.filter(
             (pair) =>
@@ -138,6 +156,7 @@ export class TokenComputeService implements ITokenComputeService {
                             this.computeTokenPriceDerivedEGLD(
                                 pair.secondTokenID,
                                 pairsNotToVisit,
+                                computedPrices,
                             ),
                             this.pairAbi.secondTokenReserve(pair.address),
                             this.pairCompute.firstTokenPrice(pair.address),
@@ -149,7 +168,10 @@ export class TokenComputeService implements ITokenComputeService {
                             .times(`1e${mxConfig.EGLDDecimals}`)
                             .integerValue();
 
-                        if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
+                        if (
+                            egldLocked.isGreaterThan(largestLiquidityEGLD) &&
+                            egldLocked.gt(minLiquidity)
+                        ) {
                             largestLiquidityEGLD = egldLocked;
                             priceSoFar = new BigNumber(firstTokenPrice)
                                 .times(secondTokenDerivedEGLD)
@@ -166,6 +188,7 @@ export class TokenComputeService implements ITokenComputeService {
                             this.computeTokenPriceDerivedEGLD(
                                 pair.firstTokenID,
                                 pairsNotToVisit,
+                                computedPrices,
                             ),
                             this.pairAbi.firstTokenReserve(pair.address),
                             this.pairCompute.secondTokenPrice(pair.address),
@@ -176,7 +199,10 @@ export class TokenComputeService implements ITokenComputeService {
                             .times(firstTokenDerivedEGLD)
                             .times(`1e${mxConfig.EGLDDecimals}`)
                             .integerValue();
-                        if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
+                        if (
+                            egldLocked.isGreaterThan(largestLiquidityEGLD) &&
+                            egldLocked.gt(minLiquidity)
+                        ) {
                             largestLiquidityEGLD = egldLocked;
                             priceSoFar = new BigNumber(secondTokenPrice)
                                 .times(firstTokenDerivedEGLD)
@@ -186,6 +212,8 @@ export class TokenComputeService implements ITokenComputeService {
                 }
             }
         }
+
+        computedPrices.set(tokenID, priceSoFar);
         return priceSoFar;
     }
 
