@@ -26,79 +26,79 @@ export class TokensResolver {
         private readonly tokenLoader: TokenLoader,
     ) {}
 
-    @ResolveField(() => String)
-    async derivedEGLD(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenPriceDerivedEGLDLoader.load(
-            parent.identifier,
-        );
-    }
+    // @ResolveField(() => String)
+    // async derivedEGLD(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenPriceDerivedEGLDLoader.load(
+    //         parent.identifier,
+    //     );
+    // }
 
-    @ResolveField(() => String)
-    async price(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenPriceDerivedUSDLoader.load(
-            parent.identifier,
-        );
-    }
+    // @ResolveField(() => String)
+    // async price(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenPriceDerivedUSDLoader.load(
+    //         parent.identifier,
+    //     );
+    // }
 
-    @ResolveField(() => String, { nullable: true })
-    async previous24hPrice(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenPrevious24hPriceLoader.load(
-            parent.identifier,
-        );
-    }
+    // @ResolveField(() => String, { nullable: true })
+    // async previous24hPrice(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenPrevious24hPriceLoader.load(
+    //         parent.identifier,
+    //     );
+    // }
 
-    @ResolveField(() => String)
-    async type(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenTypeLoader.load(parent.identifier);
-    }
+    // @ResolveField(() => String)
+    // async type(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenTypeLoader.load(parent.identifier);
+    // }
 
-    @ResolveField(() => String, { nullable: true })
-    async previous7dPrice(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenPrevious7dPriceLoader.load(
-            parent.identifier,
-        );
-    }
+    // @ResolveField(() => String, { nullable: true })
+    // async previous7dPrice(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenPrevious7dPriceLoader.load(
+    //         parent.identifier,
+    //     );
+    // }
 
-    @ResolveField(() => String, { nullable: true })
-    async volumeUSD24h(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenVolumeUSD24hLoader.load(parent.identifier);
-    }
+    // @ResolveField(() => String, { nullable: true })
+    // async volumeUSD24h(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenVolumeUSD24hLoader.load(parent.identifier);
+    // }
 
-    @ResolveField(() => String, { nullable: true })
-    async previous24hVolume(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenPrevious24hVolumeUSDLoader.load(
-            parent.identifier,
-        );
-    }
+    // @ResolveField(() => String, { nullable: true })
+    // async previous24hVolume(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenPrevious24hVolumeUSDLoader.load(
+    //         parent.identifier,
+    //     );
+    // }
 
-    @ResolveField(() => String, { nullable: true })
-    async liquidityUSD(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenLiquidityUSDLoader.load(parent.identifier);
-    }
+    // @ResolveField(() => String, { nullable: true })
+    // async liquidityUSD(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenLiquidityUSDLoader.load(parent.identifier);
+    // }
 
-    @ResolveField(() => String, { nullable: true })
-    async createdAt(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenCreatedAtLoader.load(parent.identifier);
-    }
+    // @ResolveField(() => String, { nullable: true })
+    // async createdAt(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenCreatedAtLoader.load(parent.identifier);
+    // }
 
-    @ResolveField(() => Number, { nullable: true })
-    async swapCount24h(parent: EsdtToken): Promise<number> {
-        return this.tokenLoader.tokenSwapCountLoader.load(parent.identifier);
-    }
+    // @ResolveField(() => Number, { nullable: true })
+    // async swapCount24h(parent: EsdtToken): Promise<number> {
+    //     return this.tokenLoader.tokenSwapCountLoader.load(parent.identifier);
+    // }
 
-    @ResolveField(() => Number, { nullable: true })
-    async previous24hSwapCount(parent: EsdtToken): Promise<number> {
-        return this.tokenLoader.tokenPrevious24hSwapCountLoader.load(
-            parent.identifier,
-        );
-    }
+    // @ResolveField(() => Number, { nullable: true })
+    // async previous24hSwapCount(parent: EsdtToken): Promise<number> {
+    //     return this.tokenLoader.tokenPrevious24hSwapCountLoader.load(
+    //         parent.identifier,
+    //     );
+    // }
 
-    @ResolveField(() => String, { nullable: true })
-    async trendingScore(parent: EsdtToken): Promise<string> {
-        return this.tokenLoader.tokenTrendingScoreLoader.load(
-            parent.identifier,
-        );
-    }
+    // @ResolveField(() => String, { nullable: true })
+    // async trendingScore(parent: EsdtToken): Promise<string> {
+    //     return this.tokenLoader.tokenTrendingScoreLoader.load(
+    //         parent.identifier,
+    //     );
+    // }
 
     @Query(() => [EsdtToken], {
         complexity: (options: ComplexityEstimatorArgs) => {

@@ -50,6 +50,7 @@ import { WeeklyRewardsSplittingCacheWarmerService } from './crons/weekly.rewards
 import { RouterCacheWarmerService } from './crons/router.cache.warmer.service';
 import { SmartRouterEvaluationCronModule } from 'src/modules/smart-router-evaluation/smart.router.evaluation.cron.module';
 import { TradingContestCronModule } from 'src/modules/trading-contest/trading.contest.cron.module';
+import { PersistenceCronModule } from 'src/modules/persistence/persistence.cron.module';
 
 @Module({
     imports: [
@@ -84,6 +85,7 @@ import { TradingContestCronModule } from 'src/modules/trading-contest/trading.co
         CurrencyConverterModule,
         SmartRouterEvaluationCronModule,
         TradingContestCronModule,
+        PersistenceCronModule,
     ],
     controllers: [],
     providers: [

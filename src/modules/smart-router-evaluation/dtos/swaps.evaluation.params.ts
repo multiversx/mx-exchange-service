@@ -5,7 +5,7 @@ export class SwapsEvaluationParams {
     @IsInt()
     @Min(0)
     offset: number;
-    @IsIn([5, 10, 50, 100, 200, 500, 1000])
+    @IsIn([5, 10, 50, 100, 200, 500, 1000, 5000])
     size: number;
     @IsNumber()
     delta: number;

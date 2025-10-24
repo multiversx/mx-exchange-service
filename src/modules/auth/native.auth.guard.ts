@@ -73,10 +73,10 @@ export class NativeAuthGuard implements CanActivate {
                 origin !== userInfo.origin &&
                 origin !== 'https://' + userInfo.origin
             ) {
-                this.logger.info('Unhandled auth origin: ', {
-                    origin,
-                    userInfo,
-                });
+                // this.logger.info('Unhandled auth origin: ', {
+                //     origin,
+                //     userInfo,
+                // });
                 // TO DO:  throw new NativeAuthInvalidOriginError(userInfo.origin, origin);
             }
 

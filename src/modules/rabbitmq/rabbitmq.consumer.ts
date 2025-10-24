@@ -70,6 +70,7 @@ import { GovernanceHandlerService } from './handlers/governance.handler.service'
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { StakingHandlerService } from './handlers/staking.handler.service';
 import { TradingContestSwapHandlerService } from '../trading-contest/services/trading.contest.swap.handler.service';
+import { PersistenceEventHandlerService } from './handlers/persistence.event.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -96,12 +97,14 @@ export class RabbitMqConsumer {
         private readonly governanceHandler: GovernanceHandlerService,
         private readonly remoteConfig: RemoteConfigGetterService,
         private readonly tradingContestSwapHandlerService: TradingContestSwapHandlerService,
+        private readonly persistenceEventHandler: PersistenceEventHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     @CompetingRabbitConsumer({
         queueName: process.env.RABBITMQ_QUEUE,
         exchange: process.env.RABBITMQ_EXCHANGE,
+        channel: 'channel-events',
     })
     async consumeEvents(rawEvents: any) {
         if (!rawEvents.events) {
@@ -242,14 +245,24 @@ export class RabbitMqConsumer {
                     );
                     break;
                 case ROUTER_EVENTS.CREATE_PAIR:
+                    const createPairEvent = new CreatePairEvent(rawEvent);
                     await this.routerHandler.handleCreatePairEvent(
-                        new CreatePairEvent(rawEvent),
+                        createPairEvent,
+                    );
+                    await this.persistenceEventHandler.handleCreatePairEvent(
+                        createPairEvent,
                     );
                     await this.getFilterAddresses();
                     break;
                 case ROUTER_EVENTS.PAIR_SWAP_ENABLED:
+                    const pairSwapEnabledEvent = new PairSwapEnabledEvent(
+                        rawEvent,
+                    );
                     await this.routerHandler.handlePairSwapEnabledEvent(
-                        new PairSwapEnabledEvent(rawEvent),
+                        pairSwapEnabledEvent,
+                    );
+                    await this.persistenceEventHandler.handlePairSwapEnabledEvent(
+                        pairSwapEnabledEvent,
                     );
                     break;
                 case ROUTER_EVENTS.MULTI_PAIR_SWAP:
