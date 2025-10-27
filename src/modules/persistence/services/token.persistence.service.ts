@@ -309,24 +309,4 @@ export class TokenPersistenceService {
 
         return { tokens: result.items, count: result.total };
     }
-
-    async getToken(
-        filterQuery: FilterQuery<EsdtTokenDocument>,
-        projection?: ProjectionType<EsdtTokenDocument>,
-    ): Promise<EsdtTokenDocument> {
-        const profiler = new PerformanceProfiler();
-
-        const token = await this.tokenRepository
-            .getModel()
-            .findOne(filterQuery, projection)
-            .exec();
-
-        profiler.stop();
-
-        this.logger.debug(`${this.getToken.name} : ${profiler.duration}ms`, {
-            context: TokenPersistenceService.name,
-        });
-
-        return token;
-    }
 }
