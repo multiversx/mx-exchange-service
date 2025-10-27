@@ -29,6 +29,7 @@ import { ProjectionType } from 'mongoose';
 export class TokenService {
     constructor(
         private readonly tokenRepository: TokenRepositoryService,
+        @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
@@ -114,8 +115,28 @@ export class TokenService {
         fields?: (keyof EsdtToken)[],
     ): Promise<EsdtToken> {
         // TODO: add caching
+        const projection: ProjectionType<EsdtTokenDocument> = {};
 
-        return this.tokenMetadataRaw(tokenID, fields);
+        if (fields && fields.length > 0) {
+            fields.forEach((field) => (projection[field] = 1));
+        } else {
+            projection.__v = 0;
+            projection._id = 0;
+        }
+
+        const [token] = await this.tokenPersistence.getTokens(
+            {
+                identifier: tokenID,
+            },
+            projection,
+            true,
+        );
+
+        return token;
+    }
+
+    async tokenMetadataRaw(tokenID: string): Promise<EsdtToken> {
+        return this.apiService.getToken(tokenID);
     }
 
     async getAllTokensMetadata(
@@ -152,25 +173,6 @@ export class TokenService {
             true,
         );
         return new Map(tokens.map((token) => [token.identifier, token]));
-    }
-
-    async tokenMetadataRaw(
-        tokenID: string,
-        fields: (keyof EsdtToken)[] = [],
-    ): Promise<EsdtToken> {
-        const projection: ProjectionType<EsdtTokenDocument> = {};
-
-        if (fields.length > 0) {
-            fields.forEach((field) => (projection[field] = 1));
-        }
-
-        const [token] = await this.tokenPersistence.getTokens(
-            { identifier: tokenID },
-            Object.keys(projection).length ? projection : undefined,
-            true,
-        );
-
-        return token;
     }
 
     @ErrorLoggerAsync({

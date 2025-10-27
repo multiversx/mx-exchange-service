@@ -128,8 +128,8 @@ export class TokenPersistenceService {
     ): Promise<EsdtTokenDocument> {
         try {
             const [tokenMetadata, createdAt] = await Promise.all([
-                this.tokenService.tokenMetadata(tokenID),
-                this.tokenCompute.tokenCreatedAt(tokenID),
+                this.tokenService.tokenMetadataRaw(tokenID),
+                this.tokenCompute.computeTokenCreatedAtTimestamp(tokenID),
             ]);
 
             tokenMetadata.createdAt = createdAt;
