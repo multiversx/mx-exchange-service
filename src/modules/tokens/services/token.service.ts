@@ -9,7 +9,6 @@ import {
     TokensFilter,
     TokensFiltersArgs,
 } from '../models/tokens.filter.args';
-import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenRepositoryService } from './token.repository.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
@@ -30,8 +29,6 @@ import { ProjectionType } from 'mongoose';
 export class TokenService {
     constructor(
         private readonly tokenRepository: TokenRepositoryService,
-        private readonly pairAbi: PairAbiService,
-        @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
@@ -40,7 +37,7 @@ export class TokenService {
         private readonly tokenPersistence: TokenPersistenceService,
     ) {}
 
-    // TODO : remove this ??
+    // TODO : deprecate this
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
         let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
         if (filters.identifiers && filters.identifiers.length > 0) {
@@ -112,15 +109,12 @@ export class TokenService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    // @GetOrSetCache({
-    //     baseKey: 'token',
-    //     remoteTtl: CacheTtlInfo.Token.remoteTtl,
-    //     localTtl: CacheTtlInfo.Token.localTtl,
-    // })
     async tokenMetadata(
         tokenID: string,
         fields?: (keyof EsdtToken)[],
     ): Promise<EsdtToken> {
+        // TODO: add caching
+
         return this.tokenMetadataRaw(tokenID, fields);
     }
 
@@ -128,14 +122,7 @@ export class TokenService {
         tokenIDs: string[],
         fields: (keyof EsdtToken)[] = [],
     ): Promise<EsdtToken[]> {
-        // return getAllKeys<EsdtToken>(
-        //     this.cachingService,
-        //     tokenIDs,
-        //     'token.tokenMetadata',
-        //     this.tokenMetadata.bind(this),
-        //     CacheTtlInfo.Token,
-        // );
-        // TODO: check for stale data + fallback mechanism ?
+        // TODO: add caching
 
         const tokens = await this.getAllTokensMetadataFromDb(tokenIDs, fields);
         return tokenIDs.map((tokenID) => tokens.get(tokenID));
@@ -171,8 +158,6 @@ export class TokenService {
         tokenID: string,
         fields: (keyof EsdtToken)[] = [],
     ): Promise<EsdtToken> {
-        // return this.apiService.getToken(tokenID);
-        // TODO: check for stale data + fallback mechanism ?
         const projection: ProjectionType<EsdtTokenDocument> = {};
 
         if (fields.length > 0) {
