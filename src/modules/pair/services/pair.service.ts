@@ -1,7 +1,11 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { mxConfig } from 'src/config';
 import { BigNumber } from 'bignumber.js';
-import { LiquidityPosition, LockedTokensInfo } from '../models/pair.model';
+import {
+    LiquidityPosition,
+    LockedTokensInfo,
+    PairModel,
+} from '../models/pair.model';
 import {
     quote,
     getAmountOut,
@@ -10,7 +14,7 @@ import {
 } from '../pair.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { CacheService } from 'src/services/caching/cache.service';
-import { Constants } from '@multiversx/sdk-nestjs-common';
+import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -22,6 +26,10 @@ import { TokenService } from 'src/modules/tokens/services/token.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { PairInfoModel } from '../models/pair-info.model';
+import { PairPersistenceService } from 'src/modules/persistence/services/pair.persistence.service';
+import { FilterQuery, PopulateOptions, ProjectionType } from 'mongoose';
+import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
+import { PairPopulate } from 'src/modules/persistence/entities';
 
 @Injectable()
 export class PairService {
@@ -35,6 +43,8 @@ export class PairService {
         private readonly tokenService: TokenService,
         private readonly cachingService: CacheService,
         private readonly contextGetter: ContextGetterService,
+        @Inject(forwardRef(() => PairPersistenceService))
+        private readonly pairPersistence: PairPersistenceService,
     ) {}
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
@@ -472,5 +482,41 @@ export class PairService {
             unlockEpoch,
             lockingDeadlineEpoch,
         });
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async getPairs(
+        filterQuery: FilterQuery<PairDocument>,
+        fields: (keyof PairModel)[] = [],
+        populate: PairPopulate = new PairPopulate(),
+    ): Promise<PairModel[]> {
+        const projection: ProjectionType<PairDocument> = {};
+        let populateOptions: PopulateOptions;
+
+        if (fields.length > 0) {
+            [...new Set(fields)].forEach((field) => (projection[field] = 1));
+        } else {
+            projection.__v = 0;
+            projection._id = 0;
+        }
+
+        if (populate.fields.length > 0) {
+            populateOptions = {
+                path: [...new Set(populate.fields)].join(' '),
+                options: { lean: true },
+            };
+            if (populate.select.length > 0) {
+                populateOptions.select = [...populate.select];
+            }
+        }
+
+        return this.pairPersistence.getPairs(
+            filterQuery,
+            projection,
+            populateOptions,
+            true,
+        );
     }
 }

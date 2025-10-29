@@ -115,12 +115,13 @@ export class PairPersistenceService {
         filterQuery: FilterQuery<PairDocument>,
         projection?: ProjectionType<PairDocument>,
         populateOptions?: PopulateOptions,
+        lean = false,
     ): Promise<PairDocument[]> {
         const profiler = new PerformanceProfiler();
 
         const pairs = await this.pairRepository
             .getModel()
-            .find(filterQuery, projection)
+            .find(filterQuery, projection, { lean })
             .exec();
 
         if (populateOptions) {

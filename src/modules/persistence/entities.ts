@@ -10,6 +10,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { Model } from 'mongoose';
+import { EsdtToken } from '../tokens/models/esdtToken.model';
 
 export enum TRACKED_PAIR_FIELDS {
     firstTokenReserve = 'reserves0',
@@ -65,3 +66,20 @@ export class QueueTasksRequest {
 }
 
 export type BulkWriteOperations<T> = Parameters<Model<T>['bulkWrite']>[0];
+
+export const PairPopulateFields = [
+    'firstToken',
+    'secondToken',
+    'liquidityPoolToken',
+] as const;
+
+export type PairPopulateField = (typeof PairPopulateFields)[number];
+
+export class PairPopulate {
+    fields?: PairPopulateField[] = [...PairPopulateFields];
+    select?: (keyof EsdtToken)[] = [];
+
+    constructor(init?: Partial<PairPopulate>) {
+        Object.assign(this, init);
+    }
+}
