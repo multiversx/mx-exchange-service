@@ -1,3 +1,4 @@
+import { Field, ObjectType } from '@nestjs/graphql';
 import { Type } from 'class-transformer';
 import {
     ArrayMaxSize,
@@ -65,3 +66,15 @@ export class QueueTasksRequest {
 }
 
 export type BulkWriteOperations<T> = Parameters<Model<T>['bulkWrite']>[0];
+
+export const PRICE_UPDATE_EVENT = 'tokensPriceUpdated';
+
+@ObjectType()
+export class PriceUpdatesModel {
+    @Field(() => [[String, String]])
+    updates: [string, string][];
+
+    constructor(init?: Partial<PriceUpdatesModel>) {
+        Object.assign(this, init);
+    }
+}
