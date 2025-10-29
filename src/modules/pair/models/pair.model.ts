@@ -7,6 +7,8 @@ import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-colle
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
+import { Prop, raw, Schema } from '@nestjs/mongoose';
+import * as mongoose from 'mongoose';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -93,90 +95,159 @@ export class PairRewardTokensModel {
 }
 
 @ObjectType()
+@Schema({
+    collection: 'pairs',
+    toJSON: { getters: true, virtuals: false },
+    toObject: { getters: true, virtuals: false },
+})
 export class PairModel {
+    @Prop({ unique: true })
     @Field()
     address: string;
 
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'EsdtToken',
+        index: true,
+        required: true,
+    })
     @Field({ complexity: nestedFieldComplexity })
     firstToken: EsdtToken;
 
+    @Prop({ index: true })
+    firstTokenId: string;
+
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'EsdtToken',
+        index: true,
+        required: true,
+    })
     @Field({ complexity: nestedFieldComplexity })
     secondToken: EsdtToken;
 
+    @Prop({ index: true })
+    secondTokenId: string;
+
+    @Prop({ default: '0' })
     @Field()
     firstTokenPrice: string;
 
+    @Prop({ default: '0' })
     @Field()
     firstTokenPriceUSD: string;
 
+    @Prop({ default: '0' })
     @Field()
     secondTokenPrice: string;
 
+    @Prop({ default: '0' })
     @Field()
     secondTokenPriceUSD: string;
 
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'EsdtToken',
+        index: true,
+        default: null,
+    })
     @Field({ complexity: nestedFieldComplexity })
     liquidityPoolToken: EsdtToken;
 
+    @Prop({ index: true })
+    liquidityPoolTokenId: string;
+
+    @Prop({ default: '0' })
     @Field()
     liquidityPoolTokenPriceUSD: string;
 
+    @Prop({ default: '0' })
     @Field()
     firstTokenLockedValueUSD: string;
 
+    @Prop({ default: '0' })
     @Field()
     secondTokenLockedValueUSD: string;
 
+    @Prop({ default: '0' })
     @Field()
     lockedValueUSD: string;
 
+    @Prop({ default: '0' })
     @Field()
     previous24hLockedValueUSD: string;
 
+    @Prop({ default: '0' })
     @Field()
     firstTokenVolume24h: string;
 
+    @Prop({ default: '0' })
     @Field()
     secondTokenVolume24h: string;
 
+    @Prop({ default: '0' })
     @Field()
     volumeUSD24h: string;
 
+    @Prop({ default: '0' })
     @Field()
     previous24hVolumeUSD: string;
 
+    @Prop({ default: '0' })
     @Field()
     feesUSD24h: string;
 
+    @Prop({ default: '0' })
     @Field()
     previous24hFeesUSD: string;
 
+    @Prop({ default: '0' })
     @Field()
     feesAPR: string;
 
+    @Prop({
+        type: raw({
+            reserves0: { type: String },
+            reserves1: { type: String },
+            totalSupply: { type: String },
+        }),
+        _id: false,
+        default: {
+            reserves0: '0',
+            reserves1: '0',
+            totalSupply: '0',
+        },
+    })
     @Field(() => PairInfoModel, { complexity: nestedFieldComplexity })
     info: PairInfoModel;
 
+    @Prop({ default: 0 })
     @Field()
     totalFeePercent: number;
 
+    @Prop({ default: 0 })
     @Field()
     specialFeePercent: number;
 
+    @Prop({ default: 0 })
     @Field({
         description: 'Percentage of special fees that go to the fees collector',
     })
     feesCollectorCutPercentage: number;
 
+    @Prop({ type: [String], default: [] })
     @Field(() => [String])
     trustedSwapPairs: string[];
 
+    @Prop()
     @Field()
     type: string;
 
+    @Prop({ index: true })
     @Field()
     state: string;
 
+    @Prop({ default: false, index: true })
     @Field()
     feeState: boolean;
 
@@ -186,12 +257,22 @@ export class PairModel {
     })
     lockedTokensInfo: LockedTokensInfo;
 
+    @Prop({ type: [String], default: [] })
     @Field(() => [String])
     whitelistedManagedAddresses: string[];
 
+    @Prop({ default: '' })
     @Field()
     initialLiquidityAdder: string;
 
+    @Prop(
+        raw([
+            {
+                address: { type: String },
+                tokenID: { type: String },
+            },
+        ]),
+    )
     @Field(() => [FeeDestination], { complexity: nestedFieldComplexity })
     feeDestinations: FeeDestination[];
 
@@ -202,18 +283,23 @@ export class PairModel {
     })
     feesCollector: FeesCollectorModel;
 
+    @Prop({ default: false, index: true })
     @Field()
     hasFarms: boolean;
 
+    @Prop({ default: false, index: true })
     @Field()
     hasDualFarms: boolean;
 
+    @Prop({ default: 0, index: true })
     @Field(() => Int)
     tradesCount: number;
 
+    @Prop({ default: 0, index: true })
     @Field(() => Int)
     tradesCount24h: number;
 
+    @Prop({ default: null, index: true })
     @Field(() => Int, { nullable: true })
     deployedAt: number;
 
@@ -229,11 +315,19 @@ export class PairModel {
     })
     rewardTokens: PairRewardTokensModel;
 
+    @Prop({ default: null, type: String })
     @Field({ nullable: true })
     farmAddress: string;
 
+    @Prop({ default: null, type: String })
     @Field({ nullable: true })
     stakingProxyAddress: string;
+
+    @Prop({ default: null, type: String })
+    stakingFarmAddress: string;
+
+    @Prop({ default: null, type: String })
+    feesCollectorAddress: string;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);
