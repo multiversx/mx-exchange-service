@@ -38,9 +38,10 @@ export class PairPersistenceService {
             await this.pairRepository.create(pair);
         } catch (error) {
             if (error.name === 'MongoServerError' && error.code === 11000) {
-                this.logger.info(`Pair ${pair.address} already persisted`, {
+                this.logger.warn(`Pair ${pair.address} already persisted`, {
                     context: PairPersistenceService.name,
                 });
+                return;
             }
             this.logger.error(`Failed to insert pair ${pair.address}`);
             this.logger.error(error);
