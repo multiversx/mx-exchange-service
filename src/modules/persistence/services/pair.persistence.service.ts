@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FilterQuery, PopulateOptions, ProjectionType } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -19,6 +19,16 @@ import { BulkUpdatesService } from './bulk.updates.service';
 import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { BulkWriteOperations } from '../entities';
+import {
+    PairsFilter,
+    PairSortingArgs,
+} from 'src/modules/router/models/filter.args';
+import { filteredPairsPipeline } from '../pipelines/filtered.pairs.pipeline';
+
+type FilteredPairsResponse = {
+    items: PairDocument[];
+    total: number;
+};
 
 @Injectable()
 export class PairPersistenceService {
@@ -26,7 +36,9 @@ export class PairPersistenceService {
         private readonly pairRepository: PairRepository,
         private readonly routerAbi: RouterAbiService,
         private readonly tokenPersistence: TokenPersistenceService,
+        @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
+        @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
         private readonly pairAbi: PairAbiService,
         private readonly dataApi: MXDataApiService,
@@ -535,5 +547,36 @@ export class PairPersistenceService {
         pair.feesAPR = !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
 
         await pair.save();
+    }
+
+    async getFilteredPairs(
+        offset: number,
+        limit: number,
+        filters: PairsFilter,
+        sorting: PairSortingArgs,
+    ): Promise<{ pairs: PairModel[]; count: number }> {
+        const profiler = new PerformanceProfiler();
+
+        const [result] = await this.pairRepository
+            .getModel()
+            .aggregate<FilteredPairsResponse>(
+                filteredPairsPipeline(offset, limit, filters, sorting),
+            )
+            .exec();
+
+        await this.pairRepository.getModel().populate(result.items, {
+            path: 'firstToken secondToken liquidityPoolToken',
+        });
+
+        profiler.stop();
+
+        this.logger.debug(
+            `${this.getFilteredPairs.name} : ${profiler.duration}ms`,
+            {
+                context: PairPersistenceService.name,
+            },
+        );
+
+        return { pairs: result.items, count: result.total };
     }
 }
