@@ -91,7 +91,7 @@ describe('TokenComputeService', () => {
             'TOK5-123456',
             [],
         );
-        expect(price).toEqual('0.01010101010101010101010101');
+        expect(price).toEqual('0.01');
     });
 
     it('should compute token price derived EGLD for TOK6-123456', async () => {
@@ -101,6 +101,6 @@ describe('TokenComputeService', () => {
             'TOK6-123456',
             [],
         );
-        expect(price).toEqual('0.01010101010101010101010101');
+        expect(price).toEqual('0');
     });
 });

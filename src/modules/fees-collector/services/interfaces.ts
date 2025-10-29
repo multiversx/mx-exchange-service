@@ -1,6 +1,5 @@
 export interface IFeesCollectorAbiService {
     accumulatedFees(week: number, token: string): Promise<string>;
-    lockedTokenID(): Promise<string>;
-    lockedTokensPerBlock(): Promise<string>;
+    lockedTokensPerEpoch(): Promise<string>;
     allTokens(): Promise<string[]>;
 }
