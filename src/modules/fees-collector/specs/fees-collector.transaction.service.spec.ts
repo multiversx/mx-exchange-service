@@ -191,11 +191,11 @@ describe('FeesCollectorTransactionService', () => {
         );
     });
 
-    it('should get add known token transaction', async () => {
+    it('should get remove reward token transaction', async () => {
         const service = module.get<FeesCollectorTransactionService>(
             FeesCollectorTransactionService,
         );
-        const transaction = await service.handleKnownTokens(senderAddress, [
+        const transaction = await service.removeRewardTokens(senderAddress, [
             'WEGLD-123456',
             'MEX-123456',
         ]);
@@ -212,7 +212,7 @@ describe('FeesCollectorTransactionService', () => {
                 senderUsername: undefined,
                 value: '0',
                 data: encodeTransactionData(
-                    `addKnownTokens@${'WEGLD-123456'}@${'MEX-123456'}`,
+                    `removeRewardTokens@${'WEGLD-123456'}@${'MEX-123456'}`,
                 ),
                 options: undefined,
                 signature: undefined,
