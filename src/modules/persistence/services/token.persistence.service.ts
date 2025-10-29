@@ -19,10 +19,11 @@ export class TokenPersistenceService {
             await this.tokenRepository.create(token);
         } catch (error) {
             if (error.name === 'MongoServerError' && error.code === 11000) {
-                this.logger.info(
+                this.logger.warn(
                     `Token ${token.identifier} already persisted`,
                     { context: TokenPersistenceService.name },
                 );
+                return;
             }
             this.logger.error(`Failed insert for ${token.identifier}`);
             this.logger.error(error);
