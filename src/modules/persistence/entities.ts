@@ -30,13 +30,11 @@ export enum PersistenceTasks {
     REFRESH_ANALYTICS = 'refreshAnalytics',
 }
 
-export const TASK_MAX_SCORE = 1000;
-
 export const PersistenceTaskPriority: Record<PersistenceTasks, number> = {
     populateDb: 0,
     refreshReserves: 10,
     indexLpToken: 100,
-    refreshAnalytics: TASK_MAX_SCORE,
+    refreshAnalytics: 1000,
 };
 
 export class TaskDto {

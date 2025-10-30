@@ -515,7 +515,7 @@ export class PairPersistenceService {
         pair.secondTokenVolume24h = secondTokenVolume;
         pair.volumeUSD24h = volumeUSD24h;
         pair.previous24hVolumeUSD = new BigNumber(volumeUSD48h)
-            .minus(feesUSD24h)
+            .minus(volumeUSD24h)
             .toFixed();
         pair.feesUSD24h = feesUSD24h;
         pair.previous24hFeesUSD = new BigNumber(feesUSD48h)
@@ -532,7 +532,7 @@ export class PairPersistenceService {
         );
         const feesAPR = actualFees24hBig.times(365).div(pair.lockedValueUSD);
 
-        pair.feesAPR = !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
+        pair.feesAPR = feesAPR.isNaN() ? '0' : feesAPR.toFixed();
 
         await pair.save();
     }
