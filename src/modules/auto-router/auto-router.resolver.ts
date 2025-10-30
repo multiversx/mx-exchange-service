@@ -9,6 +9,7 @@ import { UserAuthResult } from '../auth/user.auth.result';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { PairModel } from '../pair/models/pair.model';
 
 @Resolver(() => SwapRouteModel)
 export class SwapRouteResolver {
@@ -32,6 +33,11 @@ export class SwapRouteResolver {
             parent.tokenRoute,
             parent.pairs,
         );
+    }
+
+    @ResolveField(() => [PairModel])
+    async pairs(parent: AutoRouteModel): Promise<PairModel[]> {
+        return this.autoRouterService.getSwapRoutePairs(parent);
     }
 }
 
