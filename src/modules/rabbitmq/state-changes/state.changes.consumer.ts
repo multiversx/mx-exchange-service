@@ -1,17 +1,7 @@
-import {
-    Address,
-    BigUIntType,
-    BinaryCodec,
-    EnumType,
-    EnumVariantDefinition,
-    TokenIdentifierType,
-    TokenIdentifierValue,
-    U64Type,
-} from '@multiversx/sdk-core';
+import { Address } from '@multiversx/sdk-core';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { constantsConfig } from 'src/config';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { Logger } from 'winston';
 import { PairPersistenceService } from '../../persistence/services/pair.persistence.service';
@@ -20,7 +10,6 @@ import { TokenPersistenceService } from '../../persistence/services/token.persis
 import { CompetingRabbitConsumer } from '../rabbitmq.consumers';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
 import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
-import BigNumber from 'bignumber.js';
 import { PersistenceService } from 'src/modules/persistence/services/persistence.service';
 import { BlockWithStateChanges, StateAccessPerAccountRaw } from './types';
 import {
@@ -30,21 +19,7 @@ import {
     TrackedPairFields,
 } from 'src/modules/persistence/entities';
 import { BulkUpdatesService } from 'src/modules/persistence/services/bulk.updates.service';
-
-const PAIR_RESERVE_PREFIX = Buffer.from('reserve').toString('hex');
-
-type PairStorageDecoder<T> = {
-    outputField: TrackedPairFields;
-    decode: (value: Uint8Array) => T;
-};
-
-const ENUM_TYPES: Record<string, EnumType> = {
-    state: new EnumType('State', [
-        new EnumVariantDefinition('Inactive', 0),
-        new EnumVariantDefinition('Active', 1),
-        new EnumVariantDefinition('PartialActive', 2),
-    ]),
-};
+import { getPairDecoders } from './state.changes.utils';
 
 @Injectable()
 export class StateChangesConsumer {
@@ -172,7 +147,8 @@ export class StateChangesConsumer {
             context: StateChangesConsumer.name,
         });
 
-        const storageToFieldMap = this.getPairDecoders(address);
+        const pair = this.pairs.get(address);
+        const storageToFieldMap = getPairDecoders(pair);
 
         for (const state of stateAccess) {
             const dataTrieChanges = state.dataTrieChanges;
@@ -278,103 +254,4 @@ export class StateChangesConsumer {
 
         tokens.forEach((token) => this.tokens.set(token.identifier, token));
     }
-
-    private getPairDecoders(
-        address: string,
-    ): Record<string, PairStorageDecoder<any>> {
-        const codec = new BinaryCodec();
-
-        const pair = this.pairs.get(address);
-
-        const keyFirstTokenReserves =
-            PAIR_RESERVE_PREFIX +
-            codec
-                .encodeNested(new TokenIdentifierValue(pair.firstTokenId))
-                .toString('hex');
-        const keySecondTokenReserves =
-            PAIR_RESERVE_PREFIX +
-            codec
-                .encodeNested(new TokenIdentifierValue(pair.secondTokenId))
-                .toString('hex');
-
-        const keyLpTokenSupply = Buffer.from('lp_token_supply').toString('hex');
-        const keyLpTokenId = Buffer.from('lpTokenIdentifier').toString('hex');
-        const keyState = Buffer.from('state').toString('hex');
-        const keyTotalFeePercent =
-            Buffer.from('total_fee_percent').toString('hex');
-        const keySpecialFeePercent = Buffer.from(
-            'special_fee_percent',
-        ).toString('hex');
-
-        const storageToFieldMap: Record<string, PairStorageDecoder<any>> = {
-            [keyFirstTokenReserves]: {
-                outputField: TrackedPairFields.firstTokenReserve,
-                decode: decodeBigUIntType,
-            },
-            [keySecondTokenReserves]: {
-                outputField: TrackedPairFields.secondTokenReserve,
-                decode: decodeBigUIntType,
-            },
-            [keyLpTokenSupply]: {
-                outputField: TrackedPairFields.totalSupply,
-                decode: decodeBigUIntType,
-            },
-            [keyState]: {
-                outputField: TrackedPairFields.state,
-                decode: (value) => decodeEnumType(value, ENUM_TYPES.state),
-            },
-            [keyTotalFeePercent]: {
-                outputField: TrackedPairFields.totalFeePercent,
-                decode: (value) => {
-                    const raw = decodeU64Type(value);
-                    return new BigNumber(raw)
-                        .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
-                        .toNumber();
-                },
-            },
-            [keySpecialFeePercent]: {
-                outputField: TrackedPairFields.specialFeePercent,
-                decode: (value) => {
-                    const raw = decodeU64Type(value);
-                    return new BigNumber(raw)
-                        .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
-                        .toNumber();
-                },
-            },
-            [keyLpTokenId]: {
-                outputField: TrackedPairFields.lpTokenID,
-                decode: decodeTokenIdentifierType,
-            },
-        };
-
-        return storageToFieldMap;
-    }
 }
-
-const decodeBigUIntType = (value: Uint8Array): string => {
-    return new BinaryCodec()
-        .decodeTopLevel(Buffer.from(value), new BigUIntType())
-        .valueOf()
-        .toFixed();
-};
-
-const decodeU64Type = (value: Uint8Array): number => {
-    return new BinaryCodec()
-        .decodeTopLevel(Buffer.from(value), new U64Type())
-        .valueOf()
-        .toNumber();
-};
-
-const decodeTokenIdentifierType = (value: Uint8Array): string => {
-    return new BinaryCodec()
-        .decodeTopLevel(Buffer.from(value), new TokenIdentifierType())
-        .valueOf()
-        .toString();
-};
-
-const decodeEnumType = (value: Uint8Array, enumType: EnumType): string => {
-    return new BinaryCodec()
-        .decodeTopLevel(Buffer.from(value), enumType)
-        .valueOf()
-        .toString();
-};

@@ -102,21 +102,17 @@ export class BulkUpdatesService {
             TrackedPairFields.specialFeePercent,
         ];
 
+        if (Object.keys(stateChanges).includesNone(trackedFields)) {
+          return;
+        }
+
         const rawPair: Partial<PairModel> = {};
 
         for (const field of Object.keys(stateChanges)) {
-            if (!trackedFields.includes(field as TrackedPairFields)) {
-                continue;
-            }
-
             rawPair[field] = stateChanges[field];
         }
 
-        const pairChanged = this.syncPairUpdates(address, rawPair);
-
-        if (!pairChanged) {
-            return;
-        }
+        this.syncPairUpdates(address, rawPair);
 
         const pair = this.pairs.get(address);
         for (const [field, value] of Object.entries(rawPair)) {
