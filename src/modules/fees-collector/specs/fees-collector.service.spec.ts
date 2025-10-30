@@ -31,6 +31,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('FeesCollectorService', () => {
     let module: TestingModule;
@@ -71,6 +72,7 @@ describe('FeesCollectorService', () => {
                 },
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

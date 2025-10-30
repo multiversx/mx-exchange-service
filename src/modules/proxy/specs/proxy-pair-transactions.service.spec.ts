@@ -26,6 +26,7 @@ import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('TransactionProxyPairService', () => {
     let module: TestingModule;
@@ -59,6 +60,7 @@ describe('TransactionProxyPairService', () => {
                 RouterAbiServiceProvider,
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

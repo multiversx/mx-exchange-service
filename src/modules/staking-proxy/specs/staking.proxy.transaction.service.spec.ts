@@ -45,6 +45,7 @@ import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { StakingProxyFilteringService } from '../services/staking.proxy.filtering.service';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -98,6 +99,7 @@ describe('StakingProxyTransactionService', () => {
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

@@ -42,6 +42,7 @@ import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.comp
 import { SmartRouterServiceProvider } from 'src/modules/auto-router/mocks/smart.router.service.mock';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -91,6 +92,7 @@ describe('PositionCreatorTransaction', () => {
                 SmartRouterServiceProvider,
                 SmartRouterEvaluationServiceProvider,
                 ComposableTasksAbiServiceProvider,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

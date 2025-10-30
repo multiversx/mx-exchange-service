@@ -21,6 +21,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('TransactionPairService', () => {
     let module: TestingModule;
@@ -53,6 +54,7 @@ describe('TransactionPairService', () => {
                 ComposableTasksTransactionService,
                 PairTransactionService,
                 MXApiServiceProvider,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

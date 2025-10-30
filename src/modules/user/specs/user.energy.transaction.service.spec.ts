@@ -71,6 +71,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { ContractType } from '../models/user.model';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('UserEnergyTransactionService', () => {
     let module: TestingModule;
@@ -150,6 +151,7 @@ describe('UserEnergyTransactionService', () => {
                 AbiLockedAssetServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

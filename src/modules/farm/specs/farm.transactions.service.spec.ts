@@ -22,6 +22,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -56,6 +57,7 @@ describe('FarmService', () => {
                 MXDataApiServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

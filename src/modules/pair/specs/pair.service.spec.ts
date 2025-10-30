@@ -13,6 +13,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -36,6 +37,7 @@ describe('PairService', () => {
                 RouterAbiServiceProvider,
                 ApiConfigService,
                 MXApiServiceProvider,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

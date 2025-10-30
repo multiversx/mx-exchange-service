@@ -67,6 +67,7 @@ import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('UserService', () => {
     let module: TestingModule;
@@ -141,6 +142,7 @@ describe('UserService', () => {
                 RemoteConfigGetterServiceProvider,
                 MXDataApiServiceProvider,
                 ApiConfigService,
+                PairPersistenceServiceProvider,
             ],
             imports: [
                 WinstonModule.forRoot({

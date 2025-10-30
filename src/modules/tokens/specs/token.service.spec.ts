@@ -17,6 +17,7 @@ import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { TokenPersistenceServiceProvider } from 'src/modules/persistence/mocks/token.persistence.service.mock';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('TokenService', () => {
     let module: TestingModule;
@@ -44,6 +45,7 @@ describe('TokenService', () => {
                 TokenFilteringService,
                 ContextGetterServiceProvider,
                 TokenPersistenceServiceProvider,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

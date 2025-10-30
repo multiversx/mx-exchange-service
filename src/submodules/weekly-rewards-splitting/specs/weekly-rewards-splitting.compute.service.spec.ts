@@ -24,6 +24,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     let module: TestingModule;
@@ -54,6 +55,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
                 MXApiServiceProvider,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

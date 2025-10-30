@@ -17,6 +17,7 @@ import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.serv
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -42,6 +43,7 @@ describe('RouterService', () => {
                 TokenServiceProvider,
                 ContextGetterServiceProvider,
                 MXApiServiceProvider,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });

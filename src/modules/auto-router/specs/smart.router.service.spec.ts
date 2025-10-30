@@ -41,6 +41,7 @@ import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-e
 import { SmartRouterService } from '../services/smart.router.service';
 import { BinaryUtils } from '@multiversx/sdk-nestjs-common';
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('SmartRouterService', () => {
     let autoRouterService: AutoRouterService;
@@ -291,6 +292,7 @@ describe('SmartRouterService', () => {
                 SmartRouterService,
                 SmartRouterEvaluationServiceProvider,
                 ComposableTasksAbiServiceProvider,
+                PairPersistenceServiceProvider,
             ],
             exports: [],
         }).compile();

@@ -24,6 +24,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
+import { PairPersistenceServiceProvider } from 'src/modules/persistence/mocks/pair.persistence.service.mock';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -61,6 +62,7 @@ describe('RouterService', () => {
                 RouterService,
                 MXApiServiceProvider,
                 PairFilteringService,
+                PairPersistenceServiceProvider,
             ],
         }).compile();
     });
