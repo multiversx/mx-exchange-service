@@ -532,7 +532,7 @@ export class PairPersistenceService {
         );
         const feesAPR = actualFees24hBig.times(365).div(pair.lockedValueUSD);
 
-        pair.feesAPR = !feesAPR.isNaN() ? feesAPR.toFixed() : '0';
+        pair.feesAPR = feesAPR.isNaN() ? '0' : feesAPR.toFixed();
 
         await pair.save();
     }
