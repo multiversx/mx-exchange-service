@@ -515,7 +515,7 @@ export class PairPersistenceService {
         pair.secondTokenVolume24h = secondTokenVolume;
         pair.volumeUSD24h = volumeUSD24h;
         pair.previous24hVolumeUSD = new BigNumber(volumeUSD48h)
-            .minus(feesUSD24h)
+            .minus(volumeUSD24h)
             .toFixed();
         pair.feesUSD24h = feesUSD24h;
         pair.previous24hFeesUSD = new BigNumber(feesUSD48h)
