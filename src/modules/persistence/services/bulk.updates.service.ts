@@ -102,21 +102,17 @@ export class BulkUpdatesService {
             TrackedPairFields.specialFeePercent,
         ];
 
+        if (Object.keys(stateChanges).includesNone(trackedFields)) {
+          return;
+        }
+
         const rawPair: Partial<PairModel> = {};
 
         for (const field of Object.keys(stateChanges)) {
-            if (!trackedFields.includes(field as TrackedPairFields)) {
-                continue;
-            }
-
             rawPair[field] = stateChanges[field];
         }
 
-        const pairChanged = this.syncPairUpdates(address, rawPair);
-
-        if (!pairChanged) {
-            return;
-        }
+        this.syncPairUpdates(address, rawPair);
 
         const pair = this.pairs.get(address);
         for (const [field, value] of Object.entries(rawPair)) {
@@ -352,21 +348,26 @@ export class BulkUpdatesService {
         const doNotVisit = new Set<string>();
 
         const loadPairsForToken = (id: string): PairModel[] => {
-            let tokenPairs = this.tokenToPairs.get(id);
+            let pairs = this.tokenToPairs.get(id);
 
-            if (tokenPairs.length > 1) {
-                if (tokenPairs.some((p) => p.state === 'Active')) {
-                    tokenPairs = tokenPairs.filter((p) => p.state === 'Active');
+            if (!pairs || pairs.length === 0) {
+                return [];
+            }
+
+            if (pairs.length > 1) {
+                if (pairs.some((p) => p.state === 'Active')) {
+                    pairs = pairs.filter((p) => p.state === 'Active');
                 }
             }
 
-            tokenPairs = tokenPairs.filter(
-                (pair) => !doNotVisit.has(pair.address),
-            );
+            const tokenPairs: PairModel[] = [];
 
-            for (const p of tokenPairs) {
-                doNotVisit.add(p.address);
-            }
+            pairs.forEach((pair) => {
+                if (!doNotVisit.has(pair.address)) {
+                    tokenPairs.push(pair);
+                    doNotVisit.add(pair.address);
+                }
+            });
 
             return tokenPairs;
         };
@@ -382,6 +383,12 @@ export class BulkUpdatesService {
             }
 
             if (tokenID === constantsConfig.USDC_TOKEN_ID) {
+                if (!egldPriceInUSD || isNaN(Number(egldPriceInUSD))) {
+                    throw new Error(
+                        `Invalid egldPriceInUSD: "${egldPriceInUSD}"`,
+                    );
+                }
+
                 const price = new BigNumber(1)
                     .dividedBy(egldPriceInUSD)
                     .toFixed();
