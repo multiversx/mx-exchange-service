@@ -1,4 +1,3 @@
-import { Address } from '@multiversx/sdk-core/out';
 import {
     CreatePairEvent,
     PairSwapEnabledEvent,
@@ -20,13 +19,14 @@ export class PersistenceEventHandlerService {
     async handleCreatePairEvent(event: CreatePairEvent): Promise<void> {
         const profiler = new PerformanceProfiler();
 
-        const { firstTokenID, secondTokenID } = event.toJSON();
-        const address = (
-            event.toJSON().address as unknown as Address
-        ).toBech32();
+        const { pairAddress, firstTokenID, secondTokenID } = event.toJSON();
 
         const pair = await this.pairPersistence.populatePairModel(
-            new PairMetadata({ address, firstTokenID, secondTokenID }),
+            new PairMetadata({
+                address: pairAddress,
+                firstTokenID,
+                secondTokenID,
+            }),
             event.getTimestamp().toNumber(),
         );
 
@@ -36,6 +36,7 @@ export class PersistenceEventHandlerService {
 
         this.logger.info(
             `Persistence create pair event handler finished in ${profiler.duration}`,
+            { context: PersistenceEventHandlerService.name },
         );
     }
 
@@ -56,6 +57,7 @@ export class PersistenceEventHandlerService {
 
         this.logger.info(
             `Persistence swap enabled event handler finished in ${profiler.duration}`,
+            { context: PersistenceEventHandlerService.name },
         );
     }
 }
