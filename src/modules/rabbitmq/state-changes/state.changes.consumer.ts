@@ -23,7 +23,6 @@ import { getPairDecoders } from './state.changes.utils';
 
 @Injectable()
 export class StateChangesConsumer {
-    private filterAddresses: string[];
     private pairs: Map<string, PairDocument> = new Map();
     private tokens: Map<string, EsdtToken> = new Map();
 
@@ -50,29 +49,25 @@ export class StateChangesConsumer {
             return;
         }
 
-        const addressesMap = new Map<string, string>();
         const profiler = new PerformanceProfiler();
 
         await this.updatePairsAndTokens();
 
-        Object.keys(blockData.stateAccessesPerAccounts).forEach((address) => {
-            const bech32Address = Address.newFromHex(address).toBech32();
+        const filteredAddresses = [...this.pairs.keys()];
 
-            if (this.filterAddresses.includes(bech32Address)) {
-                addressesMap.set(address, bech32Address);
-            }
-        });
-
-        if (addressesMap.size === 0) {
-            profiler.stop();
-            return;
-        }
+        const filteredStateAccesses = Object.entries(
+            blockData.stateAccessesPerAccounts,
+        ).filter((value) =>
+            filteredAddresses.includes(Address.newFromHex(value[0]).toBech32()),
+        );
 
         const pairsStateChanges: Map<string, PairStateChanges> = new Map();
-        for (const [hexAddress, address] of addressesMap.entries()) {
+        for (const entry of filteredStateAccesses.values()) {
+            const address = Address.newFromHex(entry[0]).toBech32();
+
             const stateChanges = this.decodePairStateChanges(
                 address,
-                blockData.stateAccessesPerAccounts[hexAddress].stateAccess,
+                entry[1].stateAccess,
             );
 
             if (
@@ -164,7 +159,7 @@ export class StateChangesConsumer {
                 continue;
             }
 
-            this.logger.info(
+            this.logger.debug(
                 `Decoding dataTrie changes in tx ${txHash} (i: ${state.index})`,
                 {
                     context: StateChangesConsumer.name,
@@ -184,7 +179,7 @@ export class StateChangesConsumer {
                 );
 
                 if (!Object.keys(storageToFieldMap).includes(keyHex)) {
-                    this.logger.info(
+                    this.logger.debug(
                         `Skipping key ${keyHex} ${Buffer.from(
                             change.key,
                             'base64',
@@ -207,7 +202,6 @@ export class StateChangesConsumer {
     }
 
     async updatePairsAndTokens(): Promise<void> {
-        this.filterAddresses = [];
         this.pairs = new Map();
         this.tokens = new Map();
 
@@ -247,11 +241,7 @@ export class StateChangesConsumer {
             ),
         ]);
 
-        pairs.forEach((pair) => {
-            this.filterAddresses.push(pair.address);
-            this.pairs.set(pair.address, pair);
-        });
-
+        pairs.forEach((pair) => this.pairs.set(pair.address, pair));
         tokens.forEach((token) => this.tokens.set(token.identifier, token));
     }
 }

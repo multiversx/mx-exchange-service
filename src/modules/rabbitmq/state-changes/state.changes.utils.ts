@@ -14,7 +14,7 @@ import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
 
 type PairStorageDecoder<T> = {
     outputField: TrackedPairFields;
-    decode: (value: Uint8Array) => T;
+    decode: (value: Buffer) => T;
 };
 
 const ENUM_TYPES: Record<string, EnumType> = {
@@ -94,29 +94,27 @@ export const getPairDecoders = (
     return storageToFieldMap;
 };
 
-const decodeBigUIntType = (value: Uint8Array): string => {
+const decodeBigUIntType = (value: Buffer): string => {
     return new BinaryCodec()
-        .decodeTopLevel(Buffer.from(value), new BigUIntType())
+        .decodeTopLevel(value, new BigUIntType())
         .valueOf()
         .toFixed();
 };
 
-const decodeU64Type = (value: Uint8Array): number => {
+const decodeU64Type = (value: Buffer): number => {
     return new BinaryCodec()
-        .decodeTopLevel(Buffer.from(value), new U64Type())
+        .decodeTopLevel(value, new U64Type())
         .valueOf()
         .toNumber();
 };
 
-const decodeTokenIdentifierType = (value: Uint8Array): string => {
+const decodeTokenIdentifierType = (value: Buffer): string => {
     return new BinaryCodec()
-        .decodeTopLevel(Buffer.from(value), new TokenIdentifierType())
+        .decodeTopLevel(value, new TokenIdentifierType())
         .valueOf()
         .toString();
 };
 
-const decodeEnumType = (value: Uint8Array, enumType: EnumType): string => {
-    return new BinaryCodec()
-        .decodeTopLevel(Buffer.from(value), enumType)
-        .valueOf().name;
+const decodeEnumType = (value: Buffer, enumType: EnumType): string => {
+    return new BinaryCodec().decodeTopLevel(value, enumType).valueOf().name;
 };
