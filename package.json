@@ -33,7 +33,7 @@
         "@golevelup/nestjs-rabbitmq": "^4.0.0",
         "@isaacs/ttlcache": "^1.4.1",
         "@multiversx/sdk-core": "^13.15.3",
-        "@multiversx/sdk-exchange": "^0.2.23",
+        "@multiversx/sdk-exchange": "^0.2.24",
         "@multiversx/sdk-native-auth-server": "1.0.19",
         "@multiversx/sdk-nestjs-cache": "^4.2.0",
         "@multiversx/sdk-nestjs-common": "^4.2.0",

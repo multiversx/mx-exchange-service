@@ -37,7 +37,11 @@ import { TokenPersistenceService } from './services/token.persistence.service';
         PairPersistenceService,
         PersistenceService,
     ],
-    exports: [PersistenceService],
+    exports: [
+        PersistenceService,
+        TokenPersistenceService,
+        PairPersistenceService,
+    ],
     controllers: [],
 })
 export class PersistenceModule {}
