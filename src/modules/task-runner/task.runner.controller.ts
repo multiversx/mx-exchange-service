@@ -17,7 +17,7 @@ export class TaskRunnerController {
                     true,
                 );
                 break;
-            case RunnerTasks.SWAP_TOKENS:
+            case RunnerTasks.FEES_COLLECTOR_SWAP_TOKENS:
                 await this.feesCollectorTaskService.executeSwapTokensTask();
                 break;
             default:
