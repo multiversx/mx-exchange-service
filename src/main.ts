@@ -14,7 +14,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { PushNotificationsCronModule } from './modules/push-notifications/push.notifications.cron.module';
-import { TaskRunnerModule } from './modules/task-runner/task.runner.module';
+import { TaskRunnerPubSubModule } from './modules/task-runner/task.runner.pubsub.module';
+import { TaskRunnerCronModule } from './modules/task-runner/task.runner.cron.module';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -99,8 +100,25 @@ async function bootstrap() {
     }
 
     if (apiConfigService.isTaskRunnerModuleActive()) {
+        const taskRunnerPubSub =
+            await NestFactory.createMicroservice<MicroserviceOptions>(
+                TaskRunnerPubSubModule,
+                {
+                    transport: Transport.REDIS,
+                    options: {
+                        host: apiConfigService.getRedisUrl(),
+                        port: apiConfigService.getRedisPort(),
+                        retryDelay: 1000,
+                        retryAttempts: 10,
+                        retryStrategy: () => 1000,
+                    },
+                },
+            );
+
         pubSubApp.listen();
-        const taskRunnerApp = await NestFactory.create(TaskRunnerModule);
+        taskRunnerPubSub.listen();
+
+        const taskRunnerApp = await NestFactory.create(TaskRunnerCronModule);
         await taskRunnerApp.listen(5675, '0.0.0.0');
     }
 }
