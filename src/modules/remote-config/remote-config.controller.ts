@@ -32,6 +32,8 @@ import { SettingsRepositoryService } from 'src/services/database/repositories/se
 import { SettingsDocument } from './schemas/settings.schema';
 import { SettingsArgs } from './args/settings.args';
 import { SettingsCategoryEnum } from './models/settings.model';
+import { TriggerTaskArgs } from './args/trigger.task.args';
+import { TRIGGER_TASK_EVENT } from '../task-runner/constants';
 
 @Controller('remote-config')
 export class RemoteConfigController {
@@ -351,5 +353,22 @@ export class RemoteConfigController {
             category,
         });
         return settings;
+    }
+
+    @UseGuards(JwtOrNativeAdminGuard)
+    @UsePipes(
+        new ValidationPipe({
+            transform: true,
+            transformOptions: { enableImplicitConversion: true },
+        }),
+    )
+    @Post('/task-runner/trigger')
+    async triggerTask(
+        @Body() args: TriggerTaskArgs,
+        @Res() res: Response,
+    ): Promise<Response> {
+        await this.pubSub.publish(TRIGGER_TASK_EVENT, args.task);
+
+        return res.status(200).send();
     }
 }
