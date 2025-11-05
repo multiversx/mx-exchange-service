@@ -116,8 +116,6 @@ export class FeesCollectorTasksService {
                 this.transactionService.getSenderAddress(),
             );
 
-        transaction.receiver = scAddress.feesCollector;
-
         const status = await this.transactionService.broadcastTransaction(
             transaction,
         );
@@ -197,8 +195,6 @@ export class FeesCollectorTasksService {
         if (!transaction) {
             return BroadcastStatus.skip;
         }
-
-        transaction.receiver = scAddress.feesCollector;
 
         const status = await this.transactionService.broadcastTransaction(
             transaction,
