@@ -13,6 +13,8 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { TransactionModel } from 'src/models/transaction.model';
 import { BroadcastStatus } from '../constants';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { RedlockService } from '@multiversx/sdk-nestjs-cache';
+import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
 
 @Injectable()
 export class TaskRunnerTransactionService implements OnModuleInit {
@@ -23,6 +25,7 @@ export class TaskRunnerTransactionService implements OnModuleInit {
         private readonly mxProxy: MXProxyService,
         private readonly mxApi: MXApiService,
         private readonly apiConfigService: ApiConfigService,
+        private readonly redLockService: RedlockService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -51,6 +54,13 @@ export class TaskRunnerTransactionService implements OnModuleInit {
         });
     }
 
+    @LockAndRetry({
+        lockKey: TaskRunnerTransactionService.name,
+        lockName: 'broadcastTransaction',
+        maxLockRetries: 30,
+        lockRetryInterval: 2000,
+        maxOperationRetries: 1,
+    })
     async broadcastTransaction(tx: TransactionModel): Promise<BroadcastStatus> {
         try {
             const { nonce } = await this.mxApi.getAccountStats(

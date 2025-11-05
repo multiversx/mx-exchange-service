@@ -17,6 +17,7 @@ import { TaskRunnerTransactionService } from './services/task.runner.transaction
         ContextModule,
         MXCommunicationModule,
         DynamicModuleUtils.getCommonRedisModule(),
+        DynamicModuleUtils.getRedlockModule(),
         AutoRouterModule,
         EnergyModule,
         FeesCollectorModule,
