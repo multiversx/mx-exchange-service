@@ -23,7 +23,7 @@ import { TaskRunnerTransactionService } from './services/task.runner.transaction
         TokenModule,
         WeekTimekeepingModule,
     ],
-    providers: [FeesCollectorTasksService, TaskRunnerTransactionService],
+    providers: [TaskRunnerTransactionService, FeesCollectorTasksService],
     exports: [FeesCollectorTasksService],
 })
 export class TaskRunnerModule {}

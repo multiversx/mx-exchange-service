@@ -18,7 +18,6 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 export class TaskRunnerTransactionService implements OnModuleInit {
     private accountSigner: UserSigner;
     private transactionWatcher: TransactionWatcher;
-    private isInitialised = false;
 
     constructor(
         private readonly mxProxy: MXProxyService,
@@ -47,16 +46,12 @@ export class TaskRunnerTransactionService implements OnModuleInit {
             },
         });
 
-        this.isInitialised = true;
-
-        this.logger.info(`The module has been initialized.`, {
+        this.logger.info(`The provider has been initialized.`, {
             context: TaskRunnerTransactionService.name,
         });
     }
 
     async broadcastTransaction(tx: TransactionModel): Promise<BroadcastStatus> {
-        this.checkInit();
-
         try {
             const { nonce } = await this.mxApi.getAccountStats(
                 this.accountSigner.getAddress().bech32(),
@@ -106,23 +101,6 @@ export class TaskRunnerTransactionService implements OnModuleInit {
     }
 
     getSenderAddress(): string {
-        this.checkInit();
-
         return this.accountSigner.getAddress().toBech32();
-    }
-
-    private checkInit(): void {
-        if (this.isInitialised) {
-            return;
-        }
-
-        const message =
-            'Transaction broadcasting service not initialised, aborting';
-
-        this.logger.warn(message, {
-            context: TaskRunnerTransactionService.name,
-        });
-
-        throw new Error(message);
     }
 }
