@@ -18,7 +18,7 @@ export class TaskRunnerCronService {
     @LockAndRetry({
         lockKey: TaskRunnerCronService.name,
         lockName: 'swapTokens',
-        maxLockRetries: 1,
+        maxLockRetries: 0,
         maxOperationRetries: 1,
     })
     async swapTokens(): Promise<void> {
@@ -29,7 +29,7 @@ export class TaskRunnerCronService {
     @LockAndRetry({
         lockKey: TaskRunnerCronService.name,
         lockName: 'redistributeRewards',
-        maxLockRetries: 1,
+        maxLockRetries: 0,
         maxOperationRetries: 3,
     })
     async redistributeRewards(): Promise<void> {
