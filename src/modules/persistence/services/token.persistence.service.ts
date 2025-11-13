@@ -11,7 +11,15 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { constantsConfig, tokenProviderUSD } from 'src/config';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import BigNumber from 'bignumber.js';
-import { BulkWriteOperations } from '../entities';
+import { BulkWriteOperations, PRICE_UPDATE_EVENT } from '../entities';
+import { AnyBulkWriteOperation } from 'mongodb';
+import { PUB_SUB } from 'src/services/redis.pubSub.module';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import {
+    extractValueFromSetOperation,
+    extractValueFromFilter,
+    isUpdateOneOperation,
+} from '../utils/bulk.write.utils';
 import {
     TokensFilter,
     TokenSortingArgs,
@@ -33,6 +41,7 @@ export class TokenPersistenceService {
         private readonly tokenCompute: TokenComputeService,
         private readonly analyticsQuery: AnalyticsQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     async addToken(token: EsdtToken): Promise<void> {
@@ -86,6 +95,10 @@ export class TokenPersistenceService {
             const result = await this.tokenRepository
                 .getModel()
                 .bulkWrite(bulkOps);
+
+            await this.broadcastTokensPriceUpdates(
+                bulkOps as AnyBulkWriteOperation<EsdtTokenDocument>[],
+            );
 
             profiler.stop();
 
@@ -282,6 +295,54 @@ export class TokenPersistenceService {
         );
 
         return currentSwapsBN.dividedBy(maxPrevious24hTradeCount).toNumber();
+    }
+
+    async broadcastTokensPriceUpdates(
+        bulkOps: AnyBulkWriteOperation<EsdtTokenDocument>[],
+    ): Promise<void> {
+        const updates: string[][] = [];
+
+        for (const operation of bulkOps) {
+            if (!isUpdateOneOperation<EsdtTokenDocument>(operation)) {
+                continue;
+            }
+
+            const { filter, update } = operation.updateOne;
+
+            if (Array.isArray(update)) {
+                continue;
+            }
+
+            const tokenID = extractValueFromFilter<EsdtTokenDocument>(
+                filter,
+                'identifier',
+            );
+
+            if (!tokenID) {
+                continue;
+            }
+
+            const setObj = update?.$set;
+
+            if (!setObj || typeof setObj !== 'object') {
+                continue;
+            }
+
+            const price = extractValueFromSetOperation<EsdtTokenDocument>(
+                setObj,
+                'price',
+            );
+
+            if (price === undefined) {
+                continue;
+            }
+
+            updates.push([tokenID, price]);
+        }
+
+        await this.pubSub.publish(PRICE_UPDATE_EVENT, {
+            priceUpdates: updates,
+        });
     }
 
     async getFilteredTokens(

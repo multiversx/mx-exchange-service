@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { CommonAppModule } from 'src/common.app.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
@@ -10,22 +9,22 @@ import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { TokenModule } from '../tokens/token.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
+import { TaskRunnerTransactionService } from './services/task.runner.transaction.service';
 
 @Module({
     imports: [
-        ScheduleModule.forRoot(),
         CommonAppModule,
         ContextModule,
         MXCommunicationModule,
-        DynamicModuleUtils.getRedlockModule(),
         DynamicModuleUtils.getCommonRedisModule(),
+        DynamicModuleUtils.getRedlockModule(),
         AutoRouterModule,
         EnergyModule,
         FeesCollectorModule,
         TokenModule,
         WeekTimekeepingModule,
     ],
-    providers: [FeesCollectorTasksService],
-    exports: [],
+    providers: [TaskRunnerTransactionService, FeesCollectorTasksService],
+    exports: [FeesCollectorTasksService],
 })
 export class TaskRunnerModule {}

@@ -28,14 +28,16 @@ export function LockAndRetry(options: {
                 );
             }
 
+            let result: any;
             await withLockAndRetry(
                 redLockService,
                 logger,
                 options,
                 async () => {
-                    await originalMethod.apply(this, args);
+                    result = await originalMethod.apply(this, args);
                 },
             );
+            return result;
         };
 
         return descriptor;

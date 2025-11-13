@@ -1,3 +1,4 @@
+import { Field, ObjectType } from '@nestjs/graphql';
 import { Type } from 'class-transformer';
 import {
     ArrayMaxSize,
@@ -11,7 +12,7 @@ import {
 } from 'class-validator';
 import { Model } from 'mongoose';
 
-export enum TRACKED_PAIR_FIELDS {
+export enum TrackedPairFields {
     firstTokenReserve = 'reserves0',
     secondTokenReserve = 'reserves1',
     totalSupply = 'totalSupply',
@@ -21,7 +22,7 @@ export enum TRACKED_PAIR_FIELDS {
     lpTokenID = 'lpTokenID',
 }
 
-export type PairStateChanges = Partial<Record<TRACKED_PAIR_FIELDS, any>>;
+export type PairStateChanges = Partial<Record<TrackedPairFields, any>>;
 
 export enum PersistenceTasks {
     POPULATE_DB = 'populateDb',
@@ -63,3 +64,15 @@ export class QueueTasksRequest {
 }
 
 export type BulkWriteOperations<T> = Parameters<Model<T>['bulkWrite']>[0];
+
+export const PRICE_UPDATE_EVENT = 'tokensPriceUpdated';
+
+@ObjectType()
+export class PriceUpdatesModel {
+    @Field(() => [[String, String]])
+    updates: [string, string][];
+
+    constructor(init?: Partial<PriceUpdatesModel>) {
+        Object.assign(this, init);
+    }
+}
