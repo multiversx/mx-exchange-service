@@ -494,7 +494,7 @@
         "feesCollector": {
             "baseClaimRewards": 20000000,
             "claimRewardsPerWeek": 25000000,
-            "redistributeRewards": 10000000,
+            "redistributeRewards": 100000000,
             "addKnownContracts": 10000000,
             "removeRewardTokens": 10000000,
             "swapTokenToBaseToken": 25000000

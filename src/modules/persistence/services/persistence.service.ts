@@ -13,7 +13,6 @@ import {
     PersistenceTaskPriority,
     PersistenceTasks,
     TaskDto,
-    TASK_MAX_SCORE,
 } from '../entities';
 import { PairPersistenceService } from './pair.persistence.service';
 import { TokenPersistenceService } from './token.persistence.service';
@@ -42,6 +41,12 @@ export class PersistenceService {
                 );
             }
 
+            const serializedTask = JSON.stringify(instanceToPlain(task));
+
+            this.logger.info(
+                `Persistence task added to queue ${serializedTask}`,
+            );
+
             await this.redisService.zadd(
                 CACHE_KEY,
                 JSON.stringify(instanceToPlain(task)),
@@ -57,26 +62,22 @@ export class PersistenceService {
         maxOperationRetries: 1,
     })
     async processQueuedTasks(): Promise<void> {
-        const tasks = await this.redisService.zrangebyscore(
-            CACHE_KEY,
-            0,
-            TASK_MAX_SCORE,
-        );
+        const rawTask = await this.redisService['redis'].zpopmin(CACHE_KEY);
 
-        if (tasks.length === 0) {
+        if (rawTask.length === 0) {
             return;
         }
 
         const profiler = new PerformanceProfiler();
 
-        this.logger.debug('Processing persistence tasks', {
+        const task = plainToInstance(TaskDto, JSON.parse(rawTask[0]));
+
+        this.logger.info(`Processing persistence task "${task.name}"`, {
             context: PersistenceService.name,
-            tasks,
+            task,
         });
 
-        for (const rawTask of tasks) {
-            const task = plainToInstance(TaskDto, JSON.parse(rawTask));
-
+        try {
             switch (task.name) {
                 case PersistenceTasks.POPULATE_DB:
                     await this.populateDb();
@@ -93,45 +94,34 @@ export class PersistenceService {
                 default:
                     break;
             }
-        }
+        } catch (error) {
+            this.logger.error(`Failed processing task "${task.name}"`, error);
 
-        await this.redisService.delete(CACHE_KEY);
+            await this.redisService.zadd(
+                CACHE_KEY,
+                JSON.stringify(instanceToPlain(task)),
+                PersistenceTaskPriority[task.name],
+            );
+        } finally {
+            profiler.stop();
 
-        profiler.stop();
-
-        this.logger.debug(
-            `Finished processing persistence tasks in ${profiler.duration}ms`,
-            {
+            this.logger.info(`Finished processing in ${profiler.duration}ms`, {
                 context: PersistenceService.name,
-                tasks,
-            },
-        );
+                task,
+            });
+        }
     }
 
     async populateDb(): Promise<void> {
-        try {
-            await this.pairPersistence.populatePairs();
-            await this.pairPersistence.refreshPairsPricesAndTVL();
-            await this.pairPersistence.refreshPairsAbiFields();
-            await this.refreshAnalytics();
-        } catch (error) {
-            this.logger.error('Failed populate DB task', {
-                context: PersistenceService.name,
-            });
-            this.logger.error(error);
-        }
+        await this.pairPersistence.populatePairs();
+        await this.pairPersistence.refreshPairsPricesAndTVL();
+        await this.pairPersistence.refreshPairsAbiFields();
+        await this.refreshAnalytics();
     }
 
     async refreshPairReserves(): Promise<void> {
-        try {
-            await this.pairPersistence.refreshPairsStateAndReserves();
-            await this.pairPersistence.refreshPairsPricesAndTVL();
-        } catch (error) {
-            this.logger.error('Failed refresh pair reserves task', {
-                context: PersistenceService.name,
-            });
-            this.logger.error(error);
-        }
+        await this.pairPersistence.refreshPairsStateAndReserves();
+        await this.pairPersistence.refreshPairsPricesAndTVL();
     }
 
     async refreshAnalytics(): Promise<void> {
@@ -142,47 +132,35 @@ export class PersistenceService {
     }
 
     async indexPairLpToken(address: string): Promise<void> {
-        try {
-            const [pair] = await this.pairPersistence.getPairs({
-                address,
-            });
+        const [pair] = await this.pairPersistence.getPairs({
+            address,
+        });
 
-            if (!pair) {
-                throw new Error('Pair not found');
-            }
+        if (!pair) {
+            throw new Error('Pair not found');
+        }
 
-            let ct = 0;
-            while (ct < INDEX_LP_MAX_ATTEMPTS) {
-                await this.pairPersistence.updateLpToken(pair);
+        let ct = 0;
+        while (ct < INDEX_LP_MAX_ATTEMPTS) {
+            await this.pairPersistence.updateLpToken(pair);
 
-                if (pair.liquidityPoolToken) {
-                    this.logger.debug(`Updated LP token`, {
-                        context: PersistenceService.name,
-                        address,
-                        lpId: pair.liquidityPoolTokenId,
-                        token: pair.liquidityPoolToken,
-                    });
-
-                    return;
-                }
-
-                await delay(1500);
-                ct++;
-            }
-
-            this.logger.warn(
-                `Could not update LP token after ${INDEX_LP_MAX_ATTEMPTS} attempts`,
-                {
+            if (pair.liquidityPoolToken) {
+                this.logger.debug(`Updated LP token`, {
                     context: PersistenceService.name,
                     address,
-                },
-            );
-        } catch (error) {
-            this.logger.error('Failed index pair LP token task', {
-                context: PersistenceService.name,
-                address,
-            });
-            this.logger.error(error);
+                    lpId: pair.liquidityPoolTokenId,
+                    token: pair.liquidityPoolToken,
+                });
+
+                return;
+            }
+
+            await delay(1500);
+            ct++;
         }
+
+        const message = `Could not update pair ${address} LP token after ${INDEX_LP_MAX_ATTEMPTS} attempts`;
+
+        throw new Error(message);
     }
 }

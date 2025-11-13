@@ -16,7 +16,7 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import {
     BulkWriteOperations,
     PairStateChanges,
-    TRACKED_PAIR_FIELDS,
+    TrackedPairFields,
 } from '../entities';
 
 export type MongoBulkOperations = {
@@ -32,6 +32,7 @@ export class BulkUpdatesService {
     private tokens: Map<string, EsdtToken>;
     private pairsUpdates: Map<string, Partial<PairModel>> = new Map();
     private tokensUpdates: Map<string, Partial<EsdtToken>> = new Map();
+    private pricesRecomputeNeeded = false;
     private usdcPairChanged = false;
 
     constructor(
@@ -75,6 +76,50 @@ export class BulkUpdatesService {
         return this.convertUpdatesToMongoBulkOperations();
     }
 
+    getDbUpdateOperations(
+        stateChangesMap: Map<string, PairStateChanges>,
+    ): MongoBulkOperations {
+        for (const [address, stateChanges] of stateChangesMap.entries()) {
+            this.updatePairState(address, stateChanges);
+            this.updatePairReservesAndPrices(address, stateChanges);
+        }
+
+        if (this.pricesRecomputeNeeded) {
+            this.updateTokensDerivedEgldAndUsdPrices();
+            this.updateValuesUSD();
+        }
+
+        return this.convertUpdatesToMongoBulkOperations();
+    }
+
+    private updatePairState(
+        address: string,
+        stateChanges: PairStateChanges,
+    ): void {
+        const trackedFields = [
+            TrackedPairFields.state,
+            TrackedPairFields.totalFeePercent,
+            TrackedPairFields.specialFeePercent,
+        ];
+
+        if (Object.keys(stateChanges).includesNone(trackedFields)) {
+          return;
+        }
+
+        const rawPair: Partial<PairModel> = {};
+
+        for (const field of Object.keys(stateChanges)) {
+            rawPair[field] = stateChanges[field];
+        }
+
+        this.syncPairUpdates(address, rawPair);
+
+        const pair = this.pairs.get(address);
+        for (const [field, value] of Object.entries(rawPair)) {
+            pair[field] = value;
+        }
+    }
+
     private convertUpdatesToMongoBulkOperations(): MongoBulkOperations {
         const pairBulkOps: BulkWriteOperations<PairModel> = [];
         const tokenBulkOps: BulkWriteOperations<EsdtToken> = [];
@@ -112,9 +157,9 @@ export class BulkUpdatesService {
     ): boolean {
         if (
             Object.keys(stateChanges).includesSome([
-                TRACKED_PAIR_FIELDS.firstTokenReserve,
-                TRACKED_PAIR_FIELDS.secondTokenReserve,
-                TRACKED_PAIR_FIELDS.totalSupply,
+                TrackedPairFields.firstTokenReserve,
+                TrackedPairFields.secondTokenReserve,
+                TrackedPairFields.totalSupply,
             ])
         ) {
             return true;
@@ -130,6 +175,8 @@ export class BulkUpdatesService {
         if (!this.containsReservesStateChanges(stateChanges)) {
             return;
         }
+
+        this.pricesRecomputeNeeded = true;
 
         const pair = this.pairs.get(address);
 
@@ -301,21 +348,26 @@ export class BulkUpdatesService {
         const doNotVisit = new Set<string>();
 
         const loadPairsForToken = (id: string): PairModel[] => {
-            let tokenPairs = this.tokenToPairs.get(id);
+            let pairs = this.tokenToPairs.get(id);
 
-            if (tokenPairs.length > 1) {
-                if (tokenPairs.some((p) => p.state === 'Active')) {
-                    tokenPairs = tokenPairs.filter((p) => p.state === 'Active');
+            if (!pairs || pairs.length === 0) {
+                return [];
+            }
+
+            if (pairs.length > 1) {
+                if (pairs.some((p) => p.state === 'Active')) {
+                    pairs = pairs.filter((p) => p.state === 'Active');
                 }
             }
 
-            tokenPairs = tokenPairs.filter(
-                (pair) => !doNotVisit.has(pair.address),
-            );
+            const tokenPairs: PairModel[] = [];
 
-            for (const p of tokenPairs) {
-                doNotVisit.add(p.address);
-            }
+            pairs.forEach((pair) => {
+                if (!doNotVisit.has(pair.address)) {
+                    tokenPairs.push(pair);
+                    doNotVisit.add(pair.address);
+                }
+            });
 
             return tokenPairs;
         };
@@ -331,6 +383,12 @@ export class BulkUpdatesService {
             }
 
             if (tokenID === constantsConfig.USDC_TOKEN_ID) {
+                if (!egldPriceInUSD || isNaN(Number(egldPriceInUSD))) {
+                    throw new Error(
+                        `Invalid egldPriceInUSD: "${egldPriceInUSD}"`,
+                    );
+                }
+
                 const price = new BigNumber(1)
                     .dividedBy(egldPriceInUSD)
                     .toFixed();

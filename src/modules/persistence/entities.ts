@@ -1,3 +1,4 @@
+import { Field, ObjectType } from '@nestjs/graphql';
 import { Type } from 'class-transformer';
 import {
     ArrayMaxSize,
@@ -12,7 +13,7 @@ import {
 import { Model } from 'mongoose';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 
-export enum TRACKED_PAIR_FIELDS {
+export enum TrackedPairFields {
     firstTokenReserve = 'reserves0',
     secondTokenReserve = 'reserves1',
     totalSupply = 'totalSupply',
@@ -22,7 +23,7 @@ export enum TRACKED_PAIR_FIELDS {
     lpTokenID = 'lpTokenID',
 }
 
-export type PairStateChanges = Partial<Record<TRACKED_PAIR_FIELDS, any>>;
+export type PairStateChanges = Partial<Record<TrackedPairFields, any>>;
 
 export enum PersistenceTasks {
     POPULATE_DB = 'populateDb',
@@ -31,13 +32,11 @@ export enum PersistenceTasks {
     REFRESH_ANALYTICS = 'refreshAnalytics',
 }
 
-export const TASK_MAX_SCORE = 1000;
-
 export const PersistenceTaskPriority: Record<PersistenceTasks, number> = {
     populateDb: 0,
     refreshReserves: 10,
     indexLpToken: 100,
-    refreshAnalytics: TASK_MAX_SCORE,
+    refreshAnalytics: 1000,
 };
 
 export class TaskDto {
@@ -66,6 +65,18 @@ export class QueueTasksRequest {
 }
 
 export type BulkWriteOperations<T> = Parameters<Model<T>['bulkWrite']>[0];
+
+export const PRICE_UPDATE_EVENT = 'tokensPriceUpdated';
+
+@ObjectType()
+export class PriceUpdatesModel {
+    @Field(() => [[String, String]])
+    updates: [string, string][];
+
+    constructor(init?: Partial<PriceUpdatesModel>) {
+        Object.assign(this, init);
+    }
+}
 
 export const PairPopulateFields = [
     'firstToken',
