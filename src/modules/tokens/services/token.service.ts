@@ -114,24 +114,7 @@ export class TokenService {
         tokenID: string,
         fields?: (keyof EsdtToken)[],
     ): Promise<EsdtToken> {
-        // TODO: add caching
-        const projection: ProjectionType<EsdtTokenDocument> = {};
-
-        if (fields && fields.length > 0) {
-            fields.forEach((field) => (projection[field] = 1));
-        } else {
-            projection.__v = 0;
-            projection._id = 0;
-        }
-
-        const [token] = await this.tokenPersistence.getTokens(
-            {
-                identifier: tokenID,
-            },
-            projection,
-            true,
-        );
-
+        const [token] = await this.getAllTokensMetadata([tokenID], fields);
         return token;
     }
 
