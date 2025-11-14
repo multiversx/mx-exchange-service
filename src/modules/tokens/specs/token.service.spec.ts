@@ -61,4 +61,26 @@ describe('TokenService', () => {
         const token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(expectedToken);
     });
+
+    it('should get multiple tokens metadata', async () => {
+        const service: TokenService = module.get<TokenService>(TokenService);
+        const expectedTokens = [Tokens('WEGLD-123456'), Tokens('MEX-123456')];
+
+        const token = await service.getAllTokensMetadata([
+            'WEGLD-123456',
+            'MEX-123456',
+        ]);
+        expect(token).toEqual(expectedTokens);
+    });
+
+    it('should get correctly handle duplication of multiple tokens', async () => {
+        const service: TokenService = module.get<TokenService>(TokenService);
+        const expectedToken = Tokens('WEGLD-123456');
+
+        const token = await service.getAllTokensMetadata([
+            'WEGLD-123456',
+            'WEGLD-123456',
+        ]);
+        expect(token).toEqual([expectedToken, expectedToken]);
+    });
 });

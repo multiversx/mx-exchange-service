@@ -148,10 +148,17 @@ export class TokenService {
             projection._id = 0;
         }
 
+        const distinctTokenIDs = [...new Set(tokenIDs)];
+
+        const filterQuery =
+            distinctTokenIDs.length === 1
+                ? { identifier: distinctTokenIDs[0] }
+                : {
+                      identifier: { $in: distinctTokenIDs },
+                  };
+
         const tokens = await this.tokenPersistence.getTokens(
-            {
-                identifier: { $in: [...new Set(tokenIDs)] },
-            },
+            filterQuery,
             projection,
             true,
         );
