@@ -1,10 +1,12 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { BaseFarmModel, FarmRewardType } from './farm.model';
 import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
+import {
+    WeekTimekeepingModel,
+    WeekTimekeepingPropOptions,
+} from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
-import { Prop, raw, Schema, Virtual } from '@nestjs/mongoose';
-import { constantsConfig } from 'src/config';
+import { Prop, PropOptions, raw, Schema } from '@nestjs/mongoose';
 
 @ObjectType()
 export class BoostedYieldsFactors {
@@ -24,6 +26,24 @@ export class BoostedYieldsFactors {
     }
 }
 
+export const BoostedYieldsFactorsPropOptions: PropOptions = {
+    type: raw({
+        maxRewardsFactor: { type: String },
+        userRewardsEnergy: { type: String },
+        userRewardsFarm: { type: String },
+        minEnergyAmount: { type: String },
+        minFarmAmount: { type: String },
+    }),
+    _id: false,
+    default: {
+        maxRewardsFactor: '0',
+        userRewardsEnergy: '0',
+        userRewardsFarm: '0',
+        minEnergyAmount: '0',
+        minFarmAmount: '0',
+    },
+};
+
 @ObjectType()
 @Schema({
     collection: 'farms',
@@ -35,23 +55,7 @@ export class FarmModelV2 extends BaseFarmModel {
     @Field(() => Int)
     boostedYieldsRewardsPercenatage: number;
 
-    @Prop({
-        type: raw({
-            maxRewardsFactor: { type: String },
-            userRewardsEnergy: { type: String },
-            userRewardsFarm: { type: String },
-            minEnergyAmount: { type: String },
-            minFarmAmount: { type: String },
-        }),
-        _id: false,
-        default: {
-            maxRewardsFactor: '0',
-            userRewardsEnergy: '0',
-            userRewardsFarm: '0',
-            minEnergyAmount: '0',
-            minFarmAmount: '0',
-        },
-    })
+    @Prop(BoostedYieldsFactorsPropOptions)
     @Field(() => BoostedYieldsFactors, { complexity: nestedFieldComplexity })
     boostedYieldsFactors: BoostedYieldsFactors;
 
@@ -70,7 +74,7 @@ export class FarmModelV2 extends BaseFarmModel {
     @Field()
     undistributedBoostedRewardsClaimed: string;
 
-    @Prop({ required: true })
+    @Prop()
     @Field()
     energyFactoryAddress: string;
 
@@ -78,23 +82,7 @@ export class FarmModelV2 extends BaseFarmModel {
     @Field()
     rewardType: FarmRewardType;
 
-    @Virtual({
-        get: function (this: FarmModelV2) {
-            const startEpochForWeek =
-                this.firstWeekStartEpoch +
-                (this.currentWeek - 1) * constantsConfig.EPOCHS_IN_WEEK;
-            const endEpochForWeek =
-                startEpochForWeek + constantsConfig.EPOCHS_IN_WEEK - 1;
-
-            return new WeekTimekeepingModel({
-                currentWeek: this.currentWeek,
-                firstWeekStartEpoch: this.firstWeekStartEpoch,
-                startEpochForWeek,
-                endEpochForWeek,
-                scAddress: this.address,
-            });
-        },
-    })
+    @Prop(WeekTimekeepingPropOptions)
     @Field({ complexity: nestedFieldComplexity })
     time: WeekTimekeepingModel;
 
@@ -126,12 +114,6 @@ export class FarmModelV2 extends BaseFarmModel {
     @Prop()
     @Field()
     optimalEnergyPerLp: string;
-
-    @Prop()
-    currentWeek: number;
-
-    @Prop()
-    firstWeekStartEpoch: number;
 
     @Prop()
     boostedRewardsPerWeek: string;
