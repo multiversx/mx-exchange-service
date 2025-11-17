@@ -12,8 +12,10 @@ import { Logger } from 'winston';
 import {
     PersistenceTaskPriority,
     PersistenceTasks,
+    PersistenceTasksWithArguments,
     TaskDto,
 } from '../entities';
+import { FarmPersistenceService } from './farm.persistence.service';
 import { PairPersistenceService } from './pair.persistence.service';
 import { TokenPersistenceService } from './token.persistence.service';
 
@@ -25,6 +27,7 @@ export class PersistenceService {
     constructor(
         private readonly pairPersistence: PairPersistenceService,
         private readonly tokenPersistence: TokenPersistenceService,
+        private readonly farmPersistence: FarmPersistenceService,
         private readonly redisService: RedisCacheService,
         private readonly redLockService: RedlockService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -33,12 +36,10 @@ export class PersistenceService {
     async queueTasks(tasks: TaskDto[]): Promise<void> {
         for (const task of tasks) {
             if (
-                task.name === PersistenceTasks.INDEX_LP_TOKEN &&
+                PersistenceTasksWithArguments.includes(task.name) &&
                 !task.args?.length
             ) {
-                throw new Error(
-                    `Task '${task.name}' requires the pair address as an argument`,
-                );
+                throw new Error(`Task '${task.name}' requires an argument`);
             }
 
             const serializedTask = JSON.stringify(instanceToPlain(task));
@@ -91,6 +92,18 @@ export class PersistenceService {
                 case PersistenceTasks.REFRESH_ANALYTICS:
                     await this.refreshAnalytics();
                     break;
+                case PersistenceTasks.POPULATE_FARMS:
+                    await this.populateFarms();
+                    break;
+                case PersistenceTasks.REFRESH_FARM:
+                    await this.refreshFarm(task.args[0]);
+                    break;
+                case PersistenceTasks.REFRESH_FARM_INFO:
+                    await this.refreshFarmInfo(task.args[0]);
+                    break;
+                case PersistenceTasks.REFRESH_WEEK_TIMEKEEPING:
+                    await this.refreshWeekTimekeeping();
+                    break;
                 default:
                     break;
             }
@@ -116,7 +129,51 @@ export class PersistenceService {
         await this.pairPersistence.populatePairs();
         await this.pairPersistence.refreshPairsPricesAndTVL();
         await this.pairPersistence.refreshPairsAbiFields();
+        await this.populateFarms();
         await this.refreshAnalytics();
+    }
+
+    async populateFarms(): Promise<void> {
+        await this.farmPersistence.populateFarms();
+        await this.farmPersistence.refreshAbiFields();
+        await this.farmPersistence.refreshFarmsReserves();
+        await this.farmPersistence.refreshPricesAPRsAndTVL();
+        await this.farmPersistence.refreshFarmsRewards();
+    }
+
+    async refreshWeekTimekeeping(): Promise<void> {
+        await this.farmPersistence.refreshWeekTimekeeping();
+    }
+
+    async refreshFarmInfo(address: string): Promise<void> {
+        const [farm] =
+            await this.farmPersistence.getFarmsWithPairAndFarmedToken({
+                address,
+            });
+
+        if (!farm) {
+            throw new Error(`Farm ${address} not found in db`);
+        }
+
+        await this.farmPersistence.updateAbiFields(farm);
+        await this.farmPersistence.updateFarmReserves(farm);
+        await this.farmPersistence.updatePricesAPRsAndTVL(farm);
+        await this.farmPersistence.updateFarmRewards(farm);
+    }
+
+    async refreshFarm(address: string): Promise<void> {
+        const [farm] =
+            await this.farmPersistence.getFarmsWithPairAndFarmedToken({
+                address,
+            });
+
+        if (!farm) {
+            throw new Error(`Farm ${address} not found in db`);
+        }
+
+        await this.farmPersistence.updateFarmReserves(farm);
+        await this.farmPersistence.updateFarmRewards(farm);
+        await this.farmPersistence.updatePricesAPRsAndTVL(farm);
     }
 
     async refreshPairReserves(): Promise<void> {
