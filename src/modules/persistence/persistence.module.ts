@@ -31,6 +31,7 @@ import { FarmPersistenceService } from './services/farm.persistence.service';
 import { GlobalInfoPersistenceService } from './services/global.info.persistence.service';
 import { PairPersistenceService } from './services/pair.persistence.service';
 import { PersistenceService } from './services/persistence.service';
+import { StakingFarmPersistenceService } from './services/staking.farm.persistence.service';
 import { TokenPersistenceService } from './services/token.persistence.service';
 
 @Module({
