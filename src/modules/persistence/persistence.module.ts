@@ -68,6 +68,7 @@ import { TokenPersistenceService } from './services/token.persistence.service';
         GlobalInfoPersistenceService,
         GlobalInfoRepository,
         StakingFarmRepository,
+        StakingFarmPersistenceService,
         PersistenceService,
     ],
     exports: [

@@ -33,13 +33,19 @@ export enum PersistenceTasks {
     REFRESH_FARM = 'refreshFarm',
     REFRESH_FARM_INFO = 'refreshFarmInfo',
     REFRESH_WEEK_TIMEKEEPING = 'refreshWeekTimekeeping',
+    POPULATE_STAKING_FARMS = 'populateStaking',
+    REFRESH_STAKING_FARM = 'refreshStakingFarm',
+    REFRESH_STAKING_FARM_INFO = 'refreshStakingFarmInfo',
 }
 
 export const PersistenceTaskPriority: Record<PersistenceTasks, number> = {
     populateDb: 0,
     populateFarms: 5,
+    populateStaking: 6,
     refreshFarm: 15,
+    refreshStakingFarm: 15,
     refreshFarmInfo: 20,
+    refreshStakingFarmInfo: 20,
     refreshReserves: 10,
     indexLpToken: 100,
     refreshWeekTimekeeping: 200,
@@ -50,6 +56,8 @@ export const PersistenceTasksWithArguments = [
     PersistenceTasks.INDEX_LP_TOKEN,
     PersistenceTasks.REFRESH_FARM,
     PersistenceTasks.REFRESH_FARM_INFO,
+    PersistenceTasks.REFRESH_STAKING_FARM,
+    PersistenceTasks.REFRESH_STAKING_FARM_INFO,
 ];
 
 export class TaskDto {
