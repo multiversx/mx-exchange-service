@@ -21,7 +21,7 @@ export class TokenPersistenceServiceMock {
             Array.isArray(identifierFilter.$in)
         ) {
             return MockedTokens.filter((tokenID) =>
-                (identifierFilter as string[]).includes(tokenID),
+                (identifierFilter.$in as string[]).includes(tokenID),
             ).map((tokenID) => Tokens(tokenID));
         }
 
