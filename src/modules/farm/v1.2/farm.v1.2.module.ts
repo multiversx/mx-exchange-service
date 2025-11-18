@@ -17,7 +17,7 @@ import { FarmComputeLoaderV1_2 } from './services/farm.v1.2.compute.loader';
     imports: [
         ContextModule,
         MXCommunicationModule,
-        TokenModule,
+        forwardRef(() => TokenModule),
         forwardRef(() => PairModule),
     ],
     providers: [

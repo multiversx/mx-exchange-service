@@ -61,9 +61,9 @@ import { TokenPersistenceService } from './services/token.persistence.service';
         forwardRef(() => WeekTimekeepingModule),
         forwardRef(() => WeeklyRewardsSplittingModule),
         forwardRef(() => EnergyModule),
-        StakingModule,
-        RemoteConfigModule,
-        StakingProxyModule,
+        forwardRef(() => StakingModule),
+        forwardRef(() => RemoteConfigModule),
+        forwardRef(() => StakingProxyModule),
     ],
     providers: [
         TokenRepository,

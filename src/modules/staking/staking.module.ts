@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
@@ -23,7 +23,7 @@ import { StakingFilteringService } from './services/staking.filtering.service';
         ContextModule,
         MXCommunicationModule,
         RemoteConfigModule,
-        TokenModule,
+        forwardRef(() => TokenModule),
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
     ],
