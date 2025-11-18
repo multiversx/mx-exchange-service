@@ -2,7 +2,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
-import { AnalyticsModule } from '../analytics/analytics.module';
+import { AnalyticsModule } from 'src/services/analytics/analytics.module';
 import { PairModel } from '../pair/models/pair.model';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
@@ -23,8 +23,8 @@ import { TokenPersistenceService } from './services/token.persistence.service';
             { name: PairModel.name, schema: PairSchema },
         ]),
         forwardRef(() => RouterModule),
-        TokenModule,
-        PairModule,
+        forwardRef(() => TokenModule),
+        forwardRef(() => PairModule),
         MXCommunicationModule,
         AnalyticsModule,
         DynamicModuleUtils.getCommonRedisModule(),
