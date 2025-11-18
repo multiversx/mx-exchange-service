@@ -419,8 +419,8 @@ export class AnalyticsComputeService {
 
             return new TradingActivityModel({
                 hash: event.txHash,
-                inputToken: { ...inputToken },
-                outputToken: { ...outputToken },
+                inputToken: inputToken,
+                outputToken: outputToken,
                 timestamp: String(event.timestamp),
                 action,
             });
