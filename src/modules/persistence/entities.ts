@@ -36,12 +36,14 @@ export enum PersistenceTasks {
     POPULATE_STAKING_FARMS = 'populateStaking',
     REFRESH_STAKING_FARM = 'refreshStakingFarm',
     REFRESH_STAKING_FARM_INFO = 'refreshStakingFarmInfo',
+    POPULATE_STAKING_PROXIES = 'populateStakingProxies',
 }
 
 export const PersistenceTaskPriority: Record<PersistenceTasks, number> = {
     populateDb: 0,
     populateFarms: 5,
     populateStaking: 6,
+    populateStakingProxies: 7,
     refreshFarm: 15,
     refreshStakingFarm: 15,
     refreshFarmInfo: 20,

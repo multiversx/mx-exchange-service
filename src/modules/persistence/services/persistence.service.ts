@@ -18,6 +18,7 @@ import {
 import { FarmPersistenceService } from './farm.persistence.service';
 import { PairPersistenceService } from './pair.persistence.service';
 import { StakingFarmPersistenceService } from './staking.farm.persistence.service';
+import { StakingProxyPersistenceService } from './staking.proxy.persistence.service';
 import { TokenPersistenceService } from './token.persistence.service';
 
 const INDEX_LP_MAX_ATTEMPTS = 60;
@@ -30,6 +31,7 @@ export class PersistenceService {
         private readonly tokenPersistence: TokenPersistenceService,
         private readonly farmPersistence: FarmPersistenceService,
         private readonly stakingFarmPersistence: StakingFarmPersistenceService,
+        private readonly stakingProxyPersistence: StakingProxyPersistenceService,
         private readonly redisService: RedisCacheService,
         private readonly redLockService: RedlockService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -115,6 +117,9 @@ export class PersistenceService {
                 case PersistenceTasks.REFRESH_STAKING_FARM_INFO:
                     await this.refreshStakingFarmInfo(task.args[0]);
                     break;
+                case PersistenceTasks.POPULATE_STAKING_PROXIES:
+                    await this.populateStakingProxies();
+                    break;
                 default:
                     break;
             }
@@ -142,6 +147,7 @@ export class PersistenceService {
         await this.pairPersistence.refreshPairsAbiFields();
         await this.populateFarms();
         await this.populateStakingFarms();
+        await this.populateStakingProxies();
         await this.refreshAnalytics();
     }
 
@@ -228,6 +234,10 @@ export class PersistenceService {
         await this.stakingFarmPersistence.updateReserves(stakingFarm);
         await this.stakingFarmPersistence.updatePricesAPRsAndTVL(stakingFarm);
         await this.stakingFarmPersistence.updateStakingFarmRewards(stakingFarm);
+    }
+
+    async populateStakingProxies(): Promise<void> {
+        await this.stakingProxyPersistence.populateStakingProxies();
     }
 
     async refreshPairReserves(): Promise<void> {
