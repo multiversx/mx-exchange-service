@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TokenRepository } from '../repositories/token.repository';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -20,12 +20,24 @@ import {
     extractValueFromFilter,
     isUpdateOneOperation,
 } from '../utils/bulk.write.utils';
+import {
+    TokensFilter,
+    TokenSortingArgs,
+} from 'src/modules/tokens/models/tokens.filter.args';
+import { filteredTokensPipeline } from '../pipelines/filtered.tokens.pipeline';
+
+type FilteredTokensResponse = {
+    items: EsdtTokenDocument[];
+    total: number;
+};
 
 @Injectable()
 export class TokenPersistenceService {
     constructor(
         private readonly tokenRepository: TokenRepository,
+        @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
+        @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly analyticsQuery: AnalyticsQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -107,12 +119,13 @@ export class TokenPersistenceService {
     async getTokens(
         filterQuery: FilterQuery<EsdtTokenDocument>,
         projection?: ProjectionType<EsdtTokenDocument>,
+        lean = false,
     ): Promise<EsdtTokenDocument[]> {
         const profiler = new PerformanceProfiler();
 
         const result = await this.tokenRepository
             .getModel()
-            .find(filterQuery, projection)
+            .find(filterQuery, projection, { lean })
             .exec();
 
         profiler.stop();
@@ -129,8 +142,8 @@ export class TokenPersistenceService {
     ): Promise<EsdtTokenDocument> {
         try {
             const [tokenMetadata, createdAt] = await Promise.all([
-                this.tokenService.tokenMetadata(tokenID),
-                this.tokenCompute.tokenCreatedAt(tokenID),
+                this.tokenService.tokenMetadataRaw(tokenID),
+                this.tokenCompute.computeTokenCreatedAtTimestamp(tokenID),
             ]);
 
             tokenMetadata.createdAt = createdAt;
@@ -330,5 +343,32 @@ export class TokenPersistenceService {
         await this.pubSub.publish(PRICE_UPDATE_EVENT, {
             priceUpdates: updates,
         });
+    }
+
+    async getFilteredTokens(
+        offset: number,
+        limit: number,
+        filters: TokensFilter,
+        sorting: TokenSortingArgs,
+    ): Promise<{ tokens: EsdtToken[]; count: number }> {
+        const profiler = new PerformanceProfiler();
+
+        const [result] = await this.tokenRepository
+            .getModel()
+            .aggregate<FilteredTokensResponse>(
+                filteredTokensPipeline(offset, limit, filters, sorting),
+            )
+            .exec();
+
+        profiler.stop();
+
+        this.logger.debug(
+            `${this.getFilteredTokens.name} : ${profiler.duration}ms`,
+            {
+                context: TokenPersistenceService.name,
+            },
+        );
+
+        return { tokens: result.items, count: result.total };
     }
 }

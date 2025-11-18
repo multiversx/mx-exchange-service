@@ -15,6 +15,7 @@ import { AnalyticsModule } from 'src/services/analytics/analytics.module';
 import { TokenFilteringService } from './services/token.filtering.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { TokenLoader } from './services/token.loader';
+import { PersistenceModule } from '../persistence/persistence.module';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { TokenLoader } from './services/token.loader';
         ]),
         AnalyticsModule,
         ElasticSearchModule,
+        PersistenceModule,
     ],
     providers: [
         TokenLoader,

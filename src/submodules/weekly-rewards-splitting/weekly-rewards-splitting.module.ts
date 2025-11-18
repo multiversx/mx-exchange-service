@@ -22,7 +22,7 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         EnergyModule,
         forwardRef(() => RouterModule),
         forwardRef(() => PairModule),
-        TokenModule,
+        forwardRef(() => TokenModule),
         forwardRef(() => FarmModuleV2),
         forwardRef(() => FeesCollectorModule),
         forwardRef(() => ContextModule),

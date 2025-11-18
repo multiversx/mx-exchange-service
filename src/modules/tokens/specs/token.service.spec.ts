@@ -8,16 +8,15 @@ import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { TokenRepositoryServiceProvider } from '../mocks/token.repository.service.mock';
-import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
-import { CacheService } from 'src/services/caching/cache.service';
 import { TokenComputeServiceProvider } from '../mocks/token.compute.service.mock';
 import { TokenFilteringService } from '../services/token.filtering.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { TokenPersistenceServiceProvider } from 'src/modules/persistence/mocks/token.persistence.service.mock';
 
 describe('TokenService', () => {
     let module: TestingModule;
@@ -44,6 +43,7 @@ describe('TokenService', () => {
                 TokenComputeServiceProvider,
                 TokenFilteringService,
                 ContextGetterServiceProvider,
+                TokenPersistenceServiceProvider,
             ],
         }).compile();
     });
@@ -55,20 +55,32 @@ describe('TokenService', () => {
 
     it('should get token metadata', async () => {
         const service: TokenService = module.get<TokenService>(TokenService);
-        const apiService = module.get<MXApiService>(MXApiService);
-        const cachingService = module.get<CacheService>(CacheService);
-
         const tokenID = 'WEGLD-123456';
         const expectedToken = Tokens(tokenID);
-        const cacheKey = `token.tokenMetadata.${tokenID}`;
-        await cachingService.deleteInCache(cacheKey);
 
-        let token = await service.tokenMetadata(tokenID);
+        const token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(expectedToken);
+    });
 
-        jest.spyOn(apiService, 'getToken').mockResolvedValueOnce(undefined);
-        await cachingService.deleteInCache(cacheKey);
-        token = await service.tokenMetadata(tokenID);
-        expect(token).toEqual(undefined);
+    it('should get multiple tokens metadata', async () => {
+        const service: TokenService = module.get<TokenService>(TokenService);
+        const expectedTokens = [Tokens('WEGLD-123456'), Tokens('MEX-123456')];
+
+        const token = await service.getAllTokensMetadata([
+            'WEGLD-123456',
+            'MEX-123456',
+        ]);
+        expect(token).toEqual(expectedTokens);
+    });
+
+    it('should get correctly handle duplication of multiple tokens', async () => {
+        const service: TokenService = module.get<TokenService>(TokenService);
+        const expectedToken = Tokens('WEGLD-123456');
+
+        const token = await service.getAllTokensMetadata([
+            'WEGLD-123456',
+            'WEGLD-123456',
+        ]);
+        expect(token).toEqual([expectedToken, expectedToken]);
     });
 });

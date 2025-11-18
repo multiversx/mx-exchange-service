@@ -5,7 +5,7 @@ import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-time
 import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
-import { AnalyticsModule } from '../analytics/analytics.module';
+import { AnalyticsModule } from 'src/services/analytics/analytics.module';
 import { EnergyModule } from '../energy/energy.module';
 import { FarmModelV2 } from '../farm/models/farm.v2.model';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
@@ -50,17 +50,17 @@ import { TokenPersistenceService } from './services/token.persistence.service';
             { name: StakingProxyModel.name, schema: StakingProxySchema },
         ]),
         forwardRef(() => RouterModule),
-        TokenModule,
-        PairModule,
+        forwardRef(() => TokenModule),
+        forwardRef(() => PairModule),
         MXCommunicationModule,
-        AnalyticsModule,
+        forwardRef(() => AnalyticsModule),
         DynamicModuleUtils.getCommonRedisModule(),
         DynamicModuleUtils.getRedlockModule(),
         DynamicModuleUtils.getCacheModule(),
-        FarmModuleV2,
-        WeekTimekeepingModule,
-        WeeklyRewardsSplittingModule,
-        EnergyModule,
+        forwardRef(() => FarmModuleV2),
+        forwardRef(() => WeekTimekeepingModule),
+        forwardRef(() => WeeklyRewardsSplittingModule),
+        forwardRef(() => EnergyModule),
         StakingModule,
         RemoteConfigModule,
         StakingProxyModule,
