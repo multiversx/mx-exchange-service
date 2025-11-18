@@ -7,6 +7,8 @@ import {
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { PersistenceTasks, TaskDto } from 'src/modules/persistence/entities';
+import { PersistenceService } from 'src/modules/persistence/services/persistence.service';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
@@ -16,6 +18,7 @@ export class StakingHandlerService {
     constructor(
         private readonly stakingAbi: StakingAbiService,
         private readonly stakingSetter: StakingSetterService,
+        private readonly persistenceService: PersistenceService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -39,6 +42,13 @@ export class StakingHandlerService {
             ),
         ]);
         await this.deleteCacheKeys(cacheKeys);
+
+        await this.persistenceService.queueTasks([
+            new TaskDto({
+                name: PersistenceTasks.REFRESH_STAKING_FARM,
+                args: [event.address],
+            }),
+        ]);
     }
 
     async handleUnstakeEvent(rawEvent: RawEvent): Promise<void> {
@@ -60,6 +70,13 @@ export class StakingHandlerService {
             ),
         ]);
         await this.deleteCacheKeys(cacheKeys);
+
+        await this.persistenceService.queueTasks([
+            new TaskDto({
+                name: PersistenceTasks.REFRESH_STAKING_FARM,
+                args: [event.address],
+            }),
+        ]);
     }
 
     async handleClaimRewardsEvent(rawEvent: RawEvent): Promise<void> {
@@ -81,6 +98,13 @@ export class StakingHandlerService {
             ),
         ]);
         await this.deleteCacheKeys(cacheKeys);
+
+        await this.persistenceService.queueTasks([
+            new TaskDto({
+                name: PersistenceTasks.REFRESH_STAKING_FARM,
+                args: [event.address],
+            }),
+        ]);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
