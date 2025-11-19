@@ -17,7 +17,7 @@ import {
 } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { farmsAddresses, farmType } from 'src/utils/farm.utils';
-import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
+import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { FarmRepository } from '../repositories/farm.repository';
 import { FarmDocument } from '../schemas/farm.schema';
@@ -305,13 +305,10 @@ export class FarmPersistenceService {
         farm.farmingTokenPriceUSD = pair.liquidityPoolTokenPriceUSD;
         farm.farmTokenPriceUSD = pair.liquidityPoolTokenPriceUSD;
 
-        const totalValueLockedUSD = new BigNumber(farmTokenSupply).times(
-            farm.farmTokenPriceUSD,
-        );
-
-        farm.totalValueLockedUSD = denominateAmount(
-            totalValueLockedUSD.toFixed(),
+        farm.totalValueLockedUSD = computeValueUSD(
+            farmTokenSupply,
             farmTokenDecimals,
+            farm.farmTokenPriceUSD,
         ).toFixed();
 
         const totalRewardsPerYear = new BigNumber(perBlockRewards)
