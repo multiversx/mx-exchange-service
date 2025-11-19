@@ -37,6 +37,9 @@ export class StakingModel {
     @Prop()
     farmTokenCollection: string;
 
+    @Prop({ default: 18 })
+    farmTokenDecimals: number;
+
     @Prop({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'EsdtToken',

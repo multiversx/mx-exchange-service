@@ -8,6 +8,7 @@ import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-conf
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import {
@@ -30,6 +31,7 @@ export class StakingFarmPersistenceService {
         private readonly stakingAbi: StakingAbiService,
         private readonly stakingCompute: StakingComputeService,
         private readonly tokenPersistence: TokenPersistenceService,
+        private readonly tokenService: TokenService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
@@ -141,10 +143,13 @@ export class StakingFarmPersistenceService {
                 this.stakingCompute.computeDeployedAt(stakeAddress),
             ]);
 
-            const tokens = await this.tokenPersistence.getTokens(
-                { identifier: { $in: [farmingTokenID, rewardTokenID] } },
-                { _id: 1, identifier: 1, price: 1, decimals: 1 },
-            );
+            const [tokens, farmTokenMetadata] = await Promise.all([
+                this.tokenPersistence.getTokens(
+                    { identifier: { $in: [farmingTokenID, rewardTokenID] } },
+                    { _id: 1, identifier: 1, price: 1, decimals: 1 },
+                ),
+                this.tokenService.getNftCollectionMetadata(farmTokenCollection),
+            ]);
 
             const farmingToken = tokens.find(
                 (token) => token.identifier === farmingTokenID,
@@ -153,7 +158,11 @@ export class StakingFarmPersistenceService {
                 (token) => token.identifier === rewardTokenID,
             );
 
-            if (farmingToken === undefined || rewardToken === undefined) {
+            if (
+                farmingToken === undefined ||
+                rewardToken === undefined ||
+                farmTokenMetadata === undefined
+            ) {
                 throw new Error(
                     `Could not get tokens (${farmingTokenID}, ${rewardTokenID}) for staking farm ${stakeAddress}`,
                 );
@@ -173,6 +182,7 @@ export class StakingFarmPersistenceService {
             const rawStakingFarm: Partial<StakingModel> = {
                 address: stakeAddress,
                 farmTokenCollection,
+                farmTokenDecimals: farmTokenMetadata.decimals,
                 farmingToken: farmingToken._id,
                 farmingTokenID,
                 rewardToken: rewardToken._id,
@@ -378,6 +388,7 @@ export class StakingFarmPersistenceService {
     ): Promise<void> {
         const {
             farmingToken,
+            farmTokenDecimals,
             farmTokenSupply,
             isProducingRewards,
             perBlockRewards,
@@ -389,7 +400,7 @@ export class StakingFarmPersistenceService {
 
         const stakedValueUSD = computeValueUSD(
             farmTokenSupply,
-            farmingToken.decimals,
+            farmTokenDecimals,
             farmingToken.price,
         ).toFixed();
 
@@ -427,7 +438,7 @@ export class StakingFarmPersistenceService {
             boostedYieldsRewardsPercenatage,
         );
 
-        stakingFarm.farmingTokenPriceUSD = stakingFarm.farmingToken.price;
+        stakingFarm.farmingTokenPriceUSD = farmingToken.price;
         stakingFarm.stakedValueUSD = stakedValueUSD;
 
         stakingFarm.apr = apr;
