@@ -159,7 +159,7 @@ export class GlobalInfoPersistenceService {
     ): Promise<TokenDistributionModel[]> {
         const tokens = await this.tokenPersistence.getTokens(
             { identifier: { $in: payments.map((payment) => payment.tokenID) } },
-            { identifier: 1, price: 1 },
+            { identifier: 1, price: 1, decimals: 1 },
         );
 
         let totalPriceUSD = new BigNumber(0);
@@ -172,9 +172,12 @@ export class GlobalInfoPersistenceService {
                 throw new Error(`Token ${payment.tokenID} missing`);
             }
 
-            const reward = new BigNumber(token.price).multipliedBy(
+            const reward = computeValueUSD(
                 payment.amount,
+                token.decimals,
+                token.price,
             );
+
             totalPriceUSD = totalPriceUSD.plus(reward);
             return reward;
         });
