@@ -8,6 +8,7 @@ import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import {
@@ -16,7 +17,7 @@ import {
 } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { farmsAddresses, farmType } from 'src/utils/farm.utils';
-import { computeValueUSD } from 'src/utils/token.converters';
+import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { FarmRepository } from '../repositories/farm.repository';
 import { FarmDocument } from '../schemas/farm.schema';
@@ -31,6 +32,7 @@ export class FarmPersistenceService {
         private readonly farmAbiV2: FarmAbiServiceV2,
         private readonly farmComputeV2: FarmComputeServiceV2,
         private readonly tokenPersistence: TokenPersistenceService,
+        private readonly tokenService: TokenService,
         private readonly pairPersistence: PairPersistenceService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
@@ -91,16 +93,7 @@ export class FarmPersistenceService {
             { path: 'farmedToken', select: ['price', 'decimals'] },
             {
                 path: 'pair',
-                select: [
-                    'liquidityPoolTokenPriceUSD',
-                    'firstToken',
-                    'secondToken',
-                    'info',
-                ],
-                populate: {
-                    path: 'firstToken secondToken',
-                    select: ['price', 'decimals'],
-                },
+                select: ['liquidityPoolTokenPriceUSD'],
             },
         ]);
     }
@@ -143,7 +136,7 @@ export class FarmPersistenceService {
                 this.farmAbiV2.getFarmTokenIDRaw(farmAddress),
             ]);
 
-        const [[farmedToken], [pair]] = await Promise.all([
+        const [[farmedToken], [pair], farmTokenMetadata] = await Promise.all([
             this.tokenPersistence.getTokens(
                 { identifier: farmedTokenId },
                 { _id: 1, price: 1 },
@@ -157,10 +150,12 @@ export class FarmPersistenceService {
                     liquidityPoolTokenPriceUSD: 1,
                 },
             ),
+            this.tokenService.getNftCollectionMetadata(farmTokenCollection),
         ]);
 
         if (
             farmedToken === undefined ||
+            farmTokenMetadata === undefined ||
             pair === undefined ||
             !pair.liquidityPoolToken
         ) {
@@ -185,6 +180,7 @@ export class FarmPersistenceService {
             farmedToken: farmedToken._id,
             farmedTokenId,
             farmTokenCollection,
+            farmTokenDecimals: farmTokenMetadata.decimals,
             farmingToken: pair.liquidityPoolToken,
             farmingTokenId,
             pair: pair._id,
@@ -208,7 +204,10 @@ export class FarmPersistenceService {
 
         const profiler = new PerformanceProfiler();
 
-        const farms = await this.getFarms({}, { address: 1, time: 1 });
+        const farms = await this.getFarms(
+            {},
+            { address: 1, time: 1, allAccumulatedRewards: 1 },
+        );
 
         for (const farm of farms) {
             try {
@@ -295,6 +294,7 @@ export class FarmPersistenceService {
         const {
             farmedToken,
             farmTokenSupply,
+            farmTokenDecimals,
             pair,
             perBlockRewards,
             boostedYieldsRewardsPercenatage,
@@ -305,12 +305,14 @@ export class FarmPersistenceService {
         farm.farmingTokenPriceUSD = pair.liquidityPoolTokenPriceUSD;
         farm.farmTokenPriceUSD = pair.liquidityPoolTokenPriceUSD;
 
-        farm.totalValueLockedUSD = this.pairPersistence.getLiquidityPositionUSD(
-            pair.info,
-            pair.firstToken,
-            pair.secondToken,
-            farmTokenSupply,
+        const totalValueLockedUSD = new BigNumber(farmTokenSupply).times(
+            farm.farmTokenPriceUSD,
         );
+
+        farm.totalValueLockedUSD = denominateAmount(
+            totalValueLockedUSD.toFixed(),
+            farmTokenDecimals,
+        ).toFixed();
 
         const totalRewardsPerYear = new BigNumber(perBlockRewards)
             .multipliedBy(constantsConfig.BLOCKS_IN_YEAR)

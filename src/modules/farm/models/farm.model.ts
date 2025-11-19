@@ -153,6 +153,9 @@ export class BaseFarmModel {
     @Prop({ index: true })
     farmTokenCollection: string;
 
+    @Prop({ default: 18 })
+    farmTokenDecimals: number;
+
     @Prop({ default: '0' })
     @Field()
     farmTokenPriceUSD: string;

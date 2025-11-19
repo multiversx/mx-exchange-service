@@ -13,17 +13,12 @@ import { EsdtTokenDocument } from '../schemas/esdtToken.schema';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
-import {
-    EsdtToken,
-    EsdtTokenType,
-} from 'src/modules/tokens/models/esdtToken.model';
+import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { BulkUpdatesService } from './bulk.updates.service';
 import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { BulkWriteOperations } from '../entities';
-import { computeValueUSD } from 'src/utils/token.converters';
-import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 
 @Injectable()
 export class PairPersistenceService {
@@ -540,31 +535,5 @@ export class PairPersistenceService {
         pair.feesAPR = feesAPR.isNaN() ? '0' : feesAPR.toFixed();
 
         await pair.save();
-    }
-
-    getLiquidityPositionUSD(
-        pairInfo: PairInfoModel,
-        firstToken: EsdtToken,
-        secondToken: EsdtToken,
-        amount: string,
-    ): string {
-        const liquidityPosition = this.pairService.computeLiquidityPosition(
-            pairInfo,
-            amount,
-        );
-
-        return computeValueUSD(
-            liquidityPosition.firstTokenAmount,
-            firstToken.decimals,
-            firstToken.price,
-        )
-            .plus(
-                computeValueUSD(
-                    liquidityPosition.secondTokenAmount,
-                    secondToken.decimals,
-                    secondToken.price,
-                ),
-            )
-            .toFixed();
     }
 }
