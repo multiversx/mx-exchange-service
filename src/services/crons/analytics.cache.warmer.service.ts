@@ -32,17 +32,12 @@ export class AnalyticsCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheAnalytics(): Promise<void> {
-        const [
-            totalValueLockedUSD,
-            totalAggregatedRewards,
-            totalValueLockedUSDFarms,
-        ] = await Promise.all([
-            this.analyticsCompute.computeTotalValueLockedUSD(),
-            this.analyticsCompute.computeTotalAggregatedRewards(30),
-            this.analyticsCompute.computeLockedValueUSDFarms(),
-        ]);
+        const [totalAggregatedRewards, totalValueLockedUSDFarms] =
+            await Promise.all([
+                this.analyticsCompute.computeTotalAggregatedRewards(30),
+                this.analyticsCompute.computeLockedValueUSDFarms(),
+            ]);
         const cachedKeys = await Promise.all([
-            this.analyticsSetter.totalValueLockedUSD(totalValueLockedUSD),
             this.analyticsSetter.totalAggregatedRewards(
                 30,
                 totalAggregatedRewards,
@@ -53,7 +48,7 @@ export class AnalyticsCacheWarmerService {
         await this.deleteCacheKeys(cachedKeys);
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    // @Cron(CronExpression.EVERY_30_SECONDS)
     @Lock({ name: 'cacheTradingActivity', verbose: true })
     async cacheTradingActivity(): Promise<void> {
         const pairsMetadata = await this.routerAbi.pairsMetadata();
