@@ -246,10 +246,8 @@ export class PersistenceService {
     }
 
     async refreshAnalytics(): Promise<void> {
-        await Promise.all([
-            this.pairPersistence.refreshPairsAnalytics(),
-            this.tokenPersistence.refreshTokensAnalytics(),
-        ]);
+        await this.pairPersistence.refreshPairsAnalytics();
+        await this.tokenPersistence.refreshTokensAnalytics();
     }
 
     async indexPairLpToken(address: string): Promise<void> {

@@ -25,6 +25,7 @@ import {
     TokenSortingArgs,
 } from 'src/modules/tokens/models/tokens.filter.args';
 import { filteredTokensPipeline } from '../pipelines/filtered.tokens.pipeline';
+import moment from 'moment';
 
 type FilteredTokensResponse = {
     items: EsdtTokenDocument[];
@@ -182,37 +183,60 @@ export class TokenPersistenceService {
             wegldToken.previous24hPrice,
         );
 
+        const nowTimestamp = moment.utc().unix();
+        const oneDayAgoTimestamp = moment
+            .unix(nowTimestamp)
+            .subtract(1, 'day')
+            .unix();
+        const twoDaysyAgoTimestamp = moment
+            .unix(nowTimestamp)
+            .subtract(2, 'days')
+            .unix();
+
+        const [allTokensSwapsCount, allTokensPrevious24hSwapsCount] =
+            await Promise.all([
+                this.tokenCompute.computeAllTokensSwapsCount(
+                    oneDayAgoTimestamp,
+                    nowTimestamp,
+                ),
+                this.tokenCompute.computeAllTokensSwapsCount(
+                    twoDaysyAgoTimestamp,
+                    oneDayAgoTimestamp,
+                ),
+            ]);
+
         for (const token of tokens) {
             try {
-                const [
-                    volumeLast2D,
-                    pricePrevious24h,
-                    pricePrevious7D,
-                    swapsCount,
-                    previous24hSwapsCount,
-                ] = await Promise.all([
-                    this.tokenCompute.computeTokenLast2DaysVolumeUSD(
-                        token.identifier,
-                    ),
-                    this.computeTokenPrevious24hPrice(
-                        token,
-                        wrappedEGLDPrev24hPrice,
-                    ),
-                    this.tokenCompute.computeTokenPrevious7dPrice(
-                        token.identifier,
-                    ),
-                    this.tokenCompute.tokenSwapCount(token.identifier),
-                    this.tokenCompute.tokenPrevious24hSwapCount(
-                        token.identifier,
-                    ),
-                ]);
+                const [volumeLast2D, pricePrevious24h, pricePrevious7D] =
+                    await Promise.all([
+                        this.tokenCompute.computeTokenLast2DaysVolumeUSD(
+                            token.identifier,
+                        ),
+                        this.computeTokenPrevious24hPrice(
+                            token,
+                            wrappedEGLDPrev24hPrice,
+                        ),
+                        this.tokenCompute.computeTokenPrevious7dPrice(
+                            token.identifier,
+                        ),
+                    ]);
+
+                const swapCount = allTokensSwapsCount.find(
+                    (elem) => elem.tokenID === token.identifier,
+                );
+                const previous24hSwapCount =
+                    allTokensPrevious24hSwapsCount.find(
+                        (elem) => elem.tokenID === token.identifier,
+                    );
 
                 token.volumeUSD24h = volumeLast2D.current;
                 token.previous24hVolume = volumeLast2D.previous;
                 token.previous24hPrice = pricePrevious24h;
                 token.previous7dPrice = pricePrevious7D ?? '0';
-                token.swapCount24h = swapsCount;
-                token.previous24hSwapCount = previous24hSwapsCount;
+                token.swapCount24h = swapCount ? swapCount.swapsCount : 0;
+                token.previous24hSwapCount = previous24hSwapCount
+                    ? previous24hSwapCount.swapsCount
+                    : 0;
 
                 token.volumeUSDChange24h = this.computeTokenVolumeChange(token);
                 token.priceChange24h = this.computeTokenPriceChange(

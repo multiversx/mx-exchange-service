@@ -19,6 +19,7 @@ import { BulkUpdatesService } from './bulk.updates.service';
 import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { BulkWriteOperations } from '../entities';
+import { delay } from 'src/helpers/helpers';
 
 @Injectable()
 export class PairPersistenceService {
@@ -494,27 +495,55 @@ export class PairPersistenceService {
     }
 
     async updateAnalytics(pair: PairDocument): Promise<void> {
-        const [
-            firstTokenVolume,
-            secondTokenVolume,
-            volumeUSD24h,
-            volumeUSD48h,
-            feesUSD24h,
-            feesUSD48h,
-            previous24hLockedValueUSD,
-            tradesCount,
-            tradesCount24h,
-        ] = await Promise.all([
-            this.pairCompute.computeFirstTokenVolume(pair.address, '24h'),
-            this.pairCompute.computeSecondTokenVolume(pair.address, '24h'),
-            this.pairCompute.computeVolumeUSD(pair.address, '24h'),
-            this.pairCompute.computeVolumeUSD(pair.address, '48h'),
-            this.pairCompute.computeFeesUSD(pair.address, '24h'),
-            this.pairCompute.computeFeesUSD(pair.address, '48h'),
-            this.pairCompute.computePrevious24hLockedValueUSD(pair.address),
-            this.pairCompute.tradesCount(pair.address),
-            this.pairCompute.tradesCount24h(pair.address),
-        ]);
+        const firstTokenVolume = await this.pairCompute.computeFirstTokenVolume(
+            pair.address,
+            '24h',
+        );
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+        const secondTokenVolume =
+            await this.pairCompute.computeSecondTokenVolume(
+                pair.address,
+                '24h',
+            );
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+        const volumeUSD24h = await this.pairCompute.computeVolumeUSD(
+            pair.address,
+            '24h',
+        );
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+        const volumeUSD48h = await this.pairCompute.computeVolumeUSD(
+            pair.address,
+            '48h',
+        );
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+        const feesUSD24h = await this.pairCompute.computeFeesUSD(
+            pair.address,
+            '24h',
+        );
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+        const feesUSD48h = await this.pairCompute.computeFeesUSD(
+            pair.address,
+            '48h',
+        );
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+        const previous24hLockedValueUSD =
+            await this.pairCompute.computePrevious24hLockedValueUSD(
+                pair.address,
+            );
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+        const tradesCount = await this.pairCompute.tradesCount(pair.address);
+        await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+        const tradesCount24h = await this.pairCompute.tradesCount24h(
+            pair.address,
+        );
 
         pair.firstTokenVolume24h = firstTokenVolume;
         pair.secondTokenVolume24h = secondTokenVolume;

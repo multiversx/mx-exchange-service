@@ -1,3 +1,4 @@
+import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -24,14 +25,11 @@ export class PersistenceCronService {
         }
     }
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_10_MINUTES)
+    @Lock({ name: 'refreshAnalytics', verbose: true })
     async refreshAnalytics(): Promise<void> {
         try {
-            await this.persistenceService.queueTasks([
-                new TaskDto({
-                    name: PersistenceTasks.REFRESH_ANALYTICS,
-                }),
-            ]);
+            await this.persistenceService.refreshAnalytics();
         } catch (error) {
             this.logger.error(`${this.refreshAnalytics.name} cron failed`, {
                 context: PersistenceCronService.name,
