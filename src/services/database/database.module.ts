@@ -13,6 +13,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
                 user: configService.getMongoDBUsername(),
                 pass: configService.getMongoDBPassword(),
                 tlsAllowInvalidCertificates: true,
+                compressors: ['snappy', 'zlib'],
             }),
             inject: [ApiConfigService],
         }),
