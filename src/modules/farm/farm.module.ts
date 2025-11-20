@@ -23,7 +23,7 @@ import { FarmAbiService } from './base-module/services/farm.abi.service';
         MXCommunicationModule,
         ContextModule,
         forwardRef(() => PairModule),
-        TokenModule,
+        forwardRef(() => TokenModule),
         FarmCustomModule,
         FarmModuleV1_2,
         FarmModuleV1_3,

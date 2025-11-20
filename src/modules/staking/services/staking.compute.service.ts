@@ -9,7 +9,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
-import { OptimalCompoundModel } from '../models/staking.model';
+import { OptimalCompoundModel, StakingModel } from '../models/staking.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
@@ -18,6 +18,7 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 
 @Injectable()
 export class StakingComputeService {
@@ -155,6 +156,16 @@ export class StakingComputeService {
             this.stakingAbi.farmTokenSupply(stakeAddress),
             this.stakingAbi.annualPercentageRewards(stakeAddress),
         ]);
+        return this.calculateRewardsPerBlockAPRBound(
+            farmTokenSupply,
+            annualPercentageRewards,
+        );
+    }
+
+    calculateRewardsPerBlockAPRBound(
+        farmTokenSupply: string,
+        annualPercentageRewards: string,
+    ): BigNumber {
         return new BigNumber(farmTokenSupply)
             .multipliedBy(annualPercentageRewards)
             .dividedBy(constantsConfig.MAX_PERCENT)
@@ -230,14 +241,32 @@ export class StakingComputeService {
             this.stakingAbi.farmTokenSupply(stakeAddress),
         ]);
 
+        return this.calculateStakeFarmAPR(
+            isProducingRewards,
+            perBlockRewardAmount,
+            stakedValue,
+            annualPercentageRewards,
+            rewardsAPRBoundedBig,
+        );
+    }
+
+    calculateStakeFarmAPR(
+        isProducingRewards: boolean,
+        perBlockRewardAmount: string,
+        farmTokenSupply: string,
+        annualPercentageRewards: string,
+        rewardsAPRBounded: BigNumber,
+    ): string {
+        if (!isProducingRewards) {
+            return '0';
+        }
+
         const rewardsUnboundedBig = new BigNumber(perBlockRewardAmount).times(
             constantsConfig.BLOCKS_IN_YEAR,
         );
-        const stakedValueBig = new BigNumber(stakedValue);
+        const stakedValueBig = new BigNumber(farmTokenSupply);
 
-        return rewardsUnboundedBig.isLessThan(
-            rewardsAPRBoundedBig.integerValue(),
-        )
+        return rewardsUnboundedBig.isLessThan(rewardsAPRBounded.integerValue())
             ? rewardsUnboundedBig.dividedBy(stakedValueBig).toFixed()
             : new BigNumber(annualPercentageRewards)
                   .dividedBy(constantsConfig.MAX_PERCENT)
@@ -268,6 +297,22 @@ export class StakingComputeService {
             this.stakingAbi.farmTokenSupply(stakeAddress),
         ]);
 
+        return this.calculateStakeFarmUncappedAPR(
+            perBlockRewardAmount,
+            farmTokenSupply,
+            isProducingRewards,
+        );
+    }
+
+    calculateStakeFarmUncappedAPR(
+        perBlockRewardAmount: string,
+        farmTokenSupply: string,
+        isProducingRewards: boolean,
+    ): string {
+        if (!isProducingRewards) {
+            return '0';
+        }
+
         const rewardsUnboundedBig = new BigNumber(
             perBlockRewardAmount,
         ).multipliedBy(constantsConfig.BLOCKS_IN_YEAR);
@@ -293,6 +338,10 @@ export class StakingComputeService {
         return baseAPR.toFixed();
     }
 
+    calculateStakeFarmBaseAPR(apr: string, boostedApr: string): string {
+        return new BigNumber(apr).minus(boostedApr).toFixed();
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
@@ -306,6 +355,13 @@ export class StakingComputeService {
             this.stakeFarmAPR(stakeAddress),
         ]);
 
+        return this.calculateBoostedAPR(boostedYieldsRewardsPercentage, apr);
+    }
+
+    calculateBoostedAPR(
+        boostedYieldsRewardsPercentage: number,
+        apr: string,
+    ): string {
         const bnBoostedRewardsPercentage = new BigNumber(
             boostedYieldsRewardsPercentage,
         )
@@ -334,6 +390,18 @@ export class StakingComputeService {
                 this.stakingAbi.boostedYieldsRewardsPercenatage(stakeAddress),
             ]);
 
+        return this.calculateMaxBoostedApr(
+            baseAPR,
+            boostedYieldsFactors,
+            boostedYieldsRewardsPercentage,
+        );
+    }
+
+    calculateMaxBoostedApr(
+        baseAPR: string,
+        boostedYieldsFactors: BoostedYieldsFactors,
+        boostedYieldsRewardsPercentage: number,
+    ): string {
         const bnRawMaxBoostedApr = new BigNumber(baseAPR)
             .multipliedBy(boostedYieldsFactors.maxRewardsFactor)
             .multipliedBy(boostedYieldsRewardsPercentage)
@@ -371,6 +439,20 @@ export class StakingComputeService {
                 this.stakingAbi.rewardCapacity(stakeAddress),
             ]);
 
+        return this.calculateRewardsRemainingDaysBase(
+            perBlockRewardAmount,
+            rewardsCapacity,
+            accumulatedRewards,
+            extraRewardsAPRBoundedPerBlock,
+        );
+    }
+
+    calculateRewardsRemainingDaysBase(
+        perBlockRewardAmount: string,
+        rewardsCapacity: string,
+        accumulatedRewards: string,
+        extraRewardsAPRBoundedPerBlock?: BigNumber,
+    ): number {
         const perBlockRewards = extraRewardsAPRBoundedPerBlock
             ? BigNumber.min(
                   extraRewardsAPRBoundedPerBlock,
@@ -834,10 +916,10 @@ export class StakingComputeService {
             .plus(additionalUserStakeAmount)
             .toFixed();
 
-        const rewardsPerBlockAPRBound = new BigNumber(farmTokenSupply)
-            .multipliedBy(annualPercentageRewards)
-            .dividedBy(constantsConfig.MAX_PERCENT)
-            .dividedBy(constantsConfig.BLOCKS_IN_YEAR);
+        const rewardsPerBlockAPRBound = this.calculateRewardsPerBlockAPRBound(
+            farmTokenSupply,
+            annualPercentageRewards,
+        );
 
         const actualRewardsPerBlock = new BigNumber(rewardsPerBlock).isLessThan(
             rewardsPerBlockAPRBound,
@@ -901,6 +983,18 @@ export class StakingComputeService {
             ),
         ]);
 
+        return this.calculateOptimalEnergyPerStaking(
+            factors,
+            farmSupply,
+            energySupply,
+        );
+    }
+
+    calculateOptimalEnergyPerStaking(
+        factors: BoostedYieldsFactors,
+        farmSupply: string,
+        energySupply: string,
+    ): string {
         const u = factors.maxRewardsFactor;
         const A = factors.userRewardsFarm;
         const B = factors.userRewardsEnergy;

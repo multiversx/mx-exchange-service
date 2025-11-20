@@ -17,6 +17,8 @@ import {
 } from '../entities';
 import { FarmPersistenceService } from './farm.persistence.service';
 import { PairPersistenceService } from './pair.persistence.service';
+import { StakingFarmPersistenceService } from './staking.farm.persistence.service';
+import { StakingProxyPersistenceService } from './staking.proxy.persistence.service';
 import { TokenPersistenceService } from './token.persistence.service';
 
 const INDEX_LP_MAX_ATTEMPTS = 60;
@@ -28,6 +30,8 @@ export class PersistenceService {
         private readonly pairPersistence: PairPersistenceService,
         private readonly tokenPersistence: TokenPersistenceService,
         private readonly farmPersistence: FarmPersistenceService,
+        private readonly stakingFarmPersistence: StakingFarmPersistenceService,
+        private readonly stakingProxyPersistence: StakingProxyPersistenceService,
         private readonly redisService: RedisCacheService,
         private readonly redLockService: RedlockService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -104,6 +108,18 @@ export class PersistenceService {
                 case PersistenceTasks.REFRESH_WEEK_TIMEKEEPING:
                     await this.refreshWeekTimekeeping();
                     break;
+                case PersistenceTasks.POPULATE_STAKING_FARMS:
+                    await this.populateStakingFarms();
+                    break;
+                case PersistenceTasks.REFRESH_STAKING_FARM:
+                    await this.refreshStakingFarm(task.args[0]);
+                    break;
+                case PersistenceTasks.REFRESH_STAKING_FARM_INFO:
+                    await this.refreshStakingFarmInfo(task.args[0]);
+                    break;
+                case PersistenceTasks.POPULATE_STAKING_PROXIES:
+                    await this.populateStakingProxies();
+                    break;
                 default:
                     break;
             }
@@ -130,6 +146,8 @@ export class PersistenceService {
         await this.pairPersistence.refreshPairsPricesAndTVL();
         await this.pairPersistence.refreshPairsAbiFields();
         await this.populateFarms();
+        await this.populateStakingFarms();
+        await this.populateStakingProxies();
         await this.refreshAnalytics();
     }
 
@@ -142,7 +160,10 @@ export class PersistenceService {
     }
 
     async refreshWeekTimekeeping(): Promise<void> {
-        await this.farmPersistence.refreshWeekTimekeeping();
+        await Promise.all([
+            this.farmPersistence.refreshWeekTimekeeping(),
+            this.stakingFarmPersistence.refreshWeekTimekeeping(),
+        ]);
     }
 
     async refreshFarmInfo(address: string): Promise<void> {
@@ -174,6 +195,49 @@ export class PersistenceService {
         await this.farmPersistence.updateFarmReserves(farm);
         await this.farmPersistence.updateFarmRewards(farm);
         await this.farmPersistence.updatePricesAPRsAndTVL(farm);
+    }
+
+    async populateStakingFarms(): Promise<void> {
+        await this.stakingFarmPersistence.populateStakingFarms();
+        await this.stakingFarmPersistence.refreshAbiFields();
+        await this.stakingFarmPersistence.refreshReserves();
+        await this.stakingFarmPersistence.refreshPricesAPRsAndTVL();
+        await this.stakingFarmPersistence.refreshStakingFarmsRewards();
+    }
+
+    async refreshStakingFarmInfo(address: string): Promise<void> {
+        const [stakingFarm] =
+            await this.stakingFarmPersistence.getStakingFarmsWithFarmingToken({
+                address,
+            });
+
+        if (!stakingFarm) {
+            throw new Error(`Staking farm ${address} not found in db`);
+        }
+
+        await this.stakingFarmPersistence.updateAbiFields(stakingFarm);
+        await this.stakingFarmPersistence.updateReserves(stakingFarm);
+        await this.stakingFarmPersistence.updatePricesAPRsAndTVL(stakingFarm);
+        await this.stakingFarmPersistence.updateStakingFarmRewards(stakingFarm);
+    }
+
+    async refreshStakingFarm(address: string): Promise<void> {
+        const [stakingFarm] =
+            await this.stakingFarmPersistence.getStakingFarmsWithFarmingToken({
+                address,
+            });
+
+        if (!stakingFarm) {
+            throw new Error(`Staking farm ${address} not found in db`);
+        }
+
+        await this.stakingFarmPersistence.updateReserves(stakingFarm);
+        await this.stakingFarmPersistence.updatePricesAPRsAndTVL(stakingFarm);
+        await this.stakingFarmPersistence.updateStakingFarmRewards(stakingFarm);
+    }
+
+    async populateStakingProxies(): Promise<void> {
+        await this.stakingProxyPersistence.populateStakingProxies();
     }
 
     async refreshPairReserves(): Promise<void> {
