@@ -2,6 +2,13 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EnergyModel } from '../../../modules/energy/models/energy.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
+import { Prop, raw, Schema } from '@nestjs/mongoose';
+
+export enum GlobalInfoScType {
+    FARM = 'farm',
+    STAKING = 'staking',
+    FEES_COLLECTOR = 'feesCollector',
+}
 
 @ObjectType()
 export class TokenDistributionModel {
@@ -14,30 +21,60 @@ export class TokenDistributionModel {
         Object.assign(this, init);
     }
 }
-
+@Schema({ collection: 'rewards_global_info' })
 @ObjectType()
 export class GlobalInfoByWeekModel {
+    @Prop({ index: true })
     @Field()
     scAddress: string;
 
+    @Prop({ enum: GlobalInfoScType })
+    scType: string;
+
+    @Prop({ index: true })
     @Field()
     week: number;
 
+    @Prop()
     @Field()
     apr: string;
 
+    @Prop({
+        type: raw([
+            {
+                tokenType: { type: Number },
+                tokenID: { type: String },
+                nonce: { type: Number },
+                amount: { type: String },
+            },
+        ]),
+        _id: false,
+        default: [],
+    })
     @Field(() => [EsdtTokenPayment], { complexity: nestedFieldComplexity })
-    totalRewardsForWeek: [EsdtTokenPayment];
+    totalRewardsForWeek: EsdtTokenPayment[];
 
+    @Prop({
+        type: raw([
+            {
+                tokenId: { type: String },
+                percentage: { type: String },
+            },
+        ]),
+        _id: false,
+        default: [],
+    })
     @Field(() => [
         TokenDistributionModel,
         { complexity: nestedFieldComplexity },
     ])
     rewardsDistributionForWeek: TokenDistributionModel[];
 
+    @Prop()
     @Field()
     totalEnergyForWeek: string;
 
+    @Prop()
     @Field()
     totalLockedTokensForWeek: string;
 

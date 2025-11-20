@@ -24,6 +24,8 @@ import { FarmSetterFactory } from '../../farm/farm.setter.factory';
 import { FarmAbiFactory } from '../../farm/farm.abi.factory';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmSetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.setter.service';
+import { PersistenceService } from 'src/modules/persistence/services/persistence.service';
+import { PersistenceTasks, TaskDto } from 'src/modules/persistence/entities';
 
 @Injectable()
 export class FarmHandlerService {
@@ -32,6 +34,7 @@ export class FarmHandlerService {
         private readonly farmAbiV2: FarmAbiServiceV2,
         private readonly farmSetterFactory: FarmSetterFactory,
         private readonly farmSetterV2: FarmSetterServiceV2,
+        private readonly persistenceService: PersistenceService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -154,6 +157,13 @@ export class FarmHandlerService {
             ),
         ]);
         await this.deleteCacheKeys(cacheKeys);
+
+        await this.persistenceService.queueTasks([
+            new TaskDto({
+                name: PersistenceTasks.REFRESH_FARM,
+                args: [event.address],
+            }),
+        ]);
     }
 
     private async handleExitFarmEventV2(event: ExitFarmEventV2): Promise<void> {
@@ -173,6 +183,13 @@ export class FarmHandlerService {
             ),
         ]);
         await this.deleteCacheKeys(cacheKeys);
+
+        await this.persistenceService.queueTasks([
+            new TaskDto({
+                name: PersistenceTasks.REFRESH_FARM,
+                args: [event.address],
+            }),
+        ]);
     }
 
     private async handleClaimRewardsEventV2(
@@ -194,6 +211,13 @@ export class FarmHandlerService {
             ),
         ]);
         await this.deleteCacheKeys(cacheKeys);
+
+        await this.persistenceService.queueTasks([
+            new TaskDto({
+                name: PersistenceTasks.REFRESH_FARM,
+                args: [event.address],
+            }),
+        ]);
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

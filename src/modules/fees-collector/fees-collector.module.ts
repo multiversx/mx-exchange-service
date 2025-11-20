@@ -22,7 +22,7 @@ import { TokenModule } from '../tokens/token.module';
         forwardRef(() => WeeklyRewardsSplittingModule),
         ContextModule,
         EnergyModule,
-        TokenModule,
+        forwardRef(() => TokenModule),
     ],
     providers: [
         FeesCollectorService,

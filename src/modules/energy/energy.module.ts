@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
@@ -16,7 +16,7 @@ import { EnergyUpdateResolver } from './energy.update.resolver';
         CommonAppModule,
         MXCommunicationModule,
         ContextModule,
-        TokenModule,
+        forwardRef(() => TokenModule),
     ],
     providers: [
         EnergyService,
