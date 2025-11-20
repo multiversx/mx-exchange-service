@@ -63,12 +63,13 @@ export class FarmPersistenceService {
         filterQuery: FilterQuery<FarmDocument>,
         projection?: ProjectionType<FarmDocument>,
         populateOptions?: PopulateOptions[],
+        lean = false,
     ): Promise<FarmDocument[]> {
         const profiler = new PerformanceProfiler();
 
         const farms = await this.farmRepository
             .getModel()
-            .find(filterQuery, projection)
+            .find(filterQuery, projection, { lean })
             .exec();
 
         if (populateOptions) {

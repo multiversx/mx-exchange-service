@@ -226,6 +226,8 @@ export class StateChangesConsumer {
                     totalFeePercent: 1,
                     specialFeePercent: 1,
                 },
+                undefined,
+                true,
             ),
             this.tokenPersistence.getTokens(
                 {},
@@ -238,6 +240,7 @@ export class StateChangesConsumer {
                     type: 1,
                     pairAddress: 1,
                 },
+                true,
             ),
         ]);
 
