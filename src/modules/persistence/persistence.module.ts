@@ -84,6 +84,8 @@ import { TokenPersistenceService } from './services/token.persistence.service';
         PersistenceService,
         TokenPersistenceService,
         PairPersistenceService,
+        FarmPersistenceService,
+        StakingFarmPersistenceService,
     ],
     controllers: [],
 })

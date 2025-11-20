@@ -10,23 +10,23 @@ import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { Logger } from 'winston';
 import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { PUB_SUB } from '../redis.pubSub.module';
-import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { constantsConfig } from 'src/config';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import BigNumber from 'bignumber.js';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import moment from 'moment';
+import { PairPersistenceService } from 'src/modules/persistence/services/pair.persistence.service';
 
 @Injectable()
 export class AWSQueryCacheWarmerService {
     constructor(
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly tokenService: TokenService,
-        private readonly routerAbi: RouterAbiService,
         private readonly pairCompute: PairComputeService,
         private readonly analyticsAWSSetter: AnalyticsAWSSetterService,
         private readonly apiConfig: ApiConfigService,
+        private readonly pairPersistence: PairPersistenceService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
@@ -123,7 +123,6 @@ export class AWSQueryCacheWarmerService {
             return;
         }
 
-        const pairsAddresses = await this.routerAbi.pairsAddress();
         this.logger.info('Start refresh pairs analytics');
         const profiler = new PerformanceProfiler();
 
@@ -138,10 +137,18 @@ export class AWSQueryCacheWarmerService {
 
         const startTime = moment().utc().unix();
 
-        for (const pairAddress of pairsAddresses) {
-            const currentLockedValueUSD = await this.pairCompute.lockedValueUSD(
-                pairAddress,
-            );
+        const pairs = await this.pairPersistence.getPairs(
+            {},
+            { address: 1, lockedValueUSD: 1 },
+            undefined,
+            true,
+        );
+
+        for (const pair of pairs) {
+            const {
+                lockedValueUSD: currentLockedValueUSD,
+                address: pairAddress,
+            } = pair;
 
             const lockedValueUSD24h = await this.analyticsQuery.getValues24h({
                 series: pairAddress,

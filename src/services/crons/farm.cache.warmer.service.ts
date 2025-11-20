@@ -8,10 +8,8 @@ import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
-import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmSetterFactory } from 'src/modules/farm/farm.setter.factory';
-import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
-import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { FarmPersistenceService } from 'src/modules/persistence/services/farm.persistence.service';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -20,12 +18,10 @@ export class FarmCacheWarmerService {
     constructor(
         private readonly farmAbiFactory: FarmAbiFactory,
         private readonly farmAbiV1_2: FarmAbiServiceV1_2,
-        private readonly farmComputeFactory: FarmComputeFactory,
         private readonly farmComputeV1_2: FarmComputeServiceV1_2,
         private readonly farmComputeV1_3: FarmComputeServiceV1_3,
-        private readonly farmComputeV2: FarmComputeServiceV2,
         private readonly farmSetterFactory: FarmSetterFactory,
-        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly farmPersistence: FarmPersistenceService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -121,19 +117,48 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheFarmsV2APRs(): Promise<void> {
-        for (const address of farmsAddresses([FarmVersion.V2])) {
-            const [baseApr, boostedApr] = await Promise.all([
-                this.farmComputeV2.computeFarmBaseAPR(address),
-                this.farmComputeV2.computeMaxBoostedApr(address),
-            ]);
+        const farms = await this.farmPersistence.getFarms(
+            {},
+            {
+                address: 1,
+                baseApr: 1,
+                boostedApr: 1,
+                farmingTokenPriceUSD: 1,
+                totalValueLockedUSD: 1,
+                time: 1,
+                undistributedBoostedRewards: 1,
+            },
+            undefined,
+            true,
+        );
 
+        for (const farm of farms) {
             const cachedKeys = await Promise.all([
                 this.farmSetterFactory
-                    .useSetter(address)
-                    .setFarmBaseAPR(address, baseApr),
+                    .useSetter(farm.address)
+                    .setFarmBaseAPR(farm.address, farm.baseApr),
                 this.farmSetterFactory
-                    .useSetter(address)
-                    .setFarmBoostedAPR(address, boostedApr),
+                    .useSetter(farm.address)
+                    .setFarmBoostedAPR(farm.address, farm.boostedApr),
+                this.farmSetterFactory
+                    .useSetter(farm.address)
+                    .setFarmingTokenPriceUSD(
+                        farm.address,
+                        farm.farmingTokenPriceUSD,
+                    ),
+                this.farmSetterFactory
+                    .useSetter(farm.address)
+                    .setTotalValueLockedUSD(
+                        farm.address,
+                        farm.totalValueLockedUSD,
+                    ),
+                this.farmSetterFactory
+                    .useSetter(farm.address)
+                    .setFarmUndistributedBoostedRewards(
+                        farm.address,
+                        farm.undistributedBoostedRewards,
+                        farm.time.currentWeek,
+                    ),
             ]);
             this.invalidatedKeys.push(...cachedKeys);
             await this.deleteCacheKeys();
@@ -229,57 +254,6 @@ export class FarmCacheWarmerService {
                     .setRewardReserve(farmAddress, rewardReserve),
             ]);
             this.invalidatedKeys.push(cacheKeys);
-            await this.deleteCacheKeys();
-        }
-    }
-
-    @Cron(CronExpression.EVERY_30_SECONDS)
-    async cacheFarmTokensPrices(): Promise<void> {
-        for (const farmAddress of farmsAddresses()) {
-            const [farmingTokenPriceUSD, totalValueLockedUSD] =
-                await Promise.all([
-                    this.farmComputeFactory
-                        .useCompute(farmAddress)
-                        .computeFarmingTokenPriceUSD(farmAddress),
-                    this.farmComputeFactory
-                        .useCompute(farmAddress)
-                        .computeFarmLockedValueUSD(farmAddress),
-                ]);
-            const cacheKeys = await Promise.all([
-                this.farmSetterFactory
-                    .useSetter(farmAddress)
-                    .setFarmingTokenPriceUSD(farmAddress, farmingTokenPriceUSD),
-                this.farmSetterFactory
-                    .useSetter(farmAddress)
-                    .setTotalValueLockedUSD(farmAddress, totalValueLockedUSD),
-            ]);
-            this.invalidatedKeys.push(cacheKeys);
-            await this.deleteCacheKeys();
-        }
-    }
-
-    @Cron(CronExpression.EVERY_5_MINUTES)
-    async cacheFarmsV2Rewards(): Promise<void> {
-        for (const address of farmsAddresses([FarmVersion.V2])) {
-            const currentWeek = await this.weekTimekeepingAbi.currentWeek(
-                address,
-            );
-
-            const amount =
-                await this.farmComputeV2.undistributedBoostedRewardsRaw(
-                    address,
-                    currentWeek,
-                );
-
-            const cachedKey = await this.farmSetterFactory
-                .useSetter(address)
-                .setFarmUndistributedBoostedRewards(
-                    address,
-                    amount.integerValue().toFixed(),
-                    currentWeek,
-                );
-
-            this.invalidatedKeys.push(cachedKey);
             await this.deleteCacheKeys();
         }
     }
