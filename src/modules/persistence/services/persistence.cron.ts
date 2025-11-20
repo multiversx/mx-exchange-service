@@ -39,4 +39,23 @@ export class PersistenceCronService {
             });
         }
     }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async refreshWeekTimekeeping(): Promise<void> {
+        try {
+            await this.persistenceService.queueTasks([
+                new TaskDto({
+                    name: PersistenceTasks.REFRESH_WEEK_TIMEKEEPING,
+                }),
+            ]);
+        } catch (error) {
+            this.logger.error(
+                `${this.refreshWeekTimekeeping.name} cron failed`,
+                {
+                    context: PersistenceCronService.name,
+                    error,
+                },
+            );
+        }
+    }
 }

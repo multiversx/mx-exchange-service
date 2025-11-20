@@ -7,6 +7,8 @@ import {
     UserInfoByWeekModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
+import { Prop } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 
 export enum FarmVersion {
     V1_2 = 'v1.2',
@@ -125,71 +127,120 @@ export class FarmMigrationConfig {
 
 @ObjectType()
 export class BaseFarmModel {
+    @Prop({ unique: true })
     @Field()
     address: string;
 
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'EsdtToken',
+        index: true,
+        required: true,
+    })
     @Field({ complexity: nestedFieldComplexity })
     farmedToken: EsdtToken;
 
+    @Prop({ index: true })
+    farmedTokenId: string;
+
+    @Prop({ default: '0' })
     @Field()
     farmedTokenPriceUSD: string;
 
     @Field({ complexity: nestedFieldComplexity })
     farmToken: NftCollection;
 
+    @Prop({ index: true })
+    farmTokenCollection: string;
+
+    @Prop({ default: 18 })
+    farmTokenDecimals: number;
+
+    @Prop({ default: '0' })
     @Field()
     farmTokenPriceUSD: string;
 
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'EsdtToken',
+        index: true,
+        required: true,
+    })
     @Field({ complexity: nestedFieldComplexity })
     farmingToken: EsdtToken;
 
+    @Prop({ index: true })
+    farmingTokenId: string;
+
+    @Prop({ default: '0' })
     @Field()
     farmingTokenPriceUSD: string;
 
+    @Prop({ default: false, index: true })
     @Field()
     produceRewardsEnabled: boolean;
 
+    @Prop({ default: '0' })
     @Field()
     perBlockRewards: string;
 
+    @Prop({ default: '0' })
     @Field()
     farmTokenSupply: string;
 
+    @Prop({ default: 0 })
     @Field(() => Int)
     penaltyPercent: number;
 
+    @Prop({ default: 0 })
     @Field(() => Int)
     minimumFarmingEpochs: number;
 
+    @Prop({ default: '0' })
     @Field()
     rewardPerShare: string;
 
+    @Prop({ default: '0' })
     @Field()
     rewardReserve: string;
 
+    @Prop({ default: 0 })
     @Field(() => Int)
     lastRewardBlockNonce: number;
 
+    @Prop({ default: '0' })
     @Field()
     divisionSafetyConstant: string;
 
+    @Prop({ default: '0' })
     @Field()
     totalValueLockedUSD: string;
 
+    @Prop({ index: true })
     @Field()
     state: string;
 
     @Field()
     version: FarmVersion;
 
+    @Prop({ default: null })
     @Field({ nullable: true })
     burnGasLimit: string;
 
     @Field({ nullable: true })
     transferExecGasLimit: string;
 
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PairModel',
+        index: true,
+        default: null,
+    })
     @Field({ nullable: true, complexity: nestedFieldComplexity })
     pair: PairModel;
+
+    @Prop({ index: true, nullable: true })
+    pairAddress: string;
 
     @Field({ nullable: true })
     lastErrorMessage: string;

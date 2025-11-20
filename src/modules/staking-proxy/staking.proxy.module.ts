@@ -24,7 +24,7 @@ import { StakingProxyFilteringService } from './services/staking.proxy.filtering
         FarmModule,
         FarmModuleV2,
         StakingModule,
-        TokenModule,
+        forwardRef(() => TokenModule),
         RemoteConfigModule,
     ],
     providers: [

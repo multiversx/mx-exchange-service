@@ -9,6 +9,7 @@ import { WeekTimekeepingAbiService } from './week-timekeeping.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { WeekTimekeepingModel } from '../models/week-timekeeping.model';
 
 @Injectable()
 export class WeekTimekeepingComputeService
@@ -98,5 +99,25 @@ export class WeekTimekeepingComputeService
             week,
         );
         return startEpochForWeek + this.epochsInWeek - 1;
+    }
+
+    computeWeekTimekeeping(
+        scAddress: string,
+        currentWeek: number,
+        firstWeekStartEpoch: number,
+    ): WeekTimekeepingModel {
+        const startEpochForWeek =
+            firstWeekStartEpoch +
+            (currentWeek - 1) * constantsConfig.EPOCHS_IN_WEEK;
+        const endEpochForWeek =
+            startEpochForWeek + constantsConfig.EPOCHS_IN_WEEK - 1;
+
+        return new WeekTimekeepingModel({
+            currentWeek,
+            firstWeekStartEpoch,
+            startEpochForWeek,
+            endEpochForWeek,
+            scAddress,
+        });
     }
 }

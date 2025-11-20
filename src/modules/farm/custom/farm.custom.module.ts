@@ -15,7 +15,7 @@ import { FarmCustomComputeLoader } from './services/farm.custom.compute.loader';
     imports: [
         MXCommunicationModule,
         ContextModule,
-        TokenModule,
+        forwardRef(() => TokenModule),
         forwardRef(() => PairModule),
     ],
     providers: [

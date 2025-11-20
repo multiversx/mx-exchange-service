@@ -21,6 +21,7 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { IFarmComputeServiceV2 } from './interfaces';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { FarmModelV2 } from '../../models/farm.v2.model';
 
 @Injectable()
 export class FarmComputeServiceV2
@@ -456,13 +457,22 @@ export class FarmComputeServiceV2
                 this.farmAbi.boostedYieldsRewardsPercenatage(scAddress),
             ]);
 
-        const blocksInWeek = 14440 * 7;
-        const totalRewardsPerWeek = new BigNumber(rewardsPerBlock).multipliedBy(
-            blocksInWeek,
+        return this.calculateBoostedRewardsPerWeek(
+            new FarmModelV2({
+                perBlockRewards: rewardsPerBlock,
+                boostedYieldsRewardsPercenatage: boostedYieldsRewardsPercentage,
+            }),
         );
+    }
+
+    calculateBoostedRewardsPerWeek(farm: FarmModelV2): string {
+        const blocksInWeek = 14440 * 7;
+        const totalRewardsPerWeek = new BigNumber(
+            farm.perBlockRewards,
+        ).multipliedBy(blocksInWeek);
 
         return totalRewardsPerWeek
-            .multipliedBy(boostedYieldsRewardsPercentage)
+            .multipliedBy(farm.boostedYieldsRewardsPercenatage)
             .dividedBy(constantsConfig.MAX_PERCENT)
             .integerValue()
             .toFixed();
@@ -508,9 +518,22 @@ export class FarmComputeServiceV2
             this.weeklyRewardsSplittingAbi.totalEnergyForWeek(scAddress, week),
         ]);
 
-        const u = factors.maxRewardsFactor;
-        const A = factors.userRewardsFarm;
-        const B = factors.userRewardsEnergy;
+        return this.calculateOptimalEnergyPerLP(
+            new FarmModelV2({
+                boostedYieldsFactors: factors,
+                farmTokenSupply: farmSupply,
+            }),
+            energySupply,
+        );
+    }
+
+    calculateOptimalEnergyPerLP(
+        farm: FarmModelV2,
+        energySupply: string,
+    ): string {
+        const u = farm.boostedYieldsFactors.maxRewardsFactor;
+        const A = farm.boostedYieldsFactors.userRewardsFarm;
+        const B = farm.boostedYieldsFactors.userRewardsEnergy;
 
         const optimisationConstant = new BigNumber(u)
             .multipliedBy(new BigNumber(A).plus(B))
@@ -518,7 +541,7 @@ export class FarmComputeServiceV2
             .dividedBy(B);
         return optimisationConstant
             .multipliedBy(energySupply)
-            .dividedBy(farmSupply)
+            .dividedBy(farm.farmTokenSupply)
             .integerValue()
             .toFixed();
     }
