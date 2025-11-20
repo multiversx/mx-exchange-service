@@ -81,7 +81,11 @@ export class PairPersistenceService {
         try {
             const result = await this.pairRepository
                 .getModel()
-                .bulkWrite(bulkOps);
+                .bulkWrite(bulkOps, {
+                    ordered: false,
+                    bypassDocumentValidation: true,
+                    timestamps: false,
+                });
 
             profiler.stop();
 

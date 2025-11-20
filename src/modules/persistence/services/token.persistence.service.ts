@@ -94,7 +94,11 @@ export class TokenPersistenceService {
         try {
             const result = await this.tokenRepository
                 .getModel()
-                .bulkWrite(bulkOps);
+                .bulkWrite(bulkOps, {
+                    ordered: false,
+                    bypassDocumentValidation: true,
+                    timestamps: false,
+                });
 
             await this.broadcastTokensPriceUpdates(
                 bulkOps as AnyBulkWriteOperation<EsdtTokenDocument>[],
