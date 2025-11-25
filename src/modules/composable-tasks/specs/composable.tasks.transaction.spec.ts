@@ -72,7 +72,7 @@ describe('Composable Tasks Transaction', () => {
         expect(transaction).toEqual({
             chainID: 'T',
             data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBjNTc0NTQ3NGM0NDJkMzEzMjMzMzQzNTM2MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA4MGRlMGI2YjNhNzY0MDAwMEBA',
-            gasLimit: 4000000,
+            gasLimit: 9500000,
             gasPrice: 1000000000,
             guardian: undefined,
             guardianSignature: undefined,
@@ -104,7 +104,7 @@ describe('Composable Tasks Transaction', () => {
         expect(transaction).toEqual({
             chainID: 'T',
             data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTU1MzQ0NDMyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNDAxMzEyZDAwQEBAMDJAMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGI1NTUzNDQ0MzJkMzEzMjMzMzQzNTM2MDAwMDAwMDQwMTMxMmQwMA==',
-            gasLimit: 19000000,
+            gasLimit: 24500000,
             gasPrice: 1000000000,
             guardian: undefined,
             guardianSignature: undefined,
@@ -139,7 +139,7 @@ describe('Composable Tasks Transaction', () => {
         expect(transaction).toEqual({
             chainID: 'T',
             data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDEzMTJkMDBANjM2ZjZkNzA2ZjczNjU1NDYxNzM2YjczQDAwMDAwMDA0NDU0NzRjNDQwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDgwZGUwYjZiM2E3NjQwMDAwQDAyQDAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBjNTc0NTQ3NGM0NDJkMzEzMjMzMzQzNTM2MDAwMDAwMDgwZGUwYjZiM2E3NjQwMDAwQDAxQA==',
-            gasLimit: 19000000,
+            gasLimit: 24500000,
             gasPrice: 1000000000,
             guardian: undefined,
             guardianSignature: undefined,
