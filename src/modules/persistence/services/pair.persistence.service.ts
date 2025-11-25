@@ -20,6 +20,11 @@ import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { BulkWriteOperations } from '../entities';
 import { delay } from 'src/helpers/helpers';
+import {
+    MongoCollections,
+    MongoQueries,
+    PersistenceMetrics,
+} from 'src/helpers/decorators/persistence.metrics.decorator';
 
 @Injectable()
 export class PairPersistenceService {
@@ -34,6 +39,7 @@ export class PairPersistenceService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    @PersistenceMetrics(MongoCollections.Pairs, MongoQueries.Create)
     async addPair(pair: PairModel): Promise<void> {
         try {
             await this.pairRepository.create(pair);
@@ -51,6 +57,7 @@ export class PairPersistenceService {
         }
     }
 
+    @PersistenceMetrics(MongoCollections.Pairs, MongoQueries.Upsert)
     async upsertPair(
         pair: PairModel,
         projection: ProjectionType<PairModel> = { __v: 0 },
@@ -69,6 +76,17 @@ export class PairPersistenceService {
         }
     }
 
+    @PersistenceMetrics(MongoCollections.Pairs, MongoQueries.Update, 1)
+    async updatePair(pair: PairDocument, operation: string): Promise<void> {
+        await pair.save();
+
+        this.logger.debug(`${this.updatePair.name}`, {
+            context: PairPersistenceService.name,
+            operation,
+        });
+    }
+
+    @PersistenceMetrics(MongoCollections.Pairs, MongoQueries.BulkWrite, 1)
     async bulkUpdatePairs(
         bulkOps: BulkWriteOperations<PairModel>,
         operationName?: string,
@@ -76,8 +94,6 @@ export class PairPersistenceService {
         if (bulkOps.length === 0) {
             return;
         }
-
-        const profiler = new PerformanceProfiler();
 
         try {
             const result = await this.pairRepository
@@ -88,30 +104,23 @@ export class PairPersistenceService {
                     timestamps: false,
                 });
 
-            profiler.stop();
-
-            this.logger.debug(
-                `${this.bulkUpdatePairs.name} - ${profiler.duration}ms`,
-                {
-                    context: PairPersistenceService.name,
-                    operation: operationName ?? 'no-op',
-                    result,
-                },
-            );
+            this.logger.debug(`${this.bulkUpdatePairs.name}`, {
+                context: PairPersistenceService.name,
+                operation: operationName ?? 'no-op',
+                result,
+            });
         } catch (error) {
-            profiler.stop();
             this.logger.error(error, { context: PairPersistenceService.name });
         }
     }
 
+    @PersistenceMetrics(MongoCollections.Pairs, MongoQueries.Find)
     async getPairs(
         filterQuery: FilterQuery<PairDocument>,
         projection?: ProjectionType<PairDocument>,
         populateOptions?: PopulateOptions,
         lean = false,
     ): Promise<PairDocument[]> {
-        const profiler = new PerformanceProfiler();
-
         const pairs = await this.pairRepository
             .getModel()
             .find(filterQuery, projection, { lean })
@@ -122,12 +131,6 @@ export class PairPersistenceService {
                 .getModel()
                 .populate(pairs, populateOptions);
         }
-
-        profiler.stop();
-
-        this.logger.debug(`${this.getPairs.name} : ${profiler.duration}ms`, {
-            context: PairPersistenceService.name,
-        });
 
         return pairs;
     }
@@ -241,7 +244,7 @@ export class PairPersistenceService {
         pair.liquidityPoolToken = lpToken;
         pair.liquidityPoolTokenId = lpToken.identifier;
 
-        await pair.save();
+        await this.updatePair(pair, this.updateLpToken.name);
     }
 
     async refreshPairsPricesAndTVL(): Promise<void> {
@@ -368,7 +371,7 @@ export class PairPersistenceService {
         pair.info = info;
         pair.state = state;
 
-        await pair.save();
+        await this.updatePair(pair, this.updateStateAndReserves.name);
     }
 
     async refreshPairsAbiFields(): Promise<void> {
@@ -452,7 +455,7 @@ export class PairPersistenceService {
         pair.feeDestinations = feeDestinations;
         pair.feesCollectorAddress = feesCollectorAddress;
 
-        await pair.save();
+        await this.updatePair(pair, this.updateAbiFields.name);
     }
 
     async refreshPairsAnalytics(): Promise<void> {
@@ -568,6 +571,6 @@ export class PairPersistenceService {
 
         pair.feesAPR = feesAPR.isNaN() ? '0' : feesAPR.toFixed();
 
-        await pair.save();
+        await this.updatePair(pair, this.updateAnalytics.name);
     }
 }

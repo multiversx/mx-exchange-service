@@ -1,9 +1,13 @@
-import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { FilterQuery, ProjectionType } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig, scAddress } from 'src/config';
+import {
+    MongoCollections,
+    MongoQueries,
+    PersistenceMetrics,
+} from 'src/helpers/decorators/persistence.metrics.decorator';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -29,6 +33,7 @@ export class GlobalInfoPersistenceService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    @PersistenceMetrics(MongoCollections.GlobalInfo, MongoQueries.Upsert)
     async upsertGlobalInfo(
         globalInfo: GlobalInfoByWeekModel,
         projection: ProjectionType<GlobalInfoByWeekModel> = { __v: 0 },
@@ -51,27 +56,15 @@ export class GlobalInfoPersistenceService {
         }
     }
 
+    @PersistenceMetrics(MongoCollections.GlobalInfo, MongoQueries.Find)
     async getGlobalInfo(
         filterQuery: FilterQuery<GlobalInfoDocument>,
         projection?: ProjectionType<GlobalInfoDocument>,
     ): Promise<GlobalInfoDocument[]> {
-        const profiler = new PerformanceProfiler();
-
-        const farms = await this.globalInfoRepository
+        return this.globalInfoRepository
             .getModel()
             .find(filterQuery, projection)
             .exec();
-
-        profiler.stop();
-
-        this.logger.debug(
-            `${this.getGlobalInfo.name} : ${profiler.duration}ms`,
-            {
-                context: GlobalInfoPersistenceService.name,
-            },
-        );
-
-        return farms;
     }
 
     async populateGlobalInfo(

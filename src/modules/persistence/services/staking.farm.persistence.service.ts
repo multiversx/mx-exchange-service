@@ -4,6 +4,11 @@ import BigNumber from 'bignumber.js';
 import { FilterQuery, PopulateOptions, ProjectionType } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig } from 'src/config';
+import {
+    MongoCollections,
+    MongoQueries,
+    PersistenceMetrics,
+} from 'src/helpers/decorators/persistence.metrics.decorator';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
@@ -39,6 +44,7 @@ export class StakingFarmPersistenceService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    @PersistenceMetrics(MongoCollections.Staking, MongoQueries.Upsert)
     async upsertStakingFarm(
         stakingFarm: StakingModel,
         projection: ProjectionType<StakingModel> = { __v: 0 },
@@ -61,13 +67,26 @@ export class StakingFarmPersistenceService {
         }
     }
 
+    @PersistenceMetrics(MongoCollections.Staking, MongoQueries.Update, 1)
+    async updateStakingFarm(
+        stakingFarm: StakingFarmDocument,
+        operation: string,
+    ): Promise<void> {
+        this.logger.debug(`${this.updateStakingFarm.name}`, {
+            context: StakingFarmPersistenceService.name,
+            operation,
+            changes: stakingFarm.getChanges(),
+        });
+
+        await stakingFarm.save();
+    }
+
+    @PersistenceMetrics(MongoCollections.Staking, MongoQueries.Find)
     async getStakingFarms(
         filterQuery: FilterQuery<StakingFarmDocument>,
         projection?: ProjectionType<StakingFarmDocument>,
         populateOptions?: PopulateOptions[],
     ): Promise<StakingFarmDocument[]> {
-        const profiler = new PerformanceProfiler();
-
         const stakingFarms = await this.stakingFarmRepository
             .getModel()
             .find(filterQuery, projection)
@@ -78,15 +97,6 @@ export class StakingFarmPersistenceService {
                 .getModel()
                 .populate(stakingFarms, populateOptions);
         }
-
-        profiler.stop();
-
-        this.logger.debug(
-            `${this.getStakingFarms.name} : ${profiler.duration}ms`,
-            {
-                context: StakingFarmPersistenceService.name,
-            },
-        );
 
         return stakingFarms;
     }
@@ -260,7 +270,10 @@ export class StakingFarmPersistenceService {
             firstWeekStartEpoch,
         );
 
-        await stakingFarm.save();
+        await this.updateStakingFarm(
+            stakingFarm,
+            this.updateWeekTimekeeping.name,
+        );
 
         return true;
     }
@@ -349,7 +362,7 @@ export class StakingFarmPersistenceService {
         stakingFarm.stakingPositionMigrationNonce =
             stakingPositionMigrationNonce;
 
-        await stakingFarm.save();
+        await this.updateStakingFarm(stakingFarm, this.updateAbiFields.name);
     }
 
     async refreshPricesAPRsAndTVL(): Promise<void> {
@@ -447,7 +460,10 @@ export class StakingFarmPersistenceService {
         stakingFarm.baseApr = baseApr;
         stakingFarm.maxBoostedApr = maxBoostedApr;
 
-        await stakingFarm.save();
+        await this.updateStakingFarm(
+            stakingFarm,
+            this.updatePricesAPRsAndTVL.name,
+        );
     }
 
     async refreshReserves(): Promise<void> {
@@ -530,7 +546,7 @@ export class StakingFarmPersistenceService {
         stakingFarm.rewardsPerBlockAPRBound = rewardsPerBlockAPRBound.toFixed();
         stakingFarm.isProducingRewards = isProducingRewards;
 
-        await stakingFarm.save();
+        await this.updateStakingFarm(stakingFarm, this.updateReserves.name);
     }
 
     async refreshStakingFarmsRewards(): Promise<void> {
@@ -611,6 +627,9 @@ export class StakingFarmPersistenceService {
 
         stakingFarm.lastGlobalUpdateWeek = lastGlobalUpdateWeek;
 
-        await stakingFarm.save();
+        await this.updateStakingFarm(
+            stakingFarm,
+            this.updateStakingFarmRewards.name,
+        );
     }
 }

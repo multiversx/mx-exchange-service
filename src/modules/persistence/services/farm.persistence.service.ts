@@ -4,6 +4,11 @@ import BigNumber from 'bignumber.js';
 import { FilterQuery, PopulateOptions, ProjectionType } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig } from 'src/config';
+import {
+    MongoCollections,
+    MongoQueries,
+    PersistenceMetrics,
+} from 'src/helpers/decorators/persistence.metrics.decorator';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
@@ -41,6 +46,7 @@ export class FarmPersistenceService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    @PersistenceMetrics(MongoCollections.Farms, MongoQueries.Upsert)
     async upsertFarm(
         farm: FarmModelV2,
         projection: ProjectionType<FarmModelV2> = { __v: 0 },
@@ -59,14 +65,24 @@ export class FarmPersistenceService {
         }
     }
 
+    @PersistenceMetrics(MongoCollections.Farms, MongoQueries.Update, 1)
+    async updateFarm(farm: FarmDocument, operation: string): Promise<void> {
+        this.logger.debug(`${this.updateFarm.name}`, {
+            context: FarmPersistenceService.name,
+            operation,
+            changes: farm.getChanges(),
+        });
+
+        await farm.save();
+    }
+
+    @PersistenceMetrics(MongoCollections.Farms, MongoQueries.Find)
     async getFarms(
         filterQuery: FilterQuery<FarmDocument>,
         projection?: ProjectionType<FarmDocument>,
         populateOptions?: PopulateOptions[],
         lean = false,
     ): Promise<FarmDocument[]> {
-        const profiler = new PerformanceProfiler();
-
         const farms = await this.farmRepository
             .getModel()
             .find(filterQuery, projection, { lean })
@@ -77,12 +93,6 @@ export class FarmPersistenceService {
                 .getModel()
                 .populate(farms, populateOptions);
         }
-
-        profiler.stop();
-
-        this.logger.debug(`${this.getFarms.name} : ${profiler.duration}ms`, {
-            context: FarmPersistenceService.name,
-        });
 
         return farms;
     }
@@ -255,7 +265,7 @@ export class FarmPersistenceService {
             firstWeekStartEpoch,
         );
 
-        await farm.save();
+        await this.updateFarm(farm, this.updateWeekTimekeeping.name);
 
         return true;
     }
@@ -338,7 +348,7 @@ export class FarmPersistenceService {
             )
             .toFixed();
 
-        await farm.save();
+        await this.updateFarm(farm, this.updatePricesAPRsAndTVL.name);
     }
 
     async refreshAbiFields(): Promise<void> {
@@ -419,7 +429,7 @@ export class FarmPersistenceService {
         farm.lockEpochs = lockEpochs.toString();
         farm.energyFactoryAddress = energyFactoryAddress;
 
-        await farm.save();
+        await this.updateFarm(farm, this.updateAbiFields.name);
     }
 
     async refreshFarmsReserves(): Promise<void> {
@@ -477,7 +487,7 @@ export class FarmPersistenceService {
         farm.rewardPerShare = rewardPerShare;
         farm.rewardReserve = rewardReserve;
 
-        await farm.save();
+        await this.updateFarm(farm, this.updateFarmReserves.name);
     }
 
     async refreshFarmsRewards(): Promise<void> {
@@ -558,6 +568,6 @@ export class FarmPersistenceService {
 
         farm.lastGlobalUpdateWeek = lastGlobalUpdateWeek;
 
-        await farm.save();
+        await this.updateFarm(farm, this.updateFarmRewards.name);
     }
 }

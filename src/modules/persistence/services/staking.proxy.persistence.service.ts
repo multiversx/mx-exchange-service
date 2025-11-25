@@ -2,6 +2,11 @@ import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable } from '@nestjs/common';
 import { FilterQuery, PopulateOptions, ProjectionType } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import {
+    MongoCollections,
+    MongoQueries,
+    PersistenceMetrics,
+} from 'src/helpers/decorators/persistence.metrics.decorator';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
@@ -22,6 +27,7 @@ export class StakingProxyPersistenceService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    @PersistenceMetrics(MongoCollections.StakingProxy, MongoQueries.Upsert)
     async upsertStakingProxy(
         stakingProxy: StakingProxyModel,
         projection: ProjectionType<StakingProxyModel> = { __v: 0 },
@@ -44,13 +50,12 @@ export class StakingProxyPersistenceService {
         }
     }
 
+    @PersistenceMetrics(MongoCollections.StakingProxy, MongoQueries.Find)
     async getStakingProxies(
         filterQuery: FilterQuery<StakingProxyDocument>,
         projection?: ProjectionType<StakingProxyDocument>,
         populateOptions?: PopulateOptions[],
     ): Promise<StakingProxyDocument[]> {
-        const profiler = new PerformanceProfiler();
-
         const farms = await this.stakingProxyRepository
             .getModel()
             .find(filterQuery, projection)
@@ -61,15 +66,6 @@ export class StakingProxyPersistenceService {
                 .getModel()
                 .populate(farms, populateOptions);
         }
-
-        profiler.stop();
-
-        this.logger.debug(
-            `${this.getStakingProxies.name} : ${profiler.duration}ms`,
-            {
-                context: StakingProxyPersistenceService.name,
-            },
-        );
 
         return farms;
     }

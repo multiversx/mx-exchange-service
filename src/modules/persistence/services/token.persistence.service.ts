@@ -5,7 +5,6 @@ import { Logger } from 'winston';
 import { EsdtToken, EsdtTokenType } from '../../tokens/models/esdtToken.model';
 import { FilterQuery, ProjectionType } from 'mongoose';
 import { EsdtTokenDocument } from '../schemas/esdtToken.schema';
-import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { constantsConfig, tokenProviderUSD } from 'src/config';
@@ -26,6 +25,11 @@ import {
 } from 'src/modules/tokens/models/tokens.filter.args';
 import { filteredTokensPipeline } from '../pipelines/filtered.tokens.pipeline';
 import moment from 'moment';
+import {
+    MongoCollections,
+    MongoQueries,
+    PersistenceMetrics,
+} from 'src/helpers/decorators/persistence.metrics.decorator';
 
 type FilteredTokensResponse = {
     items: EsdtTokenDocument[];
@@ -45,6 +49,7 @@ export class TokenPersistenceService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
+    @PersistenceMetrics(MongoCollections.Tokens, MongoQueries.Create)
     async addToken(token: EsdtToken): Promise<void> {
         try {
             await this.tokenRepository.create(token);
@@ -63,6 +68,7 @@ export class TokenPersistenceService {
         }
     }
 
+    @PersistenceMetrics(MongoCollections.Tokens, MongoQueries.Upsert)
     async upsertToken(
         token: EsdtToken,
         projection: ProjectionType<EsdtToken> = { __v: 0 },
@@ -82,6 +88,20 @@ export class TokenPersistenceService {
         }
     }
 
+    @PersistenceMetrics(MongoCollections.Tokens, MongoQueries.Update, 1)
+    async updateToken(
+        token: EsdtTokenDocument,
+        operation: string,
+    ): Promise<void> {
+        await token.save();
+
+        this.logger.debug(`${this.updateToken.name}`, {
+            context: TokenPersistenceService.name,
+            operation,
+        });
+    }
+
+    @PersistenceMetrics(MongoCollections.Tokens, MongoQueries.BulkWrite, 1)
     async bulkUpdateTokens(
         bulkOps: BulkWriteOperations<EsdtToken>,
         operationName?: string,
@@ -89,8 +109,6 @@ export class TokenPersistenceService {
         if (bulkOps.length === 0) {
             return;
         }
-
-        const profiler = new PerformanceProfiler();
 
         try {
             const result = await this.tokenRepository
@@ -105,41 +123,26 @@ export class TokenPersistenceService {
                 bulkOps as AnyBulkWriteOperation<EsdtTokenDocument>[],
             );
 
-            profiler.stop();
-
-            this.logger.debug(
-                `${this.bulkUpdateTokens.name} : ${profiler.duration}ms`,
-                {
-                    context: TokenPersistenceService.name,
-                    operation: operationName ?? 'no-op',
-                    result,
-                },
-            );
+            this.logger.debug(`${this.bulkUpdateTokens.name}`, {
+                context: TokenPersistenceService.name,
+                operation: operationName ?? 'no-op',
+                result,
+            });
         } catch (error) {
-            profiler.stop();
-            this.logger.error(error);
+            this.logger.error(error, { context: TokenPersistenceService.name });
         }
     }
 
+    @PersistenceMetrics(MongoCollections.Tokens, MongoQueries.Find)
     async getTokens(
         filterQuery: FilterQuery<EsdtTokenDocument>,
         projection?: ProjectionType<EsdtTokenDocument>,
         lean = false,
     ): Promise<EsdtTokenDocument[]> {
-        const profiler = new PerformanceProfiler();
-
-        const result = await this.tokenRepository
+        return this.tokenRepository
             .getModel()
             .find(filterQuery, projection, { lean })
             .exec();
-
-        profiler.stop();
-
-        this.logger.debug(`${this.getTokens.name} : ${profiler.duration}ms`, {
-            context: TokenPersistenceService.name,
-        });
-
-        return result;
     }
 
     async populateEsdtTokenMetadata(
@@ -252,7 +255,7 @@ export class TokenPersistenceService {
                     token.tradeChange24h,
                 );
 
-                await token.save();
+                await this.updateToken(token, 'updateAnalytics');
             } catch (error) {
                 this.logger.error(
                     `Failed while refreshing analytics for token ${token.identifier}`,
@@ -373,29 +376,19 @@ export class TokenPersistenceService {
         });
     }
 
+    @PersistenceMetrics(MongoCollections.Tokens, MongoQueries.Find)
     async getFilteredTokens(
         offset: number,
         limit: number,
         filters: TokensFilter,
         sorting: TokenSortingArgs,
     ): Promise<{ tokens: EsdtToken[]; count: number }> {
-        const profiler = new PerformanceProfiler();
-
         const [result] = await this.tokenRepository
             .getModel()
             .aggregate<FilteredTokensResponse>(
                 filteredTokensPipeline(offset, limit, filters, sorting),
             )
             .exec();
-
-        profiler.stop();
-
-        this.logger.debug(
-            `${this.getFilteredTokens.name} : ${profiler.duration}ms`,
-            {
-                context: TokenPersistenceService.name,
-            },
-        );
 
         return { tokens: result.items, count: result.total };
     }
