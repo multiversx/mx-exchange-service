@@ -101,7 +101,7 @@
             "createPair": 35000000,
             "issueToken": 75000000,
             "setLocalRoles": 75000000,
-            "multiPairSwapMultiplier": 16500000,
+            "multiPairSwapMultiplier": 30000000,
             "swapEnableByUser": 35000000,
             "admin": {
                 "setState": 22000000,
@@ -121,11 +121,11 @@
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
                 "default": 15000000,
-                "withFeeSwap": 15000000
+                "withFeeSwap": 30000000
             },
             "swapTokensFixedOutput": {
                 "default": 15000000,
-                "withFeeSwap": 15000000
+                "withFeeSwap": 35000000
             },
             "swapNoFeeAndForward": 25500000,
             "setLpTokenIdentifier": 200000000,
