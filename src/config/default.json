@@ -537,10 +537,10 @@
                 "dualFarmPosition": 100000000,
                 "exitFarm": 50000000
             },
-            "energyPosition": 13000000
+            "energyPosition": 15000000
         },
         "composableTasks": {
-            "default": 5500000
+            "default": 6500000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 3000000,
