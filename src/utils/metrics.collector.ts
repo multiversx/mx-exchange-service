@@ -10,6 +10,7 @@ export class MetricsCollector {
     private static dataApiQueryDurationHistogram: Histogram<string>;
     private static vmQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
+    private static persistenceQueryDurationHistogram: Histogram<string>;
     private static guestQueriesGauge: Gauge<string>;
     private static currentNonceGauge: Gauge<string>;
     private static lastProcessedNonceGauge: Gauge<string>;
@@ -88,6 +89,15 @@ export class MetricsCollector {
                 help: 'Gas Difference between gas limit and gas used',
                 labelNames: ['endpoint', 'receiver'],
                 buckets: [100000, 1000000, 10000000],
+            });
+        }
+
+        if (!MetricsCollector.persistenceQueryDurationHistogram) {
+            MetricsCollector.persistenceQueryDurationHistogram = new Histogram({
+                name: 'persistence_query_duration',
+                help: 'MongoDB Queries',
+                labelNames: ['collection', 'query', 'operation'],
+                buckets: [],
             });
         }
 
@@ -218,6 +228,19 @@ export class MetricsCollector {
         MetricsCollector.gasDifferenceHistogram
             .labels(endpoint, receiver)
             .observe(gasDifference);
+    }
+
+    static setPersistenceQueryDuration(
+        collection: string,
+        query: string,
+        operation: string,
+        duration: number,
+    ) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.baseMetrics.setExternalCall('mongoDB', duration);
+        MetricsCollector.persistenceQueryDurationHistogram
+            .labels(collection, query, operation)
+            .observe(duration);
     }
 
     static setCurrentNonce(shardId: number, nonce: number) {
