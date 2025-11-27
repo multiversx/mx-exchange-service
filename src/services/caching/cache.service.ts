@@ -4,6 +4,8 @@ import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { RedisCacheService } from '@multiversx/sdk-nestjs-cache';
 import { InMemoryCacheService } from './in.memory.cache.service';
 import { parseCachedNullOrUndefined } from 'src/utils/cache.utils';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class CacheService {
@@ -319,5 +321,72 @@ export class CacheService {
         }
 
         return invalidatedKeys;
+    }
+
+    async hashSetRemote<T>(
+        hash: string,
+        field: string,
+        value: T,
+        cacheNullable = true,
+    ): Promise<number> {
+        return await this.redisCacheService.hset<T>(
+            hash,
+            field,
+            value,
+            cacheNullable,
+        );
+    }
+
+    async hashSetManyRemote(
+        hash: string,
+        fieldsValues: [string, any][],
+        cacheNullable = true,
+    ): Promise<number> {
+        if (fieldsValues.length === 0) {
+            return 0;
+        }
+
+        return await this.redisCacheService.hsetMany(
+            hash,
+            fieldsValues,
+            cacheNullable,
+        );
+    }
+
+    async hashGetRemote<T>(hash: string, field: string): Promise<T | null> {
+        return this.redisCacheService.hget<T>(hash, field);
+    }
+
+    async hashGetManyRemote<T>(
+        hash: string,
+        fields: string[],
+    ): Promise<(T | null)[]> {
+        const profiler = new PerformanceProfiler();
+        if (fields.length === 0) {
+            return [];
+        }
+
+        const rawResult = await this.redisCacheService['redis'].hmget(
+            hash,
+            fields,
+        );
+
+        const result = rawResult.map((item: string | null) =>
+            item ? (JSON.parse(item) as T) : null,
+        );
+
+        profiler.stop();
+        MetricsCollector.setRedisDuration('HMGET', profiler.duration);
+
+        return result;
+    }
+
+    async hashGetAllRemote<T>(hash: string): Promise<(T | null)[]> {
+        const rawResult = await this.redisCacheService.hgetall(hash);
+        if (!rawResult) {
+            return [];
+        }
+
+        return Object.values(rawResult);
     }
 }
