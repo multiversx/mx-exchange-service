@@ -256,22 +256,27 @@ export class FeesCollectorComputeService {
         const tokensMetadata = await this.tokenService.getAllTokensMetadata(
             allTokens,
         );
+
         const tokenData = await Promise.all(
-            allTokens.map(async (tokenId) => ({
+            allTokens.map(async (tokenId, index) => ({
                 amount: await this.feesCollectorAbi.accumulatedFees(
                     week,
                     tokenId,
                 ),
-                price: await this.tokenCompute.tokenPriceDerivedUSD(tokenId),
+                price: tokensMetadata[index]
+                    ? tokensMetadata[index].price
+                    : '0',
             })),
         );
 
         const usdValues = allTokens.map((tokenId, index) => {
-            return computeValueUSD(
-                tokenData[index].amount,
-                tokensMetadata[index].decimals,
-                tokenData[index].price,
-            );
+            return tokenData[index].price === '0'
+                ? new BigNumber('0')
+                : computeValueUSD(
+                      tokenData[index].amount,
+                      tokensMetadata[index].decimals,
+                      tokenData[index].price,
+                  );
         });
 
         const totalUsdValue = usdValues.reduce(
