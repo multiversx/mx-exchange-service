@@ -32,6 +32,10 @@ export class PersistenceEventHandlerService {
 
         await this.pairPersistence.updateAbiFields(pair);
 
+        await this.pairPersistence.refreshCachedPairs({
+            address: pair.address,
+        });
+
         profiler.stop();
 
         this.logger.info(
@@ -52,6 +56,8 @@ export class PersistenceEventHandlerService {
         await this.pairPersistence.updateLpToken(pair);
         await this.pairPersistence.updateStateAndReserves(pair);
         await this.pairPersistence.updateAbiFields(pair);
+
+        await this.pairPersistence.setPairsInCache([pair]);
 
         profiler.stop();
 
