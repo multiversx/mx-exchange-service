@@ -243,11 +243,15 @@ export class PersistenceService {
     async refreshPairReserves(): Promise<void> {
         await this.pairPersistence.refreshPairsStateAndReserves();
         await this.pairPersistence.refreshPairsPricesAndTVL();
+
+        await this.refreshCachedPairsAndTokens();
     }
 
     async refreshAnalytics(): Promise<void> {
         await this.pairPersistence.refreshPairsAnalytics();
         await this.tokenPersistence.refreshTokensAnalytics();
+
+        await this.refreshCachedPairsAndTokens();
     }
 
     async indexPairLpToken(address: string): Promise<void> {
@@ -271,6 +275,15 @@ export class PersistenceService {
                     token: pair.liquidityPoolToken,
                 });
 
+                await Promise.all([
+                    this.pairPersistence.refreshCachedPairs({
+                        address: pair.address,
+                    }),
+                    this.tokenPersistence.refreshCachedTokens({
+                        identifier: pair.liquidityPoolTokenId,
+                    }),
+                ]);
+
                 return;
             }
 
@@ -281,5 +294,12 @@ export class PersistenceService {
         const message = `Could not update pair ${address} LP token after ${INDEX_LP_MAX_ATTEMPTS} attempts`;
 
         throw new Error(message);
+    }
+
+    async refreshCachedPairsAndTokens(): Promise<void> {
+        await Promise.all([
+            this.pairPersistence.refreshCachedPairs(),
+            this.tokenPersistence.refreshCachedTokens(),
+        ]);
     }
 }

@@ -1,5 +1,5 @@
 import { Lock } from '@multiversx/sdk-nestjs-common';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -7,11 +7,15 @@ import { PersistenceTasks, TaskDto } from '../entities';
 import { PersistenceService } from './persistence.service';
 
 @Injectable()
-export class PersistenceCronService {
+export class PersistenceCronService implements OnModuleInit {
     constructor(
         private readonly persistenceService: PersistenceService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
+
+    async onModuleInit(): Promise<void> {
+        await this.persistenceService.refreshCachedPairsAndTokens();
+    }
 
     @Cron(CronExpression.EVERY_10_SECONDS)
     async executeTasks(): Promise<void> {
