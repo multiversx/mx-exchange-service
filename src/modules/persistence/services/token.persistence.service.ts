@@ -36,6 +36,7 @@ import {
 } from 'src/helpers/decorators/persistence.metrics.decorator';
 import { CacheService } from 'src/services/caching/cache.service';
 import { getHashFields } from 'src/utils/get.many.utils';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 
 type FilteredTokensResponse = {
     items: EsdtTokenDocument[];
@@ -414,5 +415,79 @@ export class TokenPersistenceService {
 
         const tokens = await this.getTokens(filterQuery, projection, true);
         return new Map(tokens.map((token) => [token.identifier, token]));
+    }
+
+    async getAllTokens(): Promise<EsdtToken[]> {
+        const tokenIDs = await this.getTokenIdentifiers();
+
+        return this.getTokensByIdentifier(tokenIDs);
+    }
+
+    async getTokenIdentifiers(): Promise<string[]> {
+        const cachedIds = await this.cacheService.getSetMembers(
+            PersistenceCacheKeys.TokenIdentifiersSet,
+        );
+
+        if (cachedIds.length > 0) {
+            return cachedIds;
+        }
+
+        const tokens = await this.getTokens(
+            {},
+            { identifier: 1, _id: 0 },
+            true,
+        );
+
+        const tokenIDs = tokens.map((token) => token.identifier);
+
+        await this.cacheService.addToSet(
+            PersistenceCacheKeys.TokenIdentifiersSet,
+            tokenIDs,
+        );
+
+        return tokenIDs;
+    }
+
+    async refreshCachedTokens(
+        filterQuery: FilterQuery<EsdtTokenDocument> = {},
+    ): Promise<void> {
+        const profiler = new PerformanceProfiler();
+
+        const tokens = await this.getTokens(
+            filterQuery,
+            {
+                _id: 0,
+                __v: 0,
+            },
+            true,
+        );
+
+        await Promise.all([
+            this.cacheService.addToSet(
+                PersistenceCacheKeys.TokenIdentifiersSet,
+                tokens.map((token) => token.identifier),
+            ),
+            this.setTokensInCache(tokens),
+        ]);
+
+        profiler.stop();
+
+        this.logger.debug(
+            `Finished ${this.refreshCachedTokens.name} : ${profiler.duration}ms`,
+            {
+                context: TokenPersistenceService.name,
+            },
+        );
+    }
+
+    async setTokensInCache(tokens: EsdtToken[]): Promise<void> {
+        if (tokens.length === 0) {
+            return;
+        }
+
+        await this.cacheService.hashSetManyRemote(
+            PersistenceCacheKeys.TokensHash,
+            tokens.map((token) => [token.identifier, token]),
+        );
     }
 }
