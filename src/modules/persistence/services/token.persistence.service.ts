@@ -10,7 +10,11 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { constantsConfig, tokenProviderUSD } from 'src/config';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import BigNumber from 'bignumber.js';
-import { BulkWriteOperations, PRICE_UPDATE_EVENT } from '../entities';
+import {
+    BulkWriteOperations,
+    PersistenceCacheKeys,
+    PRICE_UPDATE_EVENT,
+} from '../entities';
 import { AnyBulkWriteOperation } from 'mongodb';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -30,6 +34,8 @@ import {
     MongoQueries,
     PersistenceMetrics,
 } from 'src/helpers/decorators/persistence.metrics.decorator';
+import { CacheService } from 'src/services/caching/cache.service';
+import { getHashFields } from 'src/utils/get.many.utils';
 
 type FilteredTokensResponse = {
     items: EsdtTokenDocument[];
@@ -45,6 +51,7 @@ export class TokenPersistenceService {
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly cacheService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -372,5 +379,40 @@ export class TokenPersistenceService {
             .exec();
 
         return { tokens: result.items, count: result.total };
+    }
+
+    async getTokensByIdentifier(tokenIDs: string[]): Promise<EsdtToken[]> {
+        return getHashFields<EsdtToken>(
+            this.cacheService,
+            PersistenceCacheKeys.TokensHash,
+            tokenIDs,
+            this.getTokensByIdentifierRaw.bind(this),
+        );
+    }
+
+    async getTokensByIdentifierRaw(
+        tokenIDs: string[],
+        fields: (keyof EsdtToken)[] = [],
+    ): Promise<Map<string, EsdtToken>> {
+        const projection: ProjectionType<EsdtTokenDocument> = {};
+
+        if (fields.length > 0) {
+            fields.forEach((field) => (projection[field] = 1));
+        } else {
+            projection.__v = 0;
+            projection._id = 0;
+        }
+
+        const distinctTokenIDs = [...new Set(tokenIDs)];
+
+        const filterQuery =
+            distinctTokenIDs.length === 1
+                ? { identifier: distinctTokenIDs[0] }
+                : {
+                      identifier: { $in: distinctTokenIDs },
+                  };
+
+        const tokens = await this.getTokens(filterQuery, projection, true);
+        return new Map(tokens.map((token) => [token.identifier, token]));
     }
 }

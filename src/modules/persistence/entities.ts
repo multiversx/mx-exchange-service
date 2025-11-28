@@ -100,3 +100,10 @@ export class PriceUpdatesModel {
         Object.assign(this, init);
     }
 }
+
+export enum PersistenceCacheKeys {
+    TokensHash = 'token.all',
+    TokenIdentifiersSet = 'token.identifiers',
+    PairsHash = 'pair.all',
+    PairAddressesSet = 'pair.addresses',
+}
