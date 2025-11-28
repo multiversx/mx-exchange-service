@@ -22,8 +22,6 @@ import { PaginationArgs } from 'src/modules/dex.model';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenPersistenceService } from 'src/modules/persistence/services/token.persistence.service';
-import { EsdtTokenDocument } from 'src/modules/persistence/schemas/esdtToken.schema';
-import { ProjectionType } from 'mongoose';
 
 @Injectable()
 export class TokenService {
@@ -72,9 +70,13 @@ export class TokenService {
             sorting,
         );
 
+        const items = await this.getAllTokensMetadata(
+            dbResult.tokens.map((token) => token.identifier),
+        );
+
         return new CollectionType({
             count: dbResult.count,
-            items: dbResult.tokens,
+            items: items,
         });
     }
 
@@ -110,11 +112,8 @@ export class TokenService {
     @ErrorLoggerAsync({
         logArgs: true,
     })
-    async tokenMetadata(
-        tokenID: string,
-        fields?: (keyof EsdtToken)[],
-    ): Promise<EsdtToken> {
-        const [token] = await this.getAllTokensMetadata([tokenID], fields);
+    async tokenMetadata(tokenID: string): Promise<EsdtToken> {
+        const [token] = await this.getAllTokensMetadata([tokenID]);
         return token;
     }
 
@@ -122,47 +121,8 @@ export class TokenService {
         return this.apiService.getToken(tokenID);
     }
 
-    async getAllTokensMetadata(
-        tokenIDs: string[],
-        fields: (keyof EsdtToken)[] = [],
-    ): Promise<EsdtToken[]> {
-        // TODO: add caching
-
-        const tokens = await this.getAllTokensMetadataFromDb(tokenIDs, fields);
-        return tokenIDs.map((tokenID) => tokens.get(tokenID));
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    async getAllTokensMetadataFromDb(
-        tokenIDs: string[],
-        fields: (keyof EsdtToken)[] = [],
-    ): Promise<Map<string, EsdtToken>> {
-        const projection: ProjectionType<EsdtTokenDocument> = {};
-
-        if (fields.length > 0) {
-            fields.forEach((field) => (projection[field] = 1));
-        } else {
-            projection.__v = 0;
-            projection._id = 0;
-        }
-
-        const distinctTokenIDs = [...new Set(tokenIDs)];
-
-        const filterQuery =
-            distinctTokenIDs.length === 1
-                ? { identifier: distinctTokenIDs[0] }
-                : {
-                      identifier: { $in: distinctTokenIDs },
-                  };
-
-        const tokens = await this.tokenPersistence.getTokens(
-            filterQuery,
-            projection,
-            true,
-        );
-        return new Map(tokens.map((token) => [token.identifier, token]));
+    async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
+        return this.tokenPersistence.getTokensByIdentifier(tokenIDs);
     }
 
     @ErrorLoggerAsync({

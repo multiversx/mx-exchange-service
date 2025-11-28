@@ -78,13 +78,8 @@ export const filteredTokensPipeline = (
 
     itemsFacet.push({
         $project: {
-            liquidityUSDNum: 0,
-            priceNum: 0,
-            previous24hPriceNum: 0,
-            previous7dPriceNum: 0,
-            previous24hVolumeNum: 0,
-            volumeUSD24hNum: 0,
-            trendingScoreNum: 0,
+            identifier: 1,
+            _id: 0,
         },
     });
 
