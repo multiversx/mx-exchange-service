@@ -7,6 +7,7 @@ import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { ESTransactionsService } from 'src/services/elastic-search/services/es.transactions.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { PairPersistenceService } from 'src/modules/persistence/services/pair.persistence.service';
 
 @Injectable()
 export class RouterComputeService {
@@ -15,6 +16,8 @@ export class RouterComputeService {
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
         private readonly metrics: ESTransactionsService,
+        @Inject(forwardRef(() => PairPersistenceService))
+        private readonly pairPersistence: PairPersistenceService,
     ) {}
 
     @ErrorLoggerAsync()
@@ -28,18 +31,14 @@ export class RouterComputeService {
     }
 
     async computeTotalLockedValueUSD(): Promise<BigNumber> {
-        const pairsAddress = await this.routerAbi.pairsAddress();
+        const pairs = await this.pairPersistence.getAllPairs();
+
         let totalValueLockedUSD = new BigNumber(0);
-        const promises = pairsAddress.map((pairAddress) =>
-            this.pairCompute.computeLockedValueUSD(pairAddress),
-        );
 
-        const pairsLockedValueUSD = await Promise.all(promises);
-
-        for (const lockedValueUSD of pairsLockedValueUSD) {
-            const lockedValueUSDBig = new BigNumber(lockedValueUSD);
+        for (const pair of pairs) {
+            const lockedValueUSDBig = new BigNumber(pair.lockedValueUSD);
             totalValueLockedUSD = !lockedValueUSDBig.isNaN()
-                ? totalValueLockedUSD.plus(lockedValueUSD)
+                ? totalValueLockedUSD.plus(pair.lockedValueUSD)
                 : totalValueLockedUSD;
         }
 

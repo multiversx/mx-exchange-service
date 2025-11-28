@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FilterQuery, PopulateOptions, ProjectionType } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -35,6 +35,7 @@ export class PairPersistenceService {
         private readonly routerAbi: RouterAbiService,
         private readonly tokenPersistence: TokenPersistenceService,
         private readonly pairService: PairService,
+        @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
         private readonly pairAbi: PairAbiService,
         private readonly dataApi: MXDataApiService,
