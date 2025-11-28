@@ -44,3 +44,32 @@ export function extractValueFromSetOperation<T>(
 
     return;
 }
+
+export function extractChangesFromBulkWriteOperation<T>(
+    operation: AnyBulkWriteOperation<T>,
+    keyField: keyof T,
+): { key: string; updates: T } | undefined {
+    if (!isUpdateOneOperation<T>(operation)) {
+        return;
+    }
+
+    const { filter, update } = operation.updateOne;
+
+    if (Array.isArray(update)) {
+        return;
+    }
+
+    const key = extractValueFromFilter<T>(filter, keyField);
+
+    if (!key) {
+        return;
+    }
+
+    const setObj = update?.$set;
+
+    if (!setObj || typeof setObj !== 'object') {
+        return;
+    }
+
+    return { key, updates: setObj };
+}

@@ -1,6 +1,6 @@
 import { Address } from '@multiversx/sdk-core';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { Logger } from 'winston';
@@ -9,7 +9,6 @@ import { RouterAbiService } from '../../router/services/router.abi.service';
 import { TokenPersistenceService } from '../../persistence/services/token.persistence.service';
 import { CompetingRabbitConsumer } from '../rabbitmq.consumers';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
-import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
 import { PersistenceService } from 'src/modules/persistence/services/persistence.service';
 import { BlockWithStateChanges, StateAccessPerAccountRaw } from './types';
 import {
@@ -20,10 +19,15 @@ import {
 } from 'src/modules/persistence/entities';
 import { BulkUpdatesService } from 'src/modules/persistence/services/bulk.updates.service';
 import { getPairDecoders } from './state.changes.utils';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import { extractChangesFromBulkWriteOperation } from 'src/modules/persistence/utils/bulk.write.utils';
+import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
+import { AnyBulkWriteOperation } from 'mongodb';
+import { EsdtTokenDocument } from 'src/modules/persistence/schemas/esdtToken.schema';
 
 @Injectable()
-export class StateChangesConsumer {
-    private pairs: Map<string, PairDocument> = new Map();
+export class StateChangesConsumer implements OnModuleInit {
+    private pairs: Map<string, PairModel> = new Map();
     private tokens: Map<string, EsdtToken> = new Map();
 
     constructor(
@@ -34,6 +38,10 @@ export class StateChangesConsumer {
         private readonly persistenceService: PersistenceService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
+
+    async onModuleInit(): Promise<void> {
+        await this.persistenceService.refreshCachedPairsAndTokens();
+    }
 
     @CompetingRabbitConsumer({
         queueName: process.env.RABBITMQ_STATE_QUEUE,
@@ -113,6 +121,11 @@ export class StateChangesConsumer {
                     'stateChange',
                 ),
             ]);
+
+            await this.refreshCache(
+                pairBulkOps as AnyBulkWriteOperation<PairDocument>[],
+                tokenBulkOps as AnyBulkWriteOperation<EsdtTokenDocument>[],
+            );
         }
 
         profiler.stop();
@@ -123,6 +136,51 @@ export class StateChangesConsumer {
                 context: StateChangesConsumer.name,
             },
         );
+    }
+
+    private async refreshCache(
+        pairBulkOps: AnyBulkWriteOperation<PairDocument>[],
+        tokenBulkOps: AnyBulkWriteOperation<EsdtTokenDocument>[],
+    ): Promise<void> {
+        const updatedPairs: PairModel[] = [];
+        const updatedTokens: EsdtToken[] = [];
+
+        for (const operation of pairBulkOps) {
+            const { key: address, updates } =
+                extractChangesFromBulkWriteOperation<PairDocument>(
+                    operation,
+                    'address',
+                );
+
+            const pair = this.pairs.get(address);
+
+            Object.keys(updates).forEach((field) => {
+                pair[field] = updates[field];
+            });
+
+            updatedPairs.push(pair);
+        }
+
+        for (const operation of tokenBulkOps) {
+            const { key: tokenID, updates } =
+                extractChangesFromBulkWriteOperation<EsdtTokenDocument>(
+                    operation,
+                    'identifier',
+                );
+
+            const token = this.tokens.get(tokenID);
+
+            Object.keys(updates).forEach((field) => {
+                token[field] = updates[field];
+            });
+
+            updatedTokens.push(token);
+        }
+
+        await Promise.all([
+            this.pairPersistence.setPairsInCache(updatedPairs),
+            this.tokenPersistence.setTokensInCache(updatedTokens),
+        ]);
     }
 
     private decodePairStateChanges(
@@ -206,42 +264,8 @@ export class StateChangesConsumer {
         this.tokens = new Map();
 
         const [pairs, tokens] = await Promise.all([
-            this.pairPersistence.getPairs(
-                {},
-                {
-                    address: 1,
-                    firstTokenId: 1,
-                    firstTokenPrice: 1,
-                    firstTokenPriceUSD: 1,
-                    firstTokenLockedValueUSD: 1,
-                    secondTokenId: 1,
-                    secondTokenPrice: 1,
-                    secondTokenPriceUSD: 1,
-                    secondTokenLockedValueUSD: 1,
-                    liquidityPoolTokenId: 1,
-                    liquidityPoolTokenPriceUSD: 1,
-                    lockedValueUSD: 1,
-                    info: 1,
-                    state: 1,
-                    totalFeePercent: 1,
-                    specialFeePercent: 1,
-                },
-                undefined,
-                true,
-            ),
-            this.tokenPersistence.getTokens(
-                {},
-                {
-                    identifier: 1,
-                    decimals: 1,
-                    price: 1,
-                    derivedEGLD: 1,
-                    liquidityUSD: 1,
-                    type: 1,
-                    pairAddress: 1,
-                },
-                true,
-            ),
+            this.pairPersistence.getAllPairs(),
+            this.tokenPersistence.getAllTokens(),
         ]);
 
         pairs.forEach((pair) => this.pairs.set(pair.address, pair));

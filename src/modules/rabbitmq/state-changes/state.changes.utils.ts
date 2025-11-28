@@ -9,8 +9,8 @@ import {
 } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 import { TrackedPairFields } from 'src/modules/persistence/entities';
-import { PairDocument } from 'src/modules/persistence/schemas/pair.schema';
 
 type PairStorageDecoder<T> = {
     outputField: TrackedPairFields;
@@ -35,7 +35,7 @@ const SPECIAL_FEE_PERCENT_KEY = Buffer.from('special_fee_percent').toString(
 );
 
 export const getPairDecoders = (
-    pair: PairDocument,
+    pair: PairModel,
 ): Record<string, PairStorageDecoder<any>> => {
     const codec = new BinaryCodec();
 
