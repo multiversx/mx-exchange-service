@@ -18,13 +18,15 @@ import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.
 import { BulkUpdatesService } from './bulk.updates.service';
 import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
-import { BulkWriteOperations } from '../entities';
+import { BulkWriteOperations, PersistenceCacheKeys } from '../entities';
 import { delay } from 'src/helpers/helpers';
 import {
     MongoCollections,
     MongoQueries,
     PersistenceMetrics,
 } from 'src/helpers/decorators/persistence.metrics.decorator';
+import { CacheService } from 'src/services/caching/cache.service';
+import { getHashFields } from 'src/utils/get.many.utils';
 
 @Injectable()
 export class PairPersistenceService {
@@ -36,6 +38,7 @@ export class PairPersistenceService {
         private readonly pairCompute: PairComputeService,
         private readonly pairAbi: PairAbiService,
         private readonly dataApi: MXDataApiService,
+        private readonly cacheService: CacheService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -65,6 +68,7 @@ export class PairPersistenceService {
         this.logger.debug(`${this.updatePair.name}`, {
             context: PairPersistenceService.name,
             operation,
+            pair: pair.address,
         });
     }
 
@@ -187,6 +191,13 @@ export class PairPersistenceService {
 
         const pair = await this.upsertPair(rawPair as PairModel);
 
+        await Promise.all([
+            this.setPairsInCache([pair]),
+            this.cacheService.addToSet(PersistenceCacheKeys.PairAddressesSet, [
+                pair.address,
+            ]),
+        ]);
+
         profiler.stop();
 
         this.logger.debug(
@@ -257,6 +268,8 @@ export class PairPersistenceService {
                     info: 1,
                     state: 1,
                 },
+                undefined,
+                true,
             ),
             this.tokenPersistence.getTokens(
                 {},
@@ -269,6 +282,7 @@ export class PairPersistenceService {
                     type: 1,
                     pairAddress: 1,
                 },
+                true,
             ),
             this.dataApi.getTokenPrice('USDC'),
             this.routerAbi.commonTokensForUserPairs(),
@@ -554,5 +568,124 @@ export class PairPersistenceService {
         pair.feesAPR = feesAPR.isNaN() ? '0' : feesAPR.toFixed();
 
         await this.updatePair(pair, this.updateAnalytics.name);
+    }
+
+    async getPairAddresses(): Promise<string[]> {
+        const cachedAddresses = await this.cacheService.getSetMembers(
+            PersistenceCacheKeys.PairAddressesSet,
+        );
+
+        if (cachedAddresses.length > 0) {
+            return cachedAddresses;
+        }
+
+        const pairs = await this.getPairs(
+            {},
+            { address: 1, _id: 0 },
+            undefined,
+            true,
+        );
+
+        const addresses = pairs.map((pair) => pair.address);
+
+        await this.cacheService.addToSet(
+            PersistenceCacheKeys.PairAddressesSet,
+            addresses,
+        );
+
+        return addresses;
+    }
+
+    async getPairsByAddress(addresses: string[]): Promise<PairModel[]> {
+        return getHashFields<PairModel>(
+            this.cacheService,
+            PersistenceCacheKeys.PairsHash,
+            addresses,
+            this.getPairsByAddressRaw.bind(this),
+        );
+    }
+
+    async getPairsByAddressRaw(
+        addresses: string[],
+        fields: (keyof PairModel)[] = [],
+    ): Promise<Map<string, PairModel>> {
+        const projection: ProjectionType<PairDocument> = {};
+
+        if (fields.length > 0) {
+            fields.forEach((field) => (projection[field] = 1));
+        } else {
+            projection.__v = 0;
+            projection._id = 0;
+        }
+
+        const distinctAddresses = [...new Set(addresses)];
+
+        const filterQuery =
+            distinctAddresses.length === 1
+                ? { address: distinctAddresses[0] }
+                : {
+                      addresses: { $in: distinctAddresses },
+                  };
+
+        const pairs = await this.getPairs(
+            filterQuery,
+            projection,
+            undefined,
+            true,
+        );
+        return new Map(pairs.map((pair) => [pair.address, pair]));
+    }
+
+    async getAllPairs(): Promise<PairModel[]> {
+        const addresses = await this.getPairAddresses();
+
+        return this.getPairsByAddress(addresses);
+    }
+
+    async refreshCachedPairs(
+        filterQuery: FilterQuery<PairDocument> = {},
+    ): Promise<void> {
+        const profiler = new PerformanceProfiler();
+
+        const pairs = await this.getPairs(
+            filterQuery,
+            {
+                _id: 0,
+                __v: 0,
+                firstToken: 0,
+                secondToken: 0,
+                liquidityPoolToken: 0,
+            },
+            undefined,
+            true,
+        );
+
+        await Promise.all([
+            this.cacheService.addToSet(
+                PersistenceCacheKeys.PairAddressesSet,
+                pairs.map((pair) => pair.address),
+            ),
+            this.setPairsInCache(pairs),
+        ]);
+
+        profiler.stop();
+
+        this.logger.debug(
+            `Finished ${this.refreshCachedPairs.name} : ${profiler.duration}ms`,
+            {
+                context: PairPersistenceService.name,
+            },
+        );
+    }
+
+    async setPairsInCache(pairs: PairModel[]): Promise<void> {
+        if (pairs.length === 0) {
+            return;
+        }
+
+        await this.cacheService.hashSetManyRemote(
+            PersistenceCacheKeys.PairsHash,
+            pairs.map((pair) => [pair.address, pair]),
+        );
     }
 }
