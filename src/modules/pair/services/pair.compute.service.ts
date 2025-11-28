@@ -670,17 +670,17 @@ export class PairComputeService implements IPairComputeService {
     }
 
     async computeTypeFromTokens(pairAddress: string): Promise<string> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairAbi.firstTokenID(pairAddress),
-            this.pairAbi.secondTokenID(pairAddress),
-        ]);
+        // const [firstTokenID, secondTokenID] = await Promise.all([
+        //     this.pairAbi.firstTokenID(pairAddress),
+        //     this.pairAbi.secondTokenID(pairAddress),
+        // ]);
 
-        const [firstTokenType, secondTokenType] = await Promise.all([
-            this.tokenService.getEsdtTokenType(firstTokenID),
-            this.tokenService.getEsdtTokenType(secondTokenID),
-        ]);
-
-        return leastType(firstTokenType, secondTokenType);
+        // const [firstTokenType, secondTokenType] = await Promise.all([
+        //     this.tokenService.getEsdtTokenType(firstTokenID),
+        //     this.tokenService.getEsdtTokenType(secondTokenID),
+        // ]);
+        return 'Experimental';
+        // return leastType(firstTokenType, secondTokenType);
     }
 
     async computePermanentLockedValueUSD(
