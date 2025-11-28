@@ -32,7 +32,7 @@ export class TokensCacheWarmerService {
 
         const tokens = await this.tokenPersistence.getTokens(
             {},
-            { _id: 0, identifier: 1, type: 1 },
+            { _id: 0, identifier: 1, decimals: 1, type: 1 },
             true,
         );
 
