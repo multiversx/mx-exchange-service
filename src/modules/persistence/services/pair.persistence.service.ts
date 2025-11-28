@@ -39,24 +39,6 @@ export class PairPersistenceService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @PersistenceMetrics(MongoCollections.Pairs, MongoQueries.Create)
-    async addPair(pair: PairModel): Promise<void> {
-        try {
-            await this.pairRepository.create(pair);
-        } catch (error) {
-            if (error.name === 'MongoServerError' && error.code === 11000) {
-                this.logger.warn(`Pair ${pair.address} already persisted`, {
-                    context: PairPersistenceService.name,
-                });
-                return;
-            }
-            this.logger.error(`Failed to insert pair ${pair.address}`);
-            this.logger.error(error);
-
-            throw error;
-        }
-    }
-
     @PersistenceMetrics(MongoCollections.Pairs, MongoQueries.Upsert)
     async upsertPair(
         pair: PairModel,

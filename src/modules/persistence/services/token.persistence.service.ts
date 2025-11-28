@@ -49,25 +49,6 @@ export class TokenPersistenceService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @PersistenceMetrics(MongoCollections.Tokens, MongoQueries.Create)
-    async addToken(token: EsdtToken): Promise<void> {
-        try {
-            await this.tokenRepository.create(token);
-        } catch (error) {
-            if (error.name === 'MongoServerError' && error.code === 11000) {
-                this.logger.warn(
-                    `Token ${token.identifier} already persisted`,
-                    { context: TokenPersistenceService.name },
-                );
-                return;
-            }
-            this.logger.error(`Failed insert for ${token.identifier}`);
-            this.logger.error(error);
-
-            throw error;
-        }
-    }
-
     @PersistenceMetrics(MongoCollections.Tokens, MongoQueries.Upsert)
     async upsertToken(
         token: EsdtToken,
