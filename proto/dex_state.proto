@@ -1,0 +1,146 @@
+syntax = "proto3";
+
+package dex_state;
+
+import "google/protobuf/field_mask.proto";
+import "tokens.proto";
+import "pairs.proto";
+
+enum TokenSortField {
+  TOKENS_SORT_UNSPECIFIED       = 0;
+  TOKENS_SORT_PRICE             = 1;
+  TOKENS_SORT_VOLUME            = 2; 
+  TOKENS_SORT_PREV_24H_PRICE    = 3; 
+  TOKENS_SORT_PREV_7D_PRICE     = 4; 
+  TOKENS_SORT_PREV_24H_VOLUME   = 5; 
+  TOKENS_SORT_PRICE_CHANGE_7D   = 6; 
+  TOKENS_SORT_PRICE_CHANGE_24H  = 7; 
+  TOKENS_SORT_VOLUME_CHANGE_24H = 8; 
+  TOKENS_SORT_TRADES_CHANGE_24H = 9; 
+  TOKENS_SORT_LIQUIDITY         = 10; 
+  TOKENS_SORT_TRADES_COUNT      = 11; 
+  TOKENS_SORT_TRENDING_SCORE    = 12; 
+  TOKENS_SORT_CREATED_AT        = 13; 
+}
+
+enum PairSortField {
+  PAIRS_SORT_UNSPECIFIED      = 0;
+  PAIRS_SORT_TRADES_COUNT     = 1;
+  PAIRS_SORT_TRADES_COUNT_24H = 2;
+  PAIRS_SORT_TVL              = 3;
+  PAIRS_SORT_VOLUME           = 4;
+  PAIRS_SORT_FEES             = 5;
+  PAIRS_SORT_DEPLOYED_AT      = 6;
+  PAIRS_SORT_APR              = 7;
+}
+
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ASC = 1;
+  SORT_DESC = 2;
+}
+
+message Pairs {
+  repeated pairs.Pair pairs = 1;
+}
+
+message PaginatedPairs {
+  repeated pairs.Pair pairs = 1;
+  uint32 count = 2;
+}
+
+message GetPairsRequest {
+  repeated string addresses = 1;
+  google.protobuf.FieldMask fields = 2;
+}
+
+message GetFilteredPairsRequest {
+  repeated string addresses  = 1;
+  repeated string state      = 2;
+  repeated string lpTokenIds = 3;
+  repeated string farmTokens = 4;
+  string firstTokenID        = 5;
+  string secondTokenID       = 6;
+  string searchToken         = 7;
+  uint32 minVolume           = 8;
+  uint32 minLockedValueUSD   = 9;
+  uint32 minTradesCount      = 10;
+  uint32 minTradesCount24h   = 11;
+  uint32 minDeployedAt       = 12;
+  bool issuedLpToken         = 13;
+  bool feeState              = 14;
+  bool hasFarms              = 15; 
+  bool hasDualFarms          = 16; 
+
+  uint32 offset              = 17;
+  uint32 limit               = 18;
+
+  PairSortField sortField    = 19;
+  SortOrder sortOrder        = 20;
+
+  google.protobuf.FieldMask fields = 21;
+}
+
+message GetAllPairsRequest {
+  google.protobuf.FieldMask fields = 1;
+}
+
+message GetPairTokensRequest {
+  string address = 1;
+  google.protobuf.FieldMask fields = 2;
+}
+
+message PairTokens {
+  tokens.Token firstToken =  1;
+  tokens.Token secondToken = 2;
+}
+
+message Tokens {
+  repeated tokens.Token tokens = 1;
+}
+
+message PaginatedTokens {
+  repeated tokens.Token tokens = 1;
+  uint32 count = 2;
+}
+
+message GetTokensRequest {
+  repeated string identifiers = 1;
+  google.protobuf.FieldMask fields = 2;
+}
+
+message GetFilteredTokensRequest {
+  repeated string identifiers = 1;
+  bool enabledSwaps = 2;
+  string searchToken = 3;
+  uint32 minLiquidity = 4;
+  tokens.TokenType type = 5;
+
+  uint32 offset = 6;
+  uint32 limit = 7;
+
+  TokenSortField sortField = 8;
+  SortOrder sortOrder = 9;
+  google.protobuf.FieldMask fields = 10;
+}
+
+message GetAllTokensRequest {
+  google.protobuf.FieldMask fields = 1;
+}
+
+message GetTokenPairsRequest {
+  string identifier = 1;
+  google.protobuf.FieldMask fields = 2;
+}
+
+service DexStateService {
+  rpc GetPairs (GetPairsRequest) returns (Pairs) {}
+  rpc GetFilteredPairs (GetFilteredPairsRequest) returns (PaginatedPairs) {}
+  rpc GetAllPairs (GetAllPairsRequest) returns (Pairs) {}
+  rpc GetPairTokens (GetPairTokensRequest) returns (PairTokens) {}
+
+  rpc GetTokens (GetTokensRequest) returns (Tokens) {}
+  rpc GetFilteredTokens (GetFilteredTokensRequest) returns (PaginatedTokens) {}
+  rpc GetAllTokens (GetAllTokensRequest) returns (Tokens) {}
+  rpc GetTokenPairs (GetTokenPairsRequest) returns (Pairs) {}
+}

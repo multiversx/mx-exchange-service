@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package tokens;
+
+// ---------------- Enum ----------------
+
+enum TokenType {
+  TOKEN_TYPE_UNSPECIFIED       = 0;
+  TOKEN_TYPE_FUNGIBLE_TOKEN    = 1; // FungibleESDT
+  TOKEN_TYPE_FUNGIBLE_LP_TOKEN = 2; // FungibleESDT-LP
+}
+
+// ---------------- Messages ----------------
+
+message Token {
+  string identifier                 = 1;
+  uint32 decimals                   = 2;
+  string name                       = 3;
+  string ticker                     = 4;
+  string owner                      = 5;
+
+  string minted                     = 6;
+  string burnt                      = 7;
+  string initialMinted             = 8;
+  string derivedEGLD               = 9;
+
+  string price                      = 10;
+  string previous24hPrice          = 11;
+  string previous7dPrice           = 12;
+  string volumeUSD24h              = 13;
+  string previous24hVolume         = 14;
+  string liquidityUSD              = 15;
+
+  uint32  swapCount24h              = 16;
+  uint32  previous24hSwapCount     = 17;
+
+  double priceChange24h            = 18;
+  double priceChange7d             = 19;
+  double tradeChange24h            = 20;
+  double volumeUSDChange24h       = 21;
+
+  string trendingScore             = 22;
+  string supply                     = 23;
+  string circulatingSupply         = 24;
+
+  TokenAssets assets                = 25;
+
+  uint32  transactions               = 26;
+  uint32  accounts                   = 27;
+
+  bool   isPaused                  = 28;
+  bool   canUpgrade                = 29;
+  bool   canMint                   = 30;
+  bool   canBurn                   = 31;
+  bool   canChangeOwner           = 32;
+  bool   canPause                  = 33;
+  bool   canFreeze                 = 34;
+  bool   canWipe                   = 35;
+
+  TokenType type                    = 36;
+
+  repeated TokenRole roles          = 37;
+
+  string createdAt                 = 38; 
+  string pairAddress               = 39;
+}
+
+message TokenRole {
+  string address    = 1;
+  bool   canMint   = 2;
+  bool   canBurn   = 3;
+  repeated string roles = 4;
+}
+
+message TokenAssets {
+  string website                    = 1;
+  string description                = 2;
+  TokenSocial social                = 3;
+  string status                     = 4;
+  string pngUrl                    = 5;
+  string svgUrl                    = 6;
+  repeated string lockedAccounts   = 7;
+  repeated string extraTokens      = 8;
+}
+
+message TokenSocial {
+  string email        = 1;
+  string blog         = 2;
+  string twitter      = 3;
+  string coinmarketcap = 4;
+  string coingecko    = 5;
+}
