@@ -16,6 +16,12 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { PushNotificationsCronModule } from './modules/push-notifications/push.notifications.cron.module';
 import { TaskRunnerPubSubModule } from './modules/task-runner/task.runner.pubsub.module';
 import { TaskRunnerCronModule } from './modules/task-runner/task.runner.cron.module';
+import { DexStateAppModule } from './microservices/dex-state/dex.state.app.module';
+import { join } from 'path';
+import { TOKENS_PACKAGE_NAME } from './microservices/dex-state/interfaces/tokens.interfaces';
+import { DEX_STATE_PACKAGE_NAME } from './microservices/dex-state/interfaces/dex_state.interfaces';
+import { PAIRS_PACKAGE_NAME } from './microservices/dex-state/interfaces/pairs.interfaces';
+import { ReflectionService } from '@grpc/reflection';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -120,6 +126,34 @@ async function bootstrap() {
 
         const taskRunnerApp = await NestFactory.create(TaskRunnerCronModule);
         await taskRunnerApp.listen(5675, '0.0.0.0');
+    }
+
+    if (apiConfigService.isDexStateMicroserviceActive()) {
+        const pairsMicroservice =
+            await NestFactory.createMicroservice<MicroserviceOptions>(
+                DexStateAppModule,
+                {
+                    transport: Transport.GRPC,
+                    options: {
+                        package: [
+                            DEX_STATE_PACKAGE_NAME,
+                            TOKENS_PACKAGE_NAME,
+                            PAIRS_PACKAGE_NAME,
+                        ],
+                        protoPath: [
+                            join(__dirname, 'proto/dex_state.proto'),
+                            join(__dirname, 'proto/tokens.proto'),
+                            join(__dirname, 'proto/pairs.proto'),
+                        ],
+                        url: 'localhost:5000',
+                        onLoadPackageDefinition: (pkg, server) => {
+                            new ReflectionService(pkg).addToServer(server);
+                        },
+                    },
+                },
+            );
+
+        await pairsMicroservice.listen();
     }
 }
 bootstrap();

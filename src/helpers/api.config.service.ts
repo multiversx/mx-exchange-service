@@ -466,4 +466,14 @@ export class ApiConfigService {
         }
         return walletPassword;
     }
+
+    isDexStateMicroserviceActive(): boolean {
+        const dexStateMicroserviceActive = this.configService.get<string>(
+            'ENABLE_DEX_STATE_MICROSERVICE',
+        );
+        if (!dexStateMicroserviceActive) {
+            return false;
+        }
+        return dexStateMicroserviceActive === 'true';
+    }
 }
