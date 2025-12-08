@@ -1,12 +1,15 @@
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { promises } from 'fs';
 import {
+    AddPairLpTokenRequest,
+    AddPairRequest,
     GetAllPairsRequest,
     GetAllTokensRequest,
     GetFilteredPairsRequest,
     GetFilteredTokensRequest,
+    InitStateRequest,
+    InitStateResponse,
     PaginatedPairs,
     PaginatedTokens,
     Pairs,
@@ -14,14 +17,15 @@ import {
     SortOrder,
     Tokens,
     TokenSortField,
+    UpdatePairsRequest,
+    UpdatePairsResponse,
 } from '../interfaces/dex_state.interfaces';
-import { Pair } from '../interfaces/pairs.interfaces';
+import { Pair, PairInfo } from '../interfaces/pairs.interfaces';
 import { Token, TokenType } from '../interfaces/tokens.interfaces';
-
-const REVERSE_TOKEN_TYPE_MAP = {
-    FungibleESDT: TokenType.TOKEN_TYPE_FUNGIBLE_TOKEN,
-    'FungibleESDT-LP': TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN,
-};
+import { StateTasks, TaskDto } from 'src/modules/dex-state/entities';
+import { BulkUpdatesService } from './bulk.updates.service';
+import { queueStateTasks } from 'src/modules/dex-state/dex.state.utils';
+import { CacheService } from 'src/services/caching/cache.service';
 
 const TOKEN_SORT_FIELD_MAP = {
     [TokenSortField.TOKENS_SORT_PRICE]: 'price',
@@ -46,11 +50,12 @@ const PAIR_SORT_FIELD_MAP = {
     [PairSortField.PAIRS_SORT_TRADES_COUNT_24H]: 'tradesCount24h',
     [PairSortField.PAIRS_SORT_TVL]: 'lockedValueUSD',
     [PairSortField.PAIRS_SORT_VOLUME]: 'volumeUSD24h',
-    // [PairSortField.PAIRS_SORT_APR] : 'compoundedAPR',
+    [PairSortField.PAIRS_SORT_APR]: 'compoundedAprValue',
 };
 
 @Injectable()
 export class DexStateService implements OnModuleInit {
+    private readonly bulkUpdatesService: BulkUpdatesService;
     private tokens = new Map<string, Token>();
     private pairs = new Map<string, Pair>();
     private tokenPairs = new Map<string, string[]>();
@@ -58,21 +63,29 @@ export class DexStateService implements OnModuleInit {
     private activePairs = new Set<string>();
     private activePairsTokens = new Set<string>();
 
-    async onModuleInit() {
-        await this.syncData();
+    private commonTokenIDs: string[] = [];
+    private usdcPrice: number;
+
+    private initialized = false;
+
+    constructor(private readonly cacheService: CacheService) {
+        this.bulkUpdatesService = new BulkUpdatesService();
     }
 
-    async syncData() {
-        const [tokensRaw, pairsRaw] = await Promise.all([
-            promises.readFile('src/esdt_tokens.json', {
-                encoding: 'utf8',
-            }),
-            promises.readFile('src/pairs.json', {
-                encoding: 'utf8',
+    async onModuleInit() {
+        await queueStateTasks(this.cacheService, [
+            new TaskDto({
+                name: StateTasks.INIT_STATE,
             }),
         ]);
-        const tokensJson: unknown[] = JSON.parse(tokensRaw);
-        const pairsJson: unknown[] = JSON.parse(pairsRaw);
+    }
+
+    isReady(): boolean {
+        return this.initialized;
+    }
+
+    initState(request: InitStateRequest): InitStateResponse {
+        const { tokens, pairs, commonTokenIDs, usdcPrice } = request;
 
         this.tokens.clear();
         this.pairs.clear();
@@ -84,22 +97,16 @@ export class DexStateService implements OnModuleInit {
         this.tokensByType.set(TokenType.TOKEN_TYPE_FUNGIBLE_TOKEN, []);
         this.tokensByType.set(TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN, []);
 
-        for (const token of tokensJson as Token[]) {
-            if (token.assets) {
-                token.assets.lockedAccounts = token.assets.lockedAccounts
-                    ? Object.keys(token.assets.lockedAccounts)
-                    : [];
-            }
-            token.roles = token.roles ? Object.values(token.roles) : [];
-            token.type = REVERSE_TOKEN_TYPE_MAP[token.type];
+        this.usdcPrice = usdcPrice;
+        this.commonTokenIDs = commonTokenIDs;
 
-            this.tokens.set(token.identifier, token);
-
+        for (const token of tokens) {
+            this.tokens.set(token.identifier, { ...token });
             this.tokensByType.get(token.type).push(token.identifier);
         }
 
-        for (const pair of pairsJson as Pair[]) {
-            this.pairs.set(pair.address, pair);
+        for (const pair of pairs.values()) {
+            this.pairs.set(pair.address, { ...pair });
 
             if (!this.tokenPairs.has(pair.firstTokenId)) {
                 this.tokenPairs.set(pair.firstTokenId, []);
@@ -118,6 +125,13 @@ export class DexStateService implements OnModuleInit {
                 this.activePairsTokens.add(pair.secondTokenId);
             }
         }
+
+        this.initialized = true;
+
+        return {
+            tokensCount: this.tokens.size,
+            pairsCount: this.pairs.size,
+        };
     }
 
     getPairs(addresses: string[], fields: string[] = []): Pairs {
@@ -147,7 +161,7 @@ export class DexStateService implements OnModuleInit {
         }
 
         profiler.stop();
-        console.log('SERVICE GET PAIRS', profiler.duration);
+        console.log('SERVER GET PAIRS', profiler.duration);
 
         return result;
     }
@@ -339,6 +353,111 @@ export class DexStateService implements OnModuleInit {
         };
     }
 
+    addPair(request: AddPairRequest): void {
+        const { pair, firstToken, secondToken } = request;
+
+        this.pairs.set(pair.address, { ...pair });
+
+        if (!this.tokens.has(firstToken.identifier)) {
+            this.tokens.set(firstToken.identifier, { ...firstToken });
+            this.tokensByType.get(firstToken.type).push(firstToken.identifier);
+        }
+
+        if (!this.tokens.has(secondToken.identifier)) {
+            this.tokens.set(secondToken.identifier, { ...secondToken });
+            this.tokensByType
+                .get(secondToken.type)
+                .push(secondToken.identifier);
+        }
+
+        if (!this.tokenPairs.has(pair.firstTokenId)) {
+            this.tokenPairs.set(pair.firstTokenId, []);
+        }
+
+        if (!this.tokenPairs.has(pair.secondTokenId)) {
+            this.tokenPairs.set(pair.secondTokenId, []);
+        }
+
+        this.tokenPairs.get(pair.firstTokenId).push(pair.address);
+        this.tokenPairs.get(pair.secondTokenId).push(pair.address);
+
+        if (pair.state === 'Active') {
+            this.activePairs.add(pair.address);
+            this.activePairsTokens.add(pair.firstTokenId);
+            this.activePairsTokens.add(pair.secondTokenId);
+        }
+
+        this.recomputeValues();
+    }
+
+    addPairLpToken(request: AddPairLpTokenRequest): void {
+        const { address, token } = request;
+
+        const pair = { ...this.pairs.get(address) };
+
+        pair.liquidityPoolTokenId = token.identifier;
+
+        this.tokens.set(token.identifier, { ...token });
+        this.pairs.set(address, pair);
+
+        this.recomputeValues();
+    }
+
+    updatePairs(request: UpdatePairsRequest): UpdatePairsResponse {
+        const { pairs: partialPairs, updateMask } = request;
+
+        const updatedPairs = new Map<string, Pair>();
+        const failedAddresses: string[] = [];
+
+        for (const partial of partialPairs) {
+            if (!partial.address) {
+                continue;
+            }
+
+            const pair = { ...this.pairs.get(partial.address) };
+
+            if (!pair) {
+                failedAddresses.push(partial.address);
+                continue;
+            }
+
+            for (const field of updateMask.paths) {
+                if (partial[field] === undefined) {
+                    continue;
+                }
+
+                if (field === 'info') {
+                    const currentReserves: PairInfo = {
+                        reserves0:
+                            partial.info.reserves0 ?? pair.info.reserves0,
+                        reserves1:
+                            partial.info.reserves1 ?? pair.info.reserves1,
+                        totalSupply:
+                            partial.info.totalSupply ?? pair.info.totalSupply,
+                    };
+                    pair.info = currentReserves;
+                } else {
+                    pair[field] = partial[field];
+                }
+            }
+
+            updatedPairs.set(partial.address, pair);
+        }
+
+        if (updatedPairs.size > 0) {
+            updatedPairs.forEach((pair, address) => {
+                this.pairs.set(address, pair);
+            });
+        }
+
+        this.recomputeValues();
+
+        return {
+            failedAddresses,
+            updatedCount: updatedPairs.size,
+        };
+    }
+
     getTokens(tokenIDs: string[], fields: string[] = []): Tokens {
         const result: Tokens = {
             tokens: [],
@@ -468,5 +587,14 @@ export class DexStateService implements OnModuleInit {
             count: tokenIDs.length,
             tokens,
         };
+    }
+
+    private recomputeValues(): void {
+        this.bulkUpdatesService.recomputeAllValues(
+            this.pairs,
+            this.tokens,
+            this.usdcPrice,
+            this.commonTokenIDs,
+        );
     }
 }

@@ -9,40 +9,21 @@ import {
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Pair, PairInfo } from '../interfaces/pairs.interfaces';
 import { Token, TokenType } from '../interfaces/tokens.interfaces';
-import { Injectable } from '@nestjs/common';
+import { PairStateChanges } from 'src/modules/rabbitmq/state-changes/types';
 
-enum TrackedPairFields {
-    firstTokenReserve = 'reserves0',
-    secondTokenReserve = 'reserves1',
-    totalSupply = 'totalSupply',
-    state = 'state',
-    totalFeePercent = 'totalFeePercent',
-    specialFeePercent = 'specialFeePercent',
-    lpTokenID = 'lpTokenID',
-}
-
-type PairStateChanges = Partial<Record<TrackedPairFields, any>>;
-
-@Injectable()
 export class BulkUpdatesService {
     private usdcPrice: number;
     private commonTokenIDs: string[];
     private tokenToPairs: Map<string, Pair[]> = new Map();
     private pairs: Map<string, Pair>;
     private tokens: Map<string, Token>;
-    private pairsUpdates: Map<string, Partial<Pair>> = new Map();
-    private tokensUpdates: Map<string, Partial<Token>> = new Map();
-    private usdcPairChanged = false;
 
     recomputeAllValues(
         pairs: Map<string, Pair>,
         tokens: Map<string, Token>,
         usdcPrice: number,
         commonTokenIDs: string[],
-    ): {
-        pairsUpdates: Map<string, Partial<Pair>>;
-        tokensUpdates: Map<string, Partial<Token>>;
-    } {
+    ): void {
         this.initMaps(pairs, tokens, usdcPrice, commonTokenIDs);
 
         for (const [address, pair] of this.pairs.entries()) {
@@ -56,11 +37,6 @@ export class BulkUpdatesService {
         this.updateTokensDerivedEgldAndUsdPrices();
 
         this.updateValuesUSD();
-
-        return {
-            pairsUpdates: this.pairsUpdates,
-            tokensUpdates: this.tokensUpdates,
-        };
     }
 
     private initMaps(
@@ -73,10 +49,7 @@ export class BulkUpdatesService {
         this.tokens = new Map(tokens);
         this.usdcPrice = usdcPrice;
         this.commonTokenIDs = commonTokenIDs;
-        this.pairsUpdates.clear();
-        this.tokensUpdates.clear();
         this.tokenToPairs.clear();
-        this.usdcPairChanged = false;
 
         pairs.forEach((pair) => {
             const { firstTokenId, secondTokenId } = pair;
@@ -98,10 +71,6 @@ export class BulkUpdatesService {
     ): void {
         const pair = this.pairs.get(address);
 
-        if (address === scAddress.WEGLD_USDC) {
-            this.usdcPairChanged = true;
-        }
-
         const info = {
             reserves0: stateChanges.reserves0 ?? pair.info.reserves0,
             reserves1: stateChanges.reserves1 ?? pair.info.reserves1,
@@ -114,16 +83,6 @@ export class BulkUpdatesService {
                 this.tokens.get(pair.firstTokenId),
                 this.tokens.get(pair.secondTokenId),
             );
-
-        // this.syncPairUpdates(
-        //     address,
-        //     {
-        //         info,
-        //         firstTokenPrice,
-        //         secondTokenPrice,
-        //     },
-        //     true,
-        // );
 
         pair.info = info;
         pair.firstTokenPrice = firstTokenPrice;
@@ -145,16 +104,10 @@ export class BulkUpdatesService {
                 egldPriceUSD,
             );
 
-            if (token.derivedEGLD === derivedEGLD && !this.usdcPairChanged) {
-                continue;
-            }
-
             const price = new BigNumber(derivedEGLD)
                 .times(egldPriceUSD)
                 .times(this.usdcPrice)
                 .toFixed();
-
-            // this.syncTokenUpdates(tokenID, { price, derivedEGLD }, true);
 
             token.price = price;
             token.derivedEGLD = derivedEGLD;
@@ -162,8 +115,6 @@ export class BulkUpdatesService {
     }
 
     private updateValuesUSD(): void {
-        // const tokensNeedingUpdate: Set<string> = new Set();
-
         for (const [address, pair] of this.pairs.entries()) {
             const firstTokenPriceUSD = this.tokens.get(pair.firstTokenId).price;
             const secondTokenPriceUSD = this.tokens.get(
@@ -189,37 +140,9 @@ export class BulkUpdatesService {
             pair.secondTokenLockedValueUSD = secondTokenLockedValueUSD;
             pair.lockedValueUSD = lockedValueUSD;
             pair.liquidityPoolTokenPriceUSD = liquidityPoolTokenPriceUSD;
-
-            // const rawPairUpdates: Partial<Pair> = {
-            //     firstTokenPriceUSD,
-            //     secondTokenPriceUSD,
-            //     firstTokenLockedValueUSD,
-            //     secondTokenLockedValueUSD,
-            //     lockedValueUSD,
-            //     liquidityPoolTokenPriceUSD,
-            // };
-
-            // const pairChanged = this.syncPairUpdates(address, rawPairUpdates);
-
-            // if (pairChanged) {
-            //     pair.firstTokenPriceUSD = firstTokenPriceUSD;
-            //     pair.secondTokenPriceUSD = secondTokenPriceUSD;
-            //     pair.firstTokenLockedValueUSD = firstTokenLockedValueUSD;
-            //     pair.secondTokenLockedValueUSD = secondTokenLockedValueUSD;
-            //     pair.lockedValueUSD = lockedValueUSD;
-            //     pair.liquidityPoolTokenPriceUSD = liquidityPoolTokenPriceUSD;
-
-            //     tokensNeedingUpdate.add(pair.firstTokenId);
-            //     tokensNeedingUpdate.add(pair.secondTokenId);
-
-            //     if (pair.liquidityPoolTokenId) {
-            //         tokensNeedingUpdate.add(pair.liquidityPoolTokenId);
-            //     }
-            // }
         }
 
         for (const token of this.tokens.values()) {
-            // const token = this.tokens.get(token);
             if (token.type === TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN) {
                 token.price = this.pairs.get(
                     token.pairAddress,
@@ -230,24 +153,6 @@ export class BulkUpdatesService {
                 );
             }
         }
-        // for (const tokenID of tokensNeedingUpdate.values()) {
-        //     const token = this.tokens.get(tokenID);
-        //     if (token.type === TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN) {
-        //         const { liquidityPoolTokenPriceUSD } = this.pairs.get(
-        //             token.pairAddress,
-        //         );
-        //         this.syncTokenUpdates(tokenID, {
-        //             price: liquidityPoolTokenPriceUSD,
-        //         });
-
-        //         token.price = liquidityPoolTokenPriceUSD;
-        //     } else {
-        //         const liquidityUSD = this.computeTokenLiquidityUSD(tokenID);
-        //         this.syncTokenUpdates(tokenID, { liquidityUSD });
-
-        //         token.liquidityUSD = liquidityUSD;
-        //     }
-        // }
     }
 
     private computeTokensPriceByReserves(
@@ -529,87 +434,5 @@ export class BulkUpdatesService {
         );
 
         return firstTokenValueUSD.plus(secondTokenValueUSD).toFixed();
-    }
-
-    private syncPairUpdates(
-        address: string,
-        partialPair: Partial<Pair>,
-        skipCheckValueChanged = false,
-    ): boolean {
-        const pair = this.pairs.get(address);
-
-        if (skipCheckValueChanged) {
-            if (!this.pairsUpdates.has(address)) {
-                this.pairsUpdates.set(address, {});
-            }
-
-            this.pairsUpdates.set(address, {
-                ...this.pairsUpdates.get(address),
-                ...partialPair,
-            });
-
-            return true;
-        }
-
-        const rawUpdates: Partial<Pair> = {};
-        for (const [field, value] of Object.entries(partialPair)) {
-            if (pair[field] !== value) {
-                rawUpdates[field] = value;
-            }
-        }
-
-        if (Object.keys(rawUpdates).length > 0) {
-            if (!this.pairsUpdates.has(address)) {
-                this.pairsUpdates.set(address, {});
-            }
-
-            this.pairsUpdates.set(address, {
-                ...this.pairsUpdates.get(address),
-                ...rawUpdates,
-            });
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private syncTokenUpdates(
-        identifier: string,
-        partialToken: Partial<Token>,
-        skipCheckValueChanged = false,
-    ): void {
-        const token = this.tokens.get(identifier);
-
-        if (skipCheckValueChanged) {
-            if (!this.tokensUpdates.has(identifier)) {
-                this.tokensUpdates.set(identifier, {});
-            }
-
-            this.tokensUpdates.set(identifier, {
-                ...this.tokensUpdates.get(identifier),
-                ...partialToken,
-            });
-
-            return;
-        }
-
-        const rawUpdates: Partial<Token> = {};
-        for (const [field, value] of Object.entries(partialToken)) {
-            if (token[field] !== value) {
-                rawUpdates[field] = value;
-            }
-        }
-
-        if (Object.keys(rawUpdates).length > 0) {
-            if (!this.tokensUpdates.has(identifier)) {
-                this.tokensUpdates.set(identifier, {});
-            }
-
-            this.tokensUpdates.set(identifier, {
-                ...this.tokensUpdates.get(identifier),
-                ...rawUpdates,
-            });
-        }
     }
 }
