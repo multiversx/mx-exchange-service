@@ -18,7 +18,7 @@ import {
     TokensSortableFields,
 } from 'src/modules/tokens/models/tokens.filter.args';
 
-const sortOrderMap = {
+const sortFieldMap = {
     [TokensSortableFields.PRICE]: TokenSortField.TOKENS_SORT_PRICE,
     [TokensSortableFields.VOLUME]: TokenSortField.TOKENS_SORT_VOLUME,
     [TokensSortableFields.PREVIOUS_24H_PRICE]:
@@ -57,7 +57,8 @@ export class TokensStateService implements OnModuleInit {
 
     async getTokens(
         tokenIDs: string[],
-        fields: string[] = [],
+        // fields: string[] = [],
+        fields: (keyof EsdtToken)[] = [],
     ): Promise<EsdtToken[]> {
         const profiler = new PerformanceProfiler();
         const result = await firstValueFrom(
@@ -75,7 +76,9 @@ export class TokensStateService implements OnModuleInit {
             (token) =>
                 new EsdtToken({
                     ...token,
-                    type: token.type as unknown as string,
+                    ...(token.type && {
+                        type: token.type as unknown as string,
+                    }),
                 }),
         );
     }
@@ -147,7 +150,9 @@ export class TokensStateService implements OnModuleInit {
             (token) =>
                 new EsdtToken({
                     ...token,
-                    type: token.type as unknown as string,
+                    ...(token.type && {
+                        type: token.type as unknown as string,
+                    }),
                 }),
         );
     }
@@ -157,7 +162,8 @@ export class TokensStateService implements OnModuleInit {
         limit: number,
         filters: TokensFilter,
         sortArgs?: TokenSortingArgs,
-        fields: string[] = [],
+        // fields: string[] = [],
+        fields: (keyof EsdtToken)[] = [],
     ): Promise<{ tokens: EsdtToken[]; count: number }> {
         const profiler = new PerformanceProfiler();
         const sortOrder = sortArgs
@@ -168,7 +174,7 @@ export class TokensStateService implements OnModuleInit {
 
         const sortField =
             sortArgs && sortArgs.sortField
-                ? sortOrderMap[sortArgs.sortField]
+                ? sortFieldMap[sortArgs.sortField]
                 : TokenSortField.TOKENS_SORT_UNSPECIFIED;
 
         const result = await firstValueFrom(
@@ -196,7 +202,10 @@ export class TokensStateService implements OnModuleInit {
                     (token) =>
                         new EsdtToken({
                             ...token,
-                            type: token.type.toString(),
+                            ...(token.type && {
+                                type: token.type as unknown as string,
+                            }),
+                            // type: token.type as unknown as string,
                         }),
                 ) ?? [],
             count: result.count,

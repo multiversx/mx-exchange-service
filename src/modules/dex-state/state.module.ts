@@ -8,4 +8,4 @@ import { TokensStateService } from './services/tokens.state.service';
     providers: [TokensStateService, PairsStateService],
     exports: [TokensStateService, PairsStateService],
 })
-export class DexStateModule {}
+export class StateModule {}
