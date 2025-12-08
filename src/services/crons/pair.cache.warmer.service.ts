@@ -124,12 +124,39 @@ export class PairCacheWarmerService {
                 time,
             });
             await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const volumeUSD48h = await this.analyticsQuery.getAggregatedValue({
+                series: pairAddress,
+                metric: 'volumeUSD',
+                time: '48h',
+            });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
             const feesUSD24h = await this.analyticsQuery.getAggregatedValue({
                 series: pairAddress,
                 metric: 'feesUSD',
                 time,
             });
             await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const feesUSD48h = await this.analyticsQuery.getAggregatedValue({
+                series: pairAddress,
+                metric: 'feesUSD',
+                time: '48h',
+            });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+            const allPrevious24hLockedValueUSD =
+                await this.analyticsQuery.getValues24h({
+                    series: pairAddress,
+                    metric: 'lockedValueUSD',
+                });
+            await delay(constantsConfig.AWS_QUERY_CACHE_WARMER_DELAY);
+
+            const previous24hVolumeUSD = new BigNumber(volumeUSD48h)
+                .minus(volumeUSD24h)
+                .toFixed();
+            const previous24hFeesUSD = new BigNumber(feesUSD48h)
+                .minus(feesUSD24h)
+                .toFixed();
+            const previous24hLockedValueUSD =
+                allPrevious24hLockedValueUSD[0]?.value ?? '0';
 
             totalFeesUSD = totalFeesUSD.plus(feesUSD24h);
 
@@ -147,6 +174,18 @@ export class PairCacheWarmerService {
                     pairAddress,
                     feesUSD24h,
                     time,
+                ),
+                this.pairSetterService.setPrevious24hVolumeUSD(
+                    pairAddress,
+                    previous24hVolumeUSD,
+                ),
+                this.pairSetterService.setPrevious24hFeesUSD(
+                    pairAddress,
+                    previous24hFeesUSD,
+                ),
+                this.pairSetterService.setPrevious24hLockedValueUSD(
+                    pairAddress,
+                    previous24hLockedValueUSD,
                 ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
