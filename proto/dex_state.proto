@@ -3,6 +3,7 @@ syntax = "proto3";
 package dex_state;
 
 import "google/protobuf/field_mask.proto";
+import "google/protobuf/empty.proto";
 import "tokens.proto";
 import "pairs.proto";
 
@@ -41,11 +42,11 @@ enum SortOrder {
 }
 
 message Pairs {
-  repeated pairs.Pair pairs = 1;
+  repeated Pair pairs = 1;
 }
 
 message PaginatedPairs {
-  repeated pairs.Pair pairs = 1;
+  repeated Pair pairs = 1;
   uint32 count = 2;
 }
 
@@ -91,16 +92,16 @@ message GetPairTokensRequest {
 }
 
 message PairTokens {
-  tokens.Token firstToken =  1;
-  tokens.Token secondToken = 2;
+  Token firstToken =  1;
+  Token secondToken = 2;
 }
 
 message Tokens {
-  repeated tokens.Token tokens = 1;
+  repeated Token tokens = 1;
 }
 
 message PaginatedTokens {
-  repeated tokens.Token tokens = 1;
+  repeated Token tokens = 1;
   uint32 count = 2;
 }
 
@@ -114,7 +115,7 @@ message GetFilteredTokensRequest {
   bool enabledSwaps = 2;
   string searchToken = 3;
   uint32 minLiquidity = 4;
-  tokens.TokenType type = 5;
+  TokenType type = 5;
 
   uint32 offset = 6;
   uint32 limit = 7;
@@ -133,6 +134,53 @@ message GetTokenPairsRequest {
   google.protobuf.FieldMask fields = 2;
 }
 
+message UpdatePairsRequest {
+  repeated Pair pairs = 1;
+  google.protobuf.FieldMask updateMask = 2; 
+}
+
+message UpdatePairsResponse {
+  uint32 updatedCount = 1;
+  repeated string failedAddresses = 2;  
+}
+
+message UpdateTokensRequest {
+  repeated Token tokens = 1;
+  google.protobuf.FieldMask updateMask = 2;
+}
+
+message UpdateTokensResponse {
+  uint32 updatedCount = 1;
+  repeated string failedIdentifiers = 2;
+}
+
+message InitStateRequest {
+  repeated Token tokens = 1;
+  repeated Pair pairs = 2;
+  repeated string commonTokenIDs = 3;
+  double usdcPrice = 4;
+}
+
+message InitStateResponse {
+  uint32 pairsCount = 1;
+  uint32 tokensCount = 2;
+}
+
+message AddPairRequest {
+  Pair pair = 1;
+  Token firstToken = 2;
+  Token secondToken = 3;
+}
+
+message AddTokenRequest {
+  Token token = 1;
+}
+
+message AddPairLpTokenRequest {
+  string address = 1;
+  Token token = 2;
+}
+
 service DexStateService {
   rpc GetPairs (GetPairsRequest) returns (Pairs) {}
   rpc GetFilteredPairs (GetFilteredPairsRequest) returns (PaginatedPairs) {}
@@ -143,4 +191,11 @@ service DexStateService {
   rpc GetFilteredTokens (GetFilteredTokensRequest) returns (PaginatedTokens) {}
   rpc GetAllTokens (GetAllTokensRequest) returns (Tokens) {}
   rpc GetTokenPairs (GetTokenPairsRequest) returns (Pairs) {}
+
+  rpc InitState (InitStateRequest) returns (InitStateResponse) {}
+  rpc UpdatePairs (UpdatePairsRequest) returns (UpdatePairsResponse) {}
+  rpc AddPair (AddPairRequest) returns (google.protobuf.Empty) {}
+  rpc AddPairLpToken (AddPairLpTokenRequest) returns (google.protobuf.Empty) {}
+  rpc UpdateTokens (UpdateTokensRequest) returns (UpdateTokensResponse) {}
+  rpc AddToken (AddTokenRequest) returns (google.protobuf.Empty) {}
 }

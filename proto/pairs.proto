@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pairs;
+package dex_state;
 
 message PairInfo {
   string reserves0 = 1;
@@ -65,10 +65,12 @@ message Pair {
 
   uint32 deployedAt = 36;
 
-  string farmAddress = 37;
-  string stakingProxyAddress = 38;
-  string stakingFarmAddress = 39;
-  string feesCollectorAddress = 40;
+  string compoundedAprValue = 37;
+
+  string farmAddress = 38;
+  string stakingProxyAddress = 39;
+  string stakingFarmAddress = 40;
+  string feesCollectorAddress = 41;
 }
 
 

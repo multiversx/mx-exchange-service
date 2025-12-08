@@ -1,5 +1,3 @@
-export const protobufPackage = 'tokens';
-
 export enum TokenType {
     TOKEN_TYPE_UNSPECIFIED = 0,
     /** TOKEN_TYPE_FUNGIBLE_TOKEN - FungibleESDT */
@@ -52,29 +50,27 @@ export interface Token {
 }
 
 export interface TokenRole {
-    address: string;
-    canMint: boolean;
-    canBurn: boolean;
-    roles: string[];
+    address?: string;
+    canMint?: boolean;
+    canBurn?: boolean;
+    roles?: string[];
 }
 
 export interface TokenAssets {
-    website: string;
-    description: string;
-    social: TokenSocial | undefined;
-    status: string;
-    pngUrl: string;
-    svgUrl: string;
-    lockedAccounts: string[];
-    extraTokens: string[];
+    website?: string;
+    description?: string;
+    social?: TokenSocial | undefined;
+    status?: string;
+    pngUrl?: string;
+    svgUrl?: string;
+    lockedAccounts?: string[];
+    extraTokens?: string[];
 }
 
 export interface TokenSocial {
-    email: string;
-    blog: string;
-    twitter: string;
-    coinmarketcap: string;
-    coingecko: string;
+    email?: string;
+    blog?: string;
+    twitter?: string;
+    coinmarketcap?: string;
+    coingecko?: string;
 }
-
-export const TOKENS_PACKAGE_NAME = 'tokens';

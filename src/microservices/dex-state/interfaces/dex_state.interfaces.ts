@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 import { FieldMask } from './google/protobuf/field_mask.interfaces';
+import { Empty } from './google/protobuf/empty.interfaces';
 import { Pair } from './pairs.interfaces';
 import { Token, TokenType } from './tokens.interfaces';
 
@@ -127,7 +128,54 @@ export interface GetAllTokensRequest {
 
 export interface GetTokenPairsRequest {
     identifier: string;
-    fields: string[] | undefined;
+    fields: FieldMask;
+}
+
+export interface UpdatePairsRequest {
+    pairs: Pair[];
+    updateMask: FieldMask;
+}
+
+export interface UpdatePairsResponse {
+    updatedCount: number;
+    failedAddresses: string[];
+}
+
+export interface UpdateTokensRequest {
+    tokens: Token[];
+    updateMask: FieldMask;
+}
+
+export interface UpdateTokensResponse {
+    updatedCount: number;
+    failedIdentifiers: string[];
+}
+
+export interface InitStateRequest {
+    tokens: Token[];
+    pairs: Pair[];
+    commonTokenIDs: string[];
+    usdcPrice: number;
+}
+
+export interface InitStateResponse {
+    pairsCount: number;
+    tokensCount: number;
+}
+
+export interface AddPairRequest {
+    pair: Pair;
+    firstToken: Token;
+    secondToken: Token;
+}
+
+export interface AddTokenRequest {
+    token: Token;
+}
+
+export interface AddPairLpTokenRequest {
+    address: string;
+    token: Token | undefined;
 }
 
 export const DEX_STATE_PACKAGE_NAME = 'dex_state';
@@ -152,6 +200,18 @@ export interface IDexStateServiceClient {
     getAllTokens(request: GetAllTokensRequest): Observable<Tokens>;
 
     // getTokenPairs(request: GetTokenPairsRequest): Observable<Pairs>;
+
+    initState(request: InitStateRequest): Observable<InitStateResponse>;
+
+    updatePairs(request: UpdatePairsRequest): Observable<UpdatePairsResponse>;
+
+    addPair(request: AddPairRequest): Observable<Empty>;
+
+    addPairLpToken(request: AddPairLpTokenRequest): Observable<Empty>;
+
+    // updateTokens(request: UpdateTokensRequest): Observable<UpdateTokensResponse>;
+
+    //  addToken(request: AddTokenRequest): Observable<Empty>;
 }
 
 export interface IDexStateService {
@@ -186,6 +246,33 @@ export interface IDexStateService {
     // getTokenPairs(
     //     request: GetTokenPairsRequest,
     // ): Promise<Pairs> | Observable<Pairs> | Pairs;
+
+    initState(
+        request: InitStateRequest,
+    ):
+        | Promise<InitStateResponse>
+        | Observable<InitStateResponse>
+        | InitStateResponse;
+
+    updatePairs(
+        request: UpdatePairsRequest,
+    ):
+        | Promise<UpdatePairsResponse>
+        | Observable<UpdatePairsResponse>
+        | UpdatePairsResponse;
+
+    addPair(request: AddPairRequest): void;
+
+    addPairLpToken(request: AddPairLpTokenRequest): void;
+
+    // updateTokens(
+    //     request: UpdateTokensRequest,
+    // ):
+    //     | Promise<UpdateTokensResponse>
+    //     | Observable<UpdateTokensResponse>
+    //     | UpdateTokensResponse;
+
+    // addToken(request: AddTokenRequest): void;
 }
 
 export const DEX_STATE_SERVICE_NAME = 'DexStateService';

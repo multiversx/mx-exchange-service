@@ -1,5 +1,3 @@
-export const protobufPackage = 'pairs';
-
 export interface PairInfo {
     reserves0: string;
     reserves1: string;
@@ -48,10 +46,9 @@ export interface Pair {
     tradesCount: number;
     tradesCount24h: number;
     deployedAt: number;
+    compoundedAprValue: string;
     farmAddress: string;
     stakingProxyAddress: string;
     stakingFarmAddress: string;
     feesCollectorAddress: string;
 }
-
-export const PAIRS_PACKAGE_NAME = 'pairs';
