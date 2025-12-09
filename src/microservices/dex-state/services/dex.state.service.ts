@@ -8,17 +8,22 @@ import {
     GetAllTokensRequest,
     GetFilteredPairsRequest,
     GetFilteredTokensRequest,
+    GetPairsAndTokensRequest,
     InitStateRequest,
     InitStateResponse,
     PaginatedPairs,
     PaginatedTokens,
+    PairAndTokens,
     Pairs,
+    PairsAndTokensResponse,
     PairSortField,
     SortOrder,
     Tokens,
     TokenSortField,
     UpdatePairsRequest,
     UpdatePairsResponse,
+    UpdateTokensRequest,
+    UpdateTokensResponse,
 } from '../interfaces/dex_state.interfaces';
 import { Pair, PairInfo } from '../interfaces/pairs.interfaces';
 import { Token, TokenType } from '../interfaces/tokens.interfaces';
@@ -141,7 +146,7 @@ export class DexStateService implements OnModuleInit {
         };
 
         for (const address of addresses) {
-            const statePair = this.pairs.get(address);
+            const statePair = { ...this.pairs.get(address) };
 
             if (!statePair) {
                 throw new Error(`Pair ${address} not found`);
@@ -353,6 +358,72 @@ export class DexStateService implements OnModuleInit {
         };
     }
 
+    getPairsTokens(request: GetPairsAndTokensRequest): PairsAndTokensResponse {
+        const { addresses, pairFields, tokenFields } = request;
+
+        const pairTokenFields = [
+            'firstTokenId',
+            'secondTokenId',
+            'liquidityPoolTokenId',
+        ];
+
+        const pairFieldsIncludingTokenIds = pairFields?.paths ?? [];
+        const pairFieldsToRemove: string[] = [];
+
+        if (pairFieldsIncludingTokenIds.length) {
+            pairTokenFields.forEach((field) => {
+                if (!pairFieldsIncludingTokenIds.includes(field)) {
+                    pairFieldsIncludingTokenIds.push(field);
+                    pairFieldsToRemove.push(field);
+                }
+            });
+        }
+
+        const { pairs } = this.getPairs(addresses, pairFieldsIncludingTokenIds);
+
+        let tokenIds: string[] = [];
+        pairs.forEach((pair) => {
+            tokenIds.push(pair.firstTokenId);
+            tokenIds.push(pair.secondTokenId);
+            if (pair.liquidityPoolTokenId) {
+                tokenIds.push(pair.liquidityPoolTokenId);
+            }
+        });
+
+        tokenIds = [...new Set(tokenIds)];
+
+        const { tokens: firstTokens } = this.getTokens(
+            pairs.map((pair) => pair.firstTokenId),
+            tokenFields?.paths ?? [],
+        );
+        const { tokens: secondTokens } = this.getTokens(
+            pairs.map((pair) => pair.secondTokenId),
+            tokenFields?.paths ?? [],
+        );
+        const { tokens: lpTokens } = this.getTokens(
+            pairs.map((pair) => pair.liquidityPoolTokenId),
+            tokenFields?.paths ?? [],
+        );
+
+        const pairsWithTokens: PairAndTokens[] = pairs.map((pair, index) => {
+            const responsePair = { ...pair };
+
+            if (pairFieldsToRemove.length) {
+                pairFieldsToRemove.forEach((field) => {
+                    delete responsePair[field];
+                });
+            }
+            return {
+                pair: responsePair,
+                firstToken: firstTokens[index],
+                secondToken: secondTokens[index],
+                ...(lpTokens[index] && { lpToken: lpTokens[index] }),
+            };
+        });
+
+        return { pairsWithTokens };
+    }
+
     addPair(request: AddPairRequest): void {
         const { pair, firstToken, secondToken } = request;
 
@@ -409,6 +480,17 @@ export class DexStateService implements OnModuleInit {
         const updatedPairs = new Map<string, Pair>();
         const failedAddresses: string[] = [];
 
+        if (
+            updateMask.paths.includesSome([
+                'address',
+                'firstTokenId',
+                'secondTokenId',
+                'liquidityPoolTokenId',
+            ])
+        ) {
+            throw new Error('Update mask contains invalid fields');
+        }
+
         for (const partial of partialPairs) {
             if (!partial.address) {
                 continue;
@@ -464,7 +546,12 @@ export class DexStateService implements OnModuleInit {
         };
 
         for (const tokenID of tokenIDs) {
-            const stateToken = this.tokens.get(tokenID);
+            if (tokenID === undefined) {
+                result.tokens.push(undefined);
+                continue;
+            }
+
+            const stateToken = { ...this.tokens.get(tokenID) };
 
             if (!stateToken) {
                 throw new Error(`Token ${tokenID} not found`);
@@ -586,6 +673,53 @@ export class DexStateService implements OnModuleInit {
         return {
             count: tokenIDs.length,
             tokens,
+        };
+    }
+
+    updateTokens(request: UpdateTokensRequest): UpdateTokensResponse {
+        const { tokens: partialTokens, updateMask } = request;
+
+        const updatedTokens = new Map<string, Token>();
+        const failedIdentifiers: string[] = [];
+
+        if (updateMask.paths.includesSome(['identifier', 'decimals', 'type'])) {
+            throw new Error('Update mask contains invalid fields');
+        }
+
+        for (const partial of partialTokens) {
+            if (!partial.identifier) {
+                continue;
+            }
+
+            const token = { ...this.tokens.get(partial.identifier) };
+
+            if (!token) {
+                failedIdentifiers.push(partial.identifier);
+                continue;
+            }
+
+            for (const field of updateMask.paths) {
+                if (partial[field] === undefined) {
+                    continue;
+                }
+
+                token[field] = partial[field];
+            }
+
+            updatedTokens.set(partial.identifier, token);
+        }
+
+        if (updatedTokens.size > 0) {
+            updatedTokens.forEach((token, identifier) => {
+                this.tokens.set(identifier, token);
+            });
+        }
+
+        this.recomputeValues();
+
+        return {
+            failedIdentifiers,
+            updatedCount: updatedTokens.size,
         };
     }
 

@@ -86,14 +86,21 @@ message GetAllPairsRequest {
   google.protobuf.FieldMask fields = 1;
 }
 
-message GetPairTokensRequest {
-  string address = 1;
-  google.protobuf.FieldMask fields = 2;
+message GetPairsAndTokensRequest {
+  repeated string addresses = 1;
+  google.protobuf.FieldMask pairFields = 2;
+  google.protobuf.FieldMask tokenFields = 3;
 }
 
-message PairTokens {
-  Token firstToken =  1;
-  Token secondToken = 2;
+message PairsAndTokensResponse {
+  repeated PairAndTokens pairsWithTokens = 1;
+}
+
+message PairAndTokens {
+  Pair pair = 1;
+  Token firstToken =  2;
+  Token secondToken = 3;
+  Token lpToken = 4;
 }
 
 message Tokens {
@@ -185,7 +192,8 @@ service DexStateService {
   rpc GetPairs (GetPairsRequest) returns (Pairs) {}
   rpc GetFilteredPairs (GetFilteredPairsRequest) returns (PaginatedPairs) {}
   rpc GetAllPairs (GetAllPairsRequest) returns (Pairs) {}
-  rpc GetPairTokens (GetPairTokensRequest) returns (PairTokens) {}
+  
+  rpc GetPairsTokens (GetPairsAndTokensRequest) returns (PairsAndTokensResponse) {}
 
   rpc GetTokens (GetTokensRequest) returns (Tokens) {}
   rpc GetFilteredTokens (GetFilteredTokensRequest) returns (PaginatedTokens) {}

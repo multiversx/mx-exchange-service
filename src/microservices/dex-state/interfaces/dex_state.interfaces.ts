@@ -85,14 +85,21 @@ export interface GetAllPairsRequest {
     fields: FieldMask;
 }
 
-export interface GetPairTokensRequest {
-    address: string;
-    fields: string[] | undefined;
+export interface GetPairsAndTokensRequest {
+    addresses: string[];
+    pairFields: FieldMask;
+    tokenFields: FieldMask;
 }
 
-export interface PairTokens {
-    firstToken: Token | undefined;
-    secondToken: Token | undefined;
+export interface PairsAndTokensResponse {
+    pairsWithTokens: PairAndTokens[];
+}
+
+export interface PairAndTokens {
+    pair: Pair;
+    firstToken: Token;
+    secondToken: Token;
+    lpToken?: Token;
 }
 
 export interface Tokens {
@@ -189,7 +196,9 @@ export interface IDexStateServiceClient {
 
     getAllPairs(request: GetAllPairsRequest): Observable<Pairs>;
 
-    // getPairTokens(request: GetPairTokensRequest): Observable<PairTokens>;
+    getPairsTokens(
+        request: GetPairsAndTokensRequest,
+    ): Observable<PairsAndTokensResponse>;
 
     getTokens(request: GetTokensRequest): Observable<Tokens>;
 
@@ -209,7 +218,9 @@ export interface IDexStateServiceClient {
 
     addPairLpToken(request: AddPairLpTokenRequest): Observable<Empty>;
 
-    // updateTokens(request: UpdateTokensRequest): Observable<UpdateTokensResponse>;
+    updateTokens(
+        request: UpdateTokensRequest,
+    ): Observable<UpdateTokensResponse>;
 
     //  addToken(request: AddTokenRequest): Observable<Empty>;
 }
@@ -227,9 +238,12 @@ export interface IDexStateService {
         request: GetAllPairsRequest,
     ): Promise<Pairs> | Observable<Pairs> | Pairs;
 
-    // getPairTokens(
-    //     request: GetPairTokensRequest,
-    // ): Promise<PairTokens> | Observable<PairTokens> | PairTokens;
+    getPairsTokens(
+        request: GetPairsAndTokensRequest,
+    ):
+        | Promise<PairsAndTokensResponse>
+        | Observable<PairsAndTokensResponse>
+        | PairsAndTokensResponse;
 
     getTokens(
         request: GetTokensRequest,
@@ -265,12 +279,12 @@ export interface IDexStateService {
 
     addPairLpToken(request: AddPairLpTokenRequest): void;
 
-    // updateTokens(
-    //     request: UpdateTokensRequest,
-    // ):
-    //     | Promise<UpdateTokensResponse>
-    //     | Observable<UpdateTokensResponse>
-    //     | UpdateTokensResponse;
+    updateTokens(
+        request: UpdateTokensRequest,
+    ):
+        | Promise<UpdateTokensResponse>
+        | Observable<UpdateTokensResponse>
+        | UpdateTokensResponse;
 
     // addToken(request: AddTokenRequest): void;
 }

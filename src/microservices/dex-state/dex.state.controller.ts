@@ -7,6 +7,7 @@ import {
     GetAllTokensRequest,
     GetFilteredPairsRequest,
     GetFilteredTokensRequest,
+    GetPairsAndTokensRequest,
     GetPairsRequest,
     GetTokensRequest,
     IDexStateService,
@@ -15,9 +16,12 @@ import {
     PaginatedPairs,
     PaginatedTokens,
     Pairs,
+    PairsAndTokensResponse,
     Tokens,
     UpdatePairsRequest,
     UpdatePairsResponse,
+    UpdateTokensRequest,
+    UpdateTokensResponse,
 } from './interfaces/dex_state.interfaces';
 import { DexStateService } from './services/dex.state.service';
 
@@ -49,6 +53,12 @@ export class DexStateController implements IDexStateService {
     getFilteredPairs(request: GetFilteredPairsRequest): PaginatedPairs {
         this.ensureReady();
         return this.dexStateService.getFilteredPairs(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetPairsTokens')
+    getPairsTokens(request: GetPairsAndTokensRequest): PairsAndTokensResponse {
+        this.ensureReady();
+        return this.dexStateService.getPairsTokens(request);
     }
 
     @GrpcMethod(DEX_STATE_SERVICE_NAME, 'UpdatePairs')
@@ -88,6 +98,12 @@ export class DexStateController implements IDexStateService {
     getFilteredTokens(request: GetFilteredTokensRequest): PaginatedTokens {
         this.ensureReady();
         return this.dexStateService.getFilteredTokens(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'UpdateTokens')
+    updateTokens(request: UpdateTokensRequest): UpdateTokensResponse {
+        this.ensureReady();
+        return this.dexStateService.updateTokens(request);
     }
 
     private ensureReady() {
