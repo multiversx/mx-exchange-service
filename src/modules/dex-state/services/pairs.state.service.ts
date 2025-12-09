@@ -1,7 +1,7 @@
-import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import { DEX_STATE_CLIENT } from 'src/microservices/dex-state/dex.state.client.module';
 import {
     DEX_STATE_SERVICE_NAME,
@@ -20,6 +20,8 @@ import {
     PairSortableFields,
     PairSortingArgs,
 } from 'src/modules/router/models/filter.args';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { tokenToEsdtToken } from '../dex.state.utils';
 
 const sortFieldMap = {
     [PairSortableFields.DEPLOYED_AT]: PairSortField.PAIRS_SORT_DEPLOYED_AT,
@@ -44,14 +46,14 @@ export class PairsStateService implements OnModuleInit {
         );
     }
 
+    @StateRpcMetrics()
     async initState(
         tokens: Token[],
         pairs: Pair[],
         commonTokenIDs: string[],
         usdcPrice: number,
     ): Promise<InitStateResponse> {
-        const profiler = new PerformanceProfiler();
-        const result = await firstValueFrom(
+        return firstValueFrom(
             this.dexStateServive.initState({
                 tokens: [...tokens.values()],
                 pairs: [...pairs.values()],
@@ -59,45 +61,31 @@ export class PairsStateService implements OnModuleInit {
                 usdcPrice,
             }),
         );
-
-        profiler.stop();
-
-        console.log('INIT STATE CLIENT', profiler.duration);
-
-        return result;
     }
 
+    @StateRpcMetrics()
     async addPair(
         pair: Pair,
         firstToken: Token,
         secondToken: Token,
     ): Promise<void> {
-        const profiler = new PerformanceProfiler();
         await firstValueFrom(
             this.dexStateServive.addPair({ pair, firstToken, secondToken }),
         );
-
-        profiler.stop();
-
-        console.log('ADD PAIR CLIENT', profiler.duration);
     }
 
+    @StateRpcMetrics()
     async addPairLpToken(address: string, token: Token): Promise<void> {
-        const profiler = new PerformanceProfiler();
-
         await firstValueFrom(
             this.dexStateServive.addPairLpToken({ address, token }),
         );
-
-        profiler.stop();
-        console.log('ADD PAIR LP TOKEN ', profiler.duration);
     }
 
+    @StateRpcMetrics()
     async getPairs(
         addresses: string[],
         fields: (keyof PairModel)[] = [],
     ): Promise<PairModel[]> {
-        const profiler = new PerformanceProfiler();
         const result = await firstValueFrom(
             this.dexStateServive.getPairs({
                 addresses,
@@ -105,42 +93,21 @@ export class PairsStateService implements OnModuleInit {
             }),
         );
 
-        profiler.stop();
-
-        console.log('GET PAIRS', profiler.duration);
-
-        return (
-            result.pairs?.map(
-                (pair) =>
-                    new PairModel({
-                        ...pair,
-                    }),
-            ) ?? []
-        );
+        return result.pairs?.map((pair) => this.formatPair(pair, fields)) ?? [];
     }
 
+    @StateRpcMetrics()
     async getAllPairs(fields: (keyof PairModel)[] = []): Promise<PairModel[]> {
-        const profiler = new PerformanceProfiler();
         const result = await firstValueFrom(
             this.dexStateServive.getAllPairs({
                 fields: { paths: fields },
             }),
         );
 
-        profiler.stop();
-
-        console.log('GET ALL PAIRS', profiler.duration);
-
-        return (
-            result.pairs?.map(
-                (pair) =>
-                    new PairModel({
-                        ...pair,
-                    }),
-            ) ?? []
-        );
+        return result.pairs?.map((pair) => this.formatPair(pair, fields)) ?? [];
     }
 
+    @StateRpcMetrics()
     async getFilteredPairs(
         offset: number,
         limit: number,
@@ -148,7 +115,6 @@ export class PairsStateService implements OnModuleInit {
         sortArgs?: PairSortingArgs,
         fields: (keyof PairModel)[] = [],
     ): Promise<{ pairs: PairModel[]; count: number }> {
-        const profiler = new PerformanceProfiler();
         const sortOrder = sortArgs
             ? sortArgs.sortOrder === SortingOrder.ASC
                 ? SortOrder.SORT_ASC
@@ -171,17 +137,43 @@ export class PairsStateService implements OnModuleInit {
             }),
         );
 
-        profiler.stop();
-
-        console.log('GET FILTERED PAIRS', profiler.duration);
-
         return {
             pairs:
-                result.pairs?.map((pair) => new PairModel({ ...pair })) ?? [],
+                result.pairs?.map((pair) => this.formatPair(pair, fields)) ??
+                [],
             count: result.count,
         };
     }
 
+    @StateRpcMetrics()
+    async getPairsWithTokens(
+        addresses: string[],
+        pairFields: (keyof PairModel)[] = [],
+        tokenFields: (keyof EsdtToken)[] = [],
+    ): Promise<PairModel[]> {
+        const { pairsWithTokens } = await firstValueFrom(
+            this.dexStateServive.getPairsTokens({
+                addresses,
+                pairFields: { paths: pairFields },
+                tokenFields: { paths: tokenFields },
+            }),
+        );
+
+        return pairsWithTokens.map((item) => {
+            const pair = this.formatPair(item.pair, pairFields);
+
+            pair.firstToken = tokenToEsdtToken(item.firstToken);
+            pair.secondToken = tokenToEsdtToken(item.secondToken);
+
+            if (item.lpToken) {
+                pair.liquidityPoolToken = tokenToEsdtToken(item.lpToken);
+            }
+
+            return pair;
+        });
+    }
+
+    @StateRpcMetrics()
     async updatePairs(
         pairUpdates: Map<string, Partial<Pair>>,
     ): Promise<UpdatePairsResponse> {
@@ -210,5 +202,31 @@ export class PairsStateService implements OnModuleInit {
                 updateMask: { paths: [...new Set(paths)] },
             }),
         );
+    }
+
+    formatPair(pair: Pair, fields: (keyof PairModel)[]): PairModel {
+        if (fields.length === 0) {
+            return new PairModel({
+                ...pair,
+                trustedSwapPairs: pair.trustedSwapPairs ?? [],
+                feeDestinations: pair.feeDestinations ?? [],
+                whitelistedManagedAddresses:
+                    pair.whitelistedManagedAddresses ?? [],
+            });
+        }
+
+        return new PairModel({
+            ...pair,
+            ...(fields.includes('trustedSwapPairs') && {
+                trustedSwapPairs: pair.trustedSwapPairs ?? [],
+            }),
+            ...(fields.includes('feeDestinations') && {
+                feeDestinations: pair.feeDestinations ?? [],
+            }),
+            ...(fields.includes('whitelistedManagedAddresses') && {
+                whitelistedManagedAddresses:
+                    pair.whitelistedManagedAddresses ?? [],
+            }),
+        });
     }
 }

@@ -10,9 +10,10 @@ import {
 export enum StateTasks {
     INIT_STATE = 'initState',
     ADD_PAIR = 'addPair',
+    REFRESH_ANALYTICS = 'refreshAnalytics',
+    CACHE_SNAPSHOT = 'cacheSnapshot',
     REFRESH_PAIR_RESERVES = 'refreshReserves',
     INDEX_LP_TOKEN = 'indexLpToken',
-    REFRESH_ANALYTICS = 'refreshAnalytics',
     POPULATE_FARMS = 'populateFarms',
     REFRESH_FARM = 'refreshFarm',
     REFRESH_FARM_INFO = 'refreshFarmInfo',
@@ -35,7 +36,8 @@ export const StateTaskPriority: Record<StateTasks, number> = {
     refreshStakingFarmInfo: 20,
     refreshReserves: 10,
     indexLpToken: 100,
-    refreshWeekTimekeeping: 200,
+    cacheSnapshot: 200,
+    refreshWeekTimekeeping: 300,
     refreshAnalytics: 1000,
 };
 

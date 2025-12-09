@@ -1,10 +1,16 @@
 import { Lock } from '@multiversx/sdk-nestjs-common';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { delay } from 'src/helpers/helpers';
+import { Pair } from 'src/microservices/dex-state/interfaces/pairs.interfaces';
+import {
+    Token,
+    TokenType,
+} from 'src/microservices/dex-state/interfaces/tokens.interfaces';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { TokensFilter } from 'src/modules/tokens/models/tokens.filter.args';
 import { CacheService } from 'src/services/caching/cache.service';
 import { Logger } from 'winston';
 import {
@@ -15,6 +21,10 @@ import {
 } from '../entities';
 import { DexStateSyncService } from './dex.state.sync.service';
 import { PairsStateService } from './pairs.state.service';
+import {
+    reverseTokenTypeMap,
+    TokensStateService,
+} from './tokens.state.service';
 
 export const STATE_TASKS_CACHE_KEY = 'dexService.stateTasks';
 const INDEX_LP_MAX_ATTEMPTS = 60;
@@ -24,7 +34,9 @@ export class StateTasksService {
     constructor(
         private readonly syncService: DexStateSyncService,
         private readonly cacheService: CacheService,
-        private readonly pairState: PairsStateService,
+        private readonly pairsState: PairsStateService,
+        @Inject(forwardRef(() => TokensStateService))
+        private readonly tokensState: TokensStateService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -82,11 +94,14 @@ export class StateTasksService {
                 case StateTasks.INDEX_LP_TOKEN:
                     await this.indexPairLpToken(task.args[0]);
                     break;
+                case StateTasks.REFRESH_ANALYTICS:
+                    await this.refreshAnalytics();
+                    break;
+                case StateTasks.CACHE_SNAPSHOT:
+                    await this.cacheSnapshot();
+                    break;
                 // case PersistenceTasks.REFRESH_PAIR_RESERVES:
                 //     await this.refreshPairReserves();
-                //     break;
-                // case PersistenceTasks.REFRESH_ANALYTICS:
-                //     await this.refreshAnalytics();
                 //     break;
                 // case PersistenceTasks.POPULATE_FARMS:
                 //     await this.populateFarms();
@@ -137,7 +152,7 @@ export class StateTasksService {
         const { tokens, pairs, commonTokenIDs, usdcPrice } =
             await this.syncService.populateState();
 
-        await this.pairState.initState(
+        await this.pairsState.initState(
             tokens,
             pairs,
             commonTokenIDs,
@@ -152,13 +167,11 @@ export class StateTasksService {
         const { pair, firstToken, secondToken } =
             await this.syncService.addPair(pairMetadata, timestamp);
 
-        // console.log({ pair, firstToken, secondToken });
-
-        await this.pairState.addPair(pair, firstToken, secondToken);
+        await this.pairsState.addPair(pair, firstToken, secondToken);
     }
 
     async indexPairLpToken(address: string): Promise<void> {
-        const [pair] = await this.pairState.getPairs([address], ['address']);
+        const [pair] = await this.pairsState.getPairs([address], ['address']);
 
         if (!pair) {
             throw new Error('Pair not found');
@@ -171,7 +184,7 @@ export class StateTasksService {
             );
 
             if (lpToken) {
-                await this.pairState.addPairLpToken(address, lpToken);
+                await this.pairsState.addPairLpToken(address, lpToken);
 
                 this.logger.debug(`Updated LP token`, {
                     context: StateTasksService.name,
@@ -188,5 +201,86 @@ export class StateTasksService {
         const message = `Could not update pair ${address} LP token after ${INDEX_LP_MAX_ATTEMPTS} attempts`;
 
         throw new Error(message);
+    }
+
+    async refreshAnalytics(): Promise<void> {
+        const [pairs, tokensResult] = await Promise.all([
+            this.pairsState.getAllPairs([
+                'address',
+                'totalFeePercent',
+                'specialFeePercent',
+                'lockedValueUSD',
+            ]),
+            this.tokensState.getFilteredTokens(
+                0,
+                10000,
+                new TokensFilter(),
+                undefined,
+                [
+                    'identifier',
+                    'derivedEGLD',
+                    'price',
+                    'previous24hPrice',
+                    'type',
+                ],
+            ),
+        ]);
+
+        const pairUpdates = new Map<string, Partial<Pair>>();
+        for (const pair of pairs) {
+            const updates = await this.syncService.getPairAnalytics(
+                pair as unknown as Pair,
+            );
+
+            pairUpdates.set(pair.address, {
+                address: pair.address,
+                ...updates,
+            });
+        }
+
+        const tokenMap = new Map<string, Token>();
+        tokensResult.tokens.forEach((token) => {
+            tokenMap.set(token.identifier, {
+                ...token,
+                type: TokenType.TOKEN_TYPE_FUNGIBLE_TOKEN,
+            } as Token);
+        });
+
+        await this.syncService.updateTokensAnalytics(tokenMap, [
+            ...tokenMap.keys(),
+        ]);
+
+        tokenMap.forEach((token) => {
+            delete token.price;
+            delete token.derivedEGLD;
+            delete token.type;
+        });
+
+        const pairsUpdateResult = await this.pairsState.updatePairs(
+            pairUpdates,
+        );
+        const tokensUpdateResult = await this.tokensState.updateTokens(
+            tokenMap,
+        );
+
+        this.logger.debug(`Refresh analytics task completed`, {
+            context: StateTasksService.name,
+            pairsUpdateResult,
+            tokensUpdateResult,
+        });
+    }
+
+    async cacheSnapshot(): Promise<void> {
+        const [pairs, tokens] = await Promise.all([
+            this.pairsState.getAllPairs(),
+            this.tokensState.getAllTokens(),
+        ]);
+
+        const convertedTokens: Token[] = tokens.map((token) => ({
+            ...token,
+            type: reverseTokenTypeMap[token.type],
+        }));
+
+        await this.syncService.cacheSnapshot(pairs, convertedTokens);
     }
 }

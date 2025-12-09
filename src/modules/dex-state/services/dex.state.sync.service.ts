@@ -1,5 +1,5 @@
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig, tokenProviderUSD } from 'src/config';
@@ -34,8 +34,11 @@ export class DexStateSyncService {
     constructor(
         private readonly routerAbi: RouterAbiService,
         private readonly pairAbi: PairAbiService,
+        @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
+        @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
+        @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly cacheService: CacheService,
         private readonly dataApi: MXDataApiService,
@@ -175,20 +178,7 @@ export class DexStateSyncService {
 
         await this.updateTokensAnalytics(tokens, tokensNeedingAnalytics);
 
-        const pairsCacheTuple: [string, Pair][] = [];
-        for (const pair of pairs.values()) {
-            pairsCacheTuple.push([pair.address, pair]);
-        }
-
-        const tokensCacheTuple: [string, Token][] = [];
-        for (const token of tokens.values()) {
-            tokensCacheTuple.push([token.identifier, token]);
-        }
-
-        await Promise.all([
-            this.cacheService.hashSetManyRemote(PAIR_HASH, pairsCacheTuple),
-            this.cacheService.hashSetManyRemote(TOKEN_HASH, tokensCacheTuple),
-        ]);
+        await this.cacheSnapshot([...pairs.values()], [...tokens.values()]);
 
         profiler.stop();
 
@@ -205,6 +195,23 @@ export class DexStateSyncService {
             commonTokenIDs,
             usdcPrice,
         };
+    }
+
+    async cacheSnapshot(pairs: Pair[], tokens: Token[]): Promise<void> {
+        const pairsCacheTuple: [string, Pair][] = [];
+        for (const pair of pairs.values()) {
+            pairsCacheTuple.push([pair.address, pair]);
+        }
+
+        const tokensCacheTuple: [string, Token][] = [];
+        for (const token of tokens.values()) {
+            tokensCacheTuple.push([token.identifier, token]);
+        }
+
+        await Promise.all([
+            this.cacheService.hashSetManyRemote(PAIR_HASH, pairsCacheTuple),
+            this.cacheService.hashSetManyRemote(TOKEN_HASH, tokensCacheTuple),
+        ]);
     }
 
     async addPair(
@@ -429,7 +436,7 @@ export class DexStateSyncService {
         }
     }
 
-    private async updateTokensAnalytics(
+    async updateTokensAnalytics(
         tokens: Map<string, Token>,
         tokensNeedingAnalytics: string[],
     ): Promise<void> {
@@ -498,7 +505,7 @@ export class DexStateSyncService {
         }
     }
 
-    private async getPairAnalytics(pair: Pair): Promise<Partial<Pair>> {
+    async getPairAnalytics(pair: Pair): Promise<Partial<Pair>> {
         const [
             firstTokenVolume24h,
             secondTokenVolume24h,

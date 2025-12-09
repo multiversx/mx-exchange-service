@@ -1,22 +1,30 @@
-import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import { DEX_STATE_CLIENT } from 'src/microservices/dex-state/dex.state.client.module';
 import {
     DEX_STATE_SERVICE_NAME,
     IDexStateServiceClient,
     SortOrder,
     TokenSortField,
+    UpdateTokensResponse,
 } from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
-import { TokenType } from 'src/microservices/dex-state/interfaces/tokens.interfaces';
+import {
+    Token,
+    TokenType,
+} from 'src/microservices/dex-state/interfaces/tokens.interfaces';
 import { SortingOrder } from 'src/modules/common/page.data';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import {
+    EsdtToken,
+    EsdtTokenType,
+} from 'src/modules/tokens/models/esdtToken.model';
 import {
     TokensFilter,
     TokenSortingArgs,
     TokensSortableFields,
 } from 'src/modules/tokens/models/tokens.filter.args';
+import { tokenToEsdtToken } from '../dex.state.utils';
 
 const sortFieldMap = {
     [TokensSortableFields.PRICE]: TokenSortField.TOKENS_SORT_PRICE,
@@ -43,6 +51,16 @@ const sortFieldMap = {
     [TokensSortableFields.CREATED_AT]: TokenSortField.TOKENS_SORT_CREATED_AT,
 };
 
+export const tokenTypeMap = {
+    [TokenType.TOKEN_TYPE_FUNGIBLE_TOKEN]: EsdtTokenType.FungibleToken,
+    [TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN]: EsdtTokenType.FungibleLpToken,
+};
+
+export const reverseTokenTypeMap = {
+    [EsdtTokenType.FungibleToken]: TokenType.TOKEN_TYPE_FUNGIBLE_TOKEN,
+    [EsdtTokenType.FungibleLpToken]: TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN,
+};
+
 @Injectable()
 export class TokensStateService implements OnModuleInit {
     private dexStateServive: IDexStateServiceClient;
@@ -55,12 +73,11 @@ export class TokensStateService implements OnModuleInit {
         );
     }
 
+    @StateRpcMetrics()
     async getTokens(
         tokenIDs: string[],
-        // fields: string[] = [],
         fields: (keyof EsdtToken)[] = [],
     ): Promise<EsdtToken[]> {
-        const profiler = new PerformanceProfiler();
         const result = await firstValueFrom(
             this.dexStateServive.getTokens({
                 identifiers: tokenIDs,
@@ -68,18 +85,14 @@ export class TokensStateService implements OnModuleInit {
             }),
         );
 
-        profiler.stop();
-
-        console.log('GET TOKENS', profiler.duration);
-
         return result.tokens.map(
-            (token) =>
-                new EsdtToken({
-                    ...token,
-                    ...(token.type && {
-                        type: token.type as unknown as string,
-                    }),
-                }),
+            (token) => tokenToEsdtToken(token),
+            // new EsdtToken({
+            //     ...token,
+            //     ...(token.type && {
+            //         type: tokenTypeMap[token.type],
+            //     }),
+            // }),
         );
     }
     /*
@@ -134,38 +147,33 @@ export class TokensStateService implements OnModuleInit {
         //                 createdAt: token.createdAt ?? '0',
     }
 */
-    async getAllTokens(fields: string[] = []): Promise<EsdtToken[]> {
-        const profiler = new PerformanceProfiler();
+    @StateRpcMetrics()
+    async getAllTokens(fields: (keyof EsdtToken)[] = []): Promise<EsdtToken[]> {
         const result = await firstValueFrom(
             this.dexStateServive.getAllTokens({
                 fields: { paths: fields },
             }),
         );
 
-        profiler.stop();
-
-        console.log('GET ALL TOKENS', profiler.duration);
-
         return result.tokens.map(
-            (token) =>
-                new EsdtToken({
-                    ...token,
-                    ...(token.type && {
-                        type: token.type as unknown as string,
-                    }),
-                }),
+            (token) => tokenToEsdtToken(token),
+            // new EsdtToken({
+            //     ...token,
+            //     ...(token.type && {
+            //         type: tokenTypeMap[token.type],
+            //     }),
+            // }),
         );
     }
 
+    @StateRpcMetrics()
     async getFilteredTokens(
         offset: number,
         limit: number,
         filters: TokensFilter,
         sortArgs?: TokenSortingArgs,
-        // fields: string[] = [],
         fields: (keyof EsdtToken)[] = [],
     ): Promise<{ tokens: EsdtToken[]; count: number }> {
-        const profiler = new PerformanceProfiler();
         const sortOrder = sortArgs
             ? sortArgs.sortOrder === SortingOrder.ASC
                 ? SortOrder.SORT_ASC
@@ -192,23 +200,49 @@ export class TokensStateService implements OnModuleInit {
             }),
         );
 
-        profiler.stop();
-
-        console.log('GET FILTERED TOKENS', profiler.duration);
-
         return {
             tokens:
                 result.tokens?.map(
-                    (token) =>
-                        new EsdtToken({
-                            ...token,
-                            ...(token.type && {
-                                type: token.type as unknown as string,
-                            }),
-                            // type: token.type as unknown as string,
-                        }),
+                    (token) => tokenToEsdtToken(token),
+                    // new EsdtToken({
+                    //     ...token,
+                    //     ...(token.type && {
+                    //         type: tokenTypeMap[token.type],
+                    //     }),
+                    // }),
                 ) ?? [],
             count: result.count,
         };
+    }
+
+    @StateRpcMetrics()
+    async updateTokens(
+        tokenUpdates: Map<string, Partial<Token>>,
+    ): Promise<UpdateTokensResponse> {
+        if (tokenUpdates.size === 0) {
+            return {
+                failedIdentifiers: [],
+                updatedCount: 0,
+            };
+        }
+
+        const tokens: Token[] = [];
+        const paths: string[] = [];
+
+        tokenUpdates.forEach((token, identifier) => {
+            paths.push(...Object.keys(token));
+
+            tokens.push({
+                identifier,
+                ...(token as Token),
+            });
+        });
+
+        return firstValueFrom(
+            this.dexStateServive.updateTokens({
+                tokens,
+                updateMask: { paths: [...new Set(paths)] },
+            }),
+        );
     }
 }
