@@ -150,8 +150,6 @@ export class TokenService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenMetadata(tokenID: string): Promise<EsdtToken> {
-        //  const [token] = await this.getAllTokensMetadata([tokenID]);
-        // return token;
         return this.tokenMetadataRaw(tokenID);
     }
 
@@ -173,11 +171,7 @@ export class TokenService {
         return this.tokensState.getTokens(tokenIDs, fields);
     }
 
-    async getAllTokensMetadata(
-        tokenIDs: string[],
-        // fields?: string[],
-    ): Promise<EsdtToken[]> {
-        // return this.tokensState.getTokens(tokenIDs, fields);
+    async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
         return getAllKeys<EsdtToken>(
             this.cachingService,
             tokenIDs,
@@ -213,23 +207,10 @@ export class TokenService {
             this.baseTokenMetadata.bind(this),
             CacheTtlInfo.BaseToken,
         );
-        // const tokens = await this.tokensState.getTokens(tokenIDs, [
-        //     'identifier',
-        //     'decimals',
-        // ]);
-        // return tokens.map(
-        //     (token) =>
-        //         new BaseEsdtToken({
-        //             identifier: token.identifier,
-        //             decimals: token.decimals,
-        //         }),
-        // );
     }
 
     async baseTokenMetadataRaw(tokenID: string): Promise<BaseEsdtToken> {
         const token = await this.apiService.getToken(tokenID);
-        //   const [token] = await this.getAllBaseTokensMetadata([tokenID]);
-        // return token;
 
         return new BaseEsdtToken({
             identifier: tokenID,

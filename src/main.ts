@@ -137,7 +137,7 @@ async function bootstrap() {
                     options: {
                         package: DEX_STATE_PACKAGE_NAME,
                         protoPath: join(__dirname, 'proto/dex_state.proto'),
-                        url: apiConfigService.getStateMicroserviceUrl(),
+                        url: apiConfigService.getStateMicroserviceServerUrl(),
                         onLoadPackageDefinition: (pkg, server) => {
                             new ReflectionService(pkg).addToServer(server);
                         },

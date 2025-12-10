@@ -477,10 +477,22 @@ export class ApiConfigService {
         return stateMicroserviceActive === 'true';
     }
 
-    getStateMicroserviceUrl(): string {
-        const url = this.configService.get<string>('STATE_MICROSERVICE_URL');
+    getStateMicroserviceServerUrl(): string {
+        const url = this.configService.get<string>(
+            'STATE_MICROSERVICE_SERVER_URL',
+        );
         if (!url) {
-            throw new Error('No STATE_MICROSERVICE_URL present');
+            throw new Error('No STATE_MICROSERVICE_SERVER_URL present');
+        }
+        return url;
+    }
+
+    getStateMicroserviceClientUrl(): string {
+        const url = this.configService.get<string>(
+            'STATE_MICROSERVICE_CLIENT_URL',
+        );
+        if (!url) {
+            throw new Error('No STATE_MICROSERVICE_CLIENT_URL present');
         }
         return url;
     }

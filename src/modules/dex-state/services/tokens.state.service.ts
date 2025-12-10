@@ -91,58 +91,7 @@ export class TokensStateService implements OnModuleInit {
 
         return result.tokens.map((token) => tokenToEsdtToken(token));
     }
-    /*
-    private convertToEsdtToken(token: Token, fields: string[] = []): EsdtToken {
-        const {
-            type,
-            swapCount24h,
-            previous24hSwapCount,
-            transactions,
-            createdAt,
-        } = token;
-        const convertedFields: Partial<EsdtToken> = {};
 
-        let addType = false;
-        let addSwapCount = false;
-
-        if (fields.length === 0) {
-            addType = true;
-            addSwapCount = true;
-        } else {
-            addType = fields.includes('type');
-        }
-        fields.length === 0 || fields.includes('swapCount24h');
-        // const addType = fields.length === 0 || fields.includes('type');
-        // const addType = fields.length === 0 || fields.includes('type');
-        // const addType = fields.length === 0 || fields.includes('type');
-
-        if (fields.length === 0 || fields.includes('type')) {
-            convertedFields.type = type as unknown as string;
-        }
-
-        if (fields.length === 0 || fields.includes('swapCount24h')) {
-            convertedFields.swapCount24h = swapCount24h.toNumber();
-        }
-
-        const esdtToken = new EsdtToken({
-            ...token,
-            ...(addType && { type: '1' }),
-            ...(addSwapCount && {
-                swapCount24h: (
-                    token.swapCount24h as unknown as Long
-                ).toNumber(),
-            }),
-        });
-
-        //  type: token.type as unknown as string,
-        //                 swapCount24h: token.swapCount24h.toNumber(),
-        //                 previous24hSwapCount:
-        //                     token.previous24hSwapCount.valueOf(),
-        //                 transactions: token.transactions.valueOf(),
-        //                 // accounts: (token.accounts as unknown as Long).valueOf(),
-        //                 createdAt: token.createdAt ?? '0',
-    }
-*/
     @StateRpcMetrics()
     async getAllTokens(fields: (keyof EsdtToken)[] = []): Promise<EsdtToken[]> {
         const result = await firstValueFrom(
@@ -225,4 +174,57 @@ export class TokensStateService implements OnModuleInit {
             }),
         );
     }
+
+    /*
+    private convertToEsdtToken(token: Token, fields: string[] = []): EsdtToken {
+        const {
+            type,
+            swapCount24h,
+            previous24hSwapCount,
+            transactions,
+            createdAt,
+        } = token;
+        const convertedFields: Partial<EsdtToken> = {};
+
+        let addType = false;
+        let addSwapCount = false;
+
+        if (fields.length === 0) {
+            addType = true;
+            addSwapCount = true;
+        } else {
+            addType = fields.includes('type');
+        }
+        fields.length === 0 || fields.includes('swapCount24h');
+        // const addType = fields.length === 0 || fields.includes('type');
+        // const addType = fields.length === 0 || fields.includes('type');
+        // const addType = fields.length === 0 || fields.includes('type');
+
+        if (fields.length === 0 || fields.includes('type')) {
+            convertedFields.type = type as unknown as string;
+        }
+
+        if (fields.length === 0 || fields.includes('swapCount24h')) {
+            convertedFields.swapCount24h = swapCount24h.toNumber();
+        }
+
+        const esdtToken = new EsdtToken({
+            ...token,
+            ...(addType && { type: '1' }),
+            ...(addSwapCount && {
+                swapCount24h: (
+                    token.swapCount24h as unknown as Long
+                ).toNumber(),
+            }),
+        });
+
+        //  type: token.type as unknown as string,
+        //                 swapCount24h: token.swapCount24h.toNumber(),
+        //                 previous24hSwapCount:
+        //                     token.previous24hSwapCount.valueOf(),
+        //                 transactions: token.transactions.valueOf(),
+        //                 // accounts: (token.accounts as unknown as Long).valueOf(),
+        //                 createdAt: token.createdAt ?? '0',
+    }
+*/
 }
