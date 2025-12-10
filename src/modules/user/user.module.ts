@@ -34,6 +34,7 @@ import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-spli
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { ProxyModuleV2 } from '../proxy/v2/proxy.v2.module';
 import { MetabondingModule } from '../metabonding/metabonding.module';
+import { StateModule } from '../dex-state/state.module';
 
 @Module({
     imports: [
@@ -61,6 +62,7 @@ import { MetabondingModule } from '../metabonding/metabonding.module';
         LockedTokenWrapperModule,
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
+        StateModule,
     ],
     providers: [
         UserEsdtService,
