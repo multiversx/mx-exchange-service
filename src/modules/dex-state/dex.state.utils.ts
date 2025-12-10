@@ -38,10 +38,11 @@ export function tokenToEsdtToken(token: Token): EsdtToken {
         ...(token.type && {
             type: tokenTypeMap[token.type],
         }),
-        // ...(!token.liquidityUSD && { liquidityUSD: '0' }),
-        // ...(!token.previous24hPrice && { previous24hPrice: '0' }),
-        // ...(!token.previous7dPrice && { previous7dPrice: '0' }),
-        // ...(!token.previous24hSwapCount && { previous24hSwapCount: 0 }),
+        ...(!token.liquidityUSD && { liquidityUSD: '0' }),
+        ...(!token.previous24hPrice && { previous24hPrice: '0' }),
+        ...(!token.previous7dPrice && { previous7dPrice: '0' }),
+        ...(!token.previous24hSwapCount && { previous24hSwapCount: 0 }),
+        ...(!token.volumeUSD24h && { volumeUSD24h: '0' }),
     });
 }
 

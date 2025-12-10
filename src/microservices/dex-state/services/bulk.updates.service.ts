@@ -96,6 +96,7 @@ export class BulkUpdatesService {
 
         for (const [tokenID, token] of this.tokens.entries()) {
             if (token.type === TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN) {
+                token.derivedEGLD = '0';
                 continue;
             }
 
@@ -147,6 +148,7 @@ export class BulkUpdatesService {
                 token.price = this.pairs.get(
                     token.pairAddress,
                 ).liquidityPoolTokenPriceUSD;
+                token.liquidityUSD = '0';
             } else {
                 token.liquidityUSD = this.computeTokenLiquidityUSD(
                     token.identifier,
