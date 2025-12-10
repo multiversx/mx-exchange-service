@@ -26,7 +26,7 @@ export class TokensResolver {
         private readonly tokenLoader: TokenLoader,
     ) {}
 
-    @ResolveField(() => String)
+    /*  @ResolveField(() => String)
     async derivedEGLD(parent: EsdtToken): Promise<string> {
         return this.tokenLoader.tokenPriceDerivedEGLDLoader.load(
             parent.identifier,
@@ -98,7 +98,7 @@ export class TokensResolver {
         return this.tokenLoader.tokenTrendingScoreLoader.load(
             parent.identifier,
         );
-    }
+    }*/
 
     @Query(() => [EsdtToken], {
         complexity: (options: ComplexityEstimatorArgs) => {

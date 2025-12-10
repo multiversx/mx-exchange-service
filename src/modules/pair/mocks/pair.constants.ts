@@ -34,7 +34,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 initialMinted: '1',
                 price: '10',
                 derivedEGLD: '1',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'MEX-123456':
             return new EsdtToken({
@@ -63,7 +63,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '0.01',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'USDC-123456':
             return new EsdtToken({
@@ -92,7 +92,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'USDT-123456':
             return new EsdtToken({
@@ -121,7 +121,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'TOK4-123456':
             return new EsdtToken({
@@ -227,7 +227,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'EGLDMEXLP-abcdef':
             return new EsdtToken({
@@ -278,7 +278,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '10',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'EGLDTOK5LP-abcdef':
             return new EsdtToken({
@@ -305,7 +305,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '10',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'TOK5TOK6LP-abcdef':
             return new EsdtToken({
@@ -332,7 +332,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '10',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'TOK5USDCLP-abcdef':
             return new EsdtToken({
@@ -359,7 +359,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '10',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'TOK5USDTLP-abcdef':
             return new EsdtToken({
@@ -386,7 +386,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '10',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'EGLDUSDTLP-abcdef':
             return new EsdtToken({
@@ -413,7 +413,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '10',
-                roles: new RolesModel(),
+                roles: [],
             });
         case 'EGLDMEXFL-abcdef':
             return {
@@ -443,7 +443,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
-                roles: new RolesModel(),
+                roles: [],
             };
         case 'EGLDMEXF-abcdef':
             return {
@@ -473,7 +473,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
-                roles: new RolesModel(),
+                roles: [],
             };
         case 'EGLDMEXFL-bcdefg':
             return {
@@ -503,7 +503,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
-                roles: new RolesModel(),
+                roles: [],
             };
         case 'EGLDTOK4FL-abcdef':
             return {
@@ -533,7 +533,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 assets: new AssetsModel(),
                 initialMinted: '1',
                 price: '1',
-                roles: new RolesModel(),
+                roles: [],
             };
         default:
             break;

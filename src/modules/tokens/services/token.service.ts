@@ -27,6 +27,7 @@ import { TokenFilteringService } from './token.filtering.service';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { PairService } from 'src/modules/pair/services/pair.service';
+import { TokensStateService } from 'src/modules/dex-state/services/tokens.state.service';
 
 @Injectable()
 export class TokenService {
@@ -42,6 +43,7 @@ export class TokenService {
         private readonly tokenCompute: TokenComputeService,
         @Inject(forwardRef(() => TokenFilteringService))
         private readonly tokenFilteringService: TokenFilteringService,
+        private readonly tokensState: TokensStateService,
     ) {}
 
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
@@ -70,7 +72,14 @@ export class TokenService {
         filters: TokensFilter,
         sorting: TokenSortingArgs,
     ): Promise<CollectionType<EsdtToken>> {
-        let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
+        const result = await this.tokensState.getFilteredTokens(
+            pagination.offset,
+            pagination.limit,
+            filters,
+            sorting,
+        );
+
+        /*  let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
 
         tokenIDs = this.tokenFilteringService.tokensByIdentifier(
             filters,
@@ -96,14 +105,10 @@ export class TokenService {
         tokens = await this.tokenFilteringService.tokensBySearchTerm(
             filters,
             tokens,
-        );
-
+        );*/
         return new CollectionType({
-            count: tokens.length,
-            items: tokens.slice(
-                pagination.offset,
-                pagination.offset + pagination.limit,
-            ),
+            count: result.count,
+            items: result.tokens,
         });
     }
 
@@ -145,10 +150,34 @@ export class TokenService {
         localTtl: CacheTtlInfo.Token.localTtl,
     })
     async tokenMetadata(tokenID: string): Promise<EsdtToken> {
+        //  const [token] = await this.getAllTokensMetadata([tokenID]);
+        // return token;
         return this.tokenMetadataRaw(tokenID);
     }
 
-    async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    async tokenMetadataFromState(
+        tokenID: string,
+        fields: (keyof EsdtToken)[] = [],
+    ): Promise<EsdtToken> {
+        const [token] = await this.tokensState.getTokens([tokenID], fields);
+        return token;
+    }
+
+    async getAllTokensMetadataFromState(
+        tokenIDs: string[],
+        fields: (keyof EsdtToken)[] = [],
+    ): Promise<EsdtToken[]> {
+        return this.tokensState.getTokens(tokenIDs, fields);
+    }
+
+    async getAllTokensMetadata(
+        tokenIDs: string[],
+        // fields?: string[],
+    ): Promise<EsdtToken[]> {
+        // return this.tokensState.getTokens(tokenIDs, fields);
         return getAllKeys<EsdtToken>(
             this.cachingService,
             tokenIDs,
@@ -184,10 +213,23 @@ export class TokenService {
             this.baseTokenMetadata.bind(this),
             CacheTtlInfo.BaseToken,
         );
+        // const tokens = await this.tokensState.getTokens(tokenIDs, [
+        //     'identifier',
+        //     'decimals',
+        // ]);
+        // return tokens.map(
+        //     (token) =>
+        //         new BaseEsdtToken({
+        //             identifier: token.identifier,
+        //             decimals: token.decimals,
+        //         }),
+        // );
     }
 
     async baseTokenMetadataRaw(tokenID: string): Promise<BaseEsdtToken> {
         const token = await this.apiService.getToken(tokenID);
+        //   const [token] = await this.getAllBaseTokensMetadata([tokenID]);
+        // return token;
 
         return new BaseEsdtToken({
             identifier: tokenID,

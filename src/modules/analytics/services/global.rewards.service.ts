@@ -24,6 +24,9 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fees-collector.abi.service';
 import { FeesCollectorComputeService } from 'src/modules/fees-collector/services/fees-collector.compute.service';
+import { PairsStateService } from 'src/modules/dex-state/services/pairs.state.service';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import { TokensStateService } from 'src/modules/dex-state/services/tokens.state.service';
 
 @Injectable()
 export class GlobalRewardsService {
@@ -40,6 +43,8 @@ export class GlobalRewardsService {
         private readonly stakingAbi: StakingAbiService,
         private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly feesCollectorCompute: FeesCollectorComputeService,
+        private readonly pairsState: PairsStateService,
+        private readonly tokensState: TokensStateService,
     ) {}
 
     @GetOrSetCache({
@@ -114,29 +119,37 @@ export class GlobalRewardsService {
             farmAddresses,
         );
 
-        const firstTokens = await this.pairService.getAllFirstTokens(
-            pairAddresses,
-        );
-        const secondTokens = await this.pairService.getAllSecondTokens(
-            pairAddresses,
-        );
+        const pairs = await this.pairsState.getPairsWithTokens(pairAddresses, [
+            'address',
+        ]);
+
+        // const firstTokens = await this.pairService.getAllFirstTokens(
+        //     pairAddresses,
+        // );
+        // const secondTokens = await this.pairService.getAllSecondTokens(
+        //     pairAddresses,
+        // );
 
         const mexTokenID = constantsConfig.MEX_TOKEN_ID;
 
-        const mexMetadata = await this.tokenService.tokenMetadata(mexTokenID);
-        const mexPrice = await this.tokenCompute.tokenPriceDerivedUSD(
+        const mexToken = await this.tokenService.tokenMetadataFromState(
             mexTokenID,
+            ['identifier', 'price', 'decimals'],
         );
+        // const mexPrice = await this.tokenCompute.tokenPriceDerivedUSD(
+        //     mexTokenID,
+        // );
 
         for (let i = 0; i < farmAddresses.length; i++) {
             const farmReward = await this.computeSingleFarmRewards(
                 farmAddresses[i],
                 weekOffset,
-                pairAddresses[i],
-                firstTokens[i],
-                secondTokens[i],
-                mexMetadata,
-                mexPrice,
+                pairs[i],
+                // pairAddresses[i],
+                // firstTokens[i],
+                // secondTokens[i],
+                mexToken,
+                // mexPrice,
             );
 
             farmsData.push(farmReward);
@@ -150,11 +163,12 @@ export class GlobalRewardsService {
     private async computeSingleFarmRewards(
         farmAddress: string,
         weekOffset: number,
-        pairAddress: string,
-        firstToken: EsdtToken,
-        secondToken: EsdtToken,
-        mexMetadata: EsdtToken,
-        mexPrice: string,
+        pair: PairModel,
+        // pairAddress: string,
+        // firstToken: EsdtToken,
+        // secondToken: EsdtToken,
+        mexToken: EsdtToken,
+        // mexPrice: string,
     ): Promise<FarmsGlobalRewards> {
         const farmBoostedPercentage =
             await this.farmAbiV2.boostedYieldsRewardsPercenatage(farmAddress);
@@ -187,8 +201,8 @@ export class GlobalRewardsService {
 
         const energyRewardsUSD = computeValueUSD(
             rewardAmount,
-            mexMetadata.decimals,
-            mexPrice,
+            mexToken.decimals,
+            mexToken.price,
         ).toFixed();
 
         const totalRewardsUSD = new BigNumber(energyRewardsUSD)
@@ -196,9 +210,9 @@ export class GlobalRewardsService {
             .toFixed();
 
         return new FarmsGlobalRewards({
-            pairAddress,
-            firstToken,
-            secondToken,
+            pairAddress: pair.address,
+            firstToken: pair.firstToken,
+            secondToken: pair.secondToken,
             totalRewardsUSD,
             energyRewardsUSD,
         });
@@ -211,9 +225,11 @@ export class GlobalRewardsService {
         const stakingFarmsAddresses =
             await this.remoteConfig.getStakingAddresses();
 
-        const farmingTokens = await this.stakingService.getAllFarmingTokens(
+        const farmingTokenIds = await this.stakingAbi.getAllFarmTokenIds(
             stakingFarmsAddresses,
         );
+
+        const farmingTokens = await this.tokensState.getTokens(farmingTokenIds);
 
         for (let i = 0; i < stakingFarmsAddresses.length; i++) {
             const stakingReward = await this.computeSingleStakingRewards(
@@ -274,14 +290,14 @@ export class GlobalRewardsService {
             });
         }
 
-        const tokenPrice = await this.tokenCompute.tokenPriceDerivedUSD(
-            farmingToken.identifier,
-        );
+        // const tokenPrice = await this.tokenCompute.tokenPriceDerivedUSD(
+        //     farmingToken.identifier,
+        // );
 
         const energyRewardsUSD = computeValueUSD(
             rewardAmount,
             farmingToken.decimals,
-            tokenPrice,
+            farmingToken.price,
         ).toFixed();
 
         const totalRewardsUSD = new BigNumber(energyRewardsUSD)

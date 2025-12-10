@@ -8,6 +8,7 @@ import { PairInfoModel } from '../models/pair-info.model';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { constantsConfig } from 'src/config';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { TokensStateService } from 'src/modules/dex-state/services/tokens.state.service';
 
 @Injectable({
     scope: Scope.REQUEST,
@@ -17,7 +18,14 @@ export class PairAbiLoader {
         private readonly pairAbi: PairAbiService,
         private readonly pairService: PairService,
         private readonly cacheService: CacheService,
+        private readonly tokenStateService: TokensStateService,
     ) {}
+
+    public readonly tokenLoader = new DataLoader<string, EsdtToken>(
+        async (tokenIDs: string[]) => {
+            return this.tokenStateService.getTokens(tokenIDs);
+        },
+    );
 
     public readonly firstTokenLoader = new DataLoader<string, EsdtToken>(
         async (addresses: string[]) => {

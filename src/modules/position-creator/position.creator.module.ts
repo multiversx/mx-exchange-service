@@ -21,6 +21,7 @@ import {
 import { WrappingModule } from '../wrapping/wrap.module';
 import { ProxyFarmModule } from '../proxy/services/proxy-farm/proxy.farm.module';
 import { EnergyModule } from '../energy/energy.module';
+import { StateModule } from '../dex-state/state.module';
 
 @Module({
     imports: [
@@ -35,6 +36,7 @@ import { EnergyModule } from '../energy/energy.module';
         ProxyFarmModule,
         EnergyModule,
         MXCommunicationModule,
+        StateModule,
     ],
     providers: [
         PositionCreatorComputeService,

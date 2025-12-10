@@ -2,7 +2,6 @@ import { PairService } from './services/pair.service';
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import {
-    FeeDestination,
     LiquidityPosition,
     LockedTokensInfo,
     PairCompoundedAPRModel,
@@ -21,7 +20,6 @@ import { PairTransactionService } from './services/pair.transactions.service';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
-import { PairInfoModel } from './models/pair-info.model';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { PairAbiService } from './services/pair.abi.service';
@@ -48,13 +46,13 @@ export class PairRewardTokensResolver extends GenericResolver {
         super();
     }
 
-    @ResolveField()
-    async poolRewards(parent: PairRewardTokensModel): Promise<EsdtToken[]> {
-        return Promise.all([
-            this.pairService.getFirstToken(parent.address),
-            this.pairService.getSecondToken(parent.address),
-        ]);
-    }
+    // @ResolveField()
+    // async poolRewards(parent: PairRewardTokensModel): Promise<EsdtToken[]> {
+    //     return Promise.all([
+    //         this.pairService.getFirstToken(parent.address),
+    //         this.pairService.getSecondToken(parent.address),
+    //     ]);
+    // }
 
     @ResolveField()
     async farmReward(parent: PairRewardTokensModel): Promise<NftCollection> {
@@ -92,10 +90,10 @@ export class PairCompoundedAPRResolver extends GenericResolver {
         super();
     }
 
-    @ResolveField(() => String)
-    async feesAPR(parent: PairCompoundedAPRModel): Promise<string> {
-        return this.pairCompute.feesAPR(parent.address);
-    }
+    // @ResolveField(() => String)
+    // async feesAPR(parent: PairCompoundedAPRModel): Promise<string> {
+    //     return this.pairCompute.feesAPR(parent.address);
+    // }
 
     @ResolveField(() => String)
     async farmBaseAPR(parent: PairCompoundedAPRModel): Promise<string> {
@@ -163,231 +161,248 @@ export class PairResolver {
 
     @ResolveField()
     async firstToken(parent: PairModel): Promise<EsdtToken> {
-        return this.pairAbiLoader.firstTokenLoader.load(parent.address);
+        return this.pairAbiLoader.tokenLoader.load(parent.firstTokenId);
+        // return this.pairAbiLoader.firstTokenLoader.load(parent.address);
     }
 
     @ResolveField()
     async secondToken(parent: PairModel): Promise<EsdtToken> {
-        return this.pairAbiLoader.secondTokenLoader.load(parent.address);
+        return this.pairAbiLoader.tokenLoader.load(parent.secondTokenId);
+        // return this.pairAbiLoader.secondTokenLoader.load(parent.address);
     }
 
     @ResolveField()
     async liquidityPoolToken(parent: PairModel): Promise<EsdtToken> {
-        return this.pairAbiLoader.liquidityPoolTokenLoader.load(parent.address);
+        if (parent.liquidityPoolTokenId) {
+            return this.pairAbiLoader.tokenLoader.load(
+                parent.liquidityPoolTokenId,
+            );
+        }
+        return undefined;
+
+        // return this.pairAbiLoader.liquidityPoolTokenLoader.load(parent.address);
     }
 
-    @ResolveField()
-    async firstTokenPrice(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.firstTokenPriceLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async firstTokenPrice(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.firstTokenPriceLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async firstTokenPriceUSD(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.firstTokenPriceUSDLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async firstTokenPriceUSD(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.firstTokenPriceUSDLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async secondTokenPriceUSD(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.secondTokenPriceUSDLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async secondTokenPriceUSD(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.secondTokenPriceUSDLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async secondTokenPrice(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.secondTokenPriceLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async secondTokenPrice(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.secondTokenPriceLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async liquidityPoolTokenPriceUSD(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.lpTokenPriceUSDLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async liquidityPoolTokenPriceUSD(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.lpTokenPriceUSDLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async firstTokenLockedValueUSD(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.firstTokenLockedValueUSDLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async firstTokenLockedValueUSD(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.firstTokenLockedValueUSDLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async secondTokenLockedValueUSD(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.secondTokenLockedValueUSDLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async secondTokenLockedValueUSD(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.secondTokenLockedValueUSDLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async lockedValueUSD(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.lockedValueUSDLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async lockedValueUSD(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.lockedValueUSDLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async previous24hLockedValueUSD(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.previous24hLockedValueUSDLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async previous24hLockedValueUSD(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.previous24hLockedValueUSDLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async firstTokenVolume24h(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.firstTokenVolumeLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async firstTokenVolume24h(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.firstTokenVolumeLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async secondTokenVolume24h(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.secondTokenVolumeLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async secondTokenVolume24h(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.secondTokenVolumeLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async volumeUSD24h(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.volumeUSD24hLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async volumeUSD24h(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.volumeUSD24hLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async previous24hVolumeUSD(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.previous24hVolumeUSDLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async previous24hVolumeUSD(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.previous24hVolumeUSDLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async feesUSD24h(parent: PairModel): Promise<string> {
-        return this.pairCompute.feesUSD(parent.address, '24h');
-    }
+    // @ResolveField()
+    // async feesUSD24h(parent: PairModel): Promise<string> {
+    //     return this.pairCompute.feesUSD(parent.address, '24h');
+    // }
 
-    @ResolveField()
-    async previous24hFeesUSD(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.previous24hFeesUSDLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async previous24hFeesUSD(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.previous24hFeesUSDLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
-    @ResolveField()
-    async feesAPR(parent: PairModel): Promise<string> {
-        return this.pairComputeLoader.feesAPRLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async feesAPR(parent: PairModel): Promise<string> {
+    //     return this.pairComputeLoader.feesAPRLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async info(parent: PairModel): Promise<PairInfoModel> {
-        return this.pairAbiLoader.infoMetadataLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async info(parent: PairModel): Promise<PairInfoModel> {
+    //     return this.pairAbiLoader.infoMetadataLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async totalFeePercent(parent: PairModel): Promise<number> {
-        return this.pairAbiLoader.totalFeePercentLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async totalFeePercent(parent: PairModel): Promise<number> {
+    //     return this.pairAbiLoader.totalFeePercentLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async specialFeePercent(parent: PairModel): Promise<number> {
-        return this.pairAbiLoader.specialFeePercentLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async specialFeePercent(parent: PairModel): Promise<number> {
+    //     return this.pairAbiLoader.specialFeePercentLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async feesCollectorCutPercentage(parent: PairModel): Promise<number> {
-        return this.pairAbiLoader.feesCollectorCutPercentageLoader.load(
-            parent.address,
-        );
-    }
+    // @ResolveField()
+    // async feesCollectorCutPercentage(parent: PairModel): Promise<number> {
+    //     return this.pairAbiLoader.feesCollectorCutPercentageLoader.load(
+    //         parent.address,
+    //     );
+    // }
 
     @ResolveField()
     async type(parent: PairModel): Promise<string> {
         return this.pairComputeLoader.typeLoader.load(parent.address);
     }
 
-    @ResolveField()
-    async trustedSwapPairs(parent: PairModel): Promise<string[]> {
-        return this.pairAbi.trustedSwapPairs(parent.address);
-    }
+    // @ResolveField()
+    // async trustedSwapPairs(parent: PairModel): Promise<string[]> {
+    //     return this.pairAbi.trustedSwapPairs(parent.address);
+    // }
 
-    @ResolveField()
-    async state(parent: PairModel): Promise<string> {
-        return this.pairAbiLoader.stateLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async state(parent: PairModel): Promise<string> {
+    //     return this.pairAbiLoader.stateLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async feeState(parent: PairModel): Promise<boolean> {
-        return this.pairAbiLoader.feeStateLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async feeState(parent: PairModel): Promise<boolean> {
+    //     return this.pairAbiLoader.feeStateLoader.load(parent.address);
+    // }
 
     @ResolveField()
     async lockedTokensInfo(parent: PairModel): Promise<LockedTokensInfo> {
         return this.pairService.getLockedTokensInfo(parent.address);
     }
 
-    @ResolveField()
-    async whitelistedManagedAddresses(parent: PairModel): Promise<string[]> {
-        return this.pairAbi.whitelistedAddresses(parent.address);
-    }
+    // @ResolveField()
+    // async whitelistedManagedAddresses(parent: PairModel): Promise<string[]> {
+    //     return this.pairAbi.whitelistedAddresses(parent.address);
+    // }
 
-    @ResolveField()
-    async initialLiquidityAdder(parent: PairModel): Promise<string> {
-        return this.pairAbi.initialLiquidityAdder(parent.address);
-    }
+    // @ResolveField()
+    // async initialLiquidityAdder(parent: PairModel): Promise<string> {
+    //     return this.pairAbi.initialLiquidityAdder(parent.address);
+    // }
 
-    @ResolveField()
-    async feeDestinations(parent: PairModel): Promise<FeeDestination[]> {
-        return this.pairAbi.feeDestinations(parent.address);
-    }
+    // @ResolveField()
+    // async feeDestinations(parent: PairModel): Promise<FeeDestination[]> {
+    //     return this.pairAbi.feeDestinations(parent.address);
+    // }
 
     @ResolveField()
     async feesCollector(parent: PairModel): Promise<FeesCollectorModel> {
-        const feesCollectorAddress = await this.pairAbi.feesCollectorAddress(
-            parent.address,
-        );
-
-        return feesCollectorAddress
-            ? new FeesCollectorModel({
-                  address: feesCollectorAddress,
-              })
-            : undefined;
+        if (parent.feesCollectorAddress) {
+            return new FeesCollectorModel({
+                address: parent.feesCollectorAddress,
+            });
+        }
+        return undefined;
     }
 
-    @ResolveField()
-    async hasFarms(parent: PairModel): Promise<boolean> {
-        return this.pairComputeLoader.hasFarmsLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async hasFarms(parent: PairModel): Promise<boolean> {
+    //     return this.pairComputeLoader.hasFarmsLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async hasDualFarms(parent: PairModel): Promise<boolean> {
-        return this.pairComputeLoader.hasDualFarmsLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async hasDualFarms(parent: PairModel): Promise<boolean> {
+    //     return this.pairComputeLoader.hasDualFarmsLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async tradesCount(parent: PairModel): Promise<number> {
-        return this.pairComputeLoader.tradesCountLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async tradesCount(parent: PairModel): Promise<number> {
+    //     return this.pairComputeLoader.tradesCountLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async tradesCount24h(parent: PairModel): Promise<number> {
-        return this.pairComputeLoader.tradesCount24hLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async tradesCount24h(parent: PairModel): Promise<number> {
+    //     return this.pairComputeLoader.tradesCount24hLoader.load(parent.address);
+    // }
 
-    @ResolveField()
-    async deployedAt(parent: PairModel): Promise<number> {
-        return this.pairComputeLoader.deployedAtLoader.load(parent.address);
-    }
+    // @ResolveField()
+    // async deployedAt(parent: PairModel): Promise<number> {
+    //     return this.pairComputeLoader.deployedAtLoader.load(parent.address);
+    // }
 
     @ResolveField(() => PairCompoundedAPRModel, { nullable: true })
     async compoundedAPR(parent: PairModel): Promise<PairCompoundedAPRModel> {
-        return new PairCompoundedAPRModel({ address: parent.address });
+        return new PairCompoundedAPRModel({
+            address: parent.address,
+            feesAPR: parent.feesAPR,
+        });
     }
 
     @ResolveField(() => PairRewardTokensModel, { nullable: true })
     async rewardTokens(parent: PairModel): Promise<PairRewardTokensModel> {
-        return new PairRewardTokensModel({ address: parent.address });
+        const poolRewards = await Promise.all([
+            this.pairAbiLoader.tokenLoader.load(parent.firstTokenId),
+            this.pairAbiLoader.tokenLoader.load(parent.secondTokenId),
+        ]);
+
+        return new PairRewardTokensModel({
+            address: parent.address,
+            poolRewards,
+        });
     }
 
     @ResolveField()

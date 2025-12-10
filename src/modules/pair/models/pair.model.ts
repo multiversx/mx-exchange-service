@@ -100,8 +100,12 @@ export class PairModel {
     @Field({ complexity: nestedFieldComplexity })
     firstToken: EsdtToken;
 
+    firstTokenId: string;
+
     @Field({ complexity: nestedFieldComplexity })
     secondToken: EsdtToken;
+
+    secondTokenId: string;
 
     @Field()
     firstTokenPrice: string;
@@ -117,6 +121,8 @@ export class PairModel {
 
     @Field({ complexity: nestedFieldComplexity })
     liquidityPoolToken: EsdtToken;
+
+    liquidityPoolTokenId: string;
 
     @Field()
     liquidityPoolTokenPriceUSD: string;
@@ -202,6 +208,8 @@ export class PairModel {
     })
     feesCollector: FeesCollectorModel;
 
+    feesCollectorAddress: string;
+
     @Field()
     hasFarms: boolean;
 
@@ -223,6 +231,8 @@ export class PairModel {
     })
     compoundedAPR: PairCompoundedAPRModel;
 
+    compoundedAprValue: string;
+
     @Field(() => PairRewardTokensModel, {
         nullable: true,
         complexity: nestedFieldComplexity,
@@ -234,6 +244,8 @@ export class PairModel {
 
     @Field({ nullable: true })
     stakingProxyAddress: string;
+
+    stakingFarmAddress: string;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);

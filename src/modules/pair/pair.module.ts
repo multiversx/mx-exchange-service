@@ -27,6 +27,7 @@ import { EnergyModule } from '../energy/energy.module';
 import { PairAbiLoader } from './services/pair.abi.loader';
 import { PairComputeLoader } from './services/pair.compute.loader';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { StateModule } from '../dex-state/state.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -44,6 +45,7 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
         StakingModule,
         EnergyModule,
         ElasticSearchModule,
+        StateModule,
     ],
     providers: [
         PairService,

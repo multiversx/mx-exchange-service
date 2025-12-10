@@ -19,6 +19,7 @@ import { denominateAmount } from 'src/utils/token.converters';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { constantsConfig, mxConfig } from 'src/config';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PairsStateService } from 'src/modules/dex-state/services/pairs.state.service';
 
 export type PositionCreatorSingleTokenInput = {
     swapRouteArgs: TypedValue[];
@@ -35,6 +36,7 @@ export class PositionCreatorComputeService {
         private readonly stakingAbi: StakingAbiService,
         private readonly autoRouterService: AutoRouterService,
         private readonly wrapAbi: WrapAbiService,
+        private readonly pairState: PairsStateService,
     ) {}
 
     async computeSwap(
@@ -66,23 +68,43 @@ export class PositionCreatorComputeService {
 
         const [
             wrappedTokenID,
-            firstToken,
-            secondToken,
-            lpTokenID,
-            firstTokenPriceUSD,
-            secondTokenPriceUSD,
-            reserves,
-            totalFeePercent,
+            [pair],
+            // firstToken,
+            // secondToken,
+            // lpTokenID,
+            // firstTokenPriceUSD,
+            // secondTokenPriceUSD,
+            // reserves,
+            // totalFeePercent,
         ] = await Promise.all([
             this.wrapAbi.wrappedEgldTokenID(),
-            this.pairService.getFirstToken(pairAddress),
-            this.pairService.getSecondToken(pairAddress),
-            this.pairAbi.lpTokenID(pairAddress),
-            this.pairCompute.firstTokenPriceUSD(pairAddress),
-            this.pairCompute.secondTokenPriceUSD(pairAddress),
-            this.pairAbi.pairInfoMetadata(pairAddress),
-            this.pairAbi.totalFeePercent(pairAddress),
+            this.pairState.getPairsWithTokens(
+                [pairAddress],
+                [],
+                ['identifier', 'decimals', 'price'],
+            ),
+            // this.pairService.getFirstToken(pairAddress),
+            // this.pairService.getSecondToken(pairAddress),
+            // this.pairAbi.lpTokenID(pairAddress),
+            // this.pairCompute.firstTokenPriceUSD(pairAddress),
+            // this.pairCompute.secondTokenPriceUSD(pairAddress),
+            // this.pairAbi.pairInfoMetadata(pairAddress),
+            // this.pairAbi.totalFeePercent(pairAddress),
         ]);
+
+        const {
+            firstToken,
+            secondToken,
+            liquidityPoolTokenId: lpTokenID,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+        } = pair;
+
+        // const [pair] = await this.pairState.getPairsWithTokens(
+        //     [pairAddress],
+        //     [],
+        //     ['identifier', 'decimals', 'price'],
+        // );
 
         if (payment.tokenIdentifier === lpTokenID) {
             return [];
@@ -173,6 +195,12 @@ export class PositionCreatorComputeService {
                 [amount0.toFixed(), amount1.toFixed()],
             );
 
+        // const [pair] = await this.pairState.getPairsWithTokens(
+        //     [pairAddress],
+        //     [],
+        //     ['identifier', 'decimals', 'price'],
+        // );
+
         swapRoutes.push(
             new SwapRouteModel({
                 swapType: SWAP_TYPE.fixedInput,
@@ -182,13 +210,14 @@ export class PositionCreatorComputeService {
                 amountOut: amount1.toFixed(),
                 tokenRoute: [tokenIn.identifier, tokenOut.identifier],
                 pairs: [
-                    new PairModel({
-                        address: pairAddress,
-                        firstToken,
-                        secondToken,
-                        info: reserves,
-                        totalFeePercent,
-                    }),
+                    pair,
+                    // new PairModel({
+                    //     address: pairAddress,
+                    //     firstToken,
+                    //     secondToken,
+                    //     info: reserves,
+                    //     totalFeePercent,
+                    // }),
                 ],
                 intermediaryAmounts: [amount0.toFixed(), amount1.toFixed()],
                 tolerance: tolerance,
