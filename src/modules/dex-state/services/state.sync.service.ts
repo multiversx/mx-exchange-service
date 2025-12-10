@@ -28,7 +28,7 @@ const TOKEN_HASH = 'token.all';
 const MIN_TRENDING_SCORE = -(10 ** 9);
 
 @Injectable()
-export class DexStateSyncService {
+export class StateSyncService {
     private readonly bulkUpdatesService: BulkUpdatesService;
 
     constructor(
@@ -55,7 +55,7 @@ export class DexStateSyncService {
         usdcPrice: number;
     }> {
         this.logger.info(`Starting ${this.populateState.name}`, {
-            context: DexStateSyncService.name,
+            context: StateSyncService.name,
         });
         const profiler = new PerformanceProfiler();
 
@@ -185,7 +185,7 @@ export class DexStateSyncService {
         this.logger.debug(
             `${this.populateState.name} : ${profiler.duration}ms`,
             {
-                context: DexStateSyncService.name,
+                context: StateSyncService.name,
             },
         );
 
@@ -350,7 +350,7 @@ export class DexStateSyncService {
         this.logger.debug(
             `${this.populatePair.name} : ${profiler.duration}ms`,
             {
-                context: DexStateSyncService.name,
+                context: StateSyncService.name,
                 address,
                 tokens: `${firstTokenID}/${secondTokenID}`,
             },

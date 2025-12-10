@@ -19,7 +19,7 @@ import {
     StateTasksWithArguments,
     TaskDto,
 } from '../entities';
-import { DexStateSyncService } from './dex.state.sync.service';
+import { StateSyncService } from './state.sync.service';
 import { PairsStateService } from './pairs.state.service';
 import {
     reverseTokenTypeMap,
@@ -32,7 +32,7 @@ const INDEX_LP_MAX_ATTEMPTS = 60;
 @Injectable()
 export class StateTasksService {
     constructor(
-        private readonly syncService: DexStateSyncService,
+        private readonly syncService: StateSyncService,
         private readonly cacheService: CacheService,
         private readonly pairsState: PairsStateService,
         @Inject(forwardRef(() => TokensStateService))
