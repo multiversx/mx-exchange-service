@@ -85,15 +85,11 @@ export class TokensStateService implements OnModuleInit {
             }),
         );
 
-        return result.tokens.map(
-            (token) => tokenToEsdtToken(token),
-            // new EsdtToken({
-            //     ...token,
-            //     ...(token.type && {
-            //         type: tokenTypeMap[token.type],
-            //     }),
-            // }),
-        );
+        if (!result.tokens) {
+            return [];
+        }
+
+        return result.tokens.map((token) => tokenToEsdtToken(token));
     }
     /*
     private convertToEsdtToken(token: Token, fields: string[] = []): EsdtToken {
@@ -155,15 +151,7 @@ export class TokensStateService implements OnModuleInit {
             }),
         );
 
-        return result.tokens.map(
-            (token) => tokenToEsdtToken(token),
-            // new EsdtToken({
-            //     ...token,
-            //     ...(token.type && {
-            //         type: tokenTypeMap[token.type],
-            //     }),
-            // }),
-        );
+        return result.tokens.map((token) => tokenToEsdtToken(token));
     }
 
     @StateRpcMetrics()
@@ -202,15 +190,7 @@ export class TokensStateService implements OnModuleInit {
 
         return {
             tokens:
-                result.tokens?.map(
-                    (token) => tokenToEsdtToken(token),
-                    // new EsdtToken({
-                    //     ...token,
-                    //     ...(token.type && {
-                    //         type: tokenTypeMap[token.type],
-                    //     }),
-                    // }),
-                ) ?? [],
+                result.tokens?.map((token) => tokenToEsdtToken(token)) ?? [],
             count: result.count,
         };
     }

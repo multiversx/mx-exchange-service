@@ -545,6 +545,10 @@ export class DexStateService implements OnModuleInit {
             tokens: [],
         };
 
+        if (!tokenIDs) {
+            return result;
+        }
+
         for (const tokenID of tokenIDs) {
             if (tokenID === undefined) {
                 result.tokens.push(undefined);
