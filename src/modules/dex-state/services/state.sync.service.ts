@@ -519,7 +519,7 @@ export class StateSyncService {
             // TODO : fix; these fields should not be computed like this
             hasFarms,
             hasDualFarms,
-            compoundedAprValue,
+            // compoundedAprValue,
         ] = await Promise.all([
             this.pairCompute.firstTokenVolume(pair.address),
             this.pairCompute.secondTokenVolume(pair.address),
@@ -532,7 +532,7 @@ export class StateSyncService {
             this.pairCompute.tradesCount24h(pair.address),
             this.pairCompute.hasFarms(pair.address),
             this.pairCompute.hasDualFarms(pair.address),
-            this.pairCompute.computeCompoundedApr(pair.address),
+            // this.pairCompute.computeCompoundedApr(pair.address),
         ]);
 
         const actualFees24hBig = new BigNumber(feesUSD24h).multipliedBy(
@@ -555,7 +555,7 @@ export class StateSyncService {
             feesAPR: feesAPR.isNaN() ? '0' : feesAPR.toFixed(),
             hasFarms,
             hasDualFarms,
-            compoundedAprValue,
+            compoundedAprValue: '0',
         };
 
         return pairUpdates;
