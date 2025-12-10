@@ -467,13 +467,21 @@ export class ApiConfigService {
         return walletPassword;
     }
 
-    isDexStateMicroserviceActive(): boolean {
-        const dexStateMicroserviceActive = this.configService.get<string>(
-            'ENABLE_DEX_STATE_MICROSERVICE',
+    isStateMicroserviceActive(): boolean {
+        const stateMicroserviceActive = this.configService.get<string>(
+            'ENABLE_STATE_MICROSERVICE',
         );
-        if (!dexStateMicroserviceActive) {
+        if (!stateMicroserviceActive) {
             return false;
         }
-        return dexStateMicroserviceActive === 'true';
+        return stateMicroserviceActive === 'true';
+    }
+
+    getStateMicroserviceUrl(): string {
+        const url = this.configService.get<string>('STATE_MICROSERVICE_URL');
+        if (!url) {
+            throw new Error('No STATE_MICROSERVICE_URL present');
+        }
+        return url;
     }
 }

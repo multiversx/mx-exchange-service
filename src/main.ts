@@ -18,9 +18,7 @@ import { TaskRunnerPubSubModule } from './modules/task-runner/task.runner.pubsub
 import { TaskRunnerCronModule } from './modules/task-runner/task.runner.cron.module';
 import { DexStateAppModule } from './microservices/dex-state/dex.state.app.module';
 import { join } from 'path';
-import { TOKENS_PACKAGE_NAME } from './microservices/dex-state/interfaces/tokens.interfaces';
 import { DEX_STATE_PACKAGE_NAME } from './microservices/dex-state/interfaces/dex_state.interfaces';
-import { PAIRS_PACKAGE_NAME } from './microservices/dex-state/interfaces/pairs.interfaces';
 import { ReflectionService } from '@grpc/reflection';
 
 async function bootstrap() {
@@ -101,7 +99,9 @@ async function bootstrap() {
     }
 
     if (apiConfigService.isNotificationsModuleActive()) {
-        const pushNotificationsApp = await NestFactory.create(PushNotificationsCronModule);
+        const pushNotificationsApp = await NestFactory.create(
+            PushNotificationsCronModule,
+        );
         await pushNotificationsApp.listen(5674, '0.0.0.0');
     }
 
@@ -128,24 +128,16 @@ async function bootstrap() {
         await taskRunnerApp.listen(5675, '0.0.0.0');
     }
 
-    if (apiConfigService.isDexStateMicroserviceActive()) {
-        const pairsMicroservice =
+    if (apiConfigService.isStateMicroserviceActive()) {
+        const stateMicroservice =
             await NestFactory.createMicroservice<MicroserviceOptions>(
                 DexStateAppModule,
                 {
                     transport: Transport.GRPC,
                     options: {
-                        package: [
-                            DEX_STATE_PACKAGE_NAME,
-                            TOKENS_PACKAGE_NAME,
-                            PAIRS_PACKAGE_NAME,
-                        ],
-                        protoPath: [
-                            join(__dirname, 'proto/dex_state.proto'),
-                            join(__dirname, 'proto/tokens.proto'),
-                            join(__dirname, 'proto/pairs.proto'),
-                        ],
-                        url: 'localhost:5000',
+                        package: DEX_STATE_PACKAGE_NAME,
+                        protoPath: join(__dirname, 'proto/dex_state.proto'),
+                        url: apiConfigService.getStateMicroserviceUrl(),
                         onLoadPackageDefinition: (pkg, server) => {
                             new ReflectionService(pkg).addToServer(server);
                         },
@@ -153,7 +145,7 @@ async function bootstrap() {
                 },
             );
 
-        await pairsMicroservice.listen();
+        await stateMicroservice.listen();
     }
 }
 bootstrap();
