@@ -476,16 +476,12 @@ export class DexStateService implements OnModuleInit {
         const updatedPairs = new Map<string, Pair>();
         const failedAddresses: string[] = [];
 
-        if (
-            updateMask.paths.includesSome([
-                'address',
-                'firstTokenId',
-                'secondTokenId',
-                'liquidityPoolTokenId',
-            ])
-        ) {
-            throw new Error('Update mask contains invalid fields');
-        }
+        const nonUpdateableFields = [
+            'address',
+            'firstTokenId',
+            'secondTokenId',
+            'liquidityPoolTokenId',
+        ];
 
         for (const partial of partialPairs) {
             if (!partial.address) {
@@ -501,6 +497,10 @@ export class DexStateService implements OnModuleInit {
 
             for (const field of updateMask.paths) {
                 if (partial[field] === undefined) {
+                    continue;
+                }
+
+                if (nonUpdateableFields.includes(field)) {
                     continue;
                 }
 
@@ -682,9 +682,7 @@ export class DexStateService implements OnModuleInit {
         const updatedTokens = new Map<string, Token>();
         const failedIdentifiers: string[] = [];
 
-        if (updateMask.paths.includesSome(['identifier', 'decimals', 'type'])) {
-            throw new Error('Update mask contains invalid fields');
-        }
+        const nonUpdateableFields = ['identifier', 'decimals', 'type'];
 
         for (const partial of partialTokens) {
             if (!partial.identifier) {
@@ -700,6 +698,10 @@ export class DexStateService implements OnModuleInit {
 
             for (const field of updateMask.paths) {
                 if (partial[field] === undefined) {
+                    continue;
+                }
+
+                if (nonUpdateableFields.includes(field)) {
                     continue;
                 }
 
