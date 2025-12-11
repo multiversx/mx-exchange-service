@@ -233,22 +233,18 @@ export class DexStateService implements OnModuleInit {
                 return;
             }
 
-            if (
-                firstTokenID &&
-                secondTokenID &&
-                [firstTokenID, secondTokenID].includesNone([
-                    pair.firstTokenId,
-                    pair.secondTokenId,
-                ])
-            ) {
+            if (firstTokenID && secondTokenID) {
+                if (
+                    ![firstTokenID, secondTokenID].includesEvery([
+                        pair.firstTokenId,
+                        pair.secondTokenId,
+                    ])
+                ) {
+                    return;
+                }
+            } else if (firstTokenID && pair.firstTokenId !== firstTokenID) {
                 return;
-            }
-
-            if (firstTokenID && pair.firstTokenId !== firstTokenID) {
-                return;
-            }
-
-            if (secondTokenID && pair.secondTokenId !== secondTokenID) {
+            } else if (secondTokenID && pair.secondTokenId !== secondTokenID) {
                 return;
             }
 
