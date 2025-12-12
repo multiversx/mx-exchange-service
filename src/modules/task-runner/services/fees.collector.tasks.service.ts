@@ -56,7 +56,7 @@ export class FeesCollectorTasksService {
 
         const [feesCollector, tokens, tokenOut] = await Promise.all([
             this.feesCollectorService.feesCollector(scAddress.feesCollector),
-            this.mxApi.getTokensForUser(scAddress.feesCollector),
+            this.mxApi.getTokensForUser(scAddress.feesCollector, 0, 250),
             this.energyService.getBaseAssetToken(),
         ]);
 
