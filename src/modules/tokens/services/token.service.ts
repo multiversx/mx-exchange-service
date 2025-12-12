@@ -47,7 +47,19 @@ export class TokenService {
     ) {}
 
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
-        let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
+        const tokensFilter = new TokensFilter();
+        tokensFilter.enabledSwaps = filters.enabledSwaps;
+        tokensFilter.identifiers = filters.identifiers
+            ? filters.identifiers
+            : undefined;
+
+        const result = await this.tokensState.getFilteredTokens(
+            0,
+            1000,
+            tokensFilter,
+        );
+
+        /*    let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
         if (filters.identifiers && filters.identifiers.length > 0) {
             tokenIDs = tokenIDs.filter((tokenID) =>
                 filters.identifiers.includes(tokenID),
@@ -62,9 +74,9 @@ export class TokenService {
                 token.type = tokenTypes[index];
             });
             tokens = tokens.filter((token) => token.type === filters.type);
-        }
+        }*/
 
-        return tokens;
+        return result.tokens;
     }
 
     async getFilteredTokens(
