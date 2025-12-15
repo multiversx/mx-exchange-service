@@ -101,7 +101,7 @@
             "createPair": 35000000,
             "issueToken": 75000000,
             "setLocalRoles": 75000000,
-            "multiPairSwapMultiplier": 30000000,
+            "multiPairSwapMultiplier": 16500000,
             "swapEnableByUser": 35000000,
             "admin": {
                 "setState": 22000000,
@@ -120,12 +120,12 @@
             "removeLiquidity": 10000000,
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
-                "default": 17500000,
-                "withFeeSwap": 30000000
+                "default": 15000000,
+                "withFeeSwap": 15000000
             },
             "swapTokensFixedOutput": {
-                "default": 18000000,
-                "withFeeSwap": 35000000
+                "default": 15000000,
+                "withFeeSwap": 15000000
             },
             "swapNoFeeAndForward": 25500000,
             "setLpTokenIdentifier": 200000000,
@@ -492,9 +492,9 @@
             }
         },
         "feesCollector": {
-            "baseClaimRewards": 20000000,
-            "claimRewardsPerWeek": 25000000,
-            "redistributeRewards": 10000000,
+            "baseClaimRewards": 5000000,
+            "claimRewardsPerWeek": 20000000,
+            "redistributeRewards": 100000000,
             "addKnownContracts": 10000000,
             "removeRewardTokens": 10000000,
             "swapTokenToBaseToken": 25000000
@@ -537,10 +537,10 @@
                 "dualFarmPosition": 100000000,
                 "exitFarm": 50000000
             },
-            "energyPosition": 13000000
+            "energyPosition": 15000000
         },
         "composableTasks": {
-            "default": 1000000
+            "default": 6500000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 3000000,

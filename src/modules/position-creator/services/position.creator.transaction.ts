@@ -848,10 +848,14 @@ export class PositionCreatorTransactionService {
             .integerValue();
 
         const swapRouteArgs = this.serializeSwapRouteArgs(swapRoute);
-        const gasLimit =
+        let gasLimit =
             gasConfig.positionCreator.energyPosition +
             gasConfig.pairs.swapTokensFixedInput.withFeeSwap *
                 swapRoute.pairs.length;
+
+        if (payment.tokenIdentifier === mxConfig.EGLDIdentifier) {
+            gasLimit += gasConfig.wrapeGLD;
+        }
 
         const transactionOptions = new TransactionOptions({
             sender: sender,

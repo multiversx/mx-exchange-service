@@ -1,24 +1,11 @@
-import {
-    TransactionComputer,
-    UserSigner,
-    Transaction,
-    TransactionWatcher,
-} from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
-import {
-    RedisCacheService,
-    RedlockService,
-} from '@multiversx/sdk-nestjs-cache';
+import { RedisCacheService } from '@multiversx/sdk-nestjs-cache';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { promises } from 'fs';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig, scAddress } from 'src/config';
-import { ApiConfigService } from 'src/helpers/api.config.service';
-import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
 import { delay, randomJitter } from 'src/helpers/helpers';
 import { TransactionModel } from 'src/models/transaction.model';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
@@ -30,32 +17,21 @@ import { FeesCollectorTransactionService } from 'src/modules/fees-collector/serv
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-
-enum BroadcastStatus {
-    success = 'success',
-    error = 'error',
-    fail = 'fail',
-    skip = 'skip',
-}
+import { TaskRunnerTransactionService } from './task.runner.transaction.service';
+import { BroadcastStatus } from '../constants';
 
 const WAIT_MIN = 5_000;
 const WAIT_MAX = 25_000;
+const REDISTRIBUTE_REWARDS_CACHE_KEY =
+    'feeCollectorTasks.redistributeRewards.lastEpoch';
 
 @Injectable()
-export class FeesCollectorTasksService implements OnModuleInit {
-    private baseToken: EsdtToken;
-    private accountSigner: UserSigner;
-    private transactionWatcher: TransactionWatcher;
-    private isInitialised = false;
-    private currentWeek: number;
-
+export class FeesCollectorTasksService {
     constructor(
-        private readonly redLockService: RedlockService,
         private readonly autoRouterService: AutoRouterService,
         private readonly autoRouterTransaction: AutoRouterTransactionService,
         private readonly energyService: EnergyService,
@@ -63,69 +39,26 @@ export class FeesCollectorTasksService implements OnModuleInit {
         private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorTransaction: FeesCollectorTransactionService,
         private readonly tokenCompute: TokenComputeService,
-        private readonly mxProxy: MXProxyService,
         private readonly mxApi: MXApiService,
-        private readonly apiConfigService: ApiConfigService,
         private readonly redisCacheService: RedisCacheService,
         private readonly contextGetter: ContextGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly transactionService: TaskRunnerTransactionService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async onModuleInit(): Promise<void> {
-        this.baseToken = await this.energyService.getBaseAssetToken();
-
-        const wallet = await promises.readFile(
-            this.apiConfigService.getTaskRunnerWallet(),
-            { encoding: 'utf8' },
-        );
-        const walletObject = JSON.parse(wallet);
-
-        this.accountSigner = UserSigner.fromWallet(
-            walletObject,
-            this.apiConfigService.getTaskRunnerWalletPassword(),
-        );
-
-        this.transactionWatcher = new TransactionWatcher({
-            getTransaction: async (hash) => {
-                return await this.mxProxy
-                    .getService()
-                    .getTransaction(hash, true);
-            },
-        });
-
-        this.isInitialised = true;
-
-        this.logger.info(`The module has been initialized.`, {
-            context: FeesCollectorTasksService.name,
-        });
-    }
-
-    @Cron(CronExpression.EVERY_HOUR)
-    @LockAndRetry({
-        lockKey: FeesCollectorTasksService.name,
-        lockName: 'swapTokens',
-    })
-    async swapTokens(): Promise<void> {
-        if (!this.isInitialised) {
-            this.logger.warn('Service not initialised, aborting run', {
-                context: FeesCollectorTasksService.name,
-            });
-            return;
-        }
-
+    async executeSwapTokensTask(): Promise<void> {
         this.logger.info('Start swaps task for tokens in fees collector', {
             context: FeesCollectorTasksService.name,
         });
 
         const performance = new PerformanceProfiler();
 
-        const [feesCollector, tokens] = await Promise.all([
+        const [feesCollector, tokens, tokenOut] = await Promise.all([
             this.feesCollectorService.feesCollector(scAddress.feesCollector),
-            this.mxApi.getTokensForUser(scAddress.feesCollector),
+            this.mxApi.getTokensForUser(scAddress.feesCollector, 0, 250),
+            this.energyService.getBaseAssetToken(),
         ]);
-
-        this.currentWeek = feesCollector.time.currentWeek;
 
         const txStats: Record<BroadcastStatus, number> = {
             success: 0,
@@ -138,7 +71,11 @@ export class FeesCollectorTasksService implements OnModuleInit {
             const waitMs = randomJitter(WAIT_MAX, WAIT_MIN);
             await delay(waitMs);
 
-            const status = await this.performSwap(token);
+            const status = await this.performSwap(
+                token,
+                tokenOut,
+                feesCollector.time.currentWeek,
+            );
             txStats[status]++;
         }
 
@@ -153,25 +90,66 @@ export class FeesCollectorTasksService implements OnModuleInit {
         );
     }
 
-    @Cron(CronExpression.EVERY_4_HOURS)
-    @LockAndRetry({
-        lockKey: FeesCollectorTasksService.name,
-        lockName: 'redistributeRewards',
-    })
-    async redistributeRewards(): Promise<void> {
-        const cacheKey = 'feeCollectorTasks.redistributeRewards.lastEpoch';
+    async executeRedistributeRewardsTask(forceExecute = false): Promise<void> {
+        this.logger.info('Start redistribute rewards task in fees collector', {
+            context: FeesCollectorTasksService.name,
+        });
 
         const [currentEpoch, lastProcessedEpoch] = await Promise.all([
             this.contextGetter.getCurrentEpoch(),
-            this.redisCacheService.get<number>(cacheKey),
+            this.redisCacheService.get<number>(REDISTRIBUTE_REWARDS_CACHE_KEY),
         ]);
 
+        const shouldExecute = forceExecute
+            ? true
+            : await this.shouldExecuteRedistributeRewards(
+                  currentEpoch,
+                  lastProcessedEpoch,
+              );
+
+        if (!shouldExecute) {
+            return;
+        }
+
+        const transaction =
+            await this.feesCollectorTransaction.redistributeRewards(
+                this.transactionService.getSenderAddress(),
+            );
+
+        const status = await this.transactionService.broadcastTransaction(
+            transaction,
+        );
+
+        if (status === BroadcastStatus.success) {
+            await this.redisCacheService.set(
+                REDISTRIBUTE_REWARDS_CACHE_KEY,
+                currentEpoch,
+                Constants.oneHour() * 25,
+            );
+        }
+
+        if (status === BroadcastStatus.error) {
+            throw new Error('Redistribute Rewards task failed');
+        }
+
+        this.logger.info(
+            `Task 'redistributeRewards' for epoch ${currentEpoch} was completed with status: ${status}`,
+            {
+                context: FeesCollectorTasksService.name,
+            },
+        );
+    }
+
+    private async shouldExecuteRedistributeRewards(
+        currentEpoch: number,
+        lastProcessedEpoch: number,
+    ): Promise<boolean> {
         if (lastProcessedEpoch === currentEpoch) {
             this.logger.info(
                 `Redistribute rewards task skipped - already processed in epoch ${currentEpoch}`,
                 { context: FeesCollectorTasksService.name },
             );
-            return;
+            return false;
         }
 
         const firstWeekStartEpoch =
@@ -188,52 +166,40 @@ export class FeesCollectorTasksService implements OnModuleInit {
                 `Redistribute rewards task skipped for epoch ${currentEpoch}`,
                 { context: FeesCollectorTasksService.name },
             );
-            return;
+            return false;
         }
 
-        const transaction =
-            await this.feesCollectorTransaction.redistributeRewards(
-                this.accountSigner.getAddress().toBech32(),
-            );
-
-        const status = await this.broadcastTransaction(transaction);
-
-        if (status === BroadcastStatus.error) {
-            this.logger.error(
-                `Encountered an error while broadcasting redistribute rewards transaction`,
-                {
-                    context: FeesCollectorTasksService.name,
-                },
-            );
-
-            // throwing will trigger retry (up to 3 times)
-            throw new Error('Redistribute Rewards transaction failed');
-        }
-
-        await this.redisCacheService.set(
-            cacheKey,
-            currentEpoch,
-            Constants.oneHour() * 25,
-        );
+        return true;
     }
 
-    private async performSwap(token: EsdtToken): Promise<BroadcastStatus> {
-        if (token.identifier === this.baseToken.identifier) {
+    private async performSwap(
+        token: EsdtToken,
+        tokenOut: EsdtToken,
+        currentWeek: number,
+    ): Promise<BroadcastStatus> {
+        if (token.identifier === tokenOut.identifier) {
             return BroadcastStatus.skip;
         }
 
-        const amount = await this.computeAmountForSwap(token);
+        const amount = await this.computeAmountForSwap(token, currentWeek);
 
         if (amount === '0') {
             return BroadcastStatus.skip;
         }
 
-        const transaction = await this.getSwapTransaction(token, amount);
+        const transaction = await this.getSwapTransaction(
+            token,
+            amount,
+            tokenOut,
+        );
         if (!transaction) {
             return BroadcastStatus.skip;
         }
 
-        const status = await this.broadcastTransaction(transaction);
+        const status = await this.transactionService.broadcastTransaction(
+            transaction,
+        );
+
         if (status === BroadcastStatus.error) {
             this.logger.error(
                 `Encountered an error while broadcasting swap transaction for ${token.identifier}`,
@@ -246,11 +212,14 @@ export class FeesCollectorTasksService implements OnModuleInit {
         return status;
     }
 
-    private async computeAmountForSwap(token: EsdtToken): Promise<string> {
+    private async computeAmountForSwap(
+        token: EsdtToken,
+        currentWeek: number,
+    ): Promise<string> {
         try {
             const [availableAmount, tokenPriceUSD] = await Promise.all([
                 this.feesCollectorAbi.tokenAvailableAmount(
-                    this.currentWeek,
+                    currentWeek,
                     token.identifier,
                 ),
                 this.tokenCompute.computeTokenPriceDerivedUSD(token.identifier),
@@ -323,11 +292,12 @@ export class FeesCollectorTasksService implements OnModuleInit {
     private async getSwapTransaction(
         token: EsdtToken,
         amountIn: string,
+        tokenOut: EsdtToken,
     ): Promise<TransactionModel | undefined> {
         try {
             const route = await this.autoRouterService.swap({
                 tokenInID: token.identifier,
-                tokenOutID: this.baseToken.identifier,
+                tokenOutID: tokenOut.identifier,
                 tolerance: constantsConfig.FEES_COLLECTOR_SWAP_TOLERANCE,
                 amountIn,
             });
@@ -344,7 +314,7 @@ export class FeesCollectorTasksService implements OnModuleInit {
 
             const transaction =
                 await this.feesCollectorTransaction.swapTokenToBaseToken(
-                    this.accountSigner.getAddress().toBech32(),
+                    this.transactionService.getSenderAddress(),
                     new EsdtTokenPayment({
                         tokenIdentifier: token.identifier,
                         tokenNonce: 0,
@@ -357,7 +327,7 @@ export class FeesCollectorTasksService implements OnModuleInit {
         } catch (error) {
             this.logger.error(
                 `Encountered an error while computing swap transaction for token ${token.identifier} |` +
-                    ` input amount : ${amountIn} ${this.baseToken.identifier}`,
+                    ` input amount : ${amountIn} ${tokenOut.identifier}`,
                 {
                     context: FeesCollectorTasksService.name,
                 },
@@ -365,57 +335,6 @@ export class FeesCollectorTasksService implements OnModuleInit {
             this.logger.error(error);
 
             return undefined;
-        }
-    }
-
-    private async broadcastTransaction(
-        tx: TransactionModel,
-    ): Promise<BroadcastStatus> {
-        const { nonce } = await this.mxApi.getAccountStats(
-            this.accountSigner.getAddress().bech32(),
-        );
-
-        const transaction = new Transaction({
-            nonce: BigInt(nonce),
-            sender: tx.sender,
-            receiver: scAddress.feesCollector,
-            value: BigInt(tx.value),
-            data: Buffer.from(tx.data, 'base64'),
-            gasPrice: BigInt(tx.gasPrice),
-            gasLimit: BigInt(tx.gasLimit),
-            chainID: tx.chainID,
-            version: 2,
-        });
-
-        try {
-            transaction.signature = await this.accountSigner.sign(
-                new TransactionComputer().computeBytesForSigning(transaction),
-            );
-
-            const txHash = await this.mxProxy
-                .getService()
-                .sendTransaction(transaction);
-
-            const transactionOnNetwork =
-                await this.transactionWatcher.awaitCompleted(txHash);
-
-            if (!transactionOnNetwork.status.isSuccessful()) {
-                this.logger.error(`Transaction ${txHash} has failed`, {
-                    context: FeesCollectorTasksService.name,
-                });
-
-                return BroadcastStatus.fail;
-            }
-
-            this.logger.info(`Transaction ${txHash} was successful`, {
-                context: FeesCollectorTasksService.name,
-            });
-
-            return BroadcastStatus.success;
-        } catch (error) {
-            this.logger.error(error);
-
-            return BroadcastStatus.error;
         }
     }
 }
