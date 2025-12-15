@@ -1,30 +1,33 @@
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import BigNumber from 'bignumber.js';
+import moment from 'moment';
+import { Model, UpdateWriteOpResult } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig, tokenProviderUSD } from 'src/config';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import {
+    EsdtToken,
+    EsdtTokenType,
+} from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { CacheService } from 'src/services/caching/cache.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { MongoServerError } from 'mongodb';
 import { Logger } from 'winston';
-import { Pair } from '../../../microservices/dex-state/interfaces/pairs.interfaces';
-import {
-    Token,
-    TokenType,
-} from '../../../microservices/dex-state/interfaces/tokens.interfaces';
 import { BulkUpdatesService } from '../../../microservices/dex-state/services/bulk.updates.service';
+import { StateSnapshot, StateSnapshotDocument } from '../state.snapshot.schema';
 
-const PAIR_HASH = 'pair.all';
-const TOKEN_HASH = 'token.all';
 const MIN_TRENDING_SCORE = -(10 ** 9);
 
 @Injectable()
@@ -43,14 +46,99 @@ export class StateSyncService {
         private readonly cacheService: CacheService,
         private readonly dataApi: MXDataApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
+        private readonly contextGetter: ContextGetterService,
+        @InjectModel(StateSnapshot.name)
+        private readonly snapshotModel: Model<StateSnapshotDocument>,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.bulkUpdatesService = new BulkUpdatesService();
     }
 
+    async getLatestSnapshot(): Promise<{
+        pairs: Map<string, PairModel>;
+        tokens: Map<string, EsdtToken>;
+    }> {
+        const pairs = new Map<string, PairModel>();
+        const tokens = new Map<string, EsdtToken>();
+
+        const snapshot = await this.snapshotModel
+            .findOne({}, undefined, { lean: true })
+            .sort({ date: 'desc' })
+            .exec();
+
+        if (snapshot?.pairs.length > 0) {
+            snapshot.pairs.forEach((pair) => pairs.set(pair.address, pair));
+        }
+
+        if (snapshot?.tokens.length > 0) {
+            snapshot.tokens.forEach((token) =>
+                tokens.set(token.identifier, token),
+            );
+        }
+
+        return {
+            pairs,
+            tokens,
+        };
+    }
+
+    async updateSnapshot(
+        pairs: PairModel[],
+        tokens: EsdtToken[],
+    ): Promise<UpdateWriteOpResult> {
+        const date = moment().utc().startOf('day').toDate();
+        const blockNonce = await this.contextGetter.getShardCurrentBlockNonce(
+            1,
+        );
+
+        try {
+            const result = await this.snapshotModel
+                .updateOne(
+                    {
+                        date,
+                        $or: [
+                            { blockNonce: { $lte: blockNonce } },
+                            { blockNonce: { $exists: false } },
+                        ],
+                    },
+                    {
+                        $set: {
+                            pairs,
+                            tokens,
+                            blockNonce,
+                        },
+                    },
+                    {
+                        upsert: true,
+                    },
+                )
+                .exec();
+
+            return result;
+        } catch (error) {
+            if (error.name === MongoServerError.name && error.code === 11000) {
+                this.logger.warn('Duplicate snapshot', {
+                    context: StateSyncService.name,
+                    date,
+                    blockNonce,
+                });
+
+                return {
+                    acknowledged: true,
+                    matchedCount: 0,
+                    modifiedCount: 0,
+                    upsertedCount: 0,
+                    upsertedId: null,
+                };
+            } else {
+                throw error;
+            }
+        }
+    }
+
     async populateState(): Promise<{
-        tokens: Token[];
-        pairs: Pair[];
+        tokens: EsdtToken[];
+        pairs: PairModel[];
         commonTokenIDs: string[];
         usdcPrice: number;
     }> {
@@ -59,59 +147,47 @@ export class StateSyncService {
         });
         const profiler = new PerformanceProfiler();
 
-        const tokens = new Map<string, Token>();
-        const pairs = new Map<string, Pair>();
+        const tokens = new Map<string, EsdtToken>();
+        const pairs = new Map<string, PairModel>();
 
         const [
             pairsMetadata,
             commonTokenIDs,
             usdcPrice,
-            cachedPairs,
-            cachedTokens,
+            { pairs: snapshotPairs, tokens: snapshotTokens },
         ] = await Promise.all([
             this.routerAbi.getPairsMetadataRaw(),
             this.routerAbi.commonTokensForUserPairs(),
             this.dataApi.getTokenPrice('USDC'),
-            this.cacheService.hashGetAllRemote<Pair>(PAIR_HASH),
-            this.cacheService.hashGetAllRemote<Token>(TOKEN_HASH),
+            this.getLatestSnapshot(),
         ]);
-
-        const cachedPairsMap = new Map<string, Pair>();
-        const cachedTokensMap = new Map<string, Token>();
-        if (cachedPairs.length > 0) {
-            cachedPairs.forEach((pair) =>
-                cachedPairsMap.set(pair.address, pair),
-            );
-        }
-        if (cachedTokens.length > 0) {
-            cachedTokens.forEach((token) =>
-                cachedTokensMap.set(token.identifier, token),
-            );
-        }
 
         const pairsNeedingAnalytics: string[] = [];
         const tokensNeedingAnalytics: string[] = [];
         for (const pairMeta of pairsMetadata) {
             if (
-                cachedPairsMap.has(pairMeta.address) &&
-                cachedTokensMap.has(pairMeta.firstTokenID) &&
-                cachedTokensMap.has(pairMeta.secondTokenID)
+                snapshotPairs.has(pairMeta.address) &&
+                snapshotTokens.has(pairMeta.firstTokenID) &&
+                snapshotTokens.has(pairMeta.secondTokenID)
             ) {
-                const cachedPair = cachedPairsMap.get(pairMeta.address);
+                const snapshotPair = snapshotPairs.get(pairMeta.address);
 
-                pairs.set(pairMeta.address, { ...cachedPair });
+                pairs.set(pairMeta.address, { ...snapshotPair });
                 tokens.set(pairMeta.firstTokenID, {
-                    ...cachedTokensMap.get(pairMeta.firstTokenID),
+                    ...snapshotTokens.get(pairMeta.firstTokenID),
                 });
                 tokens.set(pairMeta.secondTokenID, {
-                    ...cachedTokensMap.get(pairMeta.secondTokenID),
+                    ...snapshotTokens.get(pairMeta.secondTokenID),
                 });
 
-                if (cachedPair.liquidityPoolTokenId) {
-                    tokens.set(cachedPair.liquidityPoolTokenId, {
-                        ...cachedTokensMap.get(cachedPair.liquidityPoolTokenId),
+                if (snapshotPair.liquidityPoolTokenId) {
+                    tokens.set(snapshotPair.liquidityPoolTokenId, {
+                        ...snapshotTokens.get(
+                            snapshotPair.liquidityPoolTokenId,
+                        ),
                     });
                 }
+
                 continue;
             }
 
@@ -178,8 +254,6 @@ export class StateSyncService {
 
         await this.updateTokensAnalytics(tokens, tokensNeedingAnalytics);
 
-        await this.cacheSnapshot([...pairs.values()], [...tokens.values()]);
-
         profiler.stop();
 
         this.logger.debug(
@@ -197,27 +271,14 @@ export class StateSyncService {
         };
     }
 
-    async cacheSnapshot(pairs: Pair[], tokens: Token[]): Promise<void> {
-        const pairsCacheTuple: [string, Pair][] = [];
-        for (const pair of pairs.values()) {
-            pairsCacheTuple.push([pair.address, pair]);
-        }
-
-        const tokensCacheTuple: [string, Token][] = [];
-        for (const token of tokens.values()) {
-            tokensCacheTuple.push([token.identifier, token]);
-        }
-
-        await Promise.all([
-            this.cacheService.hashSetManyRemote(PAIR_HASH, pairsCacheTuple),
-            this.cacheService.hashSetManyRemote(TOKEN_HASH, tokensCacheTuple),
-        ]);
-    }
-
     async addPair(
         pairMetadata: PairMetadata,
         timestamp?: number,
-    ): Promise<{ pair: Pair; firstToken: Token; secondToken: Token }> {
+    ): Promise<{
+        pair: PairModel;
+        firstToken: EsdtToken;
+        secondToken: EsdtToken;
+    }> {
         const pair = await this.populatePair(pairMetadata, timestamp);
 
         const { firstTokenId, secondTokenId } = pair;
@@ -285,7 +346,7 @@ export class StateSyncService {
     private async populatePair(
         pairMetadata: PairMetadata,
         timestamp?: number,
-    ): Promise<Pair> {
+    ): Promise<PairModel> {
         const profiler = new PerformanceProfiler();
 
         const { firstTokenID, secondTokenID, address } = pairMetadata;
@@ -320,7 +381,7 @@ export class StateSyncService {
             this.pairCompute.computeDeployedAt(address),
         ]);
 
-        const pair: Partial<Pair> = {
+        const pair: Partial<PairModel> = {
             address,
             firstTokenId: firstTokenID,
             secondTokenId: secondTokenID,
@@ -356,10 +417,13 @@ export class StateSyncService {
             },
         );
 
-        return pair as Pair;
+        return pair as PairModel;
     }
 
-    async populateToken(tokenID: string, pairAddress?: string): Promise<Token> {
+    async populateToken(
+        tokenID: string,
+        pairAddress?: string,
+    ): Promise<EsdtToken> {
         if (tokenID === undefined) {
             return undefined;
         }
@@ -373,12 +437,12 @@ export class StateSyncService {
             return undefined;
         }
 
-        const token: Partial<Token> = {
+        const token: Partial<EsdtToken> = {
             ...this.getTokenFromMetadata(tokenMetadata),
             ...(pairAddress && { pairAddress }),
             type: pairAddress
-                ? TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN
-                : TokenType.TOKEN_TYPE_FUNGIBLE_TOKEN,
+                ? EsdtTokenType.FungibleLpToken
+                : EsdtTokenType.FungibleToken,
             createdAt: tokenCreatedAt,
         };
 
@@ -388,10 +452,10 @@ export class StateSyncService {
                 : [];
         }
 
-        return token as Token;
+        return token as EsdtToken;
     }
 
-    async indexPairLpToken(address: string): Promise<Token> {
+    async indexPairLpToken(address: string): Promise<EsdtToken> {
         const lpTokenId = await this.pairAbi.getLpTokenIDRaw(address);
 
         if (lpTokenId === undefined) {
@@ -422,7 +486,7 @@ export class StateSyncService {
     }
 
     private async updatePairsAnalytics(
-        pairs: Map<string, Pair>,
+        pairs: Map<string, PairModel>,
         pairsNeedingAnalytics: string[],
     ): Promise<void> {
         for (const address of pairsNeedingAnalytics) {
@@ -437,7 +501,7 @@ export class StateSyncService {
     }
 
     async updateTokensAnalytics(
-        tokens: Map<string, Token>,
+        tokens: Map<string, EsdtToken>,
         tokensNeedingAnalytics: string[],
     ): Promise<void> {
         const wegldToken = tokens.get(tokenProviderUSD);
@@ -476,7 +540,7 @@ export class StateSyncService {
 
         for (const tokenID of tokensNeedingAnalytics) {
             const token = tokens.get(tokenID);
-            if (token.type === TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN) {
+            if (token.type === EsdtTokenType.FungibleLpToken) {
                 continue;
             }
 
@@ -505,7 +569,7 @@ export class StateSyncService {
         }
     }
 
-    async getPairAnalytics(pair: Pair): Promise<Partial<Pair>> {
+    async getPairAnalytics(pair: PairModel): Promise<Partial<PairModel>> {
         const [
             firstTokenVolume24h,
             secondTokenVolume24h,
@@ -542,7 +606,7 @@ export class StateSyncService {
         );
         const feesAPR = actualFees24hBig.times(365).div(pair.lockedValueUSD);
 
-        const pairUpdates: Partial<Pair> = {
+        const pairUpdates: Partial<PairModel> = {
             firstTokenVolume24h,
             secondTokenVolume24h,
             volumeUSD24h,
@@ -561,7 +625,7 @@ export class StateSyncService {
         return pairUpdates;
     }
 
-    private computeTokenVolumeChange(token: Token): number {
+    private computeTokenVolumeChange(token: EsdtToken): number {
         const currentVolumeBN = new BigNumber(token.volumeUSD24h);
         const previous24hVolumeBN = new BigNumber(token.previous24hVolume);
 
@@ -578,7 +642,7 @@ export class StateSyncService {
     }
 
     private computeTokenPriceChange(
-        token: Token,
+        token: EsdtToken,
         period: '24h' | '7d',
     ): number {
         const currentPriceBN = new BigNumber(token.price);
@@ -593,7 +657,7 @@ export class StateSyncService {
         return currentPriceBN.dividedBy(previousPriceBN).toNumber();
     }
 
-    private computeTokenTradeChange24h(token: Token): number {
+    private computeTokenTradeChange24h(token: EsdtToken): number {
         const currentSwapsBN = new BigNumber(token.swapCount24h);
         const previous24hSwapsBN = new BigNumber(token.previous24hSwapCount);
 
@@ -606,7 +670,7 @@ export class StateSyncService {
     }
 
     private async computeTokenPrevious24hPrice(
-        token: Token,
+        token: EsdtToken,
         wrappedEGLDPrev24hPrice: string,
     ): Promise<string> {
         const cachedValues24h = await this.cacheService.get<
@@ -636,7 +700,7 @@ export class StateSyncService {
         return values24h[0]?.value ?? '0';
     }
 
-    private computeTokenTrendingScore(token: Token): string {
+    private computeTokenTrendingScore(token: EsdtToken): string {
         const { volumeUSDChange24h, priceChange24h, tradeChange24h } = token;
 
         const volumeScore = new BigNumber(
@@ -662,8 +726,8 @@ export class StateSyncService {
         return trendingScore.toFixed();
     }
 
-    private getTokenFromMetadata(tokenMetadata: EsdtToken): Partial<Token> {
-        const token: Partial<Token> = {
+    private getTokenFromMetadata(tokenMetadata: EsdtToken): Partial<EsdtToken> {
+        const token: Partial<EsdtToken> = {
             identifier: tokenMetadata.identifier,
             decimals: tokenMetadata.decimals,
             name: tokenMetadata.name,

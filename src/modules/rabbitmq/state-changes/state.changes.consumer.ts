@@ -91,6 +91,15 @@ export class StateChangesConsumer {
             );
         }
 
+        if (updateResult.tokensWithPriceUpdates?.length > 0) {
+            await this.stateTasksService.queueTasks([
+                new TaskDto({
+                    name: StateTasks.BROADCAST_PRICE_UPDATES,
+                    args: [JSON.stringify(updateResult.tokensWithPriceUpdates)],
+                }),
+            ]);
+        }
+
         profiler.stop();
 
         this.logger.info(

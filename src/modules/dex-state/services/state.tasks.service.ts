@@ -4,11 +4,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { delay } from 'src/helpers/helpers';
-import { Pair } from 'src/microservices/dex-state/interfaces/pairs.interfaces';
-import {
-    Token,
-    TokenType,
-} from 'src/microservices/dex-state/interfaces/tokens.interfaces';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { TokensFilter } from 'src/modules/tokens/models/tokens.filter.args';
 import { CacheService } from 'src/services/caching/cache.service';
@@ -18,13 +13,15 @@ import {
     StateTasks,
     StateTasksWithArguments,
     TaskDto,
+    TOKENS_PRICE_UPDATE_EVENT,
 } from '../entities';
 import { StateSyncService } from './state.sync.service';
 import { PairsStateService } from './pairs.state.service';
-import {
-    reverseTokenTypeMap,
-    TokensStateService,
-} from './tokens.state.service';
+import { TokensStateService } from './tokens.state.service';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import { PUB_SUB } from 'src/services/redis.pubSub.module';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 export const STATE_TASKS_CACHE_KEY = 'dexService.stateTasks';
 const INDEX_LP_MAX_ATTEMPTS = 60;
@@ -38,6 +35,7 @@ export class StateTasksService {
         @Inject(forwardRef(() => TokensStateService))
         private readonly tokensState: TokensStateService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     async queueTasks(tasks: TaskDto[]): Promise<void> {
@@ -53,11 +51,14 @@ export class StateTasksService {
 
             await this.cacheService.zAdd(
                 STATE_TASKS_CACHE_KEY,
-                JSON.stringify(instanceToPlain(task)),
+                serializedTask,
                 StateTaskPriority[task.name],
             );
 
-            this.logger.info(`State task added to queue ${serializedTask}`, {
+            this.logger.info(`State task ${task.name} added to queue`, {
+                context: StateTasksService.name,
+            });
+            this.logger.debug(`Serialized task : ${serializedTask}`, {
                 context: StateTasksService.name,
             });
         }
@@ -77,7 +78,6 @@ export class StateTasksService {
 
         this.logger.info(`Processing state task "${task.name}"`, {
             context: StateTasksService.name,
-            task,
         });
 
         try {
@@ -97,8 +97,13 @@ export class StateTasksService {
                 case StateTasks.REFRESH_ANALYTICS:
                     await this.refreshAnalytics();
                     break;
-                case StateTasks.CACHE_SNAPSHOT:
-                    await this.cacheSnapshot();
+                case StateTasks.UPDATE_SNAPSHOT:
+                    await this.updateSnapshot();
+                    break;
+                case StateTasks.BROADCAST_PRICE_UPDATES:
+                    await this.broadcastTokensPriceUpdates(
+                        JSON.parse(task.args[0]),
+                    );
                     break;
                 // case PersistenceTasks.REFRESH_PAIR_RESERVES:
                 //     await this.refreshPairReserves();
@@ -141,7 +146,13 @@ export class StateTasksService {
         } finally {
             profiler.stop();
 
-            this.logger.info(`Finished processing in ${profiler.duration}ms`, {
+            this.logger.info(
+                `Finished processing task "${task.name}" in ${profiler.duration}ms`,
+                {
+                    context: StateTasksService.name,
+                },
+            );
+            this.logger.debug(`Processed task`, {
                 context: StateTasksService.name,
                 task,
             });
@@ -226,11 +237,9 @@ export class StateTasksService {
             ),
         ]);
 
-        const pairUpdates = new Map<string, Partial<Pair>>();
+        const pairUpdates = new Map<string, Partial<PairModel>>();
         for (const pair of pairs) {
-            const updates = await this.syncService.getPairAnalytics(
-                pair as unknown as Pair,
-            );
+            const updates = await this.syncService.getPairAnalytics(pair);
 
             pairUpdates.set(pair.address, {
                 address: pair.address,
@@ -238,12 +247,11 @@ export class StateTasksService {
             });
         }
 
-        const tokenMap = new Map<string, Token>();
+        const tokenMap = new Map<string, EsdtToken>();
         tokensResult.tokens.forEach((token) => {
             tokenMap.set(token.identifier, {
                 ...token,
-                type: TokenType.TOKEN_TYPE_FUNGIBLE_TOKEN,
-            } as Token);
+            });
         });
 
         await this.syncService.updateTokensAnalytics(tokenMap, [
@@ -270,17 +278,33 @@ export class StateTasksService {
         });
     }
 
-    async cacheSnapshot(): Promise<void> {
+    async updateSnapshot(): Promise<void> {
         const [pairs, tokens] = await Promise.all([
             this.pairsState.getAllPairs(),
             this.tokensState.getAllTokens(),
         ]);
 
-        const convertedTokens: Token[] = tokens.map((token) => ({
-            ...token,
-            type: reverseTokenTypeMap[token.type],
-        }));
+        const updateResult = await this.syncService.updateSnapshot(
+            pairs,
+            tokens,
+        );
 
-        await this.syncService.cacheSnapshot(pairs, convertedTokens);
+        this.logger.debug(`Update snapshot task completed`, {
+            context: StateTasksService.name,
+            updateResult,
+        });
+    }
+
+    async broadcastTokensPriceUpdates(tokenIDs: string[]): Promise<void> {
+        const priceUpdates: string[][] = [];
+        const tokens = await this.tokensState.getTokens(tokenIDs, ['price']);
+
+        tokenIDs.forEach((tokenID, index) =>
+            priceUpdates.push([tokenID, tokens[index].price]),
+        );
+
+        await this.pubSub.publish(TOKENS_PRICE_UPDATE_EVENT, {
+            priceUpdates,
+        });
     }
 }

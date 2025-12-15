@@ -40,13 +40,13 @@ export class StateCronService {
         }
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
-    @Lock({ name: 'cacheStateSnapshot', verbose: true })
-    async cacheStateSnapshot(): Promise<void> {
+    @Cron(CronExpression.EVERY_MINUTE)
+    @Lock({ name: 'updateStateSnapshot', verbose: true })
+    async updateStateSnapshot(): Promise<void> {
         try {
-            await this.taskService.cacheSnapshot();
+            await this.taskService.updateSnapshot();
         } catch (error) {
-            this.logger.error(`${this.cacheStateSnapshot.name} cron failed`, {
+            this.logger.error(`${this.updateStateSnapshot.name} cron failed`, {
                 context: StateCronService.name,
                 error,
             });

@@ -7,23 +7,28 @@ import {
     tokenProviderUSD,
 } from 'src/config';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { Pair, PairInfo } from '../interfaces/pairs.interfaces';
-import { Token, TokenType } from '../interfaces/tokens.interfaces';
 import { PairStateChanges } from 'src/modules/rabbitmq/state-changes/types';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import {
+    EsdtToken,
+    EsdtTokenType,
+} from 'src/modules/tokens/models/esdtToken.model';
+import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 
 export class BulkUpdatesService {
     private usdcPrice: number;
     private commonTokenIDs: string[];
-    private tokenToPairs: Map<string, Pair[]> = new Map();
-    private pairs: Map<string, Pair>;
-    private tokens: Map<string, Token>;
+    private tokenToPairs: Map<string, PairModel[]> = new Map();
+    private pairs: Map<string, PairModel>;
+    private tokens: Map<string, EsdtToken>;
+    private updatedTokens: string[] = [];
 
     recomputeAllValues(
-        pairs: Map<string, Pair>,
-        tokens: Map<string, Token>,
+        pairs: Map<string, PairModel>,
+        tokens: Map<string, EsdtToken>,
         usdcPrice: number,
         commonTokenIDs: string[],
-    ): void {
+    ): string[] {
         this.initMaps(pairs, tokens, usdcPrice, commonTokenIDs);
 
         for (const [address, pair] of this.pairs.entries()) {
@@ -37,11 +42,13 @@ export class BulkUpdatesService {
         this.updateTokensDerivedEgldAndUsdPrices();
 
         this.updateValuesUSD();
+
+        return this.updatedTokens;
     }
 
     private initMaps(
-        pairs: Map<string, Pair>,
-        tokens: Map<string, Token>,
+        pairs: Map<string, PairModel>,
+        tokens: Map<string, EsdtToken>,
         usdcPrice: number,
         commonTokenIDs: string[],
     ): void {
@@ -50,6 +57,7 @@ export class BulkUpdatesService {
         this.usdcPrice = usdcPrice;
         this.commonTokenIDs = commonTokenIDs;
         this.tokenToPairs.clear();
+        this.updatedTokens = [];
 
         pairs.forEach((pair) => {
             const { firstTokenId, secondTokenId } = pair;
@@ -95,7 +103,7 @@ export class BulkUpdatesService {
         ).firstTokenPrice;
 
         for (const [tokenID, token] of this.tokens.entries()) {
-            if (token.type === TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN) {
+            if (token.type === EsdtTokenType.FungibleLpToken) {
                 token.derivedEGLD = '0';
                 continue;
             }
@@ -109,6 +117,10 @@ export class BulkUpdatesService {
                 .times(egldPriceUSD)
                 .times(this.usdcPrice)
                 .toFixed();
+
+            if (token.price !== price || token.derivedEGLD !== derivedEGLD) {
+                this.updatedTokens.push(tokenID);
+            }
 
             token.price = price;
             token.derivedEGLD = derivedEGLD;
@@ -144,7 +156,7 @@ export class BulkUpdatesService {
         }
 
         for (const token of this.tokens.values()) {
-            if (token.type === TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN) {
+            if (token.type === EsdtTokenType.FungibleLpToken) {
                 token.price = this.pairs.get(
                     token.pairAddress,
                 ).liquidityPoolTokenPriceUSD;
@@ -158,9 +170,9 @@ export class BulkUpdatesService {
     }
 
     private computeTokensPriceByReserves(
-        info: PairInfo,
-        firstToken: Token,
-        secondToken: Token,
+        info: PairInfoModel,
+        firstToken: EsdtToken,
+        secondToken: EsdtToken,
     ): {
         firstTokenPrice: string;
         secondTokenPrice: string;
@@ -191,7 +203,7 @@ export class BulkUpdatesService {
         const memo = new Map<string, string>();
         const doNotVisit = new Set<string>();
 
-        const loadPairsForToken = (id: string): Pair[] => {
+        const loadPairsForToken = (id: string): PairModel[] => {
             let pairs = this.tokenToPairs.get(id);
 
             if (!pairs || pairs.length === 0) {
@@ -204,7 +216,7 @@ export class BulkUpdatesService {
                 }
             }
 
-            const tokenPairs: Pair[] = [];
+            const tokenPairs: PairModel[] = [];
 
             pairs.forEach((pair) => {
                 if (!doNotVisit.has(pair.address)) {

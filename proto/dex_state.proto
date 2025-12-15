@@ -148,7 +148,8 @@ message UpdatePairsRequest {
 
 message UpdatePairsResponse {
   uint32 updatedCount = 1;
-  repeated string failedAddresses = 2;  
+  repeated string tokensWithPriceUpdates = 2;
+  repeated string failedAddresses = 3;  
 }
 
 message UpdateTokensRequest {

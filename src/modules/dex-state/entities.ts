@@ -1,3 +1,4 @@
+import { Field, ObjectType } from '@nestjs/graphql';
 import {
     ArrayMinSize,
     IsArray,
@@ -11,7 +12,8 @@ export enum StateTasks {
     INIT_STATE = 'initState',
     ADD_PAIR = 'addPair',
     REFRESH_ANALYTICS = 'refreshAnalytics',
-    CACHE_SNAPSHOT = 'cacheSnapshot',
+    UPDATE_SNAPSHOT = 'updateSnapshot',
+    BROADCAST_PRICE_UPDATES = 'broadcastPriceUpdates',
     REFRESH_PAIR_RESERVES = 'refreshReserves',
     INDEX_LP_TOKEN = 'indexLpToken',
     POPULATE_FARMS = 'populateFarms',
@@ -30,13 +32,14 @@ export const StateTaskPriority: Record<StateTasks, number> = {
     populateFarms: 5,
     populateStaking: 6,
     populateStakingProxies: 7,
+    refreshReserves: 10,
     refreshFarm: 15,
     refreshStakingFarm: 15,
     refreshFarmInfo: 20,
     refreshStakingFarmInfo: 20,
-    refreshReserves: 10,
+    broadcastPriceUpdates: 30,
     indexLpToken: 100,
-    cacheSnapshot: 200,
+    updateSnapshot: 200,
     refreshWeekTimekeeping: 300,
     refreshAnalytics: 1000,
 };
@@ -44,6 +47,7 @@ export const StateTaskPriority: Record<StateTasks, number> = {
 export const StateTasksWithArguments = [
     StateTasks.INDEX_LP_TOKEN,
     StateTasks.ADD_PAIR,
+    StateTasks.BROADCAST_PRICE_UPDATES,
     StateTasks.REFRESH_FARM,
     StateTasks.REFRESH_FARM_INFO,
     StateTasks.REFRESH_STAKING_FARM,
@@ -62,6 +66,18 @@ export class TaskDto {
     args?: string[];
 
     constructor(init?: Partial<TaskDto>) {
+        Object.assign(this, init);
+    }
+}
+
+export const TOKENS_PRICE_UPDATE_EVENT = 'tokensPriceUpdated';
+
+@ObjectType()
+export class PriceUpdatesModel {
+    @Field(() => [[String, String]])
+    updates: [string, string][];
+
+    constructor(init?: Partial<PriceUpdatesModel>) {
         Object.assign(this, init);
     }
 }

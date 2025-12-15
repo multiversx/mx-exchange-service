@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs';
 import { FieldMask } from './google/protobuf/field_mask.interfaces';
 import { Empty } from './google/protobuf/empty.interfaces';
-import { Pair } from './pairs.interfaces';
-import { Token, TokenType } from './tokens.interfaces';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 
 export const protobufPackage = 'dex_state';
 
@@ -44,11 +44,11 @@ export enum SortOrder {
 }
 
 export interface Pairs {
-    pairs: Pair[];
+    pairs: PairModel[];
 }
 
 export interface PaginatedPairs {
-    pairs: Pair[];
+    pairs: PairModel[];
     count: number;
 }
 
@@ -96,18 +96,18 @@ export interface PairsAndTokensResponse {
 }
 
 export interface PairAndTokens {
-    pair: Pair;
-    firstToken: Token;
-    secondToken: Token;
-    lpToken?: Token;
+    pair: PairModel;
+    firstToken: EsdtToken;
+    secondToken: EsdtToken;
+    lpToken?: EsdtToken;
 }
 
 export interface Tokens {
-    tokens: Token[];
+    tokens: EsdtToken[];
 }
 
 export interface PaginatedTokens {
-    tokens: Token[];
+    tokens: EsdtToken[];
     count: number;
 }
 
@@ -121,7 +121,7 @@ export interface GetFilteredTokensRequest {
     enabledSwaps: boolean;
     searchToken: string;
     minLiquidity: number;
-    type: TokenType;
+    type: string;
     offset: number;
     limit: number;
     sortField: TokenSortField;
@@ -139,17 +139,18 @@ export interface GetTokenPairsRequest {
 }
 
 export interface UpdatePairsRequest {
-    pairs: Pair[];
+    pairs: PairModel[];
     updateMask: FieldMask;
 }
 
 export interface UpdatePairsResponse {
     updatedCount: number;
+    tokensWithPriceUpdates: string[];
     failedAddresses: string[];
 }
 
 export interface UpdateTokensRequest {
-    tokens: Token[];
+    tokens: EsdtToken[];
     updateMask: FieldMask;
 }
 
@@ -159,8 +160,8 @@ export interface UpdateTokensResponse {
 }
 
 export interface InitStateRequest {
-    tokens: Token[];
-    pairs: Pair[];
+    tokens: EsdtToken[];
+    pairs: PairModel[];
     commonTokenIDs: string[];
     usdcPrice: number;
 }
@@ -171,18 +172,18 @@ export interface InitStateResponse {
 }
 
 export interface AddPairRequest {
-    pair: Pair;
-    firstToken: Token;
-    secondToken: Token;
+    pair: PairModel;
+    firstToken: EsdtToken;
+    secondToken: EsdtToken;
 }
 
 export interface AddTokenRequest {
-    token: Token;
+    token: EsdtToken;
 }
 
 export interface AddPairLpTokenRequest {
     address: string;
-    token: Token | undefined;
+    token: EsdtToken | undefined;
 }
 
 export const DEX_STATE_PACKAGE_NAME = 'dex_state';
@@ -211,6 +212,7 @@ export interface IDexStateServiceClient {
     // getTokenPairs(request: GetTokenPairsRequest): Observable<Pairs>;
 
     initState(request: InitStateRequest): Observable<InitStateResponse>;
+    // initState(request: InitStateRequest): Observable<InitStateResponse>;
 
     updatePairs(request: UpdatePairsRequest): Observable<UpdatePairsResponse>;
 

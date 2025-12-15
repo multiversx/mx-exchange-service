@@ -11,8 +11,6 @@ import {
     SortOrder,
     UpdatePairsResponse,
 } from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
-import { Pair } from 'src/microservices/dex-state/interfaces/pairs.interfaces';
-import { Token } from 'src/microservices/dex-state/interfaces/tokens.interfaces';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import {
@@ -21,7 +19,7 @@ import {
     PairSortingArgs,
 } from 'src/modules/router/models/filter.args';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { tokenToEsdtToken } from '../dex.state.utils';
+import { formatPair, formatToken } from '../dex.state.utils';
 
 const sortFieldMap = {
     [PairSortableFields.DEPLOYED_AT]: PairSortField.PAIRS_SORT_DEPLOYED_AT,
@@ -48,15 +46,15 @@ export class PairsStateService implements OnModuleInit {
 
     @StateRpcMetrics()
     async initState(
-        tokens: Token[],
-        pairs: Pair[],
+        tokens: EsdtToken[],
+        pairs: PairModel[],
         commonTokenIDs: string[],
         usdcPrice: number,
     ): Promise<InitStateResponse> {
         return firstValueFrom(
             this.dexStateServive.initState({
-                tokens: [...tokens.values()],
-                pairs: [...pairs.values()],
+                tokens: [...tokens],
+                pairs: [...pairs],
                 commonTokenIDs,
                 usdcPrice,
             }),
@@ -65,9 +63,9 @@ export class PairsStateService implements OnModuleInit {
 
     @StateRpcMetrics()
     async addPair(
-        pair: Pair,
-        firstToken: Token,
-        secondToken: Token,
+        pair: PairModel,
+        firstToken: EsdtToken,
+        secondToken: EsdtToken,
     ): Promise<void> {
         await firstValueFrom(
             this.dexStateServive.addPair({ pair, firstToken, secondToken }),
@@ -75,7 +73,7 @@ export class PairsStateService implements OnModuleInit {
     }
 
     @StateRpcMetrics()
-    async addPairLpToken(address: string, token: Token): Promise<void> {
+    async addPairLpToken(address: string, token: EsdtToken): Promise<void> {
         await firstValueFrom(
             this.dexStateServive.addPairLpToken({ address, token }),
         );
@@ -93,7 +91,7 @@ export class PairsStateService implements OnModuleInit {
             }),
         );
 
-        return result.pairs?.map((pair) => this.formatPair(pair, fields)) ?? [];
+        return result.pairs?.map((pair) => formatPair(pair, fields)) ?? [];
     }
 
     @StateRpcMetrics()
@@ -104,7 +102,7 @@ export class PairsStateService implements OnModuleInit {
             }),
         );
 
-        return result.pairs?.map((pair) => this.formatPair(pair, fields)) ?? [];
+        return result.pairs?.map((pair) => formatPair(pair, fields)) ?? [];
     }
 
     @StateRpcMetrics()
@@ -138,9 +136,7 @@ export class PairsStateService implements OnModuleInit {
         );
 
         return {
-            pairs:
-                result.pairs?.map((pair) => this.formatPair(pair, fields)) ??
-                [],
+            pairs: result.pairs?.map((pair) => formatPair(pair, fields)) ?? [],
             count: result.count,
         };
     }
@@ -160,13 +156,16 @@ export class PairsStateService implements OnModuleInit {
         );
 
         return pairsWithTokens.map((item) => {
-            const pair = this.formatPair(item.pair, pairFields);
+            const pair = formatPair(item.pair, pairFields);
 
-            pair.firstToken = tokenToEsdtToken(item.firstToken);
-            pair.secondToken = tokenToEsdtToken(item.secondToken);
+            pair.firstToken = formatToken(item.firstToken, tokenFields);
+            pair.secondToken = formatToken(item.secondToken, tokenFields);
 
             if (item.lpToken) {
-                pair.liquidityPoolToken = tokenToEsdtToken(item.lpToken);
+                pair.liquidityPoolToken = formatToken(
+                    item.lpToken,
+                    tokenFields,
+                );
             }
 
             return pair;
@@ -175,16 +174,17 @@ export class PairsStateService implements OnModuleInit {
 
     @StateRpcMetrics()
     async updatePairs(
-        pairUpdates: Map<string, Partial<Pair>>,
+        pairUpdates: Map<string, Partial<PairModel>>,
     ): Promise<UpdatePairsResponse> {
         if (pairUpdates.size === 0) {
             return {
                 failedAddresses: [],
+                tokensWithPriceUpdates: [],
                 updatedCount: 0,
             };
         }
 
-        const pairs: Pair[] = [];
+        const pairs: PairModel[] = [];
         const paths: string[] = [];
 
         pairUpdates.forEach((pair, address) => {
@@ -192,7 +192,7 @@ export class PairsStateService implements OnModuleInit {
 
             pairs.push({
                 address,
-                ...(pair as Pair),
+                ...(pair as PairModel),
             });
         });
 
@@ -202,31 +202,5 @@ export class PairsStateService implements OnModuleInit {
                 updateMask: { paths: [...new Set(paths)] },
             }),
         );
-    }
-
-    formatPair(pair: Pair, fields: (keyof PairModel)[]): PairModel {
-        if (fields.length === 0) {
-            return new PairModel({
-                ...pair,
-                trustedSwapPairs: pair.trustedSwapPairs ?? [],
-                feeDestinations: pair.feeDestinations ?? [],
-                whitelistedManagedAddresses:
-                    pair.whitelistedManagedAddresses ?? [],
-            });
-        }
-
-        return new PairModel({
-            ...pair,
-            ...(fields.includes('trustedSwapPairs') && {
-                trustedSwapPairs: pair.trustedSwapPairs ?? [],
-            }),
-            ...(fields.includes('feeDestinations') && {
-                feeDestinations: pair.feeDestinations ?? [],
-            }),
-            ...(fields.includes('whitelistedManagedAddresses') && {
-                whitelistedManagedAddresses:
-                    pair.whitelistedManagedAddresses ?? [],
-            }),
-        });
     }
 }

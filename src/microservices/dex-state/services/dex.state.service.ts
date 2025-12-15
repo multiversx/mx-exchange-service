@@ -25,12 +25,16 @@ import {
     UpdateTokensRequest,
     UpdateTokensResponse,
 } from '../interfaces/dex_state.interfaces';
-import { Pair, PairInfo } from '../interfaces/pairs.interfaces';
-import { Token, TokenType } from '../interfaces/tokens.interfaces';
 import { StateTasks, TaskDto } from 'src/modules/dex-state/entities';
 import { BulkUpdatesService } from './bulk.updates.service';
 import { queueStateTasks } from 'src/modules/dex-state/dex.state.utils';
 import { CacheService } from 'src/services/caching/cache.service';
+import {
+    EsdtToken,
+    EsdtTokenType,
+} from 'src/modules/tokens/models/esdtToken.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 
 const TOKEN_SORT_FIELD_MAP = {
     [TokenSortField.TOKENS_SORT_PRICE]: 'price',
@@ -61,10 +65,10 @@ const PAIR_SORT_FIELD_MAP = {
 @Injectable()
 export class DexStateService implements OnModuleInit {
     private readonly bulkUpdatesService: BulkUpdatesService;
-    private tokens = new Map<string, Token>();
-    private pairs = new Map<string, Pair>();
+    private tokens = new Map<string, EsdtToken>();
+    private pairs = new Map<string, PairModel>();
     private tokenPairs = new Map<string, string[]>();
-    private tokensByType = new Map<TokenType, string[]>();
+    private tokensByType = new Map<EsdtTokenType, string[]>();
     private activePairs = new Set<string>();
     private activePairsTokens = new Set<string>();
 
@@ -99,15 +103,19 @@ export class DexStateService implements OnModuleInit {
         this.activePairs.clear();
         this.activePairsTokens.clear();
 
-        this.tokensByType.set(TokenType.TOKEN_TYPE_FUNGIBLE_TOKEN, []);
-        this.tokensByType.set(TokenType.TOKEN_TYPE_FUNGIBLE_LP_TOKEN, []);
+        this.tokensByType.set(EsdtTokenType.FungibleToken, []);
+        this.tokensByType.set(EsdtTokenType.FungibleLpToken, []);
 
         this.usdcPrice = usdcPrice;
         this.commonTokenIDs = commonTokenIDs;
 
+        // todo : validate token type
+
         for (const token of tokens) {
             this.tokens.set(token.identifier, { ...token });
-            this.tokensByType.get(token.type).push(token.identifier);
+            this.tokensByType
+                .get(token.type as EsdtTokenType)
+                .push(token.identifier);
         }
 
         for (const pair of pairs.values()) {
@@ -157,12 +165,12 @@ export class DexStateService implements OnModuleInit {
                 continue;
             }
 
-            const pair: Partial<Pair> = {};
+            const pair: Partial<PairModel> = {};
             for (const field of fields) {
                 pair[field] = statePair[field];
             }
 
-            result.pairs.push(pair as Pair);
+            result.pairs.push(pair as PairModel);
         }
 
         profiler.stop();
@@ -427,13 +435,15 @@ export class DexStateService implements OnModuleInit {
 
         if (!this.tokens.has(firstToken.identifier)) {
             this.tokens.set(firstToken.identifier, { ...firstToken });
-            this.tokensByType.get(firstToken.type).push(firstToken.identifier);
+            this.tokensByType
+                .get(firstToken.type as EsdtTokenType)
+                .push(firstToken.identifier);
         }
 
         if (!this.tokens.has(secondToken.identifier)) {
             this.tokens.set(secondToken.identifier, { ...secondToken });
             this.tokensByType
-                .get(secondToken.type)
+                .get(secondToken.type as EsdtTokenType)
                 .push(secondToken.identifier);
         }
 
@@ -473,7 +483,7 @@ export class DexStateService implements OnModuleInit {
     updatePairs(request: UpdatePairsRequest): UpdatePairsResponse {
         const { pairs: partialPairs, updateMask } = request;
 
-        const updatedPairs = new Map<string, Pair>();
+        const updatedPairs = new Map<string, PairModel>();
         const failedAddresses: string[] = [];
 
         const nonUpdateableFields = [
@@ -505,7 +515,7 @@ export class DexStateService implements OnModuleInit {
                 }
 
                 if (field === 'info') {
-                    const currentReserves: PairInfo = {
+                    const currentReserves: PairInfoModel = {
                         reserves0:
                             partial.info.reserves0 ?? pair.info.reserves0,
                         reserves1:
@@ -528,10 +538,11 @@ export class DexStateService implements OnModuleInit {
             });
         }
 
-        this.recomputeValues();
+        const tokensWithPriceUpdates = this.recomputeValues();
 
         return {
             failedAddresses,
+            tokensWithPriceUpdates,
             updatedCount: updatedPairs.size,
         };
     }
@@ -562,12 +573,12 @@ export class DexStateService implements OnModuleInit {
                 continue;
             }
 
-            const token: Partial<Token> = {};
+            const token: Partial<EsdtToken> = {};
             for (const field of fields) {
                 token[field] = stateToken[field];
             }
 
-            result.tokens.push(token as Token);
+            result.tokens.push(token as EsdtToken);
         }
 
         return result;
@@ -594,7 +605,7 @@ export class DexStateService implements OnModuleInit {
         } = request;
 
         const tokenIDs = this.tokensByType
-            .get(TokenType.TOKEN_TYPE_FUNGIBLE_TOKEN)
+            .get(EsdtTokenType.FungibleToken)
             .filter((token) => {
                 if (enabledSwaps && !this.activePairsTokens.has(token)) {
                     return false;
@@ -604,7 +615,7 @@ export class DexStateService implements OnModuleInit {
                     return false;
                 }
 
-                let currentToken: Token;
+                let currentToken: EsdtToken;
                 if (searchToken || minLiquidity) {
                     currentToken = this.tokens.get(token);
                 }
@@ -679,7 +690,7 @@ export class DexStateService implements OnModuleInit {
     updateTokens(request: UpdateTokensRequest): UpdateTokensResponse {
         const { tokens: partialTokens, updateMask } = request;
 
-        const updatedTokens = new Map<string, Token>();
+        const updatedTokens = new Map<string, EsdtToken>();
         const failedIdentifiers: string[] = [];
 
         const nonUpdateableFields = ['identifier', 'decimals', 'type'];
@@ -725,8 +736,8 @@ export class DexStateService implements OnModuleInit {
         };
     }
 
-    private recomputeValues(): void {
-        this.bulkUpdatesService.recomputeAllValues(
+    private recomputeValues(): string[] {
+        return this.bulkUpdatesService.recomputeAllValues(
             this.pairs,
             this.tokens,
             this.usdcPrice,

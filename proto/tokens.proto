@@ -57,7 +57,7 @@ message Token {
   bool   canFreeze                 = 34;
   bool   canWipe                   = 35;
 
-  TokenType type                    = 36;
+  string type                    = 36;
 
   repeated TokenRole roles          = 37;
 
