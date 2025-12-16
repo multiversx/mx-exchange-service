@@ -189,6 +189,14 @@ message AddPairLpTokenRequest {
   Token token = 2;
 }
 
+message UpdateUsdcPriceRequest {
+  double usdcPrice = 1;
+}
+
+message UpdateUsdcPriceResponse {
+  repeated string tokensWithPriceUpdates = 1;
+}
+
 service DexStateService {
   rpc GetPairs (GetPairsRequest) returns (Pairs) {}
   rpc GetFilteredPairs (GetFilteredPairsRequest) returns (PaginatedPairs) {}
@@ -207,4 +215,6 @@ service DexStateService {
   rpc AddPairLpToken (AddPairLpTokenRequest) returns (google.protobuf.Empty) {}
   rpc UpdateTokens (UpdateTokensRequest) returns (UpdateTokensResponse) {}
   rpc AddToken (AddTokenRequest) returns (google.protobuf.Empty) {}
+
+  rpc UpdateUsdcPrice (UpdateUsdcPriceRequest) returns (UpdateUsdcPriceResponse) {}
 }

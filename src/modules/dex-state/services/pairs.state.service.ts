@@ -10,6 +10,7 @@ import {
     PairSortField,
     SortOrder,
     UpdatePairsResponse,
+    UpdateUsdcPriceResponse,
 } from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { PairModel } from 'src/modules/pair/models/pair.model';
@@ -200,6 +201,14 @@ export class PairsStateService implements OnModuleInit {
             this.dexStateServive.updatePairs({
                 pairs,
                 updateMask: { paths: [...new Set(paths)] },
+            }),
+        );
+    }
+
+    async updateUsdcPrice(usdcPrice: number): Promise<UpdateUsdcPriceResponse> {
+        return firstValueFrom(
+            this.dexStateServive.updateUsdcPrice({
+                usdcPrice,
             }),
         );
     }

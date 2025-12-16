@@ -22,6 +22,8 @@ import {
     UpdatePairsResponse,
     UpdateTokensRequest,
     UpdateTokensResponse,
+    UpdateUsdcPriceRequest,
+    UpdateUsdcPriceResponse,
 } from './interfaces/dex_state.interfaces';
 import { DexStateService } from './services/dex.state.service';
 
@@ -104,6 +106,12 @@ export class DexStateController implements IDexStateService {
     updateTokens(request: UpdateTokensRequest): UpdateTokensResponse {
         this.ensureReady();
         return this.dexStateService.updateTokens(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'UpdateUsdcPrice')
+    updateUsdcPrice(request: UpdateUsdcPriceRequest): UpdateUsdcPriceResponse {
+        this.ensureReady();
+        return this.dexStateService.updateUsdcPrice(request);
     }
 
     private ensureReady() {

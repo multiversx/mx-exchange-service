@@ -12,7 +12,7 @@ export class StateCronService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_5_SECONDS)
+    @Cron(CronExpression.EVERY_SECOND)
     async executeStateTasks(): Promise<void> {
         try {
             await this.taskService.processQueuedTasks();
@@ -24,7 +24,7 @@ export class StateCronService {
         }
     }
 
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     @Lock({ name: 'refreshStateAnalytics', verbose: true })
     async refreshStateAnalytics(): Promise<void> {
         try {
@@ -47,6 +47,19 @@ export class StateCronService {
             await this.taskService.updateSnapshot();
         } catch (error) {
             this.logger.error(`${this.updateStateSnapshot.name} cron failed`, {
+                context: StateCronService.name,
+                error,
+            });
+        }
+    }
+
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Lock({ name: 'refreshUsdcPrice', verbose: true })
+    async refreshUsdcPrice(): Promise<void> {
+        try {
+            await this.taskService.refreshUsdcPrice();
+        } catch (error) {
+            this.logger.error(`${this.refreshUsdcPrice.name} cron failed`, {
                 context: StateCronService.name,
                 error,
             });

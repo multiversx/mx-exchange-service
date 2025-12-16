@@ -1,11 +1,14 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { Type } from 'class-transformer';
 import {
+    ArrayMaxSize,
     ArrayMinSize,
     IsArray,
     IsEnum,
     IsNotEmpty,
     IsString,
     ValidateIf,
+    ValidateNested,
 } from 'class-validator';
 
 export enum StateTasks {
@@ -15,6 +18,7 @@ export enum StateTasks {
     UPDATE_SNAPSHOT = 'updateSnapshot',
     BROADCAST_PRICE_UPDATES = 'broadcastPriceUpdates',
     REFRESH_PAIR_RESERVES = 'refreshReserves',
+    REFRESH_USDC_PRICE = 'refreshUsdcPrice',
     INDEX_LP_TOKEN = 'indexLpToken',
     POPULATE_FARMS = 'populateFarms',
     REFRESH_FARM = 'refreshFarm',
@@ -33,6 +37,7 @@ export const StateTaskPriority: Record<StateTasks, number> = {
     populateStaking: 6,
     populateStakingProxies: 7,
     refreshReserves: 10,
+    refreshUsdcPrice: 12,
     refreshFarm: 15,
     refreshStakingFarm: 15,
     refreshFarmInfo: 20,
@@ -80,4 +85,13 @@ export class PriceUpdatesModel {
     constructor(init?: Partial<PriceUpdatesModel>) {
         Object.assign(this, init);
     }
+}
+
+export class QueueTasksRequest {
+    @IsArray()
+    @ArrayMinSize(1)
+    @ArrayMaxSize(3)
+    @ValidateNested({ each: true })
+    @Type(() => TaskDto)
+    tasks: TaskDto[];
 }

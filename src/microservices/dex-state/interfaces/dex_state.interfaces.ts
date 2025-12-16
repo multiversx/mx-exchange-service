@@ -186,6 +186,14 @@ export interface AddPairLpTokenRequest {
     token: EsdtToken | undefined;
 }
 
+export interface UpdateUsdcPriceRequest {
+    usdcPrice: number;
+}
+
+export interface UpdateUsdcPriceResponse {
+    tokensWithPriceUpdates: string[];
+}
+
 export const DEX_STATE_PACKAGE_NAME = 'dex_state';
 
 export interface IDexStateServiceClient {
@@ -212,7 +220,6 @@ export interface IDexStateServiceClient {
     // getTokenPairs(request: GetTokenPairsRequest): Observable<Pairs>;
 
     initState(request: InitStateRequest): Observable<InitStateResponse>;
-    // initState(request: InitStateRequest): Observable<InitStateResponse>;
 
     updatePairs(request: UpdatePairsRequest): Observable<UpdatePairsResponse>;
 
@@ -225,6 +232,10 @@ export interface IDexStateServiceClient {
     ): Observable<UpdateTokensResponse>;
 
     //  addToken(request: AddTokenRequest): Observable<Empty>;
+
+    updateUsdcPrice(
+        request: UpdateUsdcPriceRequest,
+    ): Observable<UpdateUsdcPriceResponse>;
 }
 
 export interface IDexStateService {
@@ -289,6 +300,13 @@ export interface IDexStateService {
         | UpdateTokensResponse;
 
     // addToken(request: AddTokenRequest): void;
+
+    updateUsdcPrice(
+        request: UpdateUsdcPriceRequest,
+    ):
+        | Promise<UpdateUsdcPriceResponse>
+        | Observable<UpdateUsdcPriceResponse>
+        | UpdateUsdcPriceResponse;
 }
 
 export const DEX_STATE_SERVICE_NAME = 'DexStateService';

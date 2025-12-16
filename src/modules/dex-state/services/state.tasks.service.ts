@@ -105,9 +105,12 @@ export class StateTasksService {
                         JSON.parse(task.args[0]),
                     );
                     break;
-                // case PersistenceTasks.REFRESH_PAIR_RESERVES:
-                //     await this.refreshPairReserves();
-                //     break;
+                case StateTasks.REFRESH_PAIR_RESERVES:
+                    await this.refreshPairReserves();
+                    break;
+                case StateTasks.REFRESH_USDC_PRICE:
+                    await this.refreshUsdcPrice();
+                    break;
                 // case PersistenceTasks.POPULATE_FARMS:
                 //     await this.populateFarms();
                 //     break;
@@ -169,6 +172,13 @@ export class StateTasksService {
             commonTokenIDs,
             usdcPrice,
         );
+
+        await this.queueTasks([
+            new TaskDto({
+                name: StateTasks.REFRESH_PAIR_RESERVES,
+                args: [],
+            }),
+        ]);
     }
 
     async addPair(
@@ -305,6 +315,45 @@ export class StateTasksService {
 
         await this.pubSub.publish(TOKENS_PRICE_UPDATE_EVENT, {
             priceUpdates,
+        });
+    }
+
+    async refreshPairReserves(): Promise<void> {
+        const pairs = await this.pairsState.getAllPairs(['address']);
+
+        const pairUpdates = new Map<string, Partial<PairModel>>();
+        for (const pair of pairs) {
+            const updates = await this.syncService.getPairReservesAndState(
+                pair,
+            );
+
+            pairUpdates.set(pair.address, {
+                ...updates,
+            });
+        }
+
+        const updateResult = await this.pairsState.updatePairs(pairUpdates);
+
+        this.logger.debug(`Refresh pairs reserves and state task completed`, {
+            context: StateTasksService.name,
+            updateResult,
+        });
+    }
+
+    async refreshUsdcPrice(): Promise<void> {
+        const usdcPrice = await this.syncService.getUsdcPrice();
+
+        const updateResult = await this.pairsState.updateUsdcPrice(usdcPrice);
+
+        if (updateResult.tokensWithPriceUpdates?.length > 0) {
+            await this.broadcastTokensPriceUpdates(
+                updateResult.tokensWithPriceUpdates,
+            );
+        }
+
+        this.logger.debug(`Refresh USDC price task completed`, {
+            context: StateTasksService.name,
+            updateResult,
         });
     }
 }

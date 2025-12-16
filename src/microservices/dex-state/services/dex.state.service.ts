@@ -24,6 +24,8 @@ import {
     UpdatePairsResponse,
     UpdateTokensRequest,
     UpdateTokensResponse,
+    UpdateUsdcPriceRequest,
+    UpdateUsdcPriceResponse,
 } from '../interfaces/dex_state.interfaces';
 import { StateTasks, TaskDto } from 'src/modules/dex-state/entities';
 import { BulkUpdatesService } from './bulk.updates.service';
@@ -734,6 +736,17 @@ export class DexStateService implements OnModuleInit {
             failedIdentifiers,
             updatedCount: updatedTokens.size,
         };
+    }
+
+    updateUsdcPrice(request: UpdateUsdcPriceRequest): UpdateUsdcPriceResponse {
+        if (!request.usdcPrice) {
+            return { tokensWithPriceUpdates: [] };
+        }
+
+        this.usdcPrice = request.usdcPrice;
+        const tokensWithPriceUpdates = this.recomputeValues();
+
+        return { tokensWithPriceUpdates };
     }
 
     private recomputeValues(): string[] {

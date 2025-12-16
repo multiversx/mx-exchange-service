@@ -158,7 +158,7 @@ export class StateSyncService {
         ] = await Promise.all([
             this.routerAbi.getPairsMetadataRaw(),
             this.routerAbi.commonTokensForUserPairs(),
-            this.dataApi.getTokenPrice('USDC'),
+            this.getUsdcPrice(),
             this.getLatestSnapshot(),
         ]);
 
@@ -485,19 +485,80 @@ export class StateSyncService {
         return lpToken;
     }
 
-    private async updatePairsAnalytics(
-        pairs: Map<string, PairModel>,
-        pairsNeedingAnalytics: string[],
-    ): Promise<void> {
-        for (const address of pairsNeedingAnalytics) {
-            const pair = pairs.get(address);
-            const updates = await this.getPairAnalytics(pair);
+    async getPairReservesAndState(
+        pair: PairModel,
+    ): Promise<Partial<PairModel>> {
+        const [info, state] = await Promise.all([
+            this.pairAbi.getPairInfoMetadataRaw(pair.address),
+            this.pairAbi.getStateRaw(pair.address),
+        ]);
 
-            pairs.set(pair.address, {
-                ...pair,
-                ...updates,
-            });
-        }
+        const pairUpdates: Partial<PairModel> = {
+            info,
+            state,
+        };
+
+        return pairUpdates;
+    }
+
+    async getUsdcPrice(): Promise<number> {
+        return this.dataApi.getTokenPrice('USDC');
+    }
+
+    async getPairAnalytics(pair: PairModel): Promise<Partial<PairModel>> {
+        const [
+            firstTokenVolume24h,
+            secondTokenVolume24h,
+            volumeUSD24h,
+            previous24hVolumeUSD,
+            feesUSD24h,
+            previous24hFeesUSD,
+            previous24hLockedValueUSD,
+            tradesCount,
+            tradesCount24h,
+            // TODO : fix; these fields should not be computed like this
+            hasFarms,
+            hasDualFarms,
+            // compoundedAprValue,
+        ] = await Promise.all([
+            this.pairCompute.firstTokenVolume(pair.address),
+            this.pairCompute.secondTokenVolume(pair.address),
+            this.pairCompute.volumeUSD(pair.address),
+            this.pairCompute.previous24hVolumeUSD(pair.address),
+            this.pairCompute.feesUSD(pair.address, '24h'),
+            this.pairCompute.previous24hFeesUSD(pair.address),
+            this.pairCompute.previous24hLockedValueUSD(pair.address),
+            this.pairCompute.tradesCount(pair.address),
+            this.pairCompute.tradesCount24h(pair.address),
+            this.pairCompute.hasFarms(pair.address),
+            this.pairCompute.hasDualFarms(pair.address),
+            // this.pairCompute.computeCompoundedApr(pair.address),
+        ]);
+
+        const actualFees24hBig = new BigNumber(feesUSD24h).multipliedBy(
+            new BigNumber(pair.totalFeePercent - pair.specialFeePercent).div(
+                pair.totalFeePercent,
+            ),
+        );
+        const feesAPR = actualFees24hBig.times(365).div(pair.lockedValueUSD);
+
+        const pairUpdates: Partial<PairModel> = {
+            firstTokenVolume24h,
+            secondTokenVolume24h,
+            volumeUSD24h,
+            previous24hVolumeUSD,
+            feesUSD24h,
+            previous24hFeesUSD,
+            previous24hLockedValueUSD,
+            tradesCount,
+            tradesCount24h,
+            feesAPR: feesAPR.isNaN() ? '0' : feesAPR.toFixed(),
+            hasFarms,
+            hasDualFarms,
+            compoundedAprValue: '0',
+        };
+
+        return pairUpdates;
     }
 
     async updateTokensAnalytics(
@@ -569,60 +630,50 @@ export class StateSyncService {
         }
     }
 
-    async getPairAnalytics(pair: PairModel): Promise<Partial<PairModel>> {
-        const [
-            firstTokenVolume24h,
-            secondTokenVolume24h,
-            volumeUSD24h,
-            previous24hVolumeUSD,
-            feesUSD24h,
-            previous24hFeesUSD,
-            previous24hLockedValueUSD,
-            tradesCount,
-            tradesCount24h,
-            // TODO : fix; these fields should not be computed like this
-            hasFarms,
-            hasDualFarms,
-            // compoundedAprValue,
-        ] = await Promise.all([
-            this.pairCompute.firstTokenVolume(pair.address),
-            this.pairCompute.secondTokenVolume(pair.address),
-            this.pairCompute.volumeUSD(pair.address),
-            this.pairCompute.previous24hVolumeUSD(pair.address),
-            this.pairCompute.feesUSD(pair.address, '24h'),
-            this.pairCompute.previous24hFeesUSD(pair.address),
-            this.pairCompute.previous24hLockedValueUSD(pair.address),
-            this.pairCompute.tradesCount(pair.address),
-            this.pairCompute.tradesCount24h(pair.address),
-            this.pairCompute.hasFarms(pair.address),
-            this.pairCompute.hasDualFarms(pair.address),
-            // this.pairCompute.computeCompoundedApr(pair.address),
-        ]);
+    private async updatePairsAnalytics(
+        pairs: Map<string, PairModel>,
+        pairsNeedingAnalytics: string[],
+    ): Promise<void> {
+        for (const address of pairsNeedingAnalytics) {
+            const pair = pairs.get(address);
+            const updates = await this.getPairAnalytics(pair);
 
-        const actualFees24hBig = new BigNumber(feesUSD24h).multipliedBy(
-            new BigNumber(pair.totalFeePercent - pair.specialFeePercent).div(
-                pair.totalFeePercent,
-            ),
+            pairs.set(pair.address, {
+                ...pair,
+                ...updates,
+            });
+        }
+    }
+
+    private async computeTokenPrevious24hPrice(
+        token: EsdtToken,
+        wrappedEGLDPrev24hPrice: string,
+    ): Promise<string> {
+        const cachedValues24h = await this.cacheService.get<
+            HistoricDataModel[]
+        >(
+            generateCacheKeyFromParams('analytics', [
+                'values24h',
+                token.identifier,
+                'priceUSD',
+            ]),
         );
-        const feesAPR = actualFees24hBig.times(365).div(pair.lockedValueUSD);
 
-        const pairUpdates: Partial<PairModel> = {
-            firstTokenVolume24h,
-            secondTokenVolume24h,
-            volumeUSD24h,
-            previous24hVolumeUSD,
-            feesUSD24h,
-            previous24hFeesUSD,
-            previous24hLockedValueUSD,
-            tradesCount,
-            tradesCount24h,
-            feesAPR: feesAPR.isNaN() ? '0' : feesAPR.toFixed(),
-            hasFarms,
-            hasDualFarms,
-            compoundedAprValue: '0',
-        };
+        const values24h =
+            !cachedValues24h || cachedValues24h === undefined
+                ? await this.analyticsQuery.getValues24h({
+                      series: token.identifier,
+                      metric: 'priceUSD',
+                  })
+                : cachedValues24h;
 
-        return pairUpdates;
+        if (values24h.length > 0 && values24h[0]?.value === '0') {
+            return new BigNumber(token.derivedEGLD)
+                .times(wrappedEGLDPrev24hPrice)
+                .toFixed();
+        }
+
+        return values24h[0]?.value ?? '0';
     }
 
     private computeTokenVolumeChange(token: EsdtToken): number {
@@ -667,37 +718,6 @@ export class StateSyncService {
         );
 
         return currentSwapsBN.dividedBy(maxPrevious24hTradeCount).toNumber();
-    }
-
-    private async computeTokenPrevious24hPrice(
-        token: EsdtToken,
-        wrappedEGLDPrev24hPrice: string,
-    ): Promise<string> {
-        const cachedValues24h = await this.cacheService.get<
-            HistoricDataModel[]
-        >(
-            generateCacheKeyFromParams('analytics', [
-                'values24h',
-                token.identifier,
-                'priceUSD',
-            ]),
-        );
-
-        const values24h =
-            !cachedValues24h || cachedValues24h === undefined
-                ? await this.analyticsQuery.getValues24h({
-                      series: token.identifier,
-                      metric: 'priceUSD',
-                  })
-                : cachedValues24h;
-
-        if (values24h.length > 0 && values24h[0]?.value === '0') {
-            return new BigNumber(token.derivedEGLD)
-                .times(wrappedEGLDPrev24hPrice)
-                .toFixed();
-        }
-
-        return values24h[0]?.value ?? '0';
     }
 
     private computeTokenTrendingScore(token: EsdtToken): string {
