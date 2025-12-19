@@ -148,6 +148,10 @@ export class PairsStateService implements OnModuleInit {
         pairFields: (keyof PairModel)[] = [],
         tokenFields: (keyof EsdtToken)[] = [],
     ): Promise<PairModel[]> {
+        if (!addresses || addresses.length === 0) {
+            return [];
+        }
+
         const { pairsWithTokens } = await firstValueFrom(
             this.dexStateServive.getPairsTokens({
                 addresses,
