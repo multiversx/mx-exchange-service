@@ -4,11 +4,17 @@ import BigNumber from 'bignumber.js';
 import {
     AddPairLpTokenRequest,
     AddPairRequest,
+    Farms,
+    GetAllFarmsRequest,
     GetAllPairsRequest,
+    GetAllStakingFarmsRequest,
+    GetAllStakingProxiesRequest,
     GetAllTokensRequest,
+    GetFeesCollectorRequest,
     GetFilteredPairsRequest,
     GetFilteredTokensRequest,
     GetPairsAndTokensRequest,
+    GetWeeklyTimekeepingRequest,
     InitStateRequest,
     InitStateResponse,
     PaginatedPairs,
@@ -18,6 +24,8 @@ import {
     PairsAndTokensResponse,
     PairSortField,
     SortOrder,
+    StakingFarms,
+    StakingProxies,
     Tokens,
     TokenSortField,
     UpdatePairsRequest,
@@ -35,8 +43,26 @@ import {
     EsdtToken,
     EsdtTokenType,
 } from 'src/modules/tokens/models/esdtToken.model';
-import { PairModel } from 'src/modules/pair/models/pair.model';
+import {
+    PairCompoundedAPRModel,
+    PairModel,
+} from 'src/modules/pair/models/pair.model';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
+import {
+    BoostedYieldsFactors,
+    FarmModel,
+} from 'src/modules/farm/models/farm.v2.model';
+import { DexStateRewardsComputeService } from './dex.state.rewards.compute.service';
+import { DexStateFarmsComputeService } from './dex.state.farms.compute.service';
+import { constantsConfig, scAddress } from 'src/config';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { computeValueUSD } from 'src/utils/token.converters';
+import { StakingModel } from 'src/modules/staking/models/staking.model';
+import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
+import { FarmRewardType } from 'src/modules/farm/models/farm.model';
 
 const TOKEN_SORT_FIELD_MAP = {
     [TokenSortField.TOKENS_SORT_PRICE]: 'price',
@@ -69,6 +95,10 @@ export class DexStateService implements OnModuleInit {
     private readonly bulkUpdatesService: BulkUpdatesService;
     private tokens = new Map<string, EsdtToken>();
     private pairs = new Map<string, PairModel>();
+    private farms = new Map<string, FarmModel>();
+    private stakingFarms = new Map<string, StakingModel>();
+    private stakingProxies = new Map<string, StakingProxyModel>();
+    private feesCollector: FeesCollectorModel;
     private tokenPairs = new Map<string, string[]>();
     private tokensByType = new Map<EsdtTokenType, string[]>();
     private activePairs = new Set<string>();
@@ -79,7 +109,11 @@ export class DexStateService implements OnModuleInit {
 
     private initialized = false;
 
-    constructor(private readonly cacheService: CacheService) {
+    constructor(
+        private readonly cacheService: CacheService,
+        private readonly rewardsCompute: DexStateRewardsComputeService,
+        private readonly farmsCompute: DexStateFarmsComputeService,
+    ) {
         this.bulkUpdatesService = new BulkUpdatesService();
     }
 
@@ -96,10 +130,25 @@ export class DexStateService implements OnModuleInit {
     }
 
     initState(request: InitStateRequest): InitStateResponse {
-        const { tokens, pairs, commonTokenIDs, usdcPrice } = request;
+        const {
+            tokens,
+            pairs,
+            farms,
+            stakingFarms,
+            stakingProxies,
+            feesCollector,
+            commonTokenIDs,
+            usdcPrice,
+        } = request;
+
+        const lockedTokenCollection = 'XMEX-82f2f4';
 
         this.tokens.clear();
         this.pairs.clear();
+        this.farms.clear();
+        this.stakingFarms.clear();
+        this.stakingProxies.clear();
+
         this.tokensByType.clear();
         this.tokenPairs.clear();
         this.activePairs.clear();
@@ -121,7 +170,22 @@ export class DexStateService implements OnModuleInit {
         }
 
         for (const pair of pairs.values()) {
+            pair.compoundedAPR = new PairCompoundedAPRModel({
+                feesAPR: pair.feesAPR ?? '0',
+                farmBaseAPR: '0',
+                farmBoostedAPR: '0',
+                dualFarmBaseAPR: '0',
+                dualFarmBoostedAPR: '0',
+            });
+
             this.pairs.set(pair.address, { ...pair });
+
+            // if (
+            //     pair.address ===
+            //     'erd1qqqqqqqqqqqqqpgqzw0d0tj25qme9e4ukverjjjqle6xamay0n4s5r0v9g'
+            // ) {
+            //     console.log(this.pairs.get(pair.address));
+            // }
 
             if (!this.tokenPairs.has(pair.firstTokenId)) {
                 this.tokenPairs.set(pair.firstTokenId, []);
@@ -141,11 +205,71 @@ export class DexStateService implements OnModuleInit {
             }
         }
 
+        for (const farm of farms.values()) {
+            const completeFarm = this.computeMissingFarmFields(farm);
+
+            const pair = this.pairs.get(completeFarm.pairAddress);
+
+            if (pair && completeFarm.rewardType !== FarmRewardType.DEPRECATED) {
+                pair.hasFarms = true;
+                pair.farmAddress = completeFarm.address;
+                pair.farmRewardCollection = lockedTokenCollection;
+
+                pair.compoundedAPR.farmBaseAPR = completeFarm.baseApr;
+                pair.compoundedAPR.farmBoostedAPR = completeFarm.boostedApr;
+
+                this.pairs.set(pair.address, pair);
+            }
+
+            this.farms.set(completeFarm.address, { ...completeFarm });
+        }
+
+        for (const stakingFarm of stakingFarms.values()) {
+            const completeStakingFarm =
+                this.computeMissingStakingFarmFields(stakingFarm);
+
+            this.stakingFarms.set(completeStakingFarm.address, {
+                ...completeStakingFarm,
+            });
+        }
+
+        for (const stakingProxy of stakingProxies.values()) {
+            const completeStakingProxy =
+                this.computeMissingStakingProxyFields(stakingProxy);
+
+            const pair = this.pairs.get(completeStakingProxy.pairAddress);
+            const stakingFarm = this.stakingFarms.get(
+                stakingProxy.stakingFarmAddress,
+            );
+
+            if (pair && stakingFarm) {
+                pair.hasDualFarms = true;
+                pair.stakingProxyAddress = stakingProxy.address;
+                pair.dualFarmRewardTokenId = stakingProxy.stakingTokenId;
+                pair.stakingFarmAddress = stakingProxy.stakingFarmAddress;
+                pair.compoundedAPR.dualFarmBaseAPR = stakingFarm.baseApr;
+                pair.compoundedAPR.dualFarmBoostedAPR =
+                    stakingFarm.maxBoostedApr;
+            }
+
+            this.stakingProxies.set(completeStakingProxy.address, {
+                ...completeStakingProxy,
+            });
+        }
+
+        const completeFeesCollector =
+            this.computeMissingFeesCollectorFields(feesCollector);
+
+        this.feesCollector = { ...completeFeesCollector };
+
         this.initialized = true;
 
         return {
             tokensCount: this.tokens.size,
             pairsCount: this.pairs.size,
+            farmsCount: this.farms.size,
+            stakingFarmsCount: this.stakingFarms.size,
+            stakingProxiesCount: this.stakingProxies.size,
         };
     }
 
@@ -179,6 +303,172 @@ export class DexStateService implements OnModuleInit {
         console.log('SERVER GET PAIRS', profiler.duration);
 
         return result;
+    }
+
+    getFarms(addresses: string[], fields: string[] = []): Farms {
+        const result: Farms = {
+            farms: [],
+        };
+
+        for (const address of addresses) {
+            const stateFarm = { ...this.farms.get(address) };
+
+            if (!stateFarm) {
+                throw new Error(`Farm ${address} not found`);
+            }
+
+            if (fields.length === 0) {
+                result.farms.push(stateFarm);
+                continue;
+            }
+
+            const farm: Partial<FarmModel> = {};
+            for (const field of fields) {
+                farm[field] = stateFarm[field];
+            }
+
+            result.farms.push(farm as FarmModel);
+        }
+
+        return result;
+    }
+
+    getAllFarms(request: GetAllFarmsRequest): Farms {
+        const fields = request.fields?.paths ?? [];
+
+        return this.getFarms(Array.from(this.farms.keys()), fields);
+    }
+
+    getStakingFarms(addresses: string[], fields: string[] = []): StakingFarms {
+        const result: StakingFarms = {
+            stakingFarms: [],
+        };
+
+        for (const address of addresses) {
+            const stateStakingFarm = { ...this.stakingFarms.get(address) };
+
+            if (!stateStakingFarm) {
+                throw new Error(`Staking farm ${address} not found`);
+            }
+
+            if (fields.length === 0) {
+                result.stakingFarms.push(stateStakingFarm);
+                continue;
+            }
+
+            const stakingFarm: Partial<StakingModel> = {};
+            for (const field of fields) {
+                stakingFarm[field] = stateStakingFarm[field];
+            }
+
+            result.stakingFarms.push(stakingFarm as StakingModel);
+        }
+
+        return result;
+    }
+
+    getAllStakingFarms(request: GetAllStakingFarmsRequest): StakingFarms {
+        const fields = request.fields?.paths ?? [];
+
+        return this.getStakingFarms(
+            Array.from(this.stakingFarms.keys()),
+            fields,
+        );
+    }
+
+    getStakingProxies(
+        addresses: string[],
+        fields: string[] = [],
+    ): StakingProxies {
+        const result: StakingProxies = {
+            stakingProxies: [],
+        };
+
+        for (const address of addresses) {
+            const stateStakingProxy = { ...this.stakingProxies.get(address) };
+
+            if (!stateStakingProxy) {
+                throw new Error(`Staking proxy ${address} not found`);
+            }
+
+            if (fields.length === 0) {
+                result.stakingProxies.push(stateStakingProxy);
+                continue;
+            }
+
+            const stakingProxy: Partial<StakingProxyModel> = {};
+            for (const field of fields) {
+                stakingProxy[field] = stateStakingProxy[field];
+            }
+
+            result.stakingProxies.push(stakingProxy as StakingProxyModel);
+        }
+
+        return result;
+    }
+
+    getAllStakingProxies(request: GetAllStakingProxiesRequest): StakingProxies {
+        const fields = request.fields?.paths ?? [];
+
+        return this.getStakingProxies(
+            Array.from(this.stakingProxies.keys()),
+            fields,
+        );
+    }
+
+    getFeesCollector(request: GetFeesCollectorRequest): FeesCollectorModel {
+        const fields = request.fields?.paths ?? [];
+
+        if (fields.length === 0) {
+            return { ...this.feesCollector };
+        }
+
+        const feesCollector: Partial<FeesCollectorModel> = {};
+        for (const field of fields) {
+            feesCollector[field] = this.feesCollector[field];
+        }
+
+        return feesCollector as FeesCollectorModel;
+    }
+
+    getWeeklyTimekeeping(
+        request: GetWeeklyTimekeepingRequest,
+    ): WeekTimekeepingModel {
+        const fields = request.fields?.paths ?? [];
+        const { address } = request;
+
+        if (!address) {
+            throw new Error(`SC Address missing`);
+        }
+
+        let time: WeekTimekeepingModel;
+
+        if (this.farms.has(address)) {
+            time = { ...this.farms.get(address).time };
+        }
+
+        if (this.stakingFarms.has(address)) {
+            time = { ...this.stakingFarms.get(address).time };
+        }
+
+        if (this.feesCollector.address === address) {
+            time = { ...this.feesCollector.time };
+        }
+
+        if (time === undefined) {
+            throw new Error(`Could not find time for SC ${address}`);
+        }
+
+        if (fields.length === 0) {
+            return time;
+        }
+
+        const partialTime: Partial<WeekTimekeepingModel> = {};
+        for (const field of fields) {
+            partialTime[field] = time[field];
+        }
+
+        return partialTime as WeekTimekeepingModel;
     }
 
     getAllPairs(request: GetAllPairsRequest): Pairs {
@@ -433,6 +723,14 @@ export class DexStateService implements OnModuleInit {
     addPair(request: AddPairRequest): void {
         const { pair, firstToken, secondToken } = request;
 
+        pair.compoundedAPR = new PairCompoundedAPRModel({
+            feesAPR: pair.feesAPR,
+            farmBaseAPR: '0',
+            farmBoostedAPR: '0',
+            dualFarmBaseAPR: '0',
+            dualFarmBoostedAPR: '0',
+        });
+
         this.pairs.set(pair.address, { ...pair });
 
         if (!this.tokens.has(firstToken.identifier)) {
@@ -550,6 +848,8 @@ export class DexStateService implements OnModuleInit {
     }
 
     getTokens(tokenIDs: string[], fields: string[] = []): Tokens {
+        const profiler = new PerformanceProfiler();
+
         const result: Tokens = {
             tokens: [],
         };
@@ -582,6 +882,9 @@ export class DexStateService implements OnModuleInit {
 
             result.tokens.push(token as EsdtToken);
         }
+
+        profiler.stop();
+        console.log('SERVER GET TOKENS', profiler.duration);
 
         return result;
     }
@@ -747,6 +1050,482 @@ export class DexStateService implements OnModuleInit {
         const tokensWithPriceUpdates = this.recomputeValues();
 
         return { tokensWithPriceUpdates };
+    }
+
+    private computeMissingFeesCollectorFields(
+        feesCollector: FeesCollectorModel,
+    ): FeesCollectorModel {
+        this.refreshWeekStartAndEndEpochs(feesCollector.time);
+
+        feesCollector.undistributedRewards.forEach((globalInfo) => {
+            if (!globalInfo.totalRewardsForWeek) {
+                globalInfo.totalRewardsForWeek = [];
+            }
+            globalInfo.rewardsDistributionForWeek = this.computeDistribution(
+                globalInfo.totalRewardsForWeek,
+            );
+            globalInfo.apr = '0';
+        });
+
+        return feesCollector;
+    }
+
+    private computeMissingStakingProxyFields(
+        stakingProxy: StakingProxyModel,
+    ): StakingProxyModel {
+        const stakingFarm = this.stakingFarms.get(
+            stakingProxy.stakingFarmAddress,
+        );
+
+        stakingProxy.stakingMinUnboundEpochs =
+            stakingFarm?.minUnboundEpochs ?? 0;
+
+        return stakingProxy;
+    }
+
+    private computeMissingStakingFarmFields(
+        stakingFarm: StakingModel,
+    ): StakingModel {
+        this.refreshWeekStartAndEndEpochs(stakingFarm.time);
+
+        stakingFarm.boosterRewards.forEach((globalInfo) => {
+            if (!globalInfo.totalRewardsForWeek) {
+                globalInfo.totalRewardsForWeek = [];
+            }
+            globalInfo.rewardsDistributionForWeek = this.computeDistribution(
+                globalInfo.totalRewardsForWeek,
+            );
+            globalInfo.apr = '0';
+        });
+
+        const farmingToken = this.tokens.get(stakingFarm.farmingTokenId);
+
+        stakingFarm.isProducingRewards =
+            !stakingFarm.produceRewardsEnabled ||
+            new BigNumber(stakingFarm.accumulatedRewards).isEqualTo(
+                stakingFarm.rewardCapacity,
+            )
+                ? false
+                : true;
+
+        stakingFarm.rewardsPerBlockAPRBound =
+            this.computeRewardsPerBlockAPRBound(
+                stakingFarm.farmTokenSupply,
+                stakingFarm.annualPercentageRewards,
+            );
+
+        stakingFarm.rewardsRemainingDays = this.computeRewardsRemainingDaysBase(
+            stakingFarm.perBlockRewards,
+            stakingFarm.rewardCapacity,
+            stakingFarm.accumulatedRewards,
+            stakingFarm.rewardsPerBlockAPRBound,
+        );
+
+        stakingFarm.rewardsRemainingDaysUncapped =
+            this.computeRewardsRemainingDaysBase(
+                stakingFarm.perBlockRewards,
+                stakingFarm.rewardCapacity,
+                stakingFarm.accumulatedRewards,
+            );
+
+        stakingFarm.farmingTokenPriceUSD = farmingToken.price;
+
+        stakingFarm.stakedValueUSD = computeValueUSD(
+            stakingFarm.farmTokenSupply,
+            stakingFarm.farmTokenDecimals,
+            stakingFarm.farmingTokenPriceUSD,
+        ).toFixed();
+
+        const rewardsAPRBounded = new BigNumber(
+            stakingFarm.rewardsPerBlockAPRBound,
+        ).multipliedBy(constantsConfig.BLOCKS_IN_YEAR);
+
+        stakingFarm.apr = this.computeStakeFarmAPR(
+            stakingFarm.isProducingRewards,
+            stakingFarm.perBlockRewards,
+            stakingFarm.farmTokenSupply,
+            stakingFarm.annualPercentageRewards,
+            rewardsAPRBounded,
+        );
+
+        stakingFarm.aprUncapped = this.computeStakeFarmUncappedAPR(
+            stakingFarm.perBlockRewards,
+            stakingFarm.farmTokenSupply,
+            stakingFarm.isProducingRewards,
+        );
+
+        stakingFarm.boostedApr = this.computeBoostedAPR(
+            stakingFarm.boostedYieldsRewardsPercenatage,
+            stakingFarm.apr,
+        );
+
+        stakingFarm.baseApr = new BigNumber(stakingFarm.apr)
+            .minus(stakingFarm.boostedApr)
+            .toFixed();
+
+        stakingFarm.maxBoostedApr = this.computeMaxBoostedApr(
+            stakingFarm.baseApr,
+            stakingFarm.boostedYieldsFactors,
+            stakingFarm.boostedYieldsRewardsPercenatage,
+        );
+
+        stakingFarm.optimalEnergyPerStaking =
+            this.calculateOptimalEnergyPerStaking(stakingFarm);
+
+        return stakingFarm;
+    }
+
+    private computeMissingFarmFields(farm: FarmModel): FarmModel {
+        this.refreshWeekStartAndEndEpochs(farm.time);
+
+        farm.boosterRewards.forEach((globalInfo) => {
+            if (!globalInfo.totalRewardsForWeek) {
+                globalInfo.totalRewardsForWeek = [];
+            }
+            globalInfo.rewardsDistributionForWeek = this.computeDistribution(
+                globalInfo.totalRewardsForWeek,
+            );
+            globalInfo.apr = '0';
+        });
+
+        const pair = this.pairs.get(farm.pairAddress);
+        const farmedToken = this.tokens.get(farm.farmedTokenId);
+
+        farm.farmedTokenPriceUSD = farmedToken.price;
+        farm.farmingTokenPriceUSD = pair.liquidityPoolTokenPriceUSD;
+        farm.farmTokenPriceUSD = pair.liquidityPoolTokenPriceUSD;
+
+        farm.totalValueLockedUSD = computeValueUSD(
+            farm.farmTokenSupply,
+            farm.farmTokenDecimals,
+            farm.farmTokenPriceUSD,
+        ).toFixed();
+
+        const totalRewardsPerYear = new BigNumber(farm.perBlockRewards)
+            .multipliedBy(constantsConfig.BLOCKS_IN_YEAR)
+            .toFixed();
+
+        const totalRewardsPerYearUSD = computeValueUSD(
+            totalRewardsPerYear,
+            farmedToken.decimals,
+            farmedToken.price,
+        );
+
+        const baseApr = this.computeBaseRewards(
+            totalRewardsPerYearUSD,
+            farm.boostedYieldsRewardsPercenatage,
+        ).div(farm.totalValueLockedUSD);
+
+        farm.baseApr = baseApr.toFixed();
+        farm.boostedApr = baseApr
+            .multipliedBy(farm.boostedYieldsFactors.maxRewardsFactor)
+            .multipliedBy(farm.boostedYieldsRewardsPercenatage)
+            .dividedBy(
+                constantsConfig.MAX_PERCENT -
+                    farm.boostedYieldsRewardsPercenatage,
+            )
+            .toFixed();
+
+        farm.boostedRewardsPerWeek = this.calculateBoostedRewardsPerWeek(farm);
+        farm.optimalEnergyPerLp = this.calculateOptimalEnergyPerLP(farm);
+
+        return farm;
+    }
+
+    private computeStakeFarmAPR(
+        isProducingRewards: boolean,
+        perBlockRewardAmount: string,
+        farmTokenSupply: string,
+        annualPercentageRewards: string,
+        rewardsAPRBounded: BigNumber,
+    ): string {
+        if (!isProducingRewards) {
+            return '0';
+        }
+
+        const rewardsUnboundedBig = new BigNumber(perBlockRewardAmount).times(
+            constantsConfig.BLOCKS_IN_YEAR,
+        );
+        const stakedValueBig = new BigNumber(farmTokenSupply);
+
+        return rewardsUnboundedBig.isLessThan(rewardsAPRBounded.integerValue())
+            ? rewardsUnboundedBig.dividedBy(stakedValueBig).toFixed()
+            : new BigNumber(annualPercentageRewards)
+                  .dividedBy(constantsConfig.MAX_PERCENT)
+                  .toFixed();
+    }
+
+    private computeStakeFarmUncappedAPR(
+        perBlockRewardAmount: string,
+        farmTokenSupply: string,
+        isProducingRewards: boolean,
+    ): string {
+        if (!isProducingRewards) {
+            return '0';
+        }
+
+        const rewardsUnboundedBig = new BigNumber(
+            perBlockRewardAmount,
+        ).multipliedBy(constantsConfig.BLOCKS_IN_YEAR);
+
+        return rewardsUnboundedBig.dividedBy(farmTokenSupply).toFixed();
+    }
+
+    private computeBoostedAPR(
+        boostedYieldsRewardsPercentage: number,
+        apr: string,
+    ): string {
+        const bnBoostedRewardsPercentage = new BigNumber(
+            boostedYieldsRewardsPercentage,
+        )
+            .dividedBy(constantsConfig.MAX_PERCENT)
+            .multipliedBy(100);
+
+        const boostedAPR = new BigNumber(apr).multipliedBy(
+            bnBoostedRewardsPercentage.dividedBy(100),
+        );
+
+        return boostedAPR.toFixed();
+    }
+
+    private computeMaxBoostedApr(
+        baseAPR: string,
+        boostedYieldsFactors: BoostedYieldsFactors,
+        boostedYieldsRewardsPercentage: number,
+    ): string {
+        const bnRawMaxBoostedApr = new BigNumber(baseAPR)
+            .multipliedBy(boostedYieldsFactors.maxRewardsFactor)
+            .multipliedBy(boostedYieldsRewardsPercentage)
+            .dividedBy(
+                constantsConfig.MAX_PERCENT - boostedYieldsRewardsPercentage,
+            );
+
+        return bnRawMaxBoostedApr.toFixed();
+    }
+
+    private computeRewardsPerBlockAPRBound(
+        farmTokenSupply: string,
+        annualPercentageRewards: string,
+    ): string {
+        return new BigNumber(farmTokenSupply)
+            .multipliedBy(annualPercentageRewards)
+            .dividedBy(constantsConfig.MAX_PERCENT)
+            .dividedBy(constantsConfig.BLOCKS_IN_YEAR)
+            .toFixed();
+    }
+
+    private computeRewardsRemainingDaysBase(
+        perBlockRewardAmount: string,
+        rewardsCapacity: string,
+        accumulatedRewards: string,
+        extraRewardsAPRBoundedPerBlock?: string,
+    ): number {
+        const perBlockRewards = extraRewardsAPRBoundedPerBlock
+            ? BigNumber.min(
+                  extraRewardsAPRBoundedPerBlock,
+                  perBlockRewardAmount,
+              )
+            : new BigNumber(perBlockRewardAmount);
+
+        // 10 blocks per minute * 60 minutes per hour * 24 hours per day
+        const blocksInDay = 10 * 60 * 24;
+
+        return parseFloat(
+            new BigNumber(rewardsCapacity)
+                .minus(accumulatedRewards)
+                .dividedBy(perBlockRewards)
+                .dividedBy(blocksInDay)
+                .toFixed(2),
+        );
+    }
+
+    private computeBaseRewards(
+        totalFarmRewards: BigNumber,
+        boostedYieldsRewardsPercenatage: number,
+    ): BigNumber {
+        const boostedYieldsRewardsPercenatageBig = new BigNumber(
+            boostedYieldsRewardsPercenatage,
+        );
+
+        if (boostedYieldsRewardsPercenatageBig.isPositive()) {
+            const boosterFarmRewardsCut = totalFarmRewards
+                .multipliedBy(boostedYieldsRewardsPercenatageBig)
+                .dividedBy(constantsConfig.MAX_PERCENT);
+            return totalFarmRewards.minus(boosterFarmRewardsCut);
+        }
+        return totalFarmRewards;
+    }
+
+    private computeWeekAPR(
+        totalLockedTokensForWeek: string,
+        totalRewardsForWeek: EsdtTokenPayment[],
+        baseAssetToken: EsdtToken,
+        lockedTokenId: string,
+    ): string {
+        if (!scAddress.has(baseAssetToken.identifier)) {
+            return '0';
+        }
+
+        const tokenPriceUSD = scAddress.has(baseAssetToken.identifier)
+            ? baseAssetToken.price
+            : '0';
+
+        const totalLockedTokensForWeekPriceUSD = new BigNumber(
+            totalLockedTokensForWeek,
+        )
+            .multipliedBy(new BigNumber(tokenPriceUSD))
+            .toFixed();
+
+        const totalRewardsForWeekPriceUSD = this.computeTotalRewardsForWeekUSD(
+            totalRewardsForWeek,
+            baseAssetToken.identifier,
+            lockedTokenId,
+        );
+
+        const weekAPR = new BigNumber(totalRewardsForWeekPriceUSD)
+            .times(52)
+            .div(totalLockedTokensForWeekPriceUSD);
+
+        return weekAPR.isNaN() || !weekAPR.isFinite() ? '0' : weekAPR.toFixed();
+    }
+
+    private computeTotalRewardsForWeekUSD(
+        totalRewardsForWeek: EsdtTokenPayment[],
+        baseAssetTokenId: string,
+        lockedTokenId: string,
+    ): string {
+        return totalRewardsForWeek
+            .reduce((acc, reward) => {
+                const tokenID =
+                    reward.tokenID === lockedTokenId
+                        ? baseAssetTokenId
+                        : reward.tokenID;
+
+                const token = this.tokens.get(tokenID);
+
+                if (!token) {
+                    throw new Error(`Token ${reward.tokenID} missing`);
+                }
+
+                const rewardUSD = computeValueUSD(
+                    reward.amount,
+                    token.decimals,
+                    token.price,
+                );
+                return acc.plus(rewardUSD);
+            }, new BigNumber(0))
+            .toFixed();
+    }
+
+    private computeDistribution(
+        payments: EsdtTokenPayment[],
+    ): TokenDistributionModel[] {
+        let totalPriceUSD = new BigNumber(0);
+        const paymentsValueUSD = payments.map((payment) => {
+            const token = this.tokens.get(payment.tokenID);
+
+            if (!token) {
+                throw new Error(`Token ${payment.tokenID} missing`);
+            }
+
+            const reward = computeValueUSD(
+                payment.amount,
+                token.decimals,
+                token.price,
+            );
+
+            totalPriceUSD = totalPriceUSD.plus(reward);
+            return reward;
+        });
+
+        return payments.map((payment, index) => {
+            const valueUSD = paymentsValueUSD[index];
+            const percentage = totalPriceUSD.isZero()
+                ? '0.0000'
+                : valueUSD
+                      .dividedBy(totalPriceUSD)
+                      .multipliedBy(100)
+                      .toFixed(4);
+            return new TokenDistributionModel({
+                tokenId: payment.tokenID,
+                percentage,
+            });
+        });
+    }
+
+    private refreshWeekStartAndEndEpochs(time: WeekTimekeepingModel): void {
+        time.startEpochForWeek =
+            time.firstWeekStartEpoch +
+            (time.currentWeek - 1) * constantsConfig.EPOCHS_IN_WEEK;
+        time.endEpochForWeek =
+            time.startEpochForWeek + constantsConfig.EPOCHS_IN_WEEK - 1;
+    }
+
+    private calculateBoostedRewardsPerWeek(farm: FarmModel): string {
+        const blocksInWeek = 14440 * 7;
+        const totalRewardsPerWeek = new BigNumber(
+            farm.perBlockRewards,
+        ).multipliedBy(blocksInWeek);
+
+        return totalRewardsPerWeek
+            .multipliedBy(farm.boostedYieldsRewardsPercenatage)
+            .dividedBy(constantsConfig.MAX_PERCENT)
+            .integerValue()
+            .toFixed();
+    }
+
+    private calculateOptimalEnergyPerLP(farm: FarmModel): string {
+        const u = farm.boostedYieldsFactors.maxRewardsFactor;
+        const A = farm.boostedYieldsFactors.userRewardsFarm;
+        const B = farm.boostedYieldsFactors.userRewardsEnergy;
+
+        const currentWeekGlobalInfo = farm.boosterRewards.find(
+            (item) => item.week === farm.time.currentWeek,
+        );
+
+        if (currentWeekGlobalInfo === undefined) {
+            throw new Error(
+                `Missing farm rewards global info for ${farm.address}`,
+            );
+        }
+
+        const optimisationConstant = new BigNumber(u)
+            .multipliedBy(new BigNumber(A).plus(B))
+            .minus(A)
+            .dividedBy(B);
+        return optimisationConstant
+            .multipliedBy(currentWeekGlobalInfo.totalEnergyForWeek)
+            .dividedBy(farm.farmTokenSupply)
+            .integerValue()
+            .toFixed();
+    }
+
+    private calculateOptimalEnergyPerStaking(
+        stakingFarm: StakingModel,
+    ): string {
+        const u = stakingFarm.boostedYieldsFactors.maxRewardsFactor;
+        const A = stakingFarm.boostedYieldsFactors.userRewardsFarm;
+        const B = stakingFarm.boostedYieldsFactors.userRewardsEnergy;
+
+        const currentWeekGlobalInfo = stakingFarm.boosterRewards.find(
+            (item) => item.week === stakingFarm.time.currentWeek,
+        );
+
+        if (currentWeekGlobalInfo === undefined) {
+            throw new Error(
+                `Missing staking farm rewards global info for ${stakingFarm.address}`,
+            );
+        }
+
+        const optimisationConstant = new BigNumber(u)
+            .multipliedBy(new BigNumber(A).plus(B))
+            .minus(A)
+            .dividedBy(B);
+        return optimisationConstant
+            .multipliedBy(currentWeekGlobalInfo.totalEnergyForWeek)
+            .dividedBy(stakingFarm.farmTokenSupply)
+            .integerValue()
+            .toFixed();
     }
 
     private recomputeValues(): string[] {

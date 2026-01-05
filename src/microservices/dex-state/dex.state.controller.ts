@@ -1,15 +1,26 @@
 import { Controller, ServiceUnavailableException } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
+import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 import {
     AddPairLpTokenRequest,
     AddPairRequest,
     DEX_STATE_SERVICE_NAME,
+    Farms,
+    GetAllFarmsRequest,
+    GetAllStakingFarmsRequest,
+    GetAllStakingProxiesRequest,
     GetAllTokensRequest,
+    GetFarmsRequest,
+    GetFeesCollectorRequest,
     GetFilteredPairsRequest,
     GetFilteredTokensRequest,
     GetPairsAndTokensRequest,
     GetPairsRequest,
+    GetStakingFarmsRequest,
+    GetStakingProxiesRequest,
     GetTokensRequest,
+    GetWeeklyTimekeepingRequest,
     IDexStateService,
     InitStateRequest,
     InitStateResponse,
@@ -17,6 +28,8 @@ import {
     PaginatedTokens,
     Pairs,
     PairsAndTokensResponse,
+    StakingFarms,
+    StakingProxies,
     Tokens,
     UpdatePairsRequest,
     UpdatePairsResponse,
@@ -112,6 +125,65 @@ export class DexStateController implements IDexStateService {
     updateUsdcPrice(request: UpdateUsdcPriceRequest): UpdateUsdcPriceResponse {
         this.ensureReady();
         return this.dexStateService.updateUsdcPrice(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetFarms')
+    getFarms(request: GetFarmsRequest): Farms {
+        this.ensureReady();
+        return this.dexStateService.getFarms(
+            request.addresses,
+            request.fields?.paths ?? [],
+        );
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetAllFarms')
+    getAllFarms(request: GetAllFarmsRequest): Farms {
+        this.ensureReady();
+        return this.dexStateService.getAllFarms(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetStakingFarms')
+    getStakingFarms(request: GetStakingFarmsRequest): StakingFarms {
+        this.ensureReady();
+        return this.dexStateService.getStakingFarms(
+            request.addresses,
+            request.fields?.paths ?? [],
+        );
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetAllStakingFarms')
+    getAllStakingFarms(request: GetAllStakingFarmsRequest): StakingFarms {
+        this.ensureReady();
+        return this.dexStateService.getAllStakingFarms(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetStakingProxies')
+    getStakingProxies(request: GetStakingProxiesRequest): StakingProxies {
+        this.ensureReady();
+        return this.dexStateService.getStakingProxies(
+            request.addresses,
+            request.fields?.paths ?? [],
+        );
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetAllStakingProxies')
+    getAllStakingProxies(request: GetAllStakingProxiesRequest): StakingProxies {
+        this.ensureReady();
+        return this.dexStateService.getAllStakingProxies(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetFeesCollector')
+    getFeesCollector(request: GetFeesCollectorRequest): FeesCollectorModel {
+        this.ensureReady();
+        return this.dexStateService.getFeesCollector(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetWeeklyTimekeeping')
+    getWeeklyTimekeeping(
+        request: GetWeeklyTimekeepingRequest,
+    ): WeekTimekeepingModel {
+        this.ensureReady();
+        return this.dexStateService.getWeeklyTimekeeping(request);
     }
 
     private ensureReady() {

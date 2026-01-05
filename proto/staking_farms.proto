@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package dex_state;
+
+import "weekly_rewards.proto";
+
+message StakingFarm {
+  string address                            = 1;
+  string farmTokenCollection                = 2;
+  uint32 farmTokenDecimals                  = 3;
+  string farmingTokenId                     = 4;
+  string farmingTokenPriceUSD               = 5;
+  string rewardTokenId                      = 6;
+  string farmTokenSupply                    = 7;
+  string rewardPerShare                     = 8;
+  string accumulatedRewards                 = 9;
+  string rewardCapacity                     = 10;
+  string annualPercentageRewards            = 11;
+  string apr                                = 12;
+  string aprUncapped                        = 13;
+  string boostedApr                         = 14;
+  string baseApr                            = 15;
+  string maxBoostedApr                      = 16;
+  uint32 minUnboundEpochs                   = 17;
+  string perBlockRewards                    = 18;
+  uint32 lastRewardBlockNonce               = 19;
+  string rewardsPerBlockAPRBound            = 20;
+  bool isProducingRewards                   = 21;
+  uint32 rewardsRemainingDays               = 22;
+  uint32 rewardsRemainingDaysUncapped       = 23;
+  string divisionSafetyConstant             = 24;
+  bool produceRewardsEnabled                = 25;
+  string lockedAssetFactoryManagedAddress   = 26;
+  string state                              = 27;
+  uint32 boostedYieldsRewardsPercenatage    = 28;
+  BoostedYieldsFactors boostedYieldsFactors = 29;
+  string optimalEnergyPerStaking            = 30;
+  WeekTimekeeping time                      = 31;
+  repeated GlobalInfo boosterRewards        = 32;
+  uint32 lastGlobalUpdateWeek               = 33;
+  string farmTokenSupplyCurrentWeek         = 34;
+  string energyFactoryAddress               = 35;
+  string accumulatedRewardsForWeek          = 36;
+  string undistributedBoostedRewards        = 37;
+  uint32 stakingPositionMigrationNonce      = 38;
+  string stakedValueUSD                     = 39;
+  uint32 deployedAt                         = 40;
+}

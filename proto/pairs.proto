@@ -13,6 +13,20 @@ message FeeDestination {
   string tokenID = 2;
 }
 
+message PairCompoundedAPR {
+  string feesAPR = 1;
+  string farmBaseAPR = 2;
+  string farmBoostedAPR = 3;
+  string dualFarmBaseAPR = 4;
+  string dualFarmBoostedAPR = 5;
+}
+
+message LockedTokensInfo {
+  string lockingScAddress = 1;
+  uint32 unlockEpoch = 2;
+  uint32 lockingDeadlineEpoch = 3;
+}
+
 message Pair {
   string address = 1;
 
@@ -65,12 +79,16 @@ message Pair {
 
   uint32 deployedAt = 36;
 
-  string compoundedAprValue = 37;
+  PairCompoundedAPR compoundedAPR = 37;
+  string compoundedAprValue = 38;
 
-  string farmAddress = 38;
-  string stakingProxyAddress = 39;
-  string stakingFarmAddress = 40;
-  string feesCollectorAddress = 41;
+  string farmAddress = 39;
+  string farmRewardCollection = 40;
+  string stakingProxyAddress = 41;
+  string dualFarmRewardTokenId = 42;
+  string stakingFarmAddress = 43;
+  string feesCollectorAddress = 44;
+  LockedTokensInfo lockedTokensInfo = 45;
 }
 
 

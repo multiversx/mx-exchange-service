@@ -3,6 +3,11 @@ import { FieldMask } from './google/protobuf/field_mask.interfaces';
 import { Empty } from './google/protobuf/empty.interfaces';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { StakingModel } from 'src/modules/staking/models/staking.model';
+import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 
 export const protobufPackage = 'dex_state';
 
@@ -162,6 +167,10 @@ export interface UpdateTokensResponse {
 export interface InitStateRequest {
     tokens: EsdtToken[];
     pairs: PairModel[];
+    farms: FarmModel[];
+    stakingFarms: StakingModel[];
+    stakingProxies: StakingProxyModel[];
+    feesCollector: FeesCollectorModel;
     commonTokenIDs: string[];
     usdcPrice: number;
 }
@@ -169,6 +178,9 @@ export interface InitStateRequest {
 export interface InitStateResponse {
     pairsCount: number;
     tokensCount: number;
+    farmsCount: number;
+    stakingFarmsCount: number;
+    stakingProxiesCount: number;
 }
 
 export interface AddPairRequest {
@@ -184,6 +196,54 @@ export interface AddTokenRequest {
 export interface AddPairLpTokenRequest {
     address: string;
     token: EsdtToken | undefined;
+}
+
+export interface Farms {
+    farms: FarmModel[];
+}
+
+export interface StakingFarms {
+    stakingFarms: StakingModel[];
+}
+
+export interface StakingProxies {
+    stakingProxies: StakingProxyModel[];
+}
+
+export interface GetFarmsRequest {
+    addresses: string[];
+    fields: FieldMask;
+}
+
+export interface GetAllFarmsRequest {
+    fields: FieldMask;
+}
+
+export interface GetStakingFarmsRequest {
+    addresses: string[];
+    fields: FieldMask;
+}
+
+export interface GetAllStakingFarmsRequest {
+    fields: FieldMask;
+}
+
+export interface GetStakingProxiesRequest {
+    addresses: string[];
+    fields: FieldMask;
+}
+
+export interface GetAllStakingProxiesRequest {
+    fields: FieldMask;
+}
+
+export interface GetFeesCollectorRequest {
+    fields: FieldMask;
+}
+
+export interface GetWeeklyTimekeepingRequest {
+    address: string;
+    fields: FieldMask;
 }
 
 export interface UpdateUsdcPriceRequest {
@@ -232,6 +292,32 @@ export interface IDexStateServiceClient {
     ): Observable<UpdateTokensResponse>;
 
     //  addToken(request: AddTokenRequest): Observable<Empty>;
+
+    getFarms(request: GetFarmsRequest): Observable<Farms>;
+
+    getAllFarms(request: GetAllFarmsRequest): Observable<Farms>;
+
+    getStakingFarms(request: GetStakingFarmsRequest): Observable<StakingFarms>;
+
+    getAllStakingFarms(
+        request: GetAllStakingFarmsRequest,
+    ): Observable<StakingFarms>;
+
+    getStakingProxies(
+        request: GetStakingProxiesRequest,
+    ): Observable<StakingProxies>;
+
+    getAllStakingProxies(
+        request: GetAllStakingProxiesRequest,
+    ): Observable<StakingProxies>;
+
+    getFeesCollector(
+        request: GetFeesCollectorRequest,
+    ): Observable<FeesCollectorModel>;
+
+    getWeeklyTimekeeping(
+        request: GetWeeklyTimekeepingRequest,
+    ): Observable<WeekTimekeepingModel>;
 
     updateUsdcPrice(
         request: UpdateUsdcPriceRequest,
@@ -299,7 +385,43 @@ export interface IDexStateService {
         | Observable<UpdateTokensResponse>
         | UpdateTokensResponse;
 
-    // addToken(request: AddTokenRequest): void;
+    getFarms(
+        request: GetFarmsRequest,
+    ): Promise<Farms> | Observable<Farms> | Farms;
+
+    getAllFarms(
+        request: GetAllFarmsRequest,
+    ): Promise<Farms> | Observable<Farms> | Farms;
+
+    getStakingFarms(
+        request: GetStakingFarmsRequest,
+    ): Promise<StakingFarms> | Observable<StakingFarms> | StakingFarms;
+
+    getAllStakingFarms(
+        request: GetAllStakingFarmsRequest,
+    ): Promise<StakingFarms> | Observable<StakingFarms> | StakingFarms;
+
+    getStakingProxies(
+        request: GetStakingProxiesRequest,
+    ): Promise<StakingProxies> | Observable<StakingProxies> | StakingProxies;
+
+    getAllStakingProxies(
+        request: GetAllStakingProxiesRequest,
+    ): Promise<StakingProxies> | Observable<StakingProxies> | StakingProxies;
+
+    getFeesCollector(
+        request: GetFeesCollectorRequest,
+    ):
+        | Promise<FeesCollectorModel>
+        | Observable<FeesCollectorModel>
+        | FeesCollectorModel;
+
+    getWeeklyTimekeeping(
+        request: GetWeeklyTimekeepingRequest,
+    ):
+        | Promise<WeekTimekeepingModel>
+        | Observable<WeekTimekeepingModel>
+        | WeekTimekeepingModel;
 
     updateUsdcPrice(
         request: UpdateUsdcPriceRequest,

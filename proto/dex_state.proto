@@ -6,6 +6,11 @@ import "google/protobuf/field_mask.proto";
 import "google/protobuf/empty.proto";
 import "tokens.proto";
 import "pairs.proto";
+import "farms.proto";
+import "staking_farms.proto";
+import "staking_proxies.proto";
+import "fees_collector.proto";
+import "weekly_rewards.proto";
 
 enum TokenSortField {
   TOKENS_SORT_UNSPECIFIED       = 0;
@@ -165,13 +170,20 @@ message UpdateTokensResponse {
 message InitStateRequest {
   repeated Token tokens = 1;
   repeated Pair pairs = 2;
-  repeated string commonTokenIDs = 3;
-  double usdcPrice = 4;
+  repeated Farm farms = 3;
+  repeated StakingFarm stakingFarms = 4;
+  repeated StakingProxy stakingProxies = 5;
+  FeesCollector feesCollector = 6;
+  repeated string commonTokenIDs = 7;
+  double usdcPrice = 8;
 }
 
 message InitStateResponse {
   uint32 pairsCount = 1;
   uint32 tokensCount = 2;
+  uint32 farmsCount = 3;
+  uint32 stakingFarmsCount = 4;
+  uint32 stakingProxiesCount = 5;
 }
 
 message AddPairRequest {
@@ -187,6 +199,54 @@ message AddTokenRequest {
 message AddPairLpTokenRequest {
   string address = 1;
   Token token = 2;
+}
+
+message Farms {
+  repeated Farm farms = 1;
+}
+
+message StakingFarms {
+  repeated StakingFarm stakingFarms = 1;
+}
+
+message StakingProxies {
+  repeated StakingProxy stakingProxies = 1;
+}
+
+message GetFarmsRequest {
+  repeated string addresses = 1;
+  google.protobuf.FieldMask fields = 2;
+}
+
+message GetAllFarmsRequest {
+  google.protobuf.FieldMask fields = 1;
+}
+
+message GetStakingFarmsRequest {
+  repeated string addresses = 1;
+  google.protobuf.FieldMask fields = 2;
+}
+
+message GetAllStakingFarmsRequest {
+  google.protobuf.FieldMask fields = 1;
+}
+
+message GetStakingProxiesRequest {
+  repeated string addresses = 1;
+  google.protobuf.FieldMask fields = 2;
+}
+
+message GetAllStakingProxiesRequest {
+  google.protobuf.FieldMask fields = 1;
+}
+
+message GetFeesCollectorRequest {
+  google.protobuf.FieldMask fields = 1;
+}
+
+message GetWeeklyTimekeepingRequest {
+  string address = 1;
+  google.protobuf.FieldMask fields = 2;
 }
 
 message UpdateUsdcPriceRequest {
@@ -215,6 +275,19 @@ service DexStateService {
   rpc AddPairLpToken (AddPairLpTokenRequest) returns (google.protobuf.Empty) {}
   rpc UpdateTokens (UpdateTokensRequest) returns (UpdateTokensResponse) {}
   rpc AddToken (AddTokenRequest) returns (google.protobuf.Empty) {}
+
+  rpc GetFarms (GetFarmsRequest) returns (Farms) {}
+  rpc GetAllFarms (GetAllFarmsRequest) returns (Farms) {}
+
+  rpc GetStakingFarms (GetStakingFarmsRequest) returns (StakingFarms) {}
+  rpc GetAllStakingFarms (GetAllStakingFarmsRequest) returns (StakingFarms) {}
+
+  rpc GetStakingProxies (GetStakingProxiesRequest) returns (StakingProxies) {}
+  rpc GetAllStakingProxies (GetAllStakingProxiesRequest) returns (StakingProxies) {}
+
+  rpc GetFeesCollector (GetFeesCollectorRequest) returns (FeesCollector) {}
+
+  rpc GetWeeklyTimekeeping (GetWeeklyTimekeepingRequest) returns (WeekTimekeeping) {}
 
   rpc UpdateUsdcPrice (UpdateUsdcPriceRequest) returns (UpdateUsdcPriceResponse) {}
 }
