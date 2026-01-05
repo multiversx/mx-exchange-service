@@ -6,11 +6,9 @@ import { DEX_STATE_CLIENT } from 'src/microservices/dex-state/dex.state.client.m
 import {
     DEX_STATE_SERVICE_NAME,
     IDexStateServiceClient,
-    InitStateResponse,
     PairSortField,
     SortOrder,
     UpdatePairsResponse,
-    UpdateUsdcPriceResponse,
 } from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { PairModel } from 'src/modules/pair/models/pair.model';
@@ -46,23 +44,6 @@ export class PairsStateService implements OnModuleInit {
     }
 
     @StateRpcMetrics()
-    async initState(
-        tokens: EsdtToken[],
-        pairs: PairModel[],
-        commonTokenIDs: string[],
-        usdcPrice: number,
-    ): Promise<InitStateResponse> {
-        return firstValueFrom(
-            this.dexStateServive.initState({
-                tokens: [...tokens],
-                pairs: [...pairs],
-                commonTokenIDs,
-                usdcPrice,
-            }),
-        );
-    }
-
-    @StateRpcMetrics()
     async addPair(
         pair: PairModel,
         firstToken: EsdtToken,
@@ -85,6 +66,10 @@ export class PairsStateService implements OnModuleInit {
         addresses: string[],
         fields: (keyof PairModel)[] = [],
     ): Promise<PairModel[]> {
+        if (!addresses || addresses.length === 0) {
+            return [];
+        }
+
         const result = await firstValueFrom(
             this.dexStateServive.getPairs({
                 addresses,
@@ -160,21 +145,23 @@ export class PairsStateService implements OnModuleInit {
             }),
         );
 
-        return pairsWithTokens.map((item) => {
-            const pair = formatPair(item.pair, pairFields);
+        return pairsWithTokens && pairsWithTokens.length > 0
+            ? pairsWithTokens.map((item) => {
+                  const pair = formatPair(item.pair, pairFields);
 
-            pair.firstToken = formatToken(item.firstToken, tokenFields);
-            pair.secondToken = formatToken(item.secondToken, tokenFields);
+                  pair.firstToken = formatToken(item.firstToken, tokenFields);
+                  pair.secondToken = formatToken(item.secondToken, tokenFields);
 
-            if (item.lpToken) {
-                pair.liquidityPoolToken = formatToken(
-                    item.lpToken,
-                    tokenFields,
-                );
-            }
+                  if (item.lpToken) {
+                      pair.liquidityPoolToken = formatToken(
+                          item.lpToken,
+                          tokenFields,
+                      );
+                  }
 
-            return pair;
-        });
+                  return pair;
+              })
+            : [];
     }
 
     @StateRpcMetrics()
@@ -205,14 +192,6 @@ export class PairsStateService implements OnModuleInit {
             this.dexStateServive.updatePairs({
                 pairs,
                 updateMask: { paths: [...new Set(paths)] },
-            }),
-        );
-    }
-
-    async updateUsdcPrice(usdcPrice: number): Promise<UpdateUsdcPriceResponse> {
-        return firstValueFrom(
-            this.dexStateServive.updateUsdcPrice({
-                usdcPrice,
             }),
         );
     }

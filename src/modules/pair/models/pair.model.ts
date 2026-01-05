@@ -242,8 +242,12 @@ export class PairModel {
     @Field({ nullable: true })
     farmAddress: string;
 
+    farmRewardCollection: string;
+
     @Field({ nullable: true })
     stakingProxyAddress: string;
+
+    dualFarmRewardTokenId: string;
 
     stakingFarmAddress: string;
 

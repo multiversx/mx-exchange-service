@@ -6,10 +6,10 @@ export class WeekTimekeepingModel {
     scAddress: string;
 
     @Field()
-    firstWeekStartEpoch: number
+    firstWeekStartEpoch: number;
 
     @Field()
-    currentWeek: number
+    currentWeek: number;
 
     @Field()
     startEpochForWeek: number;

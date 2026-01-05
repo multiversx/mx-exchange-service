@@ -1,6 +1,10 @@
 import { instanceToPlain } from 'class-transformer';
 import { CacheService } from 'src/services/caching/cache.service';
+import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { FarmModel } from '../farm/models/farm.v2.model';
+import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
 import { PairModel } from '../pair/models/pair.model';
+import { StakingModel } from '../staking/models/staking.model';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 import {
     StateTaskPriority,
@@ -87,5 +91,106 @@ export function formatPair(
         ...(fields.includes('whitelistedManagedAddresses') && {
             whitelistedManagedAddresses: pair.whitelistedManagedAddresses ?? [],
         }),
+    });
+}
+
+export function formatFarm(
+    farm: FarmModel,
+    fields: (keyof FarmModel)[],
+): FarmModel {
+    if (fields.length === 0) {
+        return new FarmModel({
+            ...farm,
+            boosterRewards:
+                farm.boosterRewards?.map((globalInfo) =>
+                    formatGlobalInfoModel(globalInfo),
+                ) ?? [],
+        });
+    }
+
+    return new FarmModel({
+        ...farm,
+        ...(fields.includes('boosterRewards') && {
+            boosterRewards:
+                farm.boosterRewards?.map((globalInfo) =>
+                    formatGlobalInfoModel(globalInfo),
+                ) ?? [],
+        }),
+    });
+}
+
+export function formatStakingFarm(
+    stakingFarm: StakingModel,
+    fields: (keyof StakingModel)[],
+): StakingModel {
+    if (fields.length === 0) {
+        return new StakingModel({
+            ...stakingFarm,
+            boosterRewards:
+                stakingFarm.boosterRewards?.map((globalInfo) =>
+                    formatGlobalInfoModel(globalInfo),
+                ) ?? [],
+        });
+    }
+
+    return new StakingModel({
+        ...stakingFarm,
+        ...(fields.includes('boosterRewards') && {
+            boosterRewards:
+                stakingFarm.boosterRewards?.map((globalInfo) =>
+                    formatGlobalInfoModel(globalInfo),
+                ) ?? [],
+        }),
+    });
+}
+
+export function formatFeesCollector(
+    feesCollector: FeesCollectorModel,
+    fields: (keyof FeesCollectorModel)[],
+): FeesCollectorModel {
+    if (fields.length === 0) {
+        return new FeesCollectorModel({
+            ...feesCollector,
+            undistributedRewards:
+                feesCollector.undistributedRewards?.map((globalInfo) =>
+                    formatGlobalInfoModel(globalInfo),
+                ) ?? [],
+            allTokens: feesCollector.allTokens ?? [],
+            knownContracts: feesCollector.knownContracts ?? [],
+            accumulatedFees: feesCollector.accumulatedFees ?? [],
+            rewardsClaimed: feesCollector.rewardsClaimed ?? [],
+        });
+    }
+
+    return new FeesCollectorModel({
+        ...feesCollector,
+        ...(fields.includes('undistributedRewards') && {
+            undistributedRewards:
+                feesCollector.undistributedRewards?.map((globalInfo) =>
+                    formatGlobalInfoModel(globalInfo),
+                ) ?? [],
+            ...(fields.includes('allTokens') && {
+                allTokens: feesCollector.allTokens ?? [],
+            }),
+            ...(fields.includes('knownContracts') && {
+                knownContracts: feesCollector.knownContracts ?? [],
+            }),
+            ...(fields.includes('accumulatedFees') && {
+                accumulatedFees: feesCollector.accumulatedFees ?? [],
+            }),
+            ...(fields.includes('rewardsClaimed') && {
+                rewardsClaimed: feesCollector.rewardsClaimed ?? [],
+            }),
+        }),
+    });
+}
+
+export function formatGlobalInfoModel(
+    globalInfo: GlobalInfoByWeekModel,
+): GlobalInfoByWeekModel {
+    return new GlobalInfoByWeekModel({
+        ...globalInfo,
+        totalRewardsForWeek: globalInfo.totalRewardsForWeek ?? [],
+        rewardsDistributionForWeek: globalInfo.rewardsDistributionForWeek ?? [],
     });
 }

@@ -5,9 +5,12 @@ import BigNumber from 'bignumber.js';
 import moment from 'moment';
 import { Model, UpdateWriteOpResult } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { constantsConfig, tokenProviderUSD } from 'src/config';
+import { constantsConfig, scAddress, tokenProviderUSD } from 'src/config';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { PairModel } from 'src/modules/pair/models/pair.model';
+import {
+    LockedTokensInfo,
+    PairModel,
+} from 'src/modules/pair/models/pair.model';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
@@ -17,7 +20,6 @@ import {
     EsdtTokenType,
 } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { TokenService } from 'src/modules/tokens/services/token.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { CacheService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -27,6 +29,26 @@ import { MongoServerError } from 'mongodb';
 import { Logger } from 'winston';
 import { BulkUpdatesService } from '../../../microservices/dex-state/services/bulk.updates.service';
 import { StateSnapshot, StateSnapshotDocument } from '../state.snapshot.schema';
+import { farmsAddresses, farmType } from 'src/utils/farm.utils';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
+import { StakingModel } from 'src/modules/staking/models/staking.model';
+import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
+import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
+import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fees-collector.abi.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
+import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 
 const MIN_TRENDING_SCORE = -(10 ** 9);
 
@@ -39,12 +61,22 @@ export class StateSyncService {
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
-        @Inject(forwardRef(() => TokenService))
-        private readonly tokenService: TokenService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
+        private readonly farmAbiV2: FarmAbiServiceV2,
+        @Inject(forwardRef(() => FarmComputeServiceV2))
+        private readonly farmComputeV2: FarmComputeServiceV2,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
+        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly remoteConfigGetter: RemoteConfigGetterService,
+        private readonly stakingAbi: StakingAbiService,
+        private readonly stakingCompute: StakingComputeService,
+        private readonly stakingProxyAbi: StakingProxyAbiService,
+        private readonly feesCollectorAbi: FeesCollectorAbiService,
+        private readonly energyAbi: EnergyAbiService,
         private readonly cacheService: CacheService,
         private readonly dataApi: MXDataApiService,
+        private readonly apiService: MXApiService,
         private readonly analyticsQuery: AnalyticsQueryService,
         private readonly contextGetter: ContextGetterService,
         @InjectModel(StateSnapshot.name)
@@ -57,9 +89,16 @@ export class StateSyncService {
     async getLatestSnapshot(): Promise<{
         pairs: Map<string, PairModel>;
         tokens: Map<string, EsdtToken>;
+        farms: Map<string, FarmModel>;
+        stakingFarms: Map<string, StakingModel>;
+        stakingProxies: Map<string, StakingProxyModel>;
+        feesCollector: FeesCollectorModel;
     }> {
         const pairs = new Map<string, PairModel>();
         const tokens = new Map<string, EsdtToken>();
+        const farms = new Map<string, FarmModel>();
+        const stakingFarms = new Map<string, StakingModel>();
+        const stakingProxies = new Map<string, StakingProxyModel>();
 
         const snapshot = await this.snapshotModel
             .findOne({}, undefined, { lean: true })
@@ -76,15 +115,42 @@ export class StateSyncService {
             );
         }
 
+        if (snapshot?.farms?.length > 0) {
+            snapshot.farms.forEach((farm) => farms.set(farm.address, farm));
+        }
+
+        if (snapshot?.stakingFarms?.length > 0) {
+            snapshot.stakingFarms.forEach((stakingFarm) =>
+                stakingFarms.set(stakingFarm.address, stakingFarm),
+            );
+        }
+
+        if (snapshot?.stakingProxies?.length > 0) {
+            snapshot.stakingProxies.forEach((stakingProxy) =>
+                stakingProxies.set(stakingProxy.address, stakingProxy),
+            );
+        }
+
+        const feesCollector: FeesCollectorModel =
+            snapshot?.feesCollector ?? undefined;
+
         return {
             pairs,
             tokens,
+            farms,
+            stakingFarms,
+            stakingProxies,
+            feesCollector,
         };
     }
 
     async updateSnapshot(
         pairs: PairModel[],
         tokens: EsdtToken[],
+        farms: FarmModel[],
+        stakingFarms: StakingModel[],
+        stakingProxies: StakingProxyModel[],
+        feesCollector: FeesCollectorModel,
     ): Promise<UpdateWriteOpResult> {
         const date = moment().utc().startOf('day').toDate();
         const blockNonce = await this.contextGetter.getShardCurrentBlockNonce(
@@ -105,6 +171,10 @@ export class StateSyncService {
                         $set: {
                             pairs,
                             tokens,
+                            farms,
+                            stakingFarms,
+                            stakingProxies,
+                            feesCollector,
                             blockNonce,
                         },
                     },
@@ -139,6 +209,10 @@ export class StateSyncService {
     async populateState(): Promise<{
         tokens: EsdtToken[];
         pairs: PairModel[];
+        farms: FarmModel[];
+        stakingFarms: StakingModel[];
+        stakingProxies: StakingProxyModel[];
+        feesCollector: FeesCollectorModel;
         commonTokenIDs: string[];
         usdcPrice: number;
     }> {
@@ -154,11 +228,20 @@ export class StateSyncService {
             pairsMetadata,
             commonTokenIDs,
             usdcPrice,
-            { pairs: snapshotPairs, tokens: snapshotTokens },
+            currentEpoch,
+            {
+                pairs: snapshotPairs,
+                tokens: snapshotTokens,
+                farms: snapshotFarms,
+                stakingFarms: snapshotStakingFarms,
+                stakingProxies: snapshotStakingProxies,
+                feesCollector: snapshotFeesCollector,
+            },
         ] = await Promise.all([
             this.routerAbi.getPairsMetadataRaw(),
             this.routerAbi.commonTokensForUserPairs(),
             this.getUsdcPrice(),
+            this.contextGetter.getCurrentEpoch(),
             this.getLatestSnapshot(),
         ]);
 
@@ -191,7 +274,7 @@ export class StateSyncService {
                 continue;
             }
 
-            const pair = await this.populatePair(pairMeta);
+            const pair = await this.populatePair(pairMeta, currentEpoch);
 
             if (!tokens.has(pair.firstTokenId)) {
                 const firstToken = await this.populateToken(pair.firstTokenId);
@@ -250,9 +333,68 @@ export class StateSyncService {
             commonTokenIDs,
         );
 
-        await this.updatePairsAnalytics(pairs, pairsNeedingAnalytics);
+        const farms = new Map<string, FarmModel>();
+        const farmAddresses = farmsAddresses([FarmVersion.V2]);
 
-        await this.updateTokensAnalytics(tokens, tokensNeedingAnalytics);
+        for (const farmAddress of farmAddresses) {
+            if (snapshotFarms.has(farmAddress)) {
+                const snapshotFarm = snapshotFarms.get(farmAddress);
+                farms.set(farmAddress, { ...snapshotFarm });
+
+                continue;
+            }
+
+            const farm = await this.populateFarm(farmAddress);
+
+            farms.set(farm.address, { ...farm });
+        }
+
+        const stakingAddresses =
+            await this.remoteConfigGetter.getStakingAddresses();
+        const stakingFarms = new Map<string, StakingModel>();
+
+        for (const stakingAddress of stakingAddresses) {
+            if (snapshotStakingFarms.has(stakingAddress)) {
+                const snapshotStakingFarm =
+                    snapshotStakingFarms.get(stakingAddress);
+                stakingFarms.set(stakingAddress, { ...snapshotStakingFarm });
+
+                continue;
+            }
+
+            const stakingFarm = await this.populateStakingFarm(stakingAddress);
+
+            stakingFarms.set(stakingAddress, { ...stakingFarm });
+        }
+
+        const stakingProxyAddresses =
+            await this.remoteConfigGetter.getStakingProxyAddresses();
+        const stakingProxies = new Map<string, StakingProxyModel>();
+
+        for (const stakingProxyAddress of stakingProxyAddresses) {
+            if (snapshotStakingProxies.has(stakingProxyAddress)) {
+                const snapshotStakingProxy =
+                    snapshotStakingProxies.get(stakingProxyAddress);
+                stakingProxies.set(stakingProxyAddress, {
+                    ...snapshotStakingProxy,
+                });
+
+                continue;
+            }
+
+            const stakingProxy = await this.populateStakingProxy(
+                stakingProxyAddress,
+            );
+
+            stakingProxies.set(stakingProxyAddress, { ...stakingProxy });
+        }
+
+        const feesCollector =
+            snapshotFeesCollector ?? (await this.populateFeesCollector());
+
+        // await this.updatePairsAnalytics(pairs, pairsNeedingAnalytics);
+
+        // await this.updateTokensAnalytics(tokens, tokensNeedingAnalytics);
 
         profiler.stop();
 
@@ -266,6 +408,10 @@ export class StateSyncService {
         return {
             tokens: [...tokens.values()],
             pairs: [...pairs.values()],
+            farms: [...farms.values()],
+            stakingFarms: [...stakingFarms.values()],
+            stakingProxies: [...stakingProxies.values()],
+            feesCollector,
             commonTokenIDs,
             usdcPrice,
         };
@@ -279,7 +425,13 @@ export class StateSyncService {
         firstToken: EsdtToken;
         secondToken: EsdtToken;
     }> {
-        const pair = await this.populatePair(pairMetadata, timestamp);
+        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+
+        const pair = await this.populatePair(
+            pairMetadata,
+            currentEpoch,
+            timestamp,
+        );
 
         const { firstTokenId, secondTokenId } = pair;
 
@@ -345,6 +497,7 @@ export class StateSyncService {
 
     private async populatePair(
         pairMetadata: PairMetadata,
+        currentEpoch: number,
         timestamp?: number,
     ): Promise<PairModel> {
         const profiler = new PerformanceProfiler();
@@ -364,6 +517,9 @@ export class StateSyncService {
             initialLiquidityAdder,
             feeDestinations,
             feesCollectorAddress,
+            lockingScAddress,
+            unlockEpoch,
+            lockingDeadlineEpoch,
             deployedAt,
         ] = await Promise.all([
             this.pairAbi.getLpTokenIDRaw(address),
@@ -378,8 +534,26 @@ export class StateSyncService {
             this.pairAbi.getInitialLiquidityAdderRaw(address),
             this.pairAbi.getFeeDestinationsRaw(address),
             this.pairAbi.getFeesCollectorAddressRaw(address),
+            this.pairAbi.getLockingScAddressRaw(address),
+            this.pairAbi.getUnlockEpochRaw(address),
+            this.pairAbi.getLockingDeadlineEpochRaw(address),
             this.pairCompute.computeDeployedAt(address),
         ]);
+
+        let lockedTokensInfo: LockedTokensInfo;
+
+        if (
+            lockingScAddress !== undefined &&
+            unlockEpoch !== undefined &&
+            lockingDeadlineEpoch !== undefined &&
+            currentEpoch < lockingDeadlineEpoch
+        ) {
+            lockedTokensInfo = new LockedTokensInfo({
+                lockingScAddress: lockingScAddress,
+                unlockEpoch,
+                lockingDeadlineEpoch,
+            });
+        }
 
         const pair: Partial<PairModel> = {
             address,
@@ -403,6 +577,7 @@ export class StateSyncService {
             initialLiquidityAdder,
             feeDestinations,
             feesCollectorAddress,
+            lockedTokensInfo,
             deployedAt: deployedAt ?? timestamp ?? 0,
         };
 
@@ -429,7 +604,7 @@ export class StateSyncService {
         }
 
         const [tokenMetadata, tokenCreatedAt] = await Promise.all([
-            this.tokenService.tokenMetadataRaw(tokenID),
+            this.apiService.getToken(tokenID),
             this.tokenCompute.computeTokenCreatedAtTimestamp(tokenID),
         ]);
 
@@ -453,6 +628,503 @@ export class StateSyncService {
         }
 
         return token as EsdtToken;
+    }
+
+    async populateFarm(address: string): Promise<FarmModel> {
+        const profiler = new PerformanceProfiler();
+
+        const [
+            farmingTokenId,
+            farmedTokenId,
+            farmTokenCollection,
+            produceRewardsEnabled,
+            perBlockRewards,
+            penaltyPercent,
+            minimumFarmingEpochs,
+            divisionSafetyConstant,
+            state,
+            burnGasLimit,
+            boostedYieldsRewardsPercentage,
+            boostedYieldsFactors,
+            lockingScAddress,
+            lockEpochs,
+            energyFactoryAddress,
+            farmTokenSupply,
+            lastRewardBlockNonce,
+            rewardPerShare,
+            rewardReserve,
+            pairAddress,
+            lastGlobalUpdateWeek,
+            currentWeek,
+            firstWeekStartEpoch,
+        ] = await Promise.all([
+            this.farmAbiV2.getFarmingTokenIDRaw(address),
+            this.farmAbiV2.getFarmedTokenIDRaw(address),
+            this.farmAbiV2.getFarmTokenIDRaw(address),
+            this.farmAbiV2.getProduceRewardsEnabledRaw(address),
+            this.farmAbiV2.getRewardsPerBlockRaw(address),
+            this.farmAbiV2.getPenaltyPercentRaw(address),
+            this.farmAbiV2.getMinimumFarmingEpochsRaw(address),
+            this.farmAbiV2.getDivisionSafetyConstantRaw(address),
+            this.farmAbiV2.getStateRaw(address),
+            this.farmAbiV2.getBurnGasLimitRaw(address),
+            this.farmAbiV2.getBoostedYieldsRewardsPercenatageRaw(address),
+            this.farmAbiV2.getBoostedYieldsFactorsRaw(address),
+            this.farmAbiV2.getLockingScAddressRaw(address),
+            this.farmAbiV2.getLockEpochsRaw(address),
+            this.farmAbiV2.getEnergyFactoryAddressRaw(address),
+            this.farmAbiV2.getFarmTokenSupplyRaw(address),
+            this.farmAbiV2.getLastRewardBlockNonceRaw(address),
+            this.farmAbiV2.getRewardPerShareRaw(address),
+            this.farmAbiV2.getRewardReserveRaw(address),
+            this.farmAbiV2.getPairContractAddressRaw(address),
+            this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeekRaw(address),
+            this.weekTimekeepingAbi.getCurrentWeekRaw(address),
+            this.weekTimekeepingAbi.firstWeekStartEpochRaw(address),
+        ]);
+
+        const [
+            boosterRewards,
+            farmTokenMetadata,
+            farmTokenSupplyCurrentWeek,
+            accumulatedRewards,
+            undistributedBoostedRewards,
+        ] = await Promise.all([
+            this.getGlobalInfoWeeklyModels(address, currentWeek),
+            this.apiService.getNftCollection(farmTokenCollection),
+            this.farmAbiV2.getFarmSupplyForWeekRaw(address, currentWeek),
+            this.farmAbiV2.getAccumulatedRewardsForWeekRaw(
+                address,
+                currentWeek,
+            ),
+            this.farmComputeV2.undistributedBoostedRewardsRaw(
+                address,
+                currentWeek,
+            ),
+        ]);
+
+        const farm = new FarmModel({
+            address,
+            farmingTokenId,
+            farmedTokenId,
+            farmTokenCollection,
+            farmTokenDecimals: farmTokenMetadata.decimals,
+            farmTokenSupply,
+            farmTokenSupplyCurrentWeek,
+            pairAddress,
+            lastRewardBlockNonce,
+            rewardPerShare,
+            rewardReserve,
+            boosterRewards,
+            produceRewardsEnabled,
+            perBlockRewards,
+            penaltyPercent,
+            minimumFarmingEpochs,
+            divisionSafetyConstant,
+            state,
+            burnGasLimit,
+            boostedYieldsRewardsPercenatage: boostedYieldsRewardsPercentage,
+            boostedYieldsFactors,
+            lockingScAddress,
+            lockEpochs: lockEpochs.toString(),
+            energyFactoryAddress,
+            rewardType: farmType(address),
+            time: new WeekTimekeepingModel({
+                currentWeek,
+                firstWeekStartEpoch,
+            }),
+            lastGlobalUpdateWeek,
+            accumulatedRewards,
+            undistributedBoostedRewards: undistributedBoostedRewards
+                .integerValue()
+                .toFixed(),
+        });
+
+        profiler.stop();
+        this.logger.debug(
+            `${this.populateFarm.name} : ${profiler.duration}ms`,
+            {
+                context: StateSyncService.name,
+                address,
+                tokens: [farmingTokenId, farmedTokenId, farmTokenCollection],
+            },
+        );
+
+        return farm;
+    }
+
+    async populateStakingFarm(address: string): Promise<StakingModel> {
+        const profiler = new PerformanceProfiler();
+
+        const [
+            farmTokenCollection,
+            farmingTokenId,
+            rewardTokenId,
+            farmTokenSupply,
+            rewardPerShare,
+            accumulatedRewards,
+            rewardCapacity,
+            annualPercentageRewards,
+            perBlockRewards,
+            minUnboundEpochs,
+            lastRewardBlockNonce,
+            divisionSafetyConstant,
+            produceRewardsEnabled,
+            lockedAssetFactoryManagedAddress,
+            state,
+            boostedYieldsRewardsPercentage,
+            boostedYieldsFactors,
+            energyFactoryAddress,
+            stakingPositionMigrationNonce,
+            deployedAt,
+            currentWeek,
+            firstWeekStartEpoch,
+            lastGlobalUpdateWeek,
+        ] = await Promise.all([
+            this.stakingAbi.getFarmTokenIDRaw(address),
+            this.stakingAbi.getFarmingTokenIDRaw(address),
+            this.stakingAbi.getRewardTokenIDRaw(address),
+            this.stakingAbi.getFarmTokenSupplyRaw(address),
+            this.stakingAbi.getRewardPerShareRaw(address),
+            this.stakingAbi.getAccumulatedRewardsRaw(address),
+            this.stakingAbi.getRewardCapacityRaw(address),
+            this.stakingAbi.getAnnualPercentageRewardsRaw(address),
+            this.stakingAbi.getPerBlockRewardsAmountRaw(address),
+            this.stakingAbi.getMinUnbondEpochsRaw(address),
+            this.stakingAbi.getLastRewardBlockNonceRaw(address),
+            this.stakingAbi.getDivisionSafetyConstantRaw(address),
+            this.stakingAbi.getProduceRewardsEnabledRaw(address),
+            this.stakingAbi.getLockedAssetFactoryAddressRaw(address),
+            this.stakingAbi.getStateRaw(address),
+            this.stakingAbi.getBoostedYieldsRewardsPercenatageRaw(address),
+            this.stakingAbi.getBoostedYieldsFactorsRaw(address),
+            this.stakingAbi.getEnergyFactoryAddressRaw(address),
+            this.stakingAbi.getFarmPositionMigrationNonceRaw(address),
+            this.stakingCompute.computeDeployedAt(address),
+            this.weekTimekeepingAbi.getCurrentWeekRaw(address),
+            this.weekTimekeepingAbi.firstWeekStartEpochRaw(address),
+            this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeekRaw(address),
+        ]);
+
+        const [
+            boosterRewards,
+            farmTokenMetadata,
+            farmTokenSupplyCurrentWeek,
+            accumulatedRewardsForWeek,
+            undistributedBoostedRewards,
+        ] = await Promise.all([
+            this.getGlobalInfoWeeklyModels(address, currentWeek),
+            this.apiService.getNftCollection(farmTokenCollection),
+            this.stakingAbi.getFarmSupplyForWeekRaw(address, currentWeek),
+            this.stakingAbi.getAccumulatedRewardsForWeekRaw(
+                address,
+                currentWeek,
+            ),
+            this.stakingCompute.undistributedBoostedRewardsRaw(
+                address,
+                currentWeek,
+            ),
+        ]);
+
+        const stakingFarm = new StakingModel({
+            address,
+            farmTokenCollection,
+            farmTokenDecimals: farmTokenMetadata.decimals,
+            farmingTokenId,
+            rewardTokenId,
+            farmTokenSupply,
+            rewardPerShare,
+            accumulatedRewards,
+            rewardCapacity,
+            annualPercentageRewards,
+            minUnboundEpochs,
+            perBlockRewards,
+            lastRewardBlockNonce,
+            divisionSafetyConstant: divisionSafetyConstant.toString(),
+            produceRewardsEnabled,
+            lockedAssetFactoryManagedAddress,
+            state,
+            boostedYieldsRewardsPercenatage: boostedYieldsRewardsPercentage,
+            boostedYieldsFactors,
+            time: new WeekTimekeepingModel({
+                currentWeek,
+                firstWeekStartEpoch,
+            }),
+            boosterRewards,
+            lastGlobalUpdateWeek,
+            farmTokenSupplyCurrentWeek,
+            energyFactoryAddress,
+            accumulatedRewardsForWeek,
+            undistributedBoostedRewards: undistributedBoostedRewards
+                .integerValue()
+                .toFixed(),
+            stakingPositionMigrationNonce,
+            deployedAt,
+        });
+
+        profiler.stop();
+        this.logger.debug(
+            `${this.populateStakingFarm.name} : ${profiler.duration}ms`,
+            {
+                context: StateSyncService.name,
+                address,
+                tokens: [farmingTokenId, rewardTokenId, farmTokenCollection],
+            },
+        );
+
+        return stakingFarm;
+    }
+
+    async populateStakingProxy(address: string): Promise<StakingProxyModel> {
+        const profiler = new PerformanceProfiler();
+
+        const [
+            lpFarmAddress,
+            stakingFarmAddress,
+            pairAddress,
+            stakingTokenId,
+            farmTokenCollection,
+            dualYieldTokenCollection,
+            lpFarmTokenCollection,
+        ] = await Promise.all([
+            this.stakingProxyAbi.getlpFarmAddressRaw(address),
+            this.stakingProxyAbi.getStakingFarmAddressRaw(address),
+            this.stakingProxyAbi.getPairAddressRaw(address),
+            this.stakingProxyAbi.getStakingTokenIDRaw(address),
+            this.stakingProxyAbi.getFarmTokenIDRaw(address),
+            this.stakingProxyAbi.getDualYieldTokenIDRaw(address),
+            this.stakingProxyAbi.getLpFarmTokenIDRaw(address),
+        ]);
+
+        const stakingProxy = new StakingProxyModel({
+            address,
+            lpFarmAddress,
+            stakingFarmAddress,
+            pairAddress,
+            stakingTokenId,
+            farmTokenCollection,
+            dualYieldTokenCollection,
+            lpFarmTokenCollection,
+        });
+
+        profiler.stop();
+        this.logger.debug(
+            `${this.populateStakingProxy.name} : ${profiler.duration}ms`,
+            {
+                context: StateSyncService.name,
+                address,
+            },
+        );
+
+        return stakingProxy;
+    }
+
+    async populateFeesCollector(): Promise<FeesCollectorModel> {
+        const profiler = new PerformanceProfiler();
+
+        const address = scAddress.feesCollector;
+
+        const [
+            allTokens,
+            knownContracts,
+            lockedTokensPerEpoch,
+            lastLockedTokensAddWeek,
+            lockedTokenId,
+            currentWeek,
+            firstWeekStartEpoch,
+            lastGlobalUpdateWeek,
+            stats,
+            currentEpoch,
+        ] = await Promise.all([
+            this.feesCollectorAbi.getAllTokensRaw(),
+            this.feesCollectorAbi.getKnownContractsRaw(),
+            this.feesCollectorAbi.getLockedTokensPerEpochRaw(),
+            this.feesCollectorAbi.getLastLockedTokensAddWeekRaw(),
+            this.energyAbi.lockedTokenID(),
+            this.weekTimekeepingAbi.getCurrentWeekRaw(address),
+            this.weekTimekeepingAbi.firstWeekStartEpochRaw(address),
+            this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeekRaw(address),
+            this.apiService.getStats(),
+            this.contextGetter.getCurrentEpoch(),
+        ]);
+
+        const startEpochForWeek =
+            firstWeekStartEpoch +
+            (currentWeek - 1) * constantsConfig.EPOCHS_IN_WEEK;
+        const endEpochForWeek =
+            startEpochForWeek + constantsConfig.EPOCHS_IN_WEEK - 1;
+
+        const time = new WeekTimekeepingModel({
+            currentWeek,
+            firstWeekStartEpoch,
+            startEpochForWeek,
+            endEpochForWeek,
+        });
+
+        const [
+            undistributedRewards,
+            blocksInWeek,
+            accumulatedFees,
+            rewardsClaimed,
+        ] = await Promise.all([
+            this.getGlobalInfoWeeklyModels(address, currentWeek),
+            this.getBlocksInWeek(currentEpoch, time),
+            this.getFeesCollectorAccumulatedFees(currentWeek, allTokens),
+            this.getFeesCollectorRewardsClaimed(currentWeek, allTokens),
+        ]);
+
+        const lockedTokensPerBlock = new BigNumber(lockedTokensPerEpoch)
+            .dividedBy(stats.roundsPerEpoch)
+            .integerValue()
+            .toFixed();
+
+        const accumulatedFeesUntilNow = new BigNumber(lockedTokensPerBlock)
+            .multipliedBy(blocksInWeek)
+            .toFixed();
+
+        accumulatedFees.push(
+            new EsdtTokenPayment({
+                tokenID: `Minted${lockedTokenId}`,
+                tokenType: 0,
+                amount: accumulatedFeesUntilNow,
+                nonce: 0,
+            }),
+        );
+
+        const feesCollector = new FeesCollectorModel({
+            address,
+            time,
+            startWeek: currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
+            endWeek: currentWeek,
+            lastGlobalUpdateWeek,
+            undistributedRewards,
+            allTokens,
+            knownContracts,
+            accumulatedFees,
+            rewardsClaimed,
+            lockedTokenId,
+            lockedTokensPerBlock,
+            lockedTokensPerEpoch,
+            lastLockedTokensAddWeek,
+        });
+
+        profiler.stop();
+        this.logger.debug(
+            `${this.populateFeesCollector.name} : ${profiler.duration}ms`,
+            {
+                context: StateSyncService.name,
+            },
+        );
+
+        return feesCollector;
+    }
+
+    private async getFeesCollectorRewardsClaimed(
+        week: number,
+        allTokens: string[],
+    ): Promise<EsdtTokenPayment[]> {
+        const claimAmounts = await Promise.all(
+            allTokens.map((token) =>
+                this.feesCollectorAbi.getRewardsClaimedRaw(week, token),
+            ),
+        );
+
+        return allTokens.map(
+            (token, index) =>
+                new EsdtTokenPayment({
+                    tokenID: token,
+                    tokenType: 0,
+                    amount: claimAmounts[index],
+                    nonce: 0,
+                }),
+        );
+    }
+
+    private async getFeesCollectorAccumulatedFees(
+        week: number,
+        allTokens: string[],
+    ): Promise<EsdtTokenPayment[]> {
+        const accumulatedFeesByToken = await Promise.all(
+            allTokens.map((token) =>
+                this.feesCollectorAbi.getAccumulatedFeesRaw(week, token),
+            ),
+        );
+
+        return accumulatedFeesByToken.map(
+            (accumulatedFee, index) =>
+                new EsdtTokenPayment({
+                    tokenID: allTokens[index],
+                    tokenType: 0,
+                    amount: accumulatedFee,
+                    nonce: 0,
+                }),
+        );
+    }
+
+    private async getBlocksInWeek(
+        currentEpoch: number,
+        time: WeekTimekeepingModel,
+    ): Promise<number> {
+        const promises = [];
+        for (
+            let epoch = time.startEpochForWeek;
+            epoch <= currentEpoch;
+            epoch++
+        ) {
+            promises.push(this.contextGetter.getBlocksCountInEpoch(epoch, 1));
+        }
+
+        const blocksInEpoch = await Promise.all(promises);
+
+        return blocksInEpoch.reduce((total, current) => {
+            return total + current;
+        });
+    }
+
+    async getGlobalInfoWeeklyModels(
+        address: string,
+        currentWeek: number,
+    ): Promise<GlobalInfoByWeekModel[]> {
+        const result: GlobalInfoByWeekModel[] = [];
+        for (
+            let week = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS;
+            week <= currentWeek;
+            week++
+        ) {
+            if (week < 1) {
+                continue;
+            }
+
+            const [
+                totalRewardsForWeek,
+                totalEnergyForWeek,
+                totalLockedTokensForWeek,
+            ] = await Promise.all([
+                this.weeklyRewardsSplittingAbi.totalRewardsForWeekRaw(
+                    address,
+                    week,
+                ),
+                this.weeklyRewardsSplittingAbi.totalEnergyForWeekRaw(
+                    address,
+                    week,
+                ),
+                this.weeklyRewardsSplittingAbi.totalLockedTokensForWeekRaw(
+                    address,
+                    week,
+                ),
+            ]);
+
+            result.push(
+                new GlobalInfoByWeekModel({
+                    week,
+                    totalRewardsForWeek,
+                    totalEnergyForWeek,
+                    totalLockedTokensForWeek,
+                }),
+            );
+        }
+
+        return result;
     }
 
     async indexPairLpToken(address: string): Promise<EsdtToken> {
@@ -516,9 +1188,8 @@ export class StateSyncService {
             previous24hLockedValueUSD,
             tradesCount,
             tradesCount24h,
-            // TODO : fix; these fields should not be computed like this
-            hasFarms,
-            hasDualFarms,
+            // hasFarms,
+            // hasDualFarms,
             // compoundedAprValue,
         ] = await Promise.all([
             this.pairCompute.firstTokenVolume(pair.address),
@@ -530,8 +1201,8 @@ export class StateSyncService {
             this.pairCompute.previous24hLockedValueUSD(pair.address),
             this.pairCompute.tradesCount(pair.address),
             this.pairCompute.tradesCount24h(pair.address),
-            this.pairCompute.hasFarms(pair.address),
-            this.pairCompute.hasDualFarms(pair.address),
+            // this.pairCompute.hasFarms(pair.address),
+            // this.pairCompute.hasDualFarms(pair.address),
             // this.pairCompute.computeCompoundedApr(pair.address),
         ]);
 
@@ -553,9 +1224,9 @@ export class StateSyncService {
             tradesCount,
             tradesCount24h,
             feesAPR: feesAPR.isNaN() ? '0' : feesAPR.toFixed(),
-            hasFarms,
-            hasDualFarms,
-            compoundedAprValue: '0',
+            // hasFarms,
+            // hasDualFarms,
+            // compoundedAprValue: '0',
         };
 
         return pairUpdates;

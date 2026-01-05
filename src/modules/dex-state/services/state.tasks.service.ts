@@ -22,6 +22,10 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { FarmsStateService } from './farms.state.service';
+import { StakingFarmsStateService } from './staking.farms.state.service';
+import { FeesCollectorStateService } from './fees.collector.state.service';
+import { StateService } from './state.service';
 
 export const STATE_TASKS_CACHE_KEY = 'dexService.stateTasks';
 const INDEX_LP_MAX_ATTEMPTS = 60;
@@ -31,9 +35,13 @@ export class StateTasksService {
     constructor(
         private readonly syncService: StateSyncService,
         private readonly cacheService: CacheService,
+        private readonly stateService: StateService,
         private readonly pairsState: PairsStateService,
         @Inject(forwardRef(() => TokensStateService))
         private readonly tokensState: TokensStateService,
+        private readonly farmsState: FarmsStateService,
+        private readonly stakingState: StakingFarmsStateService,
+        private readonly feesCollectorState: FeesCollectorStateService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -111,30 +119,6 @@ export class StateTasksService {
                 case StateTasks.REFRESH_USDC_PRICE:
                     await this.refreshUsdcPrice();
                     break;
-                // case PersistenceTasks.POPULATE_FARMS:
-                //     await this.populateFarms();
-                //     break;
-                // case PersistenceTasks.REFRESH_FARM:
-                //     await this.refreshFarm(task.args[0]);
-                //     break;
-                // case PersistenceTasks.REFRESH_FARM_INFO:
-                //     await this.refreshFarmInfo(task.args[0]);
-                //     break;
-                // case PersistenceTasks.REFRESH_WEEK_TIMEKEEPING:
-                //     await this.refreshWeekTimekeeping();
-                //     break;
-                // case PersistenceTasks.POPULATE_STAKING_FARMS:
-                //     await this.populateStakingFarms();
-                //     break;
-                // case PersistenceTasks.REFRESH_STAKING_FARM:
-                //     await this.refreshStakingFarm(task.args[0]);
-                //     break;
-                // case PersistenceTasks.REFRESH_STAKING_FARM_INFO:
-                //     await this.refreshStakingFarmInfo(task.args[0]);
-                //     break;
-                // case PersistenceTasks.POPULATE_STAKING_PROXIES:
-                //     await this.populateStakingProxies();
-                //     break;
                 default:
                     break;
             }
@@ -163,22 +147,34 @@ export class StateTasksService {
     }
 
     async populateState(): Promise<void> {
-        const { tokens, pairs, commonTokenIDs, usdcPrice } =
-            await this.syncService.populateState();
-
-        await this.pairsState.initState(
+        const {
             tokens,
             pairs,
+            farms,
+            stakingFarms,
+            stakingProxies,
+            feesCollector,
+            commonTokenIDs,
+            usdcPrice,
+        } = await this.syncService.populateState();
+
+        await this.stateService.initState(
+            tokens,
+            pairs,
+            farms,
+            stakingFarms,
+            stakingProxies,
+            feesCollector,
             commonTokenIDs,
             usdcPrice,
         );
 
-        await this.queueTasks([
-            new TaskDto({
-                name: StateTasks.REFRESH_PAIR_RESERVES,
-                args: [],
-            }),
-        ]);
+        // await this.queueTasks([
+        //     new TaskDto({
+        //         name: StateTasks.REFRESH_PAIR_RESERVES,
+        //         args: [],
+        //     }),
+        // ]);
     }
 
     async addPair(
@@ -289,14 +285,29 @@ export class StateTasksService {
     }
 
     async updateSnapshot(): Promise<void> {
-        const [pairs, tokens] = await Promise.all([
+        const [
+            pairs,
+            tokens,
+            farms,
+            stakingFarms,
+            stakingProxies,
+            feesCollector,
+        ] = await Promise.all([
             this.pairsState.getAllPairs(),
             this.tokensState.getAllTokens(),
+            this.farmsState.getAllFarms(),
+            this.stakingState.getAllStakingFarms(),
+            this.stakingState.getAllStakingProxies(),
+            this.feesCollectorState.getFeesCollector(),
         ]);
 
         const updateResult = await this.syncService.updateSnapshot(
             pairs,
             tokens,
+            farms,
+            stakingFarms,
+            stakingProxies,
+            feesCollector,
         );
 
         this.logger.debug(`Update snapshot task completed`, {
@@ -343,7 +354,7 @@ export class StateTasksService {
     async refreshUsdcPrice(): Promise<void> {
         const usdcPrice = await this.syncService.getUsdcPrice();
 
-        const updateResult = await this.pairsState.updateUsdcPrice(usdcPrice);
+        const updateResult = await this.stateService.updateUsdcPrice(usdcPrice);
 
         if (updateResult.tokensWithPriceUpdates?.length > 0) {
             await this.broadcastTokensPriceUpdates(
