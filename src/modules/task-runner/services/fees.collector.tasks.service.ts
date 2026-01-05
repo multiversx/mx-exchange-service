@@ -54,9 +54,17 @@ export class FeesCollectorTasksService {
 
         const performance = new PerformanceProfiler();
 
+        const tokensCount = await this.mxApi.getTokensCountForUser(
+            scAddress.feesCollector,
+        );
+
         const [feesCollector, tokens, tokenOut] = await Promise.all([
             this.feesCollectorService.feesCollector(scAddress.feesCollector),
-            this.mxApi.getTokensForUser(scAddress.feesCollector, 0, 250),
+            this.mxApi.getTokensForUser(
+                scAddress.feesCollector,
+                0,
+                tokensCount,
+            ),
             this.energyService.getBaseAssetToken(),
         ]);
 
