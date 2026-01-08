@@ -26,6 +26,7 @@ export class StakingComputeService {
         @Inject(forwardRef(() => StakingService))
         private readonly stakingService: StakingService,
         private readonly contextGetter: ContextGetterService,
+        @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weekTimeKeepingAbi: WeekTimekeepingAbiService,

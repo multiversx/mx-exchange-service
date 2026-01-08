@@ -16,6 +16,8 @@ import {
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { StakingFilteringService } from './services/staking.filtering.service';
+import { StateModule } from '../dex-state/state.module';
+import { StateDataLoaderModule } from '../dex-state/state.dataloader.module';
 
 @Module({
     imports: [
@@ -26,6 +28,8 @@ import { StakingFilteringService } from './services/staking.filtering.service';
         TokenModule,
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
+        StateModule,
+        StateDataLoaderModule,
     ],
     providers: [
         StakingAbiService,

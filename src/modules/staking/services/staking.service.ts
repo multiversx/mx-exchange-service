@@ -39,6 +39,7 @@ import {
 } from '../models/staking.args';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { StakingFilteringService } from './staking.filtering.service';
+import { StakingFarmsStateService } from 'src/modules/dex-state/services/staking.farms.state.service';
 
 @Injectable()
 export class StakingService {
@@ -47,6 +48,7 @@ export class StakingService {
         @Inject(forwardRef(() => StakingComputeService))
         private readonly stakingCompute: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
+        @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetter: RemoteConfigGetterService,
@@ -54,22 +56,11 @@ export class StakingService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         @Inject(forwardRef(() => StakingFilteringService))
         private readonly stakingFilteringService: StakingFilteringService,
+        private readonly stakingFarmsState: StakingFarmsStateService,
     ) {}
 
     async getFarmsStaking(): Promise<StakingModel[]> {
-        const farmsStakingAddresses =
-            await this.remoteConfigGetter.getStakingAddresses();
-
-        const farmsStaking: StakingModel[] = [];
-        for (const address of farmsStakingAddresses) {
-            farmsStaking.push(
-                new StakingModel({
-                    address,
-                }),
-            );
-        }
-
-        return farmsStaking;
+        return this.stakingFarmsState.getAllStakingFarms();
     }
 
     async getFilteredFarmsStaking(
