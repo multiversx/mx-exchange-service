@@ -16,6 +16,7 @@ import { FeesCollectorComputeService } from './fees-collector.compute.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { FeesCollectorStateService } from 'src/modules/dex-state/services/fees.collector.state.service';
 
 @Injectable()
 export class FeesCollectorService {
@@ -25,6 +26,7 @@ export class FeesCollectorService {
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly energyAbi: EnergyAbiService,
+        private readonly feesCollectorState: FeesCollectorStateService,
     ) {}
 
     async getAccumulatedFees(
@@ -93,21 +95,8 @@ export class FeesCollectorService {
         );
     }
 
-    async feesCollector(scAddress: string): Promise<FeesCollectorModel> {
-        const [allToken, currentWeek] = await Promise.all([
-            this.feesCollectorAbi.allTokens(),
-            this.weekTimekeepingAbi.currentWeek(scAddress),
-        ]);
-        return new FeesCollectorModel({
-            address: scAddress,
-            time: new WeekTimekeepingModel({
-                scAddress: scAddress,
-                currentWeek: currentWeek,
-            }),
-            startWeek: currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
-            endWeek: currentWeek,
-            allTokens: allToken,
-        });
+    async feesCollector(): Promise<FeesCollectorModel> {
+        return this.feesCollectorState.getFeesCollector();
     }
 
     async userFeesCollector(
