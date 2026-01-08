@@ -21,19 +21,3 @@ export class WeekTimekeepingModel {
         Object.assign(this, init);
     }
 }
-
-@ObjectType()
-export class WeekForEpochModel {
-    @Field()
-    scAddress: string;
-
-    @Field()
-    epoch: number
-
-    @Field()
-    week: number
-
-    constructor(init?: Partial<WeekForEpochModel>) {
-        Object.assign(this, init);
-    }
-}
